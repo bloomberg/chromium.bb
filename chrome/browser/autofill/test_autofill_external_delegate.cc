@@ -40,9 +40,11 @@ void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {}
 
-void TestAutofillExternalDelegate::HideAutofillPopupInternal() {}
+void TestAutofillExternalDelegate::HideAutofillPopup() {}
 
 void TestAutofillExternalDelegate::CreatePopupForElement(
     const gfx::Rect& element_bounds) {}
+
+void TestAutofillExternalDelegate::ControllerDestroyed() {}
 
 }  // namespace autofill

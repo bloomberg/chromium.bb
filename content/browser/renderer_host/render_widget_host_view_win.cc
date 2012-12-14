@@ -1825,12 +1825,13 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   MSG msg = { m_hWnd, message, wparam, lparam };
   ui::KeyEvent key_event(msg, message == WM_CHAR);
   if (render_widget_host_ &&
-      render_widget_host_->KeyPressListenersHandleEvent(&key_event))
+      render_widget_host_->KeyPressListenersHandleEvent(
+          NativeWebKeyboardEvent(msg)))
     return 0;
 
-  if (render_widget_host_ && !ignore_keyboard_event) {
+  if (render_widget_host_ && !ignore_keyboard_event)
     render_widget_host_->ForwardKeyboardEvent(NativeWebKeyboardEvent(msg));
-  }
+
   return 0;
 }
 

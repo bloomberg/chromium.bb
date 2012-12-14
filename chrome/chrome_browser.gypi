@@ -202,8 +202,6 @@
         'browser/autofill/autofill_manager_delegate.h',
         'browser/autofill/autofill_metrics.cc',
         'browser/autofill/autofill_metrics.h',
-        'browser/autofill/autofill_popup_view.cc',
-        'browser/autofill/autofill_popup_view.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
         'browser/autofill/autofill_regex_constants.cc.utf8',

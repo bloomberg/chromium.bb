@@ -31,9 +31,11 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids) OVERRIDE;
 
-  virtual void HideAutofillPopupInternal() OVERRIDE;
+  virtual void HideAutofillPopup() OVERRIDE;
 
   virtual void CreatePopupForElement(const gfx::Rect& element_bounds) OVERRIDE;
+
+  virtual void ControllerDestroyed() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);

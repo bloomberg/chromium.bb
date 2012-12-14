@@ -459,7 +459,6 @@
         'browser/autofill/autofill_merge_unittest.cc',
         'browser/autofill/autofill_metrics_unittest.cc',
         'browser/autofill/autofill_profile_unittest.cc',
-        'browser/autofill/autofill_popup_unittest.cc',
         'browser/autofill/autofill_regexes_unittest.cc',
         'browser/autofill/autofill_type_unittest.cc',
         'browser/autofill/autofill_xml_parser_unittest.cc',
@@ -1163,6 +1162,7 @@
         'browser/ui/ash/launcher/chrome_launcher_controller_per_browser_unittest.cc',
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/auto_login_prompter_unittest.cc',
+        'browser/ui/autofill/autofill_popup_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
@@ -2130,6 +2130,10 @@
             # Test files cannot be opened on Android.
             'browser/google_apis/gdata_wapi_operations_unittest.cc',
             'browser/google_apis/gdata_wapi_parser_unittest.cc',
+
+            # The autofill popup is implemented in mostly native code on
+            # Android.
+            'browser/ui/autofill/autofill_popup_controller_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

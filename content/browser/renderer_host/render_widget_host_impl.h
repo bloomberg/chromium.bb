@@ -249,15 +249,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardGestureEventImmediately(
       const WebKit::WebGestureEvent& gesture_event);
 
-#if defined(TOOLKIT_GTK)
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.
-  bool KeyPressListenersHandleEvent(GdkEventKey* event);
-#endif  // defined(TOOLKIT_GTK)
-
-#if defined(TOOLKIT_VIEWS)
-  bool KeyPressListenersHandleEvent(ui::KeyEvent* event);
-#endif  // defined(TOOLKIT_VIEWS)
+  bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
 
   void CancelUpdateTextDirection();
 

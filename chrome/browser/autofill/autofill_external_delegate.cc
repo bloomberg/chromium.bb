@@ -6,6 +6,7 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -14,28 +15,42 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/content_view_core.h"
+#endif
 
 using content::RenderViewHost;
 using WebKit::WebAutofillClient;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(AutofillExternalDelegate)
 
-AutofillExternalDelegate::~AutofillExternalDelegate() {}
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager) {
+  if (FromWebContents(web_contents))
+    return;
+
+  web_contents->SetUserData(
+      UserDataKey(),
+      new AutofillExternalDelegate(web_contents, autofill_manager));
+}
 
 AutofillExternalDelegate::AutofillExternalDelegate(
     content::WebContents* web_contents,
     AutofillManager* autofill_manager)
     : web_contents_(web_contents),
       autofill_manager_(autofill_manager),
+      controller_(NULL),
       password_autofill_manager_(web_contents),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
-      has_shown_autofill_popup_for_current_edit_(false),
-      popup_visible_(false) {
+      has_shown_autofill_popup_for_current_edit_(false) {
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
                  content::Source<content::WebContents>(web_contents));
@@ -46,6 +61,11 @@ AutofillExternalDelegate::AutofillExternalDelegate(
         content::Source<content::NavigationController>(
             &(web_contents->GetController())));
   }
+}
+
+AutofillExternalDelegate::~AutofillExternalDelegate() {
+  if (controller_)
+    controller_->DelegateDestroyed();
 }
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
@@ -59,14 +79,14 @@ void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
 void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
                                        const FormFieldData& field,
-                                       const gfx::Rect& bounds,
+                                       const gfx::Rect& element_bounds,
                                        bool display_warning_if_disabled) {
   autofill_query_form_ = form;
   autofill_query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
   autofill_query_id_ = query_id;
 
-  CreatePopupForElement(bounds);
+  EnsurePopupForElement(element_bounds);
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -122,7 +142,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Send to display.
   if (autofill_query_field_.is_focusable) {
-    popup_visible_ = true;
     ApplyAutofillSuggestions(values, labels, icons, ids);
 
     if (autofill_manager_) {
@@ -136,11 +155,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<string16>& suggestions,
     const FormFieldData& field,
-    const gfx::Rect& bounds) {
-  if (!popup_visible_) {
-    autofill_query_field_ = field;
-    CreatePopupForElement(bounds);
-  }
+    const gfx::Rect& element_bounds) {
+  autofill_query_field_ = field;
+  EnsurePopupForElement(element_bounds);
 
   if (suggestions.empty()) {
     HideAutofillPopup();
@@ -150,8 +167,33 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   std::vector<string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
-  popup_visible_ = true;
   ApplyAutofillSuggestions(suggestions, empty, empty, password_ids);
+}
+
+void AutofillExternalDelegate::EnsurePopupForElement(
+    const gfx::Rect& element_bounds) {
+  if (controller_)
+    return;
+
+  // |controller_| owns itself.
+  controller_ = new AutofillPopupControllerImpl(
+      this,
+      // web_contents() may be NULL during testing.
+      web_contents() ? web_contents()->GetView()->GetContentNativeView() : NULL,
+      element_bounds);
+}
+
+void AutofillExternalDelegate::ApplyAutofillSuggestions(
+    const std::vector<string16>& autofill_values,
+    const std::vector<string16>& autofill_labels,
+    const std::vector<string16>& autofill_icons,
+    const std::vector<int>& autofill_unique_ids) {
+  controller_->Show(autofill_values,
+                    autofill_labels,
+                    autofill_icons,
+                    autofill_unique_ids);
+
+  web_contents()->GetRenderViewHost()->AddKeyboardListener(controller_);
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
@@ -159,15 +201,10 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
     const std::vector<string16>& data_list_labels,
     const std::vector<string16>& data_list_icons,
     const std::vector<int>& data_list_unique_ids) {
-  // TODO(csharp): Modify the code to allow the data list values to change
-  // even if the popup is visible.
-  // http://crbug.com/131003
-  if (!popup_visible_) {
-    data_list_values_ = data_list_values;
-    data_list_labels_ = data_list_labels;
-    data_list_icons_ = data_list_icons;
-    data_list_unique_ids_ = data_list_unique_ids;
-  }
+  data_list_values_ = data_list_values;
+  data_list_labels_ = data_list_labels;
+  data_list_icons_ = data_list_icons;
+  data_list_unique_ids_ = data_list_unique_ids;
 }
 
 void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
@@ -182,14 +219,13 @@ void AutofillExternalDelegate::RemoveAutofillProfileOrCreditCard(
   autofill_manager_->RemoveAutofillProfileOrCreditCard(unique_id);
 }
 
-
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
   HideAutofillPopup();
 
   has_shown_autofill_popup_for_current_edit_ = false;
 }
 
-bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
+bool AutofillExternalDelegate::DidAcceptAutofillSuggestion(
     const string16& value,
     int unique_id,
     unsigned index) {
@@ -236,14 +272,16 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
   }
 }
 
+void AutofillExternalDelegate::ControllerDestroyed() {
+  web_contents()->GetRenderViewHost()->RemoveKeyboardListener(controller_);
+  controller_ = NULL;
+}
+
 void AutofillExternalDelegate::HideAutofillPopup() {
-  if (!popup_visible_)
-    return;
-
-  popup_visible_ = false;
-
-  ClearPreviewedForm();
-  HideAutofillPopupInternal();
+  if (controller_) {
+    ClearPreviewedForm();
+    controller_->Hide();
+  }
 }
 
 void AutofillExternalDelegate::Reset() {
@@ -255,7 +293,7 @@ void AutofillExternalDelegate::Reset() {
 void AutofillExternalDelegate::AddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data) {
-    password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
+  password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
@@ -383,12 +421,3 @@ void AutofillExternalDelegate::Observe(
 }
 
 
-
-#if defined(OS_MACOSX)
-
-void AutofillExternalDelegate::CreateForWebContentsAndManager(
-    content::WebContents* web_contents,
-    AutofillManager* autofill_manager) {
-}
-
-#endif

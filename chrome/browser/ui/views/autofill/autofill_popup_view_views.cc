@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "autofill_popup_view_views.h"
+#include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 
-#include "chrome/browser/ui/views/autofill/autofill_external_delegate_views.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "grit/ui_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -24,6 +21,7 @@
 using WebKit::WebAutofillClient;
 
 namespace {
+
 const SkColor kBorderColor = SkColorSetARGB(0xFF, 0xC7, 0xCA, 0xCE);
 const SkColor kHoveredBackgroundColor = SkColorSetARGB(0xFF, 0xCD, 0xCD, 0xCD);
 const SkColor kLabelTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
@@ -33,50 +31,49 @@ const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 }  // namespace
 
 AutofillPopupViewViews::AutofillPopupViewViews(
-    content::WebContents* web_contents,
-    AutofillExternalDelegateViews* external_delegate,
-    const gfx::Rect& element_bounds)
-    : AutofillPopupView(web_contents, external_delegate, element_bounds),
-      external_delegate_(external_delegate),
-      web_contents_(web_contents) {
-}
+    AutofillPopupController* controller)
+    : controller_(controller),
+      observing_widget_(NULL) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {
-  external_delegate_->InvalidateView();
+  if (observing_widget_)
+    observing_widget_->RemoveObserver(this);
+
+  controller_->ViewDestroyed();
 }
 
 void AutofillPopupViewViews::Hide() {
-  if (GetWidget())
+  if (GetWidget()) {
+    // This deletes |this|.
     GetWidget()->Close();
-  web_contents_->GetRenderViewHost()->RemoveKeyboardListener(this);
-
-  views::Widget* browser_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(
-          web_contents_->GetView()->GetTopLevelNativeWindow());
-  browser_widget->RemoveObserver(this);
+  } else {
+    delete this;
+  }
 }
 
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
 
-  for (size_t i = 0; i < autofill_values().size(); ++i) {
-    gfx::Rect line_rect = GetRectForRow(i, width());
+  for (size_t i = 0; i < controller_->autofill_values().size(); ++i) {
+    gfx::Rect line_rect = controller_->GetRectForRow(i, width());
 
-    if (autofill_unique_ids()[i] == WebAutofillClient::MenuItemIDSeparator)
+    if (controller_->autofill_unique_ids()[i] ==
+            WebAutofillClient::MenuItemIDSeparator) {
       canvas->DrawRect(line_rect, kLabelTextColor);
-    else
+    } else {
       DrawAutofillEntry(canvas, i, line_rect);
+    }
   }
 }
 
 void AutofillPopupViewViews::OnMouseCaptureLost() {
-  ClearSelectedLine();
+  controller_->ClearSelectedLine();
 }
 
 bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
   if (HitTestPoint(gfx::Point(event.x(), event.y()))) {
-    SetSelectedPosition(event.x(), event.y());
+    controller_->SetSelectedPosition(event.x(), event.y());
 
     // We must return true in order to get future OnMouseDragged and
     // OnMouseReleased events.
@@ -84,16 +81,16 @@ bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
   }
 
   // If we move off of the popup, we lose the selection.
-  ClearSelectedLine();
+  controller_->ClearSelectedLine();
   return false;
 }
 
 void AutofillPopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
-  ClearSelectedLine();
+  controller_->ClearSelectedLine();
 }
 
 void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
-  SetSelectedPosition(event.x(), event.y());
+  controller_->SetSelectedPosition(event.x(), event.y());
 }
 
 bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
@@ -105,42 +102,16 @@ void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() &&
       HitTestPoint(gfx::Point(event.x(), event.y())))
-    AcceptSelectedPosition(event.x(), event.y());
+    controller_->AcceptSelectedPosition(event.x(), event.y());
 }
 
 void AutofillPopupViewViews::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
-  external_delegate()->HideAutofillPopup();
+  Hide();
 }
 
-bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
-  switch (event->key_code()) {
-    case ui::VKEY_UP:
-      SelectPreviousLine();
-      return true;
-    case ui::VKEY_DOWN:
-      SelectNextLine();
-      return true;
-    case ui::VKEY_PRIOR:
-      SetSelectedLine(0);
-      return true;
-    case ui::VKEY_NEXT:
-      SetSelectedLine(autofill_values().size() - 1);
-      return true;
-    case ui::VKEY_ESCAPE:
-      external_delegate()->HideAutofillPopup();
-      return true;
-    case ui::VKEY_DELETE:
-      return event->IsShiftDown() && RemoveSelectedLine();
-    case ui::VKEY_RETURN:
-      return AcceptSelectedLine();
-    default:
-      return false;
-  }
-}
-
-void AutofillPopupViewViews::ShowInternal() {
+void AutofillPopupViewViews::Show() {
   if (!GetWidget()) {
     // The widget is destroyed by the corresponding NativeWidget, so we use
     // a weak pointer to hold the reference and don't have to worry about
@@ -150,47 +121,37 @@ void AutofillPopupViewViews::ShowInternal() {
     params.delegate = this;
     params.can_activate = false;
     params.transparent = true;
-    params.parent = web_contents_->GetView()->GetTopLevelNativeWindow();
+    params.parent = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
     widget->Show();
-
-    gfx::Rect client_area;
-    web_contents_->GetContainerBounds(&client_area);
-    widget->SetBounds(client_area);
-
-    // Setup an observer to check for when the browser moves or changes size,
-    // since the popup should always be hidden in those cases.
-    views::Widget* browser_widget =
-        views::Widget::GetTopLevelWidgetForNativeView(
-            web_contents_->GetView()->GetTopLevelNativeWindow());
-    browser_widget->AddObserver(this);
 
     // Allow the popup to appear anywhere on the screen, since it may need
     // to go beyond the bounds of the window.
     // TODO(csharp): allow the popup to still appear on the border of
     // two screens.
-    widget->SetBounds(gfx::Rect(0,
-                                0,
-                                GetScreenSize().height(),
-                                GetScreenSize().width()));
+    widget->SetBounds(gfx::Rect(GetScreenSize()));
+
+    // Setup an observer to check for when the browser moves or changes size,
+    // since the popup should always be hidden in those cases.
+    observing_widget_ = views::Widget::GetTopLevelWidgetForNativeView(
+        controller_->container_view());
+    observing_widget_->AddObserver(this);
   }
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
   SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
-
-  web_contents_->GetRenderViewHost()->AddKeyboardListener(this);
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
-  SchedulePaintInRect(GetRectForRow(row, width()));
+  SchedulePaintInRect(controller_->GetRectForRow(row, width()));
 }
 
-void AutofillPopupViewViews::UpdateBoundsAndRedrawPopupInternal() {
-  SetBoundsRect(popup_bounds());
-  SchedulePaintInRect(popup_bounds());
+void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
+  SetBoundsRect(controller_->popup_bounds());
+  SchedulePaintInRect(controller_->popup_bounds());
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
@@ -198,16 +159,17 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                                                const gfx::Rect& entry_rect) {
   // TODO(csharp): support RTL
 
-  if (selected_line() == index)
+  if (controller_->selected_line() == index)
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
   canvas->DrawStringInt(
-      autofill_values()[index],
-      value_font(),
+      controller_->autofill_values()[index],
+      controller_->value_font(),
       kValueTextColor,
       kEndPadding,
       entry_rect.y(),
-      canvas->GetStringWidth(autofill_values()[index], value_font()),
+      canvas->GetStringWidth(controller_->autofill_values()[index],
+                             controller_->value_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 
@@ -216,8 +178,9 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
   // Draw the delete icon, if one is needed.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int row_height = GetRowHeightFromId(autofill_unique_ids()[index]);
-  if (CanDelete(autofill_unique_ids()[index])) {
+  int row_height = controller_->GetRowHeightFromId(
+      controller_->autofill_unique_ids()[index]);
+  if (controller_->CanDelete(controller_->autofill_unique_ids()[index])) {
     x_align_left -= kDeleteIconWidth;
 
     // TODO(csharp): Create a custom resource for the delete icon.
@@ -231,10 +194,11 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   }
 
   // Draw the Autofill icon, if one exists
-  if (!autofill_icons()[index].empty()) {
-    int icon = GetIconResourceID(autofill_icons()[index]);
+  if (!controller_->autofill_icons()[index].empty()) {
+    int icon =
+        controller_->GetIconResourceID(controller_->autofill_icons()[index]);
     DCHECK_NE(-1, icon);
-    int icon_y = entry_rect.y() + ((row_height - kAutofillIconHeight) / 2);
+    int icon_y = entry_rect.y() + (row_height - kAutofillIconHeight) / 2;
 
     x_align_left -= kAutofillIconWidth;
 
@@ -244,51 +208,53 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   }
 
   // Draw the label text.
-  x_align_left -= canvas->GetStringWidth(autofill_labels()[index],
-                                         label_font());
+  x_align_left -= canvas->GetStringWidth(controller_->autofill_labels()[index],
+                                         controller_->label_font());
 
   canvas->DrawStringInt(
-      autofill_labels()[index],
-      label_font(),
+      controller_->autofill_labels()[index],
+      controller_->label_font(),
       kLabelTextColor,
       x_align_left + kEndPadding,
       entry_rect.y(),
-      canvas->GetStringWidth(autofill_labels()[index], label_font()),
+      canvas->GetStringWidth(controller_->autofill_labels()[index],
+                             controller_->label_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
 
 void AutofillPopupViewViews::SetInitialBounds() {
-  // Find the client area of the contents to find our offset.
-  gfx::Rect client_area;
-  web_contents_->GetContainerBounds(&client_area);
-
-  int bottom_of_field = client_area.y() + element_bounds().y() +
-      element_bounds().height();
-  int popup_height =  GetPopupRequiredHeight();
+  int bottom_of_field = controller_->element_bounds().bottom();
+  int popup_height = controller_->GetPopupRequiredHeight();
 
   // Find the correct top position of the popup so that it doesn't go off
   // the screen.
   int top_of_popup = 0;
   if (GetScreenSize().height() < bottom_of_field + popup_height) {
     // The popup must appear above the field.
-    top_of_popup = element_bounds().y() - popup_height;
+    top_of_popup = controller_->element_bounds().y() - popup_height;
   } else {
     // The popup can appear below the field.
     top_of_popup = bottom_of_field;
   }
 
-  SetPopupBounds(gfx::Rect(client_area.x() + element_bounds().x(),
-                           top_of_popup,
-                           GetPopupRequiredWidth(),
-                           popup_height));
+  controller_->SetPopupBounds(gfx::Rect(
+      controller_->element_bounds().x(),
+      top_of_popup,
+      controller_->GetPopupRequiredWidth(),
+      popup_height));
 }
 
 gfx::Size AutofillPopupViewViews::GetScreenSize() {
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(
-      web_contents_->GetView()->GetTopLevelNativeWindow());
-  gfx::Display display = screen->GetDisplayNearestPoint(
-      gfx::Point(element_bounds().x(), element_bounds().y()));
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenFor(controller_->container_view());
+  gfx::Display display =
+      screen->GetDisplayNearestPoint(controller_->element_bounds().origin());
 
   return display.GetSizeInPixel();
+}
+
+AutofillPopupView* AutofillPopupView::Create(
+    AutofillPopupController* controller) {
+  return new AutofillPopupViewViews(controller);
 }

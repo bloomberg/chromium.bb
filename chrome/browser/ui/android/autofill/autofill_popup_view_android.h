@@ -8,11 +8,10 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/autofill/autofill_popup_view.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
-namespace content {
-class WebContents;
-}
+class AutofillPopupController;
 
 namespace gfx {
 class Rect;
@@ -20,10 +19,7 @@ class Rect;
 
 class AutofillPopupViewAndroid : public AutofillPopupView {
  public:
-  AutofillPopupViewAndroid(content::WebContents* web_contents,
-                           AutofillExternalDelegate* external_delegate,
-                           const gfx::Rect& element_bounds);
-  virtual ~AutofillPopupViewAndroid();
+  explicit AutofillPopupViewAndroid(AutofillPopupController* controller);
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -35,23 +31,23 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
                           jstring value,
                           jint unique_id);
 
-  // AutofillPopupView implementation.
-  virtual void Hide() OVERRIDE;
-
   void Dismiss(JNIEnv *env, jobject obj);
 
   static bool RegisterAutofillPopupViewAndroid(JNIEnv* env);
 
  protected:
-  // AutofillPopupView implementations.
-  virtual void ShowInternal() OVERRIDE;
+  // AutofillPopupView implementation.
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
   virtual void InvalidateRow(size_t row) OVERRIDE;
-  virtual void UpdateBoundsAndRedrawPopupInternal() OVERRIDE;
+  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
 
  private:
-  content::WebContents* web_contents_;  // weak; owns me.
+  virtual ~AutofillPopupViewAndroid();
 
-  // The corresponding AutofillExternalDelegate java object.
+  AutofillPopupController* controller_;  // weak.
+
+  // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewAndroid);

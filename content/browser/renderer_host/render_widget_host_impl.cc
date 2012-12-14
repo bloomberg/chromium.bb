@@ -1162,9 +1162,9 @@ void RenderWidgetHostImpl::ForwardTouchEvent(
   touch_event_queue_->QueueEvent(touch_event);
 }
 
-#if defined(TOOLKIT_GTK)
-bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
-  if (event->type != GDK_KEY_PRESS)
+bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.type != WebKeyboardEvent::RawKeyDown)
     return false;
 
   for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
@@ -1175,22 +1175,6 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
 
   return false;
 }
-#endif  // defined(TOOLKIT_GTK)
-
-#if defined(TOOLKIT_VIEWS)
-bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(ui::KeyEvent* event) {
-  if (event->type() != ui::ET_KEY_PRESSED)
-    return false;
-
-  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
-       it != keyboard_listeners_.end(); ++it) {
-    if ((*it)->HandleKeyPressEvent(event))
-      return true;
-  }
-
-  return false;
-}
-#endif  // defined(TOOLKIT_VIEWS)
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
   keyboard_listeners_.push_back(listener);

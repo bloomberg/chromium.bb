@@ -7,27 +7,18 @@
 
 #include "content/common/content_export.h"
 
-// All systems should support key listening through ui::KeyEvent.
-// GTK doesn't because there is no easy way to convet GdkEventKey to
-// ui::KeyEvent and since it is going away soon, it is not worth the effort.
-#if defined(TOOLKIT_GTK)
-typedef struct _GdkEventKey GdkEventKey;
-#else
-namespace ui {
-class KeyEvent;
-}  // namespace ui
-#endif
+namespace content {
+
+struct NativeWebKeyboardEvent;
 
 class CONTENT_EXPORT KeyboardListener {
  public:
-#if defined(TOOLKIT_GTK)
-  virtual bool HandleKeyPressEvent(GdkEventKey* event) = 0;
-#else
-  virtual bool HandleKeyPressEvent(ui::KeyEvent* event) = 0;
-#endif
+  virtual bool HandleKeyPressEvent(const NativeWebKeyboardEvent& event) = 0;
 
  protected:
   virtual ~KeyboardListener() {}
 };
+
+}  // content
 
 #endif  // CONTENT_PUBLIC_BROWSER_KEYBOARD_LISTENER_H_

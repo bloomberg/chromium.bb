@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/autofill_popup_view.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
@@ -27,13 +27,12 @@ using testing::_;
 
 namespace {
 
-class MockAutofillExternalDelegate :
-      public autofill::TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(content::WebContents* web_contents) :
-      TestAutofillExternalDelegate(
-          web_contents,
-          AutofillManager::FromWebContents(web_contents)) {}
+  explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
+      : AutofillExternalDelegate(
+            web_contents,
+            AutofillManager::FromWebContents(web_contents)) {}
   ~MockAutofillExternalDelegate() {}
 
   virtual void SelectAutofillSuggestionAtIndex(int unique_id)
@@ -41,57 +40,64 @@ class MockAutofillExternalDelegate :
 
   virtual void ClearPreviewedForm() OVERRIDE {}
 
-  MOCK_METHOD0(HideAutofillPopupInternal, void());
-};
+  AutofillPopupControllerImpl* GetController() {
+    return controller();
+  }
 
-class TestAutofillPopupView : public AutofillPopupView {
- public:
-  TestAutofillPopupView(
-      content::WebContents* web_contents,
-      AutofillExternalDelegate* autofill_external_delegate)
-      : AutofillPopupView(web_contents,
-                          autofill_external_delegate,
-                          gfx::Rect()) {}
-  virtual ~TestAutofillPopupView() {}
-
-  MOCK_METHOD0(Hide, void());
-
- protected:
-  virtual void ShowInternal() OVERRIDE {}
-
-  virtual void InvalidateRow(size_t row) OVERRIDE {}
-
-  virtual void UpdateBoundsAndRedrawPopupInternal() OVERRIDE {}
+  MOCK_METHOD0(HideAutofillPopup, void());
 };
 
 }  // namespace
 
-class AutofillPopupViewBrowserTest : public InProcessBrowserTest {
+class AutofillExternalDelegateBrowserTest
+    : public InProcessBrowserTest,
+      public content::WebContentsObserver {
  public:
-  AutofillPopupViewBrowserTest() {}
-  virtual ~AutofillPopupViewBrowserTest() {}
+  AutofillExternalDelegateBrowserTest() {}
+  virtual ~AutofillExternalDelegateBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     web_contents_ = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents_ != NULL);
+    Observe(web_contents_);
 
-    autofill_external_delegate_.reset(new MockAutofillExternalDelegate(
-        web_contents_));
-    autofill_popup_view_.reset(new TestAutofillPopupView(
-        web_contents_,
-        autofill_external_delegate_.get()));
+    autofill_external_delegate_.reset(
+        new MockAutofillExternalDelegate(web_contents_));
+  }
+
+  // Normally the WebContents will automatically delete the delegate, but here
+  // the delegate is owned by this test, so we have to manually destroy.
+  virtual void WebContentsDestroyed(content::WebContents* web_contents)
+      OVERRIDE {
+    DCHECK_EQ(web_contents_, web_contents);
+    autofill_external_delegate_.reset();
   }
 
  protected:
   content::WebContents* web_contents_;
-  scoped_ptr<TestAutofillPopupView> autofill_popup_view_;
   scoped_ptr<MockAutofillExternalDelegate> autofill_external_delegate_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
-                       SwitchTabAndHideAutofillPopup) {
+#if defined(OS_MACOSX)
+// TODO(estade): Mac doesn't have an implementation for the view yet, so these
+// are disabled.
+#define MAYBE_SwitchTabAndHideAutofillPopup \
+    DISABLED_SwitchTabAndHideAutofillPopup
+#define MAYBE_TestPageNavigationHidingAutofillPopup \
+    DISABLED_TestPageNavigationHidingAutofillPopup
+#define MAYBE_CloseWidgetAndNoLeaking \
+    DISABLED_CloseWidgetAndNoLeaking
+#else
+#define MAYBE_SwitchTabAndHideAutofillPopup SwitchTabAndHideAutofillPopup
+#define MAYBE_TestPageNavigationHidingAutofillPopup \
+    TestPageNavigationHidingAutofillPopup
+#define MAYBE_CloseWidgetAndNoLeaking CloseWidgetAndNoLeaking
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
+                       MAYBE_SwitchTabAndHideAutofillPopup) {
   EXPECT_CALL(*autofill_external_delegate_,
-              HideAutofillPopupInternal()).Times(AtLeast(1));
+              HideAutofillPopup()).Times(AtLeast(1));
 
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
@@ -105,10 +111,10 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   // The mock verifies that the call was made.
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
-                       TestPageNavigationHidingAutofillPopup) {
+IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
+                       MAYBE_TestPageNavigationHidingAutofillPopup) {
   EXPECT_CALL(*autofill_external_delegate_,
-              HideAutofillPopupInternal()).Times(AtLeast(1));
+              HideAutofillPopup()).Times(AtLeast(1));
 
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
@@ -125,4 +131,16 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   observer.Wait();
 
   // The mock verifies that the call was made.
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
+                       MAYBE_CloseWidgetAndNoLeaking) {
+  EXPECT_CALL(*autofill_external_delegate_,
+              HideAutofillPopup()).Times(AtLeast(1));
+
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
+  // Delete the view from under the delegate to ensure that the
+  // delegate and the controller can handle the popup getting deleted elsewhere.
+  autofill_external_delegate_->GetController()->view()->Hide();
 }
