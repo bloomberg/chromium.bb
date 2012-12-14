@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/common/extensions/extension.h"
@@ -198,7 +199,7 @@ void DrawBulletInFrame(NSRect frame) {
         prompt_->GetUserCount())];
     [[storeLinkButton_ cell] setUnderlineOnHover:YES];
     [[storeLinkButton_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(ConstrainedWindow::GetLinkColor())];
+        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   }
 
   // The bundle install dialog has no icon.

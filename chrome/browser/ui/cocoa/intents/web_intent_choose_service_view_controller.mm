@@ -6,11 +6,11 @@
 
 #include <cmath>
 
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/constrained_window.h"
-#import "chrome/browser/ui/constrained_window_constants.h"
 #import "chrome/browser/ui/intents/web_intent_picker.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -41,7 +41,7 @@
     separator_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
     [separator_ setBoxType:NSBoxCustom];
     [separator_ setBorderColor:gfx::SkColorToCalibratedNSColor(
-        ConstrainedWindow::GetSeparatorColor())];
+        chrome_style::GetSeparatorColor())];
     [[self view] addSubview:separator_];
 
     NSString* moreServicesTitle = l10n_util::GetNSStringWithFixup(
@@ -50,7 +50,7 @@
         [[HyperlinkButtonCell buttonWithString:moreServicesTitle] retain]);
     [[showMoreServicesButton_ cell] setUnderlineOnHover:YES];
     [[showMoreServicesButton_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(ConstrainedWindow::GetLinkColor())];
+        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
     [showMoreServicesButton_ sizeToFit];
     [[self view] addSubview:showMoreServicesButton_];
 
@@ -76,7 +76,7 @@
   [titleTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           title,
-          ConstrainedWindowConstants::kBoldTextFontStyle,
+          chrome_style::kBoldTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -85,7 +85,7 @@
   [messageTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           message,
-          ConstrainedWindowConstants::kTextFontStyle,
+          chrome_style::kTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -193,7 +193,7 @@
         messageTextField_];
   }
 
-  frame.size.width -= ConstrainedWindow::GetCloseButtonSize() +
+  frame.size.width -= chrome_style::GetCloseButtonSize() +
                       WebIntentPicker::kIconTextPadding;
   [titleTextField_ setFrame:frame];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleTextField_];

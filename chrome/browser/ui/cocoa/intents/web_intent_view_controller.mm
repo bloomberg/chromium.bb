@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_view_controller.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
-#include "chrome/browser/ui/constrained_window_constants.h"
 
 @implementation WebIntentViewController
 
@@ -14,12 +14,12 @@
   NSRect bounds = NSMakeRect(0, 0, WebIntentPicker::kWindowMinWidth,
                              WebIntentPicker::kWindowMinHeight);
   bounds = NSInsetRect(bounds,
-                       ConstrainedWindowConstants::kHorizontalPadding,
+                       chrome_style::kHorizontalPadding,
                        0);
-  bounds.origin.y += ConstrainedWindowConstants::kClientTopPadding;
+  bounds.origin.y += chrome_style::kClientTopPadding;
   bounds.size.height = bounds.size.height -
-      ConstrainedWindowConstants::kClientTopPadding -
-      ConstrainedWindowConstants::kClientBottomPadding;
+      chrome_style::kClientTopPadding -
+      chrome_style::kClientBottomPadding;
   return bounds;
 }
 
@@ -33,12 +33,12 @@
   innerFrame.size.height = std::max(minSize.height, NSHeight(innerFrame));
 
   NSRect bounds = NSInsetRect(innerFrame,
-                              -ConstrainedWindowConstants::kHorizontalPadding,
+                              -chrome_style::kHorizontalPadding,
                               0);
-  bounds.origin.y -= ConstrainedWindowConstants::kClientTopPadding;
+  bounds.origin.y -= chrome_style::kClientTopPadding;
   bounds.size.height = NSHeight(innerFrame) +
-      ConstrainedWindowConstants::kClientTopPadding +
-      ConstrainedWindowConstants::kClientBottomPadding;
+      chrome_style::kClientTopPadding +
+      chrome_style::kClientBottomPadding;
 
   [[self view] setFrameSize:bounds.size];
   [self layoutSubviewsWithinFrame:innerFrame];

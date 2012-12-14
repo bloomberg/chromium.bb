@@ -5,9 +5,9 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 
 #import "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/constrained_window.h"
-#import "chrome/browser/ui/constrained_window_constants.h"
 #include "skia/ext/skia_utils_mac.h"
 
 @implementation ConstrainedWindowCustomWindow
@@ -67,10 +67,10 @@
 - (void)drawRect:(NSRect)rect {
   NSBezierPath* path = [NSBezierPath
       bezierPathWithRoundedRect:[self bounds]
-                        xRadius:ConstrainedWindowConstants::kBorderRadius
-                        yRadius:ConstrainedWindowConstants::kBorderRadius];
+                        xRadius:chrome_style::kBorderRadius
+                        yRadius:chrome_style::kBorderRadius];
   [gfx::SkColorToCalibratedNSColor(
-      ConstrainedWindow::GetBackgroundColor()) set];
+      chrome_style::GetBackgroundColor()) set];
   [path fill];
 
   [[self window] invalidateShadow];

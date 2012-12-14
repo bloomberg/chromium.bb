@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/constrained_window.h"
-#import "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
@@ -36,7 +36,7 @@
   [titleTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           title,
-          ConstrainedWindowConstants::kTitleFontStyle,
+          chrome_style::kTitleFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -45,7 +45,7 @@
   [messageTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           message,
-          ConstrainedWindowConstants::kTextFontStyle,
+          chrome_style::kTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -54,7 +54,7 @@
   [self resizeTextFieldsToWidth:innerWidth];
   CGFloat height = NSHeight([titleTextField_ frame]);
   height += NSHeight([messageTextField_ frame]);
-  height += ConstrainedWindowConstants::kRowPadding;
+  height += chrome_style::kRowPadding;
   return NSMakeSize(innerWidth, height);
 }
 
@@ -68,7 +68,7 @@
   NSRect messageFrame = [messageTextField_ frame];
   messageFrame.origin.x = NSMinX(innerFrame);
   messageFrame.origin.y = NSMaxY(titleFrame) +
-      ConstrainedWindowConstants::kRowPadding;
+      chrome_style::kRowPadding;
   [messageTextField_ setFrame:messageFrame];
 }
 
@@ -80,7 +80,7 @@
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
       messageTextField_];
 
-  frame.size.width -= ConstrainedWindow::GetCloseButtonSize() +
+  frame.size.width -= chrome_style::GetCloseButtonSize() +
                       WebIntentPicker::kIconTextPadding;
   [titleTextField_ setFrame:frame];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleTextField_];

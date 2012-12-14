@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_CONSTRAINED_WINDOW_H_
 
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/native_widget_types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,11 +16,6 @@
 //
 class ConstrainedWindow {
  public:
-  static int GetCloseButtonSize();  // Size of close button.
-  static SkColor GetBackgroundColor();  // Dialog background color.
-  static SkColor GetLinkColor();  // Dialog link color.
-  static SkColor GetSeparatorColor();  // Dialog separator color.
-
   // Makes the Constrained Window visible. Only one Constrained Window is shown
   // at a time per tab.
   virtual void ShowConstrainedWindow() = 0;

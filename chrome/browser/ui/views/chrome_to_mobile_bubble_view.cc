@@ -15,7 +15,7 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/constrained_window_constants.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/throb_animation.h"
@@ -205,7 +205,7 @@ void ChromeToMobileBubbleView::Init() {
 
   const size_t kRadioColumnSetId = 1;
   cs = layout->AddColumnSet(kRadioColumnSetId);
-  cs->AddPaddingColumn(0, ConstrainedWindowConstants::kCheckboxIndent);
+  cs->AddPaddingColumn(0, chrome_style::kCheckboxIndent);
   cs->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                 GridLayout::USE_PREF, 0, 0);
 

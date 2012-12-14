@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
@@ -17,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -182,11 +182,11 @@
   NSRect windowFrame = [window frameRectForContentRect:bounds];
 
   NSRect closeFrame;
-  closeFrame.size.width = ConstrainedWindow::GetCloseButtonSize();
-  closeFrame.size.height = ConstrainedWindow::GetCloseButtonSize();
+  closeFrame.size.width = chrome_style::GetCloseButtonSize();
+  closeFrame.size.height = chrome_style::GetCloseButtonSize();
   closeFrame.origin.x = NSMaxX(bounds) - NSWidth(closeFrame) -
-      ConstrainedWindowConstants::kCloseButtonPadding;
-  closeFrame.origin.y = ConstrainedWindowConstants::kCloseButtonPadding;
+      chrome_style::kCloseButtonPadding;
+  closeFrame.origin.y = chrome_style::kCloseButtonPadding;
 
   if (oldViewController) {
     scoped_nsobject<NSMutableArray> array([[NSMutableArray alloc] init]);

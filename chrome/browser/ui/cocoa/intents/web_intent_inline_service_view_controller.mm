@@ -5,12 +5,12 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 
 #include "chrome/browser/ui/browser_finder.h"
+#import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
@@ -42,14 +42,14 @@
         [[HyperlinkButtonCell buttonWithString:chooseString] retain]);
     [[chooseServiceButton_ cell] setUnderlineOnHover:YES];
     [[chooseServiceButton_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(ConstrainedWindow::GetLinkColor())];
+        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
     [chooseServiceButton_ sizeToFit];
     [[self view] addSubview:chooseServiceButton_];
 
     separator_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
     [separator_ setBoxType:NSBoxCustom];
     [separator_ setBorderColor:gfx::SkColorToCalibratedNSColor(
-        ConstrainedWindow::GetSeparatorColor())];
+        chrome_style::GetSeparatorColor())];
     [[self view] addSubview:separator_];
 
     webContentView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
@@ -77,7 +77,7 @@
   [serviceNameTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           serviceName,
-          ConstrainedWindowConstants::kBoldTextFontStyle,
+          chrome_style::kBoldTextFontStyle,
           NSLeftTextAlignment,
           NSLineBreakByTruncatingTail)];
   [serviceNameTextField_ sizeToFit];
@@ -143,7 +143,7 @@
   if ([chooseServiceButton_ isHidden])
     buttonRect.size.width = 0;
   buttonRect.origin.x = NSMaxX(innerFrame) - NSWidth(buttonRect) -
-                        ConstrainedWindow::GetCloseButtonSize() -
+                        chrome_style::GetCloseButtonSize() -
                         WebIntentPicker::kIconTextPadding;
   buttonRect.origin.y = NSMinY(innerFrame);
   [chooseServiceButton_ setFrame:buttonRect];
