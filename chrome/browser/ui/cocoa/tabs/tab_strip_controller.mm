@@ -86,16 +86,16 @@ const CGFloat kUseFullAvailableWidth = -1.0;
 // the throbber is painted, the throbber's invalidation will also invalidate
 // parts of the tab to the left, and two tabs's backgrounds need to be painted
 // on each throbber frame instead of one.
-const CGFloat kTabOverlap = 18.0;
+const CGFloat kTabOverlap = 19.0;
 
 // The amount by which mini tabs are separated from normal tabs.
-const CGFloat kLastMiniTabSpacing = 3.0;
+const CGFloat kLastMiniTabSpacing = 2.0;
 
 // The width and height for a tab's icon.
 const CGFloat kIconWidthAndHeight = 16.0;
 
 // The amount by which the new tab button is offset (from the tabs).
-const CGFloat kNewTabButtonOffset = 7.0;
+const CGFloat kNewTabButtonOffset = 8.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;

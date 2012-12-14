@@ -67,8 +67,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // images). The selected tab width includes the close button width.
 + (CGFloat)minTabWidth { return 31; }
 + (CGFloat)minSelectedTabWidth { return 46; }
-+ (CGFloat)maxTabWidth { return 220; }
-+ (CGFloat)miniTabWidth { return 61; }
++ (CGFloat)maxTabWidth { return 214; }
++ (CGFloat)miniTabWidth { return 58; }
 + (CGFloat)appTabWidth { return 66; }
 
 - (TabView*)tabView {
@@ -81,7 +81,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // Icon.
     // Remember the icon's frame, so that if the icon is ever removed, a new
     // one can later replace it in the proper location.
-    originalIconFrame_ = NSMakeRect(18, 5, 16, 16);
+    originalIconFrame_ = NSMakeRect(19, 5, 16, 16);
     iconView_.reset([[NSImageView alloc] initWithFrame:originalIconFrame_]);
     [iconView_ setAutoresizingMask:NSViewMaxXMargin];
 
@@ -91,7 +91,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // and contract titleView_ under those conditions. We don't have to
     // explicilty save the offset between the title and the close button since
     // we can just get that value for the close button's frame.
-    NSRect titleFrame = NSMakeRect(34, 6, 98, 14);
+    NSRect titleFrame = NSMakeRect(35, 6, 92, 14);
     iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
 
     // Label.
@@ -108,7 +108,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
     // Close button.
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
-        NSMakeRect(130, 4, 18, 18)]);
+        NSMakeRect(125, 4, 18, 18)]);
     [closeButton_ setAutoresizingMask:NSViewMinXMargin];
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
