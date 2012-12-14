@@ -2733,7 +2733,7 @@
         }],
         ['enable_printing!=1', {
           'sources/': [
-            ['exclude', '^browser/ui/webui/print_preview/'],
+            ['exclude', '^browser/printing/'],
           ],
         }],
         ['enable_captive_portal_detection!=1', {
