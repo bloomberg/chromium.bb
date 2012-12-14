@@ -307,15 +307,31 @@ void ObliterateOneDirectory(const FilePath& current_dir,
   }
 }
 
-// Synchronously attempts to delete |root|, preserving only entries in
-// |paths_to_keep|. If there are no entries in |paths_to_keep| on disk, then it
-// completely removes |root|. All paths must be absolute paths.
+// Synchronously attempts to delete |unnormalized_root|, preserving only
+// entries in |paths_to_keep|. If there are no entries in |paths_to_keep| on
+// disk, then it completely removes |unnormalized_root|. All paths must be
+// absolute paths.
 void BlockingObliteratePath(
-    const FilePath& root,
+    const FilePath& unnormalized_browser_context_root,
+    const FilePath& unnormalized_root,
     const std::vector<FilePath>& paths_to_keep,
     const scoped_refptr<base::TaskRunner>& closure_runner,
     const base::Closure& on_gc_required) {
-  CHECK(root.IsAbsolute());
+  // Early exit required because file_util::AbsolutePath() will fail on POSIX
+  // if |unnormalized_root| does not exist. This is safe because there is
+  // nothing to do in this situation anwyays.
+  if (!file_util::PathExists(unnormalized_root)) {
+    return;
+  }
+
+  // Never try to obliterate things outside of the browser context root or the
+  // browser context root itself. Die hard.
+  FilePath root = unnormalized_root;
+  FilePath browser_context_root = unnormalized_browser_context_root;
+  CHECK(file_util::AbsolutePath(&root));
+  CHECK(file_util::AbsolutePath(&browser_context_root));
+  CHECK(file_util::ContainsPath(browser_context_root, root) &&
+        browser_context_root != root);
 
   // Reduce |paths_to_keep| set to those under the root and actually on disk.
   std::vector<FilePath> valid_paths_to_keep;
@@ -520,23 +536,10 @@ void StoragePartitionImplMap::AsyncObliterate(
   FilePath domain_root = browser_context_->GetPath().Append(
       GetStoragePartitionDomainPath(partition_domain));
 
-  // Early exit required because file_util::ContainsPath() will fail on POSIX
-  // if |domain_root| does not exist.
-  if (!file_util::PathExists(domain_root)) {
-    return;
-  }
-
-  // Never try to obliterate things outside of the browser context root or the
-  // browser context root itself. Die hard.
-  FilePath browser_context_root = browser_context_->GetPath();
-  CHECK(file_util::AbsolutePath(&domain_root));
-  CHECK(file_util::AbsolutePath(&browser_context_root));
-  CHECK(file_util::ContainsPath(browser_context_root, domain_root) &&
-        browser_context_root != domain_root) << site;
-
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
-      base::Bind(&BlockingObliteratePath, domain_root, paths_to_keep,
+      base::Bind(&BlockingObliteratePath, browser_context_->GetPath(),
+                 domain_root, paths_to_keep,
                  base::MessageLoopProxy::current(), on_gc_required));
 }
 
