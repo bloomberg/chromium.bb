@@ -13,7 +13,6 @@
       'type': 'none',
       'dependencies': [
         'suid_sandbox_client',
-        'sandbox_services',
       ],
       'conditions': [
         # Only compile in the seccomp mode 1 code for the flag combination
@@ -46,7 +45,6 @@
         'tests/unit_tests.cc',
         'tests/unit_tests.h',
         'suid/client/setuid_sandbox_client_unittest.cc',
-        'services/broker_process_unittest.cc',
       ],
       'include_dirs': [
         '../..',
@@ -115,22 +113,7 @@
         '../..',
       ],
     },
-    { 'target_name': 'sandbox_services',
-      'type': 'static_library',
-      'sources': [
-        'services/broker_process.cc',
-        'services/broker_process.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-    },
     {
-      # We make this its own target so that it does not interfere
-      # with our tests.
       'target_name': 'libc_urandom_override',
       'type': 'static_library',
       'sources': [
