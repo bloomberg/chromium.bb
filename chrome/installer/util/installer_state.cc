@@ -78,8 +78,7 @@ InstallerState::InstallerState()
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false),
-      ensure_google_update_present_(false),
-      demote_app_launcher_to_app_host_(false) {
+      ensure_google_update_present_(false) {
 }
 
 InstallerState::InstallerState(Level level)
@@ -91,8 +90,7 @@ InstallerState::InstallerState(Level level)
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false),
-      ensure_google_update_present_(false),
-      demote_app_launcher_to_app_host_(false) {
+      ensure_google_update_present_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -120,24 +118,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
 
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
-  demote_app_launcher_to_app_host_ = false;
-  // true iff Uninstalling App Launcher && Chrome will be present afterward.
-  if (is_uninstall && prefs.install_chrome_app_launcher() &&
-      !prefs.install_chrome()) {
-    const bool chrome_is_present =
-        machine_state.GetProductState(false,
-                                      BrowserDistribution::CHROME_BROWSER) ||
-        machine_state.GetProductState(true,
-                                      BrowserDistribution::CHROME_BROWSER);
-    if (chrome_is_present) {
-      const ProductState* app_host_state = machine_state.GetProductState(
-          level_ == SYSTEM_LEVEL, BrowserDistribution::CHROME_APP_HOST);
-      demote_app_launcher_to_app_host_ = app_host_state &&
-        app_host_state->uninstall_command().HasSwitch(
-            switches::kChromeAppLauncher);
-    }
-  }
-
   if (prefs.install_chrome()) {
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_BROWSER, prefs, machine_state);
@@ -151,8 +131,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
             << " distribution: " << p->distribution()->GetAppShortCutName();
   }
 
-  if (prefs.install_chrome_app_host() || (prefs.install_chrome_app_launcher() &&
-                                          !demote_app_launcher_to_app_host_)) {
+  if (prefs.install_chrome_app_host() || prefs.install_chrome_app_launcher()) {
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_APP_HOST, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")

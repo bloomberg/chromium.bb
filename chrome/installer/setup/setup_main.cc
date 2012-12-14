@@ -1032,11 +1032,6 @@ installer::InstallStatus UninstallProducts(
       install_status = prod_status;
   }
 
-  if (install_status != installer::UNINSTALL_CANCELLED &&
-      installer_state.demote_app_launcher_to_app_host()) {
-    installer::DemoteAppLauncherToAppHost(original_state, installer_state);
-  }
-
   // Tell Google Update that an uninstall has taken place.
   // Ignore the return value: success or failure of Google Update
   // has no bearing on the success or failure of Chrome's uninstallation.

@@ -60,11 +60,6 @@ installer::InstallStatus UninstallProduct(
     bool force_uninstall,
     const CommandLine& cmd_line);
 
-// Makes all the proper changes to demote App Launcher to App Host.
-void DemoteAppLauncherToAppHost(
-    const InstallationState& original_state,
-    const InstallerState& installer_state);
-
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_UNINSTALL_H_

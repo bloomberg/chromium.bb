@@ -567,8 +567,9 @@ bool ExtensionInstallDialogView::Cancel() {
 
 bool ExtensionInstallDialogView::Accept() {
 #if defined(OS_WIN)
-  if (app_launcher_opt_in_checkbox_ && app_launcher_opt_in_checkbox_->checked())
-    extensions::AppHostInstaller::SetInstallWithLauncher(true);
+  extensions::AppHostInstaller::SetInstallWithLauncher(
+      app_launcher_opt_in_checkbox_ &&
+      app_launcher_opt_in_checkbox_->checked());
 #endif
   delegate_->InstallUIProceed();
   return true;

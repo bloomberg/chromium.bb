@@ -118,12 +118,6 @@ class InstallerState {
     return ensure_google_update_present_;
   }
 
-  // A convenient method returning the intent to demote App Launcher into
-  // App Host.
-  bool demote_app_launcher_to_app_host() const {
-    return demote_app_launcher_to_app_host_;
-  }
-
   // The full path to the place where the operand resides.
   const FilePath& target_path() const { return target_path_; }
 
@@ -254,7 +248,6 @@ class InstallerState {
   bool msi_;
   bool verbose_logging_;
   bool ensure_google_update_present_;
-  bool demote_app_launcher_to_app_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);

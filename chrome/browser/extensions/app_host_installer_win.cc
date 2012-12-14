@@ -104,8 +104,7 @@ string16 GetQuickEnableAppHostCommand(bool system_level) {
 
 // Launches the Google Update command to quick-enable App Host.
 // Returns true if the command is launched.
-bool LaunchQuickEnableAppHost(
-    bool with_launcher, base::win::ScopedHandle* process) {
+bool LaunchQuickEnableAppHost(base::win::ScopedHandle* process) {
   DCHECK(!process->IsValid());
   bool success = false;
 
@@ -114,15 +113,6 @@ bool LaunchQuickEnableAppHost(
     cmd_str = GetQuickEnableAppHostCommand(false);
   if (!cmd_str.empty()) {
     VLOG(1) << "Quick-enabling application host: " << cmd_str;
-    if (!with_launcher) {
-      // Not pretty, but it seems better than building the entire command line
-      // here. This will go away when launcher is always-on.
-      ReplaceFirstSubstringAfterOffset(
-          &cmd_str, 0,
-          ASCIIToUTF16(installer::switches::kChromeAppLauncher),
-          ASCIIToUTF16(installer::switches::kChromeAppHost));
-    }
-
     if (!base::LaunchProcess(cmd_str, base::LaunchOptions(),
                              process->Receive())) {
       LOG(ERROR) << "Failed to quick-enable application host.";
@@ -196,7 +186,7 @@ void AppHostInstaller::EnsureAppHostInstalledInternal() {
 void AppHostInstaller::InstallAppHostOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!process_.IsValid());
-  if (!LaunchQuickEnableAppHost(install_with_launcher_, &process_)) {
+  if (!LaunchQuickEnableAppHost(&process_)) {
     FinishOnCallerThread(false);
   } else {
     DCHECK(process_.IsValid());
