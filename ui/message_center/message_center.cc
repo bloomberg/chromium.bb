@@ -135,8 +135,17 @@ void MessageCenter::OnQuietModeChanged(bool quiet_mode) {
   host_->MessageCenterChanged(true);
 }
 
+void MessageCenter::OnButtonClicked(const std::string& id, int button_index) {
+  if (delegate_)
+    delegate_->OnButtonClicked(id, button_index);
+}
+
 NotificationList* MessageCenter::GetNotificationList() {
   return notification_list_.get();
+}
+
+void MessageCenter::Delegate::OnButtonClicked(const std::string& id,
+                                              int button_index) {
 }
 
 }  // namespace message_center

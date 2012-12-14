@@ -26,12 +26,14 @@ class BalloonCollectionImplAsh
   virtual bool HasSpace() const OVERRIDE;
 
   // Overridden from MessageCenter::Delegate.
-  virtual void NotificationRemoved(const std::string& notifcation_id) OVERRIDE;
-  virtual void DisableExtension(const std::string& notifcation_id) OVERRIDE;
+  virtual void NotificationRemoved(const std::string& notification_id) OVERRIDE;
+  virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(
-      const std::string& notifcation_id) OVERRIDE;
-  virtual void ShowSettings(const std::string& notifcation_id) OVERRIDE;
-  virtual void OnClicked(const std::string& notifcation_id) OVERRIDE;
+      const std::string& notification_id) OVERRIDE;
+  virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
+  virtual void OnClicked(const std::string& notification_id) OVERRIDE;
+  virtual void OnButtonClicked(const std::string& notification_id,
+                               int button_index) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if

@@ -56,6 +56,9 @@ class LoggingNotificationDelegate : public NotificationDelegate {
   virtual void Click() OVERRIDE {
     Logger::log("notification clicked\n");
   }
+  virtual void ButtonClick(int index) OVERRIDE {
+    Logger::log("notification button clicked\n");
+  }
   virtual void Close(bool by_user) OVERRIDE {
     if (by_user)
       Logger::log("notification closed by user\n");

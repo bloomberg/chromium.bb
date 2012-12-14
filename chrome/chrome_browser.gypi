@@ -1178,6 +1178,7 @@
         'browser/notifications/fake_balloon_view.h',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
+        'browser/notifications/notification_delegate.cc',
         'browser/notifications/notification_delegate.h',
         'browser/notifications/notification_object_proxy.cc',
         'browser/notifications/notification_object_proxy.h',

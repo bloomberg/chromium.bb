@@ -41,21 +41,30 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
    public:
     // Called when the notification associated with |notification_id| is
     // removed (i.e. closed by the user).
-    virtual void NotificationRemoved(const std::string& notifcation_id) = 0;
+    virtual void NotificationRemoved(const std::string& notification_id) = 0;
 
     // Request to disable the extension associated with |notification_id|.
-    virtual void DisableExtension(const std::string& notifcation_id) = 0;
+    virtual void DisableExtension(const std::string& notification_id) = 0;
 
     // Request to disable notifications from the source of |notification_id|.
     virtual void DisableNotificationsFromSource(
-        const std::string& notifcation_id) = 0;
+        const std::string& notification_id) = 0;
 
     // Request to show the notification settings (|notification_id| is used
     // to identify the requesting browser context).
-    virtual void ShowSettings(const std::string& notifcation_id) = 0;
+    virtual void ShowSettings(const std::string& notification_id) = 0;
 
     // Called when the notification body is clicked on.
-    virtual void OnClicked(const std::string& notifcation_id) = 0;
+    virtual void OnClicked(const std::string& notification_id) = 0;
+
+    // Called when a button in a notification is clicked. |button_index|
+    // indicates which button was clicked, zero-indexed (button one is 0,
+    // button two is 1).
+    //
+    // TODO(miket): consider providing default implementations for the pure
+    // virtuals above, to avoid changing so many files in disparate parts of
+    // the codebase each time we enhance this interface.
+    virtual void OnButtonClicked(const std::string& id, int button_index);
 
    protected:
     virtual ~Delegate() {}
@@ -117,6 +126,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
   virtual void OnNotificationClicked(const std::string& id) OVERRIDE;
   virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE;
+  virtual void OnButtonClicked(const std::string& id, int button_index)
+      OVERRIDE;
   virtual NotificationList* GetNotificationList() OVERRIDE;
 
  private:

@@ -10,6 +10,7 @@
 
 namespace views {
 class ImageView;
+class LabelButton;
 }
 
 namespace message_center {
@@ -30,6 +31,9 @@ class BaseFormatView : public MessageView {
 
  protected:
   BaseFormatView();
+
+  views::LabelButton* button_one_;
+  views::LabelButton* button_two_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseFormatView);
 };

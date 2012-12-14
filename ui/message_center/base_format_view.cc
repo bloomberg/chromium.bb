@@ -76,19 +76,17 @@ void BaseFormatView::SetUpView() {
 
   // TODO(miket): unreadCount
 
-  views::LabelButton* button_one = NULL;
   if (notification_.button_one_title.length() != 0) {
-    button_one = new views::LabelButton(
+    button_one_ = new views::LabelButton(
         this, notification_.button_one_title);
-    button_one->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    button_one->SetNativeTheme(true);
+    button_one_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    button_one_->SetNativeTheme(true);
   }
-  views::LabelButton* button_two = NULL;
-  if (button_one && notification_.button_two_title.length() != 0) {
-    button_two = new views::LabelButton(
+  if (button_one_ && notification_.button_two_title.length() != 0) {
+    button_two_ = new views::LabelButton(
         this, notification_.button_two_title);
-    button_two->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    button_two->SetNativeTheme(true);
+    button_two_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    button_two_->SetNativeTheme(true);
   }
 
   views::Label* expanded_message = new views::Label(
@@ -168,9 +166,9 @@ void BaseFormatView::SetUpView() {
   // Row 3: Continuation of big icon, two buttons, secondary icon.
   layout->StartRow(0,0);
   layout->SkipColumns(1);
-  if (button_one) {
-    layout->AddView(button_one, 1, 1);
-    layout->AddView(button_two, 1, 1);
+  if (button_one_) {
+    layout->AddView(button_one_, 1, 1);
+    layout->AddView(button_two_, 1, 1);
   } else {
     layout->SkipColumns(3);  // two buttons plus padding
   }
@@ -189,8 +187,16 @@ void BaseFormatView::SetUpView() {
 
 void BaseFormatView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  // TODO(miket): propagate to caller.
-  MessageView::ButtonPressed(sender, event);
+  // TODO(miket): consider changing the _one, _two etc. widgets to an array or
+  // map so that we can move this behavior to the superclass. It seems like
+  // something we wouldn't want to keep recoding for each subclass.
+  if (sender == button_one_) {
+    list_delegate_->OnButtonClicked(notification_.id, 0);
+  } else if (sender == button_two_) {
+    list_delegate_->OnButtonClicked(notification_.id, 1);
+  } else {
+    MessageView::ButtonPressed(sender, event);
+  }
 }
 
 }  // namespace message_center

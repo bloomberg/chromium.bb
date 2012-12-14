@@ -45,15 +45,12 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     std::string extension_id;
 
     // Begin unpacked values from optional_fields
-    string16 message_intent;
     int priority;
     base::Time timestamp;
     gfx::ImageSkia second_image;
     int unread_count;
     string16 button_one_title;
-    string16 button_one_intent;
     string16 button_two_title;
-    string16 button_two_intent;
     string16 expanded_message;
     string16 image_url;
     std::vector<NotificationItem> items;
@@ -87,6 +84,11 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
     // Called when the quiet mode status has been changed.
     virtual void OnQuietModeChanged(bool quiet_mode) = 0;
+
+    // Called when a button in a notification is clicked. |button_index|
+    // indicates which button was clicked, zero-indexed (button one is 0,
+    // button two is 1).
+    virtual void OnButtonClicked(const std::string& id, int button_index) = 0;
 
     // Returns the list of notifications to display.
     virtual NotificationList* GetNotificationList() = 0;

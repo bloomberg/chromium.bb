@@ -27,10 +27,6 @@
     // Main notification content.
     DOMString message;
 
-    // What happens when the user clicks on the message.
-    // TODO(miket): this is imaginary.
-    DOMString? messageIntent;
-
     // Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero
     // is default.
     long? priority;
@@ -48,13 +44,11 @@
     // that mean?
     long? unreadCount;
 
-    // Text and intent of the first button in the notification.
+    // Text and of the first button in the notification.
     DOMString? buttonOneTitle;
-    DOMString? buttonOneIntent;
 
     // Text and intent of the second button in the notification.
     DOMString? buttonTwoTitle;
-    DOMString? buttonTwoIntent;
 
     // Secondary notification content.
     DOMString? expandedMessage;

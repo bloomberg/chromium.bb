@@ -40,8 +40,8 @@ void BalloonCollectionImplAsh::Add(const Notification& notification,
 }
 
 void BalloonCollectionImplAsh::DisableExtension(
-    const std::string& notifcation_id) {
-  Balloon* balloon = base().FindBalloonById(notifcation_id);
+    const std::string& notification_id) {
+  Balloon* balloon = base().FindBalloonById(notification_id);
   const extensions::Extension* extension = GetBalloonExtension(balloon);
   if (!extension)
     return;
@@ -50,8 +50,8 @@ void BalloonCollectionImplAsh::DisableExtension(
 }
 
 void BalloonCollectionImplAsh::DisableNotificationsFromSource(
-    const std::string& notifcation_id) {
-  Balloon* balloon = base().FindBalloonById(notifcation_id);
+    const std::string& notification_id) {
+  Balloon* balloon = base().FindBalloonById(notification_id);
   if (!balloon)
     return;
   DesktopNotificationService* service =
@@ -60,12 +60,13 @@ void BalloonCollectionImplAsh::DisableNotificationsFromSource(
 }
 
 void BalloonCollectionImplAsh::NotificationRemoved(
-    const std::string& notifcation_id) {
-  RemoveById(notifcation_id);
+    const std::string& notification_id) {
+  RemoveById(notification_id);
 }
 
-void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
-  Balloon* balloon = base().FindBalloonById(notifcation_id);
+void BalloonCollectionImplAsh::ShowSettings(
+    const std::string& notification_id) {
+  Balloon* balloon = base().FindBalloonById(notification_id);
   Profile* profile =
       balloon ? balloon->profile() : ProfileManager::GetDefaultProfile();
   Browser* browser =
@@ -77,12 +78,19 @@ void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
     chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
-void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id) {
-  Balloon* balloon = base().FindBalloonById(notifcation_id);
+void BalloonCollectionImplAsh::OnClicked(const std::string& notification_id) {
+  Balloon* balloon = base().FindBalloonById(notification_id);
   if (!balloon)
     return;
   balloon->OnClick();
-  RemoveById(notifcation_id);
+  RemoveById(notification_id);
+}
+
+void BalloonCollectionImplAsh::OnButtonClicked(
+    const std::string& notification_id, int button_index) {
+  Balloon* balloon = base().FindBalloonById(notification_id);
+  if (balloon)
+    balloon->OnButtonClick(button_index);
 }
 
 bool BalloonCollectionImplAsh::AddWebUIMessageCallback(

@@ -104,6 +104,7 @@ class Notification {
   void Display() const { delegate()->Display(); }
   void Error() const { delegate()->Error(); }
   void Click() const { delegate()->Click(); }
+  void ButtonClick(int index) const { delegate()->ButtonClick(index); }
   void Close(bool by_user) const { delegate()->Close(by_user); }
 
   std::string notification_id() const { return delegate()->id(); }

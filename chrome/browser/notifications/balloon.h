@@ -77,12 +77,12 @@ class Balloon {
     min_scrollbar_size_ = size;
   }
 
-  // Request a new content size for this balloon.  This will get passed
+  // Request a new content size for this balloon. This will get passed
   // to the balloon collection for checking against available space and
   // min/max restrictions.
   void ResizeDueToAutoResize(const gfx::Size& size);
 
-  // Provides a view for this balloon.  Ownership transfers to this object.
+  // Provides a view for this balloon. Ownership transfers to this object.
   void set_view(BalloonView* balloon_view);
 
   // Returns the balloon view associated with the balloon.
@@ -100,6 +100,9 @@ class Balloon {
   // Called when the balloon is clicked by the user.
   virtual void OnClick();
 
+  // Called when the user clicks a button in the balloon.
+  virtual void OnButtonClick(int button_index);
+
   // Called when the balloon is closed, either by user (through the UI)
   // or by a script.
   virtual void OnClose(bool by_user);
@@ -114,7 +117,7 @@ class Balloon {
   // The notification being shown in this balloon.
   scoped_ptr<Notification> notification_;
 
-  // The collection that this balloon belongs to.  Non-owned pointer.
+  // The collection that this balloon belongs to. Non-owned pointer.
   BalloonCollection* collection_;
 
   // The actual UI element for the balloon.

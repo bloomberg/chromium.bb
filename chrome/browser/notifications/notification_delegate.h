@@ -33,6 +33,11 @@ class NotificationDelegate
   // To be called when a desktop notification is clicked.
   virtual void Click() = 0;
 
+  // To be called when the user clicks a button in a notification. TODO(miket):
+  // consider providing default implementations of the pure virtuals of this
+  // interface, to avoid pinging so many OWNERs each time we enhance it.
+  virtual void ButtonClick(int button_index);
+
   // Returns unique id of the notification.
   virtual std::string id() const = 0;
 

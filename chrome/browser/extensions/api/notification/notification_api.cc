@@ -47,6 +47,10 @@ class NotificationApiDelegate : public NotificationDelegate {
     // TODO(miket): propagate to JS
   }
 
+  virtual void ButtonClick(int index) OVERRIDE {
+    // TODO(miket): propagate to JS
+  }
+
   virtual std::string id() const OVERRIDE {
     return id_;
   }
@@ -99,10 +103,7 @@ bool NotificationShowFunction::RunImpl() {
 
   scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
 
-  // For all notifications types.
-  if (options->message_intent.get())
-    optional_fields->SetString(ui::notifications::kMessageIntentKey,
-                               UTF8ToUTF16(*options->message_intent));
+  // For all notification types.
   if (options->priority.get())
     optional_fields->SetInteger(ui::notifications::kPriorityKey,
                                 *options->priority);
@@ -118,15 +119,9 @@ bool NotificationShowFunction::RunImpl() {
   if (options->button_one_title.get())
     optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
                                UTF8ToUTF16(*options->button_one_title));
-  if (options->button_one_intent.get())
-    optional_fields->SetString(ui::notifications::kButtonOneIntentKey,
-                               UTF8ToUTF16(*options->button_one_intent));
   if (options->button_two_title.get())
     optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
                                UTF8ToUTF16(*options->button_two_title));
-  if (options->button_two_intent.get())
-    optional_fields->SetString(ui::notifications::kButtonTwoIntentKey,
-                               UTF8ToUTF16(*options->button_two_intent));
   if (options->expanded_message.get())
     optional_fields->SetString(ui::notifications::kExpandedMessageKey,
                                UTF8ToUTF16(*options->expanded_message));

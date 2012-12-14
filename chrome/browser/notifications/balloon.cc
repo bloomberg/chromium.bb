@@ -68,6 +68,10 @@ void Balloon::OnClose(bool by_user) {
   collection_->OnBalloonClosed(this);
 }
 
+void Balloon::OnButtonClick(int button_index) {
+  notification_->ButtonClick(button_index);
+}
+
 void Balloon::CloseByScript() {
   // A user-initiated close begins with the view and then closes this object;
   // we simulate that with a script-initiated close but pass |by_user|=false.
