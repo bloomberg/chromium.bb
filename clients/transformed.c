@@ -38,6 +38,7 @@ struct transformed {
 	struct widget *widget;
 	int width, height;
 	int fullscreen;
+	enum wl_shell_surface_fullscreen_method fullscreen_method;
 };
 
 static void
@@ -152,6 +153,16 @@ fullscreen_handler(struct window *window, void *data)
 }
 
 static void
+resize_handler(struct widget *widget, int width, int height, void *data)
+{
+	struct transformed *transformed = data;
+
+	if (transformed->fullscreen_method !=
+	    WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT)
+		widget_set_size(widget, transformed->width, transformed->height);
+}
+
+static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct transformed *transformed = data;
@@ -209,10 +220,49 @@ button_handler(struct widget *widget,
 	}
 }
 
+static void
+usage(int error_code)
+{
+	fprintf(stderr, "Usage: transformed [OPTIONS]\n\n"
+		"   -d\t\tUse \"driver\" fullscreen method\n"
+		"   -w <width>\tSet window width to <width>\n"
+		"   -h <height>\tSet window height to <height>\n"
+		"   --help\tShow this help text\n\n");
+
+	exit(error_code);
+}
+
 int main(int argc, char *argv[])
 {
 	struct transformed transformed;
 	struct display *d;
+	int i;
+
+	transformed.width = 500;
+	transformed.height = 250;
+	transformed.fullscreen = 0;
+	transformed.fullscreen_method =
+		WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
+
+	for (i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-d") == 0) {
+			transformed.fullscreen_method =
+				WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER;
+		} else if (strcmp(argv[i], "-w") == 0) {
+			if (++i >= argc)
+				usage(EXIT_FAILURE);
+
+			transformed.width = atol(argv[i]);
+		} else if (strcmp(argv[i], "-h") == 0) {
+			if (++i >= argc)
+				usage(EXIT_FAILURE);
+
+			transformed.height = atol(argv[i]);
+		} else if (strcmp(argv[i], "--help") == 0)
+			usage(EXIT_SUCCESS);
+		else
+			usage(EXIT_FAILURE);
+	}
 
 	d = display_create(argc, argv);
 	if (d == NULL) {
@@ -220,18 +270,19 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	transformed.width = 500;
-	transformed.height = 250;
 	transformed.display = d;
-	transformed.fullscreen = 0;
 	transformed.window = window_create(d);
 	transformed.widget =
 		window_add_widget(transformed.window, &transformed);
+
 	window_set_title(transformed.window, "Transformed");
+	window_set_fullscreen_method(transformed.window,
+				     transformed.fullscreen_method);
 
 	widget_set_transparent(transformed.widget, 0);
 	widget_set_default_cursor(transformed.widget, CURSOR_BLANK);
 
+	widget_set_resize_handler(transformed.widget, resize_handler);
 	widget_set_redraw_handler(transformed.widget, redraw_handler);
 	widget_set_button_handler(transformed.widget, button_handler);
 
