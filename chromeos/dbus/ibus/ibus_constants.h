@@ -91,6 +91,12 @@ const char kCursorUpSignal[] = "CursorUp";
 const char kCursorDownSignal[] = "CursorDown";
 const char kPageUpSignal[] = "PageUp";
 const char kPageDownSignal[] = "PageDown";
+
+// Methods to be just ignored. We do not use these methods in the UI.
+// See http://crbug.com/164525.
+const char kFocusInMethod[] = "FocusIn";
+const char kFocusOutMethod[] = "FocusOut";
+const char kStateChangedMethod[] = "StateChanged";
 }  // namespace panel
 
 // Following variables indicate state of IBusProperty.

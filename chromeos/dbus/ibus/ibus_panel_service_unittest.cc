@@ -267,6 +267,24 @@ class IBusPanelServiceTest : public testing::Test {
         .WillRepeatedly(
             Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
+    EXPECT_CALL(*mock_exported_object_, ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kFocusInMethod, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+
+    EXPECT_CALL(*mock_exported_object_, ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kFocusOutMethod, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+
+    EXPECT_CALL(*mock_exported_object_, ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kStateChangedMethod, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+
     // Suppress uninteresting mock function call warning.
     EXPECT_CALL(*mock_bus_.get(),
                 AssertOnOriginThread())

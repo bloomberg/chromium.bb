@@ -95,6 +95,30 @@ class IBusPanelServiceImpl : public IBusPanelService {
         base::Bind(&IBusPanelServiceImpl::OnMethodExported,
                    weak_ptr_factory_.GetWeakPtr()));
 
+    exported_object_->ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kFocusInMethod,
+        base::Bind(&IBusPanelServiceImpl::NoOperation,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusPanelServiceImpl::OnMethodExported,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    exported_object_->ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kFocusOutMethod,
+        base::Bind(&IBusPanelServiceImpl::NoOperation,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusPanelServiceImpl::OnMethodExported,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    exported_object_->ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kStateChangedMethod,
+        base::Bind(&IBusPanelServiceImpl::NoOperation,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusPanelServiceImpl::OnMethodExported,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     // Request well known name to ibus-daemon.
     bus->RequestOwnership(
         ibus::panel::kServiceName,
@@ -309,6 +333,17 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
     }
     property_handler_->UpdateProperty(property);
+
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
+  }
+
+  // Handles FocusIn, FocusOut, StateChanged method calls from IBus, and ignores
+  // them.
+  void NoOperation(dbus::MethodCall* method_call,
+                   dbus::ExportedObject::ResponseSender response_sender) {
+    if (!property_handler_)
+      return;
 
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
