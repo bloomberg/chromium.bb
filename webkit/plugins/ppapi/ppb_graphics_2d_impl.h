@@ -82,6 +82,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_Graphics2D_Impl :
   void ViewFlushedPaint();
 
   PPB_ImageData_Impl* image_data() { return image_data_.get(); }
+  PluginInstance* bound_instance() const { return bound_instance_; }
 
   // Scale |op_rect| to logical pixels, taking care to include partially-
   // covered logical pixels (aka DIPs). Also scale optional |delta| to logical

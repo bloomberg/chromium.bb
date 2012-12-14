@@ -42,11 +42,11 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
 }
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
-  // Unbind from the instance when destoryed.
-  PP_Instance instance = graphics_2d_->pp_instance();
-  ppapi::thunk::EnterInstanceNoLock enter(instance);
-  if (enter.succeeded())
-    enter.functions()->BindGraphics(instance, 0);
+  // Unbind from the instance when destroyed if we're still bound.
+  webkit::ppapi::PluginInstance* bound_instance =
+      graphics_2d_->bound_instance();
+  if (bound_instance)
+    bound_instance->BindGraphics(bound_instance->pp_instance(), 0);
 }
 
 int32_t PepperGraphics2DHost::OnResourceMessageReceived(
