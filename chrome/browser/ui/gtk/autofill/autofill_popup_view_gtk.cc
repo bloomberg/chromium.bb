@@ -128,7 +128,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   // This assert is kinda ugly, but it would be more currently unneeded work
   // to support painting a border that isn't 1 pixel thick.  There is no point
   // in writing that code now, and explode if that day ever comes.
-  DCHECK_EQ(kBorderThickness, static_cast<size_t>(1));
+  DCHECK_EQ(1, kBorderThickness);
   // Draw the 1px border around the entire window.
   gdk_cairo_set_source_color(cr, &kBorderColor);
   cairo_rectangle(cr, 0, 0, window_rect.width(), window_rect.height());

@@ -22,25 +22,25 @@ class KeyEvent;
 class AutofillPopupView {
  public:
   // The size of the border around the entire results popup, in pixels.
-  static const size_t kBorderThickness = 1;
+  static const int kBorderThickness = 1;
 
   // The amount of padding between icons in pixels.
-  static const size_t kIconPadding = 5;
+  static const int kIconPadding = 5;
 
   // The amount of padding at the end of the popup in pixels.
-  static const size_t kEndPadding = 3;
+  static const int kEndPadding = 3;
 
   // Height of the delete icon in pixels.
-  static const size_t kDeleteIconHeight = 16;
+  static const int kDeleteIconHeight = 16;
 
   // Width of the delete icon in pixels.
-  static const size_t kDeleteIconWidth = 16;
+  static const int kDeleteIconWidth = 16;
 
   // Height of the Autofill icons in pixels.
-  static const size_t kAutofillIconHeight = 16;
+  static const int kAutofillIconHeight = 16;
 
   // Width of the Autofill icons in pixels.
-  static const size_t kAutofillIconWidth = 25;
+  static const int kAutofillIconWidth = 25;
 
   // Displays the Autofill popup and fills it in with data from the controller.
   virtual void Show() = 0;
