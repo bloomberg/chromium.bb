@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/hash.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -38,6 +39,7 @@ static const int kBrowserWidth = 1000;
 static const int kBrowserHeight = 600;
 
 class PDFBrowserTest : public InProcessBrowserTest,
+                       public testing::WithParamInterface<int>,
                        public content::NotificationObserver {
  public:
   PDFBrowserTest()
@@ -286,11 +288,13 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   ASSERT_EQ("adipiscing", text);
 }
 
+const int kLoadingNumberOfParts = 10;
+
 // Tests that loading async pdfs works correctly (i.e. document fully loads).
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
 // If it flakes, reopen http://crbug.com/74548.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
+IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
@@ -316,6 +320,13 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
     if (filename == "sample.pdf")
       continue;  // Crashes on Mac and Linux.  http://crbug.com/63549
 #endif
+
+    // Split the test into smaller sub-tests. Each one only loads
+    // every k-th file.
+    if (static_cast<int>(base::Hash(filename) % kLoadingNumberOfParts) !=
+        GetParam()) {
+      continue;
+    }
 
     LOG(WARNING) << "PDFBrowserTest.Loading: " << filename;
 
@@ -344,6 +355,10 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
     }
   }
 }
+
+INSTANTIATE_TEST_CASE_P(PDFTestFiles,
+                        PDFBrowserTest,
+                        testing::Range(0, kLoadingNumberOfParts));
 
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Action) {
   ASSERT_NO_FATAL_FAILURE(Load());
