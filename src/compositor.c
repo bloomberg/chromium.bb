@@ -90,6 +90,8 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform);
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
 {
+	struct weston_seat *seat;
+	pixman_region32_t old_output_region;
 	int ret;
 
 	if (!output->switch_mode)
@@ -99,6 +101,9 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	if (ret < 0)
 		return ret;
 
+	pixman_region32_init(&old_output_region);
+	pixman_region32_copy(&old_output_region, &output->region);
+
 	/* Update output region and transformation matrix */
 	weston_output_transform_init(output, output->transform);
 
@@ -107,6 +112,35 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 				  output->width, output->height);
 
 	weston_output_update_matrix(output);
+
+	/* If a pointer falls outside the outputs new geometry, move it to its
+	 * lower-right corner */
+	wl_list_for_each(seat, &output->compositor->seat_list, link) {
+		struct wl_pointer *pointer = seat->seat.pointer;
+		int32_t x, y;
+
+		if (!pointer)
+			continue;
+
+		x = wl_fixed_to_int(pointer->x);
+		y = wl_fixed_to_int(pointer->y);
+
+		if (!pixman_region32_contains_point(&old_output_region,
+						    x, y, NULL) ||
+		    pixman_region32_contains_point(&output->region,
+						   x, y, NULL))
+			continue;
+
+		if (x >= output->x + output->width)
+			x = output->x + output->width - 1;
+		if (y >= output->y + output->height)
+			y = output->y + output->height - 1;
+
+		pointer->x = wl_fixed_from_int(x);
+		pointer->y = wl_fixed_from_int(y);
+	}
+
+	pixman_region32_fini(&old_output_region);
 
 	return ret;
 }
