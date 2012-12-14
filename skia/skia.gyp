@@ -41,6 +41,7 @@
         '../third_party/skia/src/images/bmpdecoderhelper.cpp',
         '../third_party/skia/src/images/bmpdecoderhelper.h',
         #'../third_party/skia/src/images/SkFDStream.cpp',
+        #'../third_party/skia/src/images/SkFlipPixelRef.cpp',
         '../third_party/skia/src/images/SkImageDecoder.cpp',
         '../third_party/skia/src/images/SkImageDecoder_Factory.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_fpdfemb.cpp',
@@ -141,6 +142,7 @@
 
         '../third_party/skia/include/ports/SkTypeface_win.h',
 
+        '../third_party/skia/include/images/SkFlipPixelRef.h',
         '../third_party/skia/include/images/SkImageDecoder.h',
         '../third_party/skia/include/images/SkImageEncoder.h',
         '../third_party/skia/include/images/SkImageRef.h',
