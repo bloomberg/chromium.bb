@@ -419,7 +419,6 @@ class ChromeTests:
                   "--run-singly",  # run a separate DumpRenderTree for each test
                   "--fully-parallel",
                   "--time-out-ms=200000",
-                  "--noshow-results",
                   "--no-retry-failures",  # retrying takes too much time
                   "--nocheck-sys-deps"]
     # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
