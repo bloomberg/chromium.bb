@@ -49,8 +49,7 @@ static const char kWidevineBaseKeySystem[] = "com.widevine";
 // the |codecs_list| allows the container to be specified without a codec.
 // This list is converted at runtime into individual container-codec-key system
 // entries in KeySystems::key_system_map_.
-static const MediaFormatAndKeySystem
-supported_format_key_system_combinations[] = {
+static const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Clear Key.
 #if defined(DECRYPT_ONLY_AUDIO_NOT_SUPPORTED)
   { "video/webm", "vp8,vp8.0,", kClearKeyKeySystem },
@@ -92,7 +91,7 @@ supported_format_key_system_combinations[] = {
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
-static const KeySystemPluginTypePair key_system_to_plugin_type_mapping[] = {
+static const KeySystemPluginTypePair kKeySystemToPluginTypeMapping[] = {
   // TODO(xhwang): Update this with the real plugin name.
   { kExternalClearKeyKeySystem, "application/x-ppapi-clearkey-cdm" },
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -131,10 +130,10 @@ static base::LazyInstance<KeySystems> g_key_systems = LAZY_INSTANCE_INITIALIZER;
 KeySystems::KeySystems() {
   // Initialize the supported media type/key system combinations.
   for (size_t i = 0;
-       i < arraysize(supported_format_key_system_combinations);
+       i < arraysize(kSupportedFormatKeySystemCombinations);
        ++i) {
     const MediaFormatAndKeySystem& combination =
-        supported_format_key_system_combinations[i];
+        kSupportedFormatKeySystemCombinations[i];
     std::vector<std::string> mime_type_codecs;
     net::ParseCodecString(combination.codecs_list,
                           &mime_type_codecs,
@@ -238,9 +237,9 @@ bool CanUseAesDecryptor(const std::string& key_system) {
 }
 
 std::string GetPluginType(const std::string& key_system) {
-  for (size_t i = 0; i < arraysize(key_system_to_plugin_type_mapping); ++i) {
-    if (key_system_to_plugin_type_mapping[i].key_system == key_system)
-      return key_system_to_plugin_type_mapping[i].plugin_type;
+  for (size_t i = 0; i < arraysize(kKeySystemToPluginTypeMapping); ++i) {
+    if (kKeySystemToPluginTypeMapping[i].key_system == key_system)
+      return kKeySystemToPluginTypeMapping[i].plugin_type;
   }
 
   return std::string();
