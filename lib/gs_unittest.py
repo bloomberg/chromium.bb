@@ -62,13 +62,10 @@ class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
   """Base class for GSContext tests."""
 
   def setUp(self):
-    self.gs_mock = GSContextMock().Start()
+    self.gs_mock = GSContextMock()
+    self.StartPatcher(self.gs_mock)
     self.gs_mock.SetDefaultCmdResult()
     self.ctx = gs.GSContext()
-
-  def tearDown(self):
-    if hasattr(self, 'gs_mock'):
-      self.gs_mock.Stop()
 
 
 class CopyTest(AbstractGSContextTest):

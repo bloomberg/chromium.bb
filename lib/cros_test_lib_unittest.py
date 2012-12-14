@@ -21,17 +21,14 @@ from chromite.lib import partial_mock
 Dir = cros_test_lib.Directory
 
 
-class VerifyTarballTest(cros_test_lib.TempDirTestCase):
+class VerifyTarballTest(cros_test_lib.MockTempDirTestCase):
   """Test tarball verification functionality."""
 
   TARBALL = 'fake_tarball'
 
   def setUp(self):
     self.rc_mock = cros_build_lib_unittest.RunCommandMock()
-    self.rc_mock.Start()
-
-  def tearDown(self):
-    self.rc_mock.Stop()
+    self.StartPatcher(self.rc_mock)
 
   def _MockTarList(self, files):
     """Mock out tarball content list call.

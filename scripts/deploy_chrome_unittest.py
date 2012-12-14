@@ -76,13 +76,11 @@ class DeployChromeMock(partial_mock.PartialMock):
                                returnvalue,
                                side_effect=None if returnvalue else hook)
 
-  def Start(self):
-    partial_mock.PartialMock.Start(self)
-    self.rsh_mock.Start()
+  def PreStart(self):
+    self.rsh_mock.start()
 
-  def Stop(self):
-    partial_mock.PartialMock.Stop(self)
-    self.rsh_mock.Stop()
+  def PreStop(self):
+    self.rsh_mock.stop()
 
   def _CheckRootfsWriteable(self, _inst):
     return self.rootfs_writeable
@@ -95,7 +93,7 @@ class DeployChromeMock(partial_mock.PartialMock):
     pass
 
 
-class DeployChromeTest(cros_test_lib.TempDirTestCase):
+class DeployChromeTest(cros_test_lib.MockTempDirTestCase):
 
   def _GetDeployChrome(self):
     options, _ = _ParseCommandLine(list(_REGULAR_TO) + ['--gs-path', _GS_PATH])
@@ -104,11 +102,8 @@ class DeployChromeTest(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
     self.deploy_mock = DeployChromeMock()
-    self.deploy_mock.Start()
+    self.StartPatcher(self.deploy_mock)
     self.deploy = self._GetDeployChrome()
-
-  def tearDown(self):
-    self.deploy_mock.Stop()
 
 
 class TestPrepareTarget(DeployChromeTest):

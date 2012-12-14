@@ -864,7 +864,7 @@ def _DoSteps(steps):
   for step in steps:
     step()
 
-class BuildTargetStageTest(AbstractStageTest):
+class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.images_root = os.path.join(self.build_root,
@@ -909,10 +909,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
     self.parallel_mock = parallel_unittest.ParallelMock()
-    self.parallel_mock.Start()
-
-  def tearDown(self):
-    self.parallel_mock.Stop()
+    self.StartPatcher(self.parallel_mock)
 
   def ConstructStage(self):
     return stages.BuildTargetStage(
@@ -1114,10 +1111,9 @@ class ArchiveStageMock(partial_mock.PartialMock):
     return self.VERSION
 
 
-class ArchiveStageTest(AbstractStageTest):
+class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
-  @staticmethod
-  def _AutoPatch(to_patch):
+  def _AutoPatch(self, to_patch):
     """Patch a list of objects with autospec=True.
 
     Arguments:
@@ -1125,7 +1121,7 @@ class ArchiveStageTest(AbstractStageTest):
       directly passed to mock.patch.object.
     """
     for item in to_patch:
-      mock.patch.object(*item, autospec=True).start()
+      self.StartPatcher(mock.patch.object(*item, autospec=True))
 
   def _PatchDependencies(self):
     """Patch dependencies of ArchiveStage.PerformStage()."""
@@ -1140,12 +1136,8 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['push_image'] = True
 
     self.archive_mock = ArchiveStageMock()
-    self.archive_mock.Start()
+    self.StartPatcher(self.archive_mock)
     self._PatchDependencies()
-
-  def tearDown(self):
-    self.archive_mock.Stop()
-    mock.patch.stopall()
 
   def ConstructStage(self):
     return stages.ArchiveStage(self.options, self._build_config,

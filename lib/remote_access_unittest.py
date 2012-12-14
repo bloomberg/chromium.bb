@@ -40,15 +40,12 @@ class RemoteShMock(partial_mock.PartialCmdMock):
       return self.backup['RemoteSh'](inst, cmd, *args, **kwargs)
 
 
-class RemoteAccessTest(cros_test_lib.TempDirTestCase):
+class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.rsh_mock = RemoteShMock()
-    self.rsh_mock.Start()
+    self.StartPatcher(self.rsh_mock)
     self.host = remote_access.RemoteAccess('foon', self.tempdir)
-
-  def tearDown(self):
-    self.rsh_mock.Stop()
 
 
 class RemoteShTest(RemoteAccessTest):

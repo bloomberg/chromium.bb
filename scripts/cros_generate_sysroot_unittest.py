@@ -49,24 +49,20 @@ BOARD = 'lumpy'
 TAR_NAME = 'test.tar.xz'
 
 
-class OverallTest(cros_test_lib.TempDirTestCase):
+class OverallTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.cg_mock = CrosGenMock()
-    self.cg_mock.Start()
-
-  def tearDown(self):
-    self.cg_mock.Stop()
-    mock.patch.stopall()
+    self.StartPatcher(self.cg_mock)
 
   def testTarballGeneration(self):
     """End-to-end test of tarball generation."""
-    mock.patch.object(cros_build_lib, 'IsInsideChroot').start()
-    cros_build_lib.IsInsideChroot.returnvalue = True
-    cros_gen.main(
-        ['--board', BOARD, '--out-dir', self.tempdir,
-         '--out-file', TAR_NAME, '--package', constants.CHROME_CP])
-    self.cg_mock.VerifyTarball(os.path.join(self.tempdir, TAR_NAME))
+    with mock.patch.object(cros_build_lib, 'IsInsideChroot'):
+      cros_build_lib.IsInsideChroot.returnvalue = True
+      cros_gen.main(
+          ['--board', BOARD, '--out-dir', self.tempdir,
+           '--out-file', TAR_NAME, '--package', constants.CHROME_CP])
+      self.cg_mock.VerifyTarball(os.path.join(self.tempdir, TAR_NAME))
 
 
 class InterfaceTest(cros_test_lib.TempDirTestCase):

@@ -321,8 +321,8 @@ class PartialMock(object):
 
     Arguments:
       create_tempdir: If set to True, the partial mock will create its own
-        temporary directory when Start() is called, and will set self.tempdir to
-        the path of the directory.  The directory is deleted when Stop() is
+        temporary directory when start() is called, and will set self.tempdir to
+        the path of the directory.  The directory is deleted when stop() is
         called.
     """
     self.backup = {}
@@ -330,7 +330,7 @@ class PartialMock(object):
     self.patched = {}
     self.create_tempdir = create_tempdir
 
-    # Set when Start() is called.
+    # Set when start() is called.
     self.tempdir = None
     self.__saved_env__ = None
     self.started = False
@@ -340,26 +340,26 @@ class PartialMock(object):
       self._results[attr] = MockedCallResults(attr)
 
   def __enter__(self):
-    return self.Start()
+    return self.start()
 
   def __exit__(self, exc_type, exc_value, traceback):
-    self.Stop()
+    self.stop()
 
   def PreStart(self):
-    """Called at the beginning of Start(). Child classes can override this.
+    """Called at the beginning of start(). Child classes can override this.
 
     If __init__ was called with |create_tempdir| set, then self.tempdir will
     point to an existing temporary directory when this function is called.
     """
 
   def PreStop(self):
-    """Called at the beginning of Stop().  Child classes can override this.
+    """Called at the beginning of stop().  Child classes can override this.
 
     If __init__ was called with |create_tempdir| set, then self.tempdir will
     not be deleted until after this function returns.
     """
 
-  def _Start(self):
+  def _start(self):
     chunks = self.TARGET.rsplit('.', 1)
     module = cros_build_lib.load_module(chunks[0])
 
@@ -381,7 +381,7 @@ class PartialMock(object):
 
     return self
 
-  def Start(self):
+  def start(self):
     """Activates the mock context."""
     # pylint: disable=W0212
     try:
@@ -391,15 +391,15 @@ class PartialMock(object):
 
       self.started = True
       self.PreStart()
-      return self._Start()
+      return self._start()
     except:
-      self.Stop()
+      self.stop()
       raise
 
-  def _Stop(self):
+  def _stop(self):
     cros_test_lib.SafeRun([p.stop for p in self.patchers.itervalues()])
 
-  def Stop(self):
+  def stop(self):
     """Restores namespace to the unmocked state."""
     # pylint: disable=W0212
     try:
@@ -407,7 +407,7 @@ class PartialMock(object):
         osutils.SetEnvironment(self.__saved_env__)
 
       if self.started:
-        cros_test_lib.SafeRun([self.PreStop, self._Stop])
+        cros_test_lib.SafeRun([self.PreStop, self._stop])
     finally:
       self.started = False
       if getattr(self, 'tempdir', None):

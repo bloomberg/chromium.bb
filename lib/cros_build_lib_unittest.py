@@ -48,16 +48,13 @@ class RunCommandMock(partial_mock.PartialCmdMock):
       return self.backup['RunCommand'](cmd, *args, **kwargs)
 
 
-class RunCommandTestCase(cros_test_lib.TestCase):
+class RunCommandTestCase(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.rc = RunCommandMock()
     self.rc.SetDefaultCmdResult()
-    self.rc.Start()
+    self.StartPatcher(self.rc)
     self.assertCommandContains = self.rc.assertCommandContains
-
-  def tearDown(self):
-    self.rc.Stop()
 
 
 class RunCommandTempDirTestCase(RunCommandTestCase,
