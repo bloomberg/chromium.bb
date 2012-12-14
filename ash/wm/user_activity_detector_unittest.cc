@@ -117,7 +117,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
   SetEventTarget(window.get(), &touch_event);
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnTouchEvent(&touch_event));
+  detector_->OnTouchEvent(&touch_event);
+  EXPECT_FALSE(touch_event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 

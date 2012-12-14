@@ -451,14 +451,12 @@ class EventFilterRecorder : public ui::EventHandler {
     return ui::ER_UNHANDLED;
   }
 
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::ER_UNHANDLED;
   }
 
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::ER_UNHANDLED;
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {

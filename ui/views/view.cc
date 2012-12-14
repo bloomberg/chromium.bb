@@ -875,12 +875,10 @@ ui::EventResult View::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult View::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void View::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
-ui::EventResult View::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
+void View::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void View::OnGestureEvent(ui::GestureEvent* event) {
@@ -1994,8 +1992,8 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
   // WARNING: we may have been deleted.
 }
 
-ui::EventResult View::ProcessTouchEvent(ui::TouchEvent* event) {
-  return OnTouchEvent(event);
+void View::ProcessTouchEvent(ui::TouchEvent* event) {
+  OnTouchEvent(event);
 }
 
 void View::ProcessGestureEvent(ui::GestureEvent* event) {

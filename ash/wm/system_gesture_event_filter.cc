@@ -65,11 +65,10 @@ ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   touch_uma_.RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event, event->touch_id());
-  return ui::ER_UNHANDLED;
 }
 
 void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {

@@ -164,16 +164,16 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
   SetEventTarget(root_window, &touch_event);
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnTouchEvent(&touch_event));
+  event_handler->OnTouchEvent(&touch_event);
+  EXPECT_FALSE(touch_event.handled());
   EXPECT_FALSE(TooltipIsVisible());
 
   // Shouldn't hide if the touch happens on the tooltip.
   ShowImmediately();
   views::Widget* tooltip_widget = GetTooltipWidget();
   SetEventTarget(tooltip_widget->GetNativeWindow(), &touch_event);
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnTouchEvent(&touch_event));
+  event_handler->OnTouchEvent(&touch_event);
+  EXPECT_FALSE(touch_event.handled());
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for gesture events.

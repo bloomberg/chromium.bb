@@ -58,7 +58,7 @@ class ContentsView : public views::View {
 
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   ShowState show_state_;
   PaginationModel* pagination_model_;  // Owned by AppListController.

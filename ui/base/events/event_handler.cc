@@ -27,9 +27,9 @@ void EventHandler::OnEvent(Event* event) {
   else if (event->IsMouseEvent())
     result = OnMouseEvent(static_cast<MouseEvent*>(event));
   else if (event->IsScrollEvent())
-    result = OnScrollEvent(static_cast<ScrollEvent*>(event));
+    OnScrollEvent(static_cast<ScrollEvent*>(event));
   else if (event->IsTouchEvent())
-    result = OnTouchEvent(static_cast<TouchEvent*>(event));
+    OnTouchEvent(static_cast<TouchEvent*>(event));
   else if (event->IsGestureEvent())
     OnGestureEvent(static_cast<GestureEvent*>(event));
 
@@ -47,12 +47,10 @@ EventResult EventHandler::OnMouseEvent(MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-EventResult EventHandler::OnScrollEvent(ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void EventHandler::OnScrollEvent(ScrollEvent* event) {
 }
 
-EventResult EventHandler::OnTouchEvent(TouchEvent* event) {
-  return ui::ER_UNHANDLED;
+void EventHandler::OnTouchEvent(TouchEvent* event) {
 }
 
 void EventHandler::OnGestureEvent(GestureEvent* event) {

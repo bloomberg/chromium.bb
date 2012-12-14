@@ -168,12 +168,10 @@ ui::EventResult DesktopActivationClient::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult DesktopActivationClient::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void DesktopActivationClient::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
-ui::EventResult DesktopActivationClient::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
+void DesktopActivationClient::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void DesktopActivationClient::OnGestureEvent(ui::GestureEvent* event) {

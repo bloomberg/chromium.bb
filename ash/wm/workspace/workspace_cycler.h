@@ -24,7 +24,7 @@ class ASH_EXPORT WorkspaceCycler : public ui::EventHandler {
 
  private:
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   WorkspaceManager* workspace_manager_;
 

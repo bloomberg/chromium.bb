@@ -159,12 +159,10 @@ ui::EventResult FocusController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult FocusController::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void FocusController::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
-ui::EventResult FocusController::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
+void FocusController::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void FocusController::OnGestureEvent(ui::GestureEvent* event) {

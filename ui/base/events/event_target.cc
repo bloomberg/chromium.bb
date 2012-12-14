@@ -62,15 +62,16 @@ EventResult EventTarget::OnMouseEvent(MouseEvent* event) {
   return target_handler_ ? target_handler_->OnMouseEvent(event) : ER_UNHANDLED;
 }
 
-EventResult EventTarget::OnScrollEvent(ScrollEvent* event) {
+void EventTarget::OnScrollEvent(ScrollEvent* event) {
   CHECK_EQ(this, event->target());
-  return target_handler_ ? target_handler_->OnScrollEvent(event) : ER_UNHANDLED;
+  if (target_handler_)
+    target_handler_->OnScrollEvent(event);
 }
 
-EventResult EventTarget::OnTouchEvent(TouchEvent* event) {
+void EventTarget::OnTouchEvent(TouchEvent* event) {
   CHECK_EQ(this, event->target());
-  return target_handler_ ? target_handler_->OnTouchEvent(event) :
-                           ER_UNHANDLED;
+  if (target_handler_)
+    target_handler_->OnTouchEvent(event);
 }
 
 void EventTarget::OnGestureEvent(GestureEvent* event) {

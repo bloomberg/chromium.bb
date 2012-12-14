@@ -35,7 +35,7 @@ class TouchObserverHUD : public ui::EventHandler,
   void UpdateTouchPointLabel(int index);
 
   // Overriden from ui::EventHandler:
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

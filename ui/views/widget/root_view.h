@@ -62,8 +62,8 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // path, and finally to the default keyboard handler, until someone consumes
   // it. Returns whether anyone consumed the event.
   ui::EventResult DispatchKeyEvent(const ui::KeyEvent& event);
-  ui::EventResult DispatchScrollEvent(ui::ScrollEvent* event);
-  ui::EventResult DispatchTouchEvent(ui::TouchEvent* event);
+  void DispatchScrollEvent(ui::ScrollEvent* event);
+  void DispatchTouchEvent(ui::TouchEvent* event);
   virtual void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Focus ---------------------------------------------------------------------

@@ -39,16 +39,16 @@ WorkspaceCycler::~WorkspaceCycler() {
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-ui::EventResult WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
+void WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->finger_count() != 3 ||
       event->type() != ui::ET_SCROLL) {
     scrubbing_ = false;
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   if (!IsScrubbingEnabled()) {
     scrubbing_ = false;
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   if (!scrubbing_) {
@@ -73,7 +73,8 @@ ui::EventResult WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
 
     scroll_x_ = 0;
     scroll_y_ = 0;
-    return ui::ER_HANDLED;
+    event->SetHandled();
+    return;
   }
 
   if (std::abs(scroll_x_) > kWorkspaceStepSize) {
@@ -86,7 +87,6 @@ ui::EventResult WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
   }
 
   // The active workspace was not changed, do not consume the event.
-  return ui::ER_UNHANDLED;
 }
 
 }  // namespace internal

@@ -132,15 +132,14 @@ ui::EventResult RootView::DispatchKeyEvent(const ui::KeyEvent& event) {
   return consumed ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
-ui::EventResult RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
-  int result = ui::ER_UNHANDLED;
+void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
   for (View* v = GetEventHandlerForPoint(event->location());
-       v && v != this && !(result & ui::ER_CONSUMED); v = v->parent())
-    result |= v->OnScrollEvent(event);
-  return static_cast<ui::EventResult>(result);
+       v && v != this && !event->stopped_propagation(); v = v->parent()) {
+    v->OnScrollEvent(event);
+  }
 }
 
-ui::EventResult RootView::DispatchTouchEvent(ui::TouchEvent* event) {
+void RootView::DispatchTouchEvent(ui::TouchEvent* event) {
   // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
   // view and target that view with all touches with the same id until the
   // release (or keep it if captured).
@@ -148,13 +147,16 @@ ui::EventResult RootView::DispatchTouchEvent(ui::TouchEvent* event) {
   // If touch_pressed_handler_ is non null, we are currently processing
   // a touch down on the screen situation. In that case we send the
   // event to touch_pressed_handler_
-  ui::EventResult status = ui::ER_UNHANDLED;
 
   if (touch_pressed_handler_) {
     ui::TouchEvent touch_event(*event, static_cast<View*>(this),
                                touch_pressed_handler_);
-    status = touch_pressed_handler_->ProcessTouchEvent(&touch_event);
-    return status;
+    touch_pressed_handler_->ProcessTouchEvent(&touch_event);
+    if (touch_event.handled())
+      event->SetHandled();
+    if (touch_event.stopped_propagation())
+      event->StopPropagation();
+    return;
   }
 
   // Walk up the tree until we find a view that wants the touch event.
@@ -169,7 +171,11 @@ ui::EventResult RootView::DispatchTouchEvent(ui::TouchEvent* event) {
     // See if this view wants to handle the touch
     ui::TouchEvent touch_event(*event, static_cast<View*>(this),
                                touch_pressed_handler_);
-    status = touch_pressed_handler_->ProcessTouchEvent(&touch_event);
+    touch_pressed_handler_->ProcessTouchEvent(&touch_event);
+    if (touch_event.handled())
+      event->SetHandled();
+    if (touch_event.stopped_propagation())
+      event->StopPropagation();
 
     // The view could have removed itself from the tree when handling
     // OnTouchEvent(). So handle as per OnMousePressed. NB: we
@@ -179,21 +185,21 @@ ui::EventResult RootView::DispatchTouchEvent(ui::TouchEvent* event) {
 
     // The touch event wasn't processed. Go up the view hierarchy and dispatch
     // the touch event.
-    if (status == ui::ER_UNHANDLED)
+    if (!event->handled())
       continue;
 
     // If a View consumed the event, that means future touch-events should go to
     // that View. If the event wasn't consumed, then reset the handler.
-    if (!(status & ui::ER_CONSUMED))
+    if (!event->stopped_propagation())
       touch_pressed_handler_ = NULL;
 
-    return status;
+    return;
   }
 
   // Reset touch_pressed_handler_ to indicate that no processing is occurring.
   touch_pressed_handler_ = NULL;
 
-  return status;
+  return;
 }
 
 void RootView::DispatchGestureEvent(ui::GestureEvent* event) {

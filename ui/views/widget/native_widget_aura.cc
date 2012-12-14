@@ -794,22 +794,24 @@ ui::EventResult NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
 }
 
-ui::EventResult NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
+void NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL) {
-    ui::EventResult status = delegate_->OnScrollEvent(event);
-    if (status != ui::ER_UNHANDLED)
-      return status;
+    delegate_->OnScrollEvent(event);
+    if (event->handled())
+      return;
 
     // Convert unprocessed scroll events into wheel events.
     ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
-    return delegate_->OnMouseEvent(mwe) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+    if (delegate_->OnMouseEvent(mwe))
+     event->SetHandled();
+    return;
   }
-  return delegate_->OnScrollEvent(event);
+  delegate_->OnScrollEvent(event);
 }
 
-ui::EventResult NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
+void NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(window_->IsVisible());
-  return delegate_->OnTouchEvent(event);
+  delegate_->OnTouchEvent(event);
 }
 
 void NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {

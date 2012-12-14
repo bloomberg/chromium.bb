@@ -325,23 +325,20 @@ ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_CONSUMED;
 }
 
-ui::EventResult DragDropController::OnTouchEvent(ui::TouchEvent* event) {
+void DragDropController::OnTouchEvent(ui::TouchEvent* event) {
   if (!IsDragDropInProgress())
-    return ui::ER_UNHANDLED;
+    return;
 
   // If current drag session was not started by touch, dont process this touch
   // event, but consume it so it does not interfere with current drag session.
   if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
 
-  switch (event->type()) {
-    case ui::ET_TOUCH_CANCELLED:
-      DragCancel();
-      break;
-    default:
-      break;
-  }
-  return ui::ER_UNHANDLED;
+  if (event->handled())
+    return;
+
+  if (event->type() == ui::ET_TOUCH_CANCELLED)
+    DragCancel();
 }
 
 void DragDropController::OnGestureEvent(ui::GestureEvent* event) {

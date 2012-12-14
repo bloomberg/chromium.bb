@@ -110,8 +110,8 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool OnMouseEvent(const ui::MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
 
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) = 0;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) = 0;
+  virtual void OnTouchEvent(ui::TouchEvent* event) = 0;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) = 0;
   virtual void OnGestureEvent(ui::GestureEvent* event) = 0;
 
   // Runs the specified native command. Returns true if the command is handled.

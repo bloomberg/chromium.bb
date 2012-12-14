@@ -26,7 +26,7 @@ class TabScrubber : public ui::EventHandler,
   virtual ~TabScrubber();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

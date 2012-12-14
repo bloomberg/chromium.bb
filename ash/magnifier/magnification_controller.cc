@@ -115,7 +115,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // ui::EventHandler overrides:
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -506,12 +506,13 @@ ui::EventResult MagnificationControllerImpl::OnMouseEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult MagnificationControllerImpl::OnScrollEvent(
+void MagnificationControllerImpl::OnScrollEvent(
     ui::ScrollEvent* event) {
   if (event->IsAltDown() && event->IsControlDown()) {
     if (event->type() == ui::ET_SCROLL_FLING_START ||
         event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      return;
     }
 
     if (event->type() == ui::ET_SCROLL) {
@@ -519,11 +520,10 @@ ui::EventResult MagnificationControllerImpl::OnScrollEvent(
       float scale = GetScale();
       scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
       SetScale(scale, true);
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      return;
     }
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

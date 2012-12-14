@@ -282,14 +282,12 @@ ui::EventResult ActivationController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult ActivationController::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void ActivationController::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
-ui::EventResult ActivationController::OnTouchEvent(ui::TouchEvent* event) {
+void ActivationController::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
     FocusWindowWithEvent(event);
-  return ui::ER_UNHANDLED;
 }
 
 void ActivationController::OnGestureEvent(ui::GestureEvent* event) {

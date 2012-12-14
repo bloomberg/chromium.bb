@@ -232,7 +232,7 @@ class TestView : public View {
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   // Ignores GestureEvent by default.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
@@ -277,7 +277,7 @@ class TestViewIgnoreTouch : public TestView {
   virtual ~TestViewIgnoreTouch() {}
 
  private:
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 };
 
 // A view subclass that consumes all Gesture events for testing purposes.
@@ -474,27 +474,30 @@ TEST_F(ViewTest, DeleteOnPressed) {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent
 ////////////////////////////////////////////////////////////////////////////////
-ui::EventResult TestView::OnTouchEvent(ui::TouchEvent* event) {
+void TestView::OnTouchEvent(ui::TouchEvent* event) {
   last_touch_event_type_ = event->type();
   location_.SetPoint(event->x(), event->y());
   if (!in_touch_sequence_) {
     if (event->type() == ui::ET_TOUCH_PRESSED) {
       in_touch_sequence_ = true;
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      return;
     }
   } else {
     if (event->type() == ui::ET_TOUCH_RELEASED) {
       in_touch_sequence_ = false;
-      return ui::ER_HANDLED;
+      event->SetHandled();
+      return;
     }
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
+    return;
   }
-  return last_touch_event_was_handled_ ? ui::ER_CONSUMED :
-                                         ui::ER_UNHANDLED;
+
+  if (last_touch_event_was_handled_)
+   event->StopPropagation();
 }
 
-ui::EventResult TestViewIgnoreTouch::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
+void TestViewIgnoreTouch::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 TEST_F(ViewTest, TouchEvent) {

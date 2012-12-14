@@ -1585,8 +1585,7 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_HANDLED;
 }
 
-ui::EventResult RenderWidgetHostViewAura::OnScrollEvent(
-    ui::ScrollEvent* event) {
+void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnScrollEvent");
   if (event->type() == ui::ET_SCROLL) {
     WebKit::WebGestureEvent gesture_event =
@@ -1604,10 +1603,11 @@ ui::EventResult RenderWidgetHostViewAura::OnScrollEvent(
     if (event->type() == ui::ET_SCROLL_FLING_START)
       RecordAction(UserMetricsAction("TrackpadScrollFling"));
   }
-  return ui::ER_HANDLED;
+
+  event->SetHandled();
 }
 
-ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
+void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
   // Update the touch event first.
   WebKit::WebTouchPoint* point = UpdateWebTouchEventFromUIEvent(*event,
@@ -1619,15 +1619,14 @@ ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   // handler in the page, or some touch-event is already in the queue, even if
   // no point has been updated, to make sure that this event does not get
   // processed by the gesture recognizer before the events in the queue.
-  ui::EventResult result = host_->ShouldForwardTouchEvent() ? ui::ER_CONSUMED :
-                                                              ui::ER_UNHANDLED;
+  if (host_->ShouldForwardTouchEvent())
+    event->StopPropagation();
+
   if (point) {
     if (host_->ShouldForwardTouchEvent())
       host_->ForwardTouchEvent(touch_event_);
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
   }
-
-  return result;
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {

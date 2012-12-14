@@ -1173,15 +1173,15 @@ void Widget::OnMouseCaptureLost() {
   is_mouse_button_pressed_ = false;
 }
 
-ui::EventResult Widget::OnTouchEvent(ui::TouchEvent* event) {
+void Widget::OnTouchEvent(ui::TouchEvent* event) {
   ScopedEvent scoped(this, *event);
-  return static_cast<internal::RootView*>(GetRootView())->
+  static_cast<internal::RootView*>(GetRootView())->
       DispatchTouchEvent(event);
 }
 
-ui::EventResult Widget::OnScrollEvent(ui::ScrollEvent* event) {
+void Widget::OnScrollEvent(ui::ScrollEvent* event) {
   ScopedEvent scoped(this, *event);
-  return static_cast<internal::RootView*>(GetRootView())->
+  static_cast<internal::RootView*>(GetRootView())->
       DispatchScrollEvent(event);
 }
 

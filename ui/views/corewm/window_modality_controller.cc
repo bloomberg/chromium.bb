@@ -114,10 +114,10 @@ ui::EventResult WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {
                                               ui::ER_UNHANDLED;
 }
 
-ui::EventResult WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
+void WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  return ProcessLocatedEvent(target, event) ? ui::ER_CONSUMED :
-                                              ui::ER_UNHANDLED;
+  if (ProcessLocatedEvent(target, event))
+    event->StopPropagation();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

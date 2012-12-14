@@ -302,7 +302,7 @@ ui::EventResult TooltipController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TooltipController::OnTouchEvent(ui::TouchEvent* event) {
+void TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   // TODO(varunjain): need to properly implement tooltips for
   // touch events.
   // Hide the tooltip for touch events.
@@ -311,7 +311,6 @@ ui::EventResult TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
   tooltip_window_ = NULL;
-  return ui::ER_UNHANDLED;
 }
 
 void TooltipController::OnSessionStateEvent(

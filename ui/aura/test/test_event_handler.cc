@@ -35,14 +35,12 @@ ui::EventResult TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TestEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
+void TestEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
   num_scroll_events_++;
-  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TestEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+void TestEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   num_touch_events_++;
-  return ui::ER_UNHANDLED;
 }
 
 void TestEventHandler::OnGestureEvent(ui::GestureEvent* event) {

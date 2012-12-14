@@ -36,12 +36,9 @@ ui::EventResult TrayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TrayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED &&
-      ProcessLocatedEvent(event)) {
-    return ui::ER_CONSUMED;
-  }
-  return ui::ER_UNHANDLED;
+void TrayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED && ProcessLocatedEvent(event))
+    event->StopPropagation();
 }
 
 bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {

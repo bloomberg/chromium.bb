@@ -161,16 +161,13 @@ ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   return static_cast<ui::EventResult>(result);
 }
 
-ui::EventResult CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
-  int result = ui::ER_UNHANDLED;
+void CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
   if (handlers_.might_have_observers()) {
     ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
     ui::EventHandler* handler;
-    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL) {
-      result |= handler->OnTouchEvent(event);
-    }
+    while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
+      handler->OnTouchEvent(event);
   }
-  return static_cast<ui::EventResult>(result);
 }
 
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
@@ -228,18 +225,15 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return FilterMouseEvent(event);
 }
 
-ui::EventResult CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
+void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
-ui::EventResult CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  ui::EventResult result = FilterTouchEvent(event);
-  if (result == ui::ER_UNHANDLED &&
-      event->type() == ui::ET_TOUCH_PRESSED) {
+void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  FilterTouchEvent(event);
+  if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED) {
     SetCursorVisibilityOnEvent(
         static_cast<aura::Window*>(event->target()), event, false);
   }
-  return result;
 }
 
 void CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {

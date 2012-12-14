@@ -74,7 +74,7 @@ class OverflowBubbleView : public views::BubbleDelegateView {
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // views::BubbleDelegate overrides:
   virtual gfx::Rect GetBubbleBounds() OVERRIDE;
@@ -185,11 +185,11 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return true;
 }
 
-ui::EventResult OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
+void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
   ScrollByXOffset(-event->x_offset());
   ScrollByYOffset(-event->y_offset());
   Layout();
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
 
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {

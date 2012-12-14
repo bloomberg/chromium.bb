@@ -278,11 +278,10 @@ ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
+void LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
     Close();
-  return ui::ER_UNHANDLED;
 }
 
 void LauncherTooltipManager::OnGestureEvent(ui::GestureEvent* event) {

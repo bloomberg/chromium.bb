@@ -48,14 +48,12 @@ ui::EventResult UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {
+void UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {
   MaybeNotify();
-  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
+void UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
   MaybeNotify();
-  return ui::ER_UNHANDLED;
 }
 
 void UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {

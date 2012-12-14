@@ -50,22 +50,22 @@ TabScrubber::TabScrubber()
 TabScrubber::~TabScrubber() {
 }
 
-ui::EventResult TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
+void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     if (scrubbing_)
       StopScrubbing();
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   if (event->finger_count() != 3 ||
       event->type() != ui::ET_SCROLL)
-    return ui::ER_UNHANDLED;
+    return;
 
   Browser* browser = GetActiveBrowser();
   if (!browser || (browser_ && browser != browser_)) {
     if (scrubbing_)
       StopScrubbing();
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   BrowserView* browser_view =
@@ -106,7 +106,7 @@ ui::EventResult TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     browser->tab_strip_model()->ActivateTabAt(new_index, true);
   }
 
-  return ui::ER_CONSUMED;
+  event->StopPropagation();
 }
 
 void TabScrubber::Observe(int type,

@@ -653,8 +653,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Accelerators --------------------------------------------------------------
@@ -1296,9 +1296,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ProcessMouseDragged(const ui::MouseEvent& event, DragInfo* drop_info);
   void ProcessMouseReleased(const ui::MouseEvent& event);
 
-  // RootView will invoke this with incoming TouchEvents. Returns the result
-  // of OnTouchEvent.
-  ui::EventResult ProcessTouchEvent(ui::TouchEvent* event);
+  // RootView will invoke this with incoming TouchEvents.
+  void ProcessTouchEvent(ui::TouchEvent* event);
 
   // RootView will invoke this with incoming GestureEvents. This invokes
   // OnGestureEvent.

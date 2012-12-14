@@ -90,18 +90,22 @@ class TestEventHandler : public EventHandler {
     return event_result_;
   }
 
-  virtual EventResult OnScrollEvent(ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ScrollEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return event_result_;
+    SetStatusOnEvent(event);
   }
 
-  virtual EventResult OnTouchEvent(TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(TouchEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return event_result_;
+    SetStatusOnEvent(event);
   }
 
   virtual void OnGestureEvent(GestureEvent* event) OVERRIDE {
     ReceivedEvent(event);
+    SetStatusOnEvent(event);
+  }
+
+  void SetStatusOnEvent(Event* event) {
     if (event_result_ & ui::ER_CONSUMED)
       event->StopPropagation();
     if (event_result_ & ui::ER_HANDLED)
