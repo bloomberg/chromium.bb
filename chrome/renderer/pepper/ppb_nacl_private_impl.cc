@@ -163,11 +163,9 @@ PP_NaClResult StartPpapiProxy(PP_Instance instance) {
           instance_info.plugin_child_id);
   if (!renderer_ppapi_host)
     return PP_NACL_ERROR_MODULE;
-  // Finally, switch the instance to the proxy.
-  if (!nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
-    return PP_NACL_ERROR_INSTANCE;
 
-  return PP_NACL_OK;
+  // Finally, switch the instance to the proxy.
+  return nacl_plugin_module->InitAsProxiedNaCl(plugin_instance);
 }
 
 int UrandomFD(void) {

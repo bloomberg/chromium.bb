@@ -2386,7 +2386,8 @@ PP_Var PluginInstance::GetPluginInstanceURL(
                                                         components);
 }
 
-bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
+PP_NaClResult PluginInstance::ResetAsProxied(
+    scoped_refptr<PluginModule> module) {
   // Save the original module and switch over to the new one now that this
   // plugin is using the IPC-based proxy.
   original_module_ = module_;
@@ -2405,9 +2406,12 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined) {
     // The proxy must support at least one usable PPP_Instance interface.
-    // Don't assert; some tests exercise this path.
-    return false;
+    // While this could be a failure to implement the interface in the NaCl
+    // module, it is more likely that the NaCl process has crashed. Either
+    // way, report that module initialization failed.
+    return PP_NACL_ERROR_MODULE;
   }
+
   instance_interface_.reset(ppp_instance_combined);
   // Clear all PPP interfaces we may have cached.
   plugin_find_interface_ = NULL;
@@ -2428,7 +2432,7 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
   scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
   if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
                                       argn_array.get(), argv_array.get()))
-    return false;
+    return PP_NACL_ERROR_INSTANCE;
   message_channel_->StopQueueingJavaScriptMessages();
 
   // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
@@ -2441,7 +2445,7 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
   // If we received HandleDocumentLoad, re-send it now via the proxy.
   if (document_loader_)
     HandleDocumentLoad(document_loader_.get());
-  return true;
+  return PP_NACL_OK;
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

@@ -597,9 +597,12 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   if (!main_subprocess_.StartSrpcServices()) {
-    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
-                          "SRPC connection failure for " +
-                          main_subprocess_.description());
+    // The NaCl process probably crashed. On Linux, a crash causes this error,
+    // while on other platforms, the error is detected below, when we attempt to
+    // start the proxy. Report a module initialization error here, to make it
+    // less confusing for developers.
+    error_info->SetReport(ERROR_START_PROXY_MODULE,
+                          "could not initialize module.");
     return false;
   }
   // Try to start the Chrome IPC-based proxy first.

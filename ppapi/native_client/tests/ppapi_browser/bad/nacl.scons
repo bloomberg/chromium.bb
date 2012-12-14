@@ -37,14 +37,15 @@ ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 
 nmf_names = []
 # Compile all nexes embedded into the above html
-# TODO(bbudge) Re-enable these as the IPC proxy gets equivalent error reporting.
+# TODO(bbudge) Re-enable tests as the IPC proxy gets equivalent error reporting
+# or delete them after the proxy switch if they're specific to SRPC.
 # http://crbug.com/160076
-for kind in [ #'ppp_initialize', 'ppp_initialize_crash',
-              #'no_ppp_instance', 'get_ppp_instance_crash',
+for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
+              'no_ppp_instance', 'get_ppp_instance_crash',
               #'get_ppp_messaging_crash', 'get_ppp_printing_crash',
-              #'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
+              'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
               #'event_replay_crash'
-              ]:
+            ]:
   bad_nmf = 'ppapi_bad_%s' % kind
   bad_nexe = env.ProgramNameForNmf('ppapi_bad_%s' % kind)
   env.ComponentProgram(bad_nexe,

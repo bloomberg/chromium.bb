@@ -35,6 +35,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -455,7 +456,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if
   // necessary).
   // This is for use with the NaCl proxy.
-  bool ResetAsProxied(scoped_refptr<PluginModule> module);
+  PP_NaClResult ResetAsProxied(scoped_refptr<PluginModule> module);
 
  private:
   friend class PpapiUnittest;

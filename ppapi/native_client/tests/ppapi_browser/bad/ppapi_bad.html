@@ -107,9 +107,6 @@ function declareTests(tester) {
   //////////////////////////////////////
   // Initialization errors begin here //
   //////////////////////////////////////
-/* TODO(bbudge) Re-enable these tests when the IPC proxy reports similar errors.
-  http://crbug.com/160076
-
 
   // 'bad_ppp_initialize' loads a manifest, then loads a nexe that fails to
   // initialize PPAPI module
@@ -143,24 +140,6 @@ function declareTests(tester) {
       'ppapi_bad_get_ppp_instance_crash.nmf',
       'NaCl module load failed: could not initialize module.');
 
-  // 'bad_get_ppp_messaging_crash' loads a manifest, then loads a nexe that
-  // crashes when getting the optional PPP_Messaging interface, which is done
-  // on init.
-  badLoadTest(
-      tester,
-      'bad_get_ppp_messaging_crash',
-      'ppapi_bad_get_ppp_messaging_crash.nmf',
-      'NaCl module load failed: could not initialize module.');
-
-  // 'bad_get_ppp_printing_crash' loads a manifest, then loads a nexe that
-  // crashes when getting the optional PPP_Printing interface, which is done
-  // right after creation, but before loadEnd is dispatched.
-  badLoadTest(
-      tester,
-      'bad_get_ppp_printing_crash',
-      'ppapi_bad_get_ppp_printing_crash.nmf',
-      'NaCl module load failed: instance crashed after creation.');
-
   // 'bad_ppp_instance_didcreate' loads a manifest, then loads a nexe that fails
   // to create the instance
   badLoadTest(
@@ -177,6 +156,8 @@ function declareTests(tester) {
       'ppapi_bad_ppp_instance_didcreate_crash.nmf',
       'NaCl module load failed: could not create instance.');
 
+/* TODO(bbudge) Re-enable this test when the IPC proxy can report these errors.
+  http://crbug.com/160076
   // 'bad_event_replay_crash' loads a manifest, then loads a nexe and replays
   // the events that occured during loading causing the nexe to crash before
   // proxy start-up was completed.

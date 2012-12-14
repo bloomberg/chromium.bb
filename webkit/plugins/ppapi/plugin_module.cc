@@ -505,17 +505,17 @@ scoped_refptr<PluginModule> PluginModule::CreateModuleForNaClInstance() {
   return nacl_module;
 }
 
-bool PluginModule::InitAsProxiedNaCl(PluginInstance* plugin_instance) {
+PP_NaClResult PluginModule::InitAsProxiedNaCl(PluginInstance* instance) {
   DCHECK(out_of_process_proxy_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
   // PluginInstance was already created as in-process, so we missed the proxy
   // AddInstance step and must do it now.
-  out_of_process_proxy_->AddInstance(plugin_instance->pp_instance());
+  out_of_process_proxy_->AddInstance(instance->pp_instance());
   // In NaCl, we need to tell the instance to reset itself as proxied. This will
   // clear cached interface pointers and send DidCreate (etc) to the plugin
   // side of the proxy.
-  return plugin_instance->ResetAsProxied(this);
+  return instance->ResetAsProxied(this);
 }
 
 bool PluginModule::IsProxied() const {

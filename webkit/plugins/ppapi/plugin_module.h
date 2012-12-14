@@ -21,6 +21,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -115,8 +116,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   scoped_refptr<PluginModule> CreateModuleForNaClInstance();
 
   // Initializes the NaCl module for the out of process proxy. InitAsProxied
-  // must be called before calling InitAsProxiedNaCl. Returns true on success.
-  bool InitAsProxiedNaCl(PluginInstance* instance);
+  // must be called before calling InitAsProxiedNaCl. Returns a NaCl result code
+  // indicating whether the proxy started successfully or there was an error.
+  PP_NaClResult InitAsProxiedNaCl(PluginInstance* instance);
 
   bool IsProxied() const;
 
