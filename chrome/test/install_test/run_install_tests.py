@@ -19,7 +19,6 @@ Example:
       --install-build=24.0.1290.0 --update-builds=24.0.1289.0,24.0.1290.0
 """
 
-import fnmatch
 import logging
 import optparse
 import os
@@ -30,10 +29,8 @@ import unittest
 import chrome_installer_win
 from install_test import InstallTest
 
-_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(_DIRECTORY), 'pyautolib'))
-
-import pyauto_utils
+from common import unittest_util
+from common import util
 
 # To run tests from a module, append the module name to this list.
 _TEST_MODULES = ['sample_updater']
@@ -96,7 +93,7 @@ class Main(object):
     for build in builds:
       if not re.match('\d+\.\d+\.\d+\.\d+', build):
         raise RuntimeError('Invalid build number: %s' % build)
-      if not pyauto_utils.DoesUrlExist('%s/%s/' % (self._opts.url, build)):
+      if not util.DoesUrlExist('%s/%s/' % (self._opts.url, build)):
         raise RuntimeError('Could not locate build no. %s' % build)
 
   def _SetLoggingConfiguration(self):
@@ -104,100 +101,18 @@ class Main(object):
     log_format = '%(asctime)s %(levelname)-8s %(message)s'
     logging.basicConfig(level=logging.INFO, format=log_format)
 
-  def _GetTestsFromSuite(self, suite):
-    """Returns all the tests from a given test suite.
-
-    Args:
-      suite: A unittest.TestSuite object.
-
-    Returns:
-      A list that contains all the tests found in the suite.
-    """
-    tests = []
-    for test in suite:
-      if isinstance(test, unittest.TestSuite):
-        tests += self._GetTestsFromSuite(test)
-      else:
-        tests += [test]
-    return tests
-
-  def _GetTestName(self, test):
-    """Gets the test name of the given unittest test.
-
-    Args:
-      test: A unittest test.
-
-    Returns:
-      A string representing the full test name.
-    """
-    return '.'.join([test.__module__, test.__class__.__name__,
-                     test._testMethodName])
-
-  def _FilterTestSuite(self, suite, gtest_filter):
-    """Returns a new filtered test suite based on the given gtest filter.
-
-    See http://code.google.com/p/googletest/wiki/AdvancedGuide for
-    gtest_filter specification.
-
-    Args:
-      suite: A unittest.TestSuite object, which can be obtained by calling
-             |unittest.defaultTestLoader.loadTestsFromName|.
-      gtest_filter: The gtest filter to use. Filter can be passed as follows:
-                    --filter=*className* or --filter=*testcaseName.
-
-    Returns:
-      A unittest.TestSuite object that contains tests that match the gtest
-      filter.
-    """
-    return unittest.TestSuite(
-        self._FilterTests(self._GetTestsFromSuite(suite), gtest_filter))
-
-  def _FilterTests(self, all_tests, gtest_filter):
-    """Returns a filtered list of tests based on the given gtest filter.
-
-    Args:
-      all_tests: A list that contains all unittests in a given suite. This
-                 list must be obtained by calling |_GetTestsFromSuite|.
-      gtest_filter: The gtest filter to use. Filter can be passed as follows:
-                    *className* or *testcaseName.
-
-    Returns:
-      A list that contains all tests that match the given gtest filter.
-    """
-    pattern_groups = gtest_filter.split('-')
-    positive_patterns = pattern_groups[0].split(':')
-    negative_patterns = None
-    if len(pattern_groups) > 1:
-      negative_patterns = pattern_groups[1].split(':')
-    tests = []
-    for test in all_tests:
-      test_name = self._GetTestName(test)
-      # Test name must by matched by one positive pattern.
-      for pattern in positive_patterns:
-        if fnmatch.fnmatch(test_name, pattern):
-          break
-      else:
-        continue
-      # Test name must not be matched by any negative patterns.
-      for pattern in negative_patterns or []:
-        if fnmatch.fnmatch(test_name, pattern):
-          break
-      else:
-        tests += [test]
-    return tests
-
   def _Run(self):
     """Runs the unit tests."""
     all_tests = unittest.defaultTestLoader.loadTestsFromNames(_TEST_MODULES)
-    tests = self._FilterTestSuite(all_tests, self._opts.filter)
-    result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
+    tests = unittest_util.FilterTestSuite(all_tests, self._opts.filter)
+    result = unittest_util.TextTestRunner(verbosity=1).run(tests)
     # Run tests again if installation type is 'both'(i.e., user and system).
     if self._opts.install_type == 'both':
       # Load the tests again so test parameters can be reinitialized.
       all_tests = unittest.defaultTestLoader.loadTestsFromNames(_TEST_MODULES)
-      tests = self._FilterTestSuite(all_tests, self._opts.filter)
+      tests = unittest_util.FilterTestSuite(all_tests, self._opts.filter)
       InstallTest.SetInstallType(chrome_installer_win.InstallationType.SYSTEM)
-      result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
+      result = unittest_util.TextTestRunner(verbosity=1).run(tests)
     del(tests)
     if not result.wasSuccessful():
       print >>sys.stderr, ('Not all tests were successful.')
