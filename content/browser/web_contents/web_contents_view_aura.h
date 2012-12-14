@@ -151,7 +151,7 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Overridden from aura::client::DragDropDelegate:

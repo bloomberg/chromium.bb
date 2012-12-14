@@ -34,7 +34,7 @@ class WindowCycleEventFilter : public ui::EventHandler {
   virtual ~WindowCycleEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);
 };
@@ -46,14 +46,13 @@ WindowCycleEventFilter::WindowCycleEventFilter() {
 WindowCycleEventFilter::~WindowCycleEventFilter() {
 }
 
-ui::EventResult WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+void WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
     Shell::GetInstance()->window_cycle_controller()->AltKeyReleased();
     // Warning: |this| will be deleted from here on.
   }
-  return ui::ER_UNHANDLED;  // Always let the event propagate.
 }
 
 // Adds all the children of |window| to |windows|.

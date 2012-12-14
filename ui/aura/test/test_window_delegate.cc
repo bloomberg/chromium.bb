@@ -102,16 +102,19 @@ ColorTestWindowDelegate::ColorTestWindowDelegate(SkColor color)
     : color_(color),
       last_key_code_(ui::VKEY_UNKNOWN) {
 }
+
 ColorTestWindowDelegate::~ColorTestWindowDelegate() {
 }
 
-ui::EventResult ColorTestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
+void ColorTestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
   last_key_code_ = event->key_code();
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
+
 void ColorTestWindowDelegate::OnWindowDestroyed() {
   delete this;
 }
+
 void ColorTestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
 }
@@ -144,7 +147,7 @@ EventCountDelegate::EventCountDelegate()
     key_release_count_(0) {
 }
 
-ui::EventResult EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
+void EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
   switch (event->type()) {
     case ui::ET_KEY_PRESSED:
       key_press_count_++;
@@ -154,7 +157,6 @@ ui::EventResult EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
     default:
       break;
   }
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {

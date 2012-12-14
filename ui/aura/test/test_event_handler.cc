@@ -25,9 +25,8 @@ void TestEventHandler::Reset() {
   num_gesture_events_ = 0;
 }
 
-ui::EventResult TestEventHandler::OnKeyEvent(ui::KeyEvent* event) {
+void TestEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   num_key_events_++;
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {

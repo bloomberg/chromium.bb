@@ -52,7 +52,7 @@ class OverlayEventFilter : public ui::EventHandler,
   void Cancel();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

@@ -65,7 +65,7 @@ class ASH_EXPORT DragDropController
   virtual bool IsDragDropInProgress() OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

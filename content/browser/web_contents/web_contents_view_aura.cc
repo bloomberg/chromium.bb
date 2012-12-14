@@ -908,8 +908,7 @@ scoped_refptr<ui::Texture> WebContentsViewAura::CopyTexture() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, ui::EventHandler implementation:
 
-ui::EventResult WebContentsViewAura::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void WebContentsViewAura::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {

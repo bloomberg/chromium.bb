@@ -123,12 +123,11 @@ ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
     *destroyed_ = true;
 }
 
-ui::EventResult ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
+void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   if (window_resizer_.get() && event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
     CompleteDrag(DRAG_REVERT, event->flags());
   }
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(

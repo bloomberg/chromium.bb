@@ -544,27 +544,26 @@ scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 
-ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
+void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   if (event->is_char()) {
     // If a ui::InputMethod object is attached to the root window, character
     // events are handled inside the object and are not passed to this function.
     // If such object is not attached, character events might be sent (e.g. on
     // Windows). In this case, we just skip these.
-    return ui::ER_UNHANDLED;
+    return;
   }
   // Renderer may send a key event back to us if the key event wasn't handled,
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
-    return ui::ER_UNHANDLED;
+    return;
 
-  if (native_widget_delegate_->OnKeyEvent(*event))
-    return ui::ER_HANDLED;
+  native_widget_delegate_->OnKeyEvent(event);
+  if (event->handled())
+    return;
 
   if (GetWidget()->HasFocusManager() &&
       !GetWidget()->GetFocusManager()->OnKeyEvent(*event))
-    return ui::ER_HANDLED;
-
-  return ui::ER_UNHANDLED;
+    event->SetHandled();
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
@@ -671,7 +670,8 @@ void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
 void DesktopNativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   FocusManager* focus_manager =
       native_widget_delegate_->AsWidget()->GetFocusManager();
-  if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
+  native_widget_delegate_->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
+  if (key.handled() || !focus_manager)
     return;
   focus_manager->OnKeyEvent(key);
 }

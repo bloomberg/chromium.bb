@@ -149,8 +149,7 @@ void FocusController::OnWindowHiddenInRootWindow(
 
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, ui::EventHandler implementation:
-ui::EventResult FocusController::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void FocusController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult FocusController::OnMouseEvent(ui::MouseEvent* event) {

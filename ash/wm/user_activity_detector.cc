@@ -34,9 +34,8 @@ void UserActivityDetector::OnAllOutputsTurnedOff() {
   ignore_next_mouse_event_ = true;
 }
 
-ui::EventResult UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
+void UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
   MaybeNotify();
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {

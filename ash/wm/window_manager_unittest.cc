@@ -54,9 +54,12 @@ class CustomEventHandler : public aura::test::TestEventHandler {
   }
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    ui::EventResult result = aura::test::TestEventHandler::OnKeyEvent(event);
-    return key_result_ == ui::ER_UNHANDLED ? result : key_result_;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    aura::test::TestEventHandler::OnKeyEvent(event);
+    if (key_result_ & ui::ER_HANDLED)
+      event->SetHandled();
+    if (key_result_ & ui::ER_CONSUMED)
+      event->StopPropagation();
   }
 
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {

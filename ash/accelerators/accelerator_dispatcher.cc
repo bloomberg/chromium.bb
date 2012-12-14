@@ -74,8 +74,8 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
     ui::EventHandler* event_rewriter =
         ash::Shell::GetInstance()->event_rewriter_filter();
     DCHECK(event_rewriter);
-    ui::EventResult result = event_rewriter->OnKeyEvent(&key_event);
-    if (result & ui::ER_CONSUMED)
+    event_rewriter->OnKeyEvent(&key_event);
+    if (key_event.stopped_propagation())
       return true;
     ash::AcceleratorController* accelerator_controller =
         ash::Shell::GetInstance()->accelerator_controller();

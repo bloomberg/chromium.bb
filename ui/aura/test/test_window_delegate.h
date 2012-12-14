@@ -78,7 +78,7 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
   // Overridden from TestWindowDelegate:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -110,7 +110,7 @@ class EventCountDelegate : public TestWindowDelegate {
   EventCountDelegate();
 
   // Overridden from TestWindowDelegate:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Returns the counts of mouse motion events in the

@@ -44,7 +44,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   virtual void SetTooltipsEnabled(bool enable) OVERRIDE;
 
   // Overridden from ui::EventHandler.
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 

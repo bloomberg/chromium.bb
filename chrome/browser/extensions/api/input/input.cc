@@ -122,9 +122,12 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   views::InputMethod* ime = widget->GetInputMethod();
   if (ime) {
     ime->DispatchKeyEvent(event);
-  } else if (!widget->OnKeyEvent(event)) {
-    error_ = kKeyEventUnprocessedError;
-    return false;
+  } else {
+    widget->OnKeyEvent(&event);
+    if (event.handled()) {
+      error_ = kKeyEventUnprocessedError;
+      return false;
+    }
   }
 
   return true;

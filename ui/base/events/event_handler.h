@@ -36,7 +36,7 @@ class UI_EXPORT EventHandler {
   // default implementation for un-handled events.
   virtual void OnEvent(Event* event);
 
-  virtual EventResult OnKeyEvent(KeyEvent* event);
+  virtual void OnKeyEvent(KeyEvent* event);
 
   virtual EventResult OnMouseEvent(MouseEvent* event);
 

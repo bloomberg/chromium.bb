@@ -52,9 +52,10 @@ void EventTarget::OnEvent(Event* event) {
     EventHandler::OnEvent(event);
 }
 
-EventResult EventTarget::OnKeyEvent(KeyEvent* event) {
+void EventTarget::OnKeyEvent(KeyEvent* event) {
   CHECK_EQ(this, event->target());
-  return target_handler_ ? target_handler_->OnKeyEvent(event) : ER_UNHANDLED;
+  if (target_handler_)
+    target_handler_->OnKeyEvent(event);
 }
 
 EventResult EventTarget::OnMouseEvent(MouseEvent* event) {

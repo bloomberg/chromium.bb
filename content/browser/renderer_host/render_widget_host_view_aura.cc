@@ -1460,11 +1460,13 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::EventHandler implementation:
 
-ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
+void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnKeyEvent");
-  if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab() &&
-      popup_child_host_view_->OnKeyEvent(event))
-    return ui::ER_HANDLED;
+  if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
+    popup_child_host_view_->OnKeyEvent(event);
+    if (event->handled())
+      return;
+  }
 
   // We need to handle the Escape key for Pepper Flash.
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
@@ -1497,7 +1499,7 @@ ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       host_->ForwardKeyboardEvent(webkit_event);
     }
   }
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
 
 ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {

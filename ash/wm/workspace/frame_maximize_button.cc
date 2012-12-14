@@ -47,7 +47,7 @@ class FrameMaximizeButton::EscapeEventFilter : public ui::EventHandler {
   virtual ~EscapeEventFilter();
 
   // EventFilter overrides:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
  private:
   FrameMaximizeButton* button_;
@@ -65,13 +65,12 @@ FrameMaximizeButton::EscapeEventFilter::~EscapeEventFilter() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnKeyEvent(
+void FrameMaximizeButton::EscapeEventFilter::OnKeyEvent(
     ui::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
     button_->Cancel(false);
   }
-  return ui::ER_UNHANDLED;
 }
 
 // FrameMaximizeButton ---------------------------------------------------------

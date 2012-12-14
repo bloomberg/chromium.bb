@@ -285,12 +285,11 @@ bool DragDropController::IsDragDropInProgress() {
   return !!drag_drop_tracker_.get();
 }
 
-ui::EventResult DragDropController::OnKeyEvent(ui::KeyEvent* event) {
+void DragDropController::OnKeyEvent(ui::KeyEvent* event) {
   if (IsDragDropInProgress() && event->key_code() == ui::VKEY_ESCAPE) {
     DragCancel();
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {

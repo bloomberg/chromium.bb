@@ -111,7 +111,7 @@ void RootView::NotifyNativeViewHierarchyChanged(bool attached,
 
 // Input -----------------------------------------------------------------------
 
-ui::EventResult RootView::DispatchKeyEvent(const ui::KeyEvent& event) {
+void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
   bool consumed = false;
 
   View* v = NULL;
@@ -119,17 +119,19 @@ ui::EventResult RootView::DispatchKeyEvent(const ui::KeyEvent& event) {
     v = GetFocusManager()->GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->enabled() && ((event.key_code() == ui::VKEY_APPS) ||
-     (event.key_code() == ui::VKEY_F10 && event.IsShiftDown()))) {
+  if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
+     (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
+    return;
   }
   for (; v && v != this && !consumed; v = v->parent()) {
-    consumed = (event.type() == ui::ET_KEY_PRESSED) ?
-        v->OnKeyPressed(event) : v->OnKeyReleased(event);
+    consumed = (event->type() == ui::ET_KEY_PRESSED) ?
+        v->OnKeyPressed(*event) : v->OnKeyReleased(*event);
   }
 
-  return consumed ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  if (consumed)
+    event->StopPropagation();
 }
 
 void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {

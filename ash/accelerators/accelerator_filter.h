@@ -21,7 +21,7 @@ class ASH_EXPORT AcceleratorFilter : public ui::EventHandler {
   virtual ~AcceleratorFilter();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);

@@ -38,7 +38,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   virtual ~ToplevelWindowEventHandler();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 

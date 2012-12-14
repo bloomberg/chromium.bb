@@ -249,7 +249,7 @@ void TooltipController::SetTooltipsEnabled(bool enable) {
   UpdateTooltip(tooltip_window_);
 }
 
-ui::EventResult TooltipController::OnKeyEvent(ui::KeyEvent* event) {
+void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
   // On key press, we want to hide the tooltip and not show it until change.
   // This is the same behavior as hiding tooltips on timeout. Hence, we can
   // simply simulate a timeout.
@@ -257,7 +257,6 @@ ui::EventResult TooltipController::OnKeyEvent(ui::KeyEvent* event) {
     tooltip_shown_timer_.Stop();
     TooltipShownTimerFired();
   }
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TooltipController::OnMouseEvent(ui::MouseEvent* event) {

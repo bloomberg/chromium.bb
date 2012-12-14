@@ -81,9 +81,9 @@ class ConsumeKeyHandler : public test::TestEventHandler {
   virtual ~ConsumeKeyHandler() {}
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     test::TestEventHandler::OnKeyEvent(event);
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
 
  private:
@@ -441,9 +441,8 @@ class EventFilterRecorder : public ui::EventHandler {
   Events& events() { return events_; }
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::ER_UNHANDLED;
   }
 
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
@@ -640,10 +639,9 @@ class DeletingEventFilter : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     if (delete_during_pre_handle_)
       delete event->target();
-    return ui::ER_UNHANDLED;
   }
 
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
@@ -674,11 +672,10 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
 
  private:
   // Overridden from WindowDelegate:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
-    return ui::ER_UNHANDLED;
   }
 
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {

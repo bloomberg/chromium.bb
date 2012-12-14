@@ -867,8 +867,7 @@ bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return false;
 }
 
-ui::EventResult View::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void View::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult View::OnMouseEvent(ui::MouseEvent* event) {

@@ -23,7 +23,7 @@ EventHandler::~EventHandler() {
 void EventHandler::OnEvent(Event* event) {
   ui::EventResult result = ui::ER_UNHANDLED;
   if (event->IsKeyEvent())
-    result = OnKeyEvent(static_cast<KeyEvent*>(event));
+    OnKeyEvent(static_cast<KeyEvent*>(event));
   else if (event->IsMouseEvent())
     result = OnMouseEvent(static_cast<MouseEvent*>(event));
   else if (event->IsScrollEvent())
@@ -39,8 +39,7 @@ void EventHandler::OnEvent(Event* event) {
     event->SetHandled();
 }
 
-EventResult EventHandler::OnKeyEvent(KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void EventHandler::OnKeyEvent(KeyEvent* event) {
 }
 
 EventResult EventHandler::OnMouseEvent(MouseEvent* event) {

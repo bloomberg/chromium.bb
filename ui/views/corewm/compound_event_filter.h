@@ -63,7 +63,7 @@ class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
   void UpdateCursor(aura::Window* target, ui::MouseEvent* event);
 
   // Dispatches event to additional filters.
-  ui::EventResult FilterKeyEvent(ui::KeyEvent* event);
+  void FilterKeyEvent(ui::KeyEvent* event);
   ui::EventResult FilterMouseEvent(ui::MouseEvent* event);
   void FilterTouchEvent(ui::TouchEvent* event);
 
@@ -78,7 +78,7 @@ class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
                                   bool show);
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;

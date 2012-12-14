@@ -39,7 +39,7 @@ class VIEWS_EXPORT InputMethodEventFilter
 
  private:
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
   virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;

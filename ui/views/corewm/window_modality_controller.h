@@ -38,7 +38,7 @@ class VIEWS_EXPORT WindowModalityController : public ui::EventHandler,
   virtual ~WindowModalityController();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 

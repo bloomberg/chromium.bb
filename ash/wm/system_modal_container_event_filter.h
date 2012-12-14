@@ -22,7 +22,7 @@ class ASH_EXPORT SystemModalContainerEventFilter : public ui::EventHandler {
   virtual ~SystemModalContainerEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:

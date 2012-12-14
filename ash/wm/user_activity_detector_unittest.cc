@@ -92,7 +92,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   SetEventTarget(window.get(), &key_event);
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnKeyEvent(&key_event));
+  detector_->OnKeyEvent(&key_event);
+  EXPECT_FALSE(key_event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
@@ -141,13 +142,15 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   // The observer should be notified about a key event.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   SetEventTarget(window.get(), &event);
-  EXPECT_FALSE(detector_->OnKeyEvent(&event));
+  detector_->OnKeyEvent(&event);
+  EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
   // It shouldn't be notified if a second event occurs
   // in the same instant in time.
-  EXPECT_FALSE(detector_->OnKeyEvent(&event));
+  detector_->OnKeyEvent(&event);
+  EXPECT_FALSE(event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
   observer_->reset_stats();
 
@@ -155,7 +158,8 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   AdvanceTime(
       base::TimeDelta::FromMilliseconds(
           UserActivityDetector::kNotifyIntervalMs - 100));
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnKeyEvent(&event));
+  detector_->OnKeyEvent(&event);
+  EXPECT_FALSE(event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
   observer_->reset_stats();
 
@@ -164,7 +168,8 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   AdvanceTime(base::TimeDelta::FromMilliseconds(
       UserActivityDetector::kNotifyIntervalMs));
 
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnKeyEvent(&event));
+  detector_->OnKeyEvent(&event);
+  EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
 }
 

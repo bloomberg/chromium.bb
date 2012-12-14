@@ -103,9 +103,10 @@ WindowModalityController::~WindowModalityController() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, aura::EventFilter implementation:
 
-ui::EventResult WindowModalityController::OnKeyEvent(ui::KeyEvent* event) {
+void WindowModalityController::OnKeyEvent(ui::KeyEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  return GetModalTransient(target) ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  if (GetModalTransient(target))
+    event->StopPropagation();
 }
 
 ui::EventResult WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {

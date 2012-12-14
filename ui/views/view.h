@@ -651,7 +651,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;

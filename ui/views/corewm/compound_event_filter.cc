@@ -139,15 +139,13 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
   }
 }
 
-ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
-  int result = ui::ER_UNHANDLED;
+void CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   if (handlers_.might_have_observers()) {
     ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
     ui::EventHandler* handler;
-    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
-      result |= handler->OnKeyEvent(event);
+    while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
+      handler->OnKeyEvent(event);
   }
-  return static_cast<ui::EventResult>(result);
 }
 
 ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
@@ -192,13 +190,13 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, ui::EventHandler implementation:
 
-ui::EventResult CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+void CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   if (ShouldHideCursorOnKeyEvent(*event)) {
     SetCursorVisibilityOnEvent(
         static_cast<aura::Window*>(event->target()), event, false);
   }
 
-  return FilterKeyEvent(event);
+  FilterKeyEvent(event);
 }
 
 ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {

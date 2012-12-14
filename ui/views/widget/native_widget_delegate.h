@@ -106,7 +106,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;
 
   // Mouse and key event handlers.
-  virtual bool OnKeyEvent(const ui::KeyEvent& event) = 0;
+  virtual void OnKeyEvent(ui::KeyEvent* event) = 0;
   virtual bool OnMouseEvent(const ui::MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
 

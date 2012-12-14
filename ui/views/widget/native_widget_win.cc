@@ -764,7 +764,8 @@ bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {
-  return delegate_->OnKeyEvent(event);
+  delegate_->OnKeyEvent(const_cast<ui::KeyEvent*>(&event));
+  return event.handled();
 }
 
 bool NativeWidgetWin::HandleUntranslatedKeyEvent(const ui::KeyEvent& event) {

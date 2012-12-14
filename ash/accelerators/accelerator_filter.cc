@@ -67,12 +67,12 @@ AcceleratorFilter::~AcceleratorFilter() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorFilter, EventFilter implementation:
 
-ui::EventResult AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
+void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
   const ui::EventType type = event->type();
   if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
-    return ui::ER_UNHANDLED;
+    return;
   if (event->is_char())
-    return ui::ER_UNHANDLED;
+    return;
 
   ui::Accelerator accelerator(event->key_code(),
                               event->flags() & kModifierFlagMask);
@@ -85,9 +85,9 @@ ui::EventResult AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!ShouldProcessAcceleratorsNow(accelerator, target))
-    return ui::ER_UNHANDLED;
-  return Shell::GetInstance()->accelerator_controller()->Process(accelerator) ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+    return;
+  if (Shell::GetInstance()->accelerator_controller()->Process(accelerator))
+    event->StopPropagation();
 }
 
 }  // namespace internal

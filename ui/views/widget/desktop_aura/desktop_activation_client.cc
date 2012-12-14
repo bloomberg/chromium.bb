@@ -158,8 +158,7 @@ bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
        aura::client::GetActivationDelegate(window)->ShouldActivate());
 }
 
-ui::EventResult DesktopActivationClient::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void DesktopActivationClient::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult DesktopActivationClient::OnMouseEvent(ui::MouseEvent* event) {

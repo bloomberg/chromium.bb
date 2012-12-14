@@ -156,8 +156,8 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   // Should not hide for key events.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   SetEventTarget(root_window, &key_event);
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnKeyEvent(&key_event));
+  event_handler->OnKeyEvent(&key_event);
+  EXPECT_FALSE(key_event.handled());
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for touch events.

@@ -80,9 +80,9 @@ class TestEventHandler : public EventHandler {
 
  private:
   // Overridden from EventHandler:
-  virtual EventResult OnKeyEvent(KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(KeyEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return event_result_;
+    SetStatusOnEvent(event);
   }
 
   virtual EventResult OnMouseEvent(MouseEvent* event) OVERRIDE {

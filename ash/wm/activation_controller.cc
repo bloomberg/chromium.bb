@@ -272,8 +272,7 @@ void ActivationController::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // ActivationController, ui::EventHandler implementation:
 
-ui::EventResult ActivationController::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+void ActivationController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult ActivationController::OnMouseEvent(ui::MouseEvent* event) {
