@@ -103,18 +103,28 @@
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       # crbug.com/137041
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
+      # crbug.com/162341
+      '-prefs.PrefsTest.testAllowSelectedGeoTracking',
+      '-prefs.PrefsTest.testDismissedInfobarSavesNoEntry',
+      '-prefs.PrefsTest.testGeolocationBlockedWhenTrackingDenied',
+      '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/157271
       '-prefs_ui.BasicSettingsUITest.testCancelStartupURLSetting',
       '-prefs_ui.BasicSettingsUITest.testSetStartupPages',
       '-prefs_ui.BasicSettingsUITest.testUseCurrentPagesForStartup',
+      # crbug.com/162341
+      '-prefs_ui.PrefsUITest.testBehaviorValueCorrectlyDisplayed',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
       # crbug.com/157271
       '-prefs_ui.PrefsUITest.testDeleteExceptionUI',
       # crbug.com/151973
       '-prefs_ui.PrefsUITest.testInitialLineEntryInIncognitoUI',
+      # crbug.com/162341
+      '-prefs_ui.PrefsUITest.testLocationSettingOptionsUI',
+      '-prefs_ui.PrefsUITest.testNoInitialLineEntryInUI',
       # crbug.com/132285
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
