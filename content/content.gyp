@@ -284,7 +284,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
-            '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
             '../ui/ui.gyp:ui_java',
             'common_aidl',
             'content_common',
@@ -296,6 +295,13 @@
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',
           },
+          'conditions': [
+            ['android_build_type == 0', {
+              'dependencies': [
+                '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
+              ],
+            }],
+          ],
           'includes': [ '../build/java.gypi' ],
         },
         {
