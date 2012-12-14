@@ -92,12 +92,7 @@ void WebContentLayerImpl::paintContents(SkCanvas* canvas, const gfx::Rect& clip,
             false :
             static_cast<ContentLayer*>(m_layer->layer())->useLCDText();
     WebFloatRect webOpaque;
-    m_client->paintContents(canvas,
-                            clip,
-#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
-                            useLCDText,
-#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
-                            webOpaque);
+    m_client->paintContents(canvas, clip, useLCDText, webOpaque);
     opaque = webOpaque;
 }
 
