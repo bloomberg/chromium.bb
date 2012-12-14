@@ -100,10 +100,6 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
       return false;
   }
 
-  const WebInputEvent* event = CrackMessage(message);
-  if (event->type == WebInputEvent::Undefined)
-    return false;
-
   target_loop_->PostTask(
       FROM_HERE,
       base::Bind(&InputEventFilter::ForwardToHandler, this, message));
@@ -116,12 +112,9 @@ const WebInputEvent* InputEventFilter::CrackMessage(
   DCHECK(message.type() == ViewMsg_HandleInputEvent::ID);
 
   PickleIterator iter(message);
-  const char* data;
-  int data_length;
-  if (!message.ReadData(&iter, &data, &data_length))
-    return NULL;
-
-  return reinterpret_cast<const WebInputEvent*>(data);
+  const WebInputEvent* event = NULL;
+  IPC::ParamTraits<IPC::WebInputEventPointer>::Read(&message, &iter, &event);
+  return event;
 }
 
 InputEventFilter::~InputEventFilter() {

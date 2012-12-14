@@ -11,6 +11,25 @@
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "ui/base/range/range.h"
 
+namespace {
+
+int WebInputEventSizeForType(WebKit::WebInputEvent::Type type) {
+    if (WebKit::WebInputEvent::isMouseEventType(type))
+        return sizeof(WebKit::WebMouseEvent);
+    if (type == WebKit::WebInputEvent::MouseWheel)
+        return sizeof(WebKit::WebMouseWheelEvent);
+    if (WebKit::WebInputEvent::isKeyboardEventType(type))
+        return sizeof(WebKit::WebKeyboardEvent);
+    if (WebKit::WebInputEvent::isTouchEventType(type))
+        return sizeof(WebKit::WebTouchEvent);
+    if (WebKit::WebInputEvent::isGestureEventType(type))
+        return sizeof(WebKit::WebGestureEvent);
+    NOTREACHED() << "Unknown webkit event type " << type;
+    return 0;
+}
+
+}  // namespace
+
 namespace content {
 
 NPIdentifier_Param::NPIdentifier_Param()
@@ -167,6 +186,48 @@ bool ParamTraits<ui::Range>::Read(const Message* m,
 
 void ParamTraits<ui::Range>::Log(const ui::Range& r, std::string* l) {
   l->append(base::StringPrintf("(%"PRIuS", %"PRIuS")", r.start(), r.end()));
+}
+
+void ParamTraits<WebInputEventPointer>::Write(Message* m, const param_type& p) {
+  m->WriteData(reinterpret_cast<const char*>(p), p->size);
+}
+
+bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
+                                             PickleIterator* iter,
+                                             param_type* r) {
+  const char* data;
+  int data_length;
+  if (!m->ReadData(iter, &data, &data_length)) {
+    NOTREACHED();
+    return false;
+  }
+  if (data_length < static_cast<int>(sizeof(WebKit::WebInputEvent))) {
+    NOTREACHED();
+    return false;
+  }
+  param_type event = reinterpret_cast<param_type>(data);
+  // Check that the data size matches that of the event.
+  if (data_length != static_cast<int>(event->size)) {
+    NOTREACHED();
+    return false;
+  }
+  if (data_length != WebInputEventSizeForType(event->type)) {
+    NOTREACHED();
+    return false;
+  }
+  *r = event;
+  return true;
+}
+
+void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
+                                            std::string* l) {
+  l->append("(");
+  LogParam(p->size, l);
+  l->append(", ");
+  LogParam(p->type, l);
+  l->append(", ");
+  LogParam(p->timeStampSeconds, l);
+  l->append(")");
 }
 
 }  // namespace IPC

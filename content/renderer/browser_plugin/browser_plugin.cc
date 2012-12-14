@@ -969,14 +969,11 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   if (guest_crashed_ || !navigate_src_sent_ ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
-  IPC::Message* message =
-      new BrowserPluginHostMsg_HandleInputEvent(
-          render_view_routing_id_);
-  message->WriteInt(instance_id_);
-  message->WriteData(reinterpret_cast<const char*>(&plugin_rect_),
-                     sizeof(gfx::Rect));
-  message->WriteData(reinterpret_cast<const char*>(&event), event.size);
-  browser_plugin_manager()->Send(message);
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
+                                                instance_id_,
+                                                plugin_rect_,
+                                                &event));
   cursor_.GetCursorInfo(&cursor_info);
   return true;
 }

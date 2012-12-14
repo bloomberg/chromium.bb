@@ -8,6 +8,10 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
 
+namespace WebKit {
+class WebInputEvent;
+}
+
 namespace content {
 
 // Class which observes user input events and postpones
@@ -21,7 +25,8 @@ class IdleUserDetector : public RenderViewObserver {
   // RenderViewObserver implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnHandleInputEvent(const IPC::Message& message);
+  void OnHandleInputEvent(const WebKit::WebInputEvent* event,
+                          bool is_keyboard_shortcut);
 
   DISALLOW_COPY_AND_ASSIGN(IdleUserDetector);
 };

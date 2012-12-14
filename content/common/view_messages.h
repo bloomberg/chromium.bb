@@ -924,11 +924,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 // compositor path.
 IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
 
-// Message payload includes:
-// 1. A blob that should be cast to WebInputEvent
-// 2. An optional boolean value indicating if a RawKeyDown event is associated
-//    to a keyboard shortcut of the browser.
-IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
+// Sends an input event to the render widget.
+IPC_MESSAGE_ROUTED2(ViewMsg_HandleInputEvent,
+                    IPC::WebInputEventPointer /* event */,
+                    bool /* is_keyboard_shortcut */)
 
 // Tells the render widget that a smooth scroll completed.
 IPC_MESSAGE_ROUTED1(ViewMsg_SmoothScrollCompleted,

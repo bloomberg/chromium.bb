@@ -43,6 +43,7 @@ class SyncMessage;
 
 namespace WebKit {
 class WebGestureEvent;
+class WebInputEvent;
 class WebMouseEvent;
 struct WebRenderingStatsImpl;
 struct WebPoint;
@@ -264,7 +265,8 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
-  void OnHandleInputEvent(const IPC::Message& message);
+  void OnHandleInputEvent(const WebKit::WebInputEvent* event,
+                          bool keyboard_shortcut);
   void OnMouseCaptureLost();
   virtual void OnSetFocus(bool enable);
   void OnSetInputMethodActive(bool is_active);

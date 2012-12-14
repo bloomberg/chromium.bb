@@ -107,9 +107,7 @@ void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
                        const WebMouseEvent events[],
                        size_t count) {
   for (size_t i = 0; i < count; ++i) {
-    ViewMsg_HandleInputEvent message(kTestRoutingID);
-    message.WriteData(reinterpret_cast<const char*>(&events[i]),
-                      events[i].size);
+    ViewMsg_HandleInputEvent message(kTestRoutingID, &events[i], false);
     message_filter->OnMessageReceived(message);
   }
 

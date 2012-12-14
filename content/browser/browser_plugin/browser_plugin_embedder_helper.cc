@@ -34,16 +34,16 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedderHelper, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
-                        OnCreateGuest);
+                        OnCreateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest,
-                        OnNavigateGuest);
+                        OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK);
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus);
-    IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_HandleInputEvent,
-        OnHandleInputEvent(message))
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
+                        OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
-                        OnPluginDestroyed);
+                        OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
@@ -69,29 +69,14 @@ void BrowserPluginEmbedderHelper::OnResizeGuest(
 }
 
 void BrowserPluginEmbedderHelper::OnHandleInputEvent(
-    const IPC::Message& message) {
-  PickleIterator iter(message);
-
-  int instance_id = -1;
-  const char* guest_rect_data = NULL;
-  int guest_rect_data_length = -1;
-  const char* input_event_data = NULL;
-  int input_event_data_length = -1;
-  if (!message.ReadInt(&iter, &instance_id) ||
-      !message.ReadData(&iter, &guest_rect_data, &guest_rect_data_length) ||
-      !message.ReadData(&iter, &input_event_data, &input_event_data_length)) {
-    return;
-  }
-  const gfx::Rect* guest_window_rect =
-      reinterpret_cast<const gfx::Rect*>(guest_rect_data);
-  const WebKit::WebInputEvent* input_event =
-      reinterpret_cast<const WebKit::WebInputEvent*>(input_event_data);
+    int instance_id,
+    const gfx::Rect& guest_window_rect,
+    const WebKit::WebInputEvent* input_event) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       render_view_host());
-
   embedder_->HandleInputEvent(instance_id,
                               rvh,
-                              *guest_window_rect,
+                              guest_window_rect,
                               *input_event);
 }
 

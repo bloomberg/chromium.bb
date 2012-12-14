@@ -464,21 +464,20 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
   guest_screen_rect_ = guest_screen_rect;
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       web_contents()->GetRenderViewHost());
-  IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id());
 
-  // Copy the WebInputEvent and modify the event type. The guest expects
-  // WebInputEvent::RawKeyDowns and not KeyDowns.
-  scoped_array<char> input_buffer(new char[event.size]);
-  memcpy(input_buffer.get(), &event, event.size);
-  WebKit::WebInputEvent* input_event =
-      reinterpret_cast<WebKit::WebInputEvent*>(input_buffer.get());
-  if (event.type == WebKit::WebInputEvent::KeyDown)
-    input_event->type = WebKit::WebInputEvent::RawKeyDown;
+  IPC::Message* message = NULL;
 
-  message->WriteData(input_buffer.get(), event.size);
-  // TODO(fsamuel): What do we need to do here? This is for keyboard shortcuts.
-  if (input_event->type == WebKit::WebInputEvent::RawKeyDown)
-    message->WriteBool(false);
+  // TODO(fsamuel): What should we do for keyboard_shortcut field?
+  if (event.type == WebKit::WebInputEvent::KeyDown) {
+    CHECK_EQ(sizeof(WebKit::WebKeyboardEvent), event.size);
+    WebKit::WebKeyboardEvent key_event;
+    memcpy(&key_event, &event, event.size);
+    key_event.type = WebKit::WebInputEvent::RawKeyDown;
+    message = new ViewMsg_HandleInputEvent(routing_id(), &key_event, false);
+  } else {
+    message = new ViewMsg_HandleInputEvent(routing_id(), &event, false);
+  }
+
   guest_rvh->Send(message);
   guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
 }

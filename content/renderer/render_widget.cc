@@ -546,25 +546,15 @@ void RenderWidget::OnSwapBuffersComplete() {
   DoDeferredUpdateAndSendInputAck();
 }
 
-void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
+void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
+                                      bool is_keyboard_shortcut) {
   TRACE_EVENT0("renderer", "RenderWidget::OnHandleInputEvent");
-  PickleIterator iter(message);
 
-  const char* data;
-  int data_length;
   handling_input_event_ = true;
-  if (!message.ReadData(&iter, &data, &data_length)) {
+  if (!input_event) {
     handling_input_event_ = false;
     return;
   }
-
-  const WebInputEvent* input_event =
-      reinterpret_cast<const WebInputEvent*>(data);
-
-  bool is_keyboard_shortcut = false;
-  // is_keyboard_shortcut flag is only available for RawKeyDown events.
-  if (input_event->type == WebInputEvent::RawKeyDown)
-    message.ReadBool(&iter, &is_keyboard_shortcut);
 
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {

@@ -173,11 +173,11 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Stop,
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
                     int /* instance_id */)
 
-// Message payload includes:
-// 1. A blob that should be cast to WebInputEvent
-// 2. An optional boolean value indicating if a RawKeyDown event is associated
-//    to a keyboard shortcut of the browser.
-IPC_MESSAGE_ROUTED0(BrowserPluginHostMsg_HandleInputEvent)
+// Sends an input event to the guest.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
+                    int /* instance_id */,
+                    gfx::Rect /* guest_window_rect */,
+                    IPC::WebInputEventPointer /* event */)
 
 // An ACK to the guest process letting it know that the embedder has handled
 // the previous frame and is ready for the next frame. If the guest sent the

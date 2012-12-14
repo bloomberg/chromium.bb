@@ -526,7 +526,7 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {
-    WebMouseWheelEvent mouse_event;
+    WebKit::WebMouseEvent mouse_event;
     mouse_event.type = type;
     host_->ForwardMouseEvent(mouse_event);
   }
