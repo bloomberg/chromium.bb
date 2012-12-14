@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -68,26 +69,8 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
 class ToplevelWindowEventHandlerTest : public AshTestBase {
  public:
-  ToplevelWindowEventHandlerTest() : parent_(NULL) {}
+  ToplevelWindowEventHandlerTest() {}
   virtual ~ToplevelWindowEventHandlerTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    AshTestBase::SetUp();
-    parent_ = new aura::Window(NULL);
-    parent_->Init(ui::LAYER_NOT_DRAWN);
-    parent_->Show();
-    Shell::GetPrimaryRootWindow()->AddChild(parent_);
-    parent_->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
-    handler_.reset(new ToplevelWindowEventHandler(parent_));
-    parent_->AddPreTargetHandler(handler_.get());
-  }
-
-  virtual void TearDown() OVERRIDE {
-    parent_->RemovePreTargetHandler(handler_.get());
-    handler_.reset();
-    parent_ = NULL;
-    AshTestBase::TearDown();
-  }
 
  protected:
   aura::Window* CreateWindow(int hittest_code) {
@@ -95,7 +78,10 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
-    parent_->AddChild(w1);
+    aura::Window* parent =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          internal::kShellWindowId_AlwaysOnTopContainer);
+    parent->AddChild(w1);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();
     return w1;
@@ -114,9 +100,6 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
   scoped_ptr<ToplevelWindowEventHandler> handler_;
 
  private:
-  // Window |handler_| is installed on. Owned by RootWindow.
-  aura::Window* parent_;
-
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerTest);
 };
 
@@ -513,12 +496,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
 #define MAYBE_EscapeReverts EscapeReverts
 #endif
 TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
-  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  aura::client::ActivationClient* original_client =
-      aura::client::GetActivationClient(root);
-  aura::test::TestActivationClient activation_client(root);
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
-  target->Focus();
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   generator.PressLeftButton();
@@ -531,7 +509,6 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
   generator.PressKey(ui::VKEY_ESCAPE, 0);
   generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
   EXPECT_EQ("0,0 100x100", target->bounds().ToString());
-  aura::client::SetActivationClient(root, original_client);
 }
 
 // Verifies window minimization/maximization completes drag.

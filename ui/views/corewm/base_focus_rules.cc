@@ -69,6 +69,12 @@ bool BaseFocusRules::CanActivateWindow(aura::Window* window) const {
     return false;
   }
 
+  // A window must be focusable to be activatable. We don't call
+  // CanFocusWindow() from here because it will call back to us via
+  // GetActivatableWindow().
+  if (!window->CanFocus())
+    return false;
+
   // The window cannot be blocked by a modal transient.
   return !GetModalTransient(window);
 }
@@ -106,6 +112,14 @@ aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
     if (CanActivateWindow(child))
       return child;
 
+    // CanActivateWindow() above will return false if |child| is blocked by a
+    // modal transient. In this case the modal is or contains the activatable
+    // window. We recurse because the modal may itself be blocked by a modal
+    // transient.
+    aura::Window* modal_transient = GetModalTransient(child);
+    if (modal_transient)
+      return GetActivatableWindow(modal_transient);
+
     if (child->transient_parent())
       return GetActivatableWindow(child->transient_parent());
 
@@ -122,8 +136,15 @@ aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) const {
   // |window| may be in a hierarchy that is non-activatable, in which case we
   // need to cut over to the activatable hierarchy.
   aura::Window* activatable = GetActivatableWindow(window);
-  if (!activatable)
-    return GetFocusedWindow(window);
+  if (!activatable) {
+    // There may not be a related activatable hierarchy to cut over to, in which
+    // case we try an unrelated one.
+    aura::Window* toplevel = GetToplevelWindow(window);
+    if (toplevel)
+      activatable = GetNextActivatableWindow(toplevel);
+    if (!activatable)
+      return NULL;
+  }
 
   if (!activatable->Contains(window)) {
     // If there's already a child window focused in the activatable hierarchy,

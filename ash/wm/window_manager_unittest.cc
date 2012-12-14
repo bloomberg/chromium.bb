@@ -25,6 +25,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
 namespace {
@@ -233,7 +234,7 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   d1.SetWindow(w1.get());
   test::TestActivationDelegate d2;
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
-      &wd, -1, gfx::Rect(70, 70, 50, 50)));
+      &wd, -2, gfx::Rect(70, 70, 50, 50)));
   d2.SetWindow(w2.get());
 
   aura::client::FocusClient* focus_client =
@@ -289,7 +290,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   d1.set_activate(true);
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
+  EXPECT_EQ(views::corewm::UseFocusController() ? 1 : 0,
+            d2.lost_active_count());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
@@ -299,7 +301,7 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   // focus from the child.
   {
     scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
-          &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
+          &wd, -11, gfx::Rect(10, 10, 10, 10), w1.get()));
     aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                          w11.get());
     // First set the focus to the child |w11|.
@@ -404,7 +406,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   d1.set_activate(true);
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(0, d2.lost_active_count());
+  EXPECT_EQ(views::corewm::UseFocusController() ? 1 : 0,
+            d2.lost_active_count());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());

@@ -38,6 +38,7 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 FocusController::FocusController(FocusRules* rules)
     : active_window_(NULL),
       focused_window_(NULL),
+      updating_focus_(false),
       rules_(rules),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   DCHECK(rules);
@@ -107,14 +108,29 @@ void FocusController::RemoveObserver(
 
 void FocusController::FocusWindow(aura::Window* window,
                                   const ui::Event* event) {
+  if (updating_focus_)
+    return;
+
+  if (window &&
+      (window->Contains(focused_window_) || window->Contains(active_window_))) {
+    return;
+  }
+
   // Focusing a window also activates its containing activatable window. Note
   // that the rules could redirect activation activation and/or focus.
   aura::Window* focusable = rules_->GetFocusableWindow(window);
   aura::Window* activatable =
       focusable ? rules_->GetActivatableWindow(focusable) : NULL;
+
+  // We need valid focusable/activatable windows in the event we're not clearing
+  // focus. "Clearing focus" is inferred by whether or not |window| passed to
+  // this function is non-NULL.
+  if (window && (!focusable || !activatable))
+    return;
+  DCHECK((focusable && activatable) || !window);
   SetActiveWindow(activatable);
-  if (focusable && activatable)
-    DCHECK(GetActiveWindow()->Contains(focusable));
+  if (active_window_)
+    DCHECK(active_window_->Contains(focusable));
   SetFocusedWindow(focusable);
 }
 
@@ -195,12 +211,13 @@ void FocusController::OnWindowInitialized(aura::Window* window) {
 // FocusController, private:
 
 void FocusController::SetFocusedWindow(aura::Window* window) {
-  if (window == focused_window_)
+  if (updating_focus_ || window == focused_window_)
     return;
   DCHECK(rules_->CanFocusWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetFocusableWindow(window));
 
+  base::AutoReset<bool> updating_focus(&updating_focus_, true);
   aura::Window* lost_focus = focused_window_;
   focused_window_ = window;
 
@@ -217,12 +234,14 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
 }
 
 void FocusController::SetActiveWindow(aura::Window* window) {
-  if (window == active_window_)
+  if (updating_focus_ || window == active_window_)
     return;
+
   DCHECK(rules_->CanActivateWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetActivatableWindow(window));
 
+  base::AutoReset<bool> updating_focus(&updating_focus_, true);
   aura::Window* lost_activation = active_window_;
   active_window_ = window;
   if (active_window_) {
@@ -244,12 +263,15 @@ void FocusController::SetActiveWindow(aura::Window* window) {
 
 void FocusController::WindowLostFocusFromDispositionChange(
     aura::Window* window) {
+  // A window's modality state will interfere with focus restoration during its
+  // destruction.
+  window->ClearProperty(aura::client::kModalKey);
   // TODO(beng): See if this function can be replaced by a call to
   //             FocusWindow().
   // Activation adjustments are handled first in the event of a disposition
   // changed. If an activation change is necessary, focus is reset as part of
   // that process so there's no point in updating focus independently.
-  if (window->Contains(active_window_)) {
+  if (window == active_window_) {
     aura::Window* next_activatable = rules_->GetNextActivatableWindow(window);
     SetActiveWindow(next_activatable);
     SetFocusedWindow(next_activatable);

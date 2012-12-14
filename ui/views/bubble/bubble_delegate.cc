@@ -196,6 +196,7 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
   if (anchor_widget() == widget) {
+    anchor_widget_->RemoveObserver(this);
     anchor_view_ = NULL;
     anchor_widget_ = NULL;
   }

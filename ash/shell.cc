@@ -898,7 +898,8 @@ void Shell::OnEvent(ui::Event* event) {
 
 void Shell::OnWindowActivated(aura::Window* gained_active,
                               aura::Window* lost_active) {
-  active_root_window_ = gained_active->GetRootWindow();
+  if (gained_active)
+    active_root_window_ = gained_active->GetRootWindow();
 }
 
 }  // namespace ash

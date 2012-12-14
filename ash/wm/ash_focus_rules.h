@@ -27,6 +27,9 @@ class ASH_EXPORT AshFocusRules : public views::corewm::BaseFocusRules {
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* ignore) const OVERRIDE;
 
+  aura::Window* GetTopmostWindowToActivateForContainerIndex(
+      int index,
+      aura::Window* ignore) const;
   aura::Window* GetTopmostWindowToActivateInContainer(
       aura::Window* container,
       aura::Window* ignore) const;

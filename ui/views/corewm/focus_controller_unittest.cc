@@ -73,6 +73,55 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedFocusNotificationObserver);
 };
 
+// Focus/Activation change observer that attempts to shift focus/activation
+// while processing an update to focus/activation.
+class RecurseFocusObserver : public aura::client::ActivationChangeObserver,
+                             public aura::client::FocusChangeObserver {
+ public:
+  explicit RecurseFocusObserver(aura::Window* other) : other_(other) {}
+  virtual ~RecurseFocusObserver() {}
+
+ private:
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE {
+    DCHECK_NE(gained_active, other_);
+    aura::client::GetActivationClient(other_->GetRootWindow())->ActivateWindow(
+        other_);
+  }
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    DCHECK_NE(gained_focus, other_);
+    aura::client::GetFocusClient(other_)->FocusWindow(other_, NULL);
+  }
+
+  aura::Window* other_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecurseFocusObserver);
+};
+
+class ScopedRecurseFocusObserver : public RecurseFocusObserver {
+ public:
+  ScopedRecurseFocusObserver(aura::RootWindow* root_window,
+                             aura::Window* other)
+      : RecurseFocusObserver(other),
+        root_window_(root_window) {
+    aura::client::GetActivationClient(root_window_)->AddObserver(this);
+    aura::client::GetFocusClient(root_window_)->AddObserver(this);
+  }
+  virtual ~ScopedRecurseFocusObserver() {
+    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+    aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
+  }
+
+ private:
+  aura::RootWindow* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedRecurseFocusObserver);
+};
+
 class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
  public:
   ScopedTargetFocusNotificationObserver(aura::RootWindow* root_window, int id)
@@ -248,8 +297,11 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void DuplicateActivationEvents() {}
   virtual void ShiftFocusWithinActiveWindow() {}
   virtual void ShiftFocusToChildOfInactiveWindow() {}
+  virtual void ShiftFocusToParentOfFocusedWindow() {}
   virtual void FocusRulesOverride() = 0;
   virtual void ActivationRulesOverride() = 0;
+  virtual void NoRecurseFocus() {}
+  virtual void NoRecurseActivation() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -390,6 +442,15 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(11, GetFocusedWindowId());
   }
+  virtual void ShiftFocusToParentOfFocusedWindow() OVERRIDE {
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetFocusedWindowId());
+    FocusWindowById(11);
+    EXPECT_EQ(11, GetFocusedWindowId());
+    FocusWindowById(1);
+    // Focus should _not_ shift to the parent of the already-focused window.
+    EXPECT_EQ(11, GetFocusedWindowId());
+  }
   virtual void FocusRulesOverride() OVERRIDE {
     EXPECT_EQ(NULL, GetFocusedWindow());
     FocusWindowById(11);
@@ -420,6 +481,22 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());
+  }
+  virtual void NoRecurseFocus() OVERRIDE {
+    aura::Window* w2 = root_window()->GetChildById(2);
+    ScopedRecurseFocusObserver observer(root_window(), w2);
+    FocusWindowById(1);
+    // |observer| will try to set active to w2, but the focus system should
+    // prevent recursive updating.
+    EXPECT_EQ(1, GetFocusedWindowId());
+  }
+  virtual void NoRecurseActivation() OVERRIDE {
+    aura::Window* w2 = root_window()->GetChildById(2);
+    ScopedRecurseFocusObserver observer(root_window(), w2);
+    ActivateWindowById(1);
+    // |observer| will try to set active to w2, but the focus system should
+    // prevent recursive updating.
+    EXPECT_EQ(1, GetActiveWindowId());
   }
 
  private:
@@ -792,11 +869,20 @@ DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusWithinActiveWindow);
 //   activation to the activatable parent and focuses the child.
 DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToChildOfInactiveWindow);
 
+// - Input events/API calls to focus the parent of the focused window do not
+//   shift focus away from the child.
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToParentOfFocusedWindow);
+
 // - Verifies that FocusRules determine what can be focused.
 ALL_FOCUS_TESTS(FocusRulesOverride);
 
 // - Verifies that FocusRules determine what can be activated.
 TARGET_FOCUS_TESTS(ActivationRulesOverride);
+
+// - Verifies that attempts to change focus or activation from a focus or
+//   activation change observer are ignored.
+DIRECT_FOCUS_CHANGE_TESTS(NoRecurseFocus);
+DIRECT_FOCUS_CHANGE_TESTS(NoRecurseActivation);
 
 }  // namespace corewm
 }  // namespace views

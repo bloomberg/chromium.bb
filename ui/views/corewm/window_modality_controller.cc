@@ -120,9 +120,27 @@ ui::EventResult WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
                                               ui::ER_UNHANDLED;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// WindowModalityController, aura::EnvObserver implementation:
+
 void WindowModalityController::OnWindowInitialized(aura::Window* window) {
   windows_.push_back(window);
   window->AddObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowModalityController, aura::WindowObserver implementation:
+
+void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
+                                                       const void* key,
+                                                       intptr_t old) {
+  // In tests, we sometimes create the modality relationship after a window is
+  // visible.
+  if (key == aura::client::kModalKey &&
+      window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
+      window->IsVisible()) {
+    ActivateWindow(window);
+  }
 }
 
 void WindowModalityController::OnWindowVisibilityChanged(

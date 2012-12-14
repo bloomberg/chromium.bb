@@ -18,6 +18,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -207,7 +208,10 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   wm::ActivateWindow(w3.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   w3.reset();
-  EXPECT_FALSE(IsCalloutVisible());
+  if (views::corewm::UseFocusController())
+    EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w2.get()));
+  else
+    EXPECT_FALSE(IsCalloutVisible());
 }
 
 // Tests removing panels.

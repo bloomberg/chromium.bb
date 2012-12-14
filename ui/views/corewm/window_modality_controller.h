@@ -46,6 +46,9 @@ class VIEWS_EXPORT WindowModalityController : public ui::EventHandler,
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;

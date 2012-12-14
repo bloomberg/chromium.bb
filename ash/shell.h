@@ -336,6 +336,9 @@ class ASH_EXPORT Shell
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
   }
+  aura::client::ActivationClient* activation_client() {
+    return activation_client_;
+  }
 
   ScreenAsh* screen() { return screen_; }
 
@@ -401,10 +404,6 @@ class ASH_EXPORT Shell
   content::BrowserContext* browser_context() { return browser_context_; }
   void set_browser_context(content::BrowserContext* browser_context) {
     browser_context_ = browser_context;
-  }
-
-  aura::client::ActivationClient* activation_client() {
-    return activation_client_;
   }
 
   // Initializes the root window to be used for a secondary display.
