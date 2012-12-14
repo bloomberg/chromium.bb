@@ -253,13 +253,6 @@ RemovableDeviceNotificationsLinux::~RemovableDeviceNotificationsLinux() {
   g_removable_device_notifications_linux = NULL;
 }
 
-// static
-RemovableDeviceNotificationsLinux*
-RemovableDeviceNotificationsLinux::GetInstance() {
-  DCHECK(g_removable_device_notifications_linux != NULL);
-  return g_removable_device_notifications_linux;
-}
-
 void RemovableDeviceNotificationsLinux::Init() {
   DCHECK(!mtab_path_.empty());
 
@@ -475,6 +468,12 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
         device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
         mount_point.value());
   }
+}
+
+// static
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  DCHECK(g_removable_device_notifications_linux != NULL);
+  return g_removable_device_notifications_linux;
 }
 
 }  // namespace chrome

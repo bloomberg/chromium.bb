@@ -85,13 +85,6 @@ RemovableDeviceNotificationsMac::~RemovableDeviceNotificationsMac() {
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 }
 
-// static
-RemovableDeviceNotificationsMac*
-RemovableDeviceNotificationsMac::GetInstance() {
-  DCHECK(g_removable_device_notifications_mac != NULL);
-  return g_removable_device_notifications_mac;
-}
-
 void RemovableDeviceNotificationsMac::UpdateDisk(
     const DiskInfoMac& info,
     UpdateType update_type) {
@@ -214,6 +207,12 @@ bool RemovableDeviceNotificationsMac::FindDiskWithMountPoint(
     }
   }
   return false;
+}
+
+// static
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  DCHECK(g_removable_device_notifications_mac != NULL);
+  return g_removable_device_notifications_mac;
 }
 
 }  // namespace chrome

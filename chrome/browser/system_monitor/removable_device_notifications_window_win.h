@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 class FilePath;
 
@@ -17,10 +18,8 @@ namespace chrome {
 class PortableDeviceWatcherWin;
 class VolumeMountWatcherWin;
 
-class RemovableDeviceNotificationsWindowWin;
-typedef RemovableDeviceNotificationsWindowWin RemovableDeviceNotifications;
-
-class RemovableDeviceNotificationsWindowWin {
+class RemovableDeviceNotificationsWindowWin
+    : public RemovableStorageNotifications {
  public:
   // Creates an instance of RemovableDeviceNotificationsWindowWin. Should only
   // be called by browser start up code. Use GetInstance() instead.
@@ -28,18 +27,16 @@ class RemovableDeviceNotificationsWindowWin {
 
   virtual ~RemovableDeviceNotificationsWindowWin();
 
-  // base::SystemMonitor has a lifetime somewhat shorter than a Singleton and
-  // |this| is constructed/destroyed just after/before SystemMonitor.
-  static RemovableDeviceNotificationsWindowWin* GetInstance();
-
   // Must be called after the file thread is created.
   void Init();
 
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
-  bool GetDeviceInfoForPath(
+  virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info);
+      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
+
+  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
  private:
   class PortableDeviceNotifications;
@@ -59,7 +56,7 @@ class RemovableDeviceNotificationsWindowWin {
                      string16* device_location,
                      std::string* unique_id,
                      string16* name,
-                     bool* removable);
+                     bool* removable) const;
 
   static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT message, WPARAM wparam,
                                        LPARAM lparam);

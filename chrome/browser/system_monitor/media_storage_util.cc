@@ -15,17 +15,8 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
-#elif defined(OS_LINUX)
-#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
-#elif defined(OS_WIN)
-#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
-#endif
 
 #if defined(OS_LINUX)  // Implies OS_CHROMEOS
 #include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
@@ -274,8 +265,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
   bool found_device = false;
   base::SystemMonitor::RemovableStorageInfo device_info;
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-  RemovableDeviceNotifications* notifier =
-      RemovableDeviceNotifications::GetInstance();
+  RemovableStorageNotifications* notifier =
+      RemovableStorageNotifications::GetInstance();
   found_device = notifier->GetDeviceInfoForPath(path, &device_info);
 #endif
 

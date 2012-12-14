@@ -108,12 +108,6 @@ RemovableDeviceNotificationsCros::~RemovableDeviceNotificationsCros() {
   }
 }
 
-// static
-RemovableDeviceNotificationsCros*
-RemovableDeviceNotificationsCros::GetInstance() {
-  return g_removable_device_notifications_chromeos;
-}
-
 void RemovableDeviceNotificationsCros::CheckExistingMountPointsOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const disks::DiskMountManager::MountPointMap& mount_point_map =
@@ -270,3 +264,11 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
 }
 
 }  // namespace chromeos
+
+namespace chrome {
+
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  return chromeos::g_removable_device_notifications_chromeos;
+}
+
+}  // namespace chrome

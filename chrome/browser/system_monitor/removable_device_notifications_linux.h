@@ -23,6 +23,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
 
 class FilePath;
@@ -37,30 +38,26 @@ typedef void (*GetDeviceInfoFunc)(const FilePath& device_path,
 
 namespace chrome {
 
-class RemovableDeviceNotificationsLinux;
-typedef RemovableDeviceNotificationsLinux RemovableDeviceNotifications;
-
 class RemovableDeviceNotificationsLinux
-    : public base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux,
+    : public RemovableStorageNotifications,
+      public base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux,
           content::BrowserThread::DeleteOnFileThread> {
  public:
   // Should only be called by browser start up code.  Use GetInstance() instead.
   explicit RemovableDeviceNotificationsLinux(const FilePath& path);
-
-  static RemovableDeviceNotificationsLinux* GetInstance();
 
   // Must be called for RemovableDeviceNotificationsLinux to work.
   void Init();
 
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
-  bool GetDeviceInfoForPath(
+  virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const;
+      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage partition size of the device present at |location|.
   // If the requested information is unavailable, returns 0.
-  uint64 GetStorageSize(const std::string& location) const;
+  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
  protected:
   // Only for use in unit tests.

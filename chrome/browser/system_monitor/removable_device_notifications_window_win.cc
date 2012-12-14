@@ -62,13 +62,6 @@ RemovableDeviceNotificationsWindowWin::
   g_removable_device_notifications_window_win = NULL;
 }
 
-// static
-RemovableDeviceNotificationsWindowWin*
-    RemovableDeviceNotificationsWindowWin::GetInstance() {
-  DCHECK(g_removable_device_notifications_window_win);
-  return g_removable_device_notifications_window_win;
-}
-
 void RemovableDeviceNotificationsWindowWin::Init() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
@@ -90,7 +83,7 @@ void RemovableDeviceNotificationsWindowWin::Init() {
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
     const FilePath& path,
-    base::SystemMonitor::RemovableStorageInfo* device_info) {
+    base::SystemMonitor::RemovableStorageInfo* device_info) const {
   string16 location;
   std::string unique_id;
   string16 name;
@@ -133,6 +126,12 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
   return true;
 }
 
+uint64 RemovableDeviceNotificationsWindowWin::GetStorageSize(
+    const std::string& location) const {
+  NOTIMPLEMENTED();
+  return 0ULL;
+}
+
 // static
 LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProcThunk(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
@@ -159,7 +158,7 @@ LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfo(
     const FilePath& device_path, string16* device_location,
-    std::string* unique_id, string16* name, bool* removable) {
+    std::string* unique_id, string16* name, bool* removable) const {
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of
   // portable device as a media gallery.
@@ -171,6 +170,12 @@ void RemovableDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
                                                            LPARAM data) {
   volume_mount_watcher_->OnWindowMessage(event_type, data);
   portable_device_watcher_->OnWindowMessage(event_type, data);
+}
+
+// static
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  DCHECK(g_removable_device_notifications_window_win);
+  return g_removable_device_notifications_window_win;
 }
 
 }  // namespace chrome

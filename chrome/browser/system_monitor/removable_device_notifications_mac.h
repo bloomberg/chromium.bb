@@ -12,16 +12,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/disk_info_mac.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 namespace chrome {
 
-class RemovableDeviceNotificationsMac;
-typedef RemovableDeviceNotificationsMac RemovableDeviceNotifications;
-
 // This class posts notifications to base::SystemMonitor when a new disk
 // is attached, removed, or changed.
-class RemovableDeviceNotificationsMac :
-    public base::RefCountedThreadSafe<RemovableDeviceNotificationsMac> {
+class RemovableDeviceNotificationsMac
+    : public RemovableStorageNotifications,
+      public base::RefCountedThreadSafe<RemovableDeviceNotificationsMac> {
  public:
   enum UpdateType {
     UPDATE_DEVICE_ADDED,
@@ -32,18 +31,16 @@ class RemovableDeviceNotificationsMac :
   // Should only be called by browser start up code.  Use GetInstance() instead.
   RemovableDeviceNotificationsMac();
 
-  static RemovableDeviceNotificationsMac* GetInstance();
-
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 
-  bool GetDeviceInfoForPath(
+  virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const;
+      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero. |location| must be a
   // top-level mount point.
-  uint64 GetStorageSize(const std::string& location) const;
+  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsMac>;
