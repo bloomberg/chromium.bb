@@ -284,6 +284,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
+            '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
             '../ui/ui.gyp:ui_java',
             'common_aidl',
             'content_common',

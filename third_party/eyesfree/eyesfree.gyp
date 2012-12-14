@@ -2,32 +2,42 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'targets': [
-    {
-      'target_name': 'eyesfree_java',
-      'type': 'none',
-      'dependencies': [
-        'eyesfree_aidl',
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'eyesfree_java',
+          'type': 'none',
+          'dependencies': [
+            'eyesfree_aidl',
+          ],
+          'variables': {
+            'package_name': 'eyesfree',
+            'java_in_dir': 'src/android/java',
+          },
+          'includes': [ '../../build/java.gypi' ],
+        },
+        {
+          'target_name': 'eyesfree_aidl',
+          'type': 'none',
+          'variables': {
+            'package_name': 'eyesfree',
+            'aidl_interface_file': '<(android_sdk)/framework.aidl',
+            'aidl_import_include': 'src/android/java/src',
+          },
+          'sources': [
+            'src/android/java/src/com/googlecode/eyesfree/braille/display/BrailleDisplayProperties.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/display/BrailleInputEvent.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleService.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleServiceCallback.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/ISelfBrailleService.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/WriteData.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorService.aidl',
+            'src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorServiceCallback.aidl',
+          ],
+          'includes': [ '../../build/java_aidl.gypi' ],
+        },
       ],
-      'variables': {
-        'package_name': 'eyesfree',
-        'java_in_dir': 'src/android/java',
-      },
-      'includes': [ '../../build/java.gypi' ],
-    },
-    {
-      'target_name': 'eyesfree_aidl',
-      'type': 'none',
-      'variables': {
-        'package_name': 'eyesfree',
-        'aidl_interface_file': '<(android_sdk)/framework.aidl',
-        'aidl_import_include': 'android/java/src',
-      },
-      'sources': [
-        'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/ISelfBrailleService.aidl',
-        'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/WriteData.aidl',
-      ],
-      'includes': [ '../../build/java_aidl.gypi' ],
-    },
+    }],
   ],
 }

@@ -10,9 +10,13 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
+
+import com.googlecode.eyesfree.braille.selfbraille.SelfBrailleClient;
+import com.googlecode.eyesfree.braille.selfbraille.WriteData;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -33,6 +37,8 @@ import java.util.List;
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
  */
 public class AccessibilityInjector extends WebContentsObserverAndroid {
+    private static final String TAG = AccessibilityInjector.class.getSimpleName();
+
     // The ContentView this injector is responsible for managing.
     protected ContentViewCore mContentViewCore;
 
@@ -253,7 +259,8 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
         if (context != null) {
             // Enabled, we should try to add if we have to.
             if (mTextToSpeech == null) {
-                mTextToSpeech = new TextToSpeechWrapper(context);
+                mTextToSpeech = new TextToSpeechWrapper(mContentViewCore.getContainerView(),
+                        context);
                 mContentViewCore.addJavascriptInterface(mTextToSpeech,
                         ALIAS_ACCESSIBILITY_JS_INTERFACE);
             }
@@ -367,9 +374,14 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
      */
     private static class TextToSpeechWrapper {
         private TextToSpeech mTextToSpeech;
+        private SelfBrailleClient mSelfBrailleClient;
+        private View mView;
 
-        public TextToSpeechWrapper(Context context) {
+        public TextToSpeechWrapper(View view, Context context) {
+            mView = view;
             mTextToSpeech = new TextToSpeech(context, null, null);
+            mSelfBrailleClient = new SelfBrailleClient(context, CommandLine.getInstance().hasSwitch(
+                    CommandLine.ACCESSIBILITY_DEBUG_BRAILLE_SERVICE));
         }
 
         @JavascriptInterface
@@ -390,9 +402,26 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
             return mTextToSpeech.stop();
         }
 
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public void braille(String jsonString) {
+            try {
+                JSONObject jsonObj = new JSONObject(jsonString);
+
+                WriteData data = WriteData.forView(mView);
+                data.setText(jsonObj.getString("text"));
+                data.setSelectionStart(jsonObj.getInt("startIndex"));
+                data.setSelectionEnd(jsonObj.getInt("endIndex"));
+                mSelfBrailleClient.write(data);
+            } catch (JSONException ex) {
+                Log.w(TAG, "Error parsing JS JSON object", ex);
+            }
+        }
+
         @SuppressWarnings("unused")
         protected void shutdownInternal() {
             mTextToSpeech.shutdown();
+            mSelfBrailleClient.shutdown();
         }
     }
 }

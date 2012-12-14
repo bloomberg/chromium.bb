@@ -307,7 +307,7 @@ public class ContentViewCore implements MotionEventDelegate {
     /**
      * @return The ViewGroup that all view actions of this ContentViewCore should interact with.
      */
-    protected ViewGroup getContainerView() {
+    public ViewGroup getContainerView() {
         return mContainerView;
     }
 

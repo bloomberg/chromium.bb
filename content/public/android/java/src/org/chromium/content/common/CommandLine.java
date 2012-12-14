@@ -54,6 +54,8 @@ public abstract class CommandLine {
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 
+    public static final String ACCESSIBILITY_DEBUG_BRAILLE_SERVICE = "debug-braille-service";
+
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
