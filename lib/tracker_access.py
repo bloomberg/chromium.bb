@@ -6,7 +6,6 @@
 
 """Helper functions for accessing the issue tracker in a pythonic way."""
 
-import os.path
 import pprint
 import sys
 
@@ -87,7 +86,7 @@ class TrackerAccess(object):
       feed = self._tracker_client.get_issues(project_name, query=query)
     except gdata.client.RequestError, e:
       if VERBOSE:
-        print >>sys.stderr, "ERROR: Unable to access bug %s:%s: %s" % (
+        print >> sys.stderr, "ERROR: Unable to access bug %s:%s: %s" % (
             project_name, issue_id, str(e))
       return {}
 

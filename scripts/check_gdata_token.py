@@ -9,7 +9,6 @@ import filecmp
 import optparse
 import os
 import shutil
-import sys
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib as build_lib

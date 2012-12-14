@@ -167,10 +167,10 @@ class TableTest(cros_test_lib.TestCase):
   def testMergeRows(self):
     # This merge should fail without a merge rule.  Capture stderr to avoid
     # scary error message in test output.
-    self._stderr = sys.stderr
-    sys.stderr = self._stderr_cap = cStringIO.StringIO()
+    stderr = sys.stderr
+    sys.stderr = cStringIO.StringIO()
     self.assertRaises(ValueError, self._table._MergeRow, self.ROW0a, self.COL0)
-    sys.stderr = self._stderr
+    sys.stderr = stderr
 
     # Merge but stick with current row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
@@ -300,7 +300,7 @@ class TableTest(cros_test_lib.TestCase):
   def testWriteReadCSV(self):
     """Write and Read CSV and verify contents preserved."""
     # This also tests the Table == and != operators.
-    fd, path = tempfile.mkstemp(text=True)
+    _, path = tempfile.mkstemp(text=True)
     tmpfile = open(path, 'w')
     self._table.WriteCSV(tmpfile)
     tmpfile.close()

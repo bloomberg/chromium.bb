@@ -720,10 +720,10 @@ class IssueCommentTest(cros_test_lib.TestCase):
     self.assertEquals(title, ic.title)
     self.assertEquals(text, ic.text)
 
-def createTrackerIssue(id, labels, owner, status, content, title):
+def createTrackerIssue(tid, labels, owner, status, content, title):
   tissue = cros_test_lib.EasyAttr()
   tissue.id = cros_test_lib.EasyAttr(
-      text='http://www/some/path/%d' % id)
+      text='http://www/some/path/%d' % tid)
   tissue.label = [cros_test_lib.EasyAttr(text=l) for l in labels]
   tissue.owner = cros_test_lib.EasyAttr(
       username=cros_test_lib.EasyAttr(text=owner))
@@ -755,7 +755,7 @@ class IssueTest(cros_test_lib.MoxTestCase):
     tissue_content = 'The summary message'
     tissue_title = 'The Big Title'
 
-    tissue = createTrackerIssue(id=tissue_id, labels=tissue_labels,
+    tissue = createTrackerIssue(tid=tissue_id, labels=tissue_labels,
                                 owner=tissue_owner, status=tissue_status,
                                 content=tissue_content, title=tissue_title)
 
@@ -872,7 +872,7 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
     tissue_content = 'find me in body'
     tissue_title = 'find me in title'
 
-    tissue = createTrackerIssue(id=tissue_id, labels=tissue_labels,
+    tissue = createTrackerIssue(tid=tissue_id, labels=tissue_labels,
                                 owner=tissue_owner, status=tissue_status,
                                 content=tissue_content, title=tissue_title)
 
@@ -891,6 +891,7 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
     tcomm.project_name = project
 
     # We expect a Query instance to be passed into get_issues.
+    # pylint: disable=E1120
     self.mox.StubOutClassWithMocks(gd_ph_client, 'Query')
 
     mocked_query = gd_ph_client.Query(text_query='%s is:open' % text)
