@@ -228,8 +228,12 @@ bool WebGraphicsContext3DInProcessImpl::Initialize(
       strstr(extensions, "GL_EXT_framebuffer_object") != NULL;
   have_ext_framebuffer_multisample_ =
       strstr(extensions, "GL_EXT_framebuffer_multisample") != NULL;
+#if !defined(OS_ANDROID)
+  // Some Android Qualcomm drivers falsely report this ANGLE extension string.
+  // See http://crbug.com/165736
   have_angle_framebuffer_multisample_ =
       strstr(extensions, "GL_ANGLE_framebuffer_multisample") != NULL;
+#endif
   have_ext_oes_standard_derivatives_ =
       strstr(extensions, "GL_OES_standard_derivatives") != NULL;
   have_ext_oes_egl_image_external_ =

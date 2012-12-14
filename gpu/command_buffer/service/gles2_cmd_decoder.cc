@@ -2222,8 +2222,7 @@ bool GLES2DecoderImpl::Initialize(
 
   if (offscreen) {
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
-        (context_->HasExtension("GL_EXT_framebuffer_multisample") ||
-         context_->HasExtension("GL_ANGLE_framebuffer_multisample"))) {
+        features().chromium_framebuffer_multisample) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
       // max_sample_count must be initialized to a sane value.  If
       // glGetIntegerv() throws a GL error, it leaves its argument unchanged.

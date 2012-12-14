@@ -512,10 +512,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check for multisample support
+  bool ext_has_multisample = ext.Have("GL_EXT_framebuffer_multisample");
+  if (!is_qualcomm || feature_flags_.disable_workarounds) {
+    // Some Android Qualcomm drivers falsely report this ANGLE extension string.
+    // See http://crbug.com/165736
+    ext_has_multisample |= ext.Have("GL_ANGLE_framebuffer_multisample");
+  }
   if (!disallowed_features_.multisampling &&
       ext.Desire("GL_CHROMIUM_framebuffer_multisample") &&
-      (ext.Have("GL_EXT_framebuffer_multisample") ||
-       ext.Have("GL_ANGLE_framebuffer_multisample"))) {
+      ext_has_multisample) {
     feature_flags_.chromium_framebuffer_multisample = true;
     validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
     validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
