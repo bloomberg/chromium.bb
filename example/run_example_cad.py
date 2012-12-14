@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs hello_world.py, through hello_world.isolate, locally in a temporary
+"""Runs hello_world.py, through hello_world.isolated, locally in a temporary
 directory with the files fetched from the remote Content-Addressed Datastore.
 """
 
 import hashlib
+import optparse
 import os
 import shutil
 import subprocess
@@ -26,9 +27,18 @@ def run(cmd):
 
 
 def main():
-  # Uncomment to make isolate.py to output logs.
-  #os.environ['ISOLATE_DEBUG'] = '1'
-  cad_server = 'http://isolateserver.appspot.com/'
+  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option(
+      '-i', '--isolate-server',
+      default='https://isolateserver.appspot.com/',
+      help='Isolate server to use default:%default')
+  parser.add_option('-v', '--verbose', action='store_true')
+  options, args = parser.parse_args()
+  if args:
+    parser.error('Unsupported argument %s' % args)
+  if options.verbose:
+    os.environ['ISOLATE_DEBUG'] = '1'
+
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files
@@ -50,16 +60,19 @@ def main():
           'hashtable',
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
           '--isolated', isolated,
-          '--outdir', cad_server,
+          '--outdir', options.isolate_server,
         ])
 
     print('\nRunning')
+    # TODO(maruel): This makes it not work with NFS.
+    remote = (
+        options.isolate_server.rstrip('/') + '/content/retrieve/default-gzip/')
     hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
     run(
         [
           'run_isolated.py',
           '--cache', cachedir,
-          '--remote', cad_server + 'content/retrieve?hash_key=',
+          '--remote', remote,
           '--hash', hashval,
         ])
   finally:

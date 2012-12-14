@@ -8,6 +8,7 @@ directory.
 """
 
 import hashlib
+import optparse
 import os
 import shutil
 import subprocess
@@ -26,8 +27,14 @@ def run(cmd):
 
 
 def main():
-  # Uncomment to make isolate.py to output logs.
-  #os.environ['ISOLATE_DEBUG'] = '1'
+  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option('-v', '--verbose', action='store_true')
+  options, args = parser.parse_args()
+  if args:
+    parser.error('Unsupported argument %s' % args)
+
+  if options.verbose:
+    os.environ['ISOLATE_DEBUG'] = '1'
 
   try:
     # All the files are put in a temporary directory. This is optional and
