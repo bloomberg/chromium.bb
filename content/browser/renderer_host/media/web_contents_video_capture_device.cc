@@ -69,11 +69,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 
-// TODO(miu): The caller of Allocate() should use an appropriate heuristic to
-// determine the frame size.  For now, hard-code the capture device to 720p
-// resolution.
-#define FORCE_1280x720_FRAME_SIZE
-
 // Used to self-trampoline invocation of methods to the approprate thread.  This
 // should be used sparingly, only when it's not clear which thread is invoking a
 // method.
@@ -739,13 +734,6 @@ void CaptureMachine::Allocate(int width, int height, int frame_rate) {
     Error();
     return;
   }
-
-#ifdef FORCE_1280x720_FRAME_SIZE
-  VLOG_IF(1, width != 1280 || height != 720)
-      << "Forced frame size to 1280x720.";
-  width = 1280;
-  height = 720;
-#endif
 
   // Frame dimensions must each be a positive, even integer, since the consumer
   // wants (or will convert to) YUV420.
