@@ -90,11 +90,9 @@ void TestMountPointProvider::ValidateFileSystemRoot(
 }
 
 FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url,
-    FileSystemType type,
-    const FilePath& virtual_path,
+    const FileSystemURL& url,
     bool create) {
-  DCHECK_EQ(kFileSystemTypeTest, type);
+  DCHECK_EQ(kFileSystemTypeTest, url.type());
   bool success = true;
   if (create)
     success = file_util::CreateDirectory(base_path_);

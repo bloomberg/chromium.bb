@@ -73,12 +73,9 @@ void CrosMountPointProvider::ValidateFileSystemRoot(
 }
 
 FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    const FilePath& virtual_path,
+    const fileapi::FileSystemURL& url,
     bool create) {
-  DCHECK(fileapi::IsolatedContext::IsIsolatedType(type));
-  fileapi::FileSystemURL url(origin_url, type, virtual_path);
+  DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
   if (!url.is_valid())
     return FilePath();
 

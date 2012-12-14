@@ -81,9 +81,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
   virtual FilePath GetFileSystemRootPathOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& virtual_path,
+      const FileSystemURL& url,
       bool create) OVERRIDE;
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;

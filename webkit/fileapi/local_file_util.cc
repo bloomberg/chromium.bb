@@ -159,8 +159,7 @@ PlatformFileError LocalFileUtil::GetLocalFilePath(
   FileSystemMountPointProvider* provider =
       context->file_system_context()->GetMountPointProvider(url.type());
   DCHECK(provider);
-  FilePath root = provider->GetFileSystemRootPathOnFileThread(
-      url.origin(), url.type(), url.path(), false);
+  FilePath root = provider->GetFileSystemRootPathOnFileThread(url, false);
   if (root.empty())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   *local_file_path = root.Append(url.path());

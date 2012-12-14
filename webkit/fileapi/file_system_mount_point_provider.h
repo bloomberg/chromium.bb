@@ -51,13 +51,11 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
       const ValidateFileSystemCallback& callback) = 0;
 
   // Retrieves the root path of the filesystem specified by the given
-  // |origin_url| and |type| on the file thread.
+  // file system url on the file thread.
   // If |create| is true this may also create the root directory for
   // the filesystem if it doesn't exist.
   virtual FilePath GetFileSystemRootPathOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& virtual_path,
+      const FileSystemURL& url,
       bool create) = 0;
 
   // Checks if access to |virtual_path| is allowed from |origin_url|.

@@ -210,16 +210,16 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
 
 FilePath
 SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url, FileSystemType type, const FilePath& unused,
+    const FileSystemURL& url,
     bool create) {
   if (file_system_options_.is_incognito())
     // TODO(kinuko): return an isolated temporary directory.
     return FilePath();
 
-  if (!IsAllowedScheme(origin_url))
+  if (!IsAllowedScheme(url.origin()))
     return FilePath();
 
-  return GetBaseDirectoryForOriginAndType(origin_url, type, create);
+  return GetBaseDirectoryForOriginAndType(url.origin(), url.type(), create);
 }
 
 bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {

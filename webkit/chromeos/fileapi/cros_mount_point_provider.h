@@ -19,6 +19,7 @@
 
 namespace fileapi {
 class FileSystemFileUtil;
+class FileSystemURL;
 class IsolatedContext;
 class LocalFileUtil;
 }
@@ -50,9 +51,7 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
   virtual FilePath GetFileSystemRootPathOnFileThread(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      const FilePath& virtual_path,
+      const fileapi::FileSystemURL& url,
       bool create) OVERRIDE;
   virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;

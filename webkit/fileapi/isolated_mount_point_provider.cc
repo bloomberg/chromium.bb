@@ -62,9 +62,7 @@ void IsolatedMountPointProvider::ValidateFileSystemRoot(
 }
 
 FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url,
-    FileSystemType type,
-    const FilePath& virtual_path,
+    const FileSystemURL& url,
     bool create) {
   // This is not supposed to be used.
   NOTREACHED();

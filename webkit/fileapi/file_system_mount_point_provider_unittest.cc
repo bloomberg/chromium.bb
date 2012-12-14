@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -237,7 +238,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
       virtual_path = FilePath(kVirtualPath);
     FilePath returned_root_path =
         provider(type)->GetFileSystemRootPathOnFileThread(
-            origin_url, type, virtual_path, create);
+            FileSystemURL(origin_url, type, virtual_path), create);
     if (root_path)
       *root_path = returned_root_path;
     return !returned_root_path.empty();

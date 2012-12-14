@@ -11,6 +11,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_util_helper.h"
@@ -52,7 +53,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
   // Prepare the origin's root directory.
   file_system_context_->GetMountPointProvider(type_)->
       GetFileSystemRootPathOnFileThread(
-          origin_, type_, FilePath(), true /* create */);
+          FileSystemURL(origin_, type_, FilePath()), true /* create */);
 
   // Initialize the usage cache file.
   FilePath usage_cache_path = GetUsageCachePath();
@@ -87,7 +88,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
   FileSystemMountPointProvider* mount_point_provider =
       file_system_context_->GetMountPointProvider(type_);
   mount_point_provider->GetFileSystemRootPathOnFileThread(
-      origin_, type_, FilePath(), true /* create */);
+     FileSystemURL(origin_, type_, FilePath()), true /* create */);
 
   if (file_util)
     file_util_ = file_util;
@@ -110,7 +111,7 @@ void LocalFileSystemTestOriginHelper::TearDown() {
 FilePath LocalFileSystemTestOriginHelper::GetOriginRootPath() const {
   return file_system_context_->GetMountPointProvider(type_)->
       GetFileSystemRootPathOnFileThread(
-          origin_, type_, FilePath(), false);
+          FileSystemURL(origin_, type_, FilePath()), false);
 }
 
 FilePath LocalFileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
