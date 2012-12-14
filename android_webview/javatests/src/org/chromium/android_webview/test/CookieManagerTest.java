@@ -51,11 +51,11 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAllowFileSchemeCookies() throws Throwable {
-        assertFalse(CookieManager.allowFileSchemeCookies());
-        CookieManager.setAcceptFileSchemeCookies(true);
-        assertTrue(CookieManager.allowFileSchemeCookies());
-        CookieManager.setAcceptFileSchemeCookies(false);
-        assertFalse(CookieManager.allowFileSchemeCookies());
+        assertFalse(mCookieManager.allowFileSchemeCookies());
+        mCookieManager.setAcceptFileSchemeCookies(true);
+        assertTrue(mCookieManager.allowFileSchemeCookies());
+        mCookieManager.setAcceptFileSchemeCookies(false);
+        assertFalse(mCookieManager.allowFileSchemeCookies());
     }
 
     @MediumTest
@@ -152,6 +152,7 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
 
         // first there should be no cookie stored
         mCookieManager.removeAllCookie();
+        mCookieManager.flushCookieStore();
         assertFalse(mCookieManager.hasCookies());
 
         String url = "http://www.example.com";

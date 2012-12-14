@@ -88,10 +88,14 @@ public final class CookieManager {
         nativeRemoveExpiredCookie();
     }
 
+    public void flushCookieStore() {
+        nativeFlushCookieStore();
+    }
+
     /**
      * Whether cookies are accepted for file scheme URLs.
      */
-    public static boolean allowFileSchemeCookies() {
+    public boolean allowFileSchemeCookies() {
         return nativeAllowFileSchemeCookies();
     }
 
@@ -104,7 +108,7 @@ public final class CookieManager {
      * Note that calls to this method will have no effect if made after a WebView or CookieManager
      * instance has been created.
      */
-    public static void setAcceptFileSchemeCookies(boolean accept) {
+    public void setAcceptFileSchemeCookies(boolean accept) {
         nativeSetAcceptFileSchemeCookies(accept);
     }
 
@@ -117,9 +121,10 @@ public final class CookieManager {
     private native void nativeRemoveSessionCookie();
     private native void nativeRemoveAllCookie();
     private native void nativeRemoveExpiredCookie();
+    private native void nativeFlushCookieStore();
 
     private native boolean nativeHasCookies();
 
-    static native boolean nativeAllowFileSchemeCookies();
-    static native void nativeSetAcceptFileSchemeCookies(boolean accept);
+    private native boolean nativeAllowFileSchemeCookies();
+    private native void nativeSetAcceptFileSchemeCookies(boolean accept);
 }
