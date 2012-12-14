@@ -120,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   {
-    autocomplete_controller->Start(
-        ASCIIToUTF16("chrome"), string16(), true, false, true,
-        AutocompleteInput::SYNCHRONOUS_MATCHES);
+    autocomplete_controller->Start(AutocompleteInput(
+        ASCIIToUTF16("chrome"), string16::npos, string16(), true, false, true,
+        AutocompleteInput::SYNCHRONOUS_MATCHES));
 
     OmniboxView* location_entry = location_bar->GetLocationEntry();
 

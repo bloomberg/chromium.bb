@@ -14,28 +14,48 @@
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
+namespace {
+
+void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
+                                     size_t* cursor_position) {
+  if (*cursor_position == string16::npos)
+    return;
+  if (num_leading_chars_removed < *cursor_position)
+    *cursor_position -= num_leading_chars_removed;
+  else
+    *cursor_position = 0;
+}
+
+}  // namespace
+
 AutocompleteInput::AutocompleteInput()
-  : type_(INVALID),
-    prevent_inline_autocomplete_(false),
-    prefer_keyword_(false),
-    allow_exact_keyword_match_(true),
-    matches_requested_(ALL_MATCHES) {
+    : cursor_position_(string16::npos),
+      type_(INVALID),
+      prevent_inline_autocomplete_(false),
+      prefer_keyword_(false),
+      allow_exact_keyword_match_(true),
+      matches_requested_(ALL_MATCHES) {
 }
 
 AutocompleteInput::AutocompleteInput(const string16& text,
+                                     size_t cursor_position,
                                      const string16& desired_tld,
                                      bool prevent_inline_autocomplete,
                                      bool prefer_keyword,
                                      bool allow_exact_keyword_match,
                                      MatchesRequested matches_requested)
-    : desired_tld_(desired_tld),
+    : cursor_position_(cursor_position),
+      desired_tld_(desired_tld),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
       matches_requested_(matches_requested) {
+  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos);
   // None of the providers care about leading white space so we always trim it.
   // Providers that care about trailing white space handle trimming themselves.
-  TrimWhitespace(text, TRIM_LEADING, &text_);
+  if ((TrimWhitespace(text, TRIM_LEADING, &text_) & TRIM_LEADING) != 0)
+    AdjustCursorPositionIfNecessary(text.length() - text_.length(),
+                                    &cursor_position_);
 
   GURL canonicalized_url;
   type_ = Parse(text_, desired_tld, &parts_, &scheme_, &canonicalized_url);
@@ -50,17 +70,21 @@ AutocompleteInput::AutocompleteInput(const string16& text,
        !canonicalized_url.host().empty()))
     canonicalized_url_ = canonicalized_url;
 
-  RemoveForcedQueryStringIfNecessary(type_, &text_);
+  size_t chars_removed = RemoveForcedQueryStringIfNecessary(type_, &text_);
+  AdjustCursorPositionIfNecessary(chars_removed, &cursor_position_);
 }
 
 AutocompleteInput::~AutocompleteInput() {
 }
 
 // static
-void AutocompleteInput::RemoveForcedQueryStringIfNecessary(Type type,
-                                                           string16* text) {
-  if (type == FORCED_QUERY && !text->empty() && (*text)[0] == L'?')
-    text->erase(0, 1);
+size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(Type type,
+                                                             string16* text) {
+  if (type != FORCED_QUERY || text->empty() || (*text)[0] != L'?')
+    return 0;
+  // Drop the leading '?'.
+  text->erase(0, 1);
+  return 1;
 }
 
 // static
@@ -456,13 +480,17 @@ int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
 }
 
 void AutocompleteInput::UpdateText(const string16& text,
+                                   size_t cursor_position,
                                    const url_parse::Parsed& parts) {
+  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos);
   text_ = text;
+  cursor_position_ = cursor_position;
   parts_ = parts;
 }
 
 bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
   return (text_ == other.text_) &&
+         (cursor_position_ == other.cursor_position_) &&
          (type_ == other.type_) &&
          (desired_tld_ == other.desired_tld_) &&
          (scheme_ == other.scheme_) &&
@@ -473,6 +501,7 @@ bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
 
 void AutocompleteInput::Clear() {
   text_.clear();
+  cursor_position_ = string16::npos;
   type_ = INVALID;
   parts_ = url_parse::Parsed();
   scheme_.clear();

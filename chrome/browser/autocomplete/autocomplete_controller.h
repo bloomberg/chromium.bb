@@ -59,38 +59,15 @@ class AutocompleteController : public AutocompleteProviderListener {
   // done or the query is Stop()ed.  It is safe to Start() a new query without
   // Stop()ing the previous one.
   //
-  // See AutocompleteInput::desired_tld() for meaning of |desired_tld|.
-  //
-  // |prevent_inline_autocomplete| is true if the generated result set should
-  // not require inline autocomplete for the default match.  This is difficult
-  // to explain in the abstract; the practical use case is that after the user
-  // deletes text in the edit, the HistoryURLProvider should make sure not to
-  // promote a match requiring inline autocomplete too highly.
-  //
-  // |prefer_keyword| should be true when the keyword UI is onscreen; this will
-  // bias the autocomplete result set toward the keyword provider when the input
-  // string is a bare keyword.
-  //
-  // |allow_exact_keyword_match| should be false when triggering keyword mode on
-  // the input string would be surprising or wrong, e.g. when highlighting text
-  // in a page and telling the browser to search for it or navigate to it. This
-  // parameter only applies to substituting keywords.
-
-  // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
-  // asks the providers to only return matches which are synchronously
-  // available, which should mean that all providers will be done immediately.
+  // See AutocompleteInput::AutocompleteInput(...) for more details regarding
+  // |input| params.
   //
   // The controller calls AutocompleteControllerDelegate::OnResultChanged() from
   // inside this call at least once. If matches are available later on that
   // result in changing the result set the delegate is notified again. When the
   // controller is done the notification AUTOCOMPLETE_CONTROLLER_RESULT_READY is
   // sent.
-  void Start(const string16& text,
-             const string16& desired_tld,
-             bool prevent_inline_autocomplete,
-             bool prefer_keyword,
-             bool allow_exact_keyword_match,
-             AutocompleteInput::MatchesRequested matches_requested);
+  void Start(const AutocompleteInput& input);
 
   // Cancels the current query, ensuring there will be no future notifications
   // fired.  If new matches have come in since the most recent notification was

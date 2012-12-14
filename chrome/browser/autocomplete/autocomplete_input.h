@@ -47,7 +47,33 @@ class AutocompleteInput {
   };
 
   AutocompleteInput();
+  // |text| and |cursor_position| represent the input query and location of
+  // the cursor with the query respectively.  |cursor_position| may be set to
+  // string16::npos if the input |text| doesn't come directly from the user's
+  // typing.
+  //
+  // See AutocompleteInput::desired_tld() for meaning of |desired_tld|.
+  //
+  // |prevent_inline_autocomplete| is true if the generated result set should
+  // not require inline autocomplete for the default match.  This is difficult
+  // to explain in the abstract; the practical use case is that after the user
+  // deletes text in the edit, the HistoryURLProvider should make sure not to
+  // promote a match requiring inline autocomplete too highly.
+  //
+  // |prefer_keyword| should be true when the keyword UI is onscreen; this will
+  // bias the autocomplete result set toward the keyword provider when the input
+  // string is a bare keyword.
+  //
+  // |allow_exact_keyword_match| should be false when triggering keyword mode on
+  // the input string would be surprising or wrong, e.g. when highlighting text
+  // in a page and telling the browser to search for it or navigate to it. This
+  // parameter only applies to substituting keywords.
+
+  // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
+  // asks the providers to only return matches which are synchronously
+  // available, which should mean that all providers will be done immediately.
   AutocompleteInput(const string16& text,
+                    size_t cursor_position,
                     const string16& desired_tld,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
@@ -56,7 +82,8 @@ class AutocompleteInput {
   ~AutocompleteInput();
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
-  static void RemoveForcedQueryStringIfNecessary(Type type, string16* text);
+  // Returns number of leading characters removed.
+  static size_t RemoveForcedQueryStringIfNecessary(Type type, string16* text);
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
@@ -97,10 +124,16 @@ class AutocompleteInput {
   // User-provided text to be completed.
   const string16& text() const { return text_; }
 
+  // Returns 0-based cursor position within |text_| or string16::npos if not
+  // used.
+  size_t cursor_position() const { return cursor_position_; }
+
   // Use of this setter is risky, since no other internal state is updated
-  // besides |text_| and |parts_|.  Only callers who know that they're not
-  // changing the type/scheme/etc. should use this.
-  void UpdateText(const string16& text, const url_parse::Parsed& parts);
+  // besides |text_|, |cursor_position_| and |parts_|.  Only callers who know
+  // that they're not changing the type/scheme/etc. should use this.
+  void UpdateText(const string16& text,
+                  size_t cursor_position,
+                  const url_parse::Parsed& parts);
 
   // User's desired TLD, if one is not already present in the text to
   // autocomplete.  When this is non-empty, it also implies that "www." should
@@ -146,6 +179,7 @@ class AutocompleteInput {
 
  private:
   string16 text_;
+  size_t cursor_position_;
   string16 desired_tld_;
   Type type_;
   url_parse::Parsed parts_;

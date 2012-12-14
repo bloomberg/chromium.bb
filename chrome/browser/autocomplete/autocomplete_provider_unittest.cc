@@ -383,8 +383,9 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
 
 void AutocompleteProviderTest::RunQuery(const string16 query) {
   result_.Reset();
-  controller_->Start(query, string16(), true, false, true,
-      AutocompleteInput::ALL_MATCHES);
+  controller_->Start(AutocompleteInput(
+      query, string16::npos, string16(), true, false, true,
+      AutocompleteInput::ALL_MATCHES));
 
   if (!controller_->done())
     // The message loop will terminate when all autocomplete input has been
@@ -398,9 +399,9 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // created in ResetControllerWithKeywordAndSearchProviders().  The default
   // match should thus be a keyword match iff |allow_exact_keyword_match| is
   // true.
-  controller_->Start(ASCIIToUTF16("k test"), string16(), true, false,
-                     allow_exact_keyword_match,
-                     AutocompleteInput::SYNCHRONOUS_MATCHES);
+  controller_->Start(AutocompleteInput(
+      ASCIIToUTF16("k test"), string16::npos, string16(), true, false,
+      allow_exact_keyword_match, AutocompleteInput::SYNCHRONOUS_MATCHES));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(allow_exact_keyword_match ?
       AutocompleteProvider::TYPE_KEYWORD : AutocompleteProvider::TYPE_SEARCH,

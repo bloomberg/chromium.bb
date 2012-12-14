@@ -618,8 +618,10 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     return NULL;
 
   // Bail if the suggestion URL is invalid with the given replacements.
+  TemplateURLRef::SearchTermsArgs search_term_args(text);
+  search_term_args.cursor_position = input_.cursor_position();
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(text)));
+      search_term_args));
   if (!suggest_url.is_valid())
     return NULL;
 

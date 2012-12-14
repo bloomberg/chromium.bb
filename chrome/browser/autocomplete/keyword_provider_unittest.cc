@@ -65,8 +65,8 @@ void KeywordProviderTest::RunTest(
     ResultType AutocompleteMatch::* member) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(keyword_cases[i].input, string16(), true,
-                            false, true, AutocompleteInput::ALL_MATCHES);
+    AutocompleteInput input(keyword_cases[i].input, string16::npos, string16(),
+                            true, false, true, AutocompleteInput::ALL_MATCHES);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
@@ -224,4 +224,3 @@ TEST_F(KeywordProviderTest, GetKeywordForInput) {
   EXPECT_EQ(string16(),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa foo")));
 }
-

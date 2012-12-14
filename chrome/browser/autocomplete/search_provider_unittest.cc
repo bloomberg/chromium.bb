@@ -208,7 +208,8 @@ void SearchProviderTest::QueryForInput(const string16& text,
                                        const string16& desired_tld,
                                        bool prevent_inline_autocomplete) {
   // Start a query.
-  AutocompleteInput input(text, desired_tld, prevent_inline_autocomplete,
+  AutocompleteInput input(text, string16::npos, desired_tld,
+                          prevent_inline_autocomplete,
                           false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
 
@@ -690,8 +691,9 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
 
   AutocompleteController controller(&profile_, NULL,
       AutocompleteProvider::TYPE_SEARCH);
-  controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
-                   AutocompleteInput::ALL_MATCHES);
+  controller.Start(AutocompleteInput(
+      ASCIIToUTF16("k t"), string16::npos, string16(), false, false, true,
+      AutocompleteInput::ALL_MATCHES));
   const AutocompleteResult& result = controller.result();
 
   // There should be two matches, one for the keyword one for what you typed.

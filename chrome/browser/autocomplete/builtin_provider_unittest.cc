@@ -52,8 +52,8 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
                                   ResultType AutocompleteMatch::* member) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(builtin_cases[i].input, string16(), true,
-                            false, true, AutocompleteInput::ALL_MATCHES);
+    AutocompleteInput input(builtin_cases[i].input, string16::npos, string16(),
+                            true, false, true, AutocompleteInput::ALL_MATCHES);
     builtin_provider_->Start(input, false);
     EXPECT_TRUE(builtin_provider_->done());
     matches = builtin_provider_->matches();

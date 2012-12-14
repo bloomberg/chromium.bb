@@ -70,6 +70,11 @@ class TemplateURLRef {
 
     // TODO: Remove along with "aq" CGI param.
     int accepted_suggestion;
+
+    // The 0-based position of the cursor within the query string at the time
+    // the request was issued.  Set to string16::npos if not used or after the
+    // last character.
+    size_t cursor_position;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -157,6 +162,7 @@ class TemplateURLRef {
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
+    GOOGLE_CURSOR_POSITION,
     GOOGLE_INSTANT_ENABLED,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,

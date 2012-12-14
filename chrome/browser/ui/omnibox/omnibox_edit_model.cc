@@ -456,15 +456,34 @@ void OmniboxEditModel::StartAutocomplete(
 
   bool keyword_is_selected = KeywordIsSelected();
   popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
+
+  size_t cursor_position;
+  if (inline_autocomplete_text_.empty()) {
+    // Cursor position is equivalent to the current selection's end.
+    size_t start;
+    view_->GetSelectionBounds(&start, &cursor_position);
+  } else {
+    // There are some cases where StartAutocomplete() may be called
+    // with non-empty |inline_autocomplete_text_|.  In such cases, we cannot
+    // use the current selection, because it could result with the cursor
+    // position past the last character from the user text.  Instead,
+    // we assume that the cursor is simply at the end of input.
+    // One example is when user presses Ctrl key while having a highlighted
+    // inline autocomplete text.
+    // TODO: Rethink how we are going to handle this case to avoid
+    // inconsistent behavior when user presses Ctrl key.
+    cursor_position = user_text_.length();
+  }
+
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
-  autocomplete_controller_->Start(
-      user_text_, GetDesiredTLD(),
+  autocomplete_controller_->Start(AutocompleteInput(
+      user_text_, cursor_position, GetDesiredTLD(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE), keyword_is_selected,
       keyword_is_selected || allow_exact_keyword_match_,
-      AutocompleteInput::ALL_MATCHES);
+      AutocompleteInput::ALL_MATCHES));
 }
 
 void OmniboxEditModel::StopAutocomplete() {

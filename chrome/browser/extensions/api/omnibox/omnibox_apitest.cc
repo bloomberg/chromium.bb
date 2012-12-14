@@ -83,8 +83,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   // it.
   {
     autocomplete_controller->Start(
-        ASCIIToUTF16("keywor"), string16(), true, false, true,
-        AutocompleteInput::ALL_MATCHES);
+        AutocompleteInput(ASCIIToUTF16("keywor"), string16::npos, string16(),
+                          true, false, true, AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -104,8 +104,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   // Test that our extension can send suggestions back to us.
   {
     autocomplete_controller->Start(
-        ASCIIToUTF16("keyword suggestio"), string16(), true, false, true,
-        AutocompleteInput::ALL_MATCHES);
+        AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
+                          string16(), true, false, true,
+                          AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -213,8 +214,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
   autocomplete_controller->Start(
-      ASCIIToUTF16("keyword command"), string16(), true, false, true,
-      AutocompleteInput::ALL_MATCHES);
+      AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
+                        string16(), true, false, true,
+                        AutocompleteInput::ALL_MATCHES));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
@@ -252,8 +254,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   // Test that we get the incognito-specific suggestions.
   {
     autocomplete_controller->Start(
-        ASCIIToUTF16("keyword suggestio"), string16(), true, false, true,
-        AutocompleteInput::ALL_MATCHES);
+        AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
+                          string16(), true, false, true,
+                          AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -273,8 +276,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   {
     ResultCatcher catcher;
     autocomplete_controller->Start(
-        ASCIIToUTF16("keyword command incognito"), string16(),
-        true, false, true, AutocompleteInput::ALL_MATCHES);
+        AutocompleteInput(ASCIIToUTF16("keyword command incognito"),
+                          string16::npos, string16(), true, false, true,
+                          AutocompleteInput::ALL_MATCHES));
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }

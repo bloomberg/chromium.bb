@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -53,7 +54,7 @@ const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
 // Like google:baseURL, but for the Search Suggest capability.
 const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
-
+const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
 const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
@@ -144,7 +145,8 @@ std::string FindSearchTermsKey(const std::string& params) {
 
 TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
     : search_terms(search_terms),
-      accepted_suggestion(NO_SUGGESTIONS_AVAILABLE) {
+      accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
+      cursor_position(string16::npos) {
 }
 
 
@@ -294,6 +296,13 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_BASE_SUGGEST_URL:
         url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
+        break;
+
+      case GOOGLE_CURSOR_POSITION:
+        if (search_terms_args.cursor_position != string16::npos)
+          url.insert(i->index,
+                     base::StringPrintf("cp=%" PRIuS "&",
+                                        search_terms_args.cursor_position));
         break;
 
       case GOOGLE_INSTANT_ENABLED:
@@ -555,6 +564,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
   } else if (parameter == kGoogleBaseSuggestURLParameter) {
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
+  } else if (parameter == kGoogleCursorPositionParameter) {
+    replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
   } else if (parameter == kGoogleInstantEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_ENABLED, start));
   } else if (parameter == kGoogleInstantExtendedEnabledParameter) {

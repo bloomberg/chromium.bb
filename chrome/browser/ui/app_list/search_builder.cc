@@ -331,8 +331,9 @@ void SearchBuilder::StartSearch() {
   // Omnibox features such as keyword selection/accepting and instant query
   // are not implemented.
   // TODO(xiyuan): Figure out the features that need to support here.
-  controller_->Start(search_box_->text(), string16(), false, false, true,
-      AutocompleteInput::ALL_MATCHES);
+  controller_->Start(AutocompleteInput(search_box_->text(), string16::npos,
+                                       string16(), false, false, true,
+                                       AutocompleteInput::ALL_MATCHES));
 }
 
 void SearchBuilder::StopSearch() {

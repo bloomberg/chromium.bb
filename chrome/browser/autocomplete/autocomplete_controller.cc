@@ -166,18 +166,11 @@ AutocompleteController::~AutocompleteController() {
   providers_.clear();  // Not really necessary.
 }
 
-void AutocompleteController::Start(
-    const string16& text,
-    const string16& desired_tld,
-    bool prevent_inline_autocomplete,
-    bool prefer_keyword,
-    bool allow_exact_keyword_match,
-    AutocompleteInput::MatchesRequested matches_requested) {
+void AutocompleteController::Start(const AutocompleteInput& input) {
   const string16 old_input_text(input_.text());
   const AutocompleteInput::MatchesRequested old_matches_requested =
       input_.matches_requested();
-  input_ = AutocompleteInput(text, desired_tld, prevent_inline_autocomplete,
-      prefer_keyword, allow_exact_keyword_match, matches_requested);
+  input_ = input;
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
   // much.  When the user presses or releases the ctrl key, the desired_tld
@@ -200,13 +193,14 @@ void AutocompleteController::Start(
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     (*i)->Start(input_, minimal_changes);
-    if (matches_requested != AutocompleteInput::ALL_MATCHES)
+    if (input.matches_requested() != AutocompleteInput::ALL_MATCHES)
       DCHECK((*i)->done());
   }
-  if (matches_requested == AutocompleteInput::ALL_MATCHES &&
-      (text.length() < 6)) {
+  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
+      (input.text().length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "Omnibox.QueryTime." + base::IntToString(text.length());
+    std::string name = "Omnibox.QueryTime." + base::IntToString(
+        input.text().length());
     base::Histogram* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
