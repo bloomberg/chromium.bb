@@ -216,10 +216,9 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_WebM) {
       "video/webm", vp8_codec(), kClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp80_codec(), kClearKey));
-  // These two should be true. See http://crbug.com/123421.
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kClearKey));
 
   // Non-Webm codecs.
@@ -231,10 +230,9 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_WebM) {
       "video/webm", mixed_codecs(), kClearKey));
 
   // Valid audio types.
-  // Should be true. See http://crbug.com/123421.
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", no_codecs(), kClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vorbis_codec(), kClearKey));
 
   // Non-audio codecs.
@@ -257,10 +255,9 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_MP4) {
       "video/mp4", no_codecs(), "webkit-org.w3"));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kClearKey));
-  // These two should be true. See http://crbug.com/123421.
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_and_aac_codecs(), kClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", aac_codec(), kClearKey));
 
   // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
@@ -283,10 +280,9 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_MP4) {
       "video/mp4", mixed_codecs(), kClearKey));
 
   // Valid audio types.
-  // Should be true. See http://crbug.com/123421.
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kClearKey));
 
   // Non-audio codecs.

@@ -38,8 +38,6 @@ struct KeySystemPluginTypePair {
   const char* plugin_type;
 };
 
-// TODO(xhwang): Remove this and ifdefs after fixing http://crbug.com/123421.
-#define DECRYPT_ONLY_AUDIO_NOT_SUPPORTED
 // TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
 static const char kWidevineBaseKeySystem[] = "com.widevine";
 
@@ -51,19 +49,11 @@ static const char kWidevineBaseKeySystem[] = "com.widevine";
 // entries in KeySystems::key_system_map_.
 static const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Clear Key.
-#if defined(DECRYPT_ONLY_AUDIO_NOT_SUPPORTED)
-  { "video/webm", "vp8,vp8.0,", kClearKeyKeySystem },
-#else
   { "video/webm", "vorbis,vp8,vp8.0,", kClearKeyKeySystem },
   { "audio/webm", "vorbis,", kClearKeyKeySystem },
-#endif
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-#if defined(DECRYPT_ONLY_AUDIO_NOT_SUPPORTED)
-  { "video/mp4", "avc1,", kClearKeyKeySystem },
-#else
   { "video/mp4", "avc1,mp4a,", kClearKeyKeySystem },
   { "audio/mp4", "mp4a,", kClearKeyKeySystem },
-#endif
 #endif
 
   // External Clear Key (used for testing).

@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/null_audio_sink.h"
+#include "media/base/decryptor.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
@@ -125,7 +126,8 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   collection->AddVideoRenderer(g_video_renderer);
 
   collection->AddAudioRenderer(
-      new media::AudioRendererImpl(new media::NullAudioSink()));
+      new media::AudioRendererImpl(new media::NullAudioSink(),
+                                   media::SetDecryptorReadyCB()));
 
   // Create the pipeline and start it.
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());

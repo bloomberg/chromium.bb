@@ -130,28 +130,26 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
                          "com.example.invalid", kExpected));
 }
 
-// TODO(shadi): Make these three IN_PROC_BROWSER_TEST_P() when internal Clear
-// Key supports encrypted audio.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, MAYBE(BasicPlayback_AudioOnly)) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE(BasicPlayback_AudioOnly)) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
-                         kExternalClearKeyKeySystem, kExpected));
+                         GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest,
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        MAYBE(BasicPlayback_AudioClearVideo)) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo,
-                         kExternalClearKeyKeySystem, kExpected));
+                         GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, MAYBE(BasicPlayback_VideoAudio)) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE(BasicPlayback_VideoAudio)) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
-                         kExternalClearKeyKeySystem, kExpected));
+                         GetParam(), kExpected));
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoOnly) {

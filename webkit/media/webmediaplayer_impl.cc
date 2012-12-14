@@ -188,17 +188,20 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->set_frame_provider(video_renderer);
 
-  // Create default audio renderer using the null sink if no sink was provided.
-  if (!audio_renderer_sink) {
-    audio_renderer_sink = new media::NullAudioSink();
-  }
-  filter_collection_->AddAudioRenderer(
-      new media::AudioRendererImpl(audio_renderer_sink));
-
+  media::SetDecryptorReadyCB set_decryptor_ready_cb;
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(message_loop_factory_->GetMessageLoop(
         media::MessageLoopFactory::kPipeline), proxy_.get(), client, frame));
+    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
+                                        base::Unretained(decryptor_.get()));
   }
+
+  // Create default audio renderer using the null sink if no sink was provided.
+  if (!audio_renderer_sink)
+    audio_renderer_sink = new media::NullAudioSink();
+
+  filter_collection_->AddAudioRenderer(new media::AudioRendererImpl(
+      audio_renderer_sink, set_decryptor_ready_cb));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
