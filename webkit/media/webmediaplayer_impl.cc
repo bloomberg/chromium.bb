@@ -188,9 +188,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->set_frame_provider(video_renderer);
 
-  // Create default audio renderer.
+  // Create default audio renderer using the null sink if no sink was provided.
+  if (!audio_renderer_sink) {
+    audio_renderer_sink = new media::NullAudioSink();
+  }
   filter_collection_->AddAudioRenderer(
-      new media::AudioRendererImpl(new media::NullAudioSink()));
+      new media::AudioRendererImpl(audio_renderer_sink));
 
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(message_loop_factory_->GetMessageLoop(

@@ -2596,17 +2596,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   RenderAudioSourceProvider* audio_source_provider = NULL;
 
-  // Add in any custom filter factories first.
+  // |audio_source_provider| "provides" audio to WebKit and is a sink from the
+  // perspective of the audio renderer.
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
-    // audio_source_provider is a "provider" to WebKit, and a sink
-    // from the perspective of the audio renderer.
     audio_source_provider = new RenderAudioSourceProvider(routing_id_);
-
-    // Add the chrome specific audio renderer, using audio_source_provider
-    // as the sink.
-    media::AudioRendererImpl* audio_renderer =
-        new media::AudioRendererImpl(audio_source_provider);
-    collection->AddAudioRenderer(audio_renderer);
   }
 
   WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
