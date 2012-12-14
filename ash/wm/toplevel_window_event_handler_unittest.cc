@@ -490,7 +490,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
 }
 
 // Verifies pressing escape resets the bounds to the original bounds.
-#if defined(OS_MACOSX)
+// Disabled crbug.com/166219.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_EscapeReverts DISABLED_EscapeReverts
 #else
 #define MAYBE_EscapeReverts EscapeReverts
@@ -512,7 +513,13 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
 }
 
 // Verifies window minimization/maximization completes drag.
-TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
+// Disabled crbug.com/166219.
+#if defined(OS_WIN)
+#define MAYBE_MinimizeMaximizeCompletes DISABLED_MinimizeMaximizeCompletes
+#else
+#define MAYBE_MinimizeMaximizeCompletes MinimizeMaximizeCompletes
+#endif
+TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
   // Once window is minimized, window dragging completes.
   {
     scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
