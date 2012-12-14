@@ -578,8 +578,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
 
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.
-// Disabled: http://crbug.com/157357 .
-TEST_F(RenderViewImplTest, DISABLED_LastCommittedUpdateState) {
+TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   // Load page A.
   LoadHTML("<div>Page A</div>");
 
@@ -587,6 +586,7 @@ TEST_F(RenderViewImplTest, DISABLED_LastCommittedUpdateState) {
   LoadHTML("<div>Page B</div>");
 
   // Check for a valid UpdateState message for page A.
+  ProcessPendingMessages();
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
@@ -600,6 +600,7 @@ TEST_F(RenderViewImplTest, DISABLED_LastCommittedUpdateState) {
   LoadHTML("<div>Page C</div>");
 
   // Check for a valid UpdateState for page B.
+  ProcessPendingMessages();
   const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
@@ -614,6 +615,7 @@ TEST_F(RenderViewImplTest, DISABLED_LastCommittedUpdateState) {
   LoadHTML("<div>Page D</div>");
 
   // Check for a valid UpdateState for page C.
+  ProcessPendingMessages();
   const IPC::Message* msg_C = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
@@ -695,6 +697,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   EXPECT_EQ(2, view()->history_page_ids_[1]);
 
   // Check for a valid UpdateState message for page A.
+  ProcessPendingMessages();
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
@@ -759,6 +762,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   EXPECT_EQ(2, view()->history_page_ids_[1]);
 
   // Check for a valid UpdateState message for page A.
+  ProcessPendingMessages();
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
@@ -775,6 +779,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   EXPECT_EQ(3, view()->history_page_ids_[2]);
 
   // Check for a valid UpdateState message for page B.
+  ProcessPendingMessages();
   const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
