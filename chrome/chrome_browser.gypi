@@ -2127,8 +2127,6 @@
         'browser/user_style_sheet_watcher_factory.h',
         'browser/value_store/leveldb_value_store.cc',
         'browser/value_store/leveldb_value_store.h',
-        'browser/value_store/policy_value_store.cc',
-        'browser/value_store/policy_value_store.h',
         'browser/value_store/testing_value_store.cc',
         'browser/value_store/testing_value_store.h',
         'browser/value_store/value_store_change.cc',
@@ -2356,8 +2354,6 @@
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
-            ['exclude', 'browser/value_store/policy_value_store.cc'],
-            ['exclude', 'browser/value_store/policy_value_store.h'],
             ['include', 'browser/policy/policy_map.cc'],
             ['include', 'browser/policy/policy_map.h'],
             ['include', 'browser/policy/policy_service.cc'],

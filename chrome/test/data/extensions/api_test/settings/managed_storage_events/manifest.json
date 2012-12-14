@@ -6,6 +6,7 @@
   "description": "Tests events on the 'managed' namespace of the Storage API.",
   "permissions": ["storage"],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistent": false
   }
 }

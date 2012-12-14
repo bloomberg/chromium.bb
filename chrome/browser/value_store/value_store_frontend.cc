@@ -4,7 +4,10 @@
 
 #include "chrome/browser/value_store/value_store_frontend.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/file_path.h"
+#include "base/logging.h"
 #include "chrome/browser/value_store/leveldb_value_store.h"
 #include "content/public/browser/browser_thread.h"
 

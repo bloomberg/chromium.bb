@@ -41,9 +41,7 @@ void PolicyBundle::CopyFrom(const PolicyBundle& other) {
   Clear();
   for (PolicyBundle::const_iterator it = other.begin();
        it != other.end(); ++it) {
-    PolicyMap*& policy = policy_bundle_[it->first];
-    policy = new PolicyMap();
-    policy->CopyFrom(*it->second);
+    policy_bundle_[it->first] = it->second->DeepCopy().release();
   }
 }
 
@@ -68,8 +66,7 @@ void PolicyBundle::MergeFrom(const PolicyBundle& other) {
       // |other| has a PolicyMap that |this| doesn't; copy it.
       PolicyMap*& policy = policy_bundle_[it_other->first];
       DCHECK(!policy);
-      policy = new PolicyMap();
-      policy->CopyFrom(*it_other->second);
+      policy = it_other->second->DeepCopy().release();
       ++it_other;
     } else {
       NOTREACHED();
@@ -80,8 +77,7 @@ void PolicyBundle::MergeFrom(const PolicyBundle& other) {
   while (it_other != end_other) {
     PolicyMap*& policy = policy_bundle_[it_other->first];
     DCHECK(!policy);
-    policy = new PolicyMap();
-    policy->CopyFrom(*it_other->second);
+    policy = it_other->second->DeepCopy().release();
     ++it_other;
   }
 }

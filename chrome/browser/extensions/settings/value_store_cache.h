@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_proxy.h"
 
 class ValueStore;
 
@@ -18,13 +17,19 @@ namespace extensions {
 class Extension;
 
 // Each namespace of the storage API implements this interface.
-// Instances are created on the UI thread, but from then on live on the loop
-// returned by GetMessageLoop() and every method (except GetMessageLoop()
-// and ShutdownOnUI()) is always called in that loop, including the destructor.
+// Instances are created on the UI thread, but from then on live on the FILE
+// thread. At shutdown, ShutdownOnUI() is first invoked on the UI thread, and
+// the destructor is invoked soon after on the FILE thread. This gives
+// implementations the chance to work with ValueStores on FILE but observe
+// events on UI.
+// It also means that any methods invoked on UI *before ShutdownOnUI()* can
+// safely post other methods to the FILE thread, since the deletion task is only
+// posted to FILE after ShutdownOnUI().
 class ValueStoreCache {
  public:
   typedef base::Callback<void(ValueStore*)> StorageCallback;
 
+  // Invoked on FILE.
   virtual ~ValueStoreCache();
 
   // This is invoked from the UI thread during destruction of the Profile that
@@ -32,9 +37,6 @@ class ValueStoreCache {
   // performed in this method, since the destructor will execute later, after
   // the Profile is already gone.
   virtual void ShutdownOnUI();
-
-  // Returns the loop that the methods of this class should be invoked on.
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() const = 0;
 
   // Requests the cache to invoke |callback| with the appropriate ValueStore
   // for the given |extension|. |callback| should be invoked with a NULL

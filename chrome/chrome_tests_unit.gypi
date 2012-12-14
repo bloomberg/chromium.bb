@@ -727,6 +727,7 @@
         'browser/extensions/sandboxed_unpacker_unittest.cc',
         'browser/extensions/script_badge_controller_unittest.cc',
         'browser/extensions/script_bubble_controller_unittest.cc',
+        'browser/extensions/settings/policy_value_store_unittest.cc',
         'browser/extensions/settings/settings_frontend_unittest.cc',
         'browser/extensions/settings/settings_quota_unittest.cc',
         'browser/extensions/settings/settings_sync_unittest.cc',
@@ -1415,7 +1416,6 @@
         'browser/chrome_to_mobile_service_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
-        'browser/value_store/policy_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
         'browser/value_store/value_store_change_unittest.cc',
         'browser/value_store/value_store_frontend_unittest.cc',
@@ -1784,10 +1784,10 @@
         }],
         ['configuration_policy==0', {
           'sources!': [
+            'browser/extensions/settings/policy_value_store_unittest.cc',
             'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
             'browser/ui/webui/policy_ui_unittest.cc',
-            'browser/value_store/policy_value_store_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/policy/'],

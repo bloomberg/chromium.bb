@@ -167,6 +167,10 @@ class ExtensionService
   // settings are stored.
   static const char kSyncExtensionSettingsDirectoryName[];
 
+  // The name of the directory inside the profile where per-extension persistent
+  // managed settings are stored.
+  static const char kManagedSettingsDirectoryName[];
+
   // The name of the database inside the profile where chrome-internal
   // extension state resides.
   static const char kStateStoreName[];

@@ -8,10 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list_threadsafe.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
@@ -20,7 +18,6 @@
 #include "sync/api/syncable_service.h"
 
 class Profile;
-class ValueStore;
 
 namespace extensions {
 

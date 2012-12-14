@@ -450,8 +450,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   ResultCatcher catcher;
+
+  // This test starts without any test extensions installed.
+  EXPECT_FALSE(GetSingleLoadedExtension());
+  message_.clear();
 
   // Set policies for the test extension.
   scoped_ptr<base::DictionaryValue> policy = extensions::DictionaryBuilder()
@@ -476,6 +480,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
       .Set("new-policy", "eee")
       .Build();
   SetPolicies(*policy);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
+  // This test runs after PRE_ManagedStorageEvents without having deleted the
+  // profile, so the extension is still around. While the browser restarted the
+  // policy went back to the empty default, and so the extension should receive
+  // the corresponding change events.
+
+  ResultCatcher catcher;
+
+  // Verify that the test extension is still installed.
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kManagedStorageExtensionId, extension->id());
+
+  // Running the test again skips the onInstalled callback, and just triggers
+  // the onChanged notification.
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)

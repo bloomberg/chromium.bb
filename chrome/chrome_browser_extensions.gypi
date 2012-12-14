@@ -629,6 +629,8 @@
         'browser/extensions/settings/leveldb_settings_storage_factory.h',
         'browser/extensions/settings/managed_value_store_cache.cc',
         'browser/extensions/settings/managed_value_store_cache.h',
+        'browser/extensions/settings/policy_value_store.cc',
+        'browser/extensions/settings/policy_value_store.h',
         'browser/extensions/settings/setting_sync_data.cc',
         'browser/extensions/settings/setting_sync_data.h',
         'browser/extensions/settings/settings_api.cc',
@@ -821,6 +823,8 @@
           'sources!': [
             'browser/extensions/settings/managed_value_store_cache.cc',
             'browser/extensions/settings/managed_value_store_cache.h',
+            'browser/extensions/settings/policy_value_store.cc',
+            'browser/extensions/settings/policy_value_store.h',
           ],
         }],
         ['OS=="win"', {

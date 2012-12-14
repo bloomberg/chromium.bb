@@ -38,8 +38,6 @@ class SyncOrLocalValueStoreCache : public ValueStoreCache {
 
   // ValueStoreCache implementation:
 
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() const OVERRIDE;
-
   virtual void RunWithValueStoreForExtension(
       const StorageCallback& callback,
       scoped_refptr<const Extension> extension) OVERRIDE;

@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_SYNCABLE_SETTINGS_STORAGE_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/settings/setting_sync_data.h"
@@ -23,7 +24,7 @@ class SettingsSyncProcessor;
 class SyncableSettingsStorage : public ValueStore {
  public:
   SyncableSettingsStorage(
-      const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
+      const scoped_refptr<SettingsObserverList>& observers,
       const std::string& extension_id,
       // Ownership taken.
       ValueStore* delegate);
@@ -91,7 +92,7 @@ class SyncableSettingsStorage : public ValueStore {
       ValueStoreChangeList* changes);
 
   // List of observers to settings changes.
-  const scoped_refptr<ObserverListThreadSafe<SettingsObserver> > observers_;
+  const scoped_refptr<SettingsObserverList> observers_;
 
   // Id of the extension these settings are for.
   std::string const extension_id_;

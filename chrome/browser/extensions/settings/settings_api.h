@@ -46,7 +46,7 @@ class SettingsFunction : public AsyncExtensionFunction {
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
-  // SendReponse with its success value.
+  // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 
   // The settings namespace the call was for.  For example, SYNC if the API

@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 
-/* static */
+// static
 std::string ValueStoreChange::ToJson(
     const ValueStoreChangeList& changes) {
   DictionaryValue changes_value;

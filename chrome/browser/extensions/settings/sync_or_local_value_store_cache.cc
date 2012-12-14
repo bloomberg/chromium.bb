@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
@@ -36,8 +35,8 @@ SyncOrLocalValueStoreCache::SyncOrLocalValueStoreCache(
   // This post is safe since the destructor can only be invoked from the
   // same message loop, and any potential post of a deletion task must come
   // after the constructor returns.
-  GetMessageLoop()->PostTask(
-      FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&SyncOrLocalValueStoreCache::InitOnFileThread,
                  base::Unretained(this),
                  factory, quota, observers, profile_path));
@@ -57,11 +56,6 @@ SettingsBackend* SyncOrLocalValueStoreCache::GetExtensionBackend() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(extension_backend_.get());
   return extension_backend_.get();
-}
-
-scoped_refptr<base::MessageLoopProxy>
-    SyncOrLocalValueStoreCache::GetMessageLoop() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
 }
 
 void SyncOrLocalValueStoreCache::RunWithValueStoreForExtension(

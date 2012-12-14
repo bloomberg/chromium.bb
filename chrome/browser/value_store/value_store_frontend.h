@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 
+class FilePath;
 class ValueStore;
 
 // A frontend for a LeveldbValueStore, for use on the UI thread.

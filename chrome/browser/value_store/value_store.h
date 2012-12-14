@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
 #define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
 
-#include <set>
+#include <string>
+#include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/value_store/value_store_change.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_sync_processor.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
