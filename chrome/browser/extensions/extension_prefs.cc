@@ -1692,8 +1692,9 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   // should not be in the final extension prefs. All entries here should have
   // a corresponding Remove() call in FinishDelayedInstallInfo().
   if (extension->RequiresSortOrdinal()) {
-    extension_dict->SetString(kPrefSuggestedPageOrdinal,
-                              page_ordinal.ToInternalValue());
+    extension_dict->SetString(
+        kPrefSuggestedPageOrdinal,
+        page_ordinal.IsValid() ? page_ordinal.ToInternalValue() : "");
   }
 
   UpdateExtensionPref(extension->id(), kDelayedInstallInfo, extension_dict);
