@@ -219,6 +219,7 @@ struct window {
 	cairo_surface_t *cairo_surface;
 
 	int resizing;
+	int fullscreen_method;
 
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
@@ -3334,7 +3335,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		window->type = TYPE_FULLSCREEN;
 		window->saved_allocation = window->allocation;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						window->fullscreen_method,
 						0, NULL);
 	} else {
 		window->type = TYPE_TOPLEVEL;
@@ -3343,6 +3344,13 @@ window_set_fullscreen(struct window *window, int fullscreen)
 				       window->saved_allocation.width,
 				       window->saved_allocation.height);
 	}
+}
+
+void
+window_set_fullscreen_method(struct window *window,
+			     enum wl_shell_surface_fullscreen_method method)
+{
+	window->fullscreen_method = method;
 }
 
 int
@@ -3558,6 +3566,7 @@ window_create_internal(struct display *display,
 	window->type = type;
 	window->input_region = NULL;
 	window->opaque_region = NULL;
+	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
