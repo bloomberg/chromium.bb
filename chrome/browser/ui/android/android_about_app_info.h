@@ -11,6 +11,9 @@ class AndroidAboutAppInfo {
  public:
   // Returns a string containing detailed info about the os environment.
   static std::string GetOsInfo();
+
+  // Returns the JavaScript version.
+  static std::string GetJavaScriptVersion();
 };
 
 #endif  // CHROME_BROWSER_UI_ANDROID_ANDROID_ABOUT_APP_INFO_H_

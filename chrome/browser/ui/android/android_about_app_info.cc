@@ -8,6 +8,7 @@
 
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
+#include "v8/include/v8.h"
 
 std::string AndroidAboutAppInfo::GetOsInfo() {
   std::string android_info_str;
@@ -41,4 +42,10 @@ std::string AndroidAboutAppInfo::GetOsInfo() {
   }
 
   return android_info_str;
+}
+
+std::string AndroidAboutAppInfo::GetJavaScriptVersion() {
+  std::string js_version(v8::V8::GetVersion());
+  std::string js_engine = "V8";
+  return js_engine + " " + js_version;
 }
