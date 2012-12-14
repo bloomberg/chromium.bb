@@ -7,11 +7,14 @@
 
 #include <ostream>
 
+#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
+#include "sandbox/linux/services/broker_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace playground2;
+using sandbox::BrokerProcess;
 
 namespace {
 
@@ -478,6 +481,103 @@ BPF_TEST(SandboxBpf, UnsafeTrapWithErrno, RedirectAllSyscallsPolicy) {
   args.args[0] = -1;
   BPF_ASSERT(Sandbox::ForwardSyscall(args) == -EBADF);
   BPF_ASSERT(errno == 0);
+}
+
+// Test a trap handler that makes use of a broker process to open().
+
+class InitializedOpenBroker {
+ public:
+  InitializedOpenBroker() : initialized_(false) {
+    std::vector<std::string> allowed_files;
+    allowed_files.push_back("/proc/allowed");
+    allowed_files.push_back("/proc/cpuinfo");
+
+    broker_process_.reset(new BrokerProcess(allowed_files,
+                                            std::vector<std::string>()));
+    BPF_ASSERT(broker_process() != NULL);
+    BPF_ASSERT(broker_process_->Init(NULL));
+
+    initialized_ = true;
+  }
+  bool initialized() { return initialized_; }
+  class BrokerProcess* broker_process() { return broker_process_.get(); }
+ private:
+  bool initialized_;
+  scoped_ptr<class BrokerProcess> broker_process_;
+  DISALLOW_COPY_AND_ASSIGN(InitializedOpenBroker);
+};
+
+intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
+                               void *aux) {
+  BPF_ASSERT(aux);
+  BrokerProcess* broker_process = static_cast<BrokerProcess*>(aux);
+  switch(args.nr) {
+    case __NR_open:
+      return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
+          static_cast<int>(args.args[1]));
+    case __NR_openat:
+      // We only call open() so if we arrive here, it's because glibc uses
+      // the openat() system call.
+      BPF_ASSERT(static_cast<int>(args.args[0]) == AT_FDCWD);
+      return broker_process->Open(reinterpret_cast<const char*>(args.args[1]),
+          static_cast<int>(args.args[2]));
+    default:
+      BPF_ASSERT(false);
+      return -ENOSYS;
+  }
+}
+
+ErrorCode DenyOpenPolicy(int sysno, void *aux) {
+  InitializedOpenBroker* iob = static_cast<InitializedOpenBroker*>(aux);
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
+    return ErrorCode(ENOSYS);
+  }
+
+  switch (sysno) {
+    case __NR_open:
+    case __NR_openat:
+      // We get a InitializedOpenBroker class, but our trap handler wants
+      // the BrokerProcess object.
+      return ErrorCode(Sandbox::Trap(BrokerOpenTrapHandler,
+                                     iob->broker_process()));
+    default:
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+// We use a InitializedOpenBroker class, so that we can run unsandboxed
+// code in its constructor, which is the only way to do so in a BPF_TEST.
+BPF_TEST(SandboxBpf, UseOpenBroker, DenyOpenPolicy,
+         InitializedOpenBroker /* BPF_AUX */) {
+  BPF_ASSERT(BPF_AUX.initialized());
+  BrokerProcess* broker_process =  BPF_AUX.broker_process();
+  BPF_ASSERT(broker_process != NULL);
+
+  // First, use the broker "manually"
+  BPF_ASSERT(broker_process->Open("/proc/denied", O_RDONLY) == -EPERM);
+  BPF_ASSERT(broker_process->Open("/proc/allowed", O_RDONLY) == -ENOENT);
+
+  // Now use glibc's open() as an external library would.
+  BPF_ASSERT(open("/proc/denied", O_RDONLY) == -1);
+  BPF_ASSERT(errno == EPERM);
+
+  BPF_ASSERT(open("/proc/allowed", O_RDONLY) == -1);
+  BPF_ASSERT(errno == ENOENT);
+
+  // Also test glibc's openat(), some versions of libc use it transparently
+  // instead of open().
+  BPF_ASSERT(openat(AT_FDCWD, "/proc/denied", O_RDONLY) == -1);
+  BPF_ASSERT(errno == EPERM);
+
+  BPF_ASSERT(openat(AT_FDCWD, "/proc/allowed", O_RDONLY) == -1);
+  BPF_ASSERT(errno == ENOENT);
+
+
+  // This is also white listed and does exist.
+  int cpu_info_fd = open("/proc/cpuinfo", O_RDONLY);
+  BPF_ASSERT(cpu_info_fd >= 0);
+  char buf[1024];
+  BPF_ASSERT(read(cpu_info_fd, buf, sizeof(buf)) > 0);
 }
 
 } // namespace
