@@ -1,5 +1,8 @@
 2012-12-14  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/typeform.c: Added a comment about the purpose of this
+	file, as it isn't really a test
+
 	* tests/brl_checks.h:
 	* tests/brl_checks.c (convert_typeform): Add the new function to
 	the header file.

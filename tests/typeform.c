@@ -1,3 +1,19 @@
+/* This is not a test per se, i.e. it doesn't invoke any functionality
+   of liblouis and compares the result with a known good value.
+
+   Instead it just invokes the liblouis translation machinery on a
+   fairly large text. This is done simply to be able to run valgrind
+   on a big translation.
+
+   Thanks to this a number of bugs have been found and as I write this
+   there are still some memory problems remaining. There are errors
+   such as Invalid reads and writes, Conditional jump or move depends
+   on uninitialized value and Use of uninitialized value.
+
+   See the section on finding memory leaks in HACKING to find out how
+   you can use valgrind to find and possibly fix the remaining
+   problems. */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
