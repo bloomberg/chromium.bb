@@ -2332,10 +2332,7 @@ void ExtensionService::MaybeWipeout(
     return;
 
   Extension::Location location = extension->location();
-  bool wipable = location == Extension::EXTERNAL_REGISTRY ||
-                 (location == Extension::INTERNAL &&
-                     !extension->UpdatesFromGallery());
-  if (!wipable)
+  if (location != Extension::EXTERNAL_REGISTRY)
     return;
 
   if (extension_prefs_->IsExternalExtensionExcludedFromWipeout(extension->id()))

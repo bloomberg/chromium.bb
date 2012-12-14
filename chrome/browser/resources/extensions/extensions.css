@@ -300,3 +300,14 @@ html[dir='rtl'] #extension-settings .trash {
 .managed-mode .more-extensions-link {
   display: none;
 }
+
+/* Sideload Wipeout */
+
+.sideload-wipeout-learn-more {
+  text-decoration: none;
+}
+
+.sideload-wipeout-banner .page-banner-text {
+  -webkit-padding-start: 8px;
+  background-image: none;
+}

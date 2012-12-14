@@ -255,7 +255,7 @@
 
       <!-- The width of the Disabled Extensions bubble in characters (See above). -->
       <message name="IDS_DISABLED_EXTENSIONS_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
-        55
+        46
       </message>
 
       <!-- The width and height of the Join Wi-Fi network dialog box in -->

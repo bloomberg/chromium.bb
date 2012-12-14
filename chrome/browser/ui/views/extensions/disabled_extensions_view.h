@@ -29,20 +29,28 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
                          Browser* browser,
                          const ExtensionSet* wiped_out);
 
-  // Show the Disabled Extension bubble, if needed. Returns true if the bubble
-  // was shown.
+  // Show the Disabled Extension bubble, if needed.
   static void MaybeShow(Browser* browser, views::View* anchor_view);
 
- protected:
-  // views::BubbleDelegateView overrides:
-  virtual void Init() OVERRIDE;
+  // Instruct the bubble to appear, whenever ready.
+  void ShowWhenReady();
 
  private:
   virtual ~DisabledExtensionsView();
 
+  // Shows the bubble and updates the counter for how often it has been shown.
+  void ShowBubble();
+
   // Dismiss and make sure the bubble is not shown again. This bubble is a
   // single-appearance bubble.
   void DismissBubble();
+
+  // views::BubbleDelegateView overrides:
+  virtual void Init() OVERRIDE;
+
+  // views::View overrides:
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -57,16 +65,24 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
                                     View* parent,
                                     View* child) OVERRIDE;
 
+  base::WeakPtrFactory<DisabledExtensionsView> weak_factory_;
+
   Browser* browser_;
 
   // The set of extensions that have been wiped out by sideload wipeout.
   scoped_ptr<const ExtensionSet> wiped_out_;
 
-  // The headline and buttons on the bubble.
+  // The headline, labels and buttons on the bubble.
   views::Label* headline_;
   views::Link* learn_more_;
   views::NativeTextButton* settings_button_;
   views::NativeTextButton* dismiss_button_;
+  views::Label* recourse_;
+
+  // Offset (in pixels) of the Learn More link relative to the top left corner
+  // (in LTR coordinate systems) of the |recourse_| label. This is used to
+  // position the Learn More link.
+  gfx::Size link_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(DisabledExtensionsView);
 };
