@@ -22,24 +22,28 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 
-TabContents* TabAndroid::GetOrCreateTabContents(
-    content::WebContents* web_contents) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents) {
-    tab_contents = TabContents::Factory::CreateTabContents(web_contents);
-    InitTabHelpers(web_contents);
-  }
-  return tab_contents;
-}
+using content::WebContents;
 
-void TabAndroid::InitTabHelpers(content::WebContents* contents) {
-  // TODO(nileshagrawal): Currently this is not used by Chrome for Android,
-  // as it uses TabContents. When TabContents is not created for Android,
-  // this will be used to initialize all the tab helpers.
+namespace {
+
+const char kTabHelpersInitializedUserDataKey[] =
+    "TabAndroidTabHelpersInitialized";
+
+}  // namespace
+
+void TabAndroid::InitTabHelpers(WebContents* contents) {
+  // If already initialized, nothing to be done.
+  base::SupportsUserData::Data* initialization_tag =
+      contents->GetUserData(&kTabHelpersInitializedUserDataKey);
+  if (initialization_tag)
+    return;
+
+  // Mark as initialized.
+  contents->SetUserData(&kTabHelpersInitializedUserDataKey,
+                            new base::SupportsUserData::Data());
 
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
@@ -70,13 +74,15 @@ void TabAndroid::InitTabHelpers(content::WebContents* contents) {
   WindowAndroidHelper::CreateForWebContents(contents);
 }
 
-TabContents* TabAndroid::InitTabContentsFromView(JNIEnv* env,
+WebContents* TabAndroid::InitWebContentsFromView(JNIEnv* env,
                                                  jobject content_view) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::GetNativeContentViewCore(env, content_view);
   DCHECK(content_view_core);
-  DCHECK(content_view_core->GetWebContents());
-  return GetOrCreateTabContents(content_view_core->GetWebContents());
+  WebContents* web_contents = content_view_core->GetWebContents();
+  DCHECK(web_contents);
+  InitTabHelpers(web_contents);
+  return web_contents;
 }
 
 TabAndroid::TabAndroid() : tab_id_(-1) {

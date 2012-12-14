@@ -38,8 +38,6 @@ class TabContents : public content::WebContentsObserver {
     // do so.
 
     friend class Browser;
-    // See crbug.com/153587
-    friend class TabAndroid;
 
     static TabContents* CreateTabContents(content::WebContents* contents);
   };
