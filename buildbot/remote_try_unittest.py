@@ -36,6 +36,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
     args.extend(self.BOTS)
     self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
+    self.int_mirror, self.ext_mirror = None, None
 
   def _RunCommandSingleOutput(self, cmd, cwd):
     result = cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)

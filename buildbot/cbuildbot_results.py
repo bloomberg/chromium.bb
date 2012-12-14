@@ -124,11 +124,6 @@ class _Results(object):
   SPLIT_TOKEN = "\_O_/"
 
   def __init__(self):
-    self.Clear()
-
-  def Clear(self):
-    """Clear existing stage results."""
-
     # List of results for all stages that's built up as we run. Members are of
     #  the form ('name', SUCCESS | FORGIVEN | Exception, None | description)
     self._results_log = []
@@ -136,6 +131,10 @@ class _Results(object):
     # Stages run in a previous run and restored. Stored as a dictionary of
     # names to previous records.
     self._previous = {}
+
+  def Clear(self):
+    """Clear existing stage results."""
+    self.__init__()
 
   def PreviouslyCompletedRecord(self, name):
     """Check to see if this stage was previously completed.

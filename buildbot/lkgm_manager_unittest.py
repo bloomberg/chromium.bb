@@ -6,6 +6,7 @@
 
 """Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
 
+import mock
 import mox
 import os
 import sys
@@ -23,7 +24,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import patch
 
 
 # pylint: disable=E1120,W0212,R0904
@@ -461,7 +461,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
         print new_doc.toxml()
         new_doc.writexml(manifest_file)
 
-      gerrit_patch = self.mox.CreateMock(patch.GerritPatch)
+      gerrit_patch = mock.MagicMock()
       gerrit_patch.project = 'chromite/tacos'
       gerrit_patch.change_id = '1234567890'
       gerrit_patch.commit = '0987654321'

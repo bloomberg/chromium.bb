@@ -294,7 +294,7 @@ class EBuild(object):
     m = self._PACKAGE_VERSION_PATTERN.match(filename)
     if not m:
       raise EBuildVersionFormatException(filename)
-    self.version, self._version_no_rev, revision = m.groups()
+    self.version, self.version_no_rev, revision = m.groups()
     if revision is not None:
       self.current_revision = int(revision.replace('-r', ''))
     else:
@@ -304,7 +304,7 @@ class EBuild(object):
     self._ebuild_path_no_version = os.path.join(
         os.path.dirname(path), self._pkgname)
     self.ebuild_path_no_revision = '%s-%s' % (
-        self._ebuild_path_no_version, self._version_no_rev)
+        self._ebuild_path_no_version, self.version_no_rev)
     self._unstable_ebuild_path = '%s-9999.ebuild' % (
         self._ebuild_path_no_version)
     self.ebuild_path = path
@@ -492,7 +492,7 @@ class EBuild(object):
     """
 
     if self.is_stable:
-      stable_version_no_rev = self.GetVersion(srcroot, self._version_no_rev)
+      stable_version_no_rev = self.GetVersion(srcroot, self.version_no_rev)
     else:
       # If given unstable ebuild, use preferred version rather than 9999.
       stable_version_no_rev = self.GetVersion(srcroot, '0.0.1')
@@ -581,7 +581,7 @@ class EBuild(object):
     BuildEBuildDictionary(overlay_dict, True, None)
     changed_projects = set(c.project for c in changes)
     ebuild_projects = {}
-    for overlay, ebuilds in overlay_dict.iteritems():
+    for ebuilds in overlay_dict.itervalues():
       for ebuild in ebuilds:
         projects = ebuild.GetSourcePath(directory_src)[0]
         if changed_projects.intersection(projects):
@@ -673,7 +673,7 @@ def _FindUprevCandidates(files, blacklist):
   if len(stable_ebuilds) == 1:
     return stable_ebuilds[0]
 
-  stable_versions = set(ebuild._version_no_rev for ebuild in stable_ebuilds)
+  stable_versions = set(ebuild.version_no_rev for ebuild in stable_ebuilds)
   if len(stable_versions) > 1:
     package = stable_ebuilds[0].package
     message = 'Found multiple stable ebuild versions in %s:' % path

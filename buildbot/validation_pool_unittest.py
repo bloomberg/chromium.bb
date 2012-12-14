@@ -121,6 +121,7 @@ class base(cros_test_lib.MoxTestCase):
     return l
 
   def MakeHelper(self, cros_internal=None, cros=None):
+    # pylint: disable=W0201
     if cros_internal:
       cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.1'
@@ -548,6 +549,7 @@ class TestCoreLogic(base):
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
+    # pylint: disable=E1123
     pool._patch_series.Apply(
         changes, dryrun=dryrun, manifest=mox.IgnoreArg()
         ).AndReturn((applied, tot, inflight))
@@ -750,8 +752,7 @@ class TestCoreLogic(base):
       pass
 
     self.mox.StubOutWithMock(pool._patch_series, 'Apply')
-    # Suppressed because pylint can't tell that we just replaced Apply via mox.
-    # pylint: disable=E1101
+    # pylint: disable=E1123
     pool._patch_series.Apply(
         patches, dryrun=False, manifest=mox.IgnoreArg()).AndRaise(
         MyException)

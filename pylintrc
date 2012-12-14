@@ -128,9 +128,9 @@ indent-string='  '
 
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed.
-# CHANGE: Added 'AndReturn', 'InAnyOrder' and 'MultipleTimes' for pymox.
+# CHANGE: Added 'AndRaise', 'AndReturn', 'InAnyOrder' and 'MultipleTimes' for pymox.
 # CHANGE: Added tempdir for @osutils.TempDirDecorator.
-generated-members=REQUEST,acl_users,aq_parent,AndReturn,InAnyOrder,MultipleTimes,tempdir
+generated-members=REQUEST,acl_users,aq_parent,AndRaise,AndReturn,InAnyOrder,MultipleTimes,tempdir
 
 
 [BASIC]
@@ -253,7 +253,7 @@ min-similarity-lines=8
 #max-statements=50
 
 # Maximum number of parents for a class (see R0901).
-#max-parents=7
+max-parents=10
 
 # Maximum number of attributes for a class (see R0902).
 #max-attributes=7

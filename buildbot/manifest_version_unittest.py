@@ -84,8 +84,7 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     osutils.WriteFile(version_file, FAKE_VERSION % info.__dict__)
 
   @classmethod
-  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING,
-                            filename=None):
+  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING):
     """Helper method to create a version file from specified version number."""
     version_file = tempfile.mktemp(dir=tmpdir)
     cls.WriteFakeVersionFile(version_file, version=version)
