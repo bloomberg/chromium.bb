@@ -32,13 +32,13 @@ class IsolateBase(unittest.TestCase):
   def setUp(self):
     super(IsolateBase, self).setUp()
     self.old_cwd = os.getcwd()
-    self.random_directory = tempfile.mkdtemp(prefix='isolate_')
+    self.cwd = tempfile.mkdtemp(prefix='isolate_')
     # Everything should work even from another directory.
-    os.chdir(self.random_directory)
+    os.chdir(self.cwd)
 
   def tearDown(self):
     os.chdir(self.old_cwd)
-    isolate.run_isolated.rmtree(self.random_directory)
+    isolate.run_isolated.rmtree(self.cwd)
     super(IsolateBase, self).tearDown()
 
 
@@ -46,7 +46,7 @@ class IsolateTest(IsolateBase):
   def test_load_isolate_for_flavor_empty(self):
     content = "{}"
     command, infiles, touched, read_only = isolate.load_isolate_for_flavor(
-        content, isolate.get_flavor())
+        self.cwd, content, isolate.get_flavor())
     self.assertEqual([], command)
     self.assertEqual([], infiles)
     self.assertEqual([], touched)
@@ -122,7 +122,7 @@ class IsolateTest(IsolateBase):
 
   def test_load_isolate_as_config_empty(self):
     self.assertEqual({}, isolate.load_isolate_as_config(
-      {}, None, []).flatten())
+      self.cwd, {}, None, []).flatten())
 
   def test_load_isolate_as_config(self):
     value = {
@@ -194,7 +194,8 @@ class IsolateTest(IsolateBase):
       },
     }
     self.assertEqual(
-        expected, isolate.load_isolate_as_config(value, None, []).flatten())
+        expected, isolate.load_isolate_as_config(
+            self.cwd, value, None, []).flatten())
 
   def test_load_isolate_as_config_duplicate_command(self):
     value = {
@@ -210,7 +211,7 @@ class IsolateTest(IsolateBase):
       ],
     }
     try:
-      isolate.load_isolate_as_config(value, None, [])
+      isolate.load_isolate_as_config(self.cwd, value, None, [])
       self.fail()
     except AssertionError:
       pass
@@ -226,7 +227,7 @@ class IsolateTest(IsolateBase):
       KEY_TRACKED: ['a'],
       KEY_UNTRACKED: ['b'],
     }
-    actual = isolate.load_isolate_as_config(value, None, [])
+    actual = isolate.load_isolate_as_config(self.cwd, value, None, [])
     # Flattening the whole config will discard 'None'.
     self.assertEqual({}, actual.flatten())
     self.assertEqual([None], actual.per_os.keys())
@@ -521,8 +522,8 @@ class IsolateTest(IsolateBase):
     actual = isolate.union(
         isolate.union(
           isolate.Configs([], None),
-          isolate.load_isolate_as_config({}, None, [])),
-        isolate.load_isolate_as_config({}, None, [])).flatten()
+          isolate.load_isolate_as_config(self.cwd, {}, None, [])),
+        isolate.load_isolate_as_config(self.cwd, {}, None, [])).flatten()
     self.assertEqual({}, actual)
 
   def test_merge_empty(self):
@@ -568,8 +569,8 @@ class IsolateTest(IsolateBase):
     configs = isolate.union(
         isolate.union(
           isolate.Configs([], None),
-          isolate.load_isolate_as_config(linux, None, [])),
-        isolate.load_isolate_as_config(mac, None, [])).flatten()
+          isolate.load_isolate_as_config(self.cwd, linux, None, [])),
+        isolate.load_isolate_as_config(self.cwd, mac, None, [])).flatten()
     self.assertEqual(expected, configs)
 
   def test_load_three_conditions(self):
@@ -626,9 +627,9 @@ class IsolateTest(IsolateBase):
         isolate.union(
           isolate.union(
             isolate.Configs([], None),
-            isolate.load_isolate_as_config(linux, None, [])),
-          isolate.load_isolate_as_config(mac, None, [])),
-        isolate.load_isolate_as_config(win, None, [])).flatten()
+            isolate.load_isolate_as_config(self.cwd, linux, None, [])),
+          isolate.load_isolate_as_config(self.cwd, mac, None, [])),
+        isolate.load_isolate_as_config(self.cwd, win, None, [])).flatten()
     self.assertEqual(expected, configs)
 
   def test_merge_three_conditions(self):
@@ -681,20 +682,93 @@ class IsolateTest(IsolateBase):
     # Pylint is confused with isolate.union() return type.
     # pylint: disable=E1103
     configs = isolate.union(
-        isolate.load_isolate_as_config({}, '# Yo dawg!\n# Chill out.\n', []),
-        isolate.load_isolate_as_config({}, None, []))
+        isolate.load_isolate_as_config(
+            self.cwd, {}, '# Yo dawg!\n# Chill out.\n', []),
+        isolate.load_isolate_as_config(self.cwd, {}, None, []))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     configs = isolate.union(
-        isolate.load_isolate_as_config({}, None, []),
-        isolate.load_isolate_as_config({}, '# Yo dawg!\n# Chill out.\n', []))
+        isolate.load_isolate_as_config(self.cwd, {}, None, []),
+        isolate.load_isolate_as_config(
+            self.cwd, {}, '# Yo dawg!\n# Chill out.\n', []))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     # Only keep the first one.
     configs = isolate.union(
-        isolate.load_isolate_as_config({}, '# Yo dawg!\n', []),
-        isolate.load_isolate_as_config({}, '# Chill out.\n', []))
+        isolate.load_isolate_as_config(self.cwd, {}, '# Yo dawg!\n', []),
+        isolate.load_isolate_as_config(self.cwd, {}, '# Chill out.\n', []))
     self.assertEqual('# Yo dawg!\n', configs.file_comment)
+
+  def test_load_with_includes(self):
+    included_isolate = {
+      'variables': {
+        'isolate_dependency_tracked': [
+          'file_common',
+        ],
+      },
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+          },
+        }, {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_non_linux',
+            ],
+          },
+        }],
+      ],
+    }
+    isolate.trace_inputs.write_json(
+        os.path.join(self.cwd, 'included.isolate'), included_isolate, True)
+    values = {
+      'includes': ['included.isolate'],
+      'variables': {
+        'isolate_dependency_tracked': [
+          'file_less_common',
+        ],
+      },
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_mac',
+            ],
+          },
+        }],
+      ],
+    }
+    actual = isolate.load_isolate_as_config(
+        self.cwd, values, None, isolate.DEFAULT_OSES)
+
+    expected = {
+      'linux': {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_less_common',
+          'file_linux',
+        ],
+      },
+      'mac': {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_less_common',
+          'file_mac',
+          'file_non_linux',
+        ],
+      },
+      'win': {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_less_common',
+          'file_non_linux',
+        ],
+      },
+    }
+    self.assertEqual(expected, actual.flatten())
 
   def test_extract_comment(self):
     self.assertEqual(
@@ -784,7 +858,6 @@ class IsolateLoad(IsolateBase):
   def setUp(self):
     super(IsolateLoad, self).setUp()
     self.directory = tempfile.mkdtemp(prefix='isolate_')
-    self.cwd = self.random_directory
 
   def tearDown(self):
     isolate.run_isolated.rmtree(self.directory)

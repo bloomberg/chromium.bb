@@ -715,7 +715,11 @@ def eval_content(content):
   """
   globs = {'__builtins__': None}
   locs = {}
-  value = eval(content, globs, locs)
+  try:
+    value = eval(content, globs, locs)
+  except TypeError as e:
+    e.args = list(e.args) + [content]
+    raise
   assert locs == {}, locs
   assert globs == {'__builtins__': None}, globs
   return value
@@ -753,10 +757,15 @@ def verify_condition(condition):
 
 
 def verify_root(value):
-  VALID_ROOTS = ['variables', 'conditions']
+  VALID_ROOTS = ['includes', 'variables', 'conditions']
   assert isinstance(value, dict), value
   assert set(VALID_ROOTS).issuperset(set(value)), value.keys()
   verify_variables(value.get('variables', {}))
+
+  includes = value.get('includes', [])
+  assert isinstance(includes, list), includes
+  for include in includes:
+    assert isinstance(include, basestring), include
 
   conditions = value.get('conditions', [])
   assert isinstance(conditions, list), conditions
@@ -1022,7 +1031,7 @@ class Configs(object):
         (k, v.flatten()) for k, v in self.per_os.iteritems() if k is not None)
 
 
-def load_isolate_as_config(value, file_comment, default_oses):
+def load_isolate_as_config(isolate_dir, value, file_comment, default_oses):
   """Parses one .isolate file and returns a Configs() instance.
 
   |value| is the loaded dictionary that was defined in the gyp file.
@@ -1030,6 +1039,9 @@ def load_isolate_as_config(value, file_comment, default_oses):
   The expected format is strict, anything diverting from the format below will
   throw an assert:
   {
+    'includes': [
+      'foo.isolate',
+    ],
     'variables': {
       'command': [
         ...
@@ -1064,6 +1076,21 @@ def load_isolate_as_config(value, file_comment, default_oses):
   oses = oses.union(default_oses)
   configs = Configs(oses, file_comment)
 
+  # Load the includes.
+  for include in value.get('includes', []):
+    if os.path.isabs(include):
+      raise ExecutionError(
+          'Failed to load configuration; absolute include path \'%s\'' %
+          include)
+    included_isolate = os.path.normpath(os.path.join(isolate_dir, include))
+    with open(included_isolate, 'r') as f:
+      included_config = load_isolate_as_config(
+          os.path.dirname(included_isolate),
+          eval_content(f.read()),
+          None,
+          default_oses)
+    configs = union(configs, included_config)
+
   # Global level variables.
   configs.add_globals(value.get('variables', {}))
 
@@ -1077,15 +1104,17 @@ def load_isolate_as_config(value, file_comment, default_oses):
   return configs
 
 
-def load_isolate_for_flavor(content, flavor):
-  """Loads the .isolate file and returns the information unprocessed.
+def load_isolate_for_flavor(isolate_dir, content, flavor):
+  """Loads the .isolate file and returns the information unprocessed but
+  filtered for the specific OS.
 
   Returns the command, dependencies and read_only flag. The dependencies are
   fixed to use os.path.sep.
   """
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
-  configs = load_isolate_as_config(eval_content(content), None, DEFAULT_OSES)
+  configs = load_isolate_as_config(
+      isolate_dir, eval_content(content), None, DEFAULT_OSES)
   config = configs.per_os.get(flavor) or configs.per_os.get(None)
   if not config:
     raise ExecutionError('Failed to load configuration for \'%s\'' % flavor)
@@ -1328,7 +1357,7 @@ class CompleteState(object):
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
       command, infiles, touched, read_only = load_isolate_for_flavor(
-          f.read(), get_flavor())
+          os.path.dirname(isolate_file), f.read(), get_flavor())
     command = [eval_variables(i, self.saved_state.variables) for i in command]
     infiles = [eval_variables(f, self.saved_state.variables) for f in infiles]
     touched = [eval_variables(f, self.saved_state.variables) for f in touched]
@@ -1514,11 +1543,13 @@ def merge(complete_state):
   # Now take that data and union it into the original .isolate file.
   with open(complete_state.saved_state.isolate_file, 'r') as f:
     prev_content = f.read()
+  isolate_dir = os.path.dirname(complete_state.saved_state.isolate_file)
   prev_config = load_isolate_as_config(
+      isolate_dir,
       eval_content(prev_content),
       extract_comment(prev_content),
       DEFAULT_OSES)
-  new_config = load_isolate_as_config(value, '', DEFAULT_OSES)
+  new_config = load_isolate_as_config(isolate_dir, value, '', DEFAULT_OSES)
   config = union(prev_config, new_config)
   # pylint: disable=E1103
   data = convert_map_to_isolate_dict(

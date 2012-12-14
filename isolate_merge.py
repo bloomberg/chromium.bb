@@ -11,6 +11,7 @@ condition, find the strict subset. Done.
 """
 
 import logging
+import os
 import sys
 
 from isolate import Configs, DEFAULT_OSES, eval_content, extract_comment
@@ -31,6 +32,7 @@ def load_isolates(items, default_oses):
     """
   configs = Configs(default_oses, None)
   for item in items:
+    item = os.path.abspath(item)
     logging.debug('loading %s' % item)
     if item == '-':
       content = sys.stdin.read()
@@ -38,7 +40,10 @@ def load_isolates(items, default_oses):
       with open(item, 'r') as f:
         content = f.read()
     new_config = load_isolate_as_config(
-        eval_content(content), extract_comment(content), default_oses)
+        os.path.dirname(item),
+        eval_content(content),
+        extract_comment(content),
+        default_oses)
     logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
     configs = union(configs, new_config)
   logging.debug('Total OSes: %s' % ','.join(k for k in configs.per_os if k))
