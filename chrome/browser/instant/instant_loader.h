@@ -93,7 +93,8 @@ class InstantLoader : public InstantClient::Delegate,
               bool verbatim);
   void Submit(const string16& text);
   void Cancel(const string16& text);
-  void SetOmniboxBounds(const gfx::Rect& bounds);
+  void SetPopupBounds(const gfx::Rect& bounds);
+  void SetMarginSize(int start, int end);
   void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void UpOrDownKeyPressed(int count);

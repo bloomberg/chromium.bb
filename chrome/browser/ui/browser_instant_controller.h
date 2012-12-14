@@ -87,6 +87,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by the InstantController when it wants to open a URL.
   void OpenURLInCurrentTab(const GURL& url, content::PageTransition transition);
 
+  // Sets the start and end margins of the omnibox text area.
+  void SetMarginSize(int start, int end);
+
  private:
   // Sets the value of |instant_| based on value from profile. Invoked
   // on pref change.

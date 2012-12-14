@@ -37,6 +37,9 @@ if (!chrome.searchBox) {
     native function GetY();
     native function GetWidth();
     native function GetHeight();
+    native function GetStartMargin();
+    native function GetEndMargin();
+    native function GetRightToLeft();
     native function GetAutocompleteResults();
     native function GetContext();
     native function GetDisplayInstantResults();
@@ -191,6 +194,9 @@ if (!chrome.searchBox) {
     this.__defineGetter__('y', GetY);
     this.__defineGetter__('width', GetWidth);
     this.__defineGetter__('height', GetHeight);
+    this.__defineGetter__('startMargin', GetStartMargin);
+    this.__defineGetter__('endMargin', GetEndMargin);
+    this.__defineGetter__('rtl', GetRightToLeft);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
     this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
     this.__defineGetter__('context', GetContext);
@@ -237,5 +243,6 @@ if (!chrome.searchBox) {
     this.onkeypress = null;
     this.onkeycapturechange = null;
     this.oncontextchange = null;
+    this.onmarginchange = null;
   };
 }

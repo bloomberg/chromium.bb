@@ -305,8 +305,12 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancel,
                     string16 /* value */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxResize,
-                    gfx::Rect /* search_box_bounds */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPopupResize,
+                    gfx::Rect /* bounds */)
+
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
+                    int /* start */,
+                    int /* end */)
 
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
 

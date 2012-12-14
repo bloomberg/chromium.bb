@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -1366,6 +1368,19 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 bool LocationBarView::HasFocus() const {
   return location_entry_->model()->has_focus();
+}
+
+void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (browser_ && browser_->instant_controller() && parent()) {
+    // Pass the side margins of the location bar to the Instant Controller.
+    const gfx::Rect bounds = GetBoundsInScreen();
+    const gfx::Rect parent_bounds = parent()->GetBoundsInScreen();
+    int start = bounds.x() - parent_bounds.x();
+    int end = parent_bounds.right() - bounds.right();
+    if (base::i18n::IsRTL())
+      std::swap(start, end);
+    browser_->instant_controller()->SetMarginSize(start, end);
+  }
 }
 
 void LocationBarView::WriteDragDataForView(views::View* sender,

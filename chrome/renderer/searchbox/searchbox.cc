@@ -16,6 +16,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_start_(0),
       selection_end_(0),
       results_base_(0),
+      start_margin_(0),
+      end_margin_(0),
       last_results_base_(0),
       is_key_capture_enabled_(false),
       theme_area_height_(0),
@@ -63,20 +65,20 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition));
 }
 
-gfx::Rect SearchBox::GetRect() {
-  // Need to adjust for scale.
-  if (rect_.IsEmpty())
-    return rect_;
-  WebKit::WebView* web_view = render_view()->GetWebView();
-  if (!web_view)
-    return rect_;
-  double zoom = WebKit::WebView::zoomLevelToZoomFactor(web_view->zoomLevel());
-  if (zoom == 0)
-    return rect_;
-  return gfx::Rect(static_cast<int>(static_cast<float>(rect_.x()) / zoom),
-                   static_cast<int>(static_cast<float>(rect_.y()) / zoom),
-                   static_cast<int>(static_cast<float>(rect_.width()) / zoom),
-                   static_cast<int>(static_cast<float>(rect_.height()) / zoom));
+int SearchBox::GetStartMargin() const {
+  return static_cast<int>(start_margin_ / GetZoom());
+}
+
+int SearchBox::GetEndMargin() const {
+  return static_cast<int>(end_margin_ / GetZoom());
+}
+
+gfx::Rect SearchBox::GetPopupBounds() const {
+  double zoom = GetZoom();
+  return gfx::Rect(static_cast<int>(popup_bounds_.x() / zoom),
+                   static_cast<int>(popup_bounds_.y() / zoom),
+                   static_cast<int>(popup_bounds_.width() / zoom),
+                   static_cast<int>(popup_bounds_.height() / zoom));
 }
 
 const std::vector<InstantAutocompleteResult>&
@@ -111,7 +113,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxChange, OnChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSubmit, OnSubmit)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxCancel, OnCancel)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxResize, OnResize)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxPopupResize, OnPopupResize)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMarginChange, OnMarginChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxAutocompleteResults,
@@ -176,11 +179,20 @@ void SearchBox::OnCancel(const string16& query) {
   Reset();
 }
 
-void SearchBox::OnResize(const gfx::Rect& bounds) {
-  rect_ = bounds;
+void SearchBox::OnPopupResize(const gfx::Rect& bounds) {
+  popup_bounds_ = bounds;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    DVLOG(1) << render_view() << " OnResize";
+    DVLOG(1) << render_view() << " OnPopupResize";
     extensions_v8::SearchBoxExtension::DispatchResize(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+void SearchBox::OnMarginChange(int start, int end) {
+  start_margin_ = start;
+  end_margin_ = end;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchMarginChange(
         render_view()->GetWebView()->mainFrame());
   }
 }
@@ -253,13 +265,25 @@ void SearchBox::OnThemeAreaHeightChanged(int height) {
   }
 }
 
+double SearchBox::GetZoom() const {
+  WebKit::WebView* web_view = render_view()->GetWebView();
+  if (web_view) {
+    double zoom = WebKit::WebView::zoomLevelToZoomFactor(web_view->zoomLevel());
+    if (zoom != 0)
+      return zoom;
+  }
+  return 1.0;
+}
+
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
   selection_start_ = 0;
   selection_end_ = 0;
   results_base_ = 0;
-  rect_ = gfx::Rect();
+  popup_bounds_ = gfx::Rect();
+  start_margin_ = 0;
+  end_margin_ = 0;
   autocomplete_results_.clear();
   is_key_capture_enabled_ = false;
   mode_ = chrome::search::Mode();

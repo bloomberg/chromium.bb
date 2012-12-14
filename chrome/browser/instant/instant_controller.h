@@ -64,8 +64,11 @@ class InstantController {
               bool omnibox_popup_is_open,
               bool escape_pressed);
 
-  // Sets the bounds of the omnibox dropdown, in screen coordinates.
-  void SetOmniboxBounds(const gfx::Rect& bounds);
+  // Sets the bounds of the omnibox popup, in screen coordinates.
+  void SetPopupBounds(const gfx::Rect& bounds);
+
+  // Sets the start and end margins of the omnibox text area.
+  void SetMarginSize(int start, int end);
 
   // Send autocomplete results from |providers| to the preview page.
   void HandleAutocompleteResults(
@@ -205,8 +208,8 @@ class InstantController {
                   int height,
                   InstantSizeUnits units);
 
-  // Send the omnibox dropdown bounds to the page.
-  void SendBoundsToPage();
+  // Send the omnibox popup bounds to the page.
+  void SendPopupBoundsToPage();
 
   // If |template_url| is a valid TemplateURL for use with Instant, fills in
   // |instant_url| and returns true; returns false otherwise.
@@ -262,13 +265,19 @@ class InstantController {
   // The search model mode for the active tab.
   chrome::search::Mode search_mode_;
 
-  // Current omnibox bounds.
-  gfx::Rect omnibox_bounds_;
+  // Current omnibox popup bounds.
+  gfx::Rect popup_bounds_;
 
-  // Last bounds passed to the page.
-  gfx::Rect last_omnibox_bounds_;
+  // Last popup bounds passed to the page.
+  gfx::Rect last_popup_bounds_;
 
-  // Timer used to update the bounds of the omnibox.
+  // Size of the start-edge omnibox text area margin.
+  int start_margin_;
+
+  // Size of the end-edge omnibox text area margin.
+  int end_margin_;
+
+  // Timer used to update the bounds of the omnibox popup.
   base::OneShotTimer<InstantController> update_bounds_timer_;
 
   // Timer used to ensure that the Instant page does not get too stale.

@@ -44,7 +44,7 @@ bool RenderViewObserver::Send(IPC::Message* message) {
   return false;
 }
 
-RenderView* RenderViewObserver::render_view() {
+RenderView* RenderViewObserver::render_view() const {
   return render_view_;
 }
 

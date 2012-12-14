@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
+#include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "chrome/common/extensions/extension.h"
@@ -178,6 +179,15 @@ static const char kDispatchThemeAreaHeightChangeEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchMarginChangeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onmarginchange &&"
+    "    typeof window.chrome.searchBox.onmarginchange == 'function') {"
+    "  window.chrome.searchBox.onmarginchange();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -219,6 +229,17 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Gets the height of the region of the search box that overlaps the window.
   static v8::Handle<v8::Value> GetHeight(const v8::Arguments& args);
+
+  // Gets the width of the margin from the start-edge of the page to the start
+  // of the suggestions dropdown.
+  static v8::Handle<v8::Value> GetStartMargin(const v8::Arguments& args);
+
+  // Gets the width of the margin from the end-edge of the page to the end of
+  // the suggestions dropdown.
+  static v8::Handle<v8::Value> GetEndMargin(const v8::Arguments& args);
+
+  // Returns true if the Searchbox itself is oriented right-to-left.
+  static v8::Handle<v8::Value> GetRightToLeft(const v8::Arguments& args);
 
   // Gets the autocomplete results from search box.
   static v8::Handle<v8::Value> GetAutocompleteResults(
@@ -311,6 +332,12 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetWidth);
   if (name->Equals(v8::String::New("GetHeight")))
     return v8::FunctionTemplate::New(GetHeight);
+  if (name->Equals(v8::String::New("GetStartMargin")))
+    return v8::FunctionTemplate::New(GetStartMargin);
+  if (name->Equals(v8::String::New("GetEndMargin")))
+    return v8::FunctionTemplate::New(GetEndMargin);
+  if (name->Equals(v8::String::New("GetRightToLeft")))
+    return v8::FunctionTemplate::New(GetRightToLeft);
   if (name->Equals(v8::String::New("GetAutocompleteResults")))
     return v8::FunctionTemplate::New(GetAutocompleteResults);
   if (name->Equals(v8::String::New("GetContext")))
@@ -405,7 +432,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().x());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetPopupBounds().x());
 }
 
 // static
@@ -414,7 +441,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().y());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetPopupBounds().y());
 }
 
 // static
@@ -423,7 +450,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().width());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetPopupBounds().width());
 }
 
 // static
@@ -432,7 +459,29 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().height());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetPopupBounds().height());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetStartMargin(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+  return v8::Int32::New(SearchBox::Get(render_view)->GetStartMargin());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetEndMargin(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+  return v8::Int32::New(SearchBox::Get(render_view)->GetEndMargin());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetRightToLeft(
+    const v8::Arguments& args) {
+  return v8::Boolean::New(base::i18n::IsRTL());
 }
 
 // static
@@ -893,6 +942,11 @@ void SearchBoxExtension::DispatchContextChange(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchThemeChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchMarginChange(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchMarginChangeEventScript);
 }
 
 // static

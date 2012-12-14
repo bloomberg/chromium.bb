@@ -52,7 +52,14 @@ class SearchBox : public content::RenderViewObserver,
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   bool display_instant_results() const { return display_instant_results_; }
 
-  gfx::Rect GetRect();
+  // These functions return the start/end margins of the page text area,
+  // adjusted for the page zoom.
+  int GetStartMargin() const;
+  int GetEndMargin() const;
+
+  // Returns the bounds of the omnibox popup in screen coordinates.
+  gfx::Rect GetPopupBounds() const;
+
   const std::vector<InstantAutocompleteResult>& GetAutocompleteResults();
   // Searchbox retains ownership of this object.
   const InstantAutocompleteResult*
@@ -71,7 +78,8 @@ class SearchBox : public content::RenderViewObserver,
                 size_t selection_end);
   void OnSubmit(const string16& query);
   void OnCancel(const string16& query);
-  void OnResize(const gfx::Rect& bounds);
+  void OnPopupResize(const gfx::Rect& bounds);
+  void OnMarginChange(int start, int end);
   void OnDetermineIfPageSupportsInstant();
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
@@ -82,6 +90,9 @@ class SearchBox : public content::RenderViewObserver,
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
 
+  // Returns the current zoom factor of the render view or 1 on failure.
+  double GetZoom() const;
+
   // Sets the searchbox values to their initial value.
   void Reset();
 
@@ -90,7 +101,9 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_start_;
   size_t selection_end_;
   size_t results_base_;
-  gfx::Rect rect_;
+  int start_margin_;
+  int end_margin_;
+  gfx::Rect popup_bounds_;
   std::vector<InstantAutocompleteResult> autocomplete_results_;
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;

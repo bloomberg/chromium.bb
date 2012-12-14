@@ -318,8 +318,9 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                              bool just_deleted_text,
                              bool allow_keyword_ui_change);
 
-  // Invoked when the popup is going to change its bounds to |bounds|.
-  void PopupBoundsChangedTo(const gfx::Rect& bounds);
+  // Invoked when the popup has changed its bounds to |bounds|. |bounds| here
+  // is in screen coordinates.
+  void OnPopupBoundsChanged(const gfx::Rect& bounds);
 
  private:
   enum PasteState {

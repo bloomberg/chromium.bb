@@ -42,6 +42,7 @@ class SearchBoxExtension {
   static void DispatchContextChange(WebKit::WebFrame* frame);
   static void DispatchThemeChange(WebKit::WebFrame* frame);
   static void DispatchThemeAreaHeightChange(WebKit::WebFrame* frame);
+  static void DispatchMarginChange(WebKit::WebFrame* frame);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);

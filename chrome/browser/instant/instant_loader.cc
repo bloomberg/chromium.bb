@@ -244,8 +244,12 @@ void InstantLoader::Cancel(const string16& text) {
   client_.Cancel(text);
 }
 
-void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
-  client_.SetOmniboxBounds(bounds);
+void InstantLoader::SetPopupBounds(const gfx::Rect& bounds) {
+  client_.SetPopupBounds(bounds);
+}
+
+void InstantLoader::SetMarginSize(int start, int end) {
+  client_.SetMarginSize(start, end);
 }
 
 void InstantLoader::SendAutocompleteResults(

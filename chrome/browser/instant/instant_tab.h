@@ -44,6 +44,7 @@ class InstantTab : public InstantClient::Delegate {
       const std::vector<InstantAutocompleteResult>& results);
   void SetDisplayInstantResults(bool display_instant_results);
   void UpOrDownKeyPressed(int count);
+  void SetMarginSize(int start, int end);
 
  private:
   // Overridden from InstantClient::Delegate:

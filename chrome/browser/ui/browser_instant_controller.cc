@@ -171,6 +171,10 @@ void BrowserInstantController::OpenURLInCurrentTab(
                                            false));
 }
 
+void BrowserInstantController::SetMarginSize(int start, int end) {
+  instant_.SetMarginSize(start, end);
+}
+
 void BrowserInstantController::ResetInstant() {
   instant_.SetInstantEnabled(IsInstantEnabled(browser_->profile()));
 }

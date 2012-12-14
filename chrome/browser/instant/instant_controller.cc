@@ -157,6 +157,8 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
+      start_margin_(0),
+      end_margin_(0),
       allow_preview_to_show_search_suggestions_(false) {
 }
 
@@ -354,22 +356,34 @@ bool InstantController::Update(const AutocompleteMatch& match,
 
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
 // needs to fire when the preview bounds change (e.g.: open/close info bar).
-void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
+void InstantController::SetPopupBounds(const gfx::Rect& bounds) {
   if (!extended_enabled_ && !instant_enabled_)
     return;
 
-  if (omnibox_bounds_ == bounds)
+  if (popup_bounds_ == bounds)
     return;
 
-  omnibox_bounds_ = bounds;
-  if (omnibox_bounds_.height() > last_omnibox_bounds_.height()) {
+  popup_bounds_ = bounds;
+  if (popup_bounds_.height() > last_popup_bounds_.height()) {
     update_bounds_timer_.Stop();
-    SendBoundsToPage();
+    SendPopupBoundsToPage();
   } else if (!update_bounds_timer_.IsRunning()) {
     update_bounds_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS), this,
-        &InstantController::SendBoundsToPage);
+        &InstantController::SendPopupBoundsToPage);
   }
+}
+
+void InstantController::SetMarginSize(int start, int end) {
+  if (!extended_enabled_ || (start_margin_ == start && end_margin_ == end))
+    return;
+
+  start_margin_ = start;
+  end_margin_ = end;
+  if (loader_)
+    loader_->SetMarginSize(start_margin_, end_margin_);
+  if (instant_tab_)
+    instant_tab_->SetMarginSize(start_margin_, end_margin_);
 }
 
 void InstantController::HandleAutocompleteResults(
@@ -869,6 +883,7 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     loader_->SetDisplayInstantResults(instant_enabled_);
     loader_->SearchModeChanged(search_mode_);
     loader_->KeyCaptureChanged(omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+    loader_->SetMarginSize(start_margin_, end_margin_);
   }
 
   // Restart the stale loader timer.
@@ -911,6 +926,7 @@ void InstantController::ResetInstantTab() {
       instant_tab_.reset(new InstantTab(this, active_tab));
       instant_tab_->Init();
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
+      instant_tab_->SetMarginSize(start_margin_, end_margin_);
     }
 
     // Hide the |loader_| since we are now using |instant_tab_| instead.
@@ -1027,14 +1043,14 @@ void InstantController::ShowLoader(InstantShownReason reason,
     CommitIfPossible(INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION);
 }
 
-void InstantController::SendBoundsToPage() {
-  if (last_omnibox_bounds_ == omnibox_bounds_ || !loader_ ||
+void InstantController::SendPopupBoundsToPage() {
+  if (last_popup_bounds_ == popup_bounds_ || !loader_ ||
       loader_->is_pointer_down_from_activate())
     return;
 
-  last_omnibox_bounds_ = omnibox_bounds_;
+  last_popup_bounds_ = popup_bounds_;
   gfx::Rect preview_bounds = browser_->GetInstantBounds();
-  gfx::Rect intersection = gfx::IntersectRects(omnibox_bounds_, preview_bounds);
+  gfx::Rect intersection = gfx::IntersectRects(popup_bounds_, preview_bounds);
 
   // Translate into window coordinates.
   if (!intersection.IsEmpty()) {
@@ -1051,7 +1067,7 @@ void InstantController::SendBoundsToPage() {
   DCHECK_LE(0, intersection.width());
   DCHECK_LE(0, intersection.height());
 
-  loader_->SetOmniboxBounds(intersection);
+  loader_->SetPopupBounds(intersection);
 }
 
 bool InstantController::GetInstantURL(const TemplateURL* template_url,

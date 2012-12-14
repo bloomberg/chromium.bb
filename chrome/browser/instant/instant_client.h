@@ -99,7 +99,10 @@ class InstantClient : public content::WebContentsObserver {
   // Tells the page the bounds of the omnibox dropdown (in screen coordinates).
   // This is used by the page to offset the results to avoid them being covered
   // by the omnibox dropdown.
-  void SetOmniboxBounds(const gfx::Rect& bounds);
+  void SetPopupBounds(const gfx::Rect& bounds);
+
+  // Tells the page what size start and end margins to use.
+  void SetMarginSize(const int start, const int end);
 
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to InstantSupportDetermined() when the reply is received.

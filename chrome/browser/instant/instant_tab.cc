@@ -46,6 +46,10 @@ void InstantTab::UpOrDownKeyPressed(int count) {
   client_.UpOrDownKeyPressed(count);
 }
 
+void InstantTab::SetMarginSize(int start, int end) {
+  client_.SetMarginSize(start, end);
+}
+
 void InstantTab::SetSuggestions(
     const std::vector<InstantSuggestion>& suggestions) {
   InstantSupportDetermined(true);

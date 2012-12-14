@@ -36,8 +36,12 @@ void InstantClient::Cancel(const string16& text) {
   Send(new ChromeViewMsg_SearchBoxCancel(routing_id(), text));
 }
 
-void InstantClient::SetOmniboxBounds(const gfx::Rect& bounds) {
-  Send(new ChromeViewMsg_SearchBoxResize(routing_id(), bounds));
+void InstantClient::SetPopupBounds(const gfx::Rect& bounds) {
+  Send(new ChromeViewMsg_SearchBoxPopupResize(routing_id(), bounds));
+}
+
+void InstantClient::SetMarginSize(const int start, const int end) {
+  Send(new ChromeViewMsg_SearchBoxMarginChange(routing_id(), start, end));
 }
 
 void InstantClient::DetermineIfPageSupportsInstant() {

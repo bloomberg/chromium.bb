@@ -1027,10 +1027,10 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
            MaybeAcceptKeywordBySpace(user_text_));
 }
 
-void OmniboxEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
+void OmniboxEditModel::OnPopupBoundsChanged(const gfx::Rect& bounds) {
   InstantController* instant = controller_->GetInstant();
   if (instant)
-    instant->SetOmniboxBounds(bounds);
+    instant->SetPopupBounds(bounds);
 }
 
 void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
@@ -1067,14 +1067,14 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
   }
 
   if (popup_->IsOpen()) {
-    PopupBoundsChangedTo(popup_->view()->GetTargetBounds());
+    OnPopupBoundsChanged(popup_->view()->GetTargetBounds());
   } else if (was_open) {
     // Accepts the temporary text as the user text, because it makes little
     // sense to have temporary text when the popup is closed.
     InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
     has_temporary_text_ = false;
     is_temporary_text_set_by_instant_ = false;
-    PopupBoundsChangedTo(gfx::Rect());
+    OnPopupBoundsChanged(gfx::Rect());
     NotifySearchTabHelper();
   }
 
