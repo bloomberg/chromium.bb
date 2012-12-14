@@ -151,10 +151,6 @@
         'browser/prefs/mock_pref_change_callback.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
-        'browser/protector/mock_protector_service.cc',
-        'browser/protector/mock_protector_service.h',
-        'browser/protector/mock_setting_change.cc',
-        'browser/protector/mock_setting_change.h',
         'browser/search_engines/template_url_service_test_util.cc',
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',
@@ -991,11 +987,6 @@
         'browser/profiles/profile_info_util_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/profiles/profile_shortcut_manager_unittest_win.cc',
-        'browser/protector/composite_settings_change_unittest.cc',
-        'browser/protector/homepage_change_unittest.cc',
-        'browser/protector/prefs_backup_invalid_change_unittest.cc',
-        'browser/protector/protected_prefs_watcher_unittest.cc',
-        'browser/protector/session_startup_change_unittest.cc',
         'browser/renderer_host/plugin_info_message_filter_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/resources/print_preview/data/measurement_system.js',
@@ -2193,11 +2184,6 @@
         ['enable_language_detection==0', {
           'sources!': [
             'browser/language_usage_metrics_unittest.cc',
-          ],
-        }],
-        ['enable_protector_service==0', {
-          'sources/': [
-            ['exclude', '^browser/protector/'],
           ],
         }],
         ['toolkit_views==1', {

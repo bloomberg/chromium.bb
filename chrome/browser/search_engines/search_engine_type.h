@@ -42,8 +42,7 @@ enum SearchEngineType {
   SEARCH_ENGINE_WALLA,
   SEARCH_ENGINE_ZOZNAM,
   SEARCH_ENGINE_YAHOOQC,
-  SEARCH_ENGINE_NONE,  // Used by Protector. Putting it at the beginning would
-                       // corrupt UMA stats. Add new search engines below.
+  SEARCH_ENGINE_NONE,  // Defunct. Deletion would corrupt UMA stats.
   SEARCH_ENGINE_CONDUIT,
   SEARCH_ENGINE_ALL_BY,
   SEARCH_ENGINE_APORT,

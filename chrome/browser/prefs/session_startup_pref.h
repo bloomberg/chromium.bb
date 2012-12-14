@@ -71,13 +71,6 @@ struct SessionStartupPref {
   // Converts an integer pref value to a SessionStartupPref::Type.
   static SessionStartupPref::Type PrefValueToType(int pref_value);
 
-  // Returns |true| if a change to startup type or URLS was detected by
-  // ProtectorService.
-  static bool DidStartupPrefChange(Profile* profile);
-
-  // Returns the protected backup of startup type and URLS.
-  static SessionStartupPref GetStartupPrefBackup(Profile* profile);
-
   explicit SessionStartupPref(Type type);
 
   ~SessionStartupPref();

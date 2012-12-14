@@ -54,28 +54,9 @@ class Statement;
 //   alternate_urls         See TemplateURLData::alternate_urls. This was added
 //                          in version 47.
 //
-// keywords_backup          The full copy of the |keywords| table. Added in
-//                          version 43. Must be in sync with |keywords|
-//                          table otherwise verification of default search
-//                          provider settings will fail.
-//
 // This class also manages some fields in the |meta| table:
 //
 // Default Search Provider ID        The id of the default search provider.
-// Default Search Provider ID Backup
-//                                   Backup copy of the above for restoring it
-//                                   in case the setting was hijacked or
-//                                   corrupted. This was added in version 40.
-// Default Search Provider Backup  Backup copy of the raw in |keywords|
-//                                   with the default search provider ID to
-//                                   restore all provider info. This was added
-//                                   in version 42. Not used in 43.
-// Default Search Provider ID Backup Signature
-//                                   The signature of backup data and
-//                                   |keywords| table contents to be able to
-//                                   verify the backup and understand when the
-//                                   settings were changed. This was added
-//                                   in version 40.
 // Builtin Keyword Version           The version of builtin keywords data.
 //
 class KeywordTable : public WebDatabaseTable {
@@ -85,12 +66,6 @@ class KeywordTable : public WebDatabaseTable {
   // Constants exposed for the benefit of test code:
 
   static const char kDefaultSearchProviderKey[];
-  // Meta table key to store backup value for the default search provider id.
-  static const char kDefaultSearchIDBackupKey[];
-  // Meta table key to store backup value signature for the default search
-  // provider.  The default search provider ID and the |keywords_backup| table
-  // are signed.
-  static const char kBackupSignatureKey[];
 
   KeywordTable(sql::Connection* db, sql::MetaTable* meta_table);
   virtual ~KeywordTable();
@@ -118,15 +93,6 @@ class KeywordTable : public WebDatabaseTable {
   bool SetDefaultSearchProviderID(int64 id);
   int64 GetDefaultSearchProviderID();
 
-  // If the default search provider backup is valid, returns true and copies the
-  // backup into |backup|.  Otherwise returns false.
-  bool GetDefaultSearchProviderBackup(TemplateURLData* backup);
-
-  // Returns true if the default search provider has been changed out from under
-  // us. This can happen if another process modifies our database or the file
-  // was corrupted.
-  bool DidDefaultSearchProviderChange();
-
   // Version of the built-in keywords.
   bool SetBuiltinKeywordVersion(int version);
   int GetBuiltinKeywordVersion();
@@ -146,9 +112,9 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion44AddDefaultSearchProviderBackup();
   bool MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
   bool MigrateToVersion47AddAlternateURLsColumn();
+  bool MigrateToVersion48RemoveKeywordsBackup();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, SanitizeURLs);
@@ -164,28 +130,11 @@ class KeywordTable : public WebDatabaseTable {
   static bool GetKeywordDataFromStatement(const sql::Statement& s,
                                           TemplateURLData* data);
 
-  // Returns contents of |keywords_backup| table and default search provider
-  // id backup as a string through |data|. Return value is true on success,
-  // false otherwise.
-  bool GetSignatureData(int table_version, std::string* data);
-
   // Returns contents of selected table as a string in |contents| parameter.
   // Returns true on success, false otherwise.
   bool GetTableContents(const char* table_name,
                         int table_version,
                         std::string* contents);
-
-  // Updates settings backup, signs it and stores the signature in the
-  // database. Returns true on success.
-  bool UpdateBackupSignature(int table_version);
-
-  // Signs the backup table.  This is a subset of what UpdateBackupSignature()
-  // does.
-  bool SignBackup(int table_version);
-
-  // Checks the signature for the current settings backup. Returns true
-  // if signature is valid, false otherwise.
-  bool IsBackupSignatureValid(int table_version);
 
   // Gets a string representation for keyword with id specified.
   // Used to store its result in |meta| table or to compare with another
@@ -194,16 +143,9 @@ class KeywordTable : public WebDatabaseTable {
                           const std::string& table_name,
                           std::string* result);
 
-  // Updates default search provider id backup in |meta| table. Returns
-  // true on success. The id is returned back via |id| parameter.
-  bool UpdateDefaultSearchProviderIDBackup(TemplateURLID* id);
-
   // Migrates table |name| (which should be either "keywords" or
   // "keywords_backup") from version 44 to version 45.
   bool MigrateKeywordsTableForVersion45(const std::string& name);
-
-  // Whether the backup was overwritten during migration.
-  bool backup_overwritten_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

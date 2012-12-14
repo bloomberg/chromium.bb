@@ -826,12 +826,3 @@ TEST_F(WebDataServiceTest, WebIntentsRemoveDefaultByServiceURL) {
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(service_url_1.spec(), consumer.services_[0].service_url);
 }
-
-TEST_F(WebDataServiceTest, DidDefaultSearchProviderChangeOnNewProfile) {
-  KeywordsConsumer consumer;
-  wds_->GetKeywords(&consumer);
-  WaitUntilCalled();
-  ASSERT_TRUE(consumer.load_succeeded);
-  EXPECT_FALSE(consumer.keywords_result.did_default_search_provider_change);
-  EXPECT_FALSE(consumer.keywords_result.backup_valid);
-}

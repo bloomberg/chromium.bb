@@ -305,6 +305,16 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 }
 
+void MigrateUserPrefs(Profile* profile) {
+  // Cleanup old prefs.
+  static const char kBackupPref[] = "backup";
+  PrefService* prefs = profile->GetPrefs();
+  prefs->RegisterDictionaryPref(kBackupPref, new DictionaryValue(),
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->ClearPref(kBackupPref);
+  prefs->UnregisterPreference(kBackupPref);
+}
+
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Copy pref values which have been migrated to user_prefs from local_state,
   // or remove them from local_state outright, if copying is not required.

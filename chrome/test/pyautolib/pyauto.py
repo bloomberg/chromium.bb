@@ -2130,52 +2130,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                 'action': 'default'}
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def _EnsureProtectorCheck(self):
-    """Ensure that Protector check for changed settings has been performed in
-    the current browser session.
-
-    No-op if Protector is disabled.
-    """
-    # Ensure that check for default search engine change has been performed.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
-
-  def GetProtectorState(self, window_index=0):
-    """Returns current Protector state.
-
-    This will trigger Protector's check for changed settings if it hasn't been
-    performed yet.
-
-    Args:
-      window_index: The window index, default is 0.
-
-    Returns:
-      A dictionary.
-      Example:
-        { u'enabled': True,
-          u'showing_change': False }
-    """
-    self._EnsureProtectorCheck()
-    cmd_dict = {'command': 'GetProtectorState'}
-    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
-
-  def ApplyProtectorChange(self):
-    """Applies the change shown by Protector and closes the bubble.
-
-    No-op if Protector is not showing any change.
-    """
-    cmd_dict = {'command': 'PerformProtectorAction',
-                'action': 'apply_change'}
-    self._GetResultFromJSONRequest(cmd_dict)
-
-  def DiscardProtectorChange(self):
-    """Discards the change shown by Protector and closes the bubble.
-
-    No-op if Protector is not showing any change.
-    """
-    cmd_dict = {'command': 'PerformProtectorAction',
-                'action': 'discard_change'}
-    self._GetResultFromJSONRequest(cmd_dict)
-
   def GetLocalStatePrefsInfo(self):
     """Return info about preferences.
 

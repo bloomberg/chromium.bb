@@ -52,7 +52,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -279,9 +278,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   prerender::PrerenderLinkManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
-#if defined(ENABLE_PROTECTOR_SERVICE)
-  protector::ProtectorServiceFactory::GetInstance();
-#endif
 #if defined(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();
 #endif

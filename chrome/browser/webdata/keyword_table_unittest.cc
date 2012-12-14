@@ -133,115 +133,6 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   EXPECT_EQ(11, keyword_table->GetBuiltinKeywordVersion());
 }
 
-TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
-  // TODO(ivankr): suppress keyword_table.cc ERROR logs.
-  WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
-  KeywordTable* keyword_table = db.GetKeywordTable();
-
-  EXPECT_EQ(kInvalidTemplateURLID, keyword_table->GetDefaultSearchProviderID());
-
-  TemplateURLData keyword;
-  keyword.short_name = ASCIIToUTF16("short_name");
-  keyword.SetKeyword(ASCIIToUTF16("keyword"));
-  keyword.SetURL("http://url/");
-  keyword.suggestions_url = "url2";
-  keyword.favicon_url = GURL("http://favicon.url/");
-  keyword.show_in_default_list = true;
-  keyword.safe_for_autoreplace = true;
-  keyword.id = 1;
-  EXPECT_TRUE(keyword_table->AddKeyword(keyword));
-
-  EXPECT_TRUE(keyword_table->SetDefaultSearchProviderID(1));
-  EXPECT_TRUE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
-
-  TemplateURLData backup;
-  EXPECT_TRUE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  // Backup URL should have an invalid ID.
-  EXPECT_EQ(kInvalidTemplateURLID, backup.id);
-  EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(keyword.keyword(), backup.keyword());
-  EXPECT_EQ(keyword.url(), backup.url());
-  EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
-  EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
-  EXPECT_EQ(keyword.show_in_default_list, backup.show_in_default_list);
-  EXPECT_EQ(keyword.safe_for_autoreplace, backup.safe_for_autoreplace);
-  EXPECT_FALSE(keyword_table->DidDefaultSearchProviderChange());
-
-  // Change the actual setting.
-  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
-      KeywordTable::kDefaultSearchProviderKey, 2));
-  EXPECT_TRUE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(2, keyword_table->GetDefaultSearchProviderID());
-
-  EXPECT_TRUE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  EXPECT_EQ(kInvalidTemplateURLID, backup.id);
-  EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(keyword.keyword(), backup.keyword());
-  EXPECT_EQ(keyword.url(), backup.url());
-  EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
-  EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
-  EXPECT_EQ(keyword.show_in_default_list, backup.show_in_default_list);
-  EXPECT_EQ(keyword.safe_for_autoreplace, backup.safe_for_autoreplace);
-  EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
-
-  // Change the backup.
-  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
-      KeywordTable::kDefaultSearchProviderKey, 1));
-  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
-      KeywordTable::kDefaultSearchIDBackupKey, 2));
-  EXPECT_FALSE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
-  EXPECT_FALSE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
-
-  // Change the signature.
-  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
-      KeywordTable::kDefaultSearchIDBackupKey, 1));
-  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
-      KeywordTable::kBackupSignatureKey, std::string()));
-  EXPECT_FALSE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
-  EXPECT_FALSE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
-
-  // Change keywords.
-  EXPECT_TRUE(keyword_table->UpdateBackupSignature(
-      WebDatabase::kCurrentVersionNumber));
-  sql::Statement remove_keyword(keyword_table->db_->GetUniqueStatement(
-      "DELETE FROM keywords WHERE id=1"));
-  EXPECT_TRUE(remove_keyword.Run());
-  EXPECT_TRUE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
-
-  EXPECT_TRUE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  EXPECT_EQ(kInvalidTemplateURLID, backup.id);
-  EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(keyword.keyword(), backup.keyword());
-  EXPECT_EQ(keyword.url(), backup.url());
-  EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
-  EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
-  EXPECT_EQ(keyword.show_in_default_list, backup.show_in_default_list);
-  EXPECT_EQ(keyword.safe_for_autoreplace, backup.safe_for_autoreplace);
-  EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
-
-  // Change keywords backup.
-  sql::Statement remove_keyword_backup(keyword_table->db_->GetUniqueStatement(
-      "DELETE FROM keywords_backup WHERE id=1"));
-  EXPECT_TRUE(remove_keyword_backup.Run());
-  EXPECT_FALSE(keyword_table->IsBackupSignatureValid(
-      WebDatabase::kCurrentVersionNumber));
-  EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
-  EXPECT_FALSE(keyword_table->GetDefaultSearchProviderBackup(&backup));
-  EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
-}
-
 TEST_F(KeywordTableTest, GetTableContents) {
   WebDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
@@ -280,10 +171,6 @@ TEST_F(KeywordTableTest, GetTableContents) {
 
   std::string contents;
   EXPECT_TRUE(keyword_table->GetTableContents("keywords",
-      WebDatabase::kCurrentVersionNumber, &contents));
-  EXPECT_EQ(kTestContents, contents);
-
-  EXPECT_TRUE(keyword_table->GetTableContents("keywords_backup",
       WebDatabase::kCurrentVersionNumber, &contents));
   EXPECT_EQ(kTestContents, contents);
 }
@@ -327,10 +214,6 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
 
   std::string contents;
   EXPECT_TRUE(keyword_table->GetTableContents("keywords",
-      WebDatabase::kCurrentVersionNumber, &contents));
-  EXPECT_EQ(kTestContents, contents);
-
-  EXPECT_TRUE(keyword_table->GetTableContents("keywords_backup",
       WebDatabase::kCurrentVersionNumber, &contents));
   EXPECT_EQ(kTestContents, contents);
 }
@@ -433,8 +316,6 @@ TEST_F(KeywordTableTest, SanitizeURLs) {
   s.BindString16(0, string16());
   s.BindInt64(1, 2000);
   EXPECT_TRUE(s.Run());
-  EXPECT_TRUE(keyword_table->UpdateBackupSignature(
-      WebDatabase::kCurrentVersionNumber));
 
   // GetKeywords() should erase the entry with the empty URL field.
   EXPECT_TRUE(keyword_table->GetKeywords(&keywords));

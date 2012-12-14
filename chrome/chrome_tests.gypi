@@ -1093,8 +1093,6 @@
         'browser/process_singleton_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
-        'browser/protector/default_search_provider_change_browsertest.cc',
-        'browser/protector/protector_service_browsertest.cc',
         'browser/referrer_policy_browsertest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
@@ -1385,10 +1383,6 @@
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
         }, { # chromeos==1
-          'sources/': [
-            # Protector is disabled on CrOS.
-            ['exclude', '^browser/protector'],
-          ],
           'sources!': [
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',

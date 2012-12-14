@@ -21,11 +21,11 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 47;
+const int WebDatabase::kCurrentVersionNumber = 48;
 
 namespace {
 
-const int kCompatibleVersionNumber = 47;
+const int kCompatibleVersionNumber = 48;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -158,9 +158,9 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
 }
 
 sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
-  // Some malware tries to force protector to re-sign things by lowering the
-  // version number, causing migration to fail. Ensure the version number is at
-  // least as high as the compatible version number.
+  // Some malware used to lower the version number, causing migration to
+  // fail. Ensure the version number is at least as high as the compatible
+  // version number.
   int current_version = std::max(meta_table_.GetVersionNumber(),
                                  meta_table_.GetCompatibleVersionNumber());
   if (current_version > meta_table_.GetVersionNumber())
@@ -348,6 +348,13 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(47);
 
       ChangeVersion(&meta_table_, 47, true);
+      // FALL THROUGH
+
+    case 47:
+      if (!keyword_table_->MigrateToVersion48RemoveKeywordsBackup())
+        return FailedMigrationTo(48);
+
+      ChangeVersion(&meta_table_, 48, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

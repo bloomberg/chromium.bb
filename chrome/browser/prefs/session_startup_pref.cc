@@ -12,17 +12,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/protector/protected_prefs_watcher.h"
-#include "chrome/browser/protector/protector_service.h"
-#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/window_restore_utils.h"
 #endif
-
-using protector::ProtectedPrefsWatcher;
-using protector::ProtectorServiceFactory;
 
 namespace {
 
@@ -233,33 +227,6 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
     case kPrefValueHomePage: return SessionStartupPref::HOMEPAGE;
     default:                 return SessionStartupPref::DEFAULT;
   }
-}
-
-// static
-bool SessionStartupPref::DidStartupPrefChange(Profile* profile) {
-  ProtectedPrefsWatcher* prefs_watcher =
-      ProtectorServiceFactory::GetForProfile(profile)->GetPrefsWatcher();
-  return prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup) ||
-      prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup);
-}
-
-// static
-SessionStartupPref SessionStartupPref::GetStartupPrefBackup(Profile* profile) {
-  protector::ProtectedPrefsWatcher* prefs_watcher =
-      protector::ProtectorServiceFactory::GetForProfile(profile)->
-          GetPrefsWatcher();
-
-  int type;
-  CHECK(prefs_watcher->GetBackupForPref(
-            prefs::kRestoreOnStartup)->GetAsInteger(&type));
-  SessionStartupPref backup_pref(PrefValueToType(type));
-
-  const ListValue* url_list;
-  CHECK(prefs_watcher->GetBackupForPref(
-            prefs::kURLsToRestoreOnStartup)->GetAsList(&url_list));
-  URLListToPref(url_list, &backup_pref);
-
-  return backup_pref;
 }
 
 SessionStartupPref::SessionStartupPref(Type type) : type(type) {}

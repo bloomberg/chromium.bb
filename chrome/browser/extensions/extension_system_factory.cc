@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 
@@ -37,10 +37,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
 #if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif
-#if defined(ENABLE_PROTECTOR_SERVICE)
-  // ProtectorService should be destroyed after us.
-  DependsOn(protector::ProtectorServiceFactory::GetInstance());
-#endif
+  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {

@@ -41,7 +41,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
-#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -555,14 +554,6 @@ policy::PolicyService* TestingProfile::GetPolicyService() {
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
-#if defined(ENABLE_PROTECTOR_SERVICE)
-  // ProtectorService binds itself very closely to the PrefService at the moment
-  // of Profile creation and watches pref changes to update their backup.
-  // For tests that replace the PrefService after TestingProfile creation,
-  // ProtectorService is disabled to prevent further invalid memory accesses.
-  protector::ProtectorServiceFactory::GetInstance()->
-      SetTestingFactory(this, NULL);
-#endif
   prefs_.reset(prefs);
 }
 

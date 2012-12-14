@@ -5,7 +5,7 @@ INSERT INTO "meta" VALUES('version','42');
 INSERT INTO "meta" VALUES('last_compatible_version','42');
 INSERT INTO "meta" VALUES('Default Search Provider ID','2');
 INSERT INTO "meta" VALUES('Default Search Provider ID Backup','2');
-INSERT INTO "meta" VALUES('Default Search Provider ID Backup Signature','Signature');
+INSERT INTO "meta" VALUES('Default Search Provider ID Backup Signature','');
 INSERT INTO "meta" VALUES('Default Search Provider Backup','2Googlegoogle.comhttp://www.google.com/favicon.ico{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}{google:originalQueryForSuggestion}sourceid=chrome&ie={inputEncoding}&q={searchTerms}100UTF-81{google:baseSuggestURL}search?client=chrome&hl={language}&q={searchTerms}1162620{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&ie={inputEncoding}&ion=1{searchTerms}&nord=10{1234-5678-90AB-CDEF}');
 INSERT INTO "meta" VALUES('Builtin Keyword Version','33');
 CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,url VARCHAR NOT NULL,show_in_default_list INTEGER,safe_for_autoreplace INTEGER,originating_url VARCHAR,date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,input_encodings VARCHAR,suggest_url VARCHAR,prepopulate_id INTEGER DEFAULT 0,autogenerate_keyword INTEGER DEFAULT 0,logo_id INTEGER DEFAULT 0,created_by_policy INTEGER DEFAULT 0,instant_url VARCHAR,last_modified INTEGER DEFAULT 0, sync_guid VARCHAR);

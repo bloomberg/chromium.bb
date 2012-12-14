@@ -317,9 +317,6 @@
       <if expr="pp_ifdef('toolkit_views') or is_macosx">
         <structure type="chrome_scaled_image" name="IDR_HOME" file="common/browser_home_normal.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_HOMEPAGE_CHANGE_ALERT" file="protector_home_alert.png" />
-      <structure type="chrome_scaled_image" name="IDR_HOMEPAGE_CHANGE_BADGE" file="protector_home_badge.png" />
-      <structure type="chrome_scaled_image" name="IDR_HOMEPAGE_CHANGE_MENU" file="protector_home_menu.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_HOME_H" file="home_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="home_pressed.png" />
@@ -666,9 +663,7 @@
       <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="common/favicon_sad_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="sadtab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" />
-      <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_ALERT" file="protector_search_alert.png" />
-      <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="protector_search_badge.png" />
-      <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="protector_search_menu.png" />
+      <structure type="chrome_scaled_image" name="IDR_SCRIPT_BUBBLE" file="common/favicon_extensions.png" />
       <if expr="pp_ifdef('enable_settings_app')">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_128" file="settings_app_icon_128.png" />
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_16" file="settings_app_icon_16.png" />

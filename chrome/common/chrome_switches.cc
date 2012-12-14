@@ -1082,9 +1082,6 @@ const char kPromoServerURL[]                = "promo-server-url";
 // Default is yes.
 const char kPromptForExternalExtensions[]   = "prompt-for-external-extensions";
 
-// Enables the Protector feature.
-const char kProtector[]                     = "protector";
-
 // Forces proxy auto-detection.
 const char kProxyAutoDetect[]               = "proxy-auto-detect";
 

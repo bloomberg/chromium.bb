@@ -24,10 +24,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/protector/base_setting_change.h"
-#include "chrome/browser/protector/protector_service.h"
-#include "chrome/browser/protector/protector_service_factory.h"
-#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -728,22 +724,6 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
                                      &is_default_search_managed_);
 
-  // Check if the default search provider has been changed in Web Data by
-  // another program. No immediate action is performed because the default
-  // search may be changed below by Sync which effectively undoes the hijacking.
-  bool is_default_search_hijacked = false;
-  TemplateURL* hijacked_default_search_provider = NULL;
-  scoped_ptr<TemplateURL> backup_default_search_provider;
-  // No check is required if the default search is managed.
-  // |DidDefaultSearchProviderChange| must always be called because it will
-  // take care of the unowned backup default search provider instance.
-  if (DidDefaultSearchProviderChange(*result, profile_,
-                                     &backup_default_search_provider) &&
-      !is_default_search_managed_) {
-    hijacked_default_search_provider = default_search_provider;
-    is_default_search_hijacked = true;
-  }
-
   // Remove entries that were created because of policy as they may have
   // changed since the database was saved.
   RemoveProvidersCreatedByPolicy(&template_urls,
@@ -825,38 +805,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   if (new_resource_keyword_version)
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
-  bool check_if_default_search_valid = !is_default_search_managed_;
-
-  // Don't do anything if the default search provider has been changed since the
-  // check at the beginning (overridden by Sync).
-  if (is_default_search_hijacked &&
-      default_search_provider_ == hijacked_default_search_provider) {
-    // Put the #if defined(ENABLE_PROTECTOR_SERVICE) inside the 'if' block to
-    // avoid 'unused-but-set-variable' error.
-#if defined(ENABLE_PROTECTOR_SERVICE)
-    // The histograms should be reported even when Protector is disabled.
-    scoped_ptr<protector::BaseSettingChange> change(
-        protector::CreateDefaultSearchProviderChange(
-            hijacked_default_search_provider,
-            backup_default_search_provider.release()));
-    if (protector::IsEnabled()) {
-      protector::ProtectorService* protector_service =
-          protector::ProtectorServiceFactory::GetForProfile(profile());
-      DCHECK(protector_service);
-      protector_service->ShowChange(change.release());
-    } else {
-      // Protector is turned off: set the current default search to itself
-      // to update the backup and sign it. Otherwise, change will be reported
-      // every time when keywords are loaded until a search provider is added.
-      service_->SetDefaultSearchProvider(default_search_provider_);
-    }
-    // The default search provider sanity check makes no sense in this case
-    // because ProtectorService is going to change default search eventually.
-    check_if_default_search_valid = false;
-#endif
-  }
-
-  if (check_if_default_search_valid) {
+  if (!is_default_search_managed_) {
     bool has_default_search_provider = default_search_provider_ != NULL &&
         default_search_provider_->SupportsReplacement();
     UMA_HISTOGRAM_BOOLEAN("Search.HasDefaultSearchProvider",

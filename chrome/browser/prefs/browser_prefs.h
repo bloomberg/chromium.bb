@@ -17,6 +17,9 @@ void RegisterUserPrefs(PrefService* user_prefs);
 // Migrates prefs from |local_state| to |profile|'s pref store.
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state);
 
+// Migrates prefs in |profile|'s pref store.
+void MigrateUserPrefs(Profile* profile);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_PREFS_BROWSER_PREFS_H_

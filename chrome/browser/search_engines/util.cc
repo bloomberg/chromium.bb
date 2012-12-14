@@ -309,24 +309,3 @@ bool DeDupeEncodings(std::vector<std::string>* encodings) {
   encodings->swap(deduped_encodings);
   return encodings->size() != deduped_encodings.size();
 }
-
-bool DidDefaultSearchProviderChange(
-    const WDTypedResult& result,
-    Profile* profile,
-    scoped_ptr<TemplateURL>* backup_default_search_provider) {
-  DCHECK(backup_default_search_provider);
-  DCHECK(!backup_default_search_provider->get());
-  DCHECK_EQ(result.GetType(), KEYWORDS_RESULT);
-
-  WDKeywordsResult keyword_result = reinterpret_cast<
-      const WDResult<WDKeywordsResult>*>(&result)->GetValue();
-
-  if (!keyword_result.did_default_search_provider_change)
-    return false;
-
-  if (keyword_result.backup_valid) {
-    backup_default_search_provider->reset(new TemplateURL(profile,
-        keyword_result.default_search_provider_backup));
-  }
-  return true;
-}

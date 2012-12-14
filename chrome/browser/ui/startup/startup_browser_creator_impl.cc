@@ -42,10 +42,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/protector/protected_prefs_watcher.h"
-#include "chrome/browser/protector/protector_service.h"
-#include "chrome/browser/protector/protector_service_factory.h"
-#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -115,9 +111,6 @@
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using extensions::Extension;
-using protector::ProtectedPrefsWatcher;
-using protector::ProtectorService;
-using protector::ProtectorServiceFactory;
 
 extern bool in_synchronous_profile_launch;
 
@@ -361,10 +354,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   } else {
     RecordLaunchModeHistogram(urls_to_open.empty() ?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
-
-    // Notify user if the Preferences backup is invalid or changes to settings
-    // affecting browser startup have been detected.
-    CheckPreferencesBackup(profile);
 
     ProcessLaunchURLs(process_startup, urls_to_open);
 
@@ -961,62 +950,6 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
       if (it != startup_urls->end())
         startup_urls->erase(it);
     }
-  }
-}
-
-void StartupBrowserCreatorImpl::CheckPreferencesBackup(Profile* profile) {
-  ProtectorService* protector_service =
-      ProtectorServiceFactory::GetForProfile(profile);
-  ProtectedPrefsWatcher* prefs_watcher = protector_service->GetPrefsWatcher();
-
-  // Check if backup is valid.
-  if (!prefs_watcher->is_backup_valid()) {
-    protector_service->ShowChange(protector::CreatePrefsBackupInvalidChange());
-    // Further checks make no sense.
-    return;
-  }
-
-  // Check for session startup (including pinned tabs) changes.
-  if (SessionStartupPref::DidStartupPrefChange(profile) ||
-      prefs_watcher->DidPrefChange(prefs::kPinnedTabs)) {
-    LOG(WARNING) << "Session startup settings have changed";
-    SessionStartupPref new_pref = SessionStartupPref::GetStartupPref(profile);
-    StartupTabs new_tabs = PinnedTabCodec::ReadPinnedTabs(profile);
-    const base::Value* tabs_backup =
-        prefs_watcher->GetBackupForPref(prefs::kPinnedTabs);
-    protector_service->ShowChange(protector::CreateSessionStartupChange(
-        new_pref,
-        new_tabs,
-        SessionStartupPref::GetStartupPrefBackup(profile),
-        PinnedTabCodec::ReadPinnedTabs(tabs_backup)));
-  }
-
-  // Check for homepage changes.
-  if (prefs_watcher->DidPrefChange(prefs::kHomePage) ||
-      prefs_watcher->DidPrefChange(prefs::kHomePageIsNewTabPage) ||
-      prefs_watcher->DidPrefChange(prefs::kShowHomeButton)) {
-    LOG(WARNING) << "Homepage has changed";
-    PrefService* prefs = profile->GetPrefs();
-    std::string backup_homepage;
-    bool backup_homepage_is_ntp = false;
-    bool backup_show_home_button = false;
-    if (!prefs_watcher->GetBackupForPref(prefs::kHomePage)->
-            GetAsString(&backup_homepage) ||
-        !prefs_watcher->GetBackupForPref(prefs::kHomePageIsNewTabPage)->
-            GetAsBoolean(&backup_homepage_is_ntp) ||
-        !prefs_watcher->GetBackupForPref(prefs::kShowHomeButton)->
-            GetAsBoolean(&backup_show_home_button)) {
-      NOTREACHED();
-    }
-    protector_service->ShowChange(protector::CreateHomepageChange(
-        // New:
-        prefs->GetString(prefs::kHomePage),
-        prefs->GetBoolean(prefs::kHomePageIsNewTabPage),
-        prefs->GetBoolean(prefs::kShowHomeButton),
-        // Backup:
-        backup_homepage,
-        backup_homepage_is_ntp,
-        backup_show_home_button));
   }
 }
 
