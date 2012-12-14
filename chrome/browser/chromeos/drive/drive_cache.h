@@ -53,7 +53,7 @@ typedef base::Callback<void(bool success)>
 class FreeDiskSpaceGetterInterface {
  public:
   virtual ~FreeDiskSpaceGetterInterface() {}
-  virtual int64 AmountOfFreeDiskSpace() const = 0;
+  virtual int64 AmountOfFreeDiskSpace() = 0;
 };
 
 // DriveCache is used to maintain cache states of DriveFileSystem.

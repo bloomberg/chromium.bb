@@ -17,10 +17,10 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
-#include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
@@ -68,8 +68,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
     EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
 
-    mock_free_disk_space_checker_.reset(
-        new StrictMock<MockFreeDiskSpaceGetter>);
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
@@ -80,7 +79,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     cache_ = new DriveCache(
         DriveCache::GetCacheRootPath(profile_.get()),
         blocking_task_runner_,
-        mock_free_disk_space_checker_.get());
+        fake_free_disk_space_getter_.get());
 
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
@@ -133,8 +132,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
-  scoped_ptr<
-    StrictMock<MockFreeDiskSpaceGetter> > mock_free_disk_space_checker_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
@@ -148,8 +146,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
 
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // Create a stale cache file.
   DriveFileError error = DRIVE_FILE_OK;

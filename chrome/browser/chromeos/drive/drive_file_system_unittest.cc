@@ -22,11 +22,11 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
-#include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
@@ -241,8 +241,7 @@ class DriveFileSystemTest : public testing::Test {
 
     EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
 
-    mock_free_disk_space_checker_.reset(
-        new StrictMock<MockFreeDiskSpaceGetter>);
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
@@ -253,7 +252,7 @@ class DriveFileSystemTest : public testing::Test {
     cache_ = new DriveCache(
         DriveCache::GetCacheRootPath(profile_.get()),
         blocking_task_runner_,
-        mock_free_disk_space_checker_.get());
+        fake_free_disk_space_getter_.get());
 
     fake_uploader_.reset(new FakeDriveUploader);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
@@ -844,8 +843,7 @@ class DriveFileSystemTest : public testing::Test {
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
-  scoped_ptr<
-    StrictMock<MockFreeDiskSpaceGetter> > mock_free_disk_space_checker_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
@@ -1281,8 +1279,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
 }
 
 TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -1397,8 +1394,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   const int64 file_size = file->file_info().size();
 
   // Pretend we have enough space.
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
 
   const std::string remote_src_file_data = "Test file data";
   mock_drive_service_->set_file_data(new std::string(remote_src_file_data));
@@ -2016,8 +2013,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   const int64 file_size = entry_proto->file_info().size();
 
   // Pretend we have enough space.
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
@@ -2057,8 +2054,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
       entry_proto->file_specific_info().file_md5());
 
   // Pretend we have no space at all.
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(2).WillRepeatedly(Return(0));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(0);
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
@@ -2099,11 +2095,13 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // Pretend we have no space first (checked before downloading a file),
   // but then start reporting we have space. This is to emulate that
   // the disk space was freed up by removing temporary files.
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .WillOnce(Return(file_size + kMinFreeSpace))
-      .WillOnce(Return(0))
-      .WillOnce(Return(file_size + kMinFreeSpace))
-      .WillOnce(Return(file_size + kMinFreeSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(0);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
 
   // Store something in the temporary cache directory.
   TestStoreToCache("<resource_id>",
@@ -2164,10 +2162,10 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   // but then start reporting we have not enough space. This is to emulate that
   // the disk space becomes full after the file is downloaded for some reason
   // (ex. the actual file was larger than the expected size).
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .WillOnce(Return(file_size + kMinFreeSpace))
-      .WillOnce(Return(kMinFreeSpace - 1))
-      .WillOnce(Return(kMinFreeSpace - 1));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
@@ -2192,8 +2190,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -2261,8 +2258,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
 }
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -2302,8 +2298,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 }
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -2342,8 +2337,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
 }
 
 TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -2617,8 +2611,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
       .Times(1);
 
   // Pretend we have enough space.
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
-      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+  fake_free_disk_space_getter_->set_fake_free_disk_space(
+      file_size + kMinFreeSpace);
 
   const std::string kExpectedFileData = "test file data";
   mock_drive_service_->set_file_data(new std::string(kExpectedFileData));
