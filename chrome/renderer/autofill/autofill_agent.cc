@@ -354,6 +354,11 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
+  // If the element isn't focused then the changes don't matter. This check is
+  // required to properly handle IME interactions.
+  if (!element.focused())
+    return;
+
   if (password_autofill_manager_->TextDidChangeInTextField(element)) {
     element_ = element;
     return;

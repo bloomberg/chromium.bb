@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -26,6 +27,7 @@ using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebString;
+using WebKit::WebView;
 
 namespace {
 
@@ -120,6 +122,10 @@ class PasswordAutofillManagerTest : public ChromeRenderViewTest {
   void SimulateUsernameChange(const std::string& username,
                               bool move_caret_to_end) {
     username_element_.setValue(WebString::fromUTF8(username));
+    // The field must have focus or AutofillAgent will think the
+    // change should be ignored.
+    while (!username_element_.focused())
+      GetMainFrame()->document().frame()->view()->advanceFocus(false);
     if (move_caret_to_end)
       username_element_.setSelectionRange(username.length(), username.length());
     autofill_agent_->textFieldDidChange(username_element_);
