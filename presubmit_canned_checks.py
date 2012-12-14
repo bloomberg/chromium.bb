@@ -799,21 +799,6 @@ def _GetRietveldIssueProps(input_api, messages):
         issue=int(issue), messages=messages)
 
 
-def CheckIssueNotClosed(input_api, output_api):
-  """Verifies issue is not closed.
-
-  We should not be working with a closed review. CQ and dcommit set this bit,
-  so it is a pretty good indicator of whether an issue has been committed.
-  """
-  issue_props = _GetRietveldIssueProps(input_api=input_api, messages=False)
-  if issue_props and issue_props['closed']:
-    return [output_api.PresubmitError(
-        'Issue %s is closed.  You can reset the issue number associated with\n'
-        'this branch with: git cl issue 0\n' % issue_props['issue']
-        )]
-  return []
-
-
 def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """Return the owner and reviewers of a change, if any.
 
@@ -961,10 +946,6 @@ def PanProjectChecks(input_api, output_api,
     snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(
         input_api, output_api, source_file_filter=None))
-
-  snapshot("checking review not closed")
-  results.extend(input_api.canned_checks.CheckIssueNotClosed(
-      input_api, output_api))
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
