@@ -1008,15 +1008,6 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		goto err_gbm;
 	}
 
-	ret = drmModeSetCrtc(ec->drm.fd,
-			     output->crtc_id,
-			     output->current->fb_id, 0, 0,
-			     &output->connector_id, 1, &drm_mode->mode_info);
-	if (ret) {
-		weston_log("failed to set mode\n");
-		goto err_gl;
-	}
-
 	/* reset rendering stuff. */
 	if (output->current) {
 		if (output->current->is_client_buffer)
@@ -1043,8 +1034,6 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	output->base.current = &drm_mode->base;
 	return 0;
 
-err_gl:
-	gl_renderer_output_destroy(&output->base);
 err_gbm:
 	gbm_surface_destroy(surface);
 	return -1;
