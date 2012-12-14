@@ -32,10 +32,13 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Methods called by WebMediaPlayerMS and WebRtcAudioDeviceImpl.
   // MediaStreamAudioRenderer implementation.
+  virtual void Start() OVERRIDE;
   virtual void Play() OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
+  virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE;
+  virtual bool IsLocalRenderer() const OVERRIDE;
 
  protected:
   virtual ~WebRtcAudioRenderer();

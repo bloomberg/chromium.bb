@@ -207,6 +207,11 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   return true;
 }
 
+void WebRtcAudioRenderer::Start() {
+  // TODO(xians): refactor to make usage of Start/Stop more symmetric.
+  NOTIMPLEMENTED();
+}
+
 void WebRtcAudioRenderer::Play() {
   base::AutoLock auto_lock(lock_);
   if (state_ == UNINITIALIZED)
@@ -240,6 +245,14 @@ void WebRtcAudioRenderer::SetVolume(float volume) {
     return;
 
   sink_->SetVolume(volume);
+}
+
+base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {
+  return base::TimeDelta();
+}
+
+bool WebRtcAudioRenderer::IsLocalRenderer() const {
+  return false;
 }
 
 int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,

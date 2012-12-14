@@ -37,6 +37,7 @@ class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
 class VideoCaptureImplManager;
 class WebRtcAudioRenderer;
+class WebRtcLocalAudioRenderer;
 
 // MediaStreamImpl is a delegate for the Media Stream API messages used by
 // WebKit. It ties together WebKit, native PeerConnection in libjingle and
@@ -172,7 +173,9 @@ class CONTENT_EXPORT MediaStreamImpl
       webrtc::MediaStreamInterface* stream,
       const scoped_refptr<base::MessageLoopProxy>& message_loop);
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
-        webrtc::MediaStreamInterface* stream);
+      webrtc::MediaStreamInterface* stream);
+  scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
+      int session_id);
 
   // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.

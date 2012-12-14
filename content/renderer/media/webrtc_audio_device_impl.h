@@ -375,6 +375,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Sets the |renderer_|, returns false if |renderer_| has already existed.
   bool SetRenderer(WebRtcAudioRenderer* renderer);
 
+  const scoped_refptr<WebRtcAudioCapturer>& capturer() const {
+    return capturer_;
+  }
+
   // Accessors.
   int input_buffer_size() const {
     return input_audio_parameters_.frames_per_buffer();

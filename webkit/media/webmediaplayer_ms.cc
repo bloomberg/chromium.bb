@@ -103,7 +103,23 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
     GetClient()->setOpaque(true);
     if (video_frame_provider_) {
       video_frame_provider_->Start();
-    } else {
+    }
+
+    if (audio_renderer_) {
+      if (audio_renderer_->IsLocalRenderer()) {
+        // TODO(henrika): I would like to mute local audio by default but the
+        // approach here is not perfect. The right-click pop-up menu for a video
+        // element is not properly updated and does not reflect that the stream
+        // is muted. The control UI works and we are OK for audio elements.
+        // Tracking this issue at: http://crbug.com/164811.
+        setVolume(0);
+        GetClient()->volumeChanged(0);
+        GetClient()->muteChanged(true);
+      }
+      audio_renderer_->Start();
+    }
+
+    if (audio_renderer_ && !video_frame_provider_) {
       // This is audio-only mode.
       SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
       SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
@@ -233,6 +249,8 @@ float WebMediaPlayerMS::currentTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (current_frame_.get()) {
     return current_frame_->GetTimestamp().InSecondsF();
+  } else if (audio_renderer_) {
+    return audio_renderer_->GetCurrentRenderTime().InSecondsF();
   }
   return 0.0f;
 }

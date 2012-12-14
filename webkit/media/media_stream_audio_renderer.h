@@ -6,7 +6,7 @@
 #define WEBKIT_MEDIA_MEDIA_STREAM_AUDIO_RENDERER_H_
 
 #include "base/memory/ref_counted.h"
-#include "media/base/media_export.h"
+#include "base/time.h"
 
 namespace webkit_media {
 
@@ -14,16 +14,28 @@ class MediaStreamAudioRenderer
     : public base::RefCountedThreadSafe<MediaStreamAudioRenderer> {
  public:
   // Starts rendering audio.
+  virtual void Start() = 0;
+
+  // Stops rendering audio.
+  virtual void Stop() = 0;
+
+  // Resumes rendering audio after being paused.
   virtual void Play() = 0;
 
-  // Temporarily suspends rendering audio.
+  // Temporarily suspends rendering audio. The audio stream might still be
+  // active but new audio data is not provided to the consumer.
   virtual void Pause() = 0;
-
-  // Stops all operations in preparation for being deleted.
-  virtual void Stop() = 0;
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
+
+  // Time stamp that reflects the current render time. Should not be updated
+  // when paused.
+  virtual base::TimeDelta GetCurrentRenderTime() const = 0;
+
+  // Returns true if the implementation is a local renderer and false
+  // otherwise.
+  virtual bool IsLocalRenderer() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<MediaStreamAudioRenderer>;
