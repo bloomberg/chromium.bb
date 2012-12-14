@@ -25,7 +25,7 @@ bool BlacklistedByDefault(const base::ListValue* blacklist);
 // Returns true if the extension is allowed by the admin policy.
 bool UserMayLoad(const base::ListValue* blacklist,
                  const base::ListValue* whitelist,
-                 const base::ListValue* forcelist,
+                 const base::DictionaryValue* forcelist,
                  const base::ListValue* allowed_types,
                  const Extension* extension,
                  string16* error);

@@ -2250,8 +2250,8 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kExtensionInstallDenyList,
                           PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kExtensionInstallForceList,
-                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kExtensionInstallForceList,
+                                PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kExtensionAllowedTypes,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(kWebStoreLogin,

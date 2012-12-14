@@ -166,6 +166,27 @@ class ExtensionListPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(ExtensionListPolicyHandler);
 };
 
+class ExtensionInstallForcelistPolicyHandler
+    : public TypeCheckingPolicyHandler {
+ public:
+  ExtensionInstallForcelistPolicyHandler();
+  virtual ~ExtensionInstallForcelistPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  // Parses the data in |policy_value| and writes them to |extension_dict|.
+  bool ParseList(const base::Value* policy_value,
+                 base::DictionaryValue* extension_dict,
+                 PolicyErrorMap* errors);
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallForcelistPolicyHandler);
+};
+
 // Implements additional checks for policies that are lists of extension
 // URLPatterns.
 class ExtensionURLPatternListPolicyHandler : public TypeCheckingPolicyHandler {

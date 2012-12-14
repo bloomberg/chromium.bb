@@ -40,8 +40,8 @@ bool StandardManagementPolicyProvider::UserMayLoad(
       pref_service->GetList(prefs::kExtensionInstallDenyList);
   const base::ListValue* whitelist =
       pref_service->GetList(prefs::kExtensionInstallAllowList);
-  const base::ListValue* forcelist =
-      pref_service->GetList(prefs::kExtensionInstallForceList);
+  const base::DictionaryValue* forcelist =
+      pref_service->GetDictionary(prefs::kExtensionInstallForceList);
   const base::ListValue* allowed_types = NULL;
   if (pref_service->HasPrefPath(prefs::kExtensionAllowedTypes))
     allowed_types = pref_service->GetList(prefs::kExtensionAllowedTypes);

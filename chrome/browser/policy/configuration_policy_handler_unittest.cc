@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/prefs/pref_value_map.h"
+#include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -151,6 +152,86 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
                  POLICY_SCOPE_USER, policy.DeepCopy());
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+}
+
+TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
+  base::ListValue list;
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+  ExtensionInstallForcelistPolicyHandler handler;
+
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  // Add an erroneous entry. This should generate an error, but the good
+  // entry should still be translated successfully.
+  list.AppendString("adfasdf;http://example.com");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_EQ(1U, errors.size());
+
+  // Add an entry with bad URL, which should generate another error.
+  list.AppendString("abcdefghijklmnopabcdefghijklmnop;nourl");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_EQ(2U, errors.size());
+
+  // Just an extension ID should also generate an error.
+  list.AppendString("abcdefghijklmnopabcdefghijklmnop");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_EQ(3U, errors.size());
+}
+
+TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
+  base::ListValue policy;
+  base::DictionaryValue expected;
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  base::Value* value = NULL;
+  ExtensionInstallForcelistPolicyHandler handler;
+
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_FALSE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_FALSE(value);
+
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, policy.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+
+  policy.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
+  extensions::ExternalPolicyLoader::AddExtension(
+      &expected, "abcdefghijklmnopabcdefghijklmnop", "http://example.com");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, policy.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+
+  policy.AppendString("invalid");
+  policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, policy.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 

@@ -53,7 +53,7 @@ bool BlacklistedByDefault(const base::ListValue* blacklist) {
 
 bool UserMayLoad(const base::ListValue* blacklist,
                  const base::ListValue* whitelist,
-                 const base::ListValue* forcelist,
+                 const base::DictionaryValue* forcelist,
                  const base::ListValue* allowed_types,
                  const Extension* extension,
                  string16* error) {
@@ -90,7 +90,7 @@ bool UserMayLoad(const base::ListValue* blacklist,
   // Check the whitelist/forcelist first.
   base::StringValue id_value(extension->id());
   if ((whitelist && whitelist->Find(id_value) != whitelist->end()) ||
-      (forcelist && forcelist->Find(id_value) != forcelist->end()))
+      (forcelist && forcelist->HasKey(extension->id())))
     return true;
 
   // Then check the admin blacklist.

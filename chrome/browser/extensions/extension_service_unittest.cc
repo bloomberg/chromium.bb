@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/external_install_ui.h"
+#include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -3180,12 +3181,18 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
 TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   InitializeEmptyExtensionService();
 
-  // Blacklist everything.
   {
-    ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
-    blacklist->Append(Value::CreateStringValue("*"));
+    // Blacklist everything.
+    ListPrefUpdate blacklist_update(profile_->GetPrefs(),
+                                    prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = blacklist_update.Get();
+    blacklist->AppendString("*");
+
+    // Mark good.crx for force-installation.
+    DictionaryPrefUpdate forcelist_update(profile_->GetPrefs(),
+                                          prefs::kExtensionInstallForceList);
+    extensions::ExternalPolicyLoader::AddExtension(
+        forcelist_update.Get(), good_crx, "http://example.com/update_url");
   }
 
   // Have policy force-install an extension.
@@ -4024,11 +4031,12 @@ void ExtensionServiceTest::TestExternalProvider(
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
   std::string id = loaded_[0]->id();
+  bool no_uninstall = management_policy_->MustRemainEnabled(loaded_[0], NULL);
   service_->UninstallExtension(id, false, NULL);
   loop_.RunUntilIdle();
 
   FilePath install_path = extensions_install_dir_.AppendASCII(id);
-  if (Extension::IsRequired(location)) {
+  if (no_uninstall) {
     // Policy controlled extensions should not have been touched by uninstall.
     ASSERT_TRUE(file_util::PathExists(install_path));
   } else {
@@ -4055,7 +4063,7 @@ void ExtensionServiceTest::TestExternalProvider(
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
-  if (Extension::IsRequired(location)) {
+  if (management_policy_->MustRemainEnabled(loaded_[0], NULL)) {
     EXPECT_EQ(2, provider->visit_count());
   } else {
     // Now test an externally triggered uninstall (deleting the registry key or

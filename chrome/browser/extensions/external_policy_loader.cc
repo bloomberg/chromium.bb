@@ -5,38 +5,18 @@
 #include "chrome/browser/extensions/external_policy_loader.h"
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "googleurl/src/gurl.h"
 
 namespace extensions {
-
-namespace {
-
-// Check an extension ID and an URL to be syntactically correct.
-bool CheckExtension(const std::string& id, const std::string& update_url) {
-  GURL url(update_url);
-  if (!url.is_valid()) {
-    LOG(WARNING) << "Policy specifies invalid update URL for external "
-                 << "extension: " << update_url;
-    return false;
-  }
-  if (!Extension::IdIsValid(id)) {
-    LOG(WARNING) << "Policy specifies invalid ID for external "
-                 << "extension: " << id;
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
 
 ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
     : profile_(profile) {
@@ -49,31 +29,13 @@ ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
                               content::Source<Profile>(profile_));
 }
 
-void ExternalPolicyLoader::StartLoading() {
-  const ListValue* forcelist =
-      profile_->GetPrefs()->GetList(prefs::kExtensionInstallForceList);
-  DictionaryValue* result = new DictionaryValue();
-  if (forcelist != NULL) {
-    std::string extension_desc;
-    for (ListValue::const_iterator it = forcelist->begin();
-         it != forcelist->end(); ++it) {
-      if (!(*it)->GetAsString(&extension_desc)) {
-        LOG(WARNING) << "Failed to read forcelist string.";
-      } else {
-        // Each string item of the list has the following form:
-        // extension_id_code;extension_update_url
-        // The update URL might also contain semicolons.
-        size_t pos = extension_desc.find(';');
-        std::string id = extension_desc.substr(0, pos);
-        std::string update_url = extension_desc.substr(pos+1);
-        if (CheckExtension(id, update_url)) {
-          result->SetString(id + ".external_update_url", update_url);
-        }
-      }
-    }
-  }
-  prefs_.reset(result);
-  LoadFinished();
+// static
+void ExternalPolicyLoader::AddExtension(base::DictionaryValue* dict,
+                                        const std::string& extension_id,
+                                        const std::string& update_url) {
+  dict->SetString(base::StringPrintf("%s.%s", extension_id.c_str(),
+                                     ExternalProviderImpl::kExternalUpdateUrl),
+                  update_url);
 }
 
 void ExternalPolicyLoader::Observe(
@@ -88,6 +50,13 @@ void ExternalPolicyLoader::Observe(
     pref_change_registrar_.RemoveAll();
     profile_ = NULL;
   }
+}
+
+void ExternalPolicyLoader::StartLoading() {
+  const DictionaryValue* forcelist =
+      profile_->GetPrefs()->GetDictionary(prefs::kExtensionInstallForceList);
+  prefs_.reset(forcelist ? forcelist->DeepCopy() : NULL);
+  LoadFinished();
 }
 
 }  // namespace extensions

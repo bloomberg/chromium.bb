@@ -391,6 +391,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new ExtensionListPolicyHandler(key::kExtensionInstallBlacklist,
                                      prefs::kExtensionInstallDenyList,
                                      true));
+  handlers_.push_back(new ExtensionInstallForcelistPolicyHandler());
   handlers_.push_back(
       new ExtensionURLPatternListPolicyHandler(
           key::kExtensionInstallSources,

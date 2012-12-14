@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 
 #include "base/logging.h"
@@ -22,14 +23,14 @@ using content::BrowserThread;
 
 namespace extensions {
 
-class ExternalPolicyProviderTest : public testing::Test {
+class ExternalPolicyLoaderTest : public testing::Test {
  public:
-  ExternalPolicyProviderTest()
+  ExternalPolicyLoaderTest()
       : loop_(MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &loop_) {
   }
 
-  virtual ~ExternalPolicyProviderTest() {}
+  virtual ~ExternalPolicyLoaderTest() {}
 
  private:
   // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
@@ -44,15 +45,14 @@ class MockExternalPolicyProviderVisitor
   MockExternalPolicyProviderVisitor() {
   }
 
-  // Initialize a provider with |policy_forcelist|, and check that it parses
-  // exactly those extensions, that are specified in |policy_validlist|.
-  void Visit(ListValue* policy_forcelist,
-             ListValue* policy_validlist,
-             const std::set<std::string>& ignore_list) {
+  // Initialize a provider with |policy_forcelist|, and check that it installs
+  // exactly the extensions specified in |expected_extensions|.
+  void Visit(const base::DictionaryValue& policy_forcelist,
+             const std::set<std::string>& expected_extensions) {
     profile_.reset(new TestingProfile);
     profile_->GetTestingPrefService()->SetManagedPref(
         prefs::kExtensionInstallForceList,
-        policy_forcelist->DeepCopy());
+        policy_forcelist.DeepCopy());
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(profile_.get()),
@@ -62,9 +62,9 @@ class MockExternalPolicyProviderVisitor
 
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.
-    remaining_extensions = policy_validlist;
+    expected_extensions_ = expected_extensions;
     provider_->VisitRegisteredExtension();
-    EXPECT_EQ(0u, remaining_extensions->GetSize());
+    EXPECT_TRUE(expected_extensions_.empty());
   }
 
   virtual bool OnExternalExtensionFileFound(const std::string& id,
@@ -91,8 +91,7 @@ class MockExternalPolicyProviderVisitor
     EXPECT_FALSE(version1.get());
 
     // Remove the extension from our list.
-    StringValue ext_str(id + ";" + update_url.spec());
-    EXPECT_NE(false, remaining_extensions->Remove(ext_str, NULL));
+    EXPECT_EQ(1U, expected_extensions_.erase(id));
     return true;
   }
 
@@ -103,7 +102,7 @@ class MockExternalPolicyProviderVisitor
   }
 
  private:
-  ListValue* remaining_extensions;
+  std::set<std::string> expected_extensions_;
 
   scoped_ptr<TestingProfile> profile_;
 
@@ -112,47 +111,38 @@ class MockExternalPolicyProviderVisitor
   DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyProviderVisitor);
 };
 
-TEST_F(ExternalPolicyProviderTest, PolicyIsParsed) {
-  ListValue forced_extensions;
-  forced_extensions.Append(Value::CreateStringValue(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;http://www.example.com/crx?a=5;b=6"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;"
-      "https://clients2.google.com/service/update2/crx"));
+TEST_F(ExternalPolicyLoaderTest, PolicyIsParsed) {
+  base::DictionaryValue forced_extensions;
+  std::set<std::string> expected_extensions;
+  extensions::ExternalPolicyLoader::AddExtension(
+      &forced_extensions, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "http://www.example.com/crx?a=5;b=6");
+  expected_extensions.insert("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  extensions::ExternalPolicyLoader::AddExtension(
+      &forced_extensions, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "https://clients2.google.com/service/update2/crx");
+  expected_extensions.insert("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
   MockExternalPolicyProviderVisitor mv;
-  std::set<std::string> empty;
-  mv.Visit(&forced_extensions, &forced_extensions, empty);
+  mv.Visit(forced_extensions, expected_extensions);
 }
 
-TEST_F(ExternalPolicyProviderTest, InvalidPolicyIsNotParsed) {
-  ListValue forced_extensions, valid_extensions;
-  StringValue valid(
-      "cccccccccccccccccccccccccccccccc;http://www.example.com/crx");
-  valid_extensions.Append(valid.DeepCopy());
-  forced_extensions.Append(valid.DeepCopy());
-  // Add invalid strings:
-  forced_extensions.Append(Value::CreateStringValue(""));
-  forced_extensions.Append(Value::CreateStringValue(";"));
-  forced_extensions.Append(Value::CreateStringValue(";;"));
-  forced_extensions.Append(Value::CreateStringValue(
-      ";http://www.example.com/crx"));
-  forced_extensions.Append(Value::CreateStringValue(
-      ";aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "http://www.example.com/crx;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;http#//www.example.com/crx"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-  forced_extensions.Append(Value::CreateStringValue(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaahttp#//www.example.com/crx"));
+TEST_F(ExternalPolicyLoaderTest, InvalidEntriesIgnored) {
+  base::DictionaryValue forced_extensions;
+  std::set<std::string> expected_extensions;
+
+  extensions::ExternalPolicyLoader::AddExtension(
+      &forced_extensions, "cccccccccccccccccccccccccccccccc",
+      "http://www.example.com/crx");
+  expected_extensions.insert("cccccccccccccccccccccccccccccccc");
+
+  // Add invalid entries.
+  forced_extensions.SetString("invalid", "http://www.example.com/crx");
+  forced_extensions.SetString("dddddddddddddddddddddddddddddddd", "");
+  forced_extensions.SetString("invalid", "bad");
 
   MockExternalPolicyProviderVisitor mv;
-  std::set<std::string> empty;
-  mv.Visit(&forced_extensions, &valid_extensions, empty);
+  mv.Visit(forced_extensions, expected_extensions);
 }
 
 }  // namespace extensions

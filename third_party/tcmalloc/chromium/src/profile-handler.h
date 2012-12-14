@@ -102,6 +102,18 @@ typedef void (*ProfileHandlerCallback)(int sig, siginfo_t* sig_info,
 void ProfileHandlerRegisterThread();
 
 /*
+ * Unregisters a thread before exiting. This is not strictly necessary in most
+ * cases, because the pthread library will detect that previously-valid thread
+ * identifiers have become invalid. For dead-thread detection to work, pthread
+ * identifiers are accessed even after the thread has been destroyed, which may
+ * fail in some edge cases (thread ID recycling) and even crash in exotic cases
+ * (for example, when using user-allocated stacks with NPTL and unmapping the
+ * memory after the thread terminates). Thus, it is generally good practice to
+ * call ProfileHandlerUnregisterThread() just before exiting the thread.
+ */
+void ProfileHandlerUnregisterThread();
+
+/*
  * Registers a callback routine. This callback function will be called in the
  * context of SIGPROF handler, so must be async-signal-safe. The returned token
  * is to be used when unregistering this callback via

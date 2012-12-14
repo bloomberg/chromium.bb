@@ -132,10 +132,10 @@ using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::FeatureSwitch;
-using extensions::UnloadedExtensionInfo;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 using extensions::PermissionSet;
+using extensions::UnloadedExtensionInfo;
 
 namespace errors = extension_manifest_errors;
 
@@ -387,6 +387,7 @@ ExtensionService::ExtensionService(Profile* profile,
                  base::Unretained(this));
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, callback);
   pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
+  pref_change_registrar_.Add(prefs::kExtensionAllowedTypes, callback);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
