@@ -101,16 +101,28 @@ class GPU_EXPORT CommandBuffer {
   // Sets the current get offset. This can be called from any thread.
   virtual void SetGetOffset(int32 get_offset) = 0;
 
-  // Create a transfer buffer of the given size. Returns its ID or -1 on
-  // error.
-  virtual Buffer CreateTransferBuffer(size_t size, int32* id) = 0;
+  // Create a transfer buffer and return a handle that uniquely
+  // identifies it or -1 on error. id_request lets the caller request a
+  // specific id for the transfer buffer, or -1 if the caller does not care.
+  // If the requested id can not be fulfilled, a different id will be returned.
+  // id_request must be either -1 or between 0 and 100.
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) = 0;
 
-  // Destroy a transfer buffer. The ID must be positive.
+  // Register an existing shared memory object and get an ID that can be used
+  // to identify it in the command buffer. Callee dups the handle until
+  // DestroyTransferBuffer is called. id_request lets the caller request a
+  // specific id for the transfer buffer, or -1 if the caller does not care.
+  // If the requested id can not be fulfilled, a different id will be returned.
+  // id_request must be either -1 or between 0 and 100.
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size,
+                                       int32 id_request) = 0;
+
+  // Destroy a transfer buffer and recycle the handle.
   virtual void DestroyTransferBuffer(int32 id) = 0;
 
-  // Get the transfer buffer associated with an ID. Returns a null buffer for
-  // ID 0.
-  virtual Buffer GetTransferBuffer(int32 id) = 0;
+  // Get the transfer buffer associated with a handle.
+  virtual Buffer GetTransferBuffer(int32 handle) = 0;
 
   // Allows the reader to update the current token value.
   virtual void SetToken(int32 token) = 0;

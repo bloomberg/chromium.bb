@@ -129,22 +129,26 @@ void PpapiCommandBufferProxy::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-gpu::Buffer PpapiCommandBufferProxy::CreateTransferBuffer(size_t size,
-                                                          int32* id) {
-  *id = -1;
-
-  if (last_state_.error != gpu::error::kNoError)
-    return gpu::Buffer();
-
-  if (!Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
-            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, size, id))) {
-    return gpu::Buffer();
+int32 PpapiCommandBufferProxy::CreateTransferBuffer(
+    size_t size,
+    int32 id_request) {
+  if (last_state_.error == gpu::error::kNoError) {
+    int32 id;
+    if (Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
+             ppapi::API_ID_PPB_GRAPHICS_3D, resource_, size, &id))) {
+      return id;
+    }
   }
+  return -1;
+}
 
-  if ((*id) <= 0)
-    return gpu::Buffer();
-
-  return GetTransferBuffer(*id);
+int32 PpapiCommandBufferProxy::RegisterTransferBuffer(
+    base::SharedMemory* shared_memory,
+    size_t size,
+    int32 id_request) {
+  // Not implemented in proxy.
+  NOTREACHED();
+  return -1;
 }
 
 void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {

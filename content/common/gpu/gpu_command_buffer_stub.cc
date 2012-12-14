@@ -172,7 +172,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Initialize,
                                     OnInitialize);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetGetBuffer, OnSetGetBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
+                                    OnSetGetBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetSharedStateBuffer,
                                     OnSetSharedStateBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
@@ -183,10 +184,12 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnGetStateFast);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
-                        OnRegisterTransferBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
-                        OnDestroyTransferBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateTransferBuffer,
+                                    OnCreateTransferBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_RegisterTransferBuffer,
+                                    OnRegisterTransferBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_DestroyTransferBuffer,
+                                    OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetTransferBuffer,
                                     OnGetTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
@@ -350,7 +353,8 @@ void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
   Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnInitialize(IPC::Message* reply_message) {
+void GpuCommandBufferStub::OnInitialize(
+    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnInitialize");
   DCHECK(!command_buffer_.get());
 
@@ -519,10 +523,16 @@ void GpuCommandBufferStub::OnInitialize(IPC::Message* reply_message) {
   }
 }
 
-void GpuCommandBufferStub::OnSetGetBuffer(int32 shm_id) {
+void GpuCommandBufferStub::OnSetGetBuffer(
+    int32 shm_id, IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetGetBuffer");
-  if (command_buffer_.get())
+  if (command_buffer_.get()) {
     command_buffer_->SetGetBuffer(shm_id);
+  } else {
+    DLOG(ERROR) << "no command_buffer.";
+    reply_message->set_reply_error();
+  }
+  Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnSetSharedStateBuffer(
@@ -634,22 +644,51 @@ void GpuCommandBufferStub::OnRescheduled() {
     ReportState();
 }
 
+void GpuCommandBufferStub::OnCreateTransferBuffer(uint32 size,
+                                                  int32 id_request,
+                                                  IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateTransferBuffer");
+  if (command_buffer_.get()) {
+    int32 id = command_buffer_->CreateTransferBuffer(size, id_request);
+    GpuCommandBufferMsg_CreateTransferBuffer::WriteReplyParams(
+        reply_message, id);
+  } else {
+    reply_message->set_reply_error();
+  }
+  Send(reply_message);
+}
+
 void GpuCommandBufferStub::OnRegisterTransferBuffer(
-    int32 id,
     base::SharedMemoryHandle transfer_buffer,
-    uint32 size) {
+    uint32 size,
+    int32 id_request,
+    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterTransferBuffer");
   base::SharedMemory shared_memory(transfer_buffer, false);
 
-  if (command_buffer_.get())
-    command_buffer_->RegisterTransferBuffer(id, &shared_memory, size);
+  if (command_buffer_.get()) {
+    int32 id = command_buffer_->RegisterTransferBuffer(&shared_memory,
+                                                       size,
+                                                       id_request);
+    GpuCommandBufferMsg_RegisterTransferBuffer::WriteReplyParams(reply_message,
+                                                                 id);
+  } else {
+    reply_message->set_reply_error();
+  }
+
+  Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnDestroyTransferBuffer(int32 id) {
+void GpuCommandBufferStub::OnDestroyTransferBuffer(
+    int32 id,
+    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyTransferBuffer");
-
-  if (command_buffer_.get())
+  if (command_buffer_.get()) {
     command_buffer_->DestroyTransferBuffer(id);
+  } else {
+    reply_message->set_reply_error();
+  }
+  Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnGetTransferBuffer(

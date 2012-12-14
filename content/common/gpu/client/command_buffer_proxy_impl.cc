@@ -52,7 +52,7 @@ CommandBufferProxyImpl::~CommandBufferProxyImpl() {
     it->second.shared_memory = NULL;
   }
   for (Decoders::iterator it = video_decoder_hosts_.begin();
-      it != video_decoder_hosts_.end(); ++it) {
+       it != video_decoder_hosts_.end(); ++it) {
     if (it->second)
       it->second->OnChannelError();
   }
@@ -62,6 +62,8 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
+                        OnNotifyRepaint);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EchoAck, OnEchoAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetMemoryAllocation,
@@ -151,18 +153,22 @@ bool CommandBufferProxyImpl::Initialize() {
     return false;
   }
 
-  gpu::Buffer buffer = CreateTransferBuffer(sizeof(*shared_state_),
-                                            &state_buffer_);
+  state_buffer_ = CreateTransferBuffer(sizeof *shared_state_, -1);
+
+  if (state_buffer_ == -1) {
+    LOG(ERROR) << "Failed to create shared state transfer buffer.";
+    return false;
+  }
+
+  gpu::Buffer buffer = GetTransferBuffer(state_buffer_);
   if (!buffer.ptr) {
-    LOG(ERROR) << "Failed to allocate shared state buffer.";
+    LOG(ERROR) << "Failed to get shared state transfer buffer";
     return false;
   }
 
   shared_state_ = reinterpret_cast<gpu::CommandBufferSharedState*>(buffer.ptr);
   shared_state_->Initialize();
 
-  // TODO(apatrick): Eliminate this. Pass the shared state buffer handle
-  // via the Initialize IPC.
   if (!Send(new GpuCommandBufferMsg_SetSharedStateBuffer(route_id_,
                                                          state_buffer_))) {
     LOG(ERROR) << "Failed to initialize shared command buffer state.";
@@ -241,53 +247,70 @@ void CommandBufferProxyImpl::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-gpu::Buffer CommandBufferProxyImpl::CreateTransferBuffer(size_t size,
-                                                         int32* id) {
-  *id = -1;
-
+int32 CommandBufferProxyImpl::CreateTransferBuffer(
+    size_t size, int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
-    return gpu::Buffer();
+    return -1;
 
-  int32 new_id = channel_->ReserveTransferBufferId();
-  DCHECK(transfer_buffers_.find(new_id) == transfer_buffers_.end());
-
-  scoped_ptr<base::SharedMemory> shared_memory(
+  // Take ownership of shared memory. This will close the handle if Send below
+  // fails. Otherwise, callee takes ownership before this variable
+  // goes out of scope by duping the handle.
+  scoped_ptr<base::SharedMemory> shm(
       channel_->factory()->AllocateSharedMemory(size));
-  if (!shared_memory.get())
-    return gpu::Buffer();
+  if (!shm.get())
+    return -1;
 
-  if (!shared_memory->memory()) {
-    if (!shared_memory->Map(size))
-      return Buffer();
+  base::SharedMemoryHandle handle = shm->handle();
+#if defined(OS_WIN)
+  // Windows needs to explicitly duplicate the handle out to another process.
+  if (!BrokerDuplicateHandle(handle, channel_->gpu_pid(), &handle,
+                             FILE_MAP_WRITE, 0)) {
+    return -1;
+  }
+#elif defined(OS_POSIX)
+  DCHECK(!handle.auto_close);
+#endif
+
+  int32 id;
+  if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,
+                                                           handle,
+                                                           size,
+                                                           id_request,
+                                                           &id))) {
+    return -1;
   }
 
-  // Duplicate handle to the GPU process.
+  return id;
+}
+
+int32 CommandBufferProxyImpl::RegisterTransferBuffer(
+    base::SharedMemory* shared_memory,
+    size_t size,
+    int32 id_request) {
+  if (last_state_.error != gpu::error::kNoError)
+    return -1;
+
+  // Returns FileDescriptor with auto_close off.
   base::SharedMemoryHandle handle = shared_memory->handle();
 #if defined(OS_WIN)
   // Windows needs to explicitly duplicate the handle out to another process.
   if (!BrokerDuplicateHandle(handle, channel_->gpu_pid(), &handle,
                              FILE_MAP_WRITE, 0)) {
-    return Buffer();
+    return -1;
   }
-#else
-  shared_memory->ShareToProcess(channel_->gpu_pid(), &handle);
 #endif
 
-  if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,
-                                                           new_id,
-                                                           handle,
-                                                           size))) {
-    return Buffer();
+  int32 id;
+  if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(
+      route_id_,
+      handle,
+      size,
+      id_request,
+      &id))) {
+    return -1;
   }
 
-  *id = new_id;
-  Buffer buffer;
-  buffer.ptr = shared_memory->memory();
-  buffer.size = size;
-  buffer.shared_memory = shared_memory.release();
-  transfer_buffers_[new_id] = buffer;
-
-  return buffer;
+  return id;
 }
 
 void CommandBufferProxyImpl::DestroyTransferBuffer(int32 id) {
@@ -327,19 +350,20 @@ Buffer CommandBufferProxyImpl::GetTransferBuffer(int32 id) {
   }
 
   // Cache the transfer buffer shared memory object client side.
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle, false));
+  base::SharedMemory* shared_memory = new base::SharedMemory(handle, false);
 
   // Map the shared memory on demand.
   if (!shared_memory->memory()) {
-    if (!shared_memory->Map(size))
+    if (!shared_memory->Map(size)) {
+      delete shared_memory;
       return Buffer();
+    }
   }
 
   Buffer buffer;
   buffer.ptr = shared_memory->memory();
   buffer.size = size;
-  buffer.shared_memory = shared_memory.release();
+  buffer.shared_memory = shared_memory;
   transfer_buffers_[id] = buffer;
 
   return buffer;
@@ -348,6 +372,13 @@ Buffer CommandBufferProxyImpl::GetTransferBuffer(int32 id) {
 void CommandBufferProxyImpl::SetToken(int32 token) {
   // Not implemented in proxy.
   NOTREACHED();
+}
+
+void CommandBufferProxyImpl::OnNotifyRepaint() {
+  if (!notify_repaint_task_.is_null())
+    MessageLoop::current()->PostNonNestableTask(
+        FROM_HERE, notify_repaint_task_);
+  notify_repaint_task_.Reset();
 }
 
 void CommandBufferProxyImpl::SetParseError(
@@ -463,6 +494,10 @@ bool CommandBufferProxyImpl::SetParent(
   }
 
   return result;
+}
+
+void CommandBufferProxyImpl::SetNotifyRepaintTask(const base::Closure& task) {
+  notify_repaint_task_ = task;
 }
 
 GpuVideoDecodeAcceleratorHost*

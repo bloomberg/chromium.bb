@@ -142,7 +142,7 @@ class GpuCommandBufferStub
 
   // Message handlers:
   void OnInitialize(IPC::Message* reply_message);
-  void OnSetGetBuffer(int32 shm_id);
+  void OnSetGetBuffer(int32 shm_id, IPC::Message* reply_message);
   void OnSetSharedStateBuffer(int32 shm_id, IPC::Message* reply_message);
   void OnSetParent(int32 parent_route_id,
                    uint32 parent_texture_id,
@@ -152,10 +152,14 @@ class GpuCommandBufferStub
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
   void OnEcho(const IPC::Message& message);
   void OnRescheduled();
-  void OnRegisterTransferBuffer(int32 id,
-                                base::SharedMemoryHandle transfer_buffer,
-                                uint32 size);
-  void OnDestroyTransferBuffer(int32 id);
+  void OnCreateTransferBuffer(uint32 size,
+                              int32 id_request,
+                              IPC::Message* reply_message);
+  void OnRegisterTransferBuffer(base::SharedMemoryHandle transfer_buffer,
+                                uint32 size,
+                                int32 id_request,
+                                IPC::Message* reply_message);
+  void OnDestroyTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
   void OnCreateVideoDecoder(

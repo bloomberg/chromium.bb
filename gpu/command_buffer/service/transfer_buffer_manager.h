@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
@@ -20,11 +19,13 @@ class GPU_EXPORT TransferBufferManagerInterface {
  public:
   virtual ~TransferBufferManagerInterface();
 
-  virtual bool RegisterTransferBuffer(int32 id,
-                                      base::SharedMemory* shared_memory,
-                                      size_t size) = 0;
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) = 0;
+  virtual int32 RegisterTransferBuffer(
+      base::SharedMemory* shared_memory,
+      size_t size,
+      int32 id_request) = 0;
   virtual void DestroyTransferBuffer(int32 id) = 0;
-  virtual Buffer GetTransferBuffer(int32 id) = 0;
+  virtual Buffer GetTransferBuffer(int32 handle) = 0;
 
 };
 
@@ -34,17 +35,19 @@ class GPU_EXPORT TransferBufferManager
   TransferBufferManager();
 
   bool Initialize();
-  virtual bool RegisterTransferBuffer(int32 id,
-                                      base::SharedMemory* shared_memory,
-                                      size_t size) OVERRIDE;
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
+  virtual int32 RegisterTransferBuffer(
+      base::SharedMemory* shared_memory,
+      size_t size,
+      int32 id_request) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual Buffer GetTransferBuffer(int32 id) OVERRIDE;
+  virtual Buffer GetTransferBuffer(int32 handle) OVERRIDE;
 
  private:
   virtual ~TransferBufferManager();
 
-  typedef base::hash_map<int32, Buffer> BufferMap;
-  BufferMap registered_buffers_;
+  std::set<int32> unused_registered_object_elements_;
+  std::vector<Buffer> registered_objects_;
   size_t shared_memory_bytes_allocated_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferBufferManager);

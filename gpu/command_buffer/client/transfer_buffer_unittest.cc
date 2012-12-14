@@ -16,7 +16,6 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
 namespace gpu {
@@ -212,10 +211,10 @@ class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
   virtual ~MockClientCommandBufferCanFail() {
   }
 
-  MOCK_METHOD2(CreateTransferBuffer, Buffer(size_t size, int32* id));
+  MOCK_METHOD2(CreateTransferBuffer, int32(size_t size, int32 id_request));
 
-  Buffer RealCreateTransferBuffer(size_t size, int32* id) {
-    return MockCommandBufferBase::CreateTransferBuffer(size, id);
+  int32 RealCreateTransferBuffer(size_t size, int32 id_request) {
+    return MockCommandBufferBase::CreateTransferBuffer(size, id_request);
   }
 };
 
@@ -373,7 +372,7 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
   // Try to allocate again, fail first request
   EXPECT_CALL(*command_buffer(),
               CreateTransferBuffer(kStartTransferBufferSize, _))
-      .WillOnce(DoAll(SetArgPointee<1>(-1), Return(Buffer())))
+      .WillOnce(Return(-1))
       .RetiresOnSaturation();
   EXPECT_CALL(*command_buffer(),
               CreateTransferBuffer(kMinTransferBufferSize, _))
@@ -425,9 +424,9 @@ TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
 
   // Try to allocate again, fail both requests.
   EXPECT_CALL(*command_buffer(), CreateTransferBuffer(_, _))
-      .WillOnce(DoAll(SetArgPointee<1>(-1), Return(Buffer())))
-      .WillOnce(DoAll(SetArgPointee<1>(-1), Return(Buffer())))
-      .WillOnce(DoAll(SetArgPointee<1>(-1), Return(Buffer())))
+      .WillOnce(Return(-1))
+      .WillOnce(Return(-1))
+      .WillOnce(Return(-1))
       .RetiresOnSaturation();
 
   const size_t kSize1 = 512 - kStartingOffset;

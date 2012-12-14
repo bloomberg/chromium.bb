@@ -146,18 +146,24 @@ class Graphics3D::LockingCommandBuffer : public gpu::CommandBuffer {
     MaybeLock lock(need_to_lock_);
     gpu_command_buffer_->SetGetOffset(get_offset);
   }
-  virtual gpu::Buffer CreateTransferBuffer(size_t size,
-                                           int32* id) OVERRIDE {
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE {
     MaybeLock lock(need_to_lock_);
-    return gpu_command_buffer_->CreateTransferBuffer(size, id);
+    return gpu_command_buffer_->CreateTransferBuffer(size, id_request);
+  }
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size,
+                                       int32 id_request) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->RegisterTransferBuffer(shared_memory, size,
+        id_request);
   }
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE {
     MaybeLock lock(need_to_lock_);
     gpu_command_buffer_->DestroyTransferBuffer(id);
   }
-  virtual gpu::Buffer GetTransferBuffer(int32 id) OVERRIDE {
+  virtual gpu::Buffer GetTransferBuffer(int32 handle) OVERRIDE {
     MaybeLock lock(need_to_lock_);
-    return gpu_command_buffer_->GetTransferBuffer(id);
+    return gpu_command_buffer_->GetTransferBuffer(handle);
   }
   virtual void SetToken(int32 token) OVERRIDE {
     MaybeLock lock(need_to_lock_);
@@ -449,7 +455,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreateTransferBuffer(
   if (enter.succeeded())
     *id = enter.object()->CreateTransferBuffer(size);
   else
-    *id = -1;
+    *id = 0;
 }
 
 void PPB_Graphics3D_Proxy::OnMsgDestroyTransferBuffer(

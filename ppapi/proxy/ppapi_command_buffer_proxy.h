@@ -44,9 +44,12 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetBuffer(int32 transfer_buffer_id);
   virtual void SetGetOffset(int32 get_offset);
-  virtual gpu::Buffer CreateTransferBuffer(size_t size, int32* id);
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size,
+                                       int32 id_request);
   virtual void DestroyTransferBuffer(int32 id);
-  virtual gpu::Buffer GetTransferBuffer(int32 id);
+  virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
