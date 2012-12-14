@@ -241,17 +241,19 @@ class DriveFileSystemTest : public testing::Test {
 
     EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
 
-    // Likewise, this will be owned by DriveFileSystem.
-    mock_free_disk_space_checker_ = new StrictMock<MockFreeDiskSpaceGetter>;
-    SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
+    mock_free_disk_space_checker_.reset(
+        new StrictMock<MockFreeDiskSpaceGetter>);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
+    // Likewise, this will be owned by DriveFileSystem.
     cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
+        DriveCache::GetCacheRootPath(profile_.get()),
+        blocking_task_runner_,
+        mock_free_disk_space_checker_.get());
 
     fake_uploader_.reset(new FakeDriveUploader);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
@@ -282,7 +284,6 @@ class DriveFileSystemTest : public testing::Test {
     file_system_ = NULL;
     delete mock_drive_service_;
     mock_drive_service_ = NULL;
-    SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->Destroy();
     // The cache destruction requires to post a task to the blocking pool.
     google_apis::test_util::RunBlockingPoolTask();
@@ -843,7 +844,8 @@ class DriveFileSystemTest : public testing::Test {
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
-  StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
+  scoped_ptr<
+    StrictMock<MockFreeDiskSpaceGetter> > mock_free_disk_space_checker_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 

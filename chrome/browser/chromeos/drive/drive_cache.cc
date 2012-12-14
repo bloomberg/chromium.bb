@@ -40,26 +40,6 @@ const FilePath::CharType kDriveCacheTmpDownloadsDir[] =
 const FilePath::CharType kDriveCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
-// Used to tweak GetAmountOfFreeDiskSpace() behavior for testing.
-FreeDiskSpaceGetterInterface* global_free_disk_getter_for_testing = NULL;
-
-// Gets the amount of free disk space. Use
-// |global_free_disk_getter_for_testing| if set.
-int64 GetAmountOfFreeDiskSpace(const FilePath& path) {
-  if (global_free_disk_getter_for_testing)
-    return global_free_disk_getter_for_testing->AmountOfFreeDiskSpace();
-  return base::SysInfo::AmountOfFreeDiskSpace(path);
-}
-
-// Returns true if we have sufficient space to store the given number of
-// bytes, while keeping kMinFreeSpace bytes on the disk.
-bool HasEnoughSpaceFor(int64 num_bytes, const FilePath& path) {
-  int64 free_space = GetAmountOfFreeDiskSpace(path);
-  // Subtract this as if this portion does not exist.
-  free_space -= kMinFreeSpace;
-  return (free_space >= num_bytes);
-}
-
 // Create cache directory paths and set permissions.
 bool InitCachePaths(const std::vector<FilePath>& cache_paths) {
   if (cache_paths.size() < DriveCache::NUM_CACHE_TYPES) {
@@ -197,10 +177,12 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
 }  // namespace
 
 DriveCache::DriveCache(const FilePath& cache_root_path,
-                       base::SequencedTaskRunner* blocking_task_runner)
+                       base::SequencedTaskRunner* blocking_task_runner,
+                       FreeDiskSpaceGetterInterface* free_disk_space_getter)
     : cache_root_path_(cache_root_path),
       cache_paths_(GetCachePaths(cache_root_path_)),
       blocking_task_runner_(blocking_task_runner),
+      free_disk_space_getter_(free_disk_space_getter),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(blocking_task_runner_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1236,6 +1218,18 @@ void DriveCache::OnCommitDirty(const std::string& resource_id,
                       OnCacheCommitted(resource_id));
 }
 
+bool DriveCache::HasEnoughSpaceFor(int64 num_bytes, const FilePath& path) {
+  int64 free_space = 0;
+  if (free_disk_space_getter_)
+    free_space = free_disk_space_getter_->AmountOfFreeDiskSpace();
+  else
+    free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
+
+  // Subtract this as if this portion does not exist.
+  free_space -= kMinFreeSpace;
+  return (free_space >= num_bytes);
+}
+
 // static
 FilePath DriveCache::GetCacheRootPath(Profile* profile) {
   FilePath cache_base_path;
@@ -1284,11 +1278,6 @@ bool DriveCache::CreateCacheDirectories(
 DriveCache::CacheSubDirectoryType DriveCache::GetSubDirectoryType(
     const DriveCacheEntry& cache_entry) {
   return cache_entry.is_persistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-}
-
-void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
-  delete global_free_disk_getter_for_testing;  // Safe to delete NULL;
-  global_free_disk_getter_for_testing = getter;
 }
 
 }  // namespace drive

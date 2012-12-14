@@ -123,7 +123,9 @@ void DriveSystemService::Initialize(
 
   event_logger_.reset(new EventLogger(kEventLogHistorySize));
   drive_service_.reset(drive_service);
-  cache_ = new DriveCache(cache_root, blocking_task_runner_);
+  cache_ = new DriveCache(cache_root,
+                          blocking_task_runner_,
+                          NULL /* free_disk_space_getter */);
   uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
   file_system_.reset(new DriveFileSystem(profile_,

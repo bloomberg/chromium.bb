@@ -48,6 +48,14 @@ typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
 typedef base::Callback<void(bool success)>
     InitializeCacheCallback;
 
+// Interface class used for getting the free disk space. Tests can inject an
+// implementation that reports fake free disk space.
+class FreeDiskSpaceGetterInterface {
+ public:
+  virtual ~FreeDiskSpaceGetterInterface() {}
+  virtual int64 AmountOfFreeDiskSpace() const = 0;
+};
+
 // DriveCache is used to maintain cache states of DriveFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
@@ -90,8 +98,12 @@ class DriveCache {
   //
   // |blocking_task_runner| is used to post a task to the blocking worker
   // pool for file operations. Must not be null.
+  //
+  // |free_disk_space_getter| is used to inject a custom free disk space
+  // getter for testing. NULL must be passed for production code.
   DriveCache(const FilePath& cache_root_path,
-             base::SequencedTaskRunner* blocking_task_runner);
+             base::SequencedTaskRunner* blocking_task_runner,
+             FreeDiskSpaceGetterInterface* free_disk_space_getter);
 
   // Returns the sub-directory under drive cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
@@ -354,6 +366,10 @@ class DriveCache {
                      const FileOperationCallback& callback,
                      DriveFileError error);
 
+  // Returns true if we have sufficient space to store the given number of
+  // bytes, while keeping kMinFreeSpace bytes on the disk.
+  bool HasEnoughSpaceFor(int64 num_bytes, const FilePath& path);
+
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
@@ -367,12 +383,13 @@ class DriveCache {
   // List of observers, this member must be accessed on UI thread.
   ObserverList<DriveCacheObserver> observers_;
 
+  FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveCache> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveCache);
 };
-
 
 // The minimum free space to keep. DriveFileSystem::GetFileByPath() returns
 // GDATA_FILE_ERROR_NO_SPACE if the available space is smaller than
@@ -381,17 +398,6 @@ class DriveCache {
 // Copied from cryptohome/homedirs.h.
 // TODO(satorux): Share the constant.
 const int64 kMinFreeSpace = 512 * 1LL << 20;
-
-// Interface class used for getting the free disk space. Only for testing.
-class FreeDiskSpaceGetterInterface {
- public:
-  virtual ~FreeDiskSpaceGetterInterface() {}
-  virtual int64 AmountOfFreeDiskSpace() const = 0;
-};
-
-// Sets the free disk space getter for testing.
-// The existing getter is deleted.
-void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter);
 
 }  // namespace drive
 

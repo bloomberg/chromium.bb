@@ -108,7 +108,8 @@ class DriveSyncClientTest : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     cache_ = new DriveCache(
         temp_dir_.path(),
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
+        pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
+        NULL /* free_disk_space_getter */);
     bool cache_initialization_success = false;
     cache_->RequestInitialize(
         base::Bind(&test_util::CopyResultFromInitializeCacheCallback,

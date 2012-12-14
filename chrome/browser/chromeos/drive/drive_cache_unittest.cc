@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
+#include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -71,12 +72,6 @@ struct PathToVerify {
   FilePath expected_existing_path;
 };
 
-class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
- public:
-  virtual ~MockFreeDiskSpaceGetter() {}
-  MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
-};
-
 // Copies results from Iterate().
 void OnIterate(std::vector<std::string>* out_resource_ids,
                std::vector<DriveCacheEntry>* out_cache_entries,
@@ -112,15 +107,16 @@ class DriveCacheTest : public testing::Test {
 
     profile_.reset(new TestingProfile);
 
-    mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
-    SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
+    mock_free_disk_space_getter_.reset(new MockFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     cache_ = new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
+        DriveCache::GetCacheRootPath(profile_.get()),
+        blocking_task_runner_,
+        mock_free_disk_space_getter_.get());
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
@@ -134,7 +130,6 @@ class DriveCacheTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->Destroy();
     // The cache destruction requires to post a task to the blocking pool.
     google_apis::test_util::RunBlockingPoolTask();
@@ -143,7 +138,7 @@ class DriveCacheTest : public testing::Test {
   }
 
   void PrepareTestCacheResources() {
-    EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+    EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
         .WillRepeatedly(Return(kLotsOfSpace));
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cache_resources); ++i) {
@@ -690,7 +685,7 @@ class DriveCacheTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   DriveCache* cache_;
-  MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
+  scoped_ptr<MockFreeDiskSpaceGetter> mock_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
 
   DriveFileError expected_error_;
@@ -721,7 +716,7 @@ TEST_F(DriveCacheTest, GetCacheFilePath) {
 }
 
 TEST_F(DriveCacheTest, StoreToCacheSimple) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -755,7 +750,7 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
 }
 
 TEST_F(DriveCacheTest, GetFromCacheSimple) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -784,7 +779,7 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
 }
 
 TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   // Use alphanumeric characters for resource id.
@@ -813,7 +808,7 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
 }
 
 TEST_F(DriveCacheTest, PinAndUnpin) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -876,7 +871,7 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
 }
 
 TEST_F(DriveCacheTest, StoreToCachePinned) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -908,7 +903,7 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
 }
 
 TEST_F(DriveCacheTest, GetFromCachePinned) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -940,7 +935,7 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
 }
 
 TEST_F(DriveCacheTest, RemoveFromCachePinned) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   // Use alphanumeric characters for resource_id.
@@ -983,7 +978,7 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
 }
 
 TEST_F(DriveCacheTest, DirtyCacheSimple) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1018,7 +1013,7 @@ TEST_F(DriveCacheTest, DirtyCacheSimple) {
 }
 
 TEST_F(DriveCacheTest, DirtyCachePinned) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1064,7 +1059,7 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
 TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1116,7 +1111,7 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
 }
 
 TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1185,7 +1180,7 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
 }
 
 TEST_F(DriveCacheTest, DirtyCacheInvalid) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1242,7 +1237,7 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
 }
 
 TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1280,7 +1275,7 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
 }
 
 TEST_F(DriveCacheTest, MountUnmount) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   FilePath file_path;
@@ -1348,7 +1343,7 @@ TEST_F(DriveCacheTest, Iterate) {
 
 
 TEST_F(DriveCacheTest, ClearAll) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
@@ -1378,7 +1373,7 @@ TEST_F(DriveCacheTest, ClearAll) {
 }
 
 TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
-  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+  EXPECT_CALL(*mock_free_disk_space_getter_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(0));
 
   std::string resource_id("pdf:1a2b");
@@ -1408,7 +1403,8 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
   // Set the cache root to a non existent path, so the initialization fails.
   DriveCache* cache = new DriveCache(
       FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/blah"),
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
+      NULL /* free_disk_space_getter */);
 
   bool success = false;
   cache->RequestInitialize(
