@@ -88,6 +88,8 @@ std::string RepresentationToString(const gfx::ImageSkia& image,
                                    ui::ScaleFactor scale) {
   SkBitmap bitmap = image.GetRepresentation(scale).sk_bitmap();
   IPC::Message bitmap_pickle;
+  // Clear the header values so they don't vary in serialization.
+  bitmap_pickle.SetHeaderValues(0, 0, 0);
   IPC::WriteParam(&bitmap_pickle, bitmap);
   std::string raw_str(static_cast<const char*>(bitmap_pickle.data()),
                       bitmap_pickle.size());
