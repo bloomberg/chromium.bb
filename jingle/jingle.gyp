@@ -7,7 +7,7 @@
     'chromium_code': 1,
   },  # variables
   'conditions': [
-    ['OS != "ios" and OS != "android"', {
+    ['enable_webrtc==1 or (OS != "ios" and OS != "android")', {
       'targets': [
         # A library of various utils for integration with libjingle.
         {
@@ -214,9 +214,9 @@
           ],
         },
       ],
-    }, {  # OS == "ios" or OS == "android"
+    }, {  # enable_webrtc != 1 and (OS == "ios" or OS == "android")
       'targets': [
-        # Stub targets as iOS/Android don't use libjingle.
+        # Stub targets as iOS/Android don't use libjingle when webrtc is disabled.
         {
           'target_name': 'jingle_glue',
           'type': 'none',
