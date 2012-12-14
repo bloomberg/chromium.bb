@@ -181,12 +181,29 @@ void WebUILoginDisplay::ShowGaiaPasswordChanged(const std::string& username) {
     webui_handler_->ShowGaiaPasswordChanged(username);
 }
 
+void WebUILoginDisplay::ShowPasswordChangedDialog(bool show_password_error) {
+  if (webui_handler_)
+    webui_handler_->ShowPasswordChangedDialog(show_password_error);
+}
+
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
   return parent_window();
 }
 
 // WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
+void WebUILoginDisplay::CancelPasswordChangedFlow() {
+  DCHECK(delegate_);
+  if (delegate_)
+    delegate_->CancelPasswordChangedFlow();
+}
+
+void WebUILoginDisplay::CreateAccount() {
+  DCHECK(delegate_);
+  if (delegate_)
+    delegate_->CreateAccount();
+}
+
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   DCHECK(delegate_);
@@ -219,14 +236,10 @@ void WebUILoginDisplay::LoginAsPublicAccount(const std::string& username) {
     delegate_->LoginAsPublicAccount(username);
 }
 
-void WebUILoginDisplay::Signout() {
-  delegate_->Signout();
-}
-
-void WebUILoginDisplay::CreateAccount() {
+void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->CreateAccount();
+    delegate_->MigrateUserData(old_password);
 }
 
 void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
@@ -239,6 +252,12 @@ void WebUILoginDisplay::LoadSigninWallpaper() {
 
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
   UserManager::Get()->RemoveUser(username, this);
+}
+
+void WebUILoginDisplay::ResyncUserData() {
+  DCHECK(delegate_);
+  if (delegate_)
+    delegate_->ResyncUserData();
 }
 
 void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
@@ -282,6 +301,10 @@ bool WebUILoginDisplay::IsShowNewUser() const {
 void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
   if (delegate_)
     delegate_->SetDisplayEmail(email);
+}
+
+void WebUILoginDisplay::Signout() {
+  delegate_->Signout();
 }
 
 }  // namespace chromeos

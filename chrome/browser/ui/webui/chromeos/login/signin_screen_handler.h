@@ -41,16 +41,17 @@ class LoginDisplayWebUIHandler {
   virtual void OnUserRemoved(const std::string& username) = 0;
   virtual void OnUserImageChanged(const User& user) = 0;
   virtual void OnPreferencesChanged() = 0;
+  virtual void ResetSigninScreenHandlerDelegate() = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) = 0;
   virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
+  virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
   // Show siginin screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
-  virtual void ResetSigninScreenHandlerDelegate() = 0;
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -58,6 +59,12 @@ class LoginDisplayWebUIHandler {
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
  public:
+  // Cancels current password changed flow.
+  virtual void CancelPasswordChangedFlow() = 0;
+
+  // Create a new Google account.
+  virtual void CreateAccount() = 0;
+
   // Confirms sign up by provided |username| and |password| specified.
   // Used for new user login via GAIA extension.
   virtual void CompleteLogin(const std::string& username,
@@ -77,11 +84,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into the public account identified by |username|.
   virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
-  // Signs out if the screen is currently locked.
-  virtual void Signout() = 0;
-
-  // Create a new Google account.
-  virtual void CreateAccount() = 0;
+  // Decrypt cryptohome using user provided |old_password|
+  // and migrate to new password.
+  virtual void MigrateUserData(const std::string& old_password) = 0;
 
   // Load wallpaper for given |username|.
   virtual void LoadWallpaper(const std::string& username) = 0;
@@ -91,6 +96,10 @@ class SigninScreenHandlerDelegate {
 
   // Attempts to remove given user.
   virtual void RemoveUser(const std::string& username) = 0;
+
+  // Ignore password change, remove existing cryptohome and
+  // force full sync of user data.
+  virtual void ResyncUserData() = 0;
 
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
@@ -116,6 +125,9 @@ class SigninScreenHandlerDelegate {
   // Sets the displayed email for the next login attempt. If it succeeds,
   // user's displayed email value will be updated to |email|.
   virtual void SetDisplayEmail(const std::string& email) = 0;
+
+  // Signs out if the screen is currently locked.
+  virtual void Signout() = 0;
 
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
@@ -171,15 +183,16 @@ class SigninScreenHandler
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
+  virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
+  virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
+  virtual void ShowPasswordChangedDialog(bool show_password_error) OVERRIDE;
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
-  virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
-  virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
@@ -233,6 +246,9 @@ class SigninScreenHandler
   void HandleNetworkErrorShown(const base::ListValue* args);
   void HandleOpenProxySettings(const base::ListValue* args);
   void HandleLoginVisible(const base::ListValue* args);
+  void HandleCancelPasswordChangedFlow(const base::ListValue* args);
+  void HandleMigrateUserData(const base::ListValue* args);
+  void HandleResyncUserData(const base::ListValue* args);
   void HandleLoginUIStateChanged(const base::ListValue* args);
   void HandleUnlockOnLoginSuccess(const base::ListValue* args);
 

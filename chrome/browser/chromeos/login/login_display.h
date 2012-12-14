@@ -31,20 +31,19 @@ class LoginDisplay : public RemoveUserDelegate {
 
   class Delegate {
    public:
+    // Cancels current password changed flow.
+    virtual void CancelPasswordChangedFlow() = 0;
+
     // Create new Google account.
     virtual void CreateAccount() = 0;
-
-    // Returns name of the currently connected network.
-    virtual string16 GetConnectedNetworkName() = 0;
-
-    // Sets the displayed email for the next login attempt with |CompleteLogin|.
-    // If it succeeds, user's displayed email value will be updated to |email|.
-    virtual void SetDisplayEmail(const std::string& email) = 0;
 
     // Complete sign process with specified |username| and |password|.
     // Used for new users authenticated through an extension.
     virtual void CompleteLogin(const std::string& username,
                                const std::string& password) = 0;
+
+    // Returns name of the currently connected network.
+    virtual string16 GetConnectedNetworkName() = 0;
 
     // Sign in using |username| and |password| specified.
     // Used for known users only.
@@ -57,12 +56,12 @@ class LoginDisplay : public RemoveUserDelegate {
     // Sign in into guest session.
     virtual void LoginAsGuest() = 0;
 
+    // Decrypt cryptohome using user provided |old_password|
+    // and migrate to new password.
+    virtual void MigrateUserData(const std::string& old_password) = 0;
+
     // Sign in into the public account identified by |username|.
     virtual void LoginAsPublicAccount(const std::string& username) = 0;
-
-    // Sign out the currently signed in user.
-    // Used when the lock screen is being displayed.
-    virtual void Signout() = 0;
 
     // Called when existing user pod is selected in the UI.
     virtual void OnUserSelected(const std::string& username) = 0;
@@ -72,6 +71,18 @@ class LoginDisplay : public RemoveUserDelegate {
 
     // Called when the user requests device reset.
     virtual void OnStartDeviceReset() = 0;
+
+    // Ignore password change, remove existing cryptohome and
+    // force full sync of user data.
+    virtual void ResyncUserData() = 0;
+
+    // Sets the displayed email for the next login attempt with |CompleteLogin|.
+    // If it succeeds, user's displayed email value will be updated to |email|.
+    virtual void SetDisplayEmail(const std::string& email) = 0;
+
+    // Sign out the currently signed in user.
+    // Used when the lock screen is being displayed.
+    virtual void Signout() = 0;
 
    protected:
     virtual ~Delegate();
@@ -122,6 +133,10 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Proceed with Gaia flow because password has changed.
   virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
+
+  // Show password changed dialog. If |show_password_error| is not null
+  // user already tried to enter old password but it turned out to be incorrect.
+  virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
 
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect background_bounds){

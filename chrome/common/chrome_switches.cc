@@ -1421,6 +1421,10 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disables new OOBE/sign in design.
 const char kDisableNewOobe[]                = "disable-new-oobe";
 
+// Disables new password changed dialog (WebUI).
+const char kDisableNewPasswordChangedDialog[] =
+    "disable-new-password-changed-dialog";
+
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 

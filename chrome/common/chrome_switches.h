@@ -390,6 +390,7 @@ extern const char kDisableDrivePrefetch[];
 extern const char kDisableDrive[];
 extern const char kDisableLoginAnimations[];
 extern const char kDisableNewOobe[];
+extern const char kDisableNewPasswordChangedDialog[];
 extern const char kDisableOobeAnimation[];
 extern const char kDisableStubEthernet[];
 extern const char kEnableBackgroundLoader[];

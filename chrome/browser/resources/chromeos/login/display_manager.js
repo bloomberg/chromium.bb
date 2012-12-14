@@ -15,6 +15,7 @@
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
+/** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -569,6 +570,14 @@ cr.define('cr.ui.login', function() {
 
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     $(currentScreenId).showErrorBubble(loginAttempts, error);
+  };
+
+  /**
+   * Shows password changed screen that offers migration.
+   * @param {boolean} showError Whether to show the incorrect password error.
+   */
+  DisplayManager.showPasswordChangedScreen = function(showError) {
+    login.PasswordChangedScreen.show(showError);
   };
 
   /**

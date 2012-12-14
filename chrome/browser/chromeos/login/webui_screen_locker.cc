@@ -174,21 +174,21 @@ void WebUIScreenLocker::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker, LoginDisplay::Delegate implementation:
 
-void WebUIScreenLocker::CreateAccount() {
+void WebUIScreenLocker::CancelPasswordChangedFlow()  {
   NOTREACHED();
 }
 
-string16 WebUIScreenLocker::GetConnectedNetworkName() {
-  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
-}
-
-void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
+void WebUIScreenLocker::CreateAccount() {
   NOTREACHED();
 }
 
 void WebUIScreenLocker::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   NOTREACHED();
+}
+
+string16 WebUIScreenLocker::GetConnectedNetworkName() {
+  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 void WebUIScreenLocker::Login(const std::string& username,
@@ -205,12 +205,12 @@ void WebUIScreenLocker::LoginAsGuest() {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::LoginAsPublicAccount(const std::string& username) {
+void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::Signout() {
-  chromeos::ScreenLocker::default_screen_locker()->Signout();
+void WebUIScreenLocker::LoginAsPublicAccount(const std::string& username) {
+  NOTREACHED();
 }
 
 void WebUIScreenLocker::OnUserSelected(const std::string& username) {
@@ -222,6 +222,18 @@ void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
 
 void WebUIScreenLocker::OnStartDeviceReset() {
   NOTREACHED();
+}
+
+void WebUIScreenLocker::ResyncUserData() {
+  NOTREACHED();
+}
+
+void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
+  NOTREACHED();
+}
+
+void WebUIScreenLocker::Signout() {
+  chromeos::ScreenLocker::default_screen_locker()->Signout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

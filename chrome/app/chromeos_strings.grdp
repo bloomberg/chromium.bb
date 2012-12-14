@@ -342,6 +342,27 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_PASSWORD_CHANGED_DESC" desc="Detailed description of the password changed dialog">
     Your Google Account password has changed since the last time you signed in on this computer.
   </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO" desc="Additional information on the password changed dialog">
+    Because <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph> securely encrypts all your local data, you must enter the old password now to unlock that data.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT" desc="Old password field hint on the password changed dialog">
+    Enter old password
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD" desc="Error that is shown when incorrect old password was supplied for user cryptohome migration.">
+    Incorrect password
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER" desc="Text of the link that lets user skip old password input on the password changed dialog">
+    Can't remember old password?
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON" desc="Text on the button that closes password changed dialog or navigates back through its states.">
+    Back
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY" desc="Button to proceed without providing old password on the password changed dialog">
+    If you cannot remember your password, you may proceed but local data will be lost. Only synced settings and data will be retrieved.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON" desc="Button to proceed without providing old password on the password changed dialog">
+    Proceed anyway
+  </message>  
   <message name="IDS_LOGIN_PASSWORD_CHANGED_RESET" desc="Reset option of the password changed dialog">
     Only retrieve synced settings and data
   </message>

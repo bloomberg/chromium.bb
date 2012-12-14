@@ -40,6 +40,7 @@ cr.define('cr.ui', function() {
     oobe.ResetScreen.register();
     login.ErrorMessageScreen.register();
     login.TPMErrorMessageScreen.register();
+    login.PasswordChangedScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
@@ -141,6 +142,14 @@ cr.define('cr.ui', function() {
    */
   Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
     DisplayManager.showSignInError(loginAttempts, message, link, helpId);
+  };
+
+  /**
+   * Shows password changed screen that offers migration.
+   * @param {boolean} showError Whether to show the incorrect password error.
+   */
+  Oobe.showPasswordChangedScreen = function(showError) {
+    DisplayManager.showPasswordChangedScreen(showError);
   };
 
   /**

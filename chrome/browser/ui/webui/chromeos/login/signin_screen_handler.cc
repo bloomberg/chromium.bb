@@ -198,6 +198,32 @@ void SigninScreenHandler::GetLocalizedStrings(
             IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
             IDS_DISABLED_ADD_USER_TOOLTIP));
 
+  // Strings used by password changed dialog.
+  localized_strings->SetString("passwordChangedTitle",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_TITLE));
+  localized_strings->SetString("passwordChangedDesc",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DESC));
+  localized_strings->SetString("passwordChangedMoreInfo",
+      l10n_util::GetStringFUTF16(
+          IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME)));
+  localized_strings->SetString("oldPasswordHint",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT));
+  localized_strings->SetString("oldPasswordIncorrect",
+        l10n_util::GetStringUTF16(
+            IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD));
+  localized_strings->SetString("passwordChangedCantRemember",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER));
+  localized_strings->SetString("passwordChangedBackButton",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON));
+  localized_strings->SetString("passwordChangedsOkButton",
+      l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("passwordChangedProceedAnyway",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY));
+  localized_strings->SetString("proceedAnywayButton",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON));
+
   localized_strings->SetString("publicAccountInfoFormat",
       l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT));
   localized_strings->SetString("publicAccountReminder",
@@ -358,6 +384,15 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginVisible",
       base::Bind(&SigninScreenHandler::HandleLoginVisible,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("cancelPasswordChangedFlow",
+        base::Bind(&SigninScreenHandler::HandleCancelPasswordChangedFlow,
+                   base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("migrateUserData",
+        base::Bind(&SigninScreenHandler::HandleMigrateUserData,
+                   base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("resyncUserData",
+        base::Bind(&SigninScreenHandler::HandleResyncUserData,
+                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback("loginUIStateChanged",
       base::Bind(&SigninScreenHandler::HandleLoginUIStateChanged,
                  base::Unretained(this)));
@@ -409,6 +444,10 @@ void SigninScreenHandler::OnPreferencesChanged() {
   }
 }
 
+void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
+  SetDelegate(NULL);
+}
+
 void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
@@ -444,8 +483,20 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
       "login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
 }
 
-void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
-  SetDelegate(NULL);
+void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
+  base::FundamentalValue showError(show_password_error);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showPasswordChangedScreen",
+                                   showError);
+}
+
+void SigninScreenHandler::ShowSigninScreenForCreds(
+    const std::string& username,
+    const std::string& password) {
+  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
+
+  test_user_ = username;
+  test_pass_ = password;
+  HandleShowAddUser(NULL);
 }
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
@@ -581,16 +632,6 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
   base::FundamentalValue disabled(AllWhitelistedUsersPresent());
   web_ui()->CallJavascriptFunction(
       "cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
-}
-
-void SigninScreenHandler::ShowSigninScreenForCreds(
-    const std::string& username,
-    const std::string& password) {
-  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
-
-  test_user_ = username;
-  test_pass_ = password;
-  HandleShowAddUser(NULL);
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
@@ -942,6 +983,30 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
   webui_visible_ = true;
   if (ScreenLocker::default_screen_locker())
     web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
+}
+
+void SigninScreenHandler::HandleCancelPasswordChangedFlow(
+    const base::ListValue* args) {
+  if (delegate_) {
+    // TODO(nkostylev): Cleanup cookies / cache. http://crbug.com/124699
+    Show(oobe_ui_);
+    delegate_->CancelPasswordChangedFlow();
+  }
+}
+
+void SigninScreenHandler::HandleMigrateUserData(const base::ListValue* args) {
+  std::string old_password;
+  if (!args->GetString(0, &old_password)) {
+    NOTREACHED();
+    return;
+  }
+  if (delegate_)
+    delegate_->MigrateUserData(old_password);
+}
+
+void SigninScreenHandler::HandleResyncUserData(const base::ListValue* args) {
+  if (delegate_)
+    delegate_->ResyncUserData();
 }
 
 void SigninScreenHandler::HandleLoginUIStateChanged(

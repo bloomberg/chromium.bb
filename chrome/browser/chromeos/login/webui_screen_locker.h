@@ -58,20 +58,23 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual content::WebUI* GetAssociatedWebUI() OVERRIDE;
 
   // LoginDisplay::Delegate: implementation
+  virtual void CancelPasswordChangedFlow() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
-  virtual string16 GetConnectedNetworkName() OVERRIDE;
-  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password) OVERRIDE;
+  virtual string16 GetConnectedNetworkName() OVERRIDE;
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
-  virtual void Signout() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
   virtual void OnStartDeviceReset() OVERRIDE;
+  virtual void ResyncUserData() OVERRIDE;
+  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
+  virtual void Signout() OVERRIDE;
 
   // content::NotificationObserver (via WebUILoginView) implementation.
   virtual void Observe(int type,

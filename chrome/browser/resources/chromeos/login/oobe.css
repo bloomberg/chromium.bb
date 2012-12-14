@@ -69,7 +69,8 @@ button:not(.custom-appearance) {
 }
 
 #back-button,
-#reset-button {
+#reset-button,
+#password-changed-back-button {
   -webkit-margin-end: 8px;
 }
 
@@ -121,7 +122,8 @@ html[oobe=new] #oobe.oauth-enrollment #inner-container,
 html[oobe=new] #oobe.reset #inner-container,
 html[oobe=new] #oobe.update #inner-container,
 html[oobe=new] #oobe.user-image #inner-container,
-html[oobe=new] #oobe.tpm-error-message #inner-container {
+html[oobe=new] #oobe.tpm-error-message #inner-container,
+html[oobe=new] #oobe.password-changed #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
@@ -832,7 +834,8 @@ html[oobe=old] .step-controls {
 #enrollment-dot,
 #oauth-enrollment-dot,
 #reset-dot,
-#tpm-error-message-dot {
+#tpm-error-message-dot,
+#password-changed-dot {
   display: none;
 }
 

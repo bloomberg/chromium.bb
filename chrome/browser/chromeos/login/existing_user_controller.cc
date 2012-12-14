@@ -303,19 +303,16 @@ ExistingUserController::~ExistingUserController() {
 // ExistingUserController, LoginDisplay::Delegate implementation:
 //
 
+void ExistingUserController::CancelPasswordChangedFlow() {
+  login_performer_.reset(NULL);
+  login_display_->SetUIEnabled(true);
+}
+
 void ExistingUserController::CreateAccount() {
   content::RecordAction(content::UserMetricsAction("Login.CreateAccount"));
   guest_mode_url_ =
       google_util::AppendGoogleLocaleParam(GURL(kCreateAccountURL));
   LoginAsGuest();
-}
-
-string16 ExistingUserController::GetConnectedNetworkName() {
-  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
-}
-
-void ExistingUserController::SetDisplayEmail(const std::string& email) {
-  display_email_ = email;
 }
 
 void ExistingUserController::CompleteLogin(const std::string& username,
@@ -363,6 +360,10 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
       base::Bind(&ExistingUserController::PerformLogin,
                  weak_factory_.GetWeakPtr(), username, password,
                  LoginPerformer::AUTH_MODE_EXTENSION));
+}
+
+string16 ExistingUserController::GetConnectedNetworkName() {
+  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 void ExistingUserController::Login(const std::string& username,
@@ -475,6 +476,10 @@ void ExistingUserController::LoginAsGuest() {
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
 }
 
+void ExistingUserController::MigrateUserData(const std::string& old_password) {
+  RecoverEncryptedData(old_password);
+}
+
 void ExistingUserController::LoginAsPublicAccount(
     const std::string& username) {
   // Disable clicking on other windows.
@@ -518,10 +523,6 @@ void ExistingUserController::LoginAsPublicAccount(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
 
-void ExistingUserController::Signout() {
-  NOTREACHED();
-}
-
 void ExistingUserController::OnUserSelected(const std::string& username) {
   login_performer_.reset(NULL);
   num_login_attempts_ = 0;
@@ -535,6 +536,20 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
 
 void ExistingUserController::OnStartDeviceReset() {
   ShowResetScreen();
+}
+
+void ExistingUserController::ResyncUserData() {
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get())
+    login_performer_->ResyncEncryptedData();
+}
+
+void ExistingUserController::SetDisplayEmail(const std::string& email) {
+  display_email_ = email;
+}
+
+void ExistingUserController::Signout() {
+  NOTREACHED();
 }
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
@@ -761,19 +776,24 @@ void ExistingUserController::OnPasswordChangeDetected() {
   bool show_invalid_old_password_error =
       login_performer_->password_changed_callback_count() > 1;
 
-  // Passing 'false' here enables "full sync" mode in the dialog,
-  // which disables the requirement for the old owner password,
-  // allowing us to recover from a lost owner password/homedir.
-  // TODO(gspencer): We shouldn't have to erase stateful data when
-  // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-  PasswordChangedView* view = new PasswordChangedView(
-      this,
-      false,  // Allow removal of existing cryptohome, perform full migration.
-      show_invalid_old_password_error);
-  views::Widget* window = views::Widget::CreateWindowWithParent(
-      view, GetNativeWindow());
-  window->SetAlwaysOnTop(true);
-  window->Show();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewPasswordChangedDialog)) {
+    // Passing 'false' here enables "full sync" mode in the dialog,
+    // which disables the requirement for the old owner password,
+    // allowing us to recover from a lost owner password/homedir.
+    // TODO(gspencer): We shouldn't have to erase stateful data when
+    // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
+    PasswordChangedView* view = new PasswordChangedView(
+        this,
+        false,  // Allow removal of existing cryptohome, perform full migration.
+        show_invalid_old_password_error);
+    views::Widget* window = views::Widget::CreateWindowWithParent(
+        view, GetNativeWindow());
+    window->SetAlwaysOnTop(true);
+    window->Show();
+  } else {
+    login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error);
+  }
 
   if (login_status_consumer_)
     login_status_consumer_->OnPasswordChangeDetected();
