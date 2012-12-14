@@ -21,7 +21,7 @@ namespace utils = extension_function_test_utils;
 typedef InProcessBrowserTest ExtensionTabsTest;
 
 #if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
-#define MAYBE_GetLastFocusedWindow DISABLE_GetLastFocusedWindow
+#define MAYBE_GetLastFocusedWindow DISABLED_GetLastFocusedWindow
 #else
 #define MAYBE_GetLastFocusedWindow GetLastFocusedWindow
 #endif
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
 }
 
 #if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
-#define MAYBE_TabCurrentWindow DISABLE_TabCurrentWindow
+#define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
 #else
 #define MAYBE_TabCurrentWindow TabCurrentWindow
 #endif
