@@ -935,13 +935,14 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 }
 
 static int
+drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec);
+
+static int
 drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mode)
 {
 	struct drm_output *output;
 	struct drm_mode *drm_mode;
-	int ret;
 	struct drm_compositor *ec;
-	struct gbm_surface *surface;
 
 	if (output_base == NULL) {
 		weston_log("output is NULL.\n");
@@ -960,53 +961,16 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	if (!drm_mode) {
 		weston_log("%s, invalid resolution:%dx%d\n", __func__, mode->width, mode->height);
 		return -1;
-	} else if (&drm_mode->base == output->base.current) {
+	}
+
+	if (&drm_mode->base == output->base.current)
 		return 0;
-	} else if (drm_mode->base.width == output->base.current->width &&
-	           drm_mode->base.height == output->base.current->height) {
-		/* only change refresh value */
-		ret = drmModeSetCrtc(ec->drm.fd,
-				     output->crtc_id,
-				     output->current->fb_id, 0, 0,
-				     &output->connector_id, 1, &drm_mode->mode_info);
 
-		if (ret) {
-			weston_log("failed to set mode (%dx%d) %u Hz\n",
-				drm_mode->base.width,
-				drm_mode->base.height,
-				drm_mode->base.refresh / 1000);
-			ret = -1;
-		} else {
-			output->base.current->flags = 0;
-			output->base.current = &drm_mode->base;
-			drm_mode->base.flags = 
-				WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-			ret = 0;
-		}
+	output->base.current->flags = 0;
 
-		return ret;
-	}
-
-	drm_mode->base.flags =
+	output->base.current = &drm_mode->base;
+	output->base.current->flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-
-	surface = gbm_surface_create(ec->gbm,
-			         drm_mode->base.width,
-			         drm_mode->base.height,
-				 GBM_FORMAT_XRGB8888,
-				 GBM_BO_USE_SCANOUT |
-				 GBM_BO_USE_RENDERING);
-	if (!surface) {
-		weston_log("failed to create gbm surface\n");
-		return -1;
-	}
-
-	gl_renderer_output_destroy(&output->base);
-
-	if (gl_renderer_output_create(&output->base, surface) < 0) {
-		weston_log("failed to create renderer output\n");
-		goto err_gbm;
-	}
 
 	/* reset rendering stuff. */
 	if (output->current) {
@@ -1027,16 +991,15 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 	output->next = NULL;
 
+	gl_renderer_output_destroy(&output->base);
 	gbm_surface_destroy(output->surface);
-	output->surface = surface;
 
-	/*update output*/
-	output->base.current = &drm_mode->base;
+	if (drm_output_init_egl(output, ec) < 0) {
+		weston_log("failed to init output egl state with new mode");
+		return -1;
+	}
+
 	return 0;
-
-err_gbm:
-	gbm_surface_destroy(surface);
-	return -1;
 }
 
 static int
@@ -1276,6 +1239,8 @@ find_crtc_for_connector(struct drm_compositor *ec,
 static int
 drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 {
+	int i, flags;
+
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current->width,
 					     output->base.current->height,
@@ -1288,16 +1253,22 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 	}
 
 	if (gl_renderer_output_create(&output->base, output->surface) < 0) {
+		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->surface);
 		return -1;
 	}
 
-	output->cursor_bo[0] =
-		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
-			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
-	output->cursor_bo[1] =
-		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
-			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
+	flags = GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE;
+
+	for (i = 0; i < 2; i++) {
+		if (output->cursor_bo[i])
+			continue;
+
+		output->cursor_bo[i] =
+			gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
+				      flags);
+	}
+
 	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
 		weston_log("cursor buffers unavailable, using gl cursors\n");
 		ec->cursors_are_broken = 1;
