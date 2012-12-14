@@ -799,10 +799,15 @@ bool DownloadsShowFunction::RunImpl() {
   scoped_ptr<extensions::api::downloads::Show::Params> params(
       extensions::api::downloads::Show::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  error_ = download_extension_errors::kNotImplementedError;
-  if (error_.empty())
-    RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW);
-  return error_.empty();
+  DownloadItem* download_item = GetDownload(
+      profile(), include_incognito(), params->download_id);
+  if (!download_item) {
+    error_ = download_extension_errors::kInvalidOperationError;
+    return false;
+  }
+  download_item->ShowDownloadInShell();
+  RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW);
+  return true;
 }
 
 DownloadsOpenFunction::DownloadsOpenFunction() {}
