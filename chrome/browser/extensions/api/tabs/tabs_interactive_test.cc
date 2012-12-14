@@ -20,7 +20,13 @@ namespace utils = extension_function_test_utils;
 
 typedef InProcessBrowserTest ExtensionTabsTest;
 
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetLastFocusedWindow) {
+#if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
+#define MAYBE_GetLastFocusedWindow DISABLE_GetLastFocusedWindow
+#else
+#define MAYBE_GetLastFocusedWindow GetLastFocusedWindow
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   // Create a new window which making it the "last focused" window.
   // Note that "last focused" means the "top" most window.
   Browser* new_browser = CreateBrowser(browser()->profile());
@@ -111,6 +117,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCurrentWindow) {
+#if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
+#define MAYBE_TabCurrentWindow DISABLE_TabCurrentWindow
+#else
+#define MAYBE_TabCurrentWindow TabCurrentWindow
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabCurrentWindow) {
   ASSERT_TRUE(RunExtensionTest("tabs/current_window")) << message_;
 }
