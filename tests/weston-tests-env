@@ -10,14 +10,24 @@ OUTLOG="$LOGDIR/$1-log.txt"
 
 rm -f "$SERVERLOG"
 
+if test x$WAYLAND_DISPLAY != x; then
+	BACKEND=$abs_builddir/../src/.libs/wayland-backend.so
+elif test x$DISPLAY != x; then
+	BACKEND=$abs_builddir/../src/.libs/x11-backend.so
+else
+	BACKEND=$abs_builddir/../src/.libs/wayland-backend.so
+fi
+
 case $1 in
 	*.la|*.so)
-		$WESTON --modules=$abs_builddir/.libs/${1/.la/.so} \
+		$WESTON --backend=$BACKEND \
+			--modules=$abs_builddir/.libs/${1/.la/.so} \
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;
 	*)
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$1 $WESTON \
+			--backend=$BACKEND \
 			--log="$SERVERLOG" \
 			--modules=$abs_builddir/.libs/weston-test.so \
 			&> "$OUTLOG"
