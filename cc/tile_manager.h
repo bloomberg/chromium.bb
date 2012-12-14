@@ -101,6 +101,7 @@ class CC_EXPORT TileManager {
       scoped_refptr<Tile>,
       scoped_ptr<ResourcePool::Resource>,
       scoped_refptr<PicturePileImpl>,
+      int manage_tiles_call_count_when_dispatched,
       RenderingStats*);
   void DidFinishTileInitialization(Tile*);
   void DispatchImageDecodingTasksForTile(Tile*);
@@ -115,6 +116,7 @@ class CC_EXPORT TileManager {
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   bool manage_tiles_pending_;
+  int manage_tiles_call_count_;
   bool check_for_completed_set_pixels_pending_;
 
   GlobalStateThatImpactsTilePriority global_state_;

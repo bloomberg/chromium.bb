@@ -139,6 +139,7 @@ TileManager::TileManager(
       resource_pool_(ResourcePool::Create(resource_provider,
                                           Renderer::ImplPool)),
       manage_tiles_pending_(false),
+      manage_tiles_call_count_(0),
       check_for_completed_set_pixels_pending_(false) {
   // Initialize all threads.
   const std::string thread_name_prefix = kRasterThreadNamePrefix;
@@ -239,6 +240,7 @@ public:
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
   manage_tiles_pending_ = false;
+  ++manage_tiles_call_count_;
 
   // The amount of time for which we want to have prepainting coverage.
   const double prepainting_window_time_seconds = 1.0;
@@ -583,6 +585,7 @@ void TileManager::DispatchOneRasterTask(
                  tile,
                  base::Passed(&resource),
                  picture_pile_clone,
+                 manage_tiles_call_count_,
                  stats));
 }
 
@@ -590,6 +593,7 @@ void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
     scoped_refptr<PicturePileImpl> picture_pile_clone,
+    int manage_tiles_call_count_when_dispatched,
     RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
   rendering_stats_.totalRasterizeTimeInSeconds +=
@@ -605,11 +609,12 @@ void TileManager::OnRasterTaskCompleted(
 
   // Tile can be freed after the completion of the raster task. Call
   // AssignGpuMemoryToTiles() to re-assign gpu memory to highest priority
-  // tiles. The result of this could be that this tile is no longer
-  // allowed to use gpu memory and in that case we need to abort
-  // initialization and free all associated resources before calling
-  // DispatchMoreTasks().
-  AssignGpuMemoryToTiles();
+  // tiles if ManageTiles() was called since task was dispatched. The result
+  // of this could be that this tile is no longer allowed to use gpu
+  // memory and in that case we need to abort initialization and free all
+  // associated resources before calling DispatchMoreTasks().
+  if (manage_tiles_call_count_when_dispatched != manage_tiles_call_count_)
+    AssignGpuMemoryToTiles();
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
