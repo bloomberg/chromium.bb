@@ -65,6 +65,9 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // Callback invoked to store the policy after validation has finished.
   void StorePolicyAfterValidation(UserCloudPolicyValidator* validator);
 
+  // Removes any policies that are not supported on desktop platforms.
+  void FilterDisallowedPolicies();
+
   // WeakPtrFactory used to create callbacks for validating and storing policy.
   base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
 

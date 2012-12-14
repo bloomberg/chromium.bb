@@ -50,6 +50,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     store_->AddObserver(&observer_);
 
     policy_.payload().mutable_showhomebutton()->set_value(true);
+    policy_.payload().mutable_syncdisabled()->set_value(true);
     policy_.Build();
   }
 
@@ -63,13 +64,16 @@ class UserCloudPolicyStoreTest : public testing::Test {
     return tmp_dir_.path().AppendASCII("policy");
   }
 
-  // Verifies that store_->policy_map() has the ShowHomeButton entry.
+  // Verifies that store_->policy_map() has the appropriate entries.
   void VerifyPolicyMap(CloudPolicyStore* store) {
     EXPECT_EQ(1U, store->policy_map().size());
     const PolicyMap::Entry* entry =
         store->policy_map().Get(key::kShowHomeButton);
     ASSERT_TRUE(entry);
     EXPECT_TRUE(base::FundamentalValue(true).Equals(entry->value));
+
+    // SyncDisabled policy should be filtered out.
+    ASSERT_FALSE(store->policy_map().Get(key::kSyncDisabled));
   }
 
   // Install an expectation on |observer_| for an error code.

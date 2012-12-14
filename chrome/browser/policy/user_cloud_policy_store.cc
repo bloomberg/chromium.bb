@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "policy/policy_constants.h"
 
 namespace em = enterprise_management;
 
@@ -187,6 +188,7 @@ void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
   DVLOG(1) << "Device ID: " << validator->policy_data()->device_id();
 
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  FilterDisallowedPolicies();
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
@@ -245,8 +247,17 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
       base::Bind(&StorePolicyToDiskOnFileThread,
                  backing_file_path_, *validator->policy()));
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  FilterDisallowedPolicies();
   status_ = STATUS_OK;
   NotifyStoreLoaded();
+}
+
+void UserCloudPolicyStore::FilterDisallowedPolicies() {
+  // We don't yet allow setting SyncDisabled in desktop cloud policy, because
+  // it causes the user to be signed out which then removes the cloud policy.
+  // TODO(atwilson): Remove this once we support signing in with sync disabled
+  // (http://crbug.com/166148).
+  policy_map_.Erase(key::kSyncDisabled);
 }
 
 }  // namespace policy
