@@ -5,7 +5,19 @@
 #ifndef CC_LAYER_TREE_IMPL_H_
 #define CC_LAYER_TREE_IMPL_H_
 
+#include "base/hash_tables.h"
 #include "cc/layer_impl.h"
+
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template<>
+struct hash<cc::LayerImpl*> {
+  size_t operator()(cc::LayerImpl* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+} // namespace BASE_HASH_NAMESPACE
+#endif // COMPILER
 
 namespace cc {
 
@@ -70,6 +82,12 @@ class CC_EXPORT LayerTreeImpl {
 
   void ClearCurrentlyScrollingLayer();
 
+  LayerImpl* LayerById(int id);
+
+  // These should be called by LayerImpl's ctor/dtor.
+  void RegisterLayer(LayerImpl* layer);
+  void UnregisterLayer(LayerImpl* layer);
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -79,6 +97,9 @@ protected:
   HeadsUpDisplayLayerImpl* hud_layer_;
   LayerImpl* root_scroll_layer_;
   LayerImpl* currently_scrolling_layer_;
+
+  typedef base::hash_map<int, LayerImpl*> LayerIdMap;
+  LayerIdMap layer_id_map_;
 
   // Persisted state
   int scrolling_layer_id_from_previous_tree_;

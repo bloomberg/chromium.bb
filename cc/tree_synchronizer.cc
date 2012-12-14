@@ -37,8 +37,8 @@ void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& 
     for (size_t i = 0; i < children.size(); ++i)
         collectExistingLayerImplRecursive(oldLayers, children.take(i));
 
-    collectExistingLayerImplRecursive(oldLayers, layerImpl->m_maskLayer.Pass());
-    collectExistingLayerImplRecursive(oldLayers, layerImpl->m_replicaLayer.Pass());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->takeMaskLayer());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->takeReplicaLayer());
 
     int id = layerImpl->id();
     oldLayers.set(id, layerImpl.Pass());

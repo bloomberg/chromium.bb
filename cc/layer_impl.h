@@ -293,6 +293,9 @@ protected:
     static std::string indentString(int indent);
 
 private:
+    scoped_ptr<LayerImpl> takeMaskLayer();
+    scoped_ptr<LayerImpl> takeReplicaLayer();
+
     void setParent(LayerImpl* parent) { m_parent = parent; }
     friend class TreeSynchronizer;
     void clearChildList(); // Warning: This does not preserve tree structure invariants and so is only exposed to the tree synchronizer.

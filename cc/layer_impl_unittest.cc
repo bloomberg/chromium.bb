@@ -228,10 +228,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
     // Unrelated functions, set to the same values, no needs update.
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setAnchorPointZ(arbitraryNumber));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilter(arbitraryFilter));
-    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(hostImpl.activeTree(), 4)));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMasksToBounds(true));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsOpaque(true));
-    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(hostImpl.activeTree(), 5)));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPosition(arbitraryPointF));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPreserves3D(true));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDoubleSided(false)); // constructor initializes it to "true".

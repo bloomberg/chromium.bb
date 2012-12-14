@@ -43,12 +43,13 @@ class QuadCullerTest : public testing::Test
 public:
     QuadCullerTest()
         : m_hostImpl(&m_proxy)
+        , m_layerId(1)
     {
     }
 
     scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::Transform& drawTransform, const gfx::Rect& layerRect, float opacity, bool opaque, const gfx::Rect& layerOpaqueRect, std::vector<LayerImpl*>& surfaceLayerList)
     {
-        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(m_hostImpl.activeTree(), 1);
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(m_hostImpl.activeTree(), m_layerId++);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
         tiler->setBounds(layerRect.size());
         layer->setTilingData(*tiler);
@@ -96,6 +97,7 @@ public:
 protected:
     FakeImplProxy m_proxy;
     FakeLayerTreeHostImpl m_hostImpl;
+    int m_layerId;
 };
 
 #define DECLARE_AND_INITIALIZE_TEST_QUADS               \

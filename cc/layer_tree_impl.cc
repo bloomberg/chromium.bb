@@ -19,6 +19,9 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
+  // Need to explicitly clear the tree prior to destroying this so that
+  // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
+  root_layer_.reset();
 }
 
 static LayerImpl* findRootScrollLayer(LayerImpl* layer)
@@ -66,6 +69,21 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   currently_scrolling_layer_ = NULL;
   scrolling_layer_id_from_previous_tree_ = 0;
+}
+
+LayerImpl* LayerTreeImpl::LayerById(int id) {
+  LayerIdMap::iterator iter = layer_id_map_.find(id);
+  return iter != layer_id_map_.end() ? iter->second : NULL;
+}
+
+void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
+  DCHECK(!LayerById(layer->id()));
+  layer_id_map_[layer->id()] = layer;
+}
+
+void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
+  DCHECK(LayerById(layer->id()));
+  layer_id_map_.erase(layer->id());
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {

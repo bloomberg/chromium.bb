@@ -56,6 +56,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
 {
     DCHECK(m_layerId > 0);
     DCHECK(m_layerTreeImpl);
+    m_layerTreeImpl->RegisterLayer(this);
 }
 
 LayerImpl::~LayerImpl()
@@ -63,6 +64,7 @@ LayerImpl::~LayerImpl()
 #ifndef NDEBUG
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
+    m_layerTreeImpl->UnregisterLayer(this);
 }
 
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
@@ -494,30 +496,44 @@ void LayerImpl::setBounds(const gfx::Size& bounds)
 
 void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
 {
-    if (maskLayer)
-        DCHECK_EQ(layerTreeImpl(), maskLayer->layerTreeImpl());
-    m_maskLayer = maskLayer.Pass();
+    int newLayerId = maskLayer ? maskLayer->id() : -1;
 
-    int newLayerId = m_maskLayer ? m_maskLayer->id() : -1;
-    if (newLayerId == m_maskLayerId)
+    if (maskLayer) {
+        DCHECK_EQ(layerTreeImpl(), maskLayer->layerTreeImpl());
+        DCHECK_NE(newLayerId, m_maskLayerId);
+    } else if (newLayerId == m_maskLayerId)
         return;
 
+    m_maskLayer = maskLayer.Pass();
     m_maskLayerId = newLayerId;
     noteLayerPropertyChangedForSubtree();
 }
 
+scoped_ptr<LayerImpl> LayerImpl::takeMaskLayer()
+{
+  m_maskLayerId = -1;
+  return m_maskLayer.Pass();
+}
+
 void LayerImpl::setReplicaLayer(scoped_ptr<LayerImpl> replicaLayer)
 {
-    if (replicaLayer)
-        DCHECK_EQ(layerTreeImpl(), replicaLayer->layerTreeImpl());
-    m_replicaLayer = replicaLayer.Pass();
+    int newLayerId = replicaLayer ? replicaLayer->id() : -1;
 
-    int newLayerId = m_replicaLayer ? m_replicaLayer->id() : -1;
-    if (newLayerId == m_replicaLayerId)
+    if (replicaLayer) {
+        DCHECK_EQ(layerTreeImpl(), replicaLayer->layerTreeImpl());
+        DCHECK_NE(newLayerId, m_replicaLayerId);
+    } else if (newLayerId == m_replicaLayerId)
         return;
 
+    m_replicaLayer = replicaLayer.Pass();
     m_replicaLayerId = newLayerId;
     noteLayerPropertyChangedForSubtree();
+}
+
+scoped_ptr<LayerImpl> LayerImpl::takeReplicaLayer()
+{
+  m_replicaLayerId = -1;
+  return m_replicaLayer.Pass();
 }
 
 void LayerImpl::setDrawsContent(bool drawsContent)

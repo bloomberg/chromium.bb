@@ -59,7 +59,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(hostImpl.activeTree(), 2);
     gfx::Transform dummyMatrix;
     dummyMatrix.Translate(1.0, 2.0);
 

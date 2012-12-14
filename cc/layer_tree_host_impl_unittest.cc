@@ -1073,27 +1073,27 @@ TEST_P(LayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
     m_hostImpl->didDrawAllLayers(frame);
 
     // When a texture is missing and we're not animating, we draw as usual with checkerboarding.
-    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 1));
+    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 3));
     root = static_cast<DidDrawCheckLayer*>(m_hostImpl->rootLayer());
-    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 2, true, false, false, m_hostImpl->resourceProvider()));
+    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 4, true, false, false, m_hostImpl->resourceProvider()));
 
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
 
     // When a texture is missing and we're animating, we don't want to draw anything.
-    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 1));
+    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 5));
     root = static_cast<DidDrawCheckLayer*>(m_hostImpl->rootLayer());
-    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 2, true, false, true, m_hostImpl->resourceProvider()));
+    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 6, true, false, true, m_hostImpl->resourceProvider()));
 
     EXPECT_FALSE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
 
     // When the layer skips draw and we're animating, we still draw the frame.
-    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 1));
+    m_hostImpl->setRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 7));
     root = static_cast<DidDrawCheckLayer*>(m_hostImpl->rootLayer());
-    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 2, false, true, true, m_hostImpl->resourceProvider()));
+    root->addChild(MissingTextureAnimatingLayer::create(m_hostImpl->activeTree(), 8, false, true, true, m_hostImpl->resourceProvider()));
 
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
@@ -2479,10 +2479,10 @@ TEST_P(LayerTreeHostImplTest, outputSurfaceLostAndRestoredNotificationSentToAllL
     m_hostImpl->setRootLayer(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 1));
     OutputSurfaceLostNotificationCheckLayer* root = static_cast<OutputSurfaceLostNotificationCheckLayer*>(m_hostImpl->rootLayer());
 
-    root->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 1));
+    root->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 2));
     OutputSurfaceLostNotificationCheckLayer* layer1 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(root->children()[0]);
 
-    layer1->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 2));
+    layer1->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 3));
     OutputSurfaceLostNotificationCheckLayer* layer2 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(layer1->children()[0]);
 
     EXPECT_FALSE(root->didLoseOutputSurfaceCalled());
