@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "win8/util/win8_util.h"
 
 namespace {

@@ -18,7 +18,6 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"

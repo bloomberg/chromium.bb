@@ -69,7 +69,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"

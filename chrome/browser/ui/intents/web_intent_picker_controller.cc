@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/intents/web_intent_icon_loader.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/url_constants.h"

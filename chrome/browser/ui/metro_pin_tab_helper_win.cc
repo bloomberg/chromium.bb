@@ -20,7 +20,6 @@
 #include "base/win/metro.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"

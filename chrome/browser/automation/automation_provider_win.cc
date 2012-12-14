@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"

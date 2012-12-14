@@ -14,7 +14,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
