@@ -67,6 +67,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
   virtual aura::client::StackingClient* CreateStackingClient() OVERRIDE;
   virtual bool IsSearchKeyActingAsFunctionKey() const OVERRIDE;
+  virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
 
   int num_exit_requests() const { return num_exit_requests_; }
   void set_is_search_key_acting_as_function_key(bool b) {

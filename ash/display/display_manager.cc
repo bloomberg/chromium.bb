@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/display/display_controller.h"
+#include "ash/host/root_window_host_factory.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -320,12 +321,8 @@ void DisplayManager::UpdateDisplays(
 RootWindow* DisplayManager::CreateRootWindowForDisplay(
     const gfx::Display& display) {
   RootWindow::CreateParams params(display.bounds_in_pixel());
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    params.host = aura::RemoteRootWindowHostWin::Create(
-        display.bounds_in_pixel());
-  }
-#endif
+  params.host = Shell::GetInstance()->root_window_host_factory()->
+      CreateRootWindowHost(display.bounds_in_pixel());
   aura::RootWindow* root_window = new aura::RootWindow(params);
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.

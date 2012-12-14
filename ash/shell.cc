@@ -20,6 +20,7 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/host/root_window_host_factory.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -427,6 +428,7 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
+  root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
   display_controller_.reset(new DisplayController);
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();

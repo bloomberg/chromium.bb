@@ -41,6 +41,7 @@ class CapsLockDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
+class RootWindowHostFactory;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
@@ -218,6 +219,10 @@ class ASH_EXPORT ShellDelegate {
   // True if the user's preferences have the Search key acting as a Function key
   // modifier for accessing extended keyboard shortcuts.
   virtual bool IsSearchKeyActingAsFunctionKey() const = 0;
+
+  // Creates a root window host factory. Shell takes ownership of the returned
+  // value.
+  virtual RootWindowHostFactory* CreateRootWindowHostFactory() = 0;
 };
 
 }  // namespace ash

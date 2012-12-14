@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/caps_lock_delegate_stub.h"
+#include "ash/host/root_window_host_factory.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
@@ -201,6 +202,10 @@ aura::client::StackingClient* TestShellDelegate::CreateStackingClient() {
 
 bool TestShellDelegate::IsSearchKeyActingAsFunctionKey() const {
   return is_search_key_acting_as_function_key_;
+}
+
+RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {
+  return RootWindowHostFactory::Create();
 }
 
 void TestShellDelegate::SetSessionStarted(bool session_started) {

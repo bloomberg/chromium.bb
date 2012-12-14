@@ -78,6 +78,7 @@ class MagnificationController;
 class NestedDispatcherController;
 class PartialMagnificationController;
 class PowerButtonController;
+class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateController;
 class ShellDelegate;
@@ -423,6 +424,10 @@ class ASH_EXPORT Shell
 
  aura::client::StackingClient* stacking_client();
 
+ RootWindowHostFactory* root_window_host_factory() {
+   return root_window_host_factory_.get();
+ }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -527,6 +532,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
   scoped_ptr<internal::SystemModalContainerEventFilter> modality_filter_;
   scoped_ptr<internal::EventClientImpl> event_client_;
+  scoped_ptr<RootWindowHostFactory> root_window_host_factory_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;

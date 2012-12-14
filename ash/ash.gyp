@@ -100,6 +100,9 @@
         'focus_cycler.h',
         'high_contrast/high_contrast_controller.cc',
         'high_contrast/high_contrast_controller.h',
+        'host/root_window_host_factory.cc',
+        'host/root_window_host_factory.h',
+        'host/root_window_host_factory_win.cc',
         'keyboard_overlay/keyboard_overlay_delegate.cc',
         'keyboard_overlay/keyboard_overlay_delegate.h',
         'keyboard_overlay/keyboard_overlay_view.cc',
@@ -439,6 +442,11 @@
             ['exclude', 'accelerators/accelerator_filter.h'],
             ['exclude', 'accelerators/nested_dispatcher_controller.cc'],
             ['exclude', 'accelerators/nested_dispatcher_controller.h'],
+          ],
+        }],
+        ['OS=="win"', {
+          'sources/': [
+            ['exclude', 'host/root_window_host_factory.cc'],
           ],
         }],
         ['OS!="linux"', {

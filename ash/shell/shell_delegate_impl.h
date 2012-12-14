@@ -69,6 +69,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
       aura::RootWindow* root_window) OVERRIDE;
   virtual aura::client::StackingClient* CreateStackingClient() OVERRIDE;
   virtual bool IsSearchKeyActingAsFunctionKey() const OVERRIDE;
+  virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

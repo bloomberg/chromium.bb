@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "ash/host/root_window_host_factory.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -547,6 +548,10 @@ bool ChromeShellDelegate::IsSearchKeyActingAsFunctionKey() const {
 #else
   return false;
 #endif
+}
+
+ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {
+  return ash::RootWindowHostFactory::Create();
 }
 
 void ChromeShellDelegate::Observe(int type,

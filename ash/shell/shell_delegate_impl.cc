@@ -5,6 +5,7 @@
 #include "ash/shell/shell_delegate_impl.h"
 
 #include "ash/caps_lock_delegate_stub.h"
+#include "ash/host/root_window_host_factory.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/launcher_delegate_impl.h"
 #include "ash/shell/context_menu.h"
@@ -211,6 +212,10 @@ aura::client::StackingClient* ShellDelegateImpl::CreateStackingClient() {
 
 bool ShellDelegateImpl::IsSearchKeyActingAsFunctionKey() const {
   return false;
+}
+
+RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {
+  return RootWindowHostFactory::Create();
 }
 
 }  // namespace shell
