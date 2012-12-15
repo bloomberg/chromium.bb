@@ -92,3 +92,28 @@ spellcheck  something."
 saludos,
 Richard.
 http://es.openoffice.org
+Table of contents
+=================
+LICENSES-en.txt
+LLICENCIES-ca.txt
+README.chromium
+
+LICENSES-en.txt
+===============
+LICENSES :
+Spelling dictionary: LGPL, GPL
+LLICENCIES-ca.txt
+=================
+LLICÈNCIES:
+Diccionari ortogràfic : LGPL, GPL
+
+README.chromium
+===============
+Name: A Calalan spellchecking dictionary
+URL: http://www.softcatala.org/wiki/Rebost:Corrector_ortogr%C3%A0fic_de_catal%C3%A0_%28general%29_per_a_l%27OpenOffice.org
+Version: 2.3.0
+LICENSE File: LICENSES-en.txt
+Security Critical: no
+Description:
+This folder contains a partial copy of the Catalan dictionary for hunspell.
+
