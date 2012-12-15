@@ -11,7 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/features/simple_feature_provider.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "extensions/common/error_utils.h"
 
 namespace errors = extension_manifest_errors;
@@ -60,7 +60,7 @@ void Manifest::ValidateManifest(
   // checking to let developers know when they screw up.
 
   std::set<std::string> feature_names =
-      SimpleFeatureProvider::GetManifestFeatures()->GetAllFeatureNames();
+      BaseFeatureProvider::GetManifestFeatures()->GetAllFeatureNames();
   for (std::set<std::string>::iterator feature_name = feature_names.begin();
        feature_name != feature_names.end(); ++feature_name) {
     // Use Get instead of HasKey because the former uses path expansion.
@@ -68,7 +68,7 @@ void Manifest::ValidateManifest(
       continue;
 
     Feature* feature =
-        SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*feature_name);
+        BaseFeatureProvider::GetManifestFeatures()->GetFeature(*feature_name);
     Feature::Availability result = feature->IsAvailableToManifest(
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
@@ -80,7 +80,7 @@ void Manifest::ValidateManifest(
   // Also generate warnings for keys that are not features.
   for (DictionaryValue::key_iterator key = value_->begin_keys();
       key != value_->end_keys(); ++key) {
-    if (!SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
+    if (!BaseFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
       warnings->push_back(Extension::InstallWarning(
           Extension::InstallWarning::FORMAT_TEXT,
           base::StringPrintf("Unrecognized manifest key '%s'.",
@@ -167,7 +167,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 
 bool Manifest::CanAccessKey(const std::string& key) const {
   Feature* feature =
-      SimpleFeatureProvider::GetManifestFeatures()->GetFeature(key);
+      BaseFeatureProvider::GetManifestFeatures()->GetFeature(key);
   if (!feature)
     return true;
 

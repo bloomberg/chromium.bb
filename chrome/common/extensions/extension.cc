@@ -30,8 +30,8 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -757,8 +757,8 @@ bool Extension::ParsePermissions(const char* key,
 
     // Verify feature availability of permissions.
     std::vector<APIPermission::ID> to_remove;
-    SimpleFeatureProvider* permission_features =
-        SimpleFeatureProvider::GetPermissionFeatures();
+    FeatureProvider* permission_features =
+        BaseFeatureProvider::GetPermissionFeatures();
     for (APIPermissionSet::const_iterator it = api_permissions->begin();
          it != api_permissions->end(); ++it) {
       extensions::Feature* feature =

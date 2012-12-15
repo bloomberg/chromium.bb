@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -28,10 +29,10 @@ class TestFeatureProvider : public FeatureProvider {
   }
 
   virtual Feature* GetFeature(const std::string& name) OVERRIDE {
-    Feature* result = new Feature();
+    SimpleFeature* result = new SimpleFeature();
     result->set_name(name);
     result->extension_types()->insert(Extension::TYPE_EXTENSION);
-    result->contexts()->insert(context_);
+    result->GetContexts()->insert(context_);
     to_destroy_.push_back(make_linked_ptr(result));
     return result;
   }
@@ -352,11 +353,13 @@ TEST(ExtensionAPI, GetAPINameFromFullName) {
 TEST(ExtensionAPI, DefaultConfigurationFeatures) {
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());
 
-  Feature* bookmarks = api->GetFeature("bookmarks");
-  Feature* bookmarks_create = api->GetFeature("bookmarks.create");
+  SimpleFeature* bookmarks =
+      static_cast<SimpleFeature*>(api->GetFeature("bookmarks"));
+  SimpleFeature* bookmarks_create =
+      static_cast<SimpleFeature*>(api->GetFeature("bookmarks.create"));
 
   struct {
-    Feature* feature;
+    SimpleFeature* feature;
     // TODO(aa): More stuff to test over time.
   } test_data[] = {
     { bookmarks },
@@ -364,14 +367,14 @@ TEST(ExtensionAPI, DefaultConfigurationFeatures) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    Feature* feature = test_data[i].feature;
+    SimpleFeature* feature = test_data[i].feature;
     ASSERT_TRUE(feature) << i;
 
     EXPECT_TRUE(feature->whitelist()->empty());
     EXPECT_TRUE(feature->extension_types()->empty());
 
-    EXPECT_EQ(1u, feature->contexts()->size());
-    EXPECT_TRUE(feature->contexts()->count(
+    EXPECT_EQ(1u, feature->GetContexts()->size());
+    EXPECT_TRUE(feature->GetContexts()->count(
         Feature::BLESSED_EXTENSION_CONTEXT));
 
     EXPECT_EQ(Feature::UNSPECIFIED_LOCATION, feature->location());

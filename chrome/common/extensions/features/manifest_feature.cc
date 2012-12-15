@@ -18,9 +18,9 @@ Feature::Availability ManifestFeature::IsAvailableToContext(
     const Extension* extension,
     Feature::Context context,
     Feature::Platform platform) const {
-  Availability availability = Feature::IsAvailableToContext(extension,
-                                                            context,
-                                                            platform);
+  Availability availability = SimpleFeature::IsAvailableToContext(extension,
+                                                                  context,
+                                                                  platform);
   if (!availability.is_available())
     return availability;
 

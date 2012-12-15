@@ -18,7 +18,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/simple_feature_provider.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
@@ -286,7 +287,7 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     if (!uses_feature_system)
       continue;
 
-    Feature* feature = new Feature();
+    SimpleFeature* feature = new SimpleFeature();
     feature->set_name(schema_namespace);
     feature->Parse(schema);
 
@@ -307,7 +308,7 @@ void ExtensionAPI::LoadSchema(const std::string& name,
         DictionaryValue* child = NULL;
         CHECK(child_list->GetDictionary(j, &child));
 
-        scoped_ptr<Feature> child_feature(new Feature(*feature));
+        scoped_ptr<SimpleFeature> child_feature(new SimpleFeature(*feature));
         child_feature->Parse(child);
         if (child_feature->Equals(*feature))
           continue;  // no need to store no-op features
@@ -335,9 +336,9 @@ ExtensionAPI::~ExtensionAPI() {
 
 void ExtensionAPI::InitDefaultConfiguration() {
   RegisterDependencyProvider(
-      "manifest", SimpleFeatureProvider::GetManifestFeatures());
+      "manifest", BaseFeatureProvider::GetManifestFeatures());
   RegisterDependencyProvider(
-      "permission", SimpleFeatureProvider::GetPermissionFeatures());
+      "permission", BaseFeatureProvider::GetPermissionFeatures());
 
   // Schemas to be loaded from resources.
   CHECK(unloaded_schemas_.empty());
@@ -525,8 +526,8 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
          iter != resolved_dependencies.end(); ++iter) {
       Feature* dependency = GetFeatureDependency(*iter);
       for (std::set<Feature::Context>::iterator context =
-               dependency->contexts()->begin();
-           context != dependency->contexts()->end(); ++context) {
+               dependency->GetContexts()->begin();
+           context != dependency->GetContexts()->end(); ++context) {
         if (*context != Feature::BLESSED_EXTENSION_CONTEXT)
           return false;
       }
@@ -714,7 +715,7 @@ Feature* ExtensionAPI::GetFeature(const std::string& full_name) {
     result = parent_feature->second.get();
   }
 
-  if (result->contexts()->empty()) {
+  if (result->GetContexts()->empty()) {
     LOG(ERROR) << "API feature '" << full_name
                << "' must specify at least one context.";
     return NULL;

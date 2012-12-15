@@ -5,11 +5,11 @@
 #ifndef CHROME_COMMON_EXTENSIONS_FEATURES_PERMISSION_FEATURE_H_
 #define CHROME_COMMON_EXTENSIONS_FEATURES_PERMISSION_FEATURE_H_
 
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 
 namespace extensions {
 
-class PermissionFeature : public Feature {
+class PermissionFeature : public SimpleFeature {
  public:
   PermissionFeature();
   virtual ~PermissionFeature();

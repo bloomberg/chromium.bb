@@ -2,36 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_
-#define CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_BASE_FEATURE_PROVIDER_H_
+#define CHROME_COMMON_EXTENSIONS_FEATURES_BASE_FEATURE_PROVIDER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
 #include "base/memory/linked_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/feature_provider.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 
 namespace extensions {
 
 // Reads Features out of a simple JSON file description.
-class SimpleFeatureProvider : public FeatureProvider {
+class BaseFeatureProvider : public FeatureProvider {
  public:
-  typedef Feature*(*FeatureFactory)();
+  typedef SimpleFeature*(*FeatureFactory)();
 
-  // Creates a new SimpleFeatureProvider. Pass null to |factory| to have the
+  // Creates a new BaseFeatureProvider. Pass null to |factory| to have the
   // provider create plain old Feature instances.
-  SimpleFeatureProvider(DictionaryValue* root, FeatureFactory factory);
-  virtual ~SimpleFeatureProvider();
+  BaseFeatureProvider(const DictionaryValue& root, FeatureFactory factory);
+  virtual ~BaseFeatureProvider();
 
   // Gets an instance for the _manifest_features.json file that is baked into
   // Chrome as a resource.
-  static SimpleFeatureProvider* GetManifestFeatures();
+  static BaseFeatureProvider* GetManifestFeatures();
 
   // Gets an instance for the _permission_features.json file that is baked into
   // Chrome as a resource.
-  static SimpleFeatureProvider* GetPermissionFeatures();
+  static BaseFeatureProvider* GetPermissionFeatures();
 
   // Returns all features described by this instance.
   std::set<std::string> GetAllFeatureNames() const;
@@ -48,4 +49,4 @@ class SimpleFeatureProvider : public FeatureProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_BASE_FEATURE_PROVIDER_H_
