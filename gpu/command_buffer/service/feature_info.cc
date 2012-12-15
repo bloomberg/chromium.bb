@@ -82,8 +82,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
       disable_workarounds(false),
-      enable_shader_name_hashing(false),
-      enable_virtual_context(false) {
+      enable_shader_name_hashing(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds()
@@ -208,12 +207,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     GL_RENDERER,
   };
   bool is_intel = false;
-  bool is_nvidia_desktop = false;
+  bool is_nvidia = false;
   bool is_amd = false;
   bool is_mesa = false;
-  bool is_nvidia_tegra = false;
-  bool is_img = false;
-  bool is_arm = false;
   bool is_qualcomm = false;
   for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
     const char* str = reinterpret_cast<const char*>(
@@ -222,15 +218,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       std::string lstr(StringToLowerASCII(std::string(str)));
       StringSet string_set(lstr);
       is_intel |= string_set.Contains("intel");
-      is_nvidia_desktop |= string_set.Contains("nvidia");
+      is_nvidia |= string_set.Contains("nvidia");
       is_amd |= string_set.Contains("amd") || string_set.Contains("ati");
       is_mesa |= string_set.Contains("mesa");
-
-      is_nvidia_tegra |= string_set.Contains("tegra");
-      if (is_nvidia_tegra)
-        is_nvidia_desktop = false;
-      is_img |= string_set.Contains("imagination");
-      is_arm |= string_set.Contains("arm");
       is_qualcomm |= string_set.Contains("qualcomm");
     }
   }
@@ -243,7 +233,6 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableShaderNameHashing);
 
-  feature_flags_.enable_virtual_context = is_img;
 
   bool npot_ok = false;
 
@@ -677,12 +666,12 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     workarounds_.set_texture_filter_before_generating_mipmap = true;
     workarounds_.clear_alpha_in_readpixels = true;
 
-    if (is_nvidia_desktop) {
+    if (is_nvidia) {
       workarounds_.use_current_program_after_successful_link = true;
     }
 
 #if defined(OS_MACOSX)
-    workarounds_.needs_offscreen_buffer_workaround = is_nvidia_desktop;
+    workarounds_.needs_offscreen_buffer_workaround = is_nvidia;
     workarounds_.needs_glsl_built_in_function_emulation = is_amd;
 
     if ((is_amd || is_intel) &&

@@ -4,10 +4,13 @@
 
 #include "content/gpu/gpu_info_collector.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 
@@ -52,7 +55,22 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   // Create a short-lived context on the UI thread to collect the GL strings.
-  return CollectGraphicsInfoGL(gpu_info);
+  if (!CollectGraphicsInfoGL(gpu_info))
+    return false;
+
+  std::string vendor(StringToLowerASCII(gpu_info->gl_vendor));
+  std::string renderer(StringToLowerASCII(gpu_info->gl_renderer));
+  bool is_img = vendor.find("imagination") != std::string::npos;
+  bool is_arm = vendor.find("arm") != std::string::npos;
+  bool is_mali_t604 = is_arm && renderer.find("mali-t604") != std::string::npos;
+
+  // IMG: avoid context switching perf problems, crashes with share groups
+  // Mali-T604: http://crbug.com/154715
+  if (is_img || is_mali_t604) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableVirtualGLContexts);
+  }
+  return true;
 }
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
