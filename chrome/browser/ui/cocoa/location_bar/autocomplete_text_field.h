@@ -104,6 +104,9 @@ class AutocompleteTextFieldObserver {
   // Called whenever the autocomplete text field is losing focus.
   virtual void OnKillFocus() = 0;
 
+  // Called before the text field handles a mouse down event.
+  virtual void OnMouseDown(NSInteger button_number) = 0;
+
  protected:
   virtual ~AutocompleteTextFieldObserver() {}
 };

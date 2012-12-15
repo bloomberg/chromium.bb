@@ -820,6 +820,14 @@ void OmniboxViewMac::OnKillFocus() {
   controller()->OnKillFocus();
 }
 
+void OmniboxViewMac::OnMouseDown(NSInteger button_number) {
+  // Restore caret visibility whenever the user clicks in the the omnibox. This
+  // is not always covered by OnSetFocus() because when clicking while the
+  // omnibox has invisible focus does not trigger a new OnSetFocus() call.
+  if (button_number == 0 || button_number == 1)
+    model()->SetCaretVisibility(true);
+}
+
 bool OmniboxViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
   return selection.length > 0;

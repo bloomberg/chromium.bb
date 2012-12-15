@@ -53,6 +53,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(OnDoCommandBySelector, bool(SEL cmd));
   MOCK_METHOD1(OnSetFocus, void(bool control_down));
   MOCK_METHOD0(OnKillFocus, void());
+  MOCK_METHOD1(OnMouseDown, void(NSInteger button_number));
   MOCK_METHOD0(ShouldEnableCopyURL, bool());
 };
 

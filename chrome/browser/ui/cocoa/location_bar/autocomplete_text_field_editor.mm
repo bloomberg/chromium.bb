@@ -292,6 +292,27 @@ BOOL ThePasteboardIsTooDamnBig() {
   return doResign;
 }
 
+- (void)mouseDown:(NSEvent*)event {
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer)
+    observer->OnMouseDown([event buttonNumber]);
+  [super mouseDown:event];
+}
+
+- (void)rightMouseDown:(NSEvent *)event {
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer)
+    observer->OnMouseDown([event buttonNumber]);
+  [super rightMouseDown:event];
+}
+
+- (void)otherMouseDown:(NSEvent *)event {
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer)
+    observer->OnMouseDown([event buttonNumber]);
+  [super otherMouseDown:event];
+}
+
 // (URLDropTarget protocol)
 - (id<URLDropTargetController>)urlDropController {
   BrowserWindowController* windowController =

@@ -47,3 +47,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewMacBrowserTest, ApplyCaretVisibility) {
   GetOmnibox()->SetFocus();
   EXPECT_FALSE([[GetOmnibox()->field() cell] hideFocusState]);
 }
+
+
+// Verify that mouse down sets caret visibility to true.
+IN_PROC_BROWSER_TEST_F(OmniboxViewMacBrowserTest, MouseDownCaretVisibility) {
+  GetOmnibox()->model()->SetCaretVisibility(false);
+  EXPECT_FALSE(GetOmnibox()->model()->is_caret_visible());
+  GetOmnibox()->OnMouseDown(0);
+  EXPECT_TRUE(GetOmnibox()->model()->is_caret_visible());
+}

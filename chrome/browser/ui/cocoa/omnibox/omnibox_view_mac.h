@@ -86,6 +86,7 @@ class OmniboxViewMac : public OmniboxView,
   virtual bool OnDoCommandBySelector(SEL cmd) OVERRIDE;
   virtual void OnSetFocus(bool control_down) OVERRIDE;
   virtual void OnKillFocus() OVERRIDE;
+  virtual void OnMouseDown(NSInteger button_number) OVERRIDE;
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);
