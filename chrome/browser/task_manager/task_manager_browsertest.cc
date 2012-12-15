@@ -256,9 +256,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) || defined(OS_WIN)
 // This test fails on Ash because task manager treats view type
 // Panels differently for Ash.
+// This test also fails on Windows, win_rel trybot. http://crbug.com/166322
 #define MAYBE_KillPanelExtension DISABLED_KillPanelExtension
 #else
 #define MAYBE_KillPanelExtension KillPanelExtension
