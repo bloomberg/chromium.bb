@@ -97,7 +97,75 @@ const uint32 kVendorIDIntel = 0x8086;
 const uint32 kVendorIDNVidia = 0x10de;
 const uint32 kVendorIDAMD = 0x1002;
 
-bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
+}  // namespace anonymous
+
+namespace gpu_info_collector {
+
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+  *gpu_info = content::GPUInfo();
+
+  TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGpuNoContextLost)) {
+    gpu_info->can_lose_context = false;
+  } else {
+#if defined(OS_CHROMEOS)
+    gpu_info->can_lose_context = false;
+#else
+    // TODO(zmo): need to consider the case where we are running on top
+    // of desktop GL and GL_ARB_robustness extension is available.
+    gpu_info->can_lose_context =
+        (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+#endif
+  }
+
+  gpu_info->finalized = true;
+  bool rt = CollectGraphicsInfoGL(gpu_info);
+
+  return rt;
+}
+
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  bool rt = CollectVideoCardInfo(gpu_info);
+
+  std::string driver_version;
+  switch (gpu_info->gpu.vendor_id) {
+    case kVendorIDAMD:
+      driver_version = CollectDriverVersionATI();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "ATI / AMD";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDNVidia:
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDIntel:
+      // In dual-GPU cases, sometimes PCI scan only gives us the
+      // integrated GPU (i.e., the Intel one).
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+        // Machines with more than two GPUs are not handled.
+        if (gpu_info->secondary_gpus.size() <= 1)
+          gpu_info->optimus = true;
+      }
+      break;
+  }
+
+  return rt;
+}
+
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (IsPciSupported() == false) {
@@ -188,73 +256,6 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
   return (primary_gpu_identified);
 }
 
-}  // namespace anonymous
-
-namespace gpu_info_collector {
-
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGpuNoContextLost)) {
-    gpu_info->can_lose_context = false;
-  } else {
-#if defined(OS_CHROMEOS)
-    gpu_info->can_lose_context = false;
-#else
-    // TODO(zmo): need to consider the case where we are running on top
-    // of desktop GL and GL_ARB_robustness extension is available.
-    gpu_info->can_lose_context =
-        (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-#endif
-  }
-
-  gpu_info->finalized = true;
-  bool rt = CollectGraphicsInfoGL(gpu_info);
-
-  return rt;
-}
-
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  bool rt = CollectPCIVideoCardInfo(gpu_info);
-
-  std::string driver_version;
-  switch (gpu_info->gpu.vendor_id) {
-    case kVendorIDAMD:
-      driver_version = CollectDriverVersionATI();
-      if (!driver_version.empty()) {
-        gpu_info->driver_vendor = "ATI / AMD";
-        gpu_info->driver_version = driver_version;
-      }
-      break;
-    case kVendorIDNVidia:
-      driver_version = CollectDriverVersionNVidia();
-      if (!driver_version.empty()) {
-        gpu_info->driver_vendor = "NVIDIA";
-        gpu_info->driver_version = driver_version;
-      }
-      break;
-    case kVendorIDIntel:
-      // In dual-GPU cases, sometimes PCI scan only gives us the
-      // integrated GPU (i.e., the Intel one).
-      driver_version = CollectDriverVersionNVidia();
-      if (!driver_version.empty()) {
-        gpu_info->driver_vendor = "NVIDIA";
-        gpu_info->driver_version = driver_version;
-        // Machines with more than two GPUs are not handled.
-        if (gpu_info->secondary_gpus.size() <= 1)
-          gpu_info->optimus = true;
-      }
-      break;
-  }
-
-  return rt;
-}
-
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
@@ -278,11 +279,6 @@ bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   gpu_info->driver_vendor = pieces[1];
   gpu_info->driver_version = driver_version;
   return true;
-}
-
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
-  MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
 }  // namespace gpu_info_collector

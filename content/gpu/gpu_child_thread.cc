@@ -74,6 +74,7 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   }
 }
 
+
 GpuChildThread::~GpuChildThread() {
   logging::SetLogMessageHandler(NULL);
 }
@@ -133,6 +134,7 @@ void GpuChildThread::OnInitialize() {
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - process_start_time_;
 
+
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
@@ -142,9 +144,11 @@ void GpuChildThread::OnInitialize() {
       ChildProcess::current()->io_message_loop_proxy(),
       ChildProcess::current()->GetShutDownEvent()));
 
+#if defined(OS_LINUX)
   // Ensure the browser process receives the GPU info before a reply to any
   // subsequent IPC it might send.
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+#endif
 }
 
 void GpuChildThread::StopWatchdog() {
@@ -163,8 +167,12 @@ void GpuChildThread::OnCollectGraphicsInfo() {
          command_line->HasSwitch(switches::kInProcessGPU));
 #endif  // OS_WIN
 
-  if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info_))
+  // Sandbox state is not part of the gpu info collection.  It is determined
+  // in GpuMain() and passed down to GpuChildThread.
+  bool sandboxed = gpu_info_.sandboxed;
+  if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
     VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+  gpu_info_.sandboxed = sandboxed;
   GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)

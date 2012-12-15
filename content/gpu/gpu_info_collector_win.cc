@@ -157,14 +157,9 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
   return stats;
 }
 
-// Advanced Micro Devices has interesting configurations on laptops were
-// there are two videocards that can alternatively a given process output.
-enum AMDVideoCardType {
-  UNKNOWN,
-  STANDALONE,
-  INTEGRATED,
-  SWITCHABLE
-};
+}  // namespace anonymous
+
+namespace gpu_info_collector {
 
 #if !defined(GOOGLE_CHROME_BUILD)
 AMDVideoCardType GetAMDVideocardType() {
@@ -175,6 +170,139 @@ AMDVideoCardType GetAMDVideocardType() {
 // be found in src/third_party/amd.
 AMDVideoCardType GetAMDVideocardType();
 #endif
+
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectGraphicsInfo");
+
+  DCHECK(gpu_info);
+  *gpu_info = content::GPUInfo();
+
+  gpu_info->performance_stats = RetrieveGpuPerformanceStats();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
+    std::string requested_implementation_name =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+    if (requested_implementation_name == "swiftshader") {
+      gpu_info->software_rendering = true;
+      return false;
+    }
+  }
+
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    gpu_info->finalized = true;
+    return CollectGraphicsInfoGL(gpu_info);
+  }
+
+  // TODO(zmo): the following code only works if running on top of ANGLE.
+  // Need to handle the case when running on top of real EGL/GLES2 drivers.
+
+  egl::Display* display = static_cast<egl::Display*>(
+      gfx::GLSurfaceEGL::GetHardwareDisplay());
+  if (!display) {
+    LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
+    return false;
+  }
+
+  IDirect3DDevice9* device = display->getDevice();
+  if (!device) {
+    LOG(ERROR) << "display->getDevice() failed";
+    return false;
+  }
+
+  base::win::ScopedComPtr<IDirect3D9> d3d;
+  if (FAILED(device->GetDirect3D(d3d.Receive()))) {
+    LOG(ERROR) << "device->GetDirect3D(&d3d) failed";
+    return false;
+  }
+
+  if (!CollectGraphicsInfoD3D(d3d, gpu_info))
+    return false;
+
+  // DirectX diagnostics are collected asynchronously because it takes a
+  // couple of seconds. Do not mark gpu_info as complete until that is done.
+  return true;
+}
+
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
+
+  DCHECK(gpu_info);
+
+  bool rt = true;
+  if (!CollectVideoCardInfo(gpu_info))
+    rt = false;
+
+  gpu_info->performance_stats = RetrieveGpuPerformanceStatsWithHistograms();
+
+  return rt;
+}
+
+bool CollectGraphicsInfoD3D(IDirect3D9* d3d, content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectGraphicsInfoD3D");
+
+  DCHECK(d3d);
+  DCHECK(gpu_info);
+
+  bool succeed = CollectVideoCardInfo(gpu_info);
+
+  // Get version information
+  D3DCAPS9 d3d_caps;
+  if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
+                         D3DDEVTYPE_HAL,
+                         &d3d_caps) == D3D_OK) {
+    gpu_info->pixel_shader_version =
+        VersionNumberToString(d3d_caps.PixelShaderVersion);
+    gpu_info->vertex_shader_version =
+        VersionNumberToString(d3d_caps.VertexShaderVersion);
+  } else {
+    LOG(ERROR) << "d3d->GetDeviceCaps() failed";
+    succeed = false;
+  }
+
+  // Get can_lose_context
+  base::win::ScopedComPtr<IDirect3D9Ex> d3dex;
+  if (SUCCEEDED(d3dex.QueryFrom(d3d)))
+    gpu_info->can_lose_context = false;
+  else
+    gpu_info->can_lose_context = true;
+
+  return true;
+}
+
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectVideoCardInfo");
+
+  DCHECK(gpu_info);
+
+  // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
+  HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
+  gpu_info->optimus = nvd3d9wrap != NULL;
+
+  // Taken from http://developer.nvidia.com/object/device_ids.html
+  DISPLAY_DEVICE dd;
+  dd.cb = sizeof(DISPLAY_DEVICE);
+  int i = 0;
+  std::wstring id;
+  for (int i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i) {
+    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+      id = dd.DeviceID;
+      break;
+    }
+  }
+
+  if (id.length() > 20) {
+    int vendor_id = 0, device_id = 0;
+    std::wstring vendor_id_string = id.substr(8, 4);
+    std::wstring device_id_string = id.substr(17, 4);
+    base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
+    base::HexStringToInt(WideToASCII(device_id_string), &device_id);
+    gpu_info->gpu.vendor_id = vendor_id;
+    gpu_info->gpu.device_id = device_id;
+    // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
+    return CollectDriverInfoD3D(id, gpu_info);
+  }
+  return false;
+}
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
@@ -256,114 +384,6 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
   return found;
 }
 
-}  // namespace anonymous
-
-namespace gpu_info_collector {
-
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
-  TRACE_EVENT0("gpu", "CollectGraphicsInfo");
-
-  DCHECK(gpu_info);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
-    std::string requested_implementation_name =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
-    if (requested_implementation_name == "swiftshader") {
-      gpu_info->software_rendering = true;
-      return false;
-    }
-  }
-
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    gpu_info->finalized = true;
-    return CollectGraphicsInfoGL(gpu_info);
-  }
-
-  // TODO(zmo): the following code only works if running on top of ANGLE.
-  // Need to handle the case when running on top of real EGL/GLES2 drivers.
-
-  egl::Display* display = static_cast<egl::Display*>(
-      gfx::GLSurfaceEGL::GetHardwareDisplay());
-  if (!display) {
-    LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
-    return false;
-  }
-
-  IDirect3DDevice9* device = display->getDevice();
-  if (!device) {
-    LOG(ERROR) << "display->getDevice() failed";
-    return false;
-  }
-
-  base::win::ScopedComPtr<IDirect3D9> d3d;
-  if (FAILED(device->GetDirect3D(d3d.Receive()))) {
-    LOG(ERROR) << "device->GetDirect3D(&d3d) failed";
-    return false;
-  }
-
-  // Get can_lose_context
-  base::win::ScopedComPtr<IDirect3D9Ex> d3dex;
-  if (SUCCEEDED(d3dex.QueryFrom(d3d)))
-    gpu_info->can_lose_context = false;
-  else
-    gpu_info->can_lose_context = true;
-
-  // Get version information
-  D3DCAPS9 d3d_caps;
-  if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
-                         D3DDEVTYPE_HAL,
-                         &d3d_caps) == D3D_OK) {
-    gpu_info->pixel_shader_version =
-        VersionNumberToString(d3d_caps.PixelShaderVersion);
-    gpu_info->vertex_shader_version =
-        VersionNumberToString(d3d_caps.VertexShaderVersion);
-  } else {
-    LOG(ERROR) << "d3d->GetDeviceCaps() failed";
-    return false;
-  }
-
-  // DirectX diagnostics are collected asynchronously because it takes a
-  // couple of seconds. Do not mark gpu_info as complete until that is done.
-  return true;
-}
-
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
-  TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
-
-  DCHECK(gpu_info);
-
-  gpu_info->performance_stats = RetrieveGpuPerformanceStatsWithHistograms();
-
-  // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
-  HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
-  gpu_info->optimus = nvd3d9wrap != NULL;
-
-  // Taken from http://developer.nvidia.com/object/device_ids.html
-  DISPLAY_DEVICE dd;
-  dd.cb = sizeof(DISPLAY_DEVICE);
-  int i = 0;
-  std::wstring id;
-  for (int i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i) {
-    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-      id = dd.DeviceID;
-      break;
-    }
-  }
-
-  if (id.length() > 20) {
-    int vendor_id = 0, device_id = 0;
-    std::wstring vendor_id_string = id.substr(8, 4);
-    std::wstring device_id_string = id.substr(17, 4);
-    base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
-    base::HexStringToInt(WideToASCII(device_id_string), &device_id);
-    gpu_info->gpu.vendor_id = vendor_id;
-    gpu_info->gpu.device_id = device_id;
-    // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
-    return CollectDriverInfoD3D(id, gpu_info);
-  }
-  return false;
-}
-
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoGL");
 
@@ -380,34 +400,6 @@ bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
     return true;
   }
   return false;
-}
-
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
-  DCHECK(basic_gpu_info);
-
-  if (context_gpu_info.software_rendering) {
-    basic_gpu_info->software_rendering = true;
-    return;
-  }
-
-  if (!context_gpu_info.gl_vendor.empty()) {
-    MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
-    return;
-  }
-
-  basic_gpu_info->pixel_shader_version =
-      context_gpu_info.pixel_shader_version;
-  basic_gpu_info->vertex_shader_version =
-      context_gpu_info.vertex_shader_version;
-
-  basic_gpu_info->dx_diagnostics = context_gpu_info.dx_diagnostics;
-
-  basic_gpu_info->can_lose_context = context_gpu_info.can_lose_context;
-  basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
-  basic_gpu_info->gpu_accessible = context_gpu_info.gpu_accessible;
-  basic_gpu_info->finalized = context_gpu_info.finalized;
-  basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
 }
 
 }  // namespace gpu_info_collector

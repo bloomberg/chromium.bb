@@ -45,14 +45,14 @@ std::string GetDriverVersionFromString(const std::string& version_string) {
 
 namespace gpu_info_collector {
 
-bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   // can_lose_context must be false to enable accelerated Canvas2D
   gpu_info->can_lose_context = false;
   gpu_info->finalized = true;
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   // Create a short-lived context on the UI thread to collect the GL strings.
   if (!CollectGraphicsInfoGL(gpu_info))
@@ -73,15 +73,14 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   return true;
 }
 
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
+  return true;
+}
+
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   gpu_info->driver_version = GetDriverVersionFromString(
       gpu_info->gl_version_string);
   return true;
-}
-
-void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
-                  const content::GPUInfo& context_gpu_info) {
-  MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
 }  // namespace gpu_info_collector

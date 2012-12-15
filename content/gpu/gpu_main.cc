@@ -181,12 +181,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   bool initialized_gl_context = false;
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
-    if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info))
-      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-    GetContentClient()->SetGpuInfo(gpu_info);
+    if (!command_line.HasSwitch(switches::kSkipGpuFullInfoCollection)) {
+      if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
+        VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+      GetContentClient()->SetGpuInfo(gpu_info);
 
-    // We know that CollectGraphicsInfo will initialize a GLContext.
-    initialized_gl_context = true;
+      // We know that CollectGraphicsInfo will initialize a GLContext.
+      initialized_gl_context = true;
+    }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA

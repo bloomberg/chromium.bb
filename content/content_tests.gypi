@@ -358,6 +358,7 @@
         'common/sandbox_mac_system_access_unittest.mm',
         'components/navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
         'gpu/gpu_info_collector_unittest.cc',
+        'gpu/gpu_info_collector_unittest_win.cc',
         'renderer/active_notification_tracker_unittest.cc',
         'renderer/android/email_detector_unittest.cc',
         'renderer/android/phone_number_detector_unittest.cc',

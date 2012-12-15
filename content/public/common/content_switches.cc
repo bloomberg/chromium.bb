@@ -624,6 +624,9 @@ const char kSitePerProcess[]                = "site-per-process";
 // content. The switch is intended only for tests.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
+// Skip collecting full GPU info upon GPU process launch.
+const char kSkipGpuFullInfoCollection[]     = "skip-gpu-full-info-collection";
+
 // GestureTapDown events are deferred by this many miillseconds before
 // sending them to the renderer.
 const char kTapDownDeferralTimeMs[]         = "tap-down-deferral-time";
