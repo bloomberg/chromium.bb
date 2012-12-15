@@ -333,6 +333,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
                     int /* height */)
 
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
+                    string16 /* omnibox_font */,
+                    size_t /* omnibox_font_size */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
                     bool /* is_key_capture_enabled */)
 

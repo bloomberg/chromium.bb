@@ -663,16 +663,19 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeAreaHeight(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFont(
     const v8::Arguments& args) {
-  return UTF8ToV8String(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::MediumFont).GetFontName());
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  return UTF16ToV8String(SearchBox::Get(render_view)->omnibox_font());
 }
 
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFontSize(
     const v8::Arguments& args) {
-  return v8::Uint32::New(
-      ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::MediumFont).GetFontSize());
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  return v8::Uint32::New(SearchBox::Get(render_view)->omnibox_font_size());
 }
 
 // static

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/instant/instant_client.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
 
 InstantClient::Delegate::~Delegate() {
 }
@@ -131,6 +134,17 @@ void InstantClient::SetSuggestions(
 }
 
 void InstantClient::InstantSupportDetermined(int page_id, bool result) {
+  if (result) {
+    // Inform the renderer process of the Omnibox's font information.
+    const gfx::Font& omnibox_font =
+        ui::ResourceBundle::GetSharedInstance().GetFont(
+            ui::ResourceBundle::MediumFont);
+    string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
+    size_t omnibox_font_size = omnibox_font.GetFontSize();
+
+    Send(new ChromeViewMsg_SearchBoxFontInformation(
+        routing_id(), omnibox_font_name, omnibox_font_size));
+  }
   if (web_contents()->IsActiveEntry(page_id))
     delegate_->InstantSupportDetermined(result);
 }

@@ -51,6 +51,8 @@ class SearchBox : public content::RenderViewObserver,
   const chrome::search::Mode& mode() const { return mode_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   bool display_instant_results() const { return display_instant_results_; }
+  const string16& omnibox_font() const { return omnibox_font_; }
+  size_t omnibox_font_size() const { return omnibox_font_size_; }
 
   // These functions return the start/end margins of the page text area,
   // adjusted for the page zoom.
@@ -89,6 +91,8 @@ class SearchBox : public content::RenderViewObserver,
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
+  void OnFontInformationReceived(const string16& omnibox_font,
+                                 size_t omnibox_font_size);
 
   // Returns the current zoom factor of the render view or 1 on failure.
   double GetZoom() const;
@@ -112,6 +116,8 @@ class SearchBox : public content::RenderViewObserver,
   ThemeBackgroundInfo theme_info_;
   int theme_area_height_;
   bool display_instant_results_;
+  string16 omnibox_font_;
+  size_t omnibox_font_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

@@ -21,7 +21,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       last_results_base_(0),
       is_key_capture_enabled_(false),
       theme_area_height_(0),
-      display_instant_results_(false) {
+      display_instant_results_(false),
+      omnibox_font_size_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -131,6 +132,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
                         OnThemeAreaHeightChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
+                        OnFontInformationReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -275,6 +278,12 @@ double SearchBox::GetZoom() const {
   return 1.0;
 }
 
+void SearchBox::OnFontInformationReceived(const string16& omnibox_font,
+                                          size_t omnibox_font_size) {
+  omnibox_font_ = omnibox_font;
+  omnibox_font_size_ = omnibox_font_size;
+}
+
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
@@ -292,4 +301,6 @@ void SearchBox::Reset() {
   // Don't reset display_instant_results_ to prevent clearing it on committed
   // results pages in extended mode. Otherwise resetting it is a no-op because
   // a new loader is created when it changes; see crbug.com/164662.
+  // Also don't reset omnibox_font_ or omnibox_font_size_ since it never
+  // changes.
 }
