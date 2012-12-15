@@ -13,6 +13,8 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -52,18 +54,25 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
       return false;
     }
   }
-  if (!wrapper_->bubble_widget())
+  views::Widget* bubble_widget = wrapper_->bubble_widget();
+  if (!bubble_widget)
     return false;
 
-  gfx::Rect bounds = wrapper_->bubble_widget()->GetWindowBoundsInScreen();
+  gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
   bounds.Inset(wrapper_->bubble_view()->GetBorderInsets());
-  if (bounds.Contains(event->root_location()))
+  aura::RootWindow* root = bubble_widget->GetNativeView()->GetRootWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  gfx::Point screen_point(event->root_location());
+  screen_position_client->ConvertPointToScreen(root, &screen_point);
+
+  if (bounds.Contains(screen_point))
     return false;
   if (wrapper_->tray()) {
     // If the user clicks on the parent tray, don't process the event here,
     // let the tray logic handle the event and determine show/hide behavior.
     bounds = wrapper_->tray()->GetWidget()->GetClientAreaBoundsInScreen();
-    if (bounds.Contains(event->root_location()))
+    if (bounds.Contains(screen_point))
       return false;
   }
   // Handle clicking outside the bubble and tray and return true if the
