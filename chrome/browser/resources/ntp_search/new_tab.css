@@ -34,13 +34,8 @@ body {
 }
 
 #notification-container {
-  -webkit-transition: opacity 200ms;
-  position: absolute;
-}
-
-#notification-container.inactive {
-  -webkit-transition: opacity 200ms;
-  opacity: 0;
+  height: 18px;
+  padding: 10px 0;
 }
 
 #notification {
@@ -101,11 +96,6 @@ body {
 
 #bottom-panel-header {
   padding: 10px 0 20px;
-}
-
-#bottom-panel-toolbar {
-  height: 18px;
-  padding: 10px 0;
 }
 
 #bookmark-bar-spacer {

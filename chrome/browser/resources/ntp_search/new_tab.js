@@ -132,13 +132,6 @@ cr.define('ntp', function() {
   var headerHeight;
 
   /**
-   * The height of the Bottom Panel Footer, in pixels.
-   * @type {number|undefined}
-   * @private
-   */
-  var footerHeight;
-
-  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -736,9 +729,8 @@ cr.define('ntp', function() {
       var contentHeight = TILE_ROW_HEIGHT;
       if (!opt_page && currentPage.config.scrollable) {
         contentHeight = viewHeight - bottomPanelOffsetTop -
-            headerHeight - footerHeight;
+            headerHeight - $('bottom-panel-footer').offsetHeight;
         contentHeight = Math.max(TILE_ROW_HEIGHT, contentHeight);
-        contentHeight = Math.min(2 * TILE_ROW_HEIGHT, contentHeight);
       }
       this.contentHeight_ = contentHeight;
 
@@ -808,11 +800,8 @@ cr.define('ntp', function() {
 
     bottomPanelOffsetTop = $('bottom-panel').offsetTop;
     headerHeight = $('bottom-panel-header').offsetHeight;
-    footerHeight = $('bottom-panel-footer').offsetHeight;
 
     notificationContainer = getRequiredElement('notification-container');
-    notificationContainer.addEventListener(
-        'webkitTransitionEnd', onNotificationTransitionEnd);
 
     var mostVisited = new ntp.MostVisitedPage();
     newTabView.appendTilePage(mostVisited,
@@ -1006,29 +995,20 @@ cr.define('ntp', function() {
     document.addEventListener('dragstart', closeFunc);
 
     notificationContainer.hidden = false;
-    window.setTimeout(function() {
-      notificationContainer.classList.remove('inactive');
-    }, 0);
 
     var timeout = opt_timeout || 10000;
     notificationTimeout = window.setTimeout(hideNotification, timeout);
+
+    layout();
   }
 
   /**
    * Hide the notification bubble.
    */
   function hideNotification() {
-    notificationContainer.classList.add('inactive');
-  }
+    notificationContainer.hidden = true;
 
-  /**
-   * When done fading out, set hidden to true so the notification can't be
-   * tabbed to or clicked.
-   * @param {Event} e The webkitTransitionEnd event.
-   */
-  function onNotificationTransitionEnd(e) {
-    if (notificationContainer.classList.contains('inactive'))
-      notificationContainer.hidden = true;
+    layout();
   }
 
   function setMostVisitedPages(dataList, hasBlacklistedUrls) {
@@ -1104,8 +1084,8 @@ cr.define('ntp', function() {
     newTabView.highlightAppId = appId;
   }
 
-  function layout(opt_animate) {
-    newTabView.layout(opt_animate);
+  function layout() {
+    newTabView.layout.apply(newTabView, arguments);
   }
 
   function getContentHeight() {
