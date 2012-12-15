@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 
 @class ConstrainedWindowAlert;
@@ -26,7 +26,7 @@ class TabModalConfirmDialogDelegate;
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
 class TabModalConfirmDialogMac : public TabModalConfirmDialog,
-                                 public ConstrainedWindowMacDelegate2 {
+                                 public ConstrainedWindowMacDelegate {
  public:
   TabModalConfirmDialogMac(TabModalConfirmDialogDelegate* delegate,
                            content::WebContents* web_contents);
@@ -38,11 +38,11 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
-  // ConstrainedWindowMacDelegate2:
+  // ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE;
+      ConstrainedWindowMac* window) OVERRIDE;
 
-  scoped_ptr<ConstrainedWindowMac2> window_;
+  scoped_ptr<ConstrainedWindowMac> window_;
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
   scoped_nsobject<ConstrainedWindowAlert> alert_;
   scoped_nsobject<TabModalConfirmDialogMacBridge> bridge_;

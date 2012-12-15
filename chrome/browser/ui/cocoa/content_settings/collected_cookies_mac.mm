@@ -85,7 +85,7 @@ CollectedCookiesMac::CollectedCookiesMac(content::WebContents* web_contents) {
   scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_controller_ window]]);
-  window_.reset(new ConstrainedWindowMac2(
+  window_.reset(new ConstrainedWindowMac(
       this, web_contents, sheet));
 }
 
@@ -104,7 +104,7 @@ void CollectedCookiesMac::PerformClose() {
 }
 
 void CollectedCookiesMac::OnConstrainedWindowClosed(
-    ConstrainedWindowMac2* window) {
+    ConstrainedWindowMac* window) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 

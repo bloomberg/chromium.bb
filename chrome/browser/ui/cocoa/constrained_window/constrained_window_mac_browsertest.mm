@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,9 +22,9 @@ using ::testing::NiceMock;
 
 namespace {
 
-class ConstrainedWindowDelegateMock : public ConstrainedWindowMacDelegate2 {
+class ConstrainedWindowDelegateMock : public ConstrainedWindowMacDelegate {
  public:
-  MOCK_METHOD1(OnConstrainedWindowClosed, void(ConstrainedWindowMac2*));
+  MOCK_METHOD1(OnConstrainedWindowClosed, void(ConstrainedWindowMac*));
 };
 
 }  // namespace
@@ -78,7 +78,7 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
   // Show dialog in non active tab.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab0_, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab0_, sheet_);
   EXPECT_EQ(0.0, [sheet_window_ alphaValue]);
 
   // Switch to inactive tab.
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
 
   // Show dialog and verify that it's not visible yet.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab2, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab2, sheet_);
   EXPECT_FALSE([sheet_window_ isVisible]);
 
   // Activate the tab and verify that the constrained window is shown.
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
 // Test that adding a sheet disables tab dragging.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
 
   // Verify that the dialog disables dragging.
   EXPECT_TRUE([controller_ isTabDraggable:tab_view0_]);
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
 // Test that closing a browser window with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the browser window.
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
 // Test that closing a tab with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the tab.
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, Fullscreen) {
 
   // Dialog will delete it self when closed.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
 
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 

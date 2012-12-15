@@ -44,7 +44,7 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
   scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:window]);
-  constrained_window_.reset(new ConstrainedWindowMac2(
+  constrained_window_.reset(new ConstrainedWindowMac(
       this, web_contents, sheet));
 }
 
@@ -64,7 +64,7 @@ void ExtensionInstallDialogController::InstallUIAbort(bool user_initiated) {
 }
 
 void ExtensionInstallDialogController::OnConstrainedWindowClosed(
-    ConstrainedWindowMac2* window) {
+    ConstrainedWindowMac* window) {
   if (delegate_)
     delegate_->InstallUIAbort(false);
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

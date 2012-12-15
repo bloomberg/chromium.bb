@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -37,7 +37,7 @@ using content::BrowserThread;
 @end
 
 class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
-                                         public ConstrainedWindowMacDelegate2 {
+                                         public ConstrainedWindowMacDelegate {
  public:
   SSLClientAuthObserverCocoaBridge(
       const net::HttpNetworkSession* network_session,
@@ -53,9 +53,9 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
     [controller_ closeSheetWithAnimation:NO];
   }
 
-  // ConstrainedWindowMacDelegate2 implementation:
+  // ConstrainedWindowMacDelegate implementation:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE {
+      ConstrainedWindowMac* window) OVERRIDE {
     // |onConstrainedWindowClosed| will delete the sheet which might be still
     // in use higher up the call stack. Wait for the next cycle of the event
     // loop to call this function.
@@ -156,7 +156,7 @@ void ShowSSLClientCertificateSelector(
   }
 
   constrainedWindow_.reset(
-      new ConstrainedWindowMac2(observer_.get(), webContents, self));
+      new ConstrainedWindowMac(observer_.get(), webContents, self));
 }
 
 - (SFChooseIdentityPanel*)panel {

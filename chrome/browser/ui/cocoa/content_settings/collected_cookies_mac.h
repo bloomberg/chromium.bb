@@ -7,7 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,7 +22,7 @@ class WebContents;
 
 // The constrained window delegate reponsible for managing the collected
 // cookies dialog.
-class CollectedCookiesMac : public ConstrainedWindowMacDelegate2,
+class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
                             public content::NotificationObserver {
  public:
   CollectedCookiesMac(content::WebContents* web_contents);
@@ -30,9 +30,9 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate2,
 
   void PerformClose();
 
-  // ConstrainedWindowMacDelegate2 implementation.
+  // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE;
+      ConstrainedWindowMac* window) OVERRIDE;
 
   CollectedCookiesWindowController* sheet_controller() const {
     return sheet_controller_.get();
@@ -46,7 +46,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate2,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<ConstrainedWindowMac2> window_;
+  scoped_ptr<ConstrainedWindowMac> window_;
 
   scoped_nsobject<CollectedCookiesWindowController> sheet_controller_;
 

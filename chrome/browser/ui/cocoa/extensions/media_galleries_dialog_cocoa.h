@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 @class ConstrainedWindowAlert;
 @class MediaGalleriesCocoaController;
@@ -22,7 +22,7 @@ class MediaGalleriesDialogTest;
 // This class displays an alert that can be used to grant permission for
 // extensions to access a gallery (media folders).
 class MediaGalleriesDialogCocoa :
-    public ConstrainedWindowMacDelegate2,
+    public ConstrainedWindowMacDelegate,
     public MediaGalleriesDialog {
  public:
   MediaGalleriesDialogCocoa(
@@ -43,9 +43,9 @@ class MediaGalleriesDialogCocoa :
   virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
                              bool permitted) OVERRIDE;
 
-  // ConstrainedWindowMacDelegate2 implementation.
+  // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE;
+      ConstrainedWindowMac* window) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -59,7 +59,7 @@ class MediaGalleriesDialogCocoa :
   void UpdateCheckboxContainerFrame();
 
   MediaGalleriesDialogController* controller_;  // weak
-  scoped_ptr<ConstrainedWindowMac2> window_;
+  scoped_ptr<ConstrainedWindowMac> window_;
 
   // True if the user has pressed accept.
   bool accepted_;

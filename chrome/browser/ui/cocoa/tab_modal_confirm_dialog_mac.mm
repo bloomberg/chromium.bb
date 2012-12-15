@@ -76,7 +76,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
   scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[alert_ window]]);
-  window_.reset(new ConstrainedWindowMac2(this, web_contents, sheet));
+  window_.reset(new ConstrainedWindowMac(this, web_contents, sheet));
   delegate->set_window(window_.get());
 }
 
@@ -92,6 +92,6 @@ void TabModalConfirmDialogMac::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogMac::OnConstrainedWindowClosed(
-    ConstrainedWindowMac2* window) {
+    ConstrainedWindowMac* window) {
   delete this;
 }

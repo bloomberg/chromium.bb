@@ -9,7 +9,7 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -21,7 +21,7 @@ using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
 class ConstrainedWebDialogDelegateMac :
-    public ConstrainedWindowMacDelegate2,
+    public ConstrainedWindowMacDelegate,
     public ConstrainedWebDialogDelegate {
 
  public:
@@ -53,9 +53,9 @@ class ConstrainedWebDialogDelegateMac :
     return impl_->GetWebContents();
   }
 
-  // ConstrainedWindowMacDelegate2 interface
+  // ConstrainedWindowMacDelegate interface
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE {
+      ConstrainedWindowMac* window) OVERRIDE {
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->OnDialogClosed("");
     delete this;
@@ -63,7 +63,7 @@ class ConstrainedWebDialogDelegateMac :
 
  private:
   scoped_ptr<ConstrainedWebDialogDelegateBase> impl_;
-  scoped_ptr<ConstrainedWindowMac2> constrained_window_;
+  scoped_ptr<ConstrainedWindowMac> constrained_window_;
   scoped_nsobject<NSWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateMac);
@@ -90,7 +90,7 @@ ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
   scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:window_]);
-  constrained_window_.reset(new ConstrainedWindowMac2(
+  constrained_window_.reset(new ConstrainedWindowMac(
       this, web_contents, sheet));
   return impl_->set_window(constrained_window_.get());
 }

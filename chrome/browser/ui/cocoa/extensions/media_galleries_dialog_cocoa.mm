@@ -107,7 +107,7 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
     scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[alert_ window]]);
-    window_.reset(new ConstrainedWindowMac2(
+    window_.reset(new ConstrainedWindowMac(
         this, controller->web_contents(), sheet));
   }
 }
@@ -208,7 +208,7 @@ void MediaGalleriesDialogCocoa::UpdateGallery(
 }
 
 void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(
-    ConstrainedWindowMac2* window) {
+    ConstrainedWindowMac* window) {
   controller_->DialogFinished(accepted_);
 }
 

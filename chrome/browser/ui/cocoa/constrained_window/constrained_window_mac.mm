@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -16,8 +16,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
-ConstrainedWindowMac2::ConstrainedWindowMac2(
-    ConstrainedWindowMacDelegate2* delegate,
+ConstrainedWindowMac::ConstrainedWindowMac(
+    ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet)
     : delegate_(delegate),
@@ -35,10 +35,10 @@ ConstrainedWindowMac2::ConstrainedWindowMac2(
                  content::Source<content::WebContents>(web_contents));
 }
 
-ConstrainedWindowMac2::~ConstrainedWindowMac2() {
+ConstrainedWindowMac::~ConstrainedWindowMac() {
 }
 
-void ConstrainedWindowMac2::ShowConstrainedWindow() {
+void ConstrainedWindowMac::ShowConstrainedWindow() {
   NSWindow* parent_window = GetParentWindow();
   NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
   if (!parent_window || !parent_view) {
@@ -52,7 +52,7 @@ void ConstrainedWindowMac2::ShowConstrainedWindow() {
   [controller showSheet:sheet_ forParentView:parent_view];
 }
 
-void ConstrainedWindowMac2::CloseConstrainedWindow() {
+void ConstrainedWindowMac::CloseConstrainedWindow() {
   // This function may be called even if the constrained window was never shown.
   // Unset |pending_show_| to prevent the window from being reshown.
   pending_show_ = false;
@@ -66,24 +66,24 @@ void ConstrainedWindowMac2::CloseConstrainedWindow() {
     delegate_->OnConstrainedWindowClosed(this);
 }
 
-void ConstrainedWindowMac2::PulseConstrainedWindow() {
+void ConstrainedWindowMac::PulseConstrainedWindow() {
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       pulseSheet:sheet_];
 }
 
-gfx::NativeWindow ConstrainedWindowMac2::GetNativeWindow() {
+gfx::NativeWindow ConstrainedWindowMac::GetNativeWindow() {
   NOTREACHED();
   return nil;
 }
 
-bool ConstrainedWindowMac2::CanShowConstrainedWindow() {
+bool ConstrainedWindowMac::CanShowConstrainedWindow() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return true;
   return !browser->window()->IsInstantTabShowing();
 }
 
-void ConstrainedWindowMac2::Observe(
+void ConstrainedWindowMac::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -98,7 +98,7 @@ void ConstrainedWindowMac2::Observe(
   }
 }
 
-NSWindow* ConstrainedWindowMac2::GetParentWindow() const {
+NSWindow* ConstrainedWindowMac::GetParentWindow() const {
   // Tab contents in a tabbed browser may not be inside a window. For this
   // reason use a browser window if possible.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);

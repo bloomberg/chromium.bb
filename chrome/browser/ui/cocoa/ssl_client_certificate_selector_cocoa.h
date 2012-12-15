@@ -16,7 +16,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 
-class ConstrainedWindowMac2;
+class ConstrainedWindowMac;
 @class SFChooseIdentityPanel;
 class SSLClientAuthObserverCocoaBridge;
 
@@ -30,7 +30,7 @@ class SSLClientAuthObserverCocoaBridge;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   scoped_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   scoped_nsobject<SFChooseIdentityPanel> panel_;
-  scoped_ptr<ConstrainedWindowMac2> constrainedWindow_;
+  scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
   scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
 }

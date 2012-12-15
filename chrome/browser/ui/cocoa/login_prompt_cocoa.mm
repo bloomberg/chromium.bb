@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +36,7 @@ using content::WebContents;
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerMac : public LoginHandler,
-                        public ConstrainedWindowMacDelegate2 {
+                        public ConstrainedWindowMacDelegate {
  public:
   LoginHandlerMac(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request) {
@@ -75,16 +75,16 @@ class LoginHandlerMac : public LoginHandler,
     scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[sheet_controller_ window]]);
-    constrained_window_.reset(new ConstrainedWindowMac2(
+    constrained_window_.reset(new ConstrainedWindowMac(
         this, requesting_contents, sheet));
     SetDialog(constrained_window_.get());
 
     NotifyAuthNeeded();
   }
 
-  // Overridden from ConstrainedWindowMacDelegate2:
+  // Overridden from ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac2* window) OVERRIDE {
+      ConstrainedWindowMac* window) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     SetDialog(NULL);
     SetModel(NULL);
@@ -110,7 +110,7 @@ class LoginHandlerMac : public LoginHandler,
   // The Cocoa controller of the GUI.
   scoped_nsobject<LoginHandlerSheet> sheet_controller_;
 
-  scoped_ptr<ConstrainedWindowMac2> constrained_window_;
+  scoped_ptr<ConstrainedWindowMac> constrained_window_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerMac);
 };
