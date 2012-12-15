@@ -34,7 +34,7 @@ RenderAudioSourceProvider::RenderAudioSourceProvider(int source_render_view_id)
   // have the audio format information and call AudioRendererSink::Initialize()
   // to fully initialize it.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   const bool use_mixing =
       !cmd_line->HasSwitch(switches::kDisableRendererSideMixing);
 #else
