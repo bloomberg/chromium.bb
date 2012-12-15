@@ -144,9 +144,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
   api::bluetooth::AdapterState state;
   ASSERT_TRUE(api::bluetooth::AdapterState::Populate(*result, &state));
 
-  EXPECT_EQ(false, state.available);
-  EXPECT_EQ(true, state.powered);
-  EXPECT_EQ(false, state.discovering);
+  EXPECT_FALSE(state.available);
+  EXPECT_TRUE(state.powered);
+  EXPECT_FALSE(state.discovering);
   EXPECT_EQ(kName, state.name);
   EXPECT_EQ(kAdapterAddress, state.address);
 }
