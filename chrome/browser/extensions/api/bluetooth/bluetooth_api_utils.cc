@@ -7,13 +7,13 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace extensions {
 namespace api {
 namespace bluetooth {
 
-// Fill in a Device object from a BluetoothDevice.
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
                                 Device* out) {
   out->name = UTF16ToUTF8(device.GetName());
@@ -21,6 +21,15 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   out->paired = device.IsPaired();
   out->bonded = device.IsBonded();
   out->connected = device.IsConnected();
+}
+
+void PopulateAdapterState(const device::BluetoothAdapter& adapter,
+                          AdapterState* out) {
+  out->discovering = adapter.IsDiscovering();
+  out->available = adapter.IsPresent();
+  out->powered = adapter.IsPowered();
+  out->name = adapter.name();
+  out->address = adapter.address();
 }
 
 }  // namespace bluetooth

@@ -79,7 +79,7 @@ class ExtensionBluetoothEventRouter
  private:
   void InitializeAdapterIfNeeded();
   void MaybeReleaseAdapter();
-  void DispatchBooleanValueEvent(const char* event_name, bool value);
+  void DispatchAdapterStateEvent();
 
   bool send_discovery_events_;
   bool responsible_for_discovery_;

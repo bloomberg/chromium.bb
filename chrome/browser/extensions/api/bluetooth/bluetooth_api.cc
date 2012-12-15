@@ -94,11 +94,7 @@ BluetoothAPI* BluetoothAPI::Get(Profile* profile) {
 
 BluetoothAPI::BluetoothAPI(Profile* profile) : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, extensions::event_names::kBluetoothOnAvailabilityChanged);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, extensions::event_names::kBluetoothOnPowerChanged);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, extensions::event_names::kBluetoothOnDiscoveringChanged);
+      this, extensions::event_names::kBluetoothOnAdapterStateChanged);
 }
 
 BluetoothAPI::~BluetoothAPI() {
@@ -125,43 +121,15 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 namespace api {
 
-bool BluetoothIsAvailableFunction::RunImpl() {
+bool BluetoothGetAdapterStateFunction::RunImpl() {
   if (!IsBluetoothSupported(profile())) {
     SetError(kPlatformNotSupported);
     return false;
   }
 
-  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPresent()));
-  return true;
-}
-
-bool BluetoothIsPoweredFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPowered()));
-  return true;
-}
-
-bool BluetoothGetAddressFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  SetResult(Value::CreateStringValue(GetAdapter(profile())->address()));
-  return true;
-}
-
-bool BluetoothGetNameFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  SetResult(Value::CreateStringValue(GetAdapter(profile())->name()));
+  bluetooth::AdapterState state;
+  PopulateAdapterState(*GetAdapter(profile()), &state);
+  SetResult(state.ToValue().release());
   return true;
 }
 

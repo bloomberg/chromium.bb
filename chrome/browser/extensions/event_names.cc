@@ -61,14 +61,12 @@ const char kOnOffscreenTabUpdated[] = "experimental.offscreenTabs.onUpdated";
 
 const char kOnTabCaptureStatusChanged[] = "tabCapture.onStatusChanged";
 
-const char kBluetoothOnAvailabilityChanged[] =
-    "bluetooth.onAvailabilityChanged";
+const char kBluetoothOnAdapterStateChanged[] =
+    "bluetooth.onAdapterStateChanged";
 const char kBluetoothOnDeviceDiscovered[] = "bluetooth.onDeviceDiscovered";
 const char kBluetoothOnDeviceSearchFinished[] =
     "bluetooth.onDeviceSearchFinished";
 const char kBluetoothOnDeviceSearchResult[] = "bluetooth.onDeviceSearchResult";
-const char kBluetoothOnDiscoveringChanged[] = "bluetooth.onDiscoveringChanged";
-const char kBluetoothOnPowerChanged[] = "bluetooth.onPowerChanged";
 
 const char kOnPushMessage[] = "pushMessaging.onMessage";
 

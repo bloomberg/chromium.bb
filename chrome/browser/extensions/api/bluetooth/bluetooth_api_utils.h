@@ -7,6 +7,7 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace extensions {
@@ -17,6 +18,10 @@ namespace bluetooth {
 void BluetoothDeviceToApiDevice(
     const device::BluetoothDevice& device,
     Device* out);
+
+// Fill in an AdapterState object from a BluetoothAdapter.
+void PopulateAdapterState(const device::BluetoothAdapter& adapter,
+                          AdapterState* out);
 
 }  // namespace bluetooth
 }  // namespace api

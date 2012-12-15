@@ -3,35 +3,22 @@
 // found in the LICENSE file.
 
 function testEvents() {
-  chrome.test.assertEq(kExpectedValues.length, powerChangedValues.length);
-  chrome.test.assertEq(kExpectedValues.length,
-      availabilityChangedValues.length);
-  chrome.test.assertEq(kExpectedValues.length, discoveringChangedValues.length);
+  chrome.test.assertEq(kExpectedValues.length, states.length);
 
   for (var i = 0; i < kExpectedValues.length; ++i) {
-    chrome.test.assertEq(kExpectedValues[i], powerChangedValues[i]);
-    chrome.test.assertEq(kExpectedValues[i], availabilityChangedValues[i]);
-    chrome.test.assertEq(kExpectedValues[i], discoveringChangedValues[i]);
+    chrome.test.assertEq(kExpectedValues[i], states[i].powered);
+    chrome.test.assertEq(kExpectedValues[i], states[i].available);
+    chrome.test.assertEq(kExpectedValues[i], states[i].discovering);
   }
 
   chrome.test.succeed();
 }
 
-var powerChangedValues = [];
-var availabilityChangedValues = [];
-var discoveringChangedValues = [];
-var kExpectedValues = [true, false];
-chrome.bluetooth.onPowerChanged.addListener(
-    function(result) {
-      powerChangedValues.push(result);
-    });
-chrome.bluetooth.onAvailabilityChanged.addListener(
-    function(result) {
-      availabilityChangedValues.push(result);
-    });
-chrome.bluetooth.onDiscoveringChanged.addListener(
-    function(result) {
-      discoveringChangedValues.push(result);
+var states = [];
+var kExpectedValues = [false, true, true];
+chrome.bluetooth.onAdapterStateChanged.addListener(
+    function(state) {
+      states.push(state);
     });
 chrome.test.sendMessage('ready',
     function(message) {

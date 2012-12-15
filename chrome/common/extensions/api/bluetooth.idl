@@ -3,9 +3,25 @@
 // found in the LICENSE file.
 
 // Bluetooth API.
-// TODO(bryeung): mark this API as ChromeOS only (see crbug.com/119398).
 
 namespace bluetooth {
+  dictionary AdapterState {
+    // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
+    DOMString address;
+
+    // The human-readable name of the adapter.
+    DOMString name;
+
+    // Indicates whether or not the adapter has power.
+    boolean powered;
+
+    // Indicates whether or not the adapter is available (i.e. enabled).
+    boolean available;
+
+    // Indicates whether or not the adapter is currently discovering.
+    boolean discovering;
+  };
+
   dictionary Device {
     // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
@@ -34,8 +50,14 @@ namespace bluetooth {
   };
 
   dictionary Socket {
+    // The remote Bluetooth device associated with this socket.
     Device device;
+
+    // The remote Bluetooth service associated with this socket.
     DOMString serviceUuid;
+
+    // An identifier for this socket that should be used with the
+    // read/write/disconnect methods.
     long id;
   };
 
@@ -49,6 +71,7 @@ namespace bluetooth {
     ArrayBuffer randomizer;
   };
 
+  callback AdapterStateCallback = void(AdapterState result);
   callback AddressCallback = void (DOMString result);
   callback BooleanCallback = void (boolean result);
   callback DataCallback = void (optional ArrayBuffer result);
@@ -135,23 +158,10 @@ namespace bluetooth {
 
   // These functions all report failures via chrome.extension.lastError.
   interface Functions {
-    // Checks if the system has Bluetooth support.
-    // |callback| : Called with the boolean result.
-    static void isAvailable(BooleanCallback callback);
-
-    // Checks if the system's Bluetooth module has power.
-    // |callback| : Called with the boolean result.
-    static void isPowered(BooleanCallback callback);
-
-    // Get the Bluetooth address of the system's Bluetooth module.
-    // |callback| : Called with the address of the Bluetooth adapter, or "" if
-    //              there is no adapater available.
-    static void getAddress(AddressCallback callback);
-
-    // Get the name of the Bluetooth adapter.
-    // |callback| : Called with the name of the Bluetooth adapter, or "" if
-    //              there is no adapater available.
-    static void getName(NameCallback callback);
+    // Get information about the Bluetooth adapter.
+    // |callback| : Called with an AdapterState object describing the adapter
+    //              state.
+    static void getAdapterState(AdapterStateCallback callback);
 
     // Get a bluetooth devices known to the system.  Known devices are either
     // currently bonded, or have been bonded in the past.
@@ -221,17 +231,8 @@ namespace bluetooth {
   };
 
   interface Events {
-    // Fired when the availability of Bluetooth on the system changes.
-    // |available| : True if Bluetooth is available, false otherwise.
-    static void onAvailabilityChanged(boolean available);
-
-    // Fired when the power state of Bluetooth on the system changes.
-    // |powered| : True if Bluetooth is powered, false otherwise.
-    static void onPowerChanged(boolean has_power);
-
-    // Fired when the discovering state of the system changes.
-    // |discovering| : True if the system is currently in discovery mode, false
-    //                 otherwise.
-    static void onDiscoveringChanged(boolean discovering);
+    // Fired when the state of the Bluetooth adapter changes.
+    // |state| : The new state of the adapter.
+    static void onAdapterStateChanged(AdapterState state);
   };
 };

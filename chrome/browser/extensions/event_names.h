@@ -72,12 +72,10 @@ extern const char kOnOffscreenTabUpdated[];
 extern const char kOnTabCaptureStatusChanged[];
 
 // Bluetooth.
-extern const char kBluetoothOnAvailabilityChanged[];
+extern const char kBluetoothOnAdapterStateChanged[];
 extern const char kBluetoothOnDeviceDiscovered[];
 extern const char kBluetoothOnDeviceSearchFinished[];
 extern const char kBluetoothOnDeviceSearchResult[];
-extern const char kBluetoothOnDiscoveringChanged[];
-extern const char kBluetoothOnPowerChanged[];
 
 // Push messaging.
 extern const char kOnPushMessage[];

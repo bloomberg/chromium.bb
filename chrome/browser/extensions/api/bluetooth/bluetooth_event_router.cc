@@ -132,10 +132,7 @@ void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
-
-  DispatchBooleanValueEvent(
-      extensions::event_names::kBluetoothOnAvailabilityChanged,
-      present);
+  DispatchAdapterStateEvent();
 }
 
 void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
@@ -144,10 +141,7 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
-
-  DispatchBooleanValueEvent(
-      extensions::event_names::kBluetoothOnPowerChanged,
-      has_power);
+  DispatchAdapterStateEvent();
 }
 
 void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
@@ -163,9 +157,7 @@ void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
     discovered_devices_.clear();
   }
 
-  DispatchBooleanValueEvent(
-      extensions::event_names::kBluetoothOnDiscoveringChanged,
-      discovering);
+  DispatchAdapterStateEvent();
 }
 
 void ExtensionBluetoothEventRouter::DeviceAdded(
@@ -203,11 +195,15 @@ void ExtensionBluetoothEventRouter::MaybeReleaseAdapter() {
   }
 }
 
-void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
-    const char* event_name, bool value) {
+void ExtensionBluetoothEventRouter::DispatchAdapterStateEvent() {
+  api::bluetooth::AdapterState state;
+  PopulateAdapterState(*adapter_, &state);
+
   scoped_ptr<ListValue> args(new ListValue());
-  args->Append(Value::CreateBooleanValue(value));
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  args->Append(state.ToValue().release());
+  scoped_ptr<Event> event(new Event(
+      extensions::event_names::kBluetoothOnAdapterStateChanged,
+      args.Pass()));
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 

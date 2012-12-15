@@ -54,45 +54,12 @@ class BluetoothAPI : public ProfileKeyedService,
 
 namespace api {
 
-class BluetoothIsAvailableFunction : public SyncExtensionFunction {
+class BluetoothGetAdapterStateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.isAvailable")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getAdapterState")
 
  protected:
-  virtual ~BluetoothIsAvailableFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BluetoothIsPoweredFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.isPowered")
-
- protected:
-  virtual ~BluetoothIsPoweredFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BluetoothGetAddressFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getAddress")
-
- protected:
-  virtual ~BluetoothGetAddressFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BluetoothGetNameFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getName")
-
- protected:
-  virtual ~BluetoothGetNameFunction() {}
+  virtual ~BluetoothGetAdapterStateFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
