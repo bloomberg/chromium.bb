@@ -263,7 +263,6 @@ extern const char kOmniboxInlineHistoryQuickProviderProhibited[];
 extern const char kOnlyBlockSettingThirdPartyCookies[];
 extern const char kOpenInNewWindow[];
 extern const char kOrganicInstall[];
-extern const char kOriginPortToForceQuicOn[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];

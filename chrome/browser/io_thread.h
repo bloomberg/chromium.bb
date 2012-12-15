@@ -158,7 +158,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
-    Optional<uint16> origin_port_to_force_quic_on;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
