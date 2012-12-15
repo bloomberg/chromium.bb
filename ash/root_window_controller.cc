@@ -295,15 +295,19 @@ void RootWindowController::InitForPrimaryDisplay() {
 
   workspace_controller()->SetShelf(shelf_);
 
-  // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(
-      internal::kShellWindowId_PanelContainer);
-  panel_layout_manager_ =
-      new internal::PanelLayoutManager(panel_container);
-  panel_container->AddPreTargetHandler(
-      new internal::PanelWindowEventFilter(
-          panel_container, panel_layout_manager_));
-  panel_container->SetLayoutManager(panel_layout_manager_);
+  // TODO(oshima): Disable panels on non primary display for now.
+  // crbug.com/166195.
+  if (root_window_ == Shell::GetPrimaryRootWindow()) {
+    // Create Panel layout manager
+    aura::Window* panel_container = GetContainer(
+        internal::kShellWindowId_PanelContainer);
+    panel_layout_manager_ =
+        new internal::PanelLayoutManager(panel_container);
+    panel_container->AddPreTargetHandler(
+        new internal::PanelWindowEventFilter(
+            panel_container, panel_layout_manager_));
+    panel_container->SetLayoutManager(panel_layout_manager_);
+  }
 
   if (shell_delegate->IsUserLoggedIn())
     CreateLauncher();
