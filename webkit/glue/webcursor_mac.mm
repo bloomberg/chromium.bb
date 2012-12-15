@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 
 using WebKit::WebCursorInfo;
@@ -175,6 +177,7 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
 
 NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
                              const gfx::Size& custom_size,
+                             float custom_scale,
                              const gfx::Point& hotspot) {
   // If the data is missing, leave the backing transparent.
   void* data = NULL;
@@ -200,11 +203,20 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
     memcpy(bitmap.getAddr32(0, 0), data, data_size);
   else
     bitmap.eraseARGB(0, 0, 0, 0);
+
+  // Convert from pixels to view units.
+  if (custom_scale == 0)
+    custom_scale = 1;
+  NSSize dip_size = NSSizeFromCGSize(gfx::ToFlooredSize(
+      gfx::ScaleSize(custom_size, 1 / custom_scale)).ToCGSize());
+  NSPoint dip_hotspot = NSPointFromCGPoint(gfx::ToFlooredPoint(
+      gfx::ScalePoint(hotspot, 1 / custom_scale)).ToCGPoint());
+
   NSImage* cursor_image = gfx::SkBitmapToNSImage(bitmap);
+  [cursor_image setSize:dip_size];
 
   NSCursor* cursor = [[NSCursor alloc] initWithImage:cursor_image
-                                             hotSpot:NSMakePoint(hotspot.x(),
-                                                                 hotspot.y())];
+                                             hotSpot:dip_hotspot];
 
   return [cursor autorelease];
 }
@@ -297,11 +309,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return GetCoreCursorWithFallback(kCellCursor,
                                        IDR_CELL_CURSOR, 7, 7);
     case WebCursorInfo::TypeContextMenu:
-      // contextualMenuCursor is >= 10.6.
-      if ([NSCursor respondsToSelector:@selector(contextualMenuCursor)])
-        return [NSCursor contextualMenuCursor];
-      else
-        return LoadCursor(IDR_CONTEXTMENU_CURSOR, 3, 2);
+      return [NSCursor contextualMenuCursor];
     case WebCursorInfo::TypeAlias:
       return GetCoreCursorWithFallback(kMakeAliasCursor,
                                        IDR_ALIAS_CURSOR, 11, 3);
@@ -310,15 +318,9 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
                                        IDR_PROGRESS_CURSOR, 3, 2);
     case WebCursorInfo::TypeNoDrop:
     case WebCursorInfo::TypeNotAllowed:
-      // Docs say that operationNotAllowedCursor is >= 10.6, and it's not in the
-      // 10.5 SDK, but later SDKs note that it really is available on 10.5.
       return [NSCursor operationNotAllowedCursor];
     case WebCursorInfo::TypeCopy:
-      // dragCopyCursor is >= 10.6.
-      if ([NSCursor respondsToSelector:@selector(dragCopyCursor)])
-        return [NSCursor dragCopyCursor];
-      else
-        return LoadCursor(IDR_COPY_CURSOR, 3, 2);
+      return [NSCursor dragCopyCursor];
     case WebCursorInfo::TypeNone:
       return LoadCursor(IDR_NONE_CURSOR, 7, 7);
     case WebCursorInfo::TypeZoomIn:
@@ -332,7 +334,8 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::TypeGrabbing:
       return [NSCursor closedHandCursor];
     case WebCursorInfo::TypeCustom:
-      return CreateCustomCursor(custom_data_, custom_size_, hotspot_);
+      return CreateCustomCursor(
+          custom_data_, custom_size_, custom_scale_, hotspot_);
   }
   NOTREACHED();
   return nil;
@@ -367,11 +370,9 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
     cursor_info.type = WebCursorInfo::TypeGrabbing;
   } else if ([cursor isEqual:[NSCursor operationNotAllowedCursor]]) {
     cursor_info.type = WebCursorInfo::TypeNotAllowed;
-  } else if ([NSCursor respondsToSelector:@selector(dragCopyCursor)] &&
-             [cursor isEqual:[NSCursor dragCopyCursor]]) {
+  } else if ([cursor isEqual:[NSCursor dragCopyCursor]]) {
     cursor_info.type = WebCursorInfo::TypeCopy;
-  } else if ([NSCursor respondsToSelector:@selector(contextualMenuCursor)] &&
-             [cursor isEqual:[NSCursor contextualMenuCursor]]) {
+  } else if ([cursor isEqual:[NSCursor contextualMenuCursor]]) {
     cursor_info.type = WebCursorInfo::TypeContextMenu;
   } else if (
       [NSCursor respondsToSelector:@selector(IBeamCursorForVerticalLayout)] &&

@@ -134,12 +134,12 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // WebCore::PlatformCursor type.
   int type_;
 
-  // Hot spot in cursor image in physical image coordinate space.
+  // Hotspot in cursor image in pixels.
   gfx::Point hotspot_;
 
   // Custom cursor data, as 32-bit RGBA.
   // Platform-inspecific because it can be serialized.
-  gfx::Size custom_size_;
+  gfx::Size custom_size_;  // In pixels.
   float custom_scale_;
   std::vector<char> custom_data_;
 
