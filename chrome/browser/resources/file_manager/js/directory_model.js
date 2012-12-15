@@ -770,8 +770,8 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
   this.clearAndScan_(new DirectoryContentsBasic(this.currentFileListContext_,
                                                 dirEntry),
                      onScanComplete.bind(this));
-  this.updateRootsListSelection_();
   this.currentDirByRoot_[this.getCurrentRootPath()] = dirEntry.fullPath;
+  this.updateRootsListSelection_();
 };
 
 /**
