@@ -343,7 +343,7 @@ class DriveDetailedView : public TrayDetailsView,
       scroller()->Layout();
 
     // Close the details if there is really nothing to show there anymore.
-    if (new_set.empty())
+    if (new_set.empty() && GetWidget())
       GetWidget()->Close();
   }
 
@@ -404,8 +404,10 @@ views::View* TrayDrive::CreateDefaultView(user::LoginStatus status) {
   if (status != user::LOGGED_IN_USER && status != user::LOGGED_IN_OWNER)
     return NULL;
 
+  // If the list is empty AND the tray icon is invisible (= not in the margin
+  // duration of delayed item hiding), don't show the item.
   scoped_ptr<DriveOperationStatusList> list(GetCurrentOperationList());
-  if (!list->size())
+  if (list->empty() && !tray_view()->visible())
     return NULL;
 
   default_ = new tray::DriveDefaultView(this, list.get());
@@ -418,8 +420,10 @@ views::View* TrayDrive::CreateDetailedView(user::LoginStatus status) {
   if (status != user::LOGGED_IN_USER && status != user::LOGGED_IN_OWNER)
     return NULL;
 
+  // If the list is empty AND the tray icon is invisible (= not in the margin
+  // duration of delayed item hiding), don't show the item.
   scoped_ptr<DriveOperationStatusList> list(GetCurrentOperationList());
-  if (!list->size())
+  if (list->empty() && !tray_view()->visible())
     return NULL;
 
   detailed_ = new tray::DriveDetailedView(this, list.get());
