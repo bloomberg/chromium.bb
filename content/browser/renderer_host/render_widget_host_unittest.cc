@@ -2710,6 +2710,48 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 }
 
+TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
+  host_->SetupForOverscrollControllerTest();
+  process_->sink().ClearMessages();
+
+  // Send a wheel event. ACK the event as not processed. This should not
+  // initiate an overscroll gesture since it doesn't cross the threshold yet.
+  SimulateWheelEvent(10, -5, 0);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  SendInputEventACK(WebInputEvent::MouseWheel, false);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  process_->sink().ClearMessages();
+
+  // Scroll some more so as to not overscroll.
+  SimulateWheelEvent(10, -4, 0);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  SendInputEventACK(WebInputEvent::MouseWheel, false);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  process_->sink().ClearMessages();
+
+  // Scroll some more to initiate an overscroll.
+  SimulateWheelEvent(20, -4, 0);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  SendInputEventACK(WebInputEvent::MouseWheel, false);
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(40.f, host_->overscroll_delta_x());
+  EXPECT_EQ(10.f, host_->overscroll_delegate()->delta_x());
+  EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
+  process_->sink().ClearMessages();
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  // Send a fling start, but with a small velocity, so that the overscroll is
+  // aborted. The fling should proceed to the renderer, through the gesture
+  // event filter.
+  SimulateGestureFlingStartEvent(0.f, 0.f);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, process_->sink().message_count());
+}
+
 // Tests that touch-scroll events are handled correctly by the overscroll
 // controller. This also tests that the overscroll controller and the
 // gesture-event filter play nice with each other.
