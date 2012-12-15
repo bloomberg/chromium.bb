@@ -52,13 +52,17 @@ Patterns::Patterns()
       closing_pattern("--[ \\t]*"),
       epilogue_pattern("|\\r\\n(?s:.)*"),
       crlf_free_pattern("(?:[^\\r]|\\r+[^\\r\\n])*"),
-      preamble_pattern(".*?"),
+      preamble_pattern(".+?"),
       header_pattern("[!-9;-~]+:(.|\\r\\n[\\t ])*\\r\\n"),
       content_disposition_pattern("(?i:" CONTENT_DISPOSITION ")"),
       name_pattern("\\bname=\"([^\"]*)\""),
       value_pattern("\\bfilename=\"([^\"]*)\""),
       unquote_pattern(g_escape_closing_quote),
-      url_encoded_pattern("([^=]*)=([^&]*)&?") {}
+// CHARACTER is an allowed character in a URL encoding. Definition is from
+// RFC 1738, end of section 2.2.
+#define CHARACTER "(?:[a-zA-Z0-9$_.+!*'(),]|-|(?:%[a-fA-F0-9]{2}))"
+      url_encoded_pattern("(" CHARACTER "*)=(" CHARACTER "*)") {}
+#undef CHARACTER
 
 #undef CONTENT_DISPOSITION
 
@@ -96,6 +100,7 @@ class FormDataParserUrlEncoded : public FormDataParser {
 
   re2::StringPiece source_;
   bool source_set_;
+  bool source_malformed_;
 
   // Auxiliary store for using RE2.
   std::string name_;
@@ -351,6 +356,7 @@ const net::UnescapeRule::Type FormDataParserUrlEncoded::unescape_rules_ =
 FormDataParserUrlEncoded::FormDataParserUrlEncoded()
     : source_(NULL),
       source_set_(false),
+      source_malformed_(false),
       arg_name_(&name_),
       arg_value_(&value_),
       patterns_(&(g_patterns.Get())) {
@@ -362,11 +368,11 @@ FormDataParserUrlEncoded::~FormDataParserUrlEncoded() {}
 
 bool FormDataParserUrlEncoded::AllDataReadOK() {
   // All OK means we read the whole source.
-  return source_set_ && source_.size() == 0;
+  return source_set_ && source_.size() == 0 && !source_malformed_;
 }
 
 bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
-  if (!source_set_)
+  if (!source_set_ || source_malformed_)
     return false;
 
   bool success = RE2::ConsumeN(&source_, pattern(), args_, args_size_);
@@ -374,7 +380,11 @@ bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
     result->set_name(net::UnescapeURLComponent(name_, unescape_rules_));
     result->set_value(net::UnescapeURLComponent(value_, unescape_rules_));
   }
-  return success;
+  if (source_[0] == '&')
+    source_.remove_prefix(1);  // Remove the trailing '&'.
+  else if (source_.length() != 0)
+    source_malformed_ = true;  // '&' missing between two name-value pairs.
+  return success && !source_malformed_;
 }
 
 bool FormDataParserUrlEncoded::SetSource(const base::StringPiece& source) {
@@ -382,6 +392,7 @@ bool FormDataParserUrlEncoded::SetSource(const base::StringPiece& source) {
     return false;  // We do not allow multiple sources for this parser.
   source_.set(source.data(), source.size());
   source_set_ = true;
+  source_malformed_ = false;
   return true;
 }
 
