@@ -342,15 +342,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
     Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/crosh_builtin")));
-
-    // TODO(gauravsh): Only include echo extension on official builds.
-    FilePath echo_extension_path(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/echo"));
-    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
-      echo_extension_path =
-          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
-    }
-    Add(IDR_ECHO_MANIFEST, echo_extension_path);
   }
 #else  // !defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);
@@ -404,8 +395,16 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
-      Add(IDR_WALLPAPERMANAGER_MANIFEST,
-          FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+    Add(IDR_WALLPAPERMANAGER_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+
+    FilePath echo_extension_path(FILE_PATH_LITERAL(
+        "/usr/share/chromeos-assets/echo"));
+    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
+      echo_extension_path =
+          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
+    }
+    Add(IDR_ECHO_MANIFEST, echo_extension_path);
   }
 
   // Load ChromeVox extension now if spoken feedback is enabled.

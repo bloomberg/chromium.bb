@@ -1,14 +1,15 @@
 {
-  // chrome-extension://dfgpjpjbeeflfdhdpabeeeheghdmeigc
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzzB6c4Z0cusW6trA/issIOyMaxXtPfMYQclO0Dg5rOrS8SZLOAio0G4TpYDvY8z/BPdAH3a1BOSeetey8tBSdcIhOoYpqN3i9yIFuZVwHuOt83AWnJrxinVUpY05HtTblopGvGtQNlCR5crMdG+uc2yI3NlPOFZVDrFXtOv/LXQIDAQAB",
+  // chrome-extension://kddnkjkcjddckihglkfcickdhbmaodcn/
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCvO/P4dVdpUZlr+oT5s3ccPIOIxZl6fOch+sqcQWsROKNf+mvKZURGnVts8ttHH4oRt2+LW3I2M5PrkW9Q6ZPkOX5ZQFFuD7ujPSaUn8+Br5lC5TtlXsNzp1r+962Qaa1d8zCocwF/IZ+9M5bt61LUJ6Obe8lw+NRnC6CS6DuiewIDAQAB",
   "name": "Chrome OS ECHO Extension",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Chrome OS ECHO Extension",
   "manifest_version": 2,
   "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "cookies",
       "echoPrivate",
+      "experimental",  // Needed for the infobar API.
       "https://*/*"
    ],
   "icons": {
@@ -16,16 +17,11 @@
     },
   "default_locale": "en",
   "web_accessible_resources": [
-    "main.html",
-    "main.js",
-    "style.css"
+    "broker.html",
+    "broker.js"
   ],
-  "intents": {
-    "https://crosecho.com/startEcho": [{
-      "type" : ["application/vnd.chromeos.echo"],
-      "title" : "chrome",
-      "path" : "main.html",
-      "disposition" : "inline"
-    }]
+  "background": {
+    "scripts": ["main.js"],
+    "persistent": false
   }
 }
