@@ -58,12 +58,14 @@ void MessageCenter::AddNotification(
     host_->MessageCenterChanged(true);
 }
 
-void MessageCenter::UpdateNotification(const std::string& old_id,
-                                       const std::string& new_id,
-                                       const string16& title,
-                                       const string16& message) {
+void MessageCenter::UpdateNotification(
+    const std::string& old_id,
+    const std::string& new_id,
+    const string16& title,
+    const string16& message,
+    const base::DictionaryValue* optional_fields) {
   notification_list_->UpdateNotificationMessage(
-      old_id, new_id, title, message);
+      old_id, new_id, title, message, optional_fields);
   if (host_)
     host_->MessageCenterChanged(true);
 }

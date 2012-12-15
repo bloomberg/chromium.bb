@@ -71,43 +71,43 @@ void NotificationList::AddNotification(
   notification.priority = ui::notifications::DEFAULT_PRIORITY;
   notification.unread_count = 0;
 
-  UnpackOptionalFields(optional_fields, notification);
+  UnpackOptionalFields(optional_fields, &notification);
 
   PushNotification(notification);
 }
 
 void NotificationList::UnpackOptionalFields(
-    const DictionaryValue* optional_fields, Notification& notification) {
+    const DictionaryValue* optional_fields, Notification* notification) {
   if (!optional_fields)
     return;
 
   if (optional_fields->HasKey(ui::notifications::kPriorityKey))
     optional_fields->GetInteger(ui::notifications::kPriorityKey,
-                                &notification.priority);
+                                &notification->priority);
   if (optional_fields->HasKey(ui::notifications::kTimestampKey)) {
     std::string time_string;
     optional_fields->GetString(ui::notifications::kTimestampKey, &time_string);
-    base::Time::FromString(time_string.c_str(), &notification.timestamp);
+    base::Time::FromString(time_string.c_str(), &notification->timestamp);
   }
   // TODO
   // if (optional_fields->HasKey(ui::notifications::kSecondIconUrlKey))
   //   optional_fields->GetString(ui::notifications::kSecondIconUrlKey,
-  //                              &notification.second_icon_url);
+  //                              &notification->second_icon_url);
   if (optional_fields->HasKey(ui::notifications::kUnreadCountKey))
     optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
-                                &notification.unread_count);
+                                &notification->unread_count);
   if (optional_fields->HasKey(ui::notifications::kButtonOneTitleKey))
     optional_fields->GetString(ui::notifications::kButtonOneTitleKey,
-                               &notification.button_one_title);
+                               &notification->button_one_title);
   if (optional_fields->HasKey(ui::notifications::kButtonTwoTitleKey))
     optional_fields->GetString(ui::notifications::kButtonTwoTitleKey,
-                               &notification.button_two_title);
+                               &notification->button_two_title);
   if (optional_fields->HasKey(ui::notifications::kExpandedMessageKey))
     optional_fields->GetString(ui::notifications::kExpandedMessageKey,
-                               &notification.expanded_message);
+                               &notification->expanded_message);
   if (optional_fields->HasKey(ui::notifications::kImageUrlKey))
     optional_fields->GetString(ui::notifications::kImageUrlKey,
-                               &notification.image_url);
+                               &notification->image_url);
   if (optional_fields->HasKey(ui::notifications::kItemsKey)) {
     const ListValue* items;
     CHECK(optional_fields->GetList(ui::notifications::kItemsKey, &items));
@@ -118,15 +118,17 @@ void NotificationList::UnpackOptionalFields(
       items->GetDictionary(i, &item);
       item->GetString(ui::notifications::kItemTitleKey, &title);
       item->GetString(ui::notifications::kItemMessageKey, &message);
-      notification.items.push_back(NotificationItem(title, message));
+      notification->items.push_back(NotificationItem(title, message));
     }
   }
 }
 
-void NotificationList::UpdateNotificationMessage(const std::string& old_id,
-                                                 const std::string& new_id,
-                                                 const string16& title,
-                                                 const string16& message) {
+void NotificationList::UpdateNotificationMessage(
+    const std::string& old_id,
+    const std::string& new_id,
+    const string16& title,
+    const string16& message,
+    const base::DictionaryValue* optional_fields) {
   Notifications::iterator iter;
   if (!GetNotification(old_id, &iter))
     return;
@@ -135,6 +137,7 @@ void NotificationList::UpdateNotificationMessage(const std::string& old_id,
   notification.id = new_id;
   notification.title = title;
   notification.message = message;
+  UnpackOptionalFields(optional_fields, &notification);
   EraseNotification(iter);
   PushNotification(notification);
 }

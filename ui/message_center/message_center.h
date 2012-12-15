@@ -104,10 +104,12 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
                        const base::DictionaryValue* optional_fields);
 
   // Updates an existing notification with id = old_id and set its id to new_id.
+  // |optional_fields| can be NULL in case of no updates on those fields.
   void UpdateNotification(const std::string& old_id,
                           const std::string& new_id,
                           const string16& title,
-                          const string16& message);
+                          const string16& message,
+                          const base::DictionaryValue* optional_fields);
 
   // Removes an existing notification.
   void RemoveNotification(const std::string& id);

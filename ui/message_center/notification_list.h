@@ -111,7 +111,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void UpdateNotificationMessage(const std::string& old_id,
                                  const std::string& new_id,
                                  const string16& title,
-                                 const string16& message);
+                                 const string16& message,
+                                 const base::DictionaryValue* optional_fields);
 
   // Returns true if the notification was removed.
   bool RemoveNotification(const std::string& id);
@@ -179,7 +180,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // proper initialization of |notification| fields that correspond to
   // |optional_fields|.
   void UnpackOptionalFields(const base::DictionaryValue* optional_fields,
-                            Notification& notification);
+                            Notification* notification);
 
   // Sets the current quiet mode status to |quiet_mode|.
   void SetQuietModeInternal(bool quiet_mode);

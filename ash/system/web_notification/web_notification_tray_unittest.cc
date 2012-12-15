@@ -73,7 +73,8 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
     tray->message_center()->UpdateNotification(
         old_id, new_id,
         ASCIIToUTF16("Updated Web Notification"),
-        ASCIIToUTF16("Updated message body."));
+        ASCIIToUTF16("Updated message body."),
+        NULL);
   }
 
   void RemoveNotification(WebNotificationTray* tray, const std::string& id) {

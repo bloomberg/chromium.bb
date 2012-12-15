@@ -66,7 +66,8 @@ void BalloonViewAsh::Update() {
   GetMessageCenter()->UpdateNotification(current_notification_id_,
                                          new_notification_id,
                                          notification.title(),
-                                         notification.body());
+                                         notification.body(),
+                                         notification.optional_fields());
   current_notification_id_ = new_notification_id;
   FetchIcon(notification);
 }
