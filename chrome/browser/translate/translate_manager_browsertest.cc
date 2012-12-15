@@ -1488,9 +1488,16 @@ TEST_F(TranslateManagerTest, DownloadsAndHistoryNotTranslated) {
       GURL(chrome::kChromeUIHistoryURL)));
 }
 
+// Test is flaky on Win http://crbug.com/166334
+#if defined(OS_WIN)
+#define MAYBE_PRE_TranslateSessionRestore DISABLED_PRE_TranslateSessionRestore
+#else
+#define MAYBE_PRE_TranslateSessionRestore PRE_TranslateSessionRestore
+#endif
 // Test that session restore restores the translate infobar and other translate
 // settings.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, PRE_TranslateSessionRestore) {
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
+                       MAYBE_PRE_TranslateSessionRestore) {
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
@@ -1514,7 +1521,12 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, PRE_TranslateSessionRestore) {
   EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, TranslateSessionRestore) {
+#if defined (OS_WIN)
+#define MAYBE_TranslateSessionRestore DISABLED_TranslateSessionRestore
+#else
+#define MAYBE_TranslateSessionRestore TranslateSessionRestore
+#endif
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, MAYBE_TranslateSessionRestore) {
   WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
   content::Source<WebContents> source(current_web_contents);
 
