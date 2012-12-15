@@ -1545,6 +1545,15 @@
     "os": ["chromeos"]
   },
 
+  "SessionLengthLimit": {
+    "os": ["chromeos"],
+    "test_policy": { "SessionLengthLimit": 3600000 },
+    "pref_mappings": [
+      { "pref": "session.length_limit",
+        "local_state": true }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

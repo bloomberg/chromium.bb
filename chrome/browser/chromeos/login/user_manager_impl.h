@@ -31,6 +31,7 @@ class ProfileSyncService;
 namespace chromeos {
 
 class RemoveUserDelegate;
+class SessionLengthLimiter;
 
 // Implementation of the UserManager.
 class UserManagerImpl
@@ -84,6 +85,7 @@ class UserManagerImpl
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
+  virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
@@ -222,6 +224,9 @@ class UserManagerImpl
 
   // User avatar manager.
   scoped_ptr<UserImageManagerImpl> user_image_manager_;
+
+  // Session length limiter.
+  scoped_ptr<SessionLengthLimiter> session_length_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

@@ -538,6 +538,8 @@
         'browser/chromeos/power/screen_dimming_observer.h',
         'browser/chromeos/power/screen_lock_observer.cc',
         'browser/chromeos/power/screen_lock_observer.h',
+        'browser/chromeos/power/session_length_limiter.cc',
+        'browser/chromeos/power/session_length_limiter.h',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.cc',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.h',
         'browser/chromeos/power/user_activity_notifier.cc',

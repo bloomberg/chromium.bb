@@ -343,6 +343,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShelfAutoHideBehavior,
     prefs::kShelfAutoHideBehaviorLocal,
     Value::TYPE_STRING },
+  { key::kSessionLengthLimit,
+    prefs::kSessionLengthLimit,
+    Value::TYPE_INTEGER },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

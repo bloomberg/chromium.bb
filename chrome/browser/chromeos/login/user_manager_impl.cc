@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/power/session_length_limiter.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -158,6 +159,7 @@ void UserManager::RegisterPrefs(PrefService* local_state) {
                                       PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserDisplayEmail,
                                       PrefService::UNSYNCABLE_PREF);
+  SessionLengthLimiter::RegisterPrefs(local_state);
 }
 
 UserManagerImpl::UserManagerImpl()
@@ -196,6 +198,9 @@ void UserManagerImpl::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cros_settings_->RemoveSettingsObserver(kAccountsPrefDeviceLocalAccounts,
                                          this);
+  // Stop the session length limiter.
+  session_length_limiter_.reset();
+
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->RemoveObserver(this);
 }
@@ -233,6 +238,10 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     } else {
       RegularUserLoggedIn(email, browser_restart);
     }
+
+    // Start the session length limiter.
+    session_length_limiter_.reset(new SessionLengthLimiter(NULL,
+                                                           browser_restart));
   }
 
   NotifyOnLogin();
@@ -602,6 +611,13 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
+bool UserManagerImpl::HasBrowserRestarted() const {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return base::chromeos::IsRunningOnChromeOS() &&
+         command_line->HasSwitch(switches::kLoginUser) &&
+         !command_line->HasSwitch(switches::kLoginPassword);
+}
+
 bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
     const std::string& email) const {
   // Data belonging to the guest, retail mode and stub users is always
@@ -634,10 +650,7 @@ bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
   //    enabled.
   //    - or -
   // b) The browser is restarting after a crash.
-  return AreEphemeralUsersEnabled() ||
-         (base::chromeos::IsRunningOnChromeOS() &&
-          !CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kLoginManager));
+  return AreEphemeralUsersEnabled() || HasBrowserRestarted();
 }
 
 void UserManagerImpl::AddObserver(UserManager::Observer* obs) {

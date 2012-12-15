@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 169
+#   For your editing convenience: highest ID currently used: 170
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3748,12 +3748,12 @@
       },
       'example_value': True,
       'id': 164,
-      'caption': '''Add a logout button to the ash system tray''',
-      'desc': '''Adds a logout button to the ash system tray.
+      'caption': '''Add a logout button to the system tray''',
+      'desc': '''Adds a logout button to the system tray.
 
-      If enabled, a big, red logout button is shown in the ash system tray while a session is active and the screen is not locked.
+      If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
 
-      If disabled or not specified, no big, red logout button is shown in the ash system tray.''',
+      If disabled or not specified, no big, red logout button is shown in the system tray.''',
     },
     {
       'name': 'BuiltInDnsClientEnabled',
@@ -3835,6 +3835,28 @@
       If the policy is left not set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the device-local account's email account ID as the display name on the login screen.
 
       This policy is ignored for regular user accounts.''',
+    },
+    {
+      'name': 'SessionLengthLimit',
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'supported_on': ['chrome_os:25-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 3600000,
+      'id': 170,
+      'caption': '''Limit the session length''',
+      'desc': '''Limit the maximum length of a user session.
+
+      When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
+
+      When this policy is not set, the session length is not limited.
+
+      If you set this policy, users cannot change or override it.
+
+      The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.''',
     },
   ],
   'messages': {

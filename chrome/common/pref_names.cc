@@ -801,6 +801,18 @@ const char kSecondaryDisplayOffset[] = "settings.display.secondary_offset";
 // Its key is the ID of the display and its value is a dictionary for the
 // layout/offset information.
 const char kSecondaryDisplays[] = "settings.display.secondary_displays";
+
+// A preference to keep track of the session start time. The value is set
+// after login. When the browser restarts after a crash, the pref value is not
+// changed unless it appears corrupted (value unset, value lying in the future,
+// zero value).
+const char kSessionStartTime[] = "session.start_time";
+
+// Holds the maximum session time in milliseconds. If this pref is set, the
+// user is logged out when the maximum session time is reached. The user is
+// informed about the remaining time by a countdown timer shown in the ash
+// system tray.
+const char kSessionLengthLimit[] = "session.length_limit";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

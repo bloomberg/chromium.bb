@@ -190,6 +190,10 @@ class UserManager {
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
 
+  // Returns true when the browser has crashed and restarted during the current
+  // user's session.
+  virtual bool HasBrowserRestarted() const = 0;
+
   // Returns true if data stored or cached for the user with the given email
   // address outside that user's cryptohome (wallpaper, avatar, OAuth token
   // status, display name, display email) is to be treated as ephemeral.

@@ -286,6 +286,8 @@ extern const char kPrimaryDisplayID[];
 extern const char kSecondaryDisplayLayout[];
 extern const char kSecondaryDisplayOffset[];
 extern const char kSecondaryDisplays[];
+extern const char kSessionStartTime[];
+extern const char kSessionLengthLimit[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
