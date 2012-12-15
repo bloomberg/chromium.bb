@@ -1571,16 +1571,7 @@ bool PluginInstance::IsRectTopmost(const gfx::Rect& rect) {
   if (flash_fullscreen_)
     return true;
 
-#if 0
-  WebView* web_view = container()->element().document().frame()->view();
-  if (!web_view) {
-    NOTREACHED();
-    return false;
-  }
-#else
-//FIXME
   return container_->isRectTopmost(rect);
-#endif
 }
 
 bool PluginInstance::IsViewAccelerated() {
