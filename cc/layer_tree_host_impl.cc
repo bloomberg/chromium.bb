@@ -829,6 +829,11 @@ void LayerTreeHostImpl::ScheduleCheckForCompletedSetPixels()
       m_client->setNeedsRedrawOnImplThread();
 }
 
+bool LayerTreeHostImpl::shouldClearRootRenderPass() const
+{
+    return m_settings.shouldClearRootRenderPass;
+}
+
 void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
     if (m_managedMemoryPolicy == policy)

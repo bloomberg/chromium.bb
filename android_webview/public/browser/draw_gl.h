@@ -38,7 +38,10 @@ struct AwDrawGLInfo {
     kStatusMaskDone = 0x0,
     kStatusMaskDraw = 0x1,
     kStatusMaskInvoke = 0x2,
-  } status_mask;
+  };
+
+  // Output: mask indicating the status after calling the functor.
+  unsigned int status_mask;
 
   // Output: dirty region to redraw.
   float dirty_left;

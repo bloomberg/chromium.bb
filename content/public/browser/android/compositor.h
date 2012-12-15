@@ -71,6 +71,9 @@ class CONTENT_EXPORT Compositor {
   // Set the output surface handle which the compositor renders into.
   virtual void SetWindowSurface(ANativeWindow* window) = 0;
 
+  // Tells the view tree to assume a transparent background when rendering.
+  virtual void SetHasTransparentBackground(bool flag) = 0;
+
   // Attempts to composite and read back the result into the provided buffer.
   // The buffer must be at least window width * height * 4 (RGBA) bytes large.
   // The buffer is not modified if false is returned.

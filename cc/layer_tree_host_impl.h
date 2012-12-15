@@ -170,6 +170,7 @@ public:
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
     virtual bool hasImplThread() const OVERRIDE;
+    virtual bool shouldClearRootRenderPass() const OVERRIDE;
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;

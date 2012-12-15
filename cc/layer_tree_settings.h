@@ -27,6 +27,7 @@ class CC_EXPORT LayerTreeSettings {
   bool backgroundColorInsteadOfCheckerboard;
   bool showOverdrawInTracing;
   bool canUseLCDText;
+  bool shouldClearRootRenderPass;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;

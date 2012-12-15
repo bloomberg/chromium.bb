@@ -4228,6 +4228,7 @@ public:
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
     virtual bool hasImplThread() const OVERRIDE { return false; }
+    virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
 
 protected:
     TestRenderer(ResourceProvider* resourceProvider, Proxy* proxy) : GLRenderer(this, resourceProvider) { }

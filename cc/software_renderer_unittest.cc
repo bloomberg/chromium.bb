@@ -13,6 +13,7 @@
 #include "cc/test/fake_software_output_device.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/render_pass_test_utils.h"
 #include "cc/tile_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,6 +26,11 @@ namespace {
 
 class SoftwareRendererTest : public testing::Test, public RendererClient {
 public:
+    SoftwareRendererTest()
+        : m_shouldClearRootRenderPass(true)
+    {
+    }
+
     void initializeRenderer() {
         m_outputSurface = FakeOutputSurface::CreateSoftware(scoped_ptr<SoftwareOutputDevice>(new FakeSoftwareOutputDevice));
         m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
@@ -35,7 +41,8 @@ public:
     FakeOutputSurface* outputSurface() const { return m_outputSurface.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     SoftwareRenderer* renderer() const { return m_renderer.get(); }
-    void setViewportSize(gfx::Size viewportSize) { m_viewportSize = viewportSize; }
+    void setViewportSize(const gfx::Size& viewportSize) { m_viewportSize = viewportSize; }
+    void setShouldClearRootRenderPass(bool clearRootRenderPass) { m_shouldClearRootRenderPass = clearRootRenderPass; }
 
     // RendererClient implementation.
     virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
@@ -46,6 +53,7 @@ public:
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
     virtual bool hasImplThread() const OVERRIDE { return false; }
+    virtual bool shouldClearRootRenderPass() const OVERRIDE { return m_shouldClearRootRenderPass; }
 
 protected:
     scoped_ptr<FakeOutputSurface> m_outputSurface;
@@ -53,6 +61,7 @@ protected:
     scoped_ptr<SoftwareRenderer> m_renderer;
     gfx::Size m_viewportSize;
     LayerTreeSettings m_settings;
+    bool m_shouldClearRootRenderPass;
 };
 
 TEST_F(SoftwareRendererTest, solidColorQuad)
@@ -152,6 +161,60 @@ TEST_F(SoftwareRendererTest, tileQuad)
     EXPECT_EQ(SK_ColorYELLOW, pixels[outerPixels - 1]);
     EXPECT_EQ(SK_ColorCYAN, pixels[outerSize.width() + 1]);
     EXPECT_EQ(SK_ColorCYAN, pixels[outerPixels - outerSize.width() - 2]);
+}
+
+TEST_F(SoftwareRendererTest, shouldClearRootRenderPass)
+{
+    gfx::Rect viewportRect(gfx::Size(100, 100));
+    size_t viewportPixels = viewportRect.width() * viewportRect.height();
+    setViewportSize(viewportRect.size());
+    setShouldClearRootRenderPass(false);
+    initializeRenderer();
+
+    RenderPassList list;
+    RenderPassIdHashMap hashmap;
+    ScopedPtrVector<RenderPass> renderPasses;
+    scoped_array<SkColor> pixels(new SkColor[viewportPixels]);
+
+    // Draw a fullscreen green quad in a first frame.
+    RenderPass::Id rootClearPassId(1, 0);
+    TestRenderPass* rootClearPass = addRenderPass(renderPasses, rootClearPassId, viewportRect, gfx::Transform());
+    addQuad(rootClearPass, viewportRect, SK_ColorGREEN);
+
+    list.push_back(rootClearPass);
+    hashmap.set(rootClearPassId, renderPasses.take(0));
+
+    renderer()->decideRenderPassAllocationsForFrame(list);
+    renderer()->drawFrame(list, hashmap);
+    renderer()->getFramebufferPixels(pixels.get(), viewportRect);
+
+    EXPECT_EQ(SK_ColorGREEN, pixels[0]);
+    EXPECT_EQ(SK_ColorGREEN, pixels[viewportPixels - 1]);
+
+    renderPasses.clear();
+    hashmap.clear();
+    list.clear();
+
+    // Draw a smaller magenta rect without filling the viewport in a separate frame.
+    gfx::Rect smallerRect(20, 20, 60, 60);
+
+    RenderPass::Id rootSmallerPassId(2, 0);
+    TestRenderPass* rootSmallerPass = addRenderPass(renderPasses, rootSmallerPassId, viewportRect, gfx::Transform());
+    addQuad(rootSmallerPass, smallerRect, SK_ColorMAGENTA);
+
+    list.push_back(rootSmallerPass);
+    hashmap.set(rootSmallerPassId, renderPasses.take(0));
+
+    renderer()->decideRenderPassAllocationsForFrame(list);
+    renderer()->drawFrame(list, hashmap);
+    renderer()->getFramebufferPixels(pixels.get(), viewportRect);
+
+    // If we didn't clear, the borders should still be green.
+    EXPECT_EQ(SK_ColorGREEN, pixels[0]);
+    EXPECT_EQ(SK_ColorGREEN, pixels[viewportPixels - 1]);
+
+    EXPECT_EQ(SK_ColorMAGENTA, pixels[smallerRect.y() * viewportRect.width() + smallerRect.x()]);
+    EXPECT_EQ(SK_ColorMAGENTA, pixels[(smallerRect.bottom() - 1) * viewportRect.width() + smallerRect.right() - 1]);
 }
 
 }  // namespace

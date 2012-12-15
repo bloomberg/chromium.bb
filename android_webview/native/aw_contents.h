@@ -16,6 +16,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/javascript_dialogs.h"
 
+typedef void* EGLContext;
 class TabContents;
 
 namespace cc {
@@ -121,18 +122,27 @@ class AwContents : public FindHelper::Listener,
  private:
   void Invalidate();
   void SetWebContents(content::WebContents* web_contents);
+  void SetCompositorVisibility(bool visible);
+  void ResetCompositor();
+  void AttachWebViewLayer();
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;
+  scoped_ptr<content::WebContents> pending_contents_;
+
+  // Compositor-specific state.
   scoped_ptr<content::Compositor> compositor_;
-  // State to track if the view is visible, and if the compositor knows yet.
+  scoped_refptr<cc::Layer> webview_layer_;
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
-  scoped_ptr<content::WebContents> pending_contents_;
+
+  // Used only for detecting Android View System context changes.
+  // Not to be used between draw calls.
+  EGLContext last_frame_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };

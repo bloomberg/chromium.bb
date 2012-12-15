@@ -100,6 +100,8 @@
       'test/pixel_test_output_surface.h',
       'test/render_pass_test_common.cc',
       'test/render_pass_test_common.h',
+      'test/render_pass_test_utils.cc',
+      'test/render_pass_test_utils.h',
       'test/scheduler_test_common.cc',
       'test/scheduler_test_common.h',
       'test/tiled_layer_test_common.cc',

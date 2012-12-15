@@ -20,6 +20,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
@@ -50,40 +51,6 @@ protected:
     DebugScopedSetImplThreadAndMainThreadBlocked m_alwaysImplThreadAndMainThreadBlocked;
     scoped_ptr<LayerTreeHostImpl> m_hostImpl;
 };
-
-static TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList, RenderPass::Id id, gfx::Rect outputRect, gfx::Transform rootTransform)
-{
-    scoped_ptr<TestRenderPass> pass(TestRenderPass::Create());
-    pass->SetNew(id, outputRect, outputRect, rootTransform);
-    TestRenderPass* saved = pass.get();
-    passList.append(pass.PassAs<RenderPass>());
-    return saved;
-}
-
-static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor color)
-{
-    MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
-    AppendQuadsData data(pass->id);
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedState->SetAll(gfx::Transform(), rect, rect, rect, false, 1);
-    scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-    quad->SetNew(sharedState, rect, color);
-    SolidColorDrawQuad* quadPtr = quad.get();
-    quadSink.append(quad.PassAs<DrawQuad>(), data);
-    return quadPtr;
-}
-
-static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributingPass)
-{
-    MockQuadCuller quadSink(toPass->quad_list, toPass->shared_quad_state_list);
-    AppendQuadsData data(toPass->id);
-    gfx::Rect outputRect = contributingPass->output_rect;
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedState->SetAll(gfx::Transform(), outputRect, outputRect, outputRect, false, 1);
-    scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0, outputRect, gfx::RectF());
-    quadSink.append(quad.PassAs<DrawQuad>(), data);
-}
 
 class DelegatedRendererLayerImplTestSimple : public DelegatedRendererLayerImplTest {
 public:

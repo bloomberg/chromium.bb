@@ -41,6 +41,7 @@ class FakeRendererClient : public RendererClient {
   virtual void enforceManagedMemoryPolicy(
       const ManagedMemoryPolicy&) OVERRIDE {}
   virtual bool hasImplThread() const OVERRIDE { return false; }
+  virtual bool shouldClearRootRenderPass() const { return true; }
 };
 
 class GLRendererPixelTest : public testing::Test {

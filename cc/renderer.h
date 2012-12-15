@@ -26,6 +26,7 @@ public:
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
     virtual bool hasImplThread() const = 0;
+    virtual bool shouldClearRootRenderPass() const = 0;
 protected:
     virtual ~RendererClient() { }
 };
@@ -38,9 +39,9 @@ public:
 
     const LayerTreeSettings& settings() const { return m_client->settings(); }
 
-    gfx::Size viewportSize() { return m_client->deviceViewportSize(); }
-    int viewportWidth() { return viewportSize().width(); }
-    int viewportHeight() { return viewportSize().height(); }
+    gfx::Size viewportSize() const { return m_client->deviceViewportSize(); }
+    int viewportWidth() const { return viewportSize().width(); }
+    int viewportHeight() const { return viewportSize().height(); }
 
     virtual void viewportChanged() { }
     virtual void receiveCompositorFrameAck(const CompositorFrameAck&) { }

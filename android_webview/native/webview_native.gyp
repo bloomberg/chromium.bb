@@ -13,6 +13,7 @@
         '../../base/base.gyp:base_static',
         '../../content/content.gyp:web_contents_delegate_android',
         '../../skia/skia.gyp:skia',
+        '../../ui/gl/gl.gyp:gl',
         'android_webview_native_jni',
       ],
       'include_dirs': [

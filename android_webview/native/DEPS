@@ -2,4 +2,5 @@ include_rules = [
   "+cc",
   "+content/public/browser",
   "+ui/gfx",
+  "+ui/gl",
 ]

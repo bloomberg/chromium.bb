@@ -238,7 +238,8 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
         setScissorTestRect(moveScissorToWindowSpace(frame, renderPassScissor));
     }
 
-    clearFramebuffer(frame);
+    if (frame.currentRenderPass != frame.rootRenderPass || m_client->shouldClearRootRenderPass())
+        clearFramebuffer(frame);
 
     const QuadList& quadList = renderPass->quad_list;
     for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {

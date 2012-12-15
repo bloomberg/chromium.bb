@@ -48,6 +48,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
+  virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void Composite() OVERRIDE;
@@ -89,6 +90,7 @@ class CONTENT_EXPORT CompositorImpl
   scoped_ptr<cc::LayerTreeHost> host_;
 
   gfx::Size size_;
+  bool has_transparent_background_;
 
   ANativeWindow* window_;
   int surface_id_;

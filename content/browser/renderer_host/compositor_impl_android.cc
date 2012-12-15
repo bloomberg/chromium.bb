@@ -123,6 +123,7 @@ bool CompositorImpl::UsesDirectGL() {
 
 CompositorImpl::CompositorImpl(Compositor::Client* client)
     : root_layer_(cc::Layer::create()),
+      has_transparent_background_(false),
       window_(NULL),
       surface_id_(0),
       client_(client),
@@ -172,6 +173,11 @@ void CompositorImpl::SetVisible(bool visible) {
     cc::LayerTreeSettings settings;
     settings.refreshRate = 60.0;
 
+    // Do not clear the framebuffer when rendering into external GL contexts
+    // like Android View System's.
+    if (UsesDirectGL())
+      settings.shouldClearRootRenderPass = false;
+
     scoped_ptr<cc::Thread> impl_thread;
     if (g_impl_thread)
       impl_thread = cc::ThreadImpl::createForDifferentThread(
@@ -183,6 +189,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->setVisible(true);
     host_->setSurfaceReady();
     host_->setViewportSize(size_, size_);
+    host_->setHasTransparentBackground(has_transparent_background_);
   }
 }
 
@@ -194,6 +201,12 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (host_)
     host_->setViewportSize(size, size);
   root_layer_->setBounds(size);
+}
+
+void CompositorImpl::SetHasTransparentBackground(bool flag) {
+  has_transparent_background_ = flag;
+  if (host_.get())
+    host_->setHasTransparentBackground(flag);
 }
 
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {

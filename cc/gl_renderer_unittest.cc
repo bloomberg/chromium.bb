@@ -12,6 +12,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/render_pass_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -22,6 +23,8 @@ using namespace WebKitTests;
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtLeast;
+using testing::Expectation;
 using testing::InSequence;
 using testing::Mock;
 
@@ -82,6 +85,7 @@ public:
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
     virtual bool hasImplThread() const OVERRIDE { return false; }
+    virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
 
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
@@ -576,6 +580,69 @@ TEST(GLRendererTest2, activeTextureState)
     renderer.finishDrawingQuadList();
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
     Mock::VerifyAndClearExpectations(context);
+}
+
+class NoClearRootRenderPassFakeClient : public FakeRendererClient {
+public:
+    virtual bool shouldClearRootRenderPass() const { return false; }
+};
+
+class NoClearRootRenderPassMockContext : public FakeWebGraphicsContext3D {
+public:
+    MOCK_METHOD1(clear, void(WGC3Dbitfield mask));
+    MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
+};
+
+TEST(GLRendererTest2, shouldClearRootRenderPass)
+{
+    NoClearRootRenderPassFakeClient mockClient;
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new NoClearRootRenderPassMockContext)));
+    NoClearRootRenderPassMockContext* mockContext = static_cast<NoClearRootRenderPassMockContext*>(outputSurface->Context3D());
+
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    EXPECT_TRUE(renderer.initialize());
+
+    gfx::Rect viewportRect(mockClient.deviceViewportSize());
+    ScopedPtrVector<RenderPass> renderPasses;
+
+    RenderPass::Id rootPassId(1, 0);
+    TestRenderPass* rootPass = addRenderPass(renderPasses, rootPassId, viewportRect, gfx::Transform());
+    addQuad(rootPass, viewportRect, SK_ColorGREEN);
+
+    RenderPass::Id childPassId(2, 0);
+    TestRenderPass* childPass = addRenderPass(renderPasses, childPassId, viewportRect, gfx::Transform());
+    addQuad(childPass, viewportRect, SK_ColorBLUE);
+
+    addRenderPassQuad(rootPass, childPass);
+
+    mockClient.renderPassesInDrawOrder().clear();
+    mockClient.renderPassesInDrawOrder().push_back(childPass);
+    mockClient.renderPassesInDrawOrder().push_back(rootPass);
+    mockClient.renderPasses().set(rootPassId, renderPasses.take(0));
+    mockClient.renderPasses().set(childPassId, renderPasses.take(1));
+
+    // First render pass is not the root one, clearing should happen.
+    EXPECT_CALL(*mockContext, clear(GL_COLOR_BUFFER_BIT))
+        .Times(AtLeast(1));
+
+    Expectation firstRenderPass = EXPECT_CALL(*mockContext, drawElements(_, _, _, _))
+        .Times(1);
+
+    // The second render pass is the root one, clearing should be prevented.
+    EXPECT_CALL(*mockContext, clear(GL_COLOR_BUFFER_BIT))
+        .Times(0)
+        .After(firstRenderPass);
+
+    EXPECT_CALL(*mockContext, drawElements(_, _, _, _))
+        .Times(AnyNumber())
+        .After(firstRenderPass);
+
+    renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+
+    // In multiple render passes all but the root pass should clear the framebuffer.
+    Mock::VerifyAndClearExpectations(&mockContext);
 }
 
 }  // namespace
