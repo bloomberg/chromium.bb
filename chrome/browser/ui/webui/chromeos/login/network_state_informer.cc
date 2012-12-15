@@ -173,7 +173,9 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     // For a proxied network shill's Captive Portal detector isn't
     // activated and we should rely on a Chrome's Captive Portal
     // detector results.
-    if (IsRestrictedPool(network) && IsProxyConfigured(network))
+    // For a non-proxied networks to prevent shill's false positives we
+    // also rely on a Chrome's Captive Portal detector results.
+    if (IsRestrictedPool(network))
       return CAPTIVE_PORTAL;
     else
       return ONLINE;
