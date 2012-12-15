@@ -173,10 +173,6 @@ void GpuDataManagerImpl::InitializeImpl(
     CHECK(succeed);
   }
 
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_info_ = gpu_info;
-  }
   UpdateGpuInfo(gpu_info);
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
@@ -212,21 +208,12 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   if (software_rendering_)
     return;
 
-  GPUInfo my_gpu_info;
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_info_collector::MergeGPUInfo(&gpu_info_, gpu_info);
-    complete_gpu_info_already_requested_ =
-        complete_gpu_info_already_requested_ || gpu_info_.finalized;
-    my_gpu_info = gpu_info_;
-  }
-
-  GetContentClient()->SetGpuInfo(my_gpu_info);
+  GetContentClient()->SetGpuInfo(gpu_info);
 
   if (gpu_blacklist_.get()) {
     GpuBlacklist::Decision decision =
         gpu_blacklist_->MakeBlacklistDecision(
-            GpuBlacklist::kOsAny, "", my_gpu_info);
+            GpuBlacklist::kOsAny, "", gpu_info);
     if (update_histograms_)
       UpdateStats(gpu_blacklist_.get(), decision.blacklisted_features);
 
@@ -237,6 +224,13 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
       if (!command_line->HasSwitch(switches::kGpuSwitching))
         gpu_switching_ = decision.gpu_switching;
     }
+  }
+
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info_collector::MergeGPUInfo(&gpu_info_, gpu_info);
+    complete_gpu_info_already_requested_ =
+        complete_gpu_info_already_requested_ || gpu_info_.finalized;
   }
 
   // We have to update GpuFeatureType before notify all the observers.
