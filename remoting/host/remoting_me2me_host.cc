@@ -978,7 +978,7 @@ void HostProcess::ShutdownHost(int exit_code) {
 
   switch (state_) {
     case HOST_INITIALIZING:
-      state_ = HOST_STOPPED;
+      state_ = HOST_STOPPING;
       ShutdownOnNetworkThread();
       break;
 
