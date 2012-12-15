@@ -205,8 +205,8 @@ void RemainingSessionTimeTrayView::UpdateText() {
 
   // Calculate the remaining session time, clamping so that it never falls below
   // zero or exceeds 99 hours.
-  int seconds =
-      round((limit_ - (base::Time::Now() - session_start_time_)).InSecondsF());
+  int seconds = floor(
+      (limit_ - (base::Time::Now() - session_start_time_)).InSecondsF() + .5);
   seconds = std::min(std::max(seconds, 0), 99 * 60 * 60);
   int minutes = seconds / 60;
   seconds %= 60;
