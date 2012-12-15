@@ -38,6 +38,13 @@ HostDesktopType GetHostDesktopTypeForNativeView(gfx::NativeView native_view) {
   if (g_force_)
     return g_force_type_;
 #if defined(USE_ASH)
+  // TODO(ananta)
+  // Once we've threaded creation context to wherever needed, we should remove
+  // this check here.
+#if defined(OS_WIN)
+  if (!native_view)
+    return GetActiveDesktop();
+#endif
   return IsNativeViewInAsh(native_view) ?
       HOST_DESKTOP_TYPE_ASH :
       HOST_DESKTOP_TYPE_NATIVE;
@@ -51,6 +58,13 @@ HostDesktopType GetHostDesktopTypeForNativeWindow(
   if (g_force_)
     return g_force_type_;
 #if defined(USE_ASH)
+  // TODO(ananta)
+  // Once we've threaded creation context to wherever needed, we should remove
+  // this check here.
+#if defined(OS_WIN)
+  if (!native_window)
+    return GetActiveDesktop();
+#endif
   return IsNativeWindowInAsh(native_window) ?
       HOST_DESKTOP_TYPE_ASH :
       HOST_DESKTOP_TYPE_NATIVE;
