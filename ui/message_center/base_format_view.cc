@@ -28,10 +28,9 @@ const int kBaseFormatOuterHorizontalPadding = 18;
 BaseFormatView::BaseFormatView(
     NotificationList::Delegate* list_delegate,
     const NotificationList::Notification& notification)
-    : MessageView(list_delegate, notification) {
-}
-
-BaseFormatView::BaseFormatView() {
+    : MessageView(list_delegate, notification),
+      button_one_(NULL),
+      button_two_(NULL) {
 }
 
 BaseFormatView::~BaseFormatView() {
