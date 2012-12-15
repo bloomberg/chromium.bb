@@ -129,11 +129,15 @@ enum VariationID {
   kSuggestTrialStarted2012Q4IDMin = 3310029,
   kSuggestTrialStarted2012Q4IDMax = 3310048,
 
-  // Name: Instant channel field trial.
+  // Name: Instant channel and extended field trials.
   // Range: 3310050 - 3310059
-  kChannelInstantIDBeta   = 3310050,
-  kChannelInstantIDDev    = 3310051,
-  kChannelInstantIDStable = 3310052,
+  kChannelInstantIDBeta            = 3310050,
+  kChannelInstantIDDev             = 3310051,
+  kChannelInstantIDStable          = 3310052,
+  kExtendedInstantIDCanaryGroupOne = 3310053,
+  kExtendedInstantIDCanaryControl  = 3310054,
+  kExtendedInstantIDDevGroupOne    = 3310055,
+  kExtendedInstantIDDevControl     = 3310056,
 
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of kNextID, and updating kNextID to (end of your reserved
