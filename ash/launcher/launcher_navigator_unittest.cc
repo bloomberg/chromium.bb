@@ -19,7 +19,7 @@ class LauncherNavigatorTest : public testing::Test {
   LauncherNavigatorTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     model_.reset(new LauncherModel);
   }
 

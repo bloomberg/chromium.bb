@@ -61,7 +61,7 @@ class PowerButtonControllerTest : public AshTestBase {
   PowerButtonControllerTest() : controller_(NULL), delegate_(NULL) {}
   virtual ~PowerButtonControllerTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     delegate_ = new TestPowerButtonControllerDelegate;
     controller_ = Shell::GetInstance()->power_button_controller();

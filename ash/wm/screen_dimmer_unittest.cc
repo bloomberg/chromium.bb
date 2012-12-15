@@ -20,7 +20,7 @@ class ScreenDimmerTest : public AshTestBase {
   ScreenDimmerTest() : dimmer_(NULL) {}
   virtual ~ScreenDimmerTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     dimmer_ = Shell::GetPrimaryRootWindowController()->screen_dimmer();
     test_api_.reset(new internal::ScreenDimmer::TestApi(dimmer_));

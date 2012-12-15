@@ -279,7 +279,7 @@ class DragDropControllerTest : public AshTestBase {
   DragDropControllerTest() : AshTestBase() {}
   virtual ~DragDropControllerTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
@@ -288,7 +288,7 @@ class DragDropControllerTest : public AshTestBase {
     views_delegate_.reset(new views::TestViewsDelegate);
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(), NULL);
     drag_drop_controller_.reset();
     AshTestBase::TearDown();

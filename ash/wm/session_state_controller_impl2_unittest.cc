@@ -65,7 +65,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
   SessionStateControllerImpl2Test() : controller_(NULL), delegate_(NULL) {}
   virtual ~SessionStateControllerImpl2Test() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshNewLockAnimationsEnabled);
 
