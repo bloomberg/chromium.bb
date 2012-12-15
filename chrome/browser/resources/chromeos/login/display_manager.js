@@ -474,7 +474,7 @@ cr.define('cr.ui.login', function() {
    * Initializes display manager.
    */
   DisplayManager.initialize = function() {
-    var link = $('enterprise-reporting-hint-link');
+    var link = $('enterprise-info-hint-link');
     link.addEventListener(
         'click', DisplayManager.handleEnterpriseHintLinkClick);
   },
@@ -615,15 +615,11 @@ cr.define('cr.ui.login', function() {
   /**
    * Sets the text content of the enterprise info message.
    * @param {string} messageText The message text.
-   * @param {boolean} showReportingHint Whether to show the reporting warning.
    */
-  DisplayManager.setEnterpriseInfo = function(messageText, showReportingHint) {
+  DisplayManager.setEnterpriseInfo = function(messageText) {
     $('enterprise-info-message').textContent = messageText;
     if (messageText) {
-      $('enterprise-info-container').hidden = false;
-      if (showReportingHint) {
-        $('enterprise-reporting-hint-container').hidden = false;
-      }
+      $('enterprise-info').hidden = false;
     }
   };
 

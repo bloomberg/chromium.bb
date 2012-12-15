@@ -70,9 +70,6 @@ void CoreOobeHandler::GetLocalizedStrings(
       "productName", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   localized_strings->SetString(
       "learnMore", l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  localized_strings->SetString(
-      "reportingHint",
-      l10n_util::GetStringUTF16(IDS_LOGIN_MANAGED_REPORTING_HINT));
 
   // OOBE accessibility options menu strings shown on each screen.
   localized_strings->SetString("accessibilityLink",
@@ -213,13 +210,10 @@ void CoreOobeHandler::OnBootTimesLabelTextUpdated(
 }
 
 void CoreOobeHandler::OnEnterpriseInfoUpdated(
-    const std::string& message_text,
-    bool reporting_hint) {
+    const std::string& message_text) {
   base::StringValue message_text_vaue(UTF8ToUTF16(message_text));
-  base::FundamentalValue show_help_link(reporting_hint);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.setEnterpriseInfo",
-                                   message_text_vaue,
-                                   show_help_link);
+                                   message_text_vaue);
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,

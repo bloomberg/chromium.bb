@@ -48,8 +48,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void OnBootTimesLabelTextUpdated(
       const std::string& boot_times_label_text) OVERRIDE;
   virtual void OnEnterpriseInfoUpdated(
-      const std::string& message_text,
-      bool reporting_hint) OVERRIDE;
+      const std::string& message_text) OVERRIDE;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);

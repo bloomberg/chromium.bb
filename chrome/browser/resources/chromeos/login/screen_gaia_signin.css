@@ -11,9 +11,13 @@ html[oobe=old] #gaia-signin {
 }
 
 #signin-right {
-  font-size: 12px;
   top: 60px;
   width: 200px;
+}
+
+#signin-right,
+#enterprise-info-container {
+  font-size: 12px;
 }
 
 html[oobe=old] #signin-right {
@@ -90,4 +94,16 @@ html[oobe=new] .no-right-panel #signin-frame {
   top: 77px;
   visibility: hidden;
   z-index: -1;
+}
+
+#enterprise-info-container {
+  bottom: 10px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+}
+
+#enterprise-info-container #enterprise-info {
+  display: inline-block;
 }

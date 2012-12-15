@@ -207,10 +207,9 @@ cr.define('cr.ui', function() {
    * Sets the text content of the enterprise info message.
    * If the text is empty, the entire notification will be hidden.
    * @param {string} messageText The message text.
-   * @param {boolean} showTrackingHint Whether to show the reporting warning.
    */
-  Oobe.setEnterpriseInfo = function(messageText, showReportingWarning) {
-    DisplayManager.setEnterpriseInfo(messageText, showReportingWarning);
+  Oobe.setEnterpriseInfo = function(messageText) {
+    DisplayManager.setEnterpriseInfo(messageText);
   };
 
   // Export

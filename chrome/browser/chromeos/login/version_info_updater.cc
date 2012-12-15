@@ -42,8 +42,7 @@ const char* kReportingFlags[] = {
 // VersionInfoUpdater public:
 
 VersionInfoUpdater::VersionInfoUpdater(Delegate* delegate)
-    : enterprise_reporting_hint_(false),
-      cros_settings_(chromeos::CrosSettings::Get()),
+    : cros_settings_(chromeos::CrosSettings::Get()),
       delegate_(delegate) {
 }
 
@@ -127,26 +126,13 @@ void VersionInfoUpdater::UpdateVersionLabel() {
 }
 
 void VersionInfoUpdater::UpdateEnterpriseInfo() {
-  bool reporting_hint = false;
-  for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i) {
-    bool enabled = false;
-    if (cros_settings_->GetBoolean(kReportingFlags[i], &enabled) && enabled) {
-      reporting_hint = true;
-      break;
-    }
-  }
-
   SetEnterpriseInfo(
-      g_browser_process->browser_policy_connector()->GetEnterpriseDomain(),
-      reporting_hint);
+      g_browser_process->browser_policy_connector()->GetEnterpriseDomain());
 }
 
-void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
-                                           bool reporting_hint) {
-  if (domain_name != enterprise_domain_text_ ||
-      reporting_hint != enterprise_reporting_hint_) {
+void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
+  if (domain_name != enterprise_domain_text_) {
     enterprise_domain_text_ = domain_name;
-    enterprise_reporting_hint_ = reporting_hint;
     UpdateVersionLabel();
 
     // Update the notification about device status reporting.
@@ -154,9 +140,9 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
       std::string enterprise_info;
       if (!domain_name.empty()) {
         enterprise_info = l10n_util::GetStringFUTF8(
-            IDS_LOGIN_MANAGED_BY_NOTICE,
-            UTF8ToUTF16(enterprise_domain_text_));
-        delegate_->OnEnterpriseInfoUpdated(enterprise_info, reporting_hint);
+            IDS_DEVICE_OWNED_BY_NOTICE,
+            UTF8ToUTF16(domain_name));
+        delegate_->OnEnterpriseInfoUpdated(enterprise_info);
       }
     }
   }

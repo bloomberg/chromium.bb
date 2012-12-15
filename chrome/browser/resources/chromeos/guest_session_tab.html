@@ -3,6 +3,7 @@
 <head>
 <title i18n-content="title"></title>
 <link rel="stylesheet" href="../incognito_tab.css">
+<link rel="stylesheet" href="login/enterprise_info.css">
 <script>
 // Until themes can clear the cache, force-reload the theme stylesheet.
 document.write('<link id="incognitothemecss" rel="stylesheet" ' +
@@ -10,8 +11,16 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
                Date.now() + '">');
 </script>
 </head>
-<body>
-<div class="content" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="enterprise-info" location="guest-tab"
+     i18n-values="visible:enterpriseInfoVisible;">
+  <img src="chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY"/>
+  <span id="enterprise-info-message" i18n-content="enterpriseInfoMessage">
+  </span>
+  <a id="enterprise-info-hint-link" i18n-content="learnMore"
+      i18n-values=".href:enterpriseInfoHintLink"></a>
+</div>
+<div class="content" >
   <span i18n-values=".innerHTML:content"></span>
 </div>
 </body>
@@ -22,3 +31,4 @@ function themeChanged() {
 }
 </script>
 </html>
+

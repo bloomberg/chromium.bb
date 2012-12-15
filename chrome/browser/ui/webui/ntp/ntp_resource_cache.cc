@@ -15,8 +15,10 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -73,6 +75,10 @@ const char kLearnMoreIncognitoUrl[] =
 // The URL for the Learn More page shown on guest session new tab.
 const char kLearnMoreGuestSessionUrl[] =
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
+
+// The URL for the Learn More page about enterprise enrolled devices
+const char kLearnMoreEnterpriseUrl[] =
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=2535613";
 
 // The URL for bookmark sync service help.
 const char kSyncServiceHelpUrl[] =
@@ -265,6 +271,23 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
     new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
     new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
     new_tab_link = kLearnMoreGuestSessionUrl;
+
+    std::string enterprise_domain =
+        g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+    if (!enterprise_domain.empty()) {
+      // Device is enterprise enrolled.
+      localized_strings.SetString("enterpriseInfoVisible", "true");
+      string16 enterprise_info = l10n_util::GetStringFUTF16(
+          IDS_DEVICE_OWNED_BY_NOTICE,
+          UTF8ToUTF16(enterprise_domain));
+      localized_strings.SetString("enterpriseInfoMessage", enterprise_info);
+      localized_strings.SetString("learnMore",
+          l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+      localized_strings.SetString("enterpriseInfoHintLink",
+          GetUrlWithLang(GURL(kLearnMoreEnterpriseUrl)));
+    } else {
+      localized_strings.SetString("enterpriseInfoVisible", "false");
+    }
   }
 #endif
   localized_strings.SetString("content",

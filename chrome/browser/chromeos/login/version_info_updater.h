@@ -37,8 +37,7 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
 
     // Called when the enterprise info notice should be updated.
     virtual void OnEnterpriseInfoUpdated(
-        const std::string& enterprise_info,
-        bool reporting_hint) = 0;
+        const std::string& enterprise_info) = 0;
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);
@@ -74,7 +73,7 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   void UpdateEnterpriseInfo();
 
   // Set enterprise domain name.
-  void SetEnterpriseInfo(const std::string& domain_name, bool reporting_hint);
+  void SetEnterpriseInfo(const std::string& domain_name);
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);
@@ -93,7 +92,6 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   // Information pieces for version label.
   std::string version_text_;
   std::string enterprise_domain_text_;
-  bool enterprise_reporting_hint_;
 
   // Full text for the OS version label.
   std::string os_version_label_text_;

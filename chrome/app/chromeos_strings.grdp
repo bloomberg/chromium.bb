@@ -3458,11 +3458,8 @@ Battery full
   <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
     <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
   </message>
-  <message name="IDS_LOGIN_MANAGED_BY_NOTICE" desc="Text for the notification bar on the login screen showing that this is a managed device.">
-    This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
-  </message>
-  <message name="IDS_LOGIN_MANAGED_REPORTING_HINT" desc="Text for the hint on reporting features displayed in the enterprise notification bar on the login screen.">
-    Device usage may be tracked.
+  <message name="IDS_DEVICE_OWNED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
+    This device is owned by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
     This device is owned by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph> and will be used by others after you.
