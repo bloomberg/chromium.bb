@@ -276,7 +276,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }
-  ConvertResultsToAutocompleteMatches();
+  ConvertResultsToAutocompleteMatches(0);
 }
 
 SearchProvider::Result::Result(int relevance) : relevance_(relevance) {}
@@ -399,7 +399,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
   }
 
-  ConvertResultsToAutocompleteMatches();
+  ConvertResultsToAutocompleteMatches(0);
   if (done_ || results_updated)
     listener_->OnProviderUpdate(results_updated);
 }
@@ -726,7 +726,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   return true;
 }
 
-void SearchProvider::ConvertResultsToAutocompleteMatches() {
+void SearchProvider::ConvertResultsToAutocompleteMatches(int depth) {
   // Convert all the results to matches and add them to a map, so we can keep
   // the most relevant match for each result.
   MatchMap map;
@@ -803,7 +803,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     matches_.erase(matches_.begin() + max_total_matches, matches_.end());
 
   // Check constraints that may be violated by suggested relevances.
-  if (!matches_.empty() &&
+  // TODO(jered|msw): Find the root cause of http://crbug.com/166172 and remove
+  // this depth check. This is here to prevent a crash when this code recurses
+  // forever due to an unknown issue.
+  DCHECK(depth < 10) << "QoD:" << input_.text();
+  if (!matches_.empty() && depth < 10 &&
       (has_suggested_relevance_ || verbatim_relevance_ >= 0)) {
     bool reconstruct_matches = false;
     if (matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
@@ -839,7 +843,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       reconstruct_matches = true;
     }
     if (reconstruct_matches) {
-      ConvertResultsToAutocompleteMatches();
+      ConvertResultsToAutocompleteMatches(depth + 1);
       return;
     }
   }

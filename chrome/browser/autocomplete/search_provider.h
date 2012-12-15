@@ -245,7 +245,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Converts the parsed results to a set of AutocompleteMatches and adds them
   // to |matches_|.  This also sets |done_| correctly.
-  void ConvertResultsToAutocompleteMatches();
+  void ConvertResultsToAutocompleteMatches(int depth);
 
   // Converts the first navigation result in |navigation_results| to an
   // AutocompleteMatch and adds it to |matches_|.
