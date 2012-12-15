@@ -6,9 +6,8 @@
 
 #include "base/bind.h"
 #include "media/base/filter_collection.h"
-#include "media/filters/decrypting_audio_decoder.h"
-#include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/dummy_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -35,13 +34,6 @@ static void AddDefaultDecodersToCollection(
   filter_collection->GetAudioDecoders()->push_back(ffmpeg_audio_decoder);
 
   if (proxy_decryptor) {
-    scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
-        new media::DecryptingAudioDecoder(
-            message_loop,
-            base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
-                       base::Unretained(proxy_decryptor)));
-    filter_collection->GetAudioDecoders()->push_back(decrypting_audio_decoder);
-
     scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
         new media::DecryptingVideoDecoder(
             message_loop,
