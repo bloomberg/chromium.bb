@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import os
-import oshelpers
 import shutil
 import subprocess
 import sys
@@ -12,6 +11,12 @@ import tempfile
 import unittest
 import zipfile
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+
+sys.path.append(PARENT_DIR)
+
+import oshelpers
 
 class RunZipError(subprocess.CalledProcessError):
   def __init__(self, retcode, command, output, error_output):
@@ -46,7 +51,7 @@ class TestZip(unittest.TestCase):
     self.zipname = self.id().split('.')[-1] + '.zip'
     self.zipfile = None
     self.tempdir = tempfile.mkdtemp()
-    shutil.copy(os.path.join(os.path.dirname(__file__), 'oshelpers.py'),
+    shutil.copy(os.path.join(PARENT_DIR, 'oshelpers.py'),
         self.tempdir)
 
   def tearDown(self):

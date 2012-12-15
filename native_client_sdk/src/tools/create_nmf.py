@@ -15,6 +15,8 @@ import subprocess
 import sys
 import urllib
 
+import quote
+
 try:
   import json
 except ImportError:
@@ -379,16 +381,22 @@ class NmfUtils(object):
     can always be found under the top key PROGRAM.  Additional files are under
     the FILES key further mapped by file name.  In the case of 'runnable' the
     PROGRAM key is populated with urls pointing the runnable-ld.so which acts
-    as the startup nexe.  The application itself, is then placed under the
-    FILES key mapped as 'main.exe' instead of it's original name so that the
-    loader can find it.'''
+    as the startup nexe.  The application itself is then placed under the
+    FILES key mapped as 'main.exe' instead of the original name so that the
+    loader can find it. '''
     manifest = { FILES_KEY: {}, PROGRAM_KEY: {} }
 
     needed = self.GetNeeded()
 
     runnable = any(n.endswith(RUNNABLE_LD) for n in needed)
 
-    for need, archinfo in needed.items():
+    extra_files_kv = [(key, ArchFile(name=key,
+                                     arch=arch,
+                                     path=url,
+                                     url=url))
+                      for key, arch, url in self.extra_files]
+
+    for need, archinfo in needed.items() + extra_files_kv:
       urlinfo = { URL_KEY: archinfo.url }
       name = archinfo.name
 
@@ -440,6 +448,46 @@ def Trace(msg):
 Trace.verbose = False
 
 
+def ParseExtraFiles(encoded_list, err):
+  """Parse the extra-files list and return a canonicalized list of
+  [key, arch, url] triples.  The |encoded_list| should be a list of
+  strings of the form 'key:url' or 'key:arch:url', where an omitted
+  'arch' is taken to mean 'portable'.
+
+  All entries in |encoded_list| are checked for syntax errors before
+  returning.  Error messages are written to |err| (typically
+  sys.stderr) so that the user has actionable feedback for fixing all
+  errors, rather than one at a time.  If there are any errors, None is
+  returned instead of a list, since an empty list is a valid return
+  value.
+  """
+  seen_error = False
+  canonicalized = []
+  for ix in range(len(encoded_list)):
+    kv = encoded_list[ix]
+    unquoted = quote.unquote(kv, ':')
+    if len(unquoted) == 3:
+      if unquoted[1] != ':':
+        err.write('Syntax error for key:value tuple ' +
+                  'for --extra-files argument: ' + kv + '\n')
+        seen_error = True
+      else:
+        canonicalized.append([unquoted[0], 'portable', unquoted[2]])
+    elif len(unquoted) == 5:
+      if unquoted[1] != ':' or unquoted[3] != ':':
+        err.write('Syntax error for key:arch:url tuple ' +
+                  'for --extra-files argument: ' +
+                  kv + '\n')
+        seen_error = True
+      else:
+        canonicalized.append([unquoted[0], unquoted[2], unquoted[4]])
+    else:
+      err.write('Bad key:arch:url tuple for --extra-files: ' + kv + '\n')
+  if seen_error:
+    return None
+  return canonicalized
+
+
 def main(argv):
   parser = optparse.OptionParser(
       usage='Usage: %prog [options] nexe [extra_libs...]')
@@ -466,6 +514,10 @@ def main(argv):
   parser.add_option('-n', '--name', dest='name',
                     help='Rename FOO as BAR',
                     action='append', default=[], metavar='FOO,BAR')
+  parser.add_option('-x', '--extra-files',
+                    help=('Add extra key:file tuple to the "files"' +
+                          ' section of the .nmf'),
+                    action='append', default=[], metavar='FILE')
   parser.add_option('-v', '--verbose',
                     help='Verbose output', action='store_true')
   parser.add_option('-d', '--debug-mode',
@@ -482,6 +534,10 @@ def main(argv):
   if len(args) < 1:
     raise Error("No nexe files specified.  See --help for more info")
 
+  canonicalized = ParseExtraFiles(options.extra_files, sys.stderr)
+  if canonicalized is None:
+    parser.error("Bad --extra-files (-x) argument syntax")
+
   remap = {}
   for ren in options.name:
     parts = ren.split(',')
@@ -497,6 +553,7 @@ def main(argv):
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
                  lib_path=options.lib_path,
+                 extra_files=canonicalized,
                  lib_prefix=path_prefix,
                  remap=remap)
 

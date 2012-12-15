@@ -9,7 +9,7 @@ import re
 import tarfile
 import tempfile
 import unittest
-from test_sdktools import SdkToolsTestCase
+from sdktools_test import SdkToolsTestCase
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)

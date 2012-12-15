@@ -30,16 +30,6 @@ BASIC_DESC = {
 }
 
 class TestFunctions(unittest.TestCase):
-  def testPatsubst(self):
-    val = generate_make.GenPatsubst(32, 'FOO', 'cc', 'CXX')
-    gold = '$(patsubst %.cc,%_32.o,$(FOO_CXX))'
-    self.assertEqual(val, gold)
-
-  def testPatsubst(self):
-    val = generate_make.GenPatsubst(32, 'FOO', 'cc', 'CXX')
-    gold = '$(patsubst %.cc,%_32.o,$(FOO_CXX))'
-    self.assertEqual(val, gold)
-
   def testSetVar(self):
     val = generate_make.SetVar('FOO',[])
     self.assertEqual(val, 'FOO:=\n')
