@@ -31,20 +31,25 @@ LayerAnimationSequence::~LayerAnimationSequence() {
                     DetachedFromSequence(this, true));
 }
 
-void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
+void LayerAnimationSequence::Progress(base::TimeTicks now,
                                       LayerAnimationDelegate* delegate) {
   bool redraw_required = false;
 
   if (elements_.empty())
     return;
 
+  if (last_element_ == 0)
+    last_start_ = start_time_;
+
   size_t current_index = last_element_ % elements_.size();
   base::TimeDelta element_duration;
-  while ((is_cyclic_ || last_element_ < elements_.size()) &&
-         elements_[current_index]->IsFinished(elapsed - last_start_,
-                                              &element_duration)) {
+  while (is_cyclic_ || last_element_ < elements_.size()) {
+    elements_[current_index]->set_start_time(last_start_);
+    if (!elements_[current_index]->IsFinished(now, &element_duration))
+      break;
+
     // Let the element we're passing finish.
-    if (elements_[current_index]->Progress(elapsed - last_start_, delegate))
+    if (elements_[current_index]->Progress(now, delegate))
       redraw_required = true;
     last_start_ += element_duration;
     ++last_element_;
@@ -52,7 +57,7 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
   }
 
   if (is_cyclic_ || last_element_ < elements_.size()) {
-    if (elements_[current_index]->Progress(elapsed - last_start_, delegate))
+    if (elements_[current_index]->Progress(now, delegate))
       redraw_required = true;
   }
 
@@ -63,24 +68,28 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
 
   if (!is_cyclic_ && last_element_ == elements_.size()) {
     last_element_ = 0;
-    last_start_ = base::TimeDelta::FromMilliseconds(0);
     NotifyEnded();
   }
 }
 
-bool LayerAnimationSequence::IsFinished(base::TimeDelta elapsed) {
+bool LayerAnimationSequence::IsFinished(base::TimeTicks time) {
   if (is_cyclic_)
     return false;
 
   if (elements_.empty())
     return true;
 
-  base::TimeDelta current_start = last_start_;
+  if (last_element_ == 0)
+    last_start_ = start_time_;
+
+  base::TimeTicks current_start = last_start_;
   size_t current_index = last_element_;
   base::TimeDelta element_duration;
-  while ((current_index < elements_.size()) &&
-          elements_[current_index]->IsFinished(elapsed - current_start,
-                                               &element_duration)) {
+  while (current_index < elements_.size()) {
+    elements_[current_index]->set_start_time(current_start);
+    if (!elements_[current_index]->IsFinished(time, &element_duration))
+      break;
+
     current_start += element_duration;
     ++current_index;
   }
@@ -107,7 +116,6 @@ void LayerAnimationSequence::ProgressToEnd(LayerAnimationDelegate* delegate) {
 
   if (!is_cyclic_) {
     last_element_ = 0;
-    last_start_ = base::TimeDelta::FromMilliseconds(0);
     NotifyEnded();
   }
 }
@@ -128,7 +136,6 @@ void LayerAnimationSequence::Abort() {
     ++current_index;
   }
   last_element_ = 0;
-  last_start_ = base::TimeDelta::FromMilliseconds(0);
   NotifyAborted();
 }
 

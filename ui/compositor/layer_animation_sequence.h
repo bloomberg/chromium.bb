@@ -41,13 +41,19 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   explicit LayerAnimationSequence(LayerAnimationElement* element);
   virtual ~LayerAnimationSequence();
 
-  // Updates the delegate to the appropriate value for |elapsed|. Requests a
-  // redraw if it is required.
-  void Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
+  // Sets the start time for the animation. This must be called before the
+  // first call to {Progress, IsFinished}. Once the animation is finished, this
+  // must be called again in order to restart the animation.
+  void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
+  base::TimeTicks start_time() const { return start_time_; }
 
-  // Returns true if calling Progress now, with the given elapsed time, will
-  // finish the animation.
-  bool IsFinished(base::TimeDelta elapsed);
+  // Updates the delegate to the appropriate value for |now|. Requests a
+  // redraw if it is required.
+  void Progress(base::TimeTicks now, LayerAnimationDelegate* delegate);
+
+  // Returns true if calling Progress now, with the given time, will finish
+  // the animation.
+  bool IsFinished(base::TimeTicks time);
 
   // Updates the delegate to the end of the animation; if this sequence is
   // cyclic, updates the delegate to the end of one cycle of the sequence.
@@ -115,7 +121,10 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   // These are used when animating to efficiently find the next element.
   size_t last_element_;
-  base::TimeDelta last_start_;
+  base::TimeTicks last_start_;
+
+  // The start time of the current run of the sequence.
+  base::TimeTicks start_time_;
 
   // These parties are notified when layer animations end.
   ObserverList<LayerAnimationObserver> observers_;

@@ -325,11 +325,11 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
 // LayerAnimator protected -----------------------------------------------------
 
 void LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
-                                      base::TimeDelta delta) {
+                                      base::TimeTicks now) {
   if (!delegate())
     return;
 
-  sequence->Progress(delta, delegate());
+  sequence->Progress(now, delegate());
 }
 
 void LayerAnimator::ProgressAnimationToEnd(LayerAnimationSequence* sequence) {
@@ -367,11 +367,10 @@ void LayerAnimator::Step(base::TimeTicks now) {
     if (!SAFE_INVOKE_BOOL(HasAnimation, running_animations_copy[i]))
       continue;
 
-    base::TimeDelta delta = now - running_animations_copy[i].start_time();
-    if (running_animations_copy[i].sequence()->IsFinished(delta)) {
+    if (running_animations_copy[i].sequence()->IsFinished(now)) {
       SAFE_INVOKE_VOID(FinishAnimation, running_animations_copy[i]);
     } else
-      SAFE_INVOKE_VOID(ProgressAnimation, running_animations_copy[i], delta);
+      SAFE_INVOKE_VOID(ProgressAnimation, running_animations_copy[i], now);
   }
 }
 
@@ -440,7 +439,8 @@ void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
     if (!SAFE_INVOKE_BOOL(HasAnimation, running_animations_copy[i]))
       continue;
 
-    if (running_animations_copy[i].sequence()->IsFinished(base::TimeDelta())) {
+    if (running_animations_copy[i].sequence()->IsFinished(
+          running_animations_copy[i].sequence()->start_time())) {
       SAFE_INVOKE_VOID(ProgressAnimationToEnd, running_animations_copy[i]);
       scoped_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
@@ -680,8 +680,9 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   else
     start_time = base::TimeTicks::Now();
 
+  sequence->set_start_time(start_time);
   running_animations_.push_back(
-      RunningAnimation(sequence->AsWeakPtr(), start_time));
+      RunningAnimation(sequence->AsWeakPtr()));
 
   // Need to keep a reference to the animation.
   AddToQueueIfNotPresent(sequence);
@@ -747,10 +748,8 @@ void LayerAnimator::PurgeDeletedAnimations() {
 }
 
 LayerAnimator::RunningAnimation::RunningAnimation(
-    const base::WeakPtr<LayerAnimationSequence>& sequence,
-    base::TimeTicks start_time)
-    : sequence_(sequence),
-      start_time_(start_time) {
+    const base::WeakPtr<LayerAnimationSequence>& sequence)
+    : sequence_(sequence) {
 }
 
 LayerAnimator::RunningAnimation::~RunningAnimation() { }

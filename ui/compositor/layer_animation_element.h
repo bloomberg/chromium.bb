@@ -113,14 +113,20 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
       SkColor color,
       base::TimeDelta duration);
 
-  // Updates the delegate to the appropriate value for |elapsed|. Returns true
-  // if a redraw is required.
-  bool Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
+  // Sets the start time for the animation. This must be called before the first
+  // call to {Progress, IsFinished}. Once the animation is finished, this must
+  // be called again in order to restart the animation.
+  void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
+  base::TimeTicks start_time() const { return start_time_; }
 
-  // If calling Progress now, with the given elapsed time, will finish the
-  // animation, returns true and sets |total_duration| to the actual duration
-  // for this animation, incuding any queueing delays.
-  bool IsFinished(base::TimeDelta elapsed, base::TimeDelta* total_duration);
+  // Updates the delegate to the appropriate value for |now|. Returns true
+  // if a redraw is required.
+  bool Progress(base::TimeTicks now, LayerAnimationDelegate* delegate);
+
+  // If calling Progress now, with the given time, will finish the animation,
+  // returns true and sets |end_duration| to the actual duration for this
+  // animation, incuding any queueing delays.
+  bool IsFinished(base::TimeTicks time, base::TimeDelta* total_duration);
 
   // Updates the delegate to the end of the animation. Returns true if a
   // redraw is required.
@@ -155,6 +161,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   bool first_frame_;
   const AnimatableProperties properties_;
+  base::TimeTicks start_time_;
   const base::TimeDelta duration_;
   Tween::Type tween_type_;
 

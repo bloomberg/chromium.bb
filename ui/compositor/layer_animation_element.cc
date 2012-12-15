@@ -405,8 +405,10 @@ LayerAnimationElement::LayerAnimationElement(
 LayerAnimationElement::~LayerAnimationElement() {
 }
 
-bool LayerAnimationElement::Progress(base::TimeDelta elapsed,
+bool LayerAnimationElement::Progress(base::TimeTicks now,
                                      LayerAnimationDelegate* delegate) {
+  DCHECK(start_time_ != base::TimeTicks());
+  base::TimeDelta elapsed = now - start_time_;
   if (first_frame_)
     OnStart(delegate);
   double t = 1.0;
@@ -417,8 +419,9 @@ bool LayerAnimationElement::Progress(base::TimeDelta elapsed,
   return need_draw;
 }
 
-bool LayerAnimationElement::IsFinished(base::TimeDelta elapsed,
+bool LayerAnimationElement::IsFinished(base::TimeTicks time,
                                        base::TimeDelta* total_duration) {
+  base::TimeDelta elapsed = time - start_time_;
   if (elapsed >= duration_) {
     *total_duration = duration_;
     return true;
@@ -427,7 +430,11 @@ bool LayerAnimationElement::IsFinished(base::TimeDelta elapsed,
 }
 
 bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
-  return Progress(duration_, delegate);
+  if (first_frame_)
+    OnStart(delegate);
+  bool need_draw = OnProgress(1.0, delegate);
+  first_frame_ = true;
+  return need_draw;
 }
 
 void LayerAnimationElement::GetTargetValue(TargetValue* target) const {

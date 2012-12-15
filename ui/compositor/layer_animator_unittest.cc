@@ -108,9 +108,9 @@ class TestLayerAnimator : public LayerAnimator {
   virtual ~TestLayerAnimator() {}
 
   virtual void ProgressAnimation(LayerAnimationSequence* sequence,
-                                 base::TimeDelta delta) OVERRIDE {
+                                 base::TimeTicks now) OVERRIDE {
     EXPECT_TRUE(HasAnimation(sequence));
-    LayerAnimator::ProgressAnimation(sequence, delta);
+    LayerAnimator::ProgressAnimation(sequence, now);
   }
 
  private:

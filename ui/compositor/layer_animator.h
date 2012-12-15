@@ -201,7 +201,7 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   // Virtual for testing.
   virtual void ProgressAnimation(LayerAnimationSequence* sequence,
-                                 base::TimeDelta delta);
+                                 base::TimeTicks now);
 
   void ProgressAnimationToEnd(LayerAnimationSequence* sequence);
 
@@ -212,20 +212,16 @@ class COMPOSITOR_EXPORT LayerAnimator
   friend class base::RefCounted<LayerAnimator>;
   friend class ScopedLayerAnimationSettings;
 
-  // We need to keep track of the start time of every running animation.
   class RunningAnimation {
    public:
-    RunningAnimation(const base::WeakPtr<LayerAnimationSequence>& sequence,
-                     base::TimeTicks start_time);
+    RunningAnimation(const base::WeakPtr<LayerAnimationSequence>& sequence);
     ~RunningAnimation();
 
     bool is_sequence_alive() const { return !!sequence_; }
     LayerAnimationSequence* sequence() const { return sequence_.get(); }
-    base::TimeTicks start_time() const { return start_time_; }
 
    private:
     base::WeakPtr<LayerAnimationSequence> sequence_;
-    base::TimeTicks start_time_;
 
     // Copy and assign are allowed.
   };

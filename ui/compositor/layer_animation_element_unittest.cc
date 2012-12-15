@@ -26,20 +26,23 @@ TEST(LayerAnimationElementTest, TransformElement) {
   gfx::Transform start_transform, target_transform, middle_transform;
   start_transform.Rotate(-30.0);
   target_transform.Rotate(30.0);
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(target_transform, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetTransformFromAnimation(start_transform);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     CheckApproximatelyEqual(start_transform,
                             delegate.GetTransformForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     CheckApproximatelyEqual(middle_transform,
                             delegate.GetTransformForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     CheckApproximatelyEqual(target_transform,
                             delegate.GetTransformForAnimation());
   }
@@ -49,7 +52,7 @@ TEST(LayerAnimationElementTest, TransformElement) {
   CheckApproximatelyEqual(target_transform, target_value.transform);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -61,18 +64,21 @@ TEST(LayerAnimationElementTest, BoundsElement) {
   start = target = middle = gfx::Rect(0, 0, 50, 50);
   start.set_x(-90);
   target.set_x(90);
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBoundsElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetBoundsFromAnimation(start);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     CheckApproximatelyEqual(start, delegate.GetBoundsForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     CheckApproximatelyEqual(middle, delegate.GetBoundsForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     CheckApproximatelyEqual(target, delegate.GetBoundsForAnimation());
   }
 
@@ -81,7 +87,7 @@ TEST(LayerAnimationElementTest, BoundsElement) {
   CheckApproximatelyEqual(target, target_value.bounds);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -92,17 +98,20 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   float start = 0.0;
   float middle = 0.5;
   float target = 1.0;
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateOpacityElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetOpacityFromAnimation(start);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetOpacityForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetOpacityForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
   }
 
@@ -111,7 +120,7 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   EXPECT_FLOAT_EQ(target, target_value.opacity);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -121,17 +130,20 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   TestLayerAnimationDelegate delegate;
   bool start = true;
   bool target = false;
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateVisibilityElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetVisibilityFromAnimation(start);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     EXPECT_FALSE(delegate.GetVisibilityForAnimation());
   }
 
@@ -140,7 +152,7 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   EXPECT_FALSE(target_value.visibility);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -151,17 +163,20 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
   float start = 0.0;
   float middle = 0.5;
   float target = 1.0;
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBrightnessElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetBrightnessFromAnimation(start);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetBrightnessForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetBrightnessForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetBrightnessForAnimation());
   }
 
@@ -170,7 +185,7 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
   EXPECT_FLOAT_EQ(target, target_value.brightness);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -181,17 +196,20 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
   float start = 0.0;
   float middle = 0.5;
   float target = 1.0;
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateGrayscaleElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_start_time(start_time);
     delegate.SetGrayscaleFromAnimation(start);
-    element->Progress(base::TimeDelta(), &delegate);
+    element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetGrayscaleForAnimation());
-    element->Progress(delta/2, &delegate);
+    element->Progress(start_time + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetGrayscaleForAnimation());
-    element->Progress(delta, &delegate);
+    element->Progress(start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetGrayscaleForAnimation());
   }
 
@@ -200,7 +218,7 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
   EXPECT_FLOAT_EQ(target, target_value.grayscale);
 
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
@@ -213,6 +231,7 @@ TEST(LayerAnimationElementTest, PauseElement) {
   properties.insert(LayerAnimationElement::OPACITY);
   properties.insert(LayerAnimationElement::BRIGHTNESS);
   properties.insert(LayerAnimationElement::GRAYSCALE);
+  base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(
@@ -221,7 +240,9 @@ TEST(LayerAnimationElementTest, PauseElement) {
   TestLayerAnimationDelegate delegate;
   TestLayerAnimationDelegate copy = delegate;
 
-  element->Progress(delta, &delegate);
+  start_time += delta;
+  element->set_start_time(start_time);
+  element->Progress(start_time + delta, &delegate);
 
   // Nothing should have changed.
   CheckApproximatelyEqual(delegate.GetBoundsForAnimation(),
@@ -237,7 +258,7 @@ TEST(LayerAnimationElementTest, PauseElement) {
 
   // Pause should last for |delta|.
   base::TimeDelta element_duration;
-  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
   EXPECT_EQ(delta, element_duration);
 }
 
