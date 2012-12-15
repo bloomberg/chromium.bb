@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 #define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/observer_list.h"
@@ -103,12 +105,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
 
-  // Fills output parameters |one| and |two| with properties of
-  // first two connected outputs found on |display| and |screen|.
-  int GetDualOutputs(Display* display,
-                     XRRScreenResources* screen,
-                     OutputSnapshot* one,
-                     OutputSnapshot* two);
+  // Returns a vector filled with properties of the first two connected outputs
+  // found on |display| and |screen|.
+  std::vector<OutputSnapshot> GetDualOutputs(Display* display,
+                                             XRRScreenResources* screen);
 
   // Looks for a mode on internal and external outputs having same resolution.
   // |display| and |screen| parameters are needed for some XRandR calls.
@@ -133,17 +133,26 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
                               RRMode* internal_mirror_mode,
                               RRMode* external_mirror_mode);
 
+  // Searches for touchscreens among input devices,
+  // and tries to match them up to screens in |outputs|.
+  // |display| and |screen| are used to make X calls.
+  // |outputs| is an array of detected screens.
+  // If a touchscreen with same resolution as an output's native mode
+  // is detected, its id will be stored in this output.
+  void GetTouchscreens(Display* display,
+                       XRRScreenResources* screen,
+                       std::vector<OutputSnapshot>& outputs);
+
   // Configures X to the state specified in |new_state|.
   // |display|, |screen| and |window| are used to change X configuration.
   // |new_state| is the state to enter.
-  // |outputs| and |output_count| contain information
-  // on the currently configured state, as well as how to apply the new state.
+  // |outputs| contains information on the currently configured state,
+  // as well as how to apply the new state.
   bool EnterState(Display* display,
                   XRRScreenResources* screen,
                   Window window,
                   OutputState new_state,
-                  const OutputSnapshot* outputs,
-                  int output_count);
+                  const std::vector<OutputSnapshot>& outputs);
 
   // Outputs UMA metrics of previous state (the state that is being left).
   // Updates |mirror_mode_preserved_aspect_| and |last_enter_state_time_|.

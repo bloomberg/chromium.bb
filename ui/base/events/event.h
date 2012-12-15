@@ -472,11 +472,10 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
 
-  // Calibrate the touch-point. This is useful when the touch-surface that
-  // generates the events need to be remapped to a surface of a different
-  // size. |from| is the size of the native surface, and |to| is the size
-  // of the target surface.
-  void CalibrateLocation(const gfx::Size& from, const gfx::Size& to);
+  // Relocate the touch-point to a new |origin|.
+  // This is useful when touch event is in X Root Window coordinates,
+  // and it needs to be mapped into Aura Root Window coordinates.
+  void Relocate(const gfx::Point& origin);
 
   // Used for unit tests.
   void set_radius_x(const float r) { radius_x_ = r; }

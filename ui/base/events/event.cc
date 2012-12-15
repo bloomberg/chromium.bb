@@ -419,9 +419,9 @@ TouchEvent::TouchEvent(EventType type,
 TouchEvent::~TouchEvent() {
 }
 
-void TouchEvent::CalibrateLocation(const gfx::Size& from, const gfx::Size& to) {
-  location_ = CalibratePoint(location_, from, to);
-  root_location_ = CalibratePoint(root_location_, from, to);
+void TouchEvent::Relocate(const gfx::Point& origin) {
+  location_ -= origin.OffsetFromOrigin();
+  root_location_ -= origin.OffsetFromOrigin();
 }
 
 void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {

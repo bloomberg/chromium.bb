@@ -4,8 +4,13 @@
 
 #include "chromeos/display/output_configurator.h"
 
+#include <cmath>
+
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/dpms.h>
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 
 // Xlib defines Status as int which causes our include of dbus/bus.h to fail
@@ -37,6 +42,23 @@ struct OutputSnapshot {
   RRMode native_mode;
   RRMode mirror_mode;
   bool is_internal;
+  bool is_aspect_preserving_scaling;
+  int touch_device_id;
+};
+
+struct CoordinateTransformation {
+  // Initialize to identity transformation
+  CoordinateTransformation()
+    : x_scale(1.0),
+      x_offset(0.0),
+      y_scale(1.0),
+      y_offset(0.0) {
+  }
+
+  float x_scale;
+  float x_offset;
+  float y_scale;
+  float y_offset;
 };
 
 enum MirrorModeType {
@@ -161,12 +183,104 @@ static void CreateFrameBuffer(Display* display,
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
 }
 
-static OutputState InferCurrentState(Display* display,
-                                     XRRScreenResources* screen,
-                                     const OutputSnapshot* outputs,
-                                     int output_count) {
+// Configures X input's Coordinate Transformation Matrix property.
+// |display| is used to make X calls.
+// |touch_device_id| is X's id of touchscreen device to configure.
+// |ctm| contains the desired transformation parameters.
+// The offsets in it should be normalized,
+// so that 1 corresponds to x or y axis size for the respectful offset.
+static void ConfigureCTM(Display* display,
+                         int touch_device_id,
+                         const CoordinateTransformation& ctm) {
+  int ndevices;
+  XIDeviceInfo* info = XIQueryDevice(display, touch_device_id, &ndevices);
+  Atom prop = XInternAtom(display, "Coordinate Transformation Matrix", False);
+  Atom float_atom = XInternAtom(display, "FLOAT", False);
+  if (ndevices == 1 && prop != None && float_atom != None) {
+    Atom type;
+    int format;
+    unsigned long num_items;
+    unsigned long bytes_after;
+    unsigned char* data = NULL;
+    // Verify that the property exists with correct format, type, etc.
+    int status = XIGetProperty(display,
+                               info->deviceid,
+                               prop,
+                               0,  // Irrelevant - we are not interested in data
+                               0,  // Irrelevant - we are not interested in data
+                               False,  // Leave the property as is
+                               AnyPropertyType,
+                               &type,
+                               &format,
+                               &num_items,
+                               &bytes_after,
+                               &data);
+    if (data)
+      XFree(data);
+    if (status == Success && type == float_atom && format == 32) {
+      float value[3][3] = {
+          { ctm.x_scale,         0.0, ctm.x_offset },
+          {         0.0, ctm.y_scale, ctm.y_offset },
+          {         0.0,         0.0,          1.0 }
+      };
+      XIChangeProperty(display,
+                       info->deviceid,
+                       prop,
+                       type,
+                       format,
+                       PropModeReplace,
+                       reinterpret_cast<unsigned char*>(value),
+                       9);
+    }
+  }
+  XIFreeDeviceInfo(info);
+}
+
+// Computes the relevant transformation for mirror mode.
+// |screen| is used to make X calls.
+// |output| is the output on which mirror mode is being applied.
+// Returns the transformation, which would be identity if computations fail.
+static CoordinateTransformation GetMirrorModeCTM(XRRScreenResources* screen,
+                                                 const OutputSnapshot* output) {
+  CoordinateTransformation ctm;  // Default to identity
+  XRRModeInfo* native_mode_info = ModeInfoForID(screen, output->native_mode);
+  XRRModeInfo* mirror_mode_info = ModeInfoForID(screen, output->mirror_mode);
+  if (native_mode_info == NULL || mirror_mode_info == NULL)
+    return ctm;
+
+  if (native_mode_info->height == 0 || mirror_mode_info->height == 0 ||
+      native_mode_info->width == 0 || mirror_mode_info->width == 0)
+    return ctm;
+
+  float native_mode_ar = static_cast<float>(native_mode_info->width) /
+      static_cast<float>(native_mode_info->height);
+  float mirror_mode_ar = static_cast<float>(mirror_mode_info->width) /
+      static_cast<float>(mirror_mode_info->height);
+
+  if (mirror_mode_ar > native_mode_ar) {  // Letterboxing
+    ctm.x_scale = 1.0;
+    ctm.x_offset = 0.0;
+    ctm.y_scale = mirror_mode_ar / native_mode_ar;
+    ctm.y_offset = (native_mode_ar / mirror_mode_ar - 1.0) * 0.5;
+    return ctm;
+  }
+  if (native_mode_ar > mirror_mode_ar) {  // Pillarboxing
+    ctm.y_scale = 1.0;
+    ctm.y_offset = 0.0;
+    ctm.x_scale = native_mode_ar / mirror_mode_ar;
+    ctm.x_offset = (mirror_mode_ar / native_mode_ar - 1.0) * 0.5;
+    return ctm;
+  }
+
+  return ctm;  // Same aspect ratio - return identity
+}
+
+static OutputState InferCurrentState(
+    Display* display,
+    XRRScreenResources* screen,
+    const std::vector<OutputSnapshot>& outputs) {
   OutputState state = STATE_INVALID;
-  switch (output_count) {
+  switch (outputs.size()) {
     case 0:
       state = STATE_HEADLESS;
       break;
@@ -231,11 +345,10 @@ static OutputState InferCurrentState(Display* display,
 static OutputState GetNextState(Display* display,
                                 XRRScreenResources* screen,
                                 OutputState current_state,
-                                const OutputSnapshot* outputs,
-                                int output_count) {
+                                const std::vector<OutputSnapshot>& outputs) {
   OutputState state = STATE_INVALID;
 
-  switch (output_count) {
+  switch (outputs.size()) {
     case 0:
       state = STATE_HEADLESS;
       break;
@@ -298,15 +411,66 @@ static XRRScreenResources* GetScreenResourcesAndRecordUMA(Display* display,
 
 // Determine if there is an "internal" output and how many outputs are
 // connected.
-static bool IsProjecting(const OutputSnapshot* outputs, int output_count) {
+static bool IsProjecting(const std::vector<OutputSnapshot>& outputs) {
   bool has_internal_output = false;
-  int connected_output_count = output_count;
-  for (int i = 0; i < output_count; ++i)
+  int connected_output_count = outputs.size();
+  for (size_t i = 0; i < outputs.size(); ++i)
     has_internal_output |= outputs[i].is_internal;
 
   // "Projecting" is defined as having more than 1 output connected while at
   // least one of them is an internal output.
   return has_internal_output && (connected_output_count > 1);
+}
+
+// Returns whether the |output| is configured to preserve aspect when scaling.
+static bool IsOutputAspectPreservingScaling(Display* display,
+                                            RROutput output) {
+  bool ret = false;
+
+  Atom scaling_prop = XInternAtom(display, "scaling mode", False);
+  Atom full_aspect_atom = XInternAtom(display, "Full aspect", False);
+  if (scaling_prop == None || full_aspect_atom == None)
+    return false;
+
+  int nprop = 0;
+  Atom* props = XRRListOutputProperties(display, output, &nprop);
+  for (int j = 0; j < nprop && !ret; j++) {
+    Atom prop = props[j];
+    if (scaling_prop == prop) {
+      unsigned char* values = NULL;
+      int actual_format;
+      unsigned long nitems;
+      unsigned long bytes_after;
+      Atom actual_type;
+      int success;
+
+      success = XRRGetOutputProperty(display,
+                                     output,
+                                     prop,
+                                     0,
+                                     100,
+                                     False,
+                                     False,
+                                     AnyPropertyType,
+                                     &actual_type,
+                                     &actual_format,
+                                     &nitems,
+                                     &bytes_after,
+                                     &values);
+      if (success == Success && actual_type == XA_ATOM &&
+          actual_format == 32 && nitems == 1) {
+        Atom value = reinterpret_cast<Atom*>(values)[0];
+        if (full_aspect_atom == value)
+          ret = true;
+      }
+      if (values)
+        XFree(values);
+    }
+  }
+  if (props)
+    XFree(props);
+
+  return ret;
 }
 
 }  // namespace
@@ -337,28 +501,24 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   CHECK(screen != NULL);
 
   // Detect our initial state.
-  OutputSnapshot outputs[2] = { {0}, {0} };
-  connected_output_count_ =
-      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
-  output_state_ =
-      InferCurrentState(display, screen, outputs, connected_output_count_);
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  connected_output_count_ = outputs.size();
+  output_state_ = InferCurrentState(display, screen, outputs);
   // Ensure that we are in a supported state with all connected displays powered
   // on.
   OutputState starting_state = GetNextState(display,
                                             screen,
                                             STATE_INVALID,
-                                            outputs,
-                                            connected_output_count_);
+                                            outputs);
   if (output_state_ != starting_state &&
       EnterState(display,
                  screen,
                  window,
                  starting_state,
-                 outputs,
-                 connected_output_count_)) {
+                 outputs)) {
     output_state_ = starting_state;
   }
-  bool is_projecting = IsProjecting(outputs, connected_output_count_);
+  bool is_projecting = IsProjecting(outputs);
 
   // Find xrandr_event_base_ since we need it to interpret events, later.
   int error_base_ignored = 0;
@@ -394,20 +554,12 @@ bool OutputConfigurator::CycleDisplayMode() {
   XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
 
-  OutputSnapshot outputs[2] = { {0}, {0} };
-  connected_output_count_ =
-      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
-  OutputState original =
-      InferCurrentState(display, screen, outputs, connected_output_count_);
-  OutputState next_state =
-      GetNextState(display, screen, original, outputs, connected_output_count_);
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  connected_output_count_ = outputs.size();
+  OutputState original = InferCurrentState(display, screen, outputs);
+  OutputState next_state = GetNextState(display, screen, original, outputs);
   if (original != next_state &&
-      EnterState(display,
-                 screen,
-                 window,
-                 next_state,
-                 outputs,
-                 connected_output_count_)) {
+      EnterState(display, screen, window, next_state, outputs)) {
     did_change = true;
   }
   // We have seen cases where the XRandR data can get out of sync with our own
@@ -437,18 +589,12 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
 
-  OutputSnapshot outputs[2] = { {0}, {0} };
-  connected_output_count_ =
-      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  connected_output_count_ = outputs.size();
 
   if (all_displays && power_on) {
     // Resume all displays using the current state.
-    if (EnterState(display,
-                   screen,
-                   window,
-                   output_state_,
-                   outputs,
-                   connected_output_count_)) {
+    if (EnterState(display, screen, window, output_state_, outputs)) {
       // Force the DPMS on since the driver doesn't always detect that it should
       // turn on. This is needed when coming back from idle suspend.
       CHECK(DPMSEnable(display));
@@ -521,15 +667,9 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
 
-  OutputSnapshot outputs[2] = { {0}, {0} };
-  connected_output_count_ =
-      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
-  if (EnterState(display,
-                 screen,
-                 window,
-                 new_state,
-                 outputs,
-                 connected_output_count_)) {
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  connected_output_count_ = outputs.size();
+  if (EnterState(display, screen, window, new_state, outputs)) {
     output_state_ = new_state;
   }
 
@@ -563,27 +703,18 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
           GetScreenResourcesAndRecordUMA(display, window);
       CHECK(screen != NULL);
 
-      OutputSnapshot outputs[2] = { {0}, {0} };
-      int new_output_count =
-          GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+      std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+      int new_output_count = outputs.size();
       if (new_output_count != connected_output_count_) {
         connected_output_count_ = new_output_count;
-        OutputState new_state = GetNextState(display,
-                                             screen,
-                                             STATE_INVALID,
-                                             outputs,
-                                             connected_output_count_);
-        if (EnterState(display,
-                       screen,
-                       window,
-                       new_state,
-                       outputs,
-                       connected_output_count_)) {
+        OutputState new_state =
+            GetNextState(display, screen, STATE_INVALID, outputs);
+        if (EnterState(display, screen, window, new_state, outputs)) {
           output_state_ = new_state;
         }
       }
 
-      bool is_projecting = IsProjecting(outputs, connected_output_count_);
+      bool is_projecting = IsProjecting(outputs);
       XRRFreeScreenResources(screen);
       XUngrabServer(display);
 
@@ -629,68 +760,69 @@ void OutputConfigurator::NotifyOnDisplayChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
 }
 
-int OutputConfigurator::GetDualOutputs(Display* display,
-                                       XRRScreenResources* screen,
-                                       OutputSnapshot* one,
-                                       OutputSnapshot* two) {
-  int found_count = 0;
+std::vector<OutputSnapshot> OutputConfigurator::GetDualOutputs(
+    Display* display,
+    XRRScreenResources* screen) {
+  std::vector<OutputSnapshot> outputs;
   XRROutputInfo* one_info = NULL;
   XRROutputInfo* two_info = NULL;
 
-  for (int i = 0; (i < screen->noutput) && (found_count < 2); ++i) {
+  for (int i = 0; (i < screen->noutput) && (outputs.size() < 2); ++i) {
     RROutput this_id = screen->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, this_id);
     bool is_connected = (RR_Connected == output_info->connection);
 
     if (is_connected) {
-      OutputSnapshot *to_populate = NULL;
+      OutputSnapshot to_populate;
 
-      if (0 == found_count) {
-        to_populate = one;
+      if (0 == outputs.size()) {
         one_info = output_info;
       } else {
-        to_populate = two;
         two_info = output_info;
       }
 
-      to_populate->output = this_id;
+      to_populate.output = this_id;
       // Now, look up the corresponding CRTC and any related info.
-      to_populate->crtc = output_info->crtc;
-      if (None != to_populate->crtc) {
+      to_populate.crtc = output_info->crtc;
+      if (None != to_populate.crtc) {
         XRRCrtcInfo* crtc_info =
-            XRRGetCrtcInfo(display, screen, to_populate->crtc);
-        to_populate->current_mode = crtc_info->mode;
-        to_populate->height = crtc_info->height;
-        to_populate->y = crtc_info->y;
+            XRRGetCrtcInfo(display, screen, to_populate.crtc);
+        to_populate.current_mode = crtc_info->mode;
+        to_populate.height = crtc_info->height;
+        to_populate.y = crtc_info->y;
         XRRFreeCrtcInfo(crtc_info);
       } else {
-        to_populate->current_mode = 0;
-        to_populate->height = 0;
-        to_populate->y = 0;
+        to_populate.current_mode = 0;
+        to_populate.height = 0;
+        to_populate.y = 0;
       }
       // Find the native_mode and leave the mirror_mode for the pass after the
       // loop.
-      to_populate->native_mode = GetOutputNativeMode(output_info);
-      to_populate->mirror_mode = 0;
+      to_populate.native_mode = GetOutputNativeMode(output_info);
+      to_populate.mirror_mode = 0;
 
       // See if this output refers to an internal display.
-      to_populate->is_internal = IsInternalOutput(output_info);
+      to_populate.is_internal = IsInternalOutput(output_info);
 
-      VLOG(1) << "Found display #" << found_count
-              << " with output " << (int)to_populate->output
-              << " crtc " << (int)to_populate->crtc
-              << " current mode " << (int)to_populate->current_mode;
-      ++found_count;
+      to_populate.is_aspect_preserving_scaling =
+          IsOutputAspectPreservingScaling(display, this_id);
+      to_populate.touch_device_id = None;
+
+      VLOG(1) << "Found display #" << outputs.size()
+              << " with output " << (int)to_populate.output
+              << " crtc " << (int)to_populate.crtc
+              << " current mode " << (int)to_populate.current_mode;
+      outputs.push_back(to_populate);
     } else {
       XRRFreeOutputInfo(output_info);
     }
   }
 
-  if (2 == found_count) {
+  if (2 == outputs.size()) {
     bool one_is_internal = IsInternalOutput(one_info);
     bool two_is_internal = IsInternalOutput(two_info);
     int internal_outputs = (one_is_internal ? 1 : 0) +
-      (two_is_internal ? 1 : 0);
+        (two_is_internal ? 1 : 0);
 
     DCHECK(internal_outputs < 2);
     LOG_IF(WARNING, internal_outputs == 2) << "Two internal outputs detected.";
@@ -708,21 +840,21 @@ int OutputConfigurator::GetDualOutputs(Display* display,
                                               screen,
                                               one_info,
                                               two_info,
-                                              one->output,
+                                              outputs[0].output,
                                               is_panel_fitting_enabled_,
                                               preserve_aspect,
-                                              &one->mirror_mode,
-                                              &two->mirror_mode);
+                                              &outputs[0].mirror_mode,
+                                              &outputs[1].mirror_mode);
         } else {  // if (two_is_internal)
           can_mirror = FindOrCreateMirrorMode(display,
                                               screen,
                                               two_info,
                                               one_info,
-                                              two->output,
+                                              outputs[1].output,
                                               is_panel_fitting_enabled_,
                                               preserve_aspect,
-                                              &two->mirror_mode,
-                                              &one->mirror_mode);
+                                              &outputs[1].mirror_mode,
+                                              &outputs[0].mirror_mode);
         }
       } else {  // if (internal_outputs == 0)
         // No panel fitting for external outputs, so fall back to exact match
@@ -730,11 +862,11 @@ int OutputConfigurator::GetDualOutputs(Display* display,
                                             screen,
                                             one_info,
                                             two_info,
-                                            one->output,
+                                            outputs[0].output,
                                             false,
                                             preserve_aspect,
-                                            &one->mirror_mode,
-                                            &two->mirror_mode);
+                                            &outputs[0].mirror_mode,
+                                            &outputs[1].mirror_mode);
         if (!can_mirror && preserve_aspect) {
           // FindOrCreateMirrorMode will try to preserve aspect ratio of
           // what it thinks is external display, so if it didn't succeed
@@ -744,11 +876,11 @@ int OutputConfigurator::GetDualOutputs(Display* display,
                                               screen,
                                               two_info,
                                               one_info,
-                                              two->output,
+                                              outputs[1].output,
                                               false,
                                               preserve_aspect,
-                                              &two->mirror_mode,
-                                              &one->mirror_mode);
+                                              &outputs[1].mirror_mode,
+                                              &outputs[0].mirror_mode);
         }
       }
 
@@ -770,8 +902,8 @@ int OutputConfigurator::GetDualOutputs(Display* display,
 
     if (!can_mirror) {
       // We can't mirror so set mirror_mode to None.
-      one->mirror_mode = None;
-      two->mirror_mode = None;
+      outputs[0].mirror_mode = None;
+      outputs[1].mirror_mode = None;
 
       UMA_HISTOGRAM_ENUMERATION(
           "Display.GetDualOutputs.detected_mirror_mode",
@@ -781,21 +913,22 @@ int OutputConfigurator::GetDualOutputs(Display* display,
     }
   }
 
+  GetTouchscreens(display, screen, outputs);
+
   XRRFreeOutputInfo(one_info);
   XRRFreeOutputInfo(two_info);
-  return found_count;
+  return outputs;
 }
 
-bool OutputConfigurator::FindOrCreateMirrorMode(
-    Display* display,
-    XRRScreenResources* screen,
-    XRROutputInfo* internal_info,
-    XRROutputInfo* external_info,
-    RROutput internal_output_id,
-    bool try_creating,
-    bool preserve_aspect,
-    RRMode* internal_mirror_mode,
-    RRMode* external_mirror_mode) {
+bool OutputConfigurator::FindOrCreateMirrorMode(Display* display,
+                                                XRRScreenResources* screen,
+                                                XRROutputInfo* internal_info,
+                                                XRROutputInfo* external_info,
+                                                RROutput internal_output_id,
+                                                bool try_creating,
+                                                bool preserve_aspect,
+                                                RRMode* internal_mirror_mode,
+                                                RRMode* external_mirror_mode) {
   RRMode internal_mode_id = GetOutputNativeMode(internal_info);
   RRMode external_mode_id = GetOutputNativeMode(external_info);
 
@@ -849,13 +982,100 @@ bool OutputConfigurator::FindOrCreateMirrorMode(
   return false;
 }
 
-bool OutputConfigurator::EnterState(Display* display,
-                                    XRRScreenResources* screen,
-                                    Window window,
-                                    OutputState new_state,
-                                    const OutputSnapshot* outputs,
-                                    int output_count) {
-  switch (output_count) {
+void OutputConfigurator::GetTouchscreens(Display* display,
+                                         XRRScreenResources* screen,
+                                         std::vector<OutputSnapshot>& outputs) {
+  int ndevices = 0;
+  Atom valuator_x = XInternAtom(display, "Abs MT Position X", False);
+  Atom valuator_y = XInternAtom(display, "Abs MT Position Y", False);
+  if (valuator_x == None || valuator_y == None)
+    return;
+
+  XIDeviceInfo* info = XIQueryDevice(display, XIAllDevices, &ndevices);
+  for (int i = 0; i < ndevices; i++) {
+    if (!info[i].enabled || info[i].use != XIFloatingSlave)
+      continue;  // Assume all touchscreens are floating slaves
+
+    double width = -1.0;
+    double height = -1.0;
+    bool is_direct_touch = false;
+
+    for (int j = 0; j < info[i].num_classes; j++) {
+      XIAnyClassInfo* class_info = info[i].classes[j];
+
+      if (class_info->type == XIValuatorClass) {
+        XIValuatorClassInfo* valuator_info =
+            reinterpret_cast<XIValuatorClassInfo*>(class_info);
+
+        if (valuator_x == valuator_info->label) {
+          // Ignore X axis valuator with unexpected properties
+          if (valuator_info->number == 0 && valuator_info->mode == Absolute &&
+              valuator_info->min == 0.0) {
+            width = valuator_info->max;
+          }
+        } else if (valuator_y == valuator_info->label) {
+          // Ignore Y axis valuator with unexpected properties
+          if (valuator_info->number == 1 && valuator_info->mode == Absolute &&
+              valuator_info->min == 0.0) {
+            height = valuator_info->max;
+          }
+        }
+      }
+#if defined(USE_XI2_MT)
+      if (class_info->type == XITouchClass) {
+        XITouchClassInfo* touch_info =
+            reinterpret_cast<XITouchClassInfo*>(class_info);
+        is_direct_touch = touch_info->mode == XIDirectTouch;
+      }
+#endif
+    }
+
+    // Touchscreens should have absolute X and Y axes,
+    // and be direct touch devices.
+    if (width > 0.0 && height > 0.0 && is_direct_touch) {
+      size_t k = 0;
+      for (; k < outputs.size(); k++) {
+        if (outputs[k].native_mode == None ||
+            outputs[k].touch_device_id != None)
+          continue;
+        XRRModeInfo* native_mode = ModeInfoForID(screen,
+                                                 outputs[k].native_mode);
+        if (native_mode == NULL)
+          continue;
+
+        // Allow 1 pixel difference between screen and touchscreen resolutions.
+        // Because in some cases for monitor resolution 1024x768 touchscreen's
+        // resolution would be 1024x768, but for some 1023x767.
+        // It really depends on touchscreen's firmware configuration.
+        if (std::abs(native_mode->width - width) <= 1.0 &&
+            std::abs(native_mode->height - height) <= 1.0) {
+          outputs[k].touch_device_id = info[i].deviceid;
+
+          VLOG(1) << "Found touchscreen for output #" << k
+                  << " id " << outputs[k].touch_device_id
+                  << " width " << width
+                  << " height " << height;
+          break;
+        }
+      }
+
+      VLOG_IF(1, k == outputs.size())
+          << "No matching output - ignoring touchscreen id " << info[i].deviceid
+          << " width " << width
+          << " height " << height;
+    }
+  }
+
+  XIFreeDeviceInfo(info);
+}
+
+bool OutputConfigurator::EnterState(
+    Display* display,
+    XRRScreenResources* screen,
+    Window window,
+    OutputState new_state,
+    const std::vector<OutputSnapshot>& outputs) {
+  switch (outputs.size()) {
     case 0:
       // Do nothing as no 0-display states are supported.
       break;
@@ -882,6 +1102,11 @@ bool OutputConfigurator::EnterState(Display* display,
                     y,
                     outputs[0].native_mode,
                     outputs[0].output);
+      // Restore identity transformation for single monitor in native mode.
+      if (outputs[0].touch_device_id != None) {
+        CoordinateTransformation ctm;  // Defaults to identity
+        ConfigureCTM(display, outputs[0].touch_device_id, ctm);
+      }
       break;
     }
     case 2: {
@@ -917,6 +1142,19 @@ bool OutputConfigurator::EnterState(Display* display,
                       y,
                       outputs[1].mirror_mode,
                       outputs[1].output);
+        for (size_t i = 0; i < outputs.size(); i++) {
+          if (outputs[i].touch_device_id == None)
+            continue;
+
+          CoordinateTransformation ctm;
+          // CTM needs to be calculated if aspect preserving scaling is used.
+          // Otherwise, assume it is full screen, and use identity CTM.
+          if (outputs[i].mirror_mode != outputs[i].native_mode &&
+              outputs[i].is_aspect_preserving_scaling) {
+            ctm = GetMirrorModeCTM(screen, &outputs[i]);
+          }
+          ConfigureCTM(display, outputs[i].touch_device_id, ctm);
+        }
       } else {
         XRRModeInfo* primary_mode_info =
             ModeInfoForID(screen, outputs[0].native_mode);
@@ -935,40 +1173,48 @@ bool OutputConfigurator::EnterState(Display* display,
         CreateFrameBuffer(display, screen, window, width, height);
 
         const int x = 0;
-        if (STATE_DUAL_PRIMARY_ONLY == new_state) {
-          int primary_y = 0;
-          ConfigureCrtc(display,
-                        screen,
-                        primary_crtc,
-                        x,
-                        primary_y,
-                        outputs[0].native_mode,
-                        outputs[0].output);
-          int secondary_y = primary_height + kVerticalGap;
-          ConfigureCrtc(display,
-                        screen,
-                        secondary_crtc,
-                        x,
-                        secondary_y,
-                        outputs[1].native_mode,
-                        outputs[1].output);
-        } else {
-          int primary_y = secondary_height + kVerticalGap;
-          ConfigureCrtc(display,
-                        screen,
-                        primary_crtc,
-                        x,
-                        primary_y,
-                        outputs[0].native_mode,
-                        outputs[0].output);
-          int secondary_y = 0;
-          ConfigureCrtc(display,
-                        screen,
-                        secondary_crtc,
-                        x,
-                        secondary_y,
-                        outputs[1].native_mode,
-                        outputs[1].output);
+        int primary_y = 0;
+        int secondary_y = 0;
+        if (STATE_DUAL_PRIMARY_ONLY == new_state)
+          secondary_y = primary_height + kVerticalGap;
+        else
+          primary_y = secondary_height + kVerticalGap;
+
+        ConfigureCrtc(display,
+                      screen,
+                      primary_crtc,
+                      x,
+                      primary_y,
+                      outputs[0].native_mode,
+                      outputs[0].output);
+        ConfigureCrtc(display,
+                      screen,
+                      secondary_crtc,
+                      x,
+                      secondary_y,
+                      outputs[1].native_mode,
+                      outputs[1].output);
+        if (outputs[0].touch_device_id != None) {
+          CoordinateTransformation ctm;
+          ctm.x_scale = static_cast<float>(primary_mode_info->width) /
+              static_cast<float>(width);
+          ctm.x_offset = static_cast<float>(x) / static_cast<float>(width);
+          ctm.y_scale = static_cast<float>(primary_height) /
+              static_cast<float>(height);
+          ctm.y_offset = static_cast<float>(primary_y) /
+              static_cast<float>(height);
+          ConfigureCTM(display, outputs[0].touch_device_id, ctm);
+        }
+        if (outputs[1].touch_device_id != None) {
+          CoordinateTransformation ctm;
+          ctm.x_scale = static_cast<float>(secondary_mode_info->width) /
+              static_cast<float>(width);
+          ctm.x_offset = static_cast<float>(x) / static_cast<float>(width);
+          ctm.y_scale = static_cast<float>(secondary_height) /
+              static_cast<float>(height);
+          ctm.y_offset = static_cast<float>(secondary_y) /
+              static_cast<float>(height);
+          ConfigureCTM(display, outputs[1].touch_device_id, ctm);
         }
       }
       break;
@@ -983,8 +1229,7 @@ bool OutputConfigurator::EnterState(Display* display,
 }
 
 void OutputConfigurator::RecordPreviousStateUMA() {
-  base::TimeDelta duration = base::TimeTicks::Now() -
-      last_enter_state_time_;
+  base::TimeDelta duration = base::TimeTicks::Now() - last_enter_state_time_;
 
   // |output_state_| can be used for the state being left,
   // since RecordPreviousStateUMA is called from EnterState,

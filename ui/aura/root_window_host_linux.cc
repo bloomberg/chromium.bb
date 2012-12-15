@@ -860,13 +860,7 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_RELEASED: {
       ui::TouchEvent touchev(xev);
 #if defined(OS_CHROMEOS)
-      // X maps the touch-surface to the size of the X root-window. In
-      // multi-monitor setup, the X root-window size is a combination of
-      // both the monitor sizes. So it is necessary to remap the location of
-      // the event from the X root-window to the X host-window for the aura
-      // root-window.
       if (base::chromeos::IsRunningOnChromeOS()) {
-        touchev.CalibrateLocation(x_root_bounds_.size(), bounds_.size());
         if (!bounds_.Contains(touchev.location())) {
           // This might still be in the bezel region.
           gfx::Rect expanded(bounds_);
@@ -877,6 +871,13 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
           if (!expanded.Contains(touchev.location()))
             break;
         }
+        // X maps the touch-surface to the size of the X root-window.
+        // In multi-monitor setup, Coordinate Transformation Matrix
+        // repositions the touch-surface onto part of X root-window
+        // containing aura root-window corresponding to the touchscreen.
+        // However, if aura root-window has non-zero origin,
+        // we need to relocate the event into aura root-window coordinates.
+        touchev.Relocate(bounds_.origin());
       }
 #endif  // defined(OS_CHROMEOS)
       delegate_->OnHostTouchEvent(&touchev);
