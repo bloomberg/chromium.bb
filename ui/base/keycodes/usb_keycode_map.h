@@ -134,7 +134,7 @@ const usb_keymap usb_keycode_map[] = {
   USB_KEYMAP(0x070043, 0x004c, 0x0044, 0x006d),  // F10
   USB_KEYMAP(0x070044, 0x005f, 0x0057, 0x0067),  // F11
   USB_KEYMAP(0x070045, 0x0060, 0x0058, 0x006f),  // F12
-  USB_KEYMAP(0x070046, 0x006b, 0xe037, 0xffff),  // PrintScreen
+  USB_KEYMAP(0x070046, 0x006b, 0xe037, 0x0069),  // PrintScreen
   USB_KEYMAP(0x070047, 0x004e, 0x0046, 0xffff),  // ScrollLock
 
   USB_KEYMAP(0x070048, 0x007f, 0x0000, 0xffff),  // Pause
@@ -173,9 +173,8 @@ const usb_keymap usb_keycode_map[] = {
   // This key is typically located near LeftShift key.
   // The keycap varies on international keyboards:
   //   Dan: <> Dutch: ][ Ger: <> UK: \|
-  // TODO(garykac) Determine correct XKB scancode.
-  USB_KEYMAP(0x070064, 0x0000, 0x0056, 0xffff),  // Non-US \|
-  USB_KEYMAP(0x070065, 0x0087, 0xe05d, 0xffff),  // AppMenu (next to RWin key)
+  USB_KEYMAP(0x070064, 0x005e, 0x0056, 0x000a),  // Non-US \|
+  USB_KEYMAP(0x070065, 0x0087, 0xe05d, 0x006e),  // AppMenu (next to RWin key)
   USB_KEYMAP(0x070066, 0x007c, 0x0000, 0xffff),  // Power
   USB_KEYMAP(0x070067, 0x007d, 0x0000, 0x0051),  // Keypad_=
 
