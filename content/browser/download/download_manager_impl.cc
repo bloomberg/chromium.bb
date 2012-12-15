@@ -40,7 +40,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/base/load_flags.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -61,10 +62,11 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
   request->set_load_flags(request->load_flags() | params->load_flags());
   request->set_method(params->method());
   if (!params->post_body().empty()) {
-    scoped_refptr<net::UploadData> upload_data(new net::UploadData());
-    upload_data->AppendBytes(params->post_body().data(),
-                             params->post_body().size());
-    request->set_upload(upload_data);
+    const std::string& body = params->post_body();
+    scoped_ptr<net::UploadElementReader> reader(
+        net::UploadOwnedBytesElementReader::CreateWithString(body));
+    request->set_upload(make_scoped_ptr(
+        net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
   }
   if (params->post_id() >= 0) {
     // The POST in this case does not have an actual body, and only works
@@ -73,9 +75,9 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
     // plan on how to display the UI for that.
     DCHECK(params->prefer_cache());
     DCHECK(params->method() == "POST");
-    scoped_refptr<net::UploadData> upload_data = new net::UploadData();
-    upload_data->set_identifier(params->post_id());
-    request->set_upload(upload_data);
+    ScopedVector<net::UploadElementReader> element_readers;
+    request->set_upload(make_scoped_ptr(
+        new net::UploadDataStream(&element_readers, params->post_id())));
   }
   for (DownloadUrlParameters::RequestHeadersType::const_iterator iter
            = params->request_headers_begin();

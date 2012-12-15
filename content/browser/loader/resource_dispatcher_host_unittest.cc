@@ -26,7 +26,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/net_errors.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -1289,9 +1290,10 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   std::string upload_content;
   upload_content.resize(33);
   std::fill(upload_content.begin(), upload_content.end(), 'x');
-  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
-  upload_data->AppendBytes(upload_content.data(), upload_content.size());
-  req.set_upload(upload_data);
+  scoped_ptr<net::UploadElementReader> reader(new net::UploadBytesElementReader(
+      upload_content.data(), upload_content.size()));
+  req.set_upload(make_scoped_ptr(
+      net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
 
   // Since the upload throttling is disabled, this has no effect on the cost.
   EXPECT_EQ(4436,

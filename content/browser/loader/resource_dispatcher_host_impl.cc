@@ -66,7 +66,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/request_priority.h"
 #include "net/base/ssl_cert_request_info.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_data_stream.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
@@ -953,9 +953,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body) {
-    request->set_upload(
-        request_data.request_body->ResolveElementsAndCreateUploadData(
-            filter_->blob_storage_context()->controller()));
+    request->set_upload(make_scoped_ptr(
+        request_data.request_body->ResolveElementsAndCreateUploadDataStream(
+            filter_->blob_storage_context()->controller())));
   }
 
   bool allow_download = request_data.allow_download &&

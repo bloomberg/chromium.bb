@@ -14,8 +14,7 @@
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace net {
-class UploadData;
-class UploadElement;
+class UploadDataStream;
 }
 
 namespace webkit_blob {
@@ -42,10 +41,10 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
   void AppendFileSystemFileRange(const GURL& url, uint64 offset, uint64 length,
                                  const base::Time& expected_modification_time);
 
-  // Creates a new UploadData from this request body. This also resolves
+  // Creates a new UploadDataStream from this request body. This also resolves
   // any blob references using given |blob_controller|.
   // TODO(kinuko): Clean up this hack.
-  net::UploadData* ResolveElementsAndCreateUploadData(
+  net::UploadDataStream* ResolveElementsAndCreateUploadDataStream(
       webkit_blob::BlobStorageController* blob_controller);
 
   const std::vector<Element>* elements() const { return &elements_; }

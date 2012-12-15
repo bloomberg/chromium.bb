@@ -39,7 +39,9 @@
 #include "net/base/capturing_net_log.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -489,11 +491,15 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
     request.SetExtraRequestHeaderByName(net::HttpRequestHeaders::kContentType,
                                         content_type,
                                         true /* overwrite */);
-  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
-  upload_data->AppendBytes(&(bytes_1[0]), bytes_1.size());
-  upload_data->AppendFileRange(::FilePath(), 0, 0, base::Time());
-  upload_data->AppendBytes(&(bytes_2[0]), bytes_2.size());
-  request.set_upload(upload_data);
+  ScopedVector<net::UploadElementReader> element_readers;
+  element_readers.push_back(new net::UploadBytesElementReader(
+      &(bytes_1[0]), bytes_1.size()));
+  element_readers.push_back(new net::UploadFileElementReader(
+      ::FilePath(), 0, 0, base::Time()));
+  element_readers.push_back(new net::UploadBytesElementReader(
+      &(bytes_2[0]), bytes_2.size()));
+  request.set_upload(make_scoped_ptr(
+      new net::UploadDataStream(&element_readers, 0)));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request.Start();
 }

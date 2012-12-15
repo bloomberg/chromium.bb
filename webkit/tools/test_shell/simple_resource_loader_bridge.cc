@@ -53,7 +53,7 @@
 #include "net/base/net_util.h"
 #include "net/base/network_delegate.h"
 #include "net/base/static_cookie_policy.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_data_stream.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
@@ -428,10 +428,10 @@ class RequestProxy
     request_->SetExtraRequestHeaders(headers);
     request_->set_load_flags(params->load_flags);
     if (params->request_body) {
-      request_->set_upload(
-          params->request_body->ResolveElementsAndCreateUploadData(
+      request_->set_upload(make_scoped_ptr(
+          params->request_body->ResolveElementsAndCreateUploadDataStream(
               static_cast<TestShellRequestContext*>(g_request_context)->
-                  blob_storage_controller()));
+              blob_storage_controller())));
     }
     SimpleAppCacheSystem::SetExtraRequestInfo(
         request_.get(), params->appcache_host_id, params->request_type);

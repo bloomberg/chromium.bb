@@ -13,7 +13,8 @@
 #include "chrome/browser/net/cert_logger.pb.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_info.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request_context.h"
 
@@ -34,9 +35,8 @@ ChromeFraudulentCertificateReporter::~ChromeFraudulentCertificateReporter() {
   STLDeleteElements(&inflight_requests_);
 }
 
-static std::string BuildReport(
-    const std::string& hostname,
-    const net::SSLInfo& ssl_info) {
+static std::string BuildReport(const std::string& hostname,
+                               const net::SSLInfo& ssl_info) {
   CertLoggerRequest request;
   base::Time now = base::Time::Now();
   request.set_time_usec(now.ToInternalValue());
@@ -79,9 +79,10 @@ void ChromeFraudulentCertificateReporter::SendReport(
   net::URLRequest* url_request = CreateURLRequest(request_context_);
   url_request->set_method("POST");
 
-  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
-  upload_data->AppendBytes(report.data(), report.size());
-  url_request->set_upload(upload_data);
+  scoped_ptr<net::UploadElementReader> reader(
+      net::UploadOwnedBytesElementReader::CreateWithString(report));
+  url_request->set_upload(make_scoped_ptr(
+      net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
 
   net::HttpRequestHeaders headers;
   headers.SetHeader(net::HttpRequestHeaders::kContentType,
