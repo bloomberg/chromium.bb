@@ -24,18 +24,18 @@ struct TexturedQuadDrawCache {
   // Values tracked to determine if textured quads may be coalesced.
   int program_id;
   int resource_id;
-  float alpha;
   bool use_premultiplied_alpha;
   bool needs_blending;
 
   // Information about the program binding that is required to draw.
-  int alpha_location;
   int uv_xform_location;
+  int vertex_opacity_location;
   int matrix_location;
   int sampler_location;
 
   // A cache for the coalesced quad data.
   std::vector<Float4> uv_xform_data;
+  std::vector<float> vertex_opacity_data;
   std::vector<Float16> matrix_data;
 };
 

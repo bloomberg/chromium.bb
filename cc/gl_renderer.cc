@@ -994,8 +994,10 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
     {
         TextureProgramBinding::set(program, context);
         texTransformLocation = program->vertexShader().texTransformLocation();
+        vertexOpacityLocation = program->vertexShader().vertexOpacityLocation();
     }
     int texTransformLocation;
+    int vertexOpacityLocation;
 };
 
 void GLRenderer::flushTextureQuadCache()
@@ -1030,15 +1032,13 @@ void GLRenderer::flushTextureQuadCache()
         GLC(context(), context()->blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
     }
 
-    // Set the shader opacity.
-    setShaderOpacity(m_drawCache.alpha, m_drawCache.alpha_location);
-
     COMPILE_ASSERT(sizeof(Float4) == 4 * sizeof(float), struct_is_densely_packed);
     COMPILE_ASSERT(sizeof(Float16) == 16 * sizeof(float), struct_is_densely_packed);
 
     // Upload the tranforms for both points and uvs.
-    GLC(m_context, m_context->uniformMatrix4fv((int)m_drawCache.matrix_location, (int)m_drawCache.matrix_data.size(), false, (float*)&m_drawCache.matrix_data.front()));
-    GLC(m_context, m_context->uniform4fv((int)m_drawCache.uv_xform_location, (int)m_drawCache.uv_xform_data.size(), (float*)&m_drawCache.uv_xform_data.front()));
+    GLC(m_context, m_context->uniformMatrix4fv(static_cast<int>(m_drawCache.matrix_location), static_cast<int>(m_drawCache.matrix_data.size()), false, reinterpret_cast<float*>(&m_drawCache.matrix_data.front())));
+    GLC(m_context, m_context->uniform4fv(static_cast<int>(m_drawCache.uv_xform_location), static_cast<int>(m_drawCache.uv_xform_data.size()), reinterpret_cast<float*>(&m_drawCache.uv_xform_data.front())));
+    GLC(m_context, m_context->uniform1fv(static_cast<int>(m_drawCache.vertex_opacity_location), static_cast<int>(m_drawCache.vertex_opacity_data.size()), static_cast<float*>(&m_drawCache.vertex_opacity_data.front())));
 
     // Draw the quads!
     GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6 * m_drawCache.matrix_data.size(), GL_UNSIGNED_SHORT, 0));
@@ -1050,12 +1050,13 @@ void GLRenderer::flushTextureQuadCache()
     // Clear the cache.
     m_drawCache.program_id = 0;
     m_drawCache.uv_xform_data.resize(0);
+    m_drawCache.vertex_opacity_data.resize(0);
     m_drawCache.matrix_data.resize(0);
 }
 
 void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
-    // Choose the correcte texture program binding
+    // Choose the correct texture program binding
     TexTransformTextureProgramBinding binding;
     if (quad->flipped)
         binding.set(textureProgramFlip(), context());
@@ -1066,19 +1067,17 @@ void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDraw
 
     if (m_drawCache.program_id != binding.programId ||
         m_drawCache.resource_id != resourceID ||
-        m_drawCache.alpha != quad->opacity() ||
         m_drawCache.use_premultiplied_alpha != quad->premultiplied_alpha ||
         m_drawCache.needs_blending != quad->ShouldDrawWithBlending() ||
         m_drawCache.matrix_data.size() >= 8) {
         flushTextureQuadCache();
         m_drawCache.program_id = binding.programId;
         m_drawCache.resource_id = resourceID;
-        m_drawCache.alpha = quad->opacity();
         m_drawCache.use_premultiplied_alpha = quad->premultiplied_alpha;
         m_drawCache.needs_blending = quad->ShouldDrawWithBlending();
 
-        m_drawCache.alpha_location = binding.alphaLocation;
         m_drawCache.uv_xform_location = binding.texTransformLocation;
+        m_drawCache.vertex_opacity_location = binding.vertexOpacityLocation;
         m_drawCache.matrix_location = binding.matrixLocation;
         m_drawCache.sampler_location = binding.samplerLocation;
     }
@@ -1087,6 +1086,13 @@ void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDraw
     const gfx::RectF& uvRect = quad->uv_rect;
     Float4 uv = {uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()};
     m_drawCache.uv_xform_data.push_back(uv);
+
+    // Generate the vertex opacity
+    const float opacity = quad->opacity();
+    m_drawCache.vertex_opacity_data.push_back(quad->vertex_opacity[0] * opacity);
+    m_drawCache.vertex_opacity_data.push_back(quad->vertex_opacity[1] * opacity);
+    m_drawCache.vertex_opacity_data.push_back(quad->vertex_opacity[2] * opacity);
+    m_drawCache.vertex_opacity_data.push_back(quad->vertex_opacity[3] * opacity);
 
     // Generate the transform matrix
     gfx::Transform quadRectMatrix;
@@ -1110,6 +1116,8 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     const gfx::RectF& uvRect = quad->uv_rect;
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
+    GLC(context(), context()->uniform1fv(binding.vertexOpacityLocation, 4, quad->vertex_opacity));
+
     ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
     if (!quad->premultiplied_alpha) {
@@ -1124,7 +1132,6 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
         GLC(context(), context()->blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
     }
 
-    setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->rect, binding.matrixLocation);
 
     if (!quad->premultiplied_alpha)
@@ -1143,9 +1150,11 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     else
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->io_surface_size.width(), quad->io_surface_size.height()));
 
+    const float vertex_opacity[] = {quad->opacity(), quad->opacity(), quad->opacity(), quad->opacity()};
+    GLC(context(), context()->uniform1fv(binding.vertexOpacityLocation, 4, vertex_opacity));
+
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->io_surface_texture_id));
 
-    setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->rect, binding.matrixLocation);
 
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));

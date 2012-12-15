@@ -108,38 +108,39 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     // Nothing is opaque here.
     // TODO(danakj): Should we look at the SkBitmaps to determine opaqueness?
     gfx::Rect opaqueRect;
+    const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad;
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, topLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvTopLeft, flipped);
+    quad->SetNew(sharedQuadState, topLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvTopLeft, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, topRight, opaqueRect, m_resourceId, premultipliedAlpha, uvTopRight, flipped);
+    quad->SetNew(sharedQuadState, topRight, opaqueRect, m_resourceId, premultipliedAlpha, uvTopRight, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, bottomLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomLeft, flipped);
+    quad->SetNew(sharedQuadState, bottomLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomLeft, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, bottomRight, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomRight, flipped);
+    quad->SetNew(sharedQuadState, bottomRight, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomRight, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, top, opaqueRect, m_resourceId, premultipliedAlpha, uvTop, flipped);
+    quad->SetNew(sharedQuadState, top, opaqueRect, m_resourceId, premultipliedAlpha, uvTop, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, left, opaqueRect, m_resourceId, premultipliedAlpha, uvLeft, flipped);
+    quad->SetNew(sharedQuadState, left, opaqueRect, m_resourceId, premultipliedAlpha, uvLeft, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, right, opaqueRect, m_resourceId, premultipliedAlpha, uvRight, flipped);
+    quad->SetNew(sharedQuadState, right, opaqueRect, m_resourceId, premultipliedAlpha, uvRight, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, bottom, opaqueRect, m_resourceId, premultipliedAlpha, uvBottom, flipped);
+    quad->SetNew(sharedQuadState, bottom, opaqueRect, m_resourceId, premultipliedAlpha, uvBottom, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 

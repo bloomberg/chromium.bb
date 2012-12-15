@@ -70,10 +70,12 @@ public:
 
     int matrixLocation() const { return m_matrixLocation; }
     int texTransformLocation() const { return m_texTransformLocation; }
+    int vertexOpacityLocation() const { return m_vertexOpacityLocation; }
 
 private:
     int m_matrixLocation;
     int m_texTransformLocation;
+    int m_vertexOpacityLocation;
 };
 
 class VertexShaderQuad {
@@ -154,7 +156,12 @@ private:
     int m_samplerLocation;
 };
 
-class FragmentShaderRGBATexFlipAlpha : public FragmentTexAlphaBinding {
+class FragmentShaderRGBATexFlipVaryingAlpha : public FragmentTexOpaqueBinding {
+public:
+    std::string getShaderString() const;
+};
+
+class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
 public:
     std::string getShaderString() const;
 };
@@ -164,12 +171,12 @@ public:
     std::string getShaderString() const;
 };
 
-class FragmentShaderRGBATexRectFlipAlpha : public FragmentTexAlphaBinding {
+class FragmentShaderRGBATexRectFlipVaryingAlpha : public FragmentTexAlphaBinding {
 public:
     std::string getShaderString() const;
 };
 
-class FragmentShaderRGBATexRectAlpha : public FragmentTexAlphaBinding {
+class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexAlphaBinding {
 public:
     std::string getShaderString() const;
 };

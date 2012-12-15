@@ -34,6 +34,9 @@ public:
     // Sets a UV transform to be used at draw time. Defaults to (0, 0, 1, 1).
     void setUVRect(const gfx::RectF&);
 
+    // Sets an opacity value per vertex. It will be multiplied by the layer opacity value.
+    void setVertexOpacity(float bottomLeft, float topLeft, float topRight, float bottomRight);
+
     // Sets whether the alpha channel is premultiplied or unpremultiplied. Defaults to true.
     void setPremultipliedAlpha(bool);
 
@@ -64,6 +67,8 @@ private:
 
     bool m_flipped;
     gfx::RectF m_uvRect;
+    // [bottom left, top left, top right, bottom right]
+    float m_vertexOpacity[4];
     bool m_premultipliedAlpha;
     bool m_rateLimitContext;
     bool m_contextLost;

@@ -336,22 +336,25 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
     gfx::RectF uvRect(0.5, 224, -51, 36);
+    const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     bool flipped = true;
     CREATE_SHARED_STATE();
 
-    CREATE_QUAD_5_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped);
+    CREATE_QUAD_6_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, vertex_opacity, flipped);
     EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
     EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
+    EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copyQuad->vertex_opacity, 4);
     EXPECT_EQ(flipped, copyQuad->flipped);
 
-    CREATE_QUAD_4_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
+    CREATE_QUAD_5_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, vertex_opacity, flipped);
     EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
     EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
+    EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copyQuad->vertex_opacity, 4);
     EXPECT_EQ(flipped, copyQuad->flipped);
 }
 

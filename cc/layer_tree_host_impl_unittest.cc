@@ -2775,8 +2775,9 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
     pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Transform());
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
     sharedState->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), false, 1);
+    const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), false);
+    quad->SetNew(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), vertex_opacity, false);
 
     pass->AppendSharedQuadState(sharedState.Pass());
     pass->AppendQuad(quad.PassAs<DrawQuad>());
@@ -4273,7 +4274,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 // Solid color draw quad
                 scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
                 quad->SetNew(testData.sharedQuadState.get(), gfx::Rect(0, 0, 10, 10), SK_ColorWHITE);
-                
+
                 renderPass->AppendQuad(quad.PassAs<DrawQuad>());
                 currentChar++;
             } else if ((*currentChar >= 'A') && (*currentChar <= 'Z')) {
@@ -4287,7 +4288,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 ASSERT_NE(rootRenderPassId, newRenderPassId);
                 bool hasTexture = false;
                 bool contentsChanged = true;
-                
+
                 if (*currentChar == '[') {
                     currentChar++;
                     while (*currentChar && *currentChar != ']') {
@@ -4357,7 +4358,7 @@ void dumpRenderPassTestData(const RenderPassRemovalTestData& testData, char* buf
                 pos++;
                 break;
             }
-            
+
             quadListIterator++;
         }
         *pos = '\n';
@@ -4459,7 +4460,7 @@ TestCase removeRenderPassesCases[] =
             "H0sssI0sss\n"
             "I0J0\n"
             "J0ssss\n",
-            
+
             "R0sssssA0ssss\n"
         }, {
             "Wide recursion, remove all",
@@ -4474,7 +4475,7 @@ TestCase removeRenderPassesCases[] =
             "H0s\n"
             "I0s\n"
             "J0ssss\n",
-            
+
             "R0A0B0C0D0E0F0G0H0I0J0\n"
         }, {
             "Remove passes regardless of cache state",
@@ -4695,7 +4696,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
                                 layoutSurfaceSize.height() * static_cast<int>(deviceScaleFactor));
     float pageScale = 2;
     scoped_ptr<LayerImpl> root = createScrollableLayer(1, layoutSurfaceSize);
-    // For this test we want to scrolls to move both the document and the 
+    // For this test we want to scrolls to move both the document and the
     // pinchZoomViewport so we can see some scroll component on the implTransform.
     root->setMaxScrollOffset(gfx::Vector2d(3, 4));
     m_hostImpl->setRootLayer(root.Pass());
@@ -4814,7 +4815,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
                                 layoutSurfaceSize.height() * static_cast<int>(deviceScaleFactor));
     float pageScale = 2;
     scoped_ptr<LayerImpl> root = createScrollableLayer(1, layoutSurfaceSize);
-    // For this test we want to scrolls to move both the document and the 
+    // For this test we want to scrolls to move both the document and the
     // pinchZoomViewport so we can see some scroll component on the implTransform.
     root->setMaxScrollOffset(gfx::Vector2d(3, 4));
     m_hostImpl->setRootLayer(root.Pass());

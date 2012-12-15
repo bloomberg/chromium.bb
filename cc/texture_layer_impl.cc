@@ -19,6 +19,10 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* treeImpl, int id)
     , m_flipped(true)
     , m_uvRect(0, 0, 1, 1)
 {
+  m_vertexOpacity[0] = 1.0f;
+  m_vertexOpacity[1] = 1.0f;
+  m_vertexOpacity[2] = 1.0f;
+  m_vertexOpacity[3] = 1.0f;
 }
 
 TextureLayerImpl::~TextureLayerImpl()
@@ -44,7 +48,7 @@ void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQu
     gfx::Rect quadRect(gfx::Point(), contentBounds());
     gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped);
+    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_vertexOpacity, m_flipped);
 
     // Perform explicit clipping on a quad to avoid setting a scissor later.
     if (sharedQuadState->is_clipped && quad->PerformClipping())
@@ -70,6 +74,13 @@ void TextureLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     str->append(indentString(indent));
     base::StringAppendF(str, "texture layer texture id: %u premultiplied: %d\n", m_textureId, m_premultipliedAlpha);
     LayerImpl::dumpLayerProperties(str, indent);
+}
+
+void TextureLayerImpl::setVertexOpacity(const float vertexOpacity[4]) {
+    m_vertexOpacity[0] = vertexOpacity[0];
+    m_vertexOpacity[1] = vertexOpacity[1];
+    m_vertexOpacity[2] = vertexOpacity[2];
+    m_vertexOpacity[3] = vertexOpacity[3];
 }
 
 void TextureLayerImpl::didLoseOutputSurface()

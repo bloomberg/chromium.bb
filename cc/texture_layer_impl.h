@@ -32,6 +32,11 @@ public:
     void setFlipped(bool flipped) { m_flipped = flipped; }
     void setUVRect(const gfx::RectF& rect) { m_uvRect = rect; }
 
+    // 1--2
+    // |  |
+    // 0--3
+    void setVertexOpacity(const float vertexOpacity[4]);
+
 private:
     TextureLayerImpl(LayerTreeImpl* treeImpl, int id);
 
@@ -42,6 +47,7 @@ private:
     bool m_premultipliedAlpha;
     bool m_flipped;
     gfx::RectF m_uvRect;
+    float m_vertexOpacity[4];
 };
 
 }

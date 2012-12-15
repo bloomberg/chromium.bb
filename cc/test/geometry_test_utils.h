@@ -50,6 +50,13 @@ do { \
     EXPECT_EQ((expected).y(), (actual).y()); \
 } while (false)
 
+#define EXPECT_FLOAT_ARRAY_EQ(expected, actual, count) \
+do { \
+    for (int i = 0; i < count; i++) {\
+        EXPECT_FLOAT_EQ((expected)[i], (actual)[i]); \
+    }\
+} while (false)
+
 // This is a function rather than a macro because when this is included as a macro
 // in bulk, it causes a significant slow-down in compilation time. This problem
 // exists with both gcc and clang, and bugs have been filed at

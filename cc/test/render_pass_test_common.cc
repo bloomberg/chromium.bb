@@ -24,6 +24,7 @@ using cc::DrawQuad;
 void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProvider) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
+  const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
   cc::ResourceProvider::ResourceId texture_resource =
       resourceProvider->createResourceFromExternalTexture(1);
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
@@ -94,6 +95,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
                        texture_resource,
                        false,
                        rect,
+                       vertex_opacity,
                        false);
   AppendQuad(texture_quad.PassAs<DrawQuad>());
 

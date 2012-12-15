@@ -25,7 +25,7 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context, const gf
     struct Vertex {
         float a_position[3];
         float a_texCoord[2];
-        float a_index; // index into the matrix array for this quad
+        float a_index; // index of the vertex, divide by 4 to have the matrix for this quad
     };
     struct Quad { Vertex v0, v1, v2, v3; };
     struct QuadIndex { uint16_t data[6]; };
@@ -36,10 +36,10 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context, const gf
     Quad quad_list[8];
     QuadIndex quad_index_list[8];
     for (int i = 0; i < 8; i++) {
-        Vertex v0 = { quadVertexRect.x()    , quadVertexRect.bottom(), 0.0f,  0.0f, 1.0f, (float)i };
-        Vertex v1 = { quadVertexRect.x()    , quadVertexRect.y()     , 0.0f,  0.0f, 0.0f, (float)i };
-        Vertex v2 = { quadVertexRect.right(), quadVertexRect.y()     , 0.0f,  1.0f, 0.0f, (float)i };
-        Vertex v3 = { quadVertexRect.right(), quadVertexRect.bottom(), 0.0f,  1.0f, 1.0f, (float)i };
+        Vertex v0 = { quadVertexRect.x()    , quadVertexRect.bottom(), 0.0f,  0.0f, 1.0f, i * 4.0f + 0.0f };
+        Vertex v1 = { quadVertexRect.x()    , quadVertexRect.y()     , 0.0f,  0.0f, 0.0f, i * 4.0f + 1.0f };
+        Vertex v2 = { quadVertexRect.right(), quadVertexRect.y()     , 0.0f,  1.0f, 0.0f, i * 4.0f + 2.0f };
+        Vertex v3 = { quadVertexRect.right(), quadVertexRect.bottom(), 0.0f,  1.0f, 1.0f, i * 4.0f + 3.0f };
         Quad x = { v0, v1, v2, v3 };
         quad_list[i] = x;
         QuadIndex y = { 0 + 4 * i, 1 + 4 * i, 2 + 4 * i, 3 + 4 * i, 0 + 4 * i, 2 + 4 * i };

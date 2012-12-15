@@ -229,9 +229,10 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         const FramePlane& plane = m_framePlanes[media::VideoFrame::kRGBPlane];
         bool premultipliedAlpha = true;
         gfx::RectF uvRect(0, 0, texWidthScale, texHeightScale);
+        const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::Create();
-        textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
+        textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, plane.resourceId, premultipliedAlpha, uvRect, opacity, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
@@ -239,9 +240,10 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         // NativeTexture hardware decoder.
         bool premultipliedAlpha = true;
         gfx::RectF uvRect(0, 0, texWidthScale, texHeightScale);
+        const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::Create();
-        textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
+        textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, premultipliedAlpha, uvRect, opacity, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }

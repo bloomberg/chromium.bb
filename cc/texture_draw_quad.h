@@ -22,6 +22,7 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               unsigned resource_id,
               bool premultiplied_alpha,
               const gfx::RectF& uv_rect,
+              const float vertex_opacity[4],
               bool flipped);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -32,11 +33,13 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               unsigned resource_id,
               bool premultiplied_alpha,
               const gfx::RectF& uv_rect,
+              const float vertex_opacity[4],
               bool flipped);
 
   unsigned resource_id;
   bool premultiplied_alpha;
   gfx::RectF uv_rect;
+  float vertex_opacity[4];
   bool flipped;
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);

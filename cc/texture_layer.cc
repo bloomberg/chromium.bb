@@ -28,6 +28,10 @@ TextureLayer::TextureLayer(TextureLayerClient* client)
     , m_textureId(0)
     , m_contentCommitted(false)
 {
+  m_vertexOpacity[0] = 1.0f;
+  m_vertexOpacity[1] = 1.0f;
+  m_vertexOpacity[2] = 1.0f;
+  m_vertexOpacity[3] = 1.0f;
 }
 
 TextureLayer::~TextureLayer()
@@ -55,6 +59,21 @@ void TextureLayer::setUVRect(const gfx::RectF& rect)
 {
     m_uvRect = rect;
     setNeedsCommit();
+}
+
+void TextureLayer::setVertexOpacity(float bottomLeft,
+                                    float topLeft,
+                                    float topRight,
+                                    float bottomRight) {
+  // Indexing according to the quad vertex generation:
+  // 1--2
+  // |  |
+  // 0--3
+  m_vertexOpacity[0] = bottomLeft;
+  m_vertexOpacity[1] = topLeft;
+  m_vertexOpacity[2] = topRight;
+  m_vertexOpacity[3] = bottomRight;
+  setNeedsCommit();
 }
 
 void TextureLayer::setPremultipliedAlpha(bool premultipliedAlpha)
@@ -126,6 +145,7 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
     textureLayer->setFlipped(m_flipped);
     textureLayer->setUVRect(m_uvRect);
+    textureLayer->setVertexOpacity(m_vertexOpacity);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
     textureLayer->setTextureId(m_textureId);
     m_contentCommitted = drawsContent();
