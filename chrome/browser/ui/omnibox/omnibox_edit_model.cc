@@ -647,17 +647,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
-  // Text in the omnibox needs to be reverted in the following cases:
-  // (1) Non-instant-extended query is committed (except to a background tab,
-  //     where the query stays in the omnibox e.g. middle-click).
-  // (2) Instant-extended query is committed on a new tab (foreground or
-  //     background). Current tab should show previous, reverted query.
-  bool is_instant_extended_search = controller()->GetInstant() &&
-      controller()->GetInstant()->IsInstantExtendedSearch();
-  if ((disposition != NEW_BACKGROUND_TAB && !is_instant_extended_search) ||
-      (is_instant_extended_search &&
-          (disposition == NEW_BACKGROUND_TAB ||
-           disposition == NEW_FOREGROUND_TAB))) {
+  if (disposition != NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state
   }

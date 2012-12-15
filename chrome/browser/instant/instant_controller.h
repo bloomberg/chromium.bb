@@ -85,9 +85,6 @@ class InstantController {
   // Returns true if the Instant preview is showing a search results preview.
   bool IsPreviewingSearchResults() const;
 
-  // Returns true if an Instant-extended search is currently being done.
-  bool IsInstantExtendedSearch() const;
-
   // If the preview is showing search results, commits the preview, calling
   // CommitInstant() on the browser, and returns true. Else, returns false.
   bool CommitIfPossible(InstantCommitType type);

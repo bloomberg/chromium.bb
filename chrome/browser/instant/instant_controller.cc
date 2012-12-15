@@ -445,10 +445,6 @@ bool InstantController::IsPreviewingSearchResults() const {
          IsFullHeight(model_);
 }
 
-bool InstantController::IsInstantExtendedSearch() const {
-  return extended_enabled_  && instant_enabled_ && last_match_was_search_;
-}
-
 bool InstantController::CommitIfPossible(InstantCommitType type) {
   if (!extended_enabled_ && !instant_enabled_)
     return false;
