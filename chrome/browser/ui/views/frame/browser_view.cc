@@ -216,6 +216,10 @@ void PaintBottomBookmarkBarBackground(gfx::Canvas* canvas,
       ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment)) {
     return;
   }
+  // The tab contents height contains the view height whereas we use this value
+  // as if the two views where side by side...
+  tab_contents_height -= view->height();
+
   int tiling = ThemeService::NO_REPEAT;
   theme_provider->GetDisplayProperty(
       ThemeService::NTP_BACKGROUND_TILING, &tiling);
