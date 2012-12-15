@@ -1297,7 +1297,7 @@ ErrorCode FlashProcessPolicy(int sysno, void *) {
 }
 
 ErrorCode BlacklistDebugAndNumaPolicy(int sysno, void *) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   }
@@ -1312,7 +1312,7 @@ ErrorCode BlacklistDebugAndNumaPolicy(int sysno, void *) {
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
 ErrorCode AllowAllPolicy(int sysno, void *) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   } else {
@@ -1402,8 +1402,8 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
 void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
                             BrokerProcess* broker_process) {
 
-  Sandbox::setSandboxPolicy(syscall_policy, broker_process);
-  Sandbox::startSandbox();
+  Sandbox::SetSandboxPolicy(syscall_policy, broker_process);
+  Sandbox::StartSandbox();
 }
 
 // Initialize the seccomp-bpf sandbox.
@@ -1456,7 +1456,7 @@ bool SandboxSeccompBpf::SupportsSandbox() {
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
   // here.
   Sandbox::SandboxStatus bpf_sandbox_status =
-      Sandbox::supportsSeccompSandbox(-1);
+      Sandbox::SupportsSeccompSandbox(-1);
   // Kernel support is what we are interested in here. Other status
   // such as STATUS_UNAVAILABLE (has threads) still indicate kernel support.
   // We make this a negative check, since if there is a bug, we would rather

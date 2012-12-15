@@ -42,13 +42,83 @@ bool Verifier::VerifyBPF(const std::vector<struct sock_filter>& program,
 #endif
 #endif
     ErrorCode code = evaluate_syscall(sysnum, aux);
-    uint32_t computed_ret = EvaluateBPF(program, data, err);
+    if (!VerifyErrorCode(program, &data, code, err)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
+                               struct arch_seccomp_data *data,
+                               const ErrorCode& code, const char **err) {
+  if (code.error_type_ == ErrorCode::ET_SIMPLE ||
+      code.error_type_ == ErrorCode::ET_TRAP) {
+    uint32_t computed_ret = EvaluateBPF(program, *data, err);
     if (*err) {
       return false;
     } else if (computed_ret != code.err()) {
       *err = "Exit code from BPF program doesn't match";
       return false;
     }
+  } else if (code.error_type_ == ErrorCode::ET_COND) {
+    if (code.argno_ < 0 || code.argno_ >= 6) {
+      *err = "Invalid argument number in error code";
+      return false;
+    }
+    switch (code.op_) {
+    case ErrorCode::OP_EQUAL:
+      // Verify that we can check a 32bit value (or the LSB of a 64bit value)
+      // for equality.
+      data->args[code.argno_] = code.value_;
+      if (!VerifyErrorCode(program, data, *code.passed_, err)) {
+        return false;
+      }
+
+      // Change the value to no longer match and verify that this is detected
+      // as an inequality.
+      data->args[code.argno_] = code.value_ ^ 0x55AA55AA;
+      if (!VerifyErrorCode(program, data, *code.failed_, err)) {
+        return false;
+      }
+
+      // BPF programs can only ever operate on 32bit values. So, we have
+      // generated additional BPF instructions that inspect the MSB. Verify
+      // that they behave as intended.
+      if (code.width_ == ErrorCode::TP_32BIT) {
+        if (code.value_ >> 32) {
+          SANDBOX_DIE("Invalid comparison of a 32bit system call argument "
+                      "against a 64bit constant; this test is always false.");
+        }
+
+        // If the system call argument was intended to be a 32bit parameter,
+        // verify that it is a fatal error if a 64bit value is ever passed
+        // here.
+        data->args[code.argno_] = 0x100000000ull;
+        if (!VerifyErrorCode(program, data, Sandbox::Unexpected64bitArgument(),
+                           err)) {
+          return false;
+        }
+      } else {
+        // If the system call argument was intended to be a 64bit parameter,
+        // verify that we can handle (in-)equality for the MSB. This is
+        // essentially the same test that we did earlier for the LSB.
+        // We only need to verify the behavior of the inequality test. We
+        // know that the equality test already passed, as unlike the kernel
+        // the Verifier does operate on 64bit quantities.
+        data->args[code.argno_] = code.value_ ^ 0x55AA55AA00000000ull;
+        if (!VerifyErrorCode(program, data, *code.failed_, err)) {
+          return false;
+        }
+      }
+      break;
+    default: // TODO(markus): We can only check for equality so far.
+      *err = "Unsupported operation in conditional error code";
+      return false;
+    }
+  } else {
+    *err = "Attempting to return invalid error code from BPF program";
+    return false;
   }
   return true;
 }
@@ -74,8 +144,21 @@ uint32_t Verifier::EvaluateBPF(const std::vector<struct sock_filter>& program,
     case BPF_JMP:
       Jmp(&state, insn, err);
       break;
-    case BPF_RET:
-      return Ret(&state, insn, err);
+    case BPF_RET: {
+      uint32_t r = Ret(&state, insn, err);
+      switch (r & SECCOMP_RET_ACTION) {
+      case SECCOMP_RET_TRAP:
+      case SECCOMP_RET_ERRNO:
+      case SECCOMP_RET_ALLOW:
+        break;
+      case SECCOMP_RET_KILL:     // We don't ever generate this
+      case SECCOMP_RET_TRACE:    // We don't ever generate this
+      case SECCOMP_RET_INVALID:  // Should never show up in BPF program
+      default:
+        *err = "Unexpected return code found in BPF program";
+        return 0;
+      }
+      return r; }
     default:
       *err = "Unexpected instruction in BPF program";
       break;

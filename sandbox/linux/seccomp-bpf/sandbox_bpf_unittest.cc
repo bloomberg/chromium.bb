@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +27,7 @@ TEST(SandboxBpf, CallSupports) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
   bool seccomp_bpf_supported =
-      Sandbox::supportsSeccompSandbox(-1) == Sandbox::STATUS_AVAILABLE;
+      Sandbox::SupportsSeccompSandbox(-1) == Sandbox::STATUS_AVAILABLE;
   // We want to log whether or not seccomp BPF is actually supported
   // since actual test coverage depends on it.
   RecordProperty("SeccompBPFSupported",
@@ -39,8 +40,8 @@ TEST(SandboxBpf, CallSupports) {
 }
 
 SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
-  Sandbox::supportsSeccompSandbox(-1);
-  Sandbox::supportsSeccompSandbox(-1);
+  Sandbox::SupportsSeccompSandbox(-1);
+  Sandbox::SupportsSeccompSandbox(-1);
 }
 
 // BPF_TEST does a lot of the boiler-plate code around setting up a
@@ -57,7 +58,7 @@ intptr_t FakeGetPid(const struct arch_seccomp_data& args, void *aux) {
 }
 
 ErrorCode VerboseAPITestingPolicy(int sysno, void *aux) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   } else if (sysno == __NR_getpid) {
     return Sandbox::Trap(FakeGetPid, aux);
@@ -67,11 +68,11 @@ ErrorCode VerboseAPITestingPolicy(int sysno, void *aux) {
 }
 
 SANDBOX_TEST(SandboxBpf, VerboseAPITesting) {
-  if (Sandbox::supportsSeccompSandbox(-1) ==
+  if (Sandbox::SupportsSeccompSandbox(-1) ==
       playground2::Sandbox::STATUS_AVAILABLE) {
     pid_t test_var = 0;
-    playground2::Sandbox::setSandboxPolicy(VerboseAPITestingPolicy, &test_var);
-    playground2::Sandbox::startSandbox();
+    playground2::Sandbox::SetSandboxPolicy(VerboseAPITestingPolicy, &test_var);
+    playground2::Sandbox::StartSandbox();
 
     BPF_ASSERT(test_var == 0);
     BPF_ASSERT(syscall(__NR_getpid) == 0);
@@ -88,7 +89,7 @@ SANDBOX_TEST(SandboxBpf, VerboseAPITesting) {
 // A simple blacklist test
 
 ErrorCode BlacklistNanosleepPolicy(int sysno, void *) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
@@ -142,7 +143,7 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
 }
 
 ErrorCode BlacklistNanosleepPolicySigsys(int sysno, void *aux) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
@@ -188,7 +189,7 @@ int SysnoToRandomErrno(int sysno) {
 }
 
 ErrorCode SyntheticPolicy(int sysno, void *) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
@@ -246,7 +247,7 @@ int ArmPrivateSysnoToErrno(int sysno) {
 }
 
 ErrorCode ArmPrivatePolicy(int sysno, void *) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   }
@@ -308,7 +309,7 @@ ErrorCode GreyListedPolicy(int sysno, void *aux) {
   } else if (sysno == __NR_getpid) {
     // Disallow getpid()
     return ErrorCode(EPERM);
-  } else if (Sandbox::isValidSyscallNumber(sysno)) {
+  } else if (Sandbox::IsValidSyscallNumber(sysno)) {
     // Allow (and count) all other system calls.
       return Sandbox::UnsafeTrap(CountSyscalls, aux);
   } else {
@@ -347,7 +348,7 @@ ErrorCode PrctlPolicy(int sysno, void *aux) {
   if (sysno == __NR_prctl) {
     // Handle prctl() inside an UnsafeTrap()
     return Sandbox::UnsafeTrap(PrctlHandler, NULL);
-  } else if (Sandbox::isValidSyscallNumber(sysno)) {
+  } else if (Sandbox::IsValidSyscallNumber(sysno)) {
     // Allow all other system calls.
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   } else {
@@ -397,7 +398,7 @@ ErrorCode RedirectAllSyscallsPolicy(int sysno, void *aux) {
 #endif
       ) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
-  } else if (Sandbox::isValidSyscallNumber(sysno)) {
+  } else if (Sandbox::IsValidSyscallNumber(sysno)) {
     return Sandbox::UnsafeTrap(AllowRedirectedSyscall, aux);
   } else {
     return ErrorCode(ENOSYS);
@@ -529,7 +530,7 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
 
 ErrorCode DenyOpenPolicy(int sysno, void *aux) {
   InitializedOpenBroker* iob = static_cast<InitializedOpenBroker*>(aux);
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
 
@@ -579,5 +580,384 @@ BPF_TEST(SandboxBpf, UseOpenBroker, DenyOpenPolicy,
   char buf[1024];
   BPF_ASSERT(read(cpu_info_fd, buf, sizeof(buf)) > 0);
 }
+
+// This test exercises the Sandbox::Cond() method by building a complex
+// tree of conditional equality operations. It then makes system calls and
+// verifies that they return the values that we expected from our BPF
+// program.
+class EqualityStressTest {
+ public:
+  EqualityStressTest() {
+    // We want a deterministic test
+    srand(0);
+
+    // Iterates over system call numbers and builds a random tree of
+    // equality tests.
+    // We are actually constructing a graph of ArgValue objects. This
+    // graph will later be used to a) compute our sandbox policy, and
+    // b) drive the code that verifies the output from the BPF program.
+    COMPILE_ASSERT(kNumTestCases < (int)(MAX_PUBLIC_SYSCALL-MIN_SYSCALL-10),
+           num_test_cases_must_be_significantly_smaller_than_num_system_calls);
+    for (int sysno = MIN_SYSCALL, end = kNumTestCases; sysno < end; ++sysno) {
+      if (IsReservedSyscall(sysno)) {
+        // Skip reserved system calls. This ensures that our test frame
+        // work isn't impacted by the fact that we are overriding
+        // a lot of different system calls.
+        ++end;
+        arg_values_.push_back(NULL);
+      } else {
+        arg_values_.push_back(RandomArgValue(rand() % kMaxArgs, 0,
+                                             rand() % kMaxArgs));
+      }
+    }
+  }
+
+  ~EqualityStressTest() {
+    for (std::vector<ArgValue *>::iterator iter = arg_values_.begin();
+         iter != arg_values_.end();
+         ++iter) {
+      DeleteArgValue(*iter);
+    }
+  }
+
+  ErrorCode Policy(int sysno) {
+    if (!Sandbox::IsValidSyscallNumber(sysno)) {
+      // FIXME: we should really not have to do that in a trivial policy
+      return ErrorCode(ENOSYS);
+    } else if (sysno < 0 || sysno >= (int)arg_values_.size() ||
+               IsReservedSyscall(sysno)) {
+      // We only return ErrorCode values for the system calls that
+      // are part of our test data. Every other system call remains
+      // allowed.
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+    } else {
+      // ToErrorCode() turns an ArgValue object into an ErrorCode that is
+      // suitable for use by a sandbox policy.
+      return ToErrorCode(arg_values_[sysno]);
+    }
+  }
+
+  void VerifyFilter() {
+    // Iterate over all system calls. Skip the system calls that have
+    // previously been determined as being reserved.
+    for (int sysno = 0; sysno < (int)arg_values_.size(); ++sysno) {
+      if (!arg_values_[sysno]) {
+        // Skip reserved system calls.
+        continue;
+      }
+      // Verify that system calls return the values that we expect them to
+      // return. This involves passing different combinations of system call
+      // parameters in order to exercise all possible code paths through the
+      // BPF filter program.
+      // We arbitrarily start by setting all six system call arguments to
+      // zero. And we then recursive traverse our tree of ArgValues to
+      // determine the necessary combinations of parameters.
+      intptr_t args[6] = { };
+      Verify(sysno, args, *arg_values_[sysno]);
+    }
+  }
+
+ private:
+  struct ArgValue {
+    int argno;                     // Argument number to inspect.
+    int size;                      // Number of test cases (must be > 0).
+    struct Tests {
+      uint32_t k_value;            // Value to compare syscall arg against.
+      int      err;                // If non-zero, errno value to return.
+      struct ArgValue *arg_value;  // Otherwise, more args needs inspecting.
+    } *tests;
+    int err;                       // If none of the tests passed, this is what
+    struct ArgValue *arg_value;    // we'll return (this is the "else" branch).
+  };
+
+  bool IsReservedSyscall(int sysno) {
+    // There are a handful of system calls that we should never use in our
+    // test cases. These system calls are needed to allow the test framework
+    // to run properly.
+    // If we wanted to write fully generic code, there are more system calls
+    // that could be listed here, and it is quite difficult to come up with a
+    // truly comprehensive list. After all, we are deliberately making system
+    // calls unavailable. In practice, we have a pretty good idea of the system
+    // calls that will be made by this particular test. So, this small list is
+    // sufficient. But if anybody copy'n'pasted this code for other uses, they
+    // would have to review that the list.
+    return sysno == __NR_read       ||
+           sysno == __NR_write      ||
+           sysno == __NR_exit       ||
+           sysno == __NR_exit_group ||
+           sysno == __NR_restart_syscall;
+  }
+
+  ArgValue *RandomArgValue(int argno, int args_mask, int remaining_args) {
+    // Create a new ArgValue and fill it with random data. We use as bit mask
+    // to keep track of the system call parameters that have previously been
+    // set; this ensures that we won't accidentally define a contradictory
+    // set of equality tests.
+    struct ArgValue *arg_value = new ArgValue();
+    args_mask        |= 1 << argno;
+    arg_value->argno  = argno;
+
+    // Apply some restrictions on just how complex our tests can be.
+    // Otherwise, we end up with a BPF program that is too complicated for
+    // the kernel to load.
+    int fan_out       = kMaxFanOut;
+    if (remaining_args > 3) {
+      fan_out         = 1;
+    } else if (remaining_args > 2) {
+      fan_out         = 2;
+    }
+
+    // Create a couple of different test cases with randomized values that
+    // we want to use when comparing system call parameter number "argno".
+    arg_value->size   = rand() % fan_out + 1;
+    arg_value->tests  = new ArgValue::Tests[arg_value->size];
+
+    uint32_t k_value  = rand();
+    for (int n = 0; n < arg_value->size; ++n) {
+      // Ensure that we have unique values
+      k_value += rand() % (RAND_MAX/(kMaxFanOut+1)) + 1;
+
+      // There are two possible types of nodes. Either this is a leaf node;
+      // in that case, we have completed all the equality tests that we
+      // wanted to perform, and we can now compute a random "errno" value that
+      // we should return. Or this is part of a more complex boolean
+      // expression; in that case, we have to recursively add tests for some
+      // of system call parameters that we have not yet included in our
+      // tests.
+      arg_value->tests[n].k_value = k_value;
+      if (!remaining_args || (rand() & 1)) {
+        arg_value->tests[n].err = (rand() % 1000) + 1;
+        arg_value->tests[n].arg_value = NULL;
+      } else {
+        arg_value->tests[n].err = 0;
+        arg_value->tests[n].arg_value =
+          RandomArgValue(RandomArg(args_mask), args_mask, remaining_args - 1);
+      }
+    }
+    // Finally, we have to define what we should return if none of the
+    // previous equality tests pass. Again, we can either deal with a leaf
+    // node, or we can randomly add another couple of tests.
+    if (!remaining_args || (rand() & 1)) {
+      arg_value->err = (rand() % 1000) + 1;
+      arg_value->arg_value = NULL;
+    } else {
+      arg_value->err = 0;
+      arg_value->arg_value =
+        RandomArgValue(RandomArg(args_mask), args_mask, remaining_args - 1);
+    }
+    // We have now built a new (sub-)tree of ArgValues defining a set of
+    // boolean expressions for testing random system call arguments against
+    // random values. Return this tree to our caller.
+    return arg_value;
+  }
+
+  int RandomArg(int args_mask) {
+    // Compute a random system call parameter number.
+    int argno = rand() % kMaxArgs;
+
+    // Make sure that this same parameter number has not previously been
+    // used. Otherwise, we could end up with a test that is impossible to
+    // satisfy (e.g. args[0] == 1 && args[0] == 2).
+    while (args_mask & (1 << argno)) {
+      argno = (argno + 1) % kMaxArgs;
+    }
+    return argno;
+  }
+
+  void DeleteArgValue(ArgValue *arg_value) {
+    // Delete an ArgValue and all of its child nodes. This requires
+    // recursively descending into the tree.
+    if (arg_value) {
+      if (arg_value->size) {
+        for (int n = 0; n < arg_value->size; ++n) {
+          if (!arg_value->tests[n].err) {
+            DeleteArgValue(arg_value->tests[n].arg_value);
+          }
+        }
+        delete[] arg_value->tests;
+      }
+      if (!arg_value->err) {
+        DeleteArgValue(arg_value->arg_value);
+      }
+      delete arg_value;
+    }
+  }
+
+  ErrorCode ToErrorCode(ArgValue *arg_value) {
+    // Compute the ErrorCode that should be returned, if none of our
+    // tests succeed (i.e. the system call parameter doesn't match any
+    // of the values in arg_value->tests[].k_value).
+    ErrorCode err;
+    if (arg_value->err) {
+      // If this was a leaf node, return the errno value that we expect to
+      // return from the BPF filter program.
+      err = ErrorCode(arg_value->err);
+    } else {
+      // If this wasn't a leaf node yet, recursively descend into the rest
+      // of the tree. This will end up adding a few more Sandbox::Cond()
+      // tests to our ErrorCode.
+      err = ToErrorCode(arg_value->arg_value);
+    }
+
+    // Now, iterate over all the test cases that we want to compare against.
+    // This builds a chain of Sandbox::Cond() tests
+    // (aka "if ... elif ... elif ... elif ... fi")
+    for (int n = arg_value->size; n-- > 0; ) {
+      ErrorCode matched;
+      // Again, we distinguish between leaf nodes and subtrees.
+      if (arg_value->tests[n].err) {
+        matched = ErrorCode(arg_value->tests[n].err);
+      } else {
+        matched = ToErrorCode(arg_value->tests[n].arg_value);
+      }
+      // For now, all of our tests are limited to 32bit.
+      // We have separate tests that check the behavior of 32bit vs. 64bit
+      // conditional expressions.
+      err = Sandbox::Cond(arg_value->argno, ErrorCode::TP_32BIT,
+                          ErrorCode::OP_EQUAL, arg_value->tests[n].k_value,
+                          matched, err);
+    }
+    return err;
+  }
+
+  void Verify(int sysno, intptr_t *args, const ArgValue& arg_value) {
+    uint32_t mismatched = 0;
+    // Iterate over all the k_values in arg_value.tests[] and verify that
+    // we see the expected return values from system calls, when we pass
+    // the k_value as a parameter in a system call.
+    for (int n = arg_value.size; n-- > 0; ) {
+      mismatched += arg_value.tests[n].k_value;
+      args[arg_value.argno] = arg_value.tests[n].k_value;
+      if (arg_value.tests[n].err) {
+        VerifyErrno(sysno, args, arg_value.tests[n].err);
+      } else {
+        Verify(sysno, args, *arg_value.tests[n].arg_value);
+      }
+    }
+    // Find a k_value that doesn't match any of the k_values in
+    // arg_value.tests[]. In most cases, the current value of "mismatched"
+    // would fit this requirement. But on the off-chance that it happens
+    // to collide, we double-check.
+  try_again:
+    for (int n = arg_value.size; n-- > 0; ) {
+      if (mismatched == arg_value.tests[n].k_value) {
+        ++mismatched;
+        goto try_again;
+      }
+    }
+    // Now verify that we see the expected return value from system calls,
+    // if we pass a value that doesn't match any of the conditions (i.e. this
+    // is testing the "else" clause of the conditions).
+    args[arg_value.argno] = mismatched;
+    if (arg_value.err) {
+      VerifyErrno(sysno, args, arg_value.err);
+    } else {
+      Verify(sysno, args, *arg_value.arg_value);
+    }
+    // Reset args[arg_value.argno]. This is not technically needed, but it
+    // makes it easier to reason about the correctness of our tests.
+    args[arg_value.argno] = 0;
+  }
+
+  void VerifyErrno(int sysno, intptr_t *args, int err) {
+    // We installed BPF filters that return different errno values
+    // based on the system call number and the parameters that we decided
+    // to pass in. Verify that this condition holds true.
+    BPF_ASSERT(SandboxSyscall(sysno,
+                              args[0], args[1], args[2],
+                              args[3], args[4], args[5]) == -err);
+  }
+
+  // Vector of ArgValue trees. These trees define all the possible boolean
+  // expressions that we want to turn into a BPF filter program.
+  std::vector<ArgValue *> arg_values_;
+
+  // Don't increase these values. We are pushing the limits of the maximum
+  // BPF program that the kernel will allow us to load. If the values are
+  // increased too much, the test will start failing.
+  static const int kNumIterations = 3;
+  static const int kNumTestCases = 40;
+  static const int kMaxFanOut = 3;
+  static const int kMaxArgs = 6;
+};
+
+ErrorCode EqualityStressTestPolicy(int sysno, void *aux) {
+  return reinterpret_cast<EqualityStressTest *>(aux)->Policy(sysno);
+}
+
+BPF_TEST(SandboxBpf, EqualityTests, EqualityStressTestPolicy,
+         EqualityStressTest /* BPF_AUX */) {
+  BPF_AUX.VerifyFilter();
+}
+
+ErrorCode EqualityArgumentWidthPolicy(int sysno, void *) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+    // FIXME: we should really not have to do that in a trivial policy
+    return ErrorCode(ENOSYS);
+  } else if (sysno == __NR_uname) {
+    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 0,
+           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         0x55555555, ErrorCode(1), ErrorCode(2)),
+           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL,
+                         0x55555555AAAAAAAAull, ErrorCode(1), ErrorCode(2)));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+BPF_TEST(SandboxBpf, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 0, 0x55555555) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 0, 0xAAAAAAAA) == -2);
+#if __SIZEOF_POINTER__ > 4
+  // On 32bit machines, there is no way to pass a 64bit argument through the
+  // syscall interface. So, we have to skip the part of the test that requires
+  // 64bit arguments.
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x55555555AAAAAAAAull) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555500000000ull) == -2);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555511111111ull) == -2);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x11111111AAAAAAAAull) == -2);
+#endif
+}
+
+#if __SIZEOF_POINTER__ > 4
+// On 32bit machines, there is no way to pass a 64bit argument through the
+// syscall interface. So, we have to skip the part of the test that requires
+// 64bit arguments.
+BPF_DEATH_TEST(SandboxBpf, EqualityArgumentUnallowed64bit,
+               DEATH_MESSAGE("Unexpected 64bit argument detected"),
+               EqualityArgumentWidthPolicy) {
+  SandboxSyscall(__NR_uname, 0, 0x5555555555555555ull);
+}
+#endif
+
+ErrorCode EqualityWithNegativeArgumentsPolicy(int sysno, void *) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+    // FIXME: we should really not have to do that in a trivial policy
+    return ErrorCode(ENOSYS);
+  } else if (sysno == __NR_uname) {
+    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         0xFFFFFFFF, ErrorCode(1), ErrorCode(2));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+BPF_TEST(SandboxBpf, EqualityWithNegativeArguments,
+         EqualityWithNegativeArgumentsPolicy) {
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, -1) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, -1ll) == -1);
+}
+
+#if __SIZEOF_POINTER__ > 4
+BPF_DEATH_TEST(SandboxBpf, EqualityWithNegative64bitArguments,
+               DEATH_MESSAGE("Unexpected 64bit argument detected"),
+               EqualityWithNegativeArgumentsPolicy) {
+  // When expecting a 32bit system call argument, we look at the MSB of the
+  // 64bit value and allow both "0" and "-1". But the latter is allowed only
+  // iff the LSB was negative. So, this death test should error out.
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF00000000ll) == -1);
+}
+#endif
 
 } // namespace

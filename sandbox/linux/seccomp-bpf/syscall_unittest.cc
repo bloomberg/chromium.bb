@@ -78,7 +78,7 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void *aux) {
 }
 
 ErrorCode CopyAllArgsOnUnamePolicy(int sysno, void *aux) {
-  if (!Sandbox::isValidSyscallNumber(sysno)) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
   if (sysno == __NR_uname) {

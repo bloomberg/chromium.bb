@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <base/logging.h>
-
 namespace playground2 {
 
 // Iterates over the entire system call range from 0..0xFFFFFFFFu. This
@@ -49,7 +47,7 @@ class SyscallIterator {
   bool     done_;
   uint32_t num_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyscallIterator);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SyscallIterator);
 };
 
 }  // namespace playground2

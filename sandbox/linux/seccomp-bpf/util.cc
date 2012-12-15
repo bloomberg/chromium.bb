@@ -17,7 +17,7 @@
 
 namespace playground2 {
 
-bool Util::sendFds(int transport, const void *buf, size_t len, ...) {
+bool Util::SendFds(int transport, const void *buf, size_t len, ...) {
   int count = 0;
   va_list ap;
   va_start(ap, len);
@@ -55,7 +55,7 @@ bool Util::sendFds(int transport, const void *buf, size_t len, ...) {
       static_cast<ssize_t>(sizeof(dummy) + ((buf && len > 0) ? len : 0));
 }
 
-bool Util::getFds(int transport, void *buf, size_t *len, ...) {
+bool Util::GetFds(int transport, void *buf, size_t *len, ...) {
   int count = 0;
   va_list ap;
   va_start(ap, len);
@@ -115,7 +115,7 @@ bool Util::getFds(int transport, void *buf, size_t *len, ...) {
   return true;
 }
 
-void Util::closeAllBut(int fd, ...) {
+void Util::CloseAllBut(int fd, ...) {
   int proc_fd;
   int fdir;
   if ((proc_fd = Sandbox::proc_fd()) < 0 ||

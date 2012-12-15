@@ -2,24 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <endian.h>
-#if __BYTE_ORDER == __BIG_ENDIAN
-// The BPF "struct seccomp_data" layout has to deal with storing 64bit
-// values that need to be inspected by a virtual machine that only ever
-// operates on 32bit values. The kernel developers decided how values
-// should be split into two 32bit words to achieve this goal. But at this
-// time, there is no existing BPF implementation in the kernel that uses
-// 64bit big endian values. So, all we have to go by is the consensus
-// from a discussion on LKLM. Actual implementations, if and when they
-// happen, might very well differ.
-// If this code is ever going to be used with such a kernel, you should
-// disable the "#error" and carefully test the code (e.g. run the unit
-// tests). If things don't work, search for all occurrences of __BYTE_ORDER
-// and verify that the proposed implementation agrees with what the kernel
-// actually does.
-#error Big endian operation is untested and expected to be broken
-#endif
-
 #ifndef SECCOMP_BPF_STANDALONE
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -79,7 +61,7 @@ const int kExpectedExitCode = 100;
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.
-ErrorCode Sandbox::probeEvaluator(int sysnum, void *) {
+ErrorCode Sandbox::ProbeEvaluator(int sysnum, void *) {
   switch (sysnum) {
   case __NR_getpid:
     // Return EPERM so that we can check that the filter actually ran.
@@ -93,24 +75,24 @@ ErrorCode Sandbox::probeEvaluator(int sysnum, void *) {
   }
 }
 
-void Sandbox::probeProcess(void) {
+void Sandbox::ProbeProcess(void) {
   if (syscall(__NR_getpid) < 0 && errno == EPERM) {
     syscall(__NR_exit_group, static_cast<intptr_t>(kExpectedExitCode));
   }
 }
 
-bool Sandbox::isValidSyscallNumber(int sysnum) {
+bool Sandbox::IsValidSyscallNumber(int sysnum) {
   return SyscallIterator::IsValid(sysnum);
 }
 
-ErrorCode Sandbox::allowAllEvaluator(int sysnum, void *) {
-  if (!isValidSyscallNumber(sysnum)) {
+ErrorCode Sandbox::AllowAllEvaluator(int sysnum, void *) {
+  if (!IsValidSyscallNumber(sysnum)) {
     return ErrorCode(ENOSYS);
   }
   return ErrorCode(ErrorCode::ERR_ALLOWED);
 }
 
-void Sandbox::tryVsyscallProcess(void) {
+void Sandbox::TryVsyscallProcess(void) {
   time_t current_time;
   // time() is implemented as a vsyscall. With an older glibc, with
   // vsyscall=emulate and some versions of the seccomp BPF patch
@@ -120,15 +102,15 @@ void Sandbox::tryVsyscallProcess(void) {
   }
 }
 
-bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
-                                  EvaluateSyscall syscallEvaluator,
+bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
+                                  EvaluateSyscall syscall_evaluator,
                                   void *aux,
                                   int proc_fd) {
   // Block all signals before forking a child process. This prevents an
   // attacker from manipulating our test by sending us an unexpected signal.
-  sigset_t oldMask, newMask;
-  if (sigfillset(&newMask) ||
-      sigprocmask(SIG_BLOCK, &newMask, &oldMask)) {
+  sigset_t old_mask, new_mask;
+  if (sigfillset(&new_mask) ||
+      sigprocmask(SIG_BLOCK, &new_mask, &old_mask)) {
     SANDBOX_DIE("sigprocmask() failed");
   }
   int fds[2];
@@ -148,7 +130,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     // But what we don't want to do is return "false", as a crafty
     // attacker might cause fork() to fail at will and could trick us
     // into running without a sandbox.
-    sigprocmask(SIG_SETMASK, &oldMask, NULL);  // OK, if it fails
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);  // OK, if it fails
     SANDBOX_DIE("fork() failed unexpectedly");
   }
 
@@ -191,18 +173,18 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     }
 
     evaluators_.clear();
-    setSandboxPolicy(syscallEvaluator, aux);
-    setProcFd(proc_fd);
+    SetSandboxPolicy(syscall_evaluator, aux);
+    set_proc_fd(proc_fd);
 
     // By passing "quiet=true" to "startSandboxInternal()" we suppress
     // messages for expected and benign failures (e.g. if the current
     // kernel lacks support for BPF filters).
-    startSandboxInternal(true);
+    StartSandboxInternal(true);
 
     // Run our code in the sandbox.
-    CodeInSandbox();
+    code_in_sandbox();
 
-    // CodeInSandbox() is not supposed to return here.
+    // code_in_sandbox() is not supposed to return here.
     SANDBOX_DIE(NULL);
   }
 
@@ -210,7 +192,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
   if (HANDLE_EINTR(close(fds[1]))) {
     SANDBOX_DIE("close() failed");
   }
-  if (sigprocmask(SIG_SETMASK, &oldMask, NULL)) {
+  if (sigprocmask(SIG_SETMASK, &old_mask, NULL)) {
     SANDBOX_DIE("sigprocmask() failed");
   }
   int status;
@@ -242,7 +224,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
   return rc;
 }
 
-bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
+bool Sandbox::KernelSupportSeccompBPF(int proc_fd) {
 #if defined(SECCOMP_BPF_VALGRIND_HACKS)
   if (RUNNING_ON_VALGRIND) {
     // Valgrind doesn't like our run-time test. Disable testing and assume we
@@ -253,12 +235,12 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
 #endif
 
   return
-    RunFunctionInPolicy(probeProcess, Sandbox::probeEvaluator, 0, proc_fd) &&
-    RunFunctionInPolicy(tryVsyscallProcess, Sandbox::allowAllEvaluator, 0,
+    RunFunctionInPolicy(ProbeProcess, Sandbox::ProbeEvaluator, 0, proc_fd) &&
+    RunFunctionInPolicy(TryVsyscallProcess, Sandbox::AllowAllEvaluator, 0,
                         proc_fd);
 }
 
-Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
+Sandbox::SandboxStatus Sandbox::SupportsSeccompSandbox(int proc_fd) {
   // It the sandbox is currently active, we clearly must have support for
   // sandboxing.
   if (status_ == STATUS_ENABLED) {
@@ -268,13 +250,13 @@ Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
   // Even if the sandbox was previously available, something might have
   // changed in our run-time environment. Check one more time.
   if (status_ == STATUS_AVAILABLE) {
-    if (!isSingleThreaded(proc_fd)) {
+    if (!IsSingleThreaded(proc_fd)) {
       status_ = STATUS_UNAVAILABLE;
     }
     return status_;
   }
 
-  if (status_ == STATUS_UNAVAILABLE && isSingleThreaded(proc_fd)) {
+  if (status_ == STATUS_UNAVAILABLE && IsSingleThreaded(proc_fd)) {
     // All state transitions resulting in STATUS_UNAVAILABLE are immediately
     // preceded by STATUS_AVAILABLE. Furthermore, these transitions all
     // happen, if and only if they are triggered by the process being multi-
@@ -290,25 +272,25 @@ Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
   // we otherwise don't believe to have a good cached value, we have to
   // perform a thorough check now.
   if (status_ == STATUS_UNKNOWN) {
-    status_ = kernelSupportSeccompBPF(proc_fd)
+    status_ = KernelSupportSeccompBPF(proc_fd)
       ? STATUS_AVAILABLE : STATUS_UNSUPPORTED;
 
     // As we are performing our tests from a child process, the run-time
     // environment that is visible to the sandbox is always guaranteed to be
     // single-threaded. Let's check here whether the caller is single-
     // threaded. Otherwise, we mark the sandbox as temporarily unavailable.
-    if (status_ == STATUS_AVAILABLE && !isSingleThreaded(proc_fd)) {
+    if (status_ == STATUS_AVAILABLE && !IsSingleThreaded(proc_fd)) {
       status_ = STATUS_UNAVAILABLE;
     }
   }
   return status_;
 }
 
-void Sandbox::setProcFd(int proc_fd) {
+void Sandbox::set_proc_fd(int proc_fd) {
   proc_fd_ = proc_fd;
 }
 
-void Sandbox::startSandboxInternal(bool quiet) {
+void Sandbox::StartSandboxInternal(bool quiet) {
   if (status_ == STATUS_UNSUPPORTED || status_ == STATUS_UNAVAILABLE) {
     SANDBOX_DIE("Trying to start sandbox, even though it is known to be "
                 "unavailable");
@@ -323,7 +305,7 @@ void Sandbox::startSandboxInternal(bool quiet) {
     // For now, continue in degraded mode, if we can't access /proc.
     // In the future, we might want to tighten this requirement.
   }
-  if (!isSingleThreaded(proc_fd_)) {
+  if (!IsSingleThreaded(proc_fd_)) {
     SANDBOX_DIE("Cannot start sandbox, if process is already multi-threaded");
   }
 
@@ -338,13 +320,13 @@ void Sandbox::startSandboxInternal(bool quiet) {
   }
 
   // Install the filters.
-  installFilter(quiet);
+  InstallFilter(quiet);
 
   // We are now inside the sandbox.
   status_ = STATUS_ENABLED;
 }
 
-bool Sandbox::isSingleThreaded(int proc_fd) {
+bool Sandbox::IsSingleThreaded(int proc_fd) {
   if (proc_fd < 0) {
     // Cannot determine whether program is single-threaded. Hope for
     // the best...
@@ -365,17 +347,17 @@ bool Sandbox::isSingleThreaded(int proc_fd) {
   return true;
 }
 
-bool Sandbox::isDenied(const ErrorCode& code) {
+bool Sandbox::IsDenied(const ErrorCode& code) {
   return (code.err() & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP ||
          (code.err() >= (SECCOMP_RET_ERRNO + ErrorCode::ERR_MIN_ERRNO) &&
           code.err() <= (SECCOMP_RET_ERRNO + ErrorCode::ERR_MAX_ERRNO));
 }
 
-void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
+void Sandbox::PolicySanityChecks(EvaluateSyscall syscall_evaluator,
                                  void *aux) {
   for (SyscallIterator iter(true); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    if (!isDenied(syscallEvaluator(sysnum, aux))) {
+    if (!IsDenied(syscall_evaluator(sysnum, aux))) {
       SANDBOX_DIE("Policies should deny system calls that are outside the "
                   "expected range (typically MIN_SYSCALL..MAX_SYSCALL)");
     }
@@ -386,8 +368,8 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
 void Sandbox::CheckForUnsafeErrorCodes(Instruction *insn, void *aux) {
   if (BPF_CLASS(insn->code) == BPF_RET &&
       insn->k >  SECCOMP_RET_TRAP &&
-      insn->k - SECCOMP_RET_TRAP <= trapArraySize_) {
-    const ErrorCode& err = trapArray_[insn->k - SECCOMP_RET_TRAP - 1];
+      insn->k - SECCOMP_RET_TRAP <= trap_array_size_) {
+    const ErrorCode& err = trap_array_[insn->k - SECCOMP_RET_TRAP - 1];
     if (!err.safe_) {
       bool *is_unsafe = static_cast<bool *>(aux);
       *is_unsafe = true;
@@ -395,7 +377,7 @@ void Sandbox::CheckForUnsafeErrorCodes(Instruction *insn, void *aux) {
   }
 }
 
-void Sandbox::RedirectToUserspace(Instruction *insn, void *aux) {
+void Sandbox::RedirectToUserspace(Instruction *insn, void *) {
   // When inside an UnsafeTrap() callback, we want to allow all system calls.
   // This means, we must conditionally disable the sandbox -- and that's not
   // something that kernel-side BPF filters can do, as they cannot inspect
@@ -425,15 +407,15 @@ ErrorCode Sandbox::RedirectToUserspaceEvalWrapper(int sysnum, void *aux) {
   return err;
 }
 
-void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator, void *aux) {
+void Sandbox::SetSandboxPolicy(EvaluateSyscall syscall_evaluator, void *aux) {
   if (status_ == STATUS_ENABLED) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");
   }
-  policySanityChecks(syscallEvaluator, aux);
-  evaluators_.push_back(std::make_pair(syscallEvaluator, aux));
+  PolicySanityChecks(syscall_evaluator, aux);
+  evaluators_.push_back(std::make_pair(syscall_evaluator, aux));
 }
 
-void Sandbox::installFilter(bool quiet) {
+void Sandbox::InstallFilter(bool quiet) {
   // Verify that the user pushed a policy.
   if (evaluators_.empty()) {
   filter_failed:
@@ -443,7 +425,7 @@ void Sandbox::installFilter(bool quiet) {
   // Set new SIGSYS handler
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
-  sa.sa_sigaction = sigSys;
+  sa.sa_sigaction = SigSys;
   sa.sa_flags = SA_SIGINFO | SA_NODEFER;
   if (sigaction(SIGSYS, &sa, NULL) < 0) {
     goto filter_failed;
@@ -473,24 +455,22 @@ void Sandbox::installFilter(bool quiet) {
   // system call.
   Instruction *tail;
   Instruction *head =
-    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                         offsetof(struct arch_seccomp_data, arch),
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS, SECCOMP_ARCH_IDX,
   tail =
     gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH,
                          NULL,
     gen->MakeInstruction(BPF_RET+BPF_K,
-                         Kill(
-                           "Invalid audit architecture in BPF filter").err_)));
+                         Kill("Invalid audit architecture in BPF filter"))));
 
   {
     // Evaluate all possible system calls and group their ErrorCodes into
     // ranges of identical codes.
     Ranges ranges;
-    findRanges(&ranges);
+    FindRanges(&ranges);
 
     // Compile the system call ranges to an optimized BPF jumptable
     Instruction *jumptable =
-      assembleJumpTable(gen, ranges.begin(), ranges.end());
+      AssembleJumpTable(gen, ranges.begin(), ranges.end());
 
     // If there is at least one UnsafeTrap() in our program, the entire sandbox
     // is unsafe. We need to modify the program so that all non-
@@ -502,8 +482,7 @@ void Sandbox::installFilter(bool quiet) {
 
     // Grab the system call number, so that we can implement jump tables.
     Instruction *load_nr =
-      gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                           offsetof(struct arch_seccomp_data, nr));
+      gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS, SECCOMP_NR_IDX);
 
     // If our BPF program has unsafe jumps, enable support for them. This
     // test happens very early in the BPF filter program. Even before we
@@ -550,21 +529,14 @@ void Sandbox::installFilter(bool quiet) {
 #endif
 
       // BPF cannot do native 64bit comparisons. On 64bit architectures, we
-      // have to compare both 32bit halfs of the instruction pointer. If they
+      // have to compare both 32bit halves of the instruction pointer. If they
       // match what we expect, we return ERR_ALLOWED. If either or both don't
       // match, we continue evalutating the rest of the sandbox policy.
       Instruction *escape_hatch =
-        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                             offsetof(struct arch_seccomp_data,
-                                      instruction_pointer) +
-                             (__SIZEOF_POINTER__ > 4 &&
-                              __BYTE_ORDER == __BIG_ENDIAN ? 4 : 0),
+        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS, SECCOMP_IP_LSB_IDX,
         gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, low,
 #if __SIZEOF_POINTER__ > 4
-        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                             offsetof(struct arch_seccomp_data,
-                                      instruction_pointer) +
-                             (__BYTE_ORDER == __BIG_ENDIAN ? 0 : 4),
+        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS, SECCOMP_IP_MSB_IDX,
         gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, hi,
 #endif
         gen->MakeInstruction(BPF_RET+BPF_K, ErrorCode(ErrorCode::ERR_ALLOWED)),
@@ -646,6 +618,7 @@ void Sandbox::installFilter(bool quiet) {
 
   // Release memory that is no longer needed
   evaluators_.clear();
+  conds_.clear();
 
 #if defined(SECCOMP_BPF_VALGRIND_HACKS)
   // Valgrind is really not happy about our sandbox. Disable it when running
@@ -667,36 +640,36 @@ void Sandbox::installFilter(bool quiet) {
   return;
 }
 
-void Sandbox::findRanges(Ranges *ranges) {
+void Sandbox::FindRanges(Ranges *ranges) {
   // Please note that "struct seccomp_data" defines system calls as a signed
   // int32_t, but BPF instructions always operate on unsigned quantities. We
   // deal with this disparity by enumerating from MIN_SYSCALL to MAX_SYSCALL,
   // and then verifying that the rest of the number range (both positive and
   // negative) all return the same ErrorCode.
-  EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
-  void *aux                       = evaluators_.begin()->second;
-  uint32_t oldSysnum              = 0;
-  ErrorCode oldErr                = evaluateSyscall(oldSysnum, aux);
-  ErrorCode invalidErr            = evaluateSyscall(MIN_SYSCALL - 1, aux);
+  EvaluateSyscall evaluate_syscall = evaluators_.begin()->first;
+  void *aux                        = evaluators_.begin()->second;
+  uint32_t old_sysnum              = 0;
+  ErrorCode old_err                = evaluate_syscall(old_sysnum, aux);
+  ErrorCode invalid_err            = evaluate_syscall(MIN_SYSCALL - 1, aux);
   for (SyscallIterator iter(false); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    ErrorCode err = evaluateSyscall(static_cast<int>(sysnum), aux);
-    if (!iter.IsValid(sysnum) && !invalidErr.Equals(err)) {
+    ErrorCode err = evaluate_syscall(static_cast<int>(sysnum), aux);
+    if (!iter.IsValid(sysnum) && !invalid_err.Equals(err)) {
       // A proper sandbox policy should always treat system calls outside of
       // the range MIN_SYSCALL..MAX_SYSCALL (i.e. anything that returns
       // "false" for SyscallIterator::IsValid()) identically. Typically, all
       // of these system calls would be denied with the same ErrorCode.
       SANDBOX_DIE("Invalid seccomp policy");
     }
-    if (!err.Equals(oldErr) || iter.Done()) {
-      ranges->push_back(Range(oldSysnum, sysnum - 1, oldErr));
-      oldSysnum = sysnum;
-      oldErr    = err;
+    if (!err.Equals(old_err) || iter.Done()) {
+      ranges->push_back(Range(old_sysnum, sysnum - 1, old_err));
+      old_sysnum = sysnum;
+      old_err    = err;
     }
   }
 }
 
-Instruction *Sandbox::assembleJumpTable(CodeGen *gen,
+Instruction *Sandbox::AssembleJumpTable(CodeGen *gen,
                                         Ranges::const_iterator start,
                                         Ranges::const_iterator stop) {
   // We convert the list of system call ranges into jump table that performs
@@ -708,7 +681,7 @@ Instruction *Sandbox::assembleJumpTable(CodeGen *gen,
   } else if (stop - start == 1) {
     // If we have narrowed things down to a single range object, we can
     // return from the BPF filter program.
-    return gen->MakeInstruction(BPF_RET+BPF_K, start->err);
+    return RetExpression(gen, start->err);
   }
 
   // Pick the range object that is located at the mid point of our list.
@@ -718,18 +691,108 @@ Instruction *Sandbox::assembleJumpTable(CodeGen *gen,
   Ranges::const_iterator mid = start + (stop - start)/2;
 
   // Sub-divide the list of ranges and continue recursively.
-  Instruction *jf = assembleJumpTable(gen, start, mid);
-  Instruction *jt = assembleJumpTable(gen, mid, stop);
+  Instruction *jf = AssembleJumpTable(gen, start, mid);
+  Instruction *jt = AssembleJumpTable(gen, mid, stop);
   return gen->MakeInstruction(BPF_JMP+BPF_JGE+BPF_K, mid->from, jt, jf);
 }
 
-void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
+Instruction *Sandbox::RetExpression(CodeGen *gen, const ErrorCode& cond) {
+  if (cond.error_type_ == ErrorCode::ET_COND) {
+    return CondExpression(gen, cond);
+  } else {
+    return gen->MakeInstruction(BPF_RET+BPF_K, cond);
+  }
+}
+
+Instruction *Sandbox::CondExpression(CodeGen *gen, const ErrorCode& cond) {
+  // We can only inspect the six system call arguments that are passed in
+  // CPU registers.
+  if (cond.argno_ < 0 || cond.argno_ >= 6) {
+    SANDBOX_DIE("Internal compiler error; invalid argument number "
+                "encountered");
+  }
+
+  // BPF programs operate on 32bit entities. Load both halfs of the 64bit
+  // system call argument and then generate suitable conditional statements.
+  Instruction *msb_head =
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                         SECCOMP_ARG_MSB_IDX(cond.argno_));
+  Instruction *msb_tail = msb_head;
+  Instruction *lsb_head =
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                         SECCOMP_ARG_LSB_IDX(cond.argno_));
+  Instruction *lsb_tail = lsb_head;
+
+  // Emit a suitable comparison statement.
+  switch (cond.op_) {
+  case ErrorCode::OP_EQUAL:
+    // Compare the least significant bits for equality
+    lsb_tail = gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K,
+                                    static_cast<uint32_t>(cond.value_),
+                                    RetExpression(gen, *cond.passed_),
+                                    RetExpression(gen, *cond.failed_));
+    gen->JoinInstructions(lsb_head, lsb_tail);
+
+    // If we are looking at a 64bit argument, we need to also compare the
+    // most significant bits.
+    if (cond.width_ == ErrorCode::TP_64BIT) {
+      msb_tail = gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K,
+                                      static_cast<uint32_t>(cond.value_ >> 32),
+                                      NULL,
+                                      RetExpression(gen, *cond.failed_));
+      gen->JoinInstructions(msb_head, msb_tail);
+    }
+    break;
+  default:
+    // TODO(markus): We can only check for equality so far.
+    SANDBOX_DIE("Not implemented");
+    break;
+  }
+
+  // Ensure that we never pass a 64bit value, when we only expect a 32bit
+  // value. This is somewhat complicated by the fact that on 64bit systems,
+  // callers could legitimately pass in a non-zero value in the MSB, iff the
+  // LSB has been sign-extended into the MSB.
+  if (cond.width_ == ErrorCode::TP_32BIT) {
+    if (cond.value_ >> 32) {
+      SANDBOX_DIE("Invalid comparison of a 32bit system call argument "
+                  "against a 64bit constant; this test is always false.");
+    }
+
+    Instruction *invalid_64bit = RetExpression(gen, Unexpected64bitArgument());
+    #if __SIZEOF_POINTER__ > 4
+    invalid_64bit =
+      gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, 0xFFFFFFFF,
+      gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                           SECCOMP_ARG_LSB_IDX(cond.argno_),
+      gen->MakeInstruction(BPF_JMP+BPF_JGE+BPF_K, 0x80000000,
+                           lsb_head,
+                           invalid_64bit)),
+                           invalid_64bit);
+    #endif
+    gen->JoinInstructions(
+      msb_tail,
+      gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, 0,
+                           lsb_head,
+                           invalid_64bit));
+  } else {
+    gen->JoinInstructions(msb_tail, lsb_head);
+  }
+
+  return msb_head;
+}
+
+ErrorCode Sandbox::Unexpected64bitArgument() {
+  return Kill("Unexpected 64bit argument detected");
+}
+
+void Sandbox::SigSys(int nr, siginfo_t *info, void *void_context) {
   // Various sanity checks to make sure we actually received a signal
   // triggered by a BPF filter. If something else triggered SIGSYS
   // (e.g. kill()), there is really nothing we can do with this signal.
   if (nr != SIGSYS || info->si_code != SYS_SECCOMP || !void_context ||
       info->si_errno <= 0 ||
-      static_cast<size_t>(info->si_errno) > trapArraySize_) {
+      static_cast<size_t>(info->si_errno) > trap_array_size_) {
     // SANDBOX_DIE() can call LOG(FATAL). This is not normally async-signal
     // safe and can lead to bugs. We should eventually implement a different
     // logging and reporting mechanism that is safe to be called from
@@ -773,7 +836,7 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
                         SECCOMP_PARM3(ctx), SECCOMP_PARM4(ctx),
                         SECCOMP_PARM5(ctx), SECCOMP_PARM6(ctx));
   } else {
-    const ErrorCode& err = trapArray_[info->si_errno - 1];
+    const ErrorCode& err = trap_array_[info->si_errno - 1];
     if (!err.safe_) {
       SetIsInSigHandler();
     }
@@ -824,9 +887,9 @@ ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
   // Each unique pair of TrapFnc and auxiliary data make up a distinct instance
   // of a SECCOMP_RET_TRAP.
   TrapKey key(fnc, aux, safe);
-  TrapIds::const_iterator iter = trapIds_.find(key);
+  TrapIds::const_iterator iter = trap_ids_.find(key);
   uint16_t id;
-  if (iter != trapIds_.end()) {
+  if (iter != trap_ids_.end()) {
     // We have seen this pair before. Return the same id that we assigned
     // earlier.
     id = iter->second;
@@ -847,7 +910,7 @@ ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
     id = traps_->size() + 1;
 
     traps_->push_back(ErrorCode(fnc, aux, safe, id));
-    trapIds_[key] = id;
+    trap_ids_[key] = id;
 
     // We want to access the traps_ vector from our signal handler. But
     // we are not assured that doing so is async-signal safe. On the other
@@ -855,8 +918,8 @@ ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
     // contiguous C-style array.
     // So, we look up the address and size of this array outside of the
     // signal handler, where we can safely do so.
-    trapArray_     = &(*traps_)[0];
-    trapArraySize_ = id;
+    trap_array_      = &(*traps_)[0];
+    trap_array_size_ = id;
     return traps_->back();
   }
 
@@ -890,21 +953,30 @@ intptr_t Sandbox::ReturnErrno(const struct arch_seccomp_data&, void *aux) {
   return -err;
 }
 
-intptr_t Sandbox::bpfFailure(const struct arch_seccomp_data&, void *aux) {
+ErrorCode Sandbox::Cond(int argno, ErrorCode::ArgType width,
+                        ErrorCode::Operation op, uint64_t value,
+                        const ErrorCode& passed, const ErrorCode& failed) {
+  return ErrorCode(argno, width, op, value,
+                   &*conds_.insert(passed).first,
+                   &*conds_.insert(failed).first);
+}
+
+intptr_t Sandbox::BpfFailure(const struct arch_seccomp_data&, void *aux) {
   SANDBOX_DIE(static_cast<char *>(aux));
 }
 
 ErrorCode Sandbox::Kill(const char *msg) {
-  return Trap(bpfFailure, const_cast<char *>(msg));
+  return Trap(BpfFailure, const_cast<char *>(msg));
 }
 
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
-int    Sandbox::proc_fd_                = -1;
+int Sandbox::proc_fd_                   = -1;
 Sandbox::Evaluators Sandbox::evaluators_;
 Sandbox::Traps *Sandbox::traps_         = NULL;
-Sandbox::TrapIds Sandbox::trapIds_;
-ErrorCode *Sandbox::trapArray_          = NULL;
-size_t Sandbox::trapArraySize_          = 0;
+Sandbox::TrapIds Sandbox::trap_ids_;
+ErrorCode *Sandbox::trap_array_         = NULL;
+size_t Sandbox::trap_array_size_        = 0;
   bool Sandbox::has_unsafe_traps_       = false;
+Sandbox::Conds Sandbox::conds_;
 
 }  // namespace

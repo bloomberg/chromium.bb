@@ -137,92 +137,102 @@ static intptr_t defaultHandler(const struct arch_seccomp_data& data,
   return -ERR;
 }
 
-static ErrorCode evaluator(int sysno) {
+static ErrorCode evaluator(int sysno, void *) {
   switch (sysno) {
-  #if defined(__NR_accept)
-    case __NR_accept: case __NR_accept4:
+#if defined(__NR_accept)
+  case __NR_accept: case __NR_accept4:
 #endif
-    case __NR_alarm:
-    case __NR_brk:
-    case __NR_clock_gettime:
-    case __NR_close:
-    case __NR_dup: case __NR_dup2:
-    case __NR_epoll_create: case __NR_epoll_ctl: case __NR_epoll_wait:
-    case __NR_exit: case __NR_exit_group:
-    case __NR_fcntl:
+  case __NR_alarm:
+  case __NR_brk:
+  case __NR_clock_gettime:
+  case __NR_close:
+  case __NR_dup: case __NR_dup2:
+  case __NR_epoll_create: case __NR_epoll_ctl: case __NR_epoll_wait:
+  case __NR_exit: case __NR_exit_group:
+  case __NR_fcntl:
 #if defined(__NR_fcntl64)
-    case __NR_fcntl64:
+  case __NR_fcntl64:
 #endif
-    case __NR_fdatasync:
-    case __NR_fstat:
+  case __NR_fdatasync:
+  case __NR_fstat:
 #if defined(__NR_fstat64)
-    case __NR_fstat64:
+  case __NR_fstat64:
 #endif
-    case __NR_ftruncate:
-    case __NR_futex:
-    case __NR_getdents: case __NR_getdents64:
-    case __NR_getegid:
+  case __NR_ftruncate:
+  case __NR_futex:
+  case __NR_getdents: case __NR_getdents64:
+  case __NR_getegid:
 #if defined(__NR_getegid32)
-    case __NR_getegid32:
+  case __NR_getegid32:
 #endif
-    case __NR_geteuid:
+  case __NR_geteuid:
 #if defined(__NR_geteuid32)
-    case __NR_geteuid32:
+  case __NR_geteuid32:
 #endif
-    case __NR_getgid:
+  case __NR_getgid:
 #if defined(__NR_getgid32)
-    case __NR_getgid32:
+  case __NR_getgid32:
 #endif
-    case __NR_getitimer: case __NR_setitimer:
+  case __NR_getitimer: case __NR_setitimer:
 #if defined(__NR_getpeername)
-    case __NR_getpeername:
+  case __NR_getpeername:
 #endif
-    case __NR_getpid: case __NR_gettid:
+  case __NR_getpid: case __NR_gettid:
 #if defined(__NR_getsockname)
-    case __NR_getsockname:
+  case __NR_getsockname:
 #endif
-    case __NR_gettimeofday:
-    case __NR_getuid:
+  case __NR_gettimeofday:
+  case __NR_getuid:
 #if defined(__NR_getuid32)
-    case __NR_getuid32:
+  case __NR_getuid32:
 #endif
 #if defined(__NR__llseek)
-    case __NR__llseek:
+  case __NR__llseek:
 #endif
-    case __NR_lseek:
-    case __NR_nanosleep:
-    case __NR_pipe: case __NR_pipe2:
-    case __NR_poll:
-    case __NR_pread64: case __NR_preadv:
-    case __NR_pwrite64: case __NR_pwritev:
-    case __NR_read: case __NR_readv:
-    case __NR_restart_syscall:
-    case __NR_set_robust_list:
-    case __NR_rt_sigaction:
+  case __NR_lseek:
+  case __NR_nanosleep:
+  case __NR_pipe: case __NR_pipe2:
+  case __NR_poll:
+  case __NR_pread64: case __NR_preadv:
+  case __NR_pwrite64: case __NR_pwritev:
+  case __NR_read: case __NR_readv:
+  case __NR_restart_syscall:
+  case __NR_set_robust_list:
+  case __NR_rt_sigaction:
 #if defined(__NR_sigaction)
-    case __NR_sigaction:
+  case __NR_sigaction:
 #endif
 #if defined(__NR_signal)
-    case __NR_signal:
+  case __NR_signal:
 #endif
-    case __NR_rt_sigprocmask:
+  case __NR_rt_sigprocmask:
 #if defined(__NR_sigprocmask)
-    case __NR_sigprocmask:
+  case __NR_sigprocmask:
 #endif
 #if defined(__NR_shutdown)
-    case __NR_shutdown:
+  case __NR_shutdown:
 #endif
-    case __NR_rt_sigreturn:
+  case __NR_rt_sigreturn:
 #if defined(__NR_sigreturn)
-    case __NR_sigreturn:
+  case __NR_sigreturn:
 #endif
 #if defined(__NR_socketpair)
-    case __NR_socketpair:
+  case __NR_socketpair:
 #endif
-    case __NR_time:
-    case __NR_uname:
-    case __NR_write: case __NR_writev:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+  case __NR_time:
+  case __NR_uname:
+  case __NR_write: case __NR_writev:
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+  case __NR_prctl:
+    // Allow PR_SET_DUMPABLE and PR_GET_DUMPABLE. Do not allow anything else.
+    return Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         PR_SET_DUMPABLE,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         PR_GET_DUMPABLE,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           Sandbox::Trap(defaultHandler, NULL)));
 
   // The following system calls are temporarily permitted. This must be
   // tightened later. But we currently don't implement enough of the sandboxing
@@ -250,7 +260,6 @@ static ErrorCode evaluator(int sysno) {
 #endif
   case __NR_getrlimit:
   case __NR_ioctl:
-  case __NR_prctl:
   case __NR_clone:
   case __NR_munmap: case __NR_mprotect: case __NR_madvise:
   case __NR_remap_file_pages:
@@ -278,8 +287,8 @@ static void *sendmsgStressThreadFnc(void *arg) {
     }
     size_t len = 4;
     char buf[4];
-    if (!Util::sendFds(fds[0], "test", 4, fds[1], fds[1], fds[1], -1) ||
-        !Util::getFds(fds[1], buf, &len, fds+2, fds+3, fds+4, NULL) ||
+    if (!Util::SendFds(fds[0], "test", 4, fds[1], fds[1], fds[1], -1) ||
+        !Util::GetFds(fds[1], buf, &len, fds+2, fds+3, fds+4, NULL) ||
         len != 4 ||
         memcmp(buf, "test", len) ||
         write(fds[2], "demo", 4) != 4 ||
@@ -302,14 +311,14 @@ int main(int argc, char *argv[]) {
   if (argc) { }
   if (argv) { }
   int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
-  if (Sandbox::supportsSeccompSandbox(proc_fd) !=
+  if (Sandbox::SupportsSeccompSandbox(proc_fd) !=
       Sandbox::STATUS_AVAILABLE) {
     perror("sandbox");
     _exit(1);
   }
-  Sandbox::setProcFd(proc_fd);
-  Sandbox::setSandboxPolicy(evaluator, NULL);
-  Sandbox::startSandbox();
+  Sandbox::set_proc_fd(proc_fd);
+  Sandbox::SetSandboxPolicy(evaluator, NULL);
+  Sandbox::StartSandbox();
 
   // Check that we can create threads
   pthread_t thr;
@@ -367,8 +376,8 @@ int main(int argc, char *argv[]) {
   }
   size_t len = 4;
   char buf[4];
-  if (!Util::sendFds(fds[0], "test", 4, fds[1], -1) ||
-      !Util::getFds(fds[1], buf, &len, fds+2, NULL) ||
+  if (!Util::SendFds(fds[0], "test", 4, fds[1], -1) ||
+      !Util::GetFds(fds[1], buf, &len, fds+2, NULL) ||
       len != 4 ||
       memcmp(buf, "test", len) ||
       write(fds[2], "demo", 4) != 4 ||

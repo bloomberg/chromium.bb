@@ -9,9 +9,9 @@ namespace playground2 {
 
 class Util {
  public:
-  static bool sendFds(int transport, const void *buf, size_t len, ...);
-  static bool getFds(int transport, void *buf, size_t *len, ...);
-  static void closeAllBut(int fd, ...);
+  static bool SendFds(int transport, const void *buf, size_t len, ...);
+  static bool GetFds(int transport, void *buf, size_t *len, ...);
+  static void CloseAllBut(int fd, ...);
 };
 
 }  // namespace
