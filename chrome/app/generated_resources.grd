@@ -6112,12 +6112,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
         Disables saving pages as HTML-only or HTML Complete; enables saving pages only as MHTML: a single text file containing HTML and all sub-resources.
       </message>
-      <message name="IDS_FLAGS_WEB_INTENTS_INVOCATION_ENABLED_NAME" desc="Name of the lab to enable web intents invocation for web content.">
-        Enable web intents invocation for web content
-      </message>
-      <message name="IDS_FLAGS_WEB_INTENTS_INVOCATION_ENABLED_DESCRIPTION" desc="Description of the lab to enable web intents invocation for web content.">
-        Make it possible for any web page to invoke web intents.
-      </message>
       <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
       </message>

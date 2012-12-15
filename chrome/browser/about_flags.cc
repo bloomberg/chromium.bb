@@ -1137,13 +1137,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNewAutofillHeuristics)
   },
   {
-    "enable-web-intents-invocation",
-    IDS_FLAGS_WEB_INTENTS_INVOCATION_ENABLED_NAME,
-    IDS_FLAGS_WEB_INTENTS_INVOCATION_ENABLED_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kWebIntentsInvocationEnabled)
-  },
-  {
     "show-app-list-shortcut",
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME,
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION,
