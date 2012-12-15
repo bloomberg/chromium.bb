@@ -121,5 +121,24 @@ class IdlSchemaTest(unittest.TestCase):
                        '<br/><br/> It also tests a comment with two newlines.'),
                       func['description'])
 
+  def testReservedWords(self):
+    schema = idl_schema.Load('test/idl_reserved_words.idl')[0]
+
+    foo_type = getType(schema, 'reserved_words.Foo')
+    self.assertEquals(['float', 'DOMString'], foo_type['enum'])
+
+    enum_type = getType(schema, 'reserved_words.enum')
+    self.assertEquals(['callback', 'namespace'], enum_type['enum'])
+
+    dictionary = getType(schema, 'reserved_words.dictionary');
+    self.assertEquals('integer', dictionary['properties']['long']['type'])
+
+    mytype = getType(schema, 'reserved_words.MyType')
+    self.assertEquals('string', mytype['properties']['interface']['type'])
+
+    params = getParams(schema, 'static')
+    self.assertEquals('reserved_words.Foo', params[0]['$ref'])
+    self.assertEquals('reserved_words.enum', params[1]['$ref'])
+
 if __name__ == '__main__':
   unittest.main()

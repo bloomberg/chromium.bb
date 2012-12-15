@@ -64,7 +64,6 @@ class IDLLexer(object):
     # Invented for apps use
       'NAMESPACE',
 
-
     # Data types
       'FLOAT',
       'OCT',
@@ -144,10 +143,15 @@ class IDLLexer(object):
 
   # A symbol or keyword.
   def t_KEYWORD_SYMBOL(self, t):
-    r'[A-Za-z][A-Za-z_0-9]*'
+    r'_?[A-Za-z][A-Za-z_0-9]*'
 
-    #All non-keywords are assumed to be symbols
+    # All non-keywords are assumed to be symbols
     t.type = self.keywords.get(t.value, 'SYMBOL')
+
+    # We strip leading underscores so that you can specify symbols with the same
+    # value as a keywords (E.g. a dictionary named 'interface').
+    if t.value[0] == '_':
+      t.value = t.value[1:]
     return t
 
   def t_ANY_error(self, t):
