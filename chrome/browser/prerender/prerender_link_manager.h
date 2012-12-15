@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/gurl.h"
 
@@ -31,7 +32,8 @@ class PrerenderManager;
 // being rendered in this chrome instance.  It receives messages from the
 // renderer indicating addition, cancelation and abandonment of link elements,
 // and controls the PrerenderManager accordingly.
-class PrerenderLinkManager : public ProfileKeyedService {
+class PrerenderLinkManager : public ProfileKeyedService,
+                             public PrerenderHandle::Observer {
  public:
   explicit PrerenderLinkManager(PrerenderManager* manager);
   virtual ~PrerenderLinkManager();
@@ -76,6 +78,15 @@ class PrerenderLinkManager : public ProfileKeyedService {
       const IdPairToPrerenderHandleMap::iterator& id_to_handle_iter);
 
   bool IsEmpty() const;
+
+  IdPairToPrerenderHandleMap::iterator FindPrerenderHandle(
+      PrerenderHandle* prerender_handle);
+
+  // From PrerenderHandle::Observer:
+  virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) OVERRIDE;
+  virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
+  virtual void OnPrerenderAddAlias(PrerenderHandle* prerender_handle,
+                                   const GURL& alias_url) OVERRIDE;
 
   PrerenderManager* manager_;
 

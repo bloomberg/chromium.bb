@@ -23,20 +23,40 @@ class PrerenderContents;
 // A class representing a running prerender to a client of the PrerenderManager.
 // Methods on PrerenderManager which start prerenders return a caller-owned
 // PrerenderHandle* to the client (or NULL if they are unable to start a
-// prerender). Because the PrerenderManager can stop running prerenders at any
-// time, callers may wish to check PrerenderHandle::IsValid() before operating
-// on their prerenders.
-class PrerenderHandle : public base::NonThreadSafe {
+// prerender). Calls on the handle of a prerender that is not running at no-ops.
+// Destroying a handle before a prerender starts will prevent it from ever
+// starting. Destroying a handle while a prerendering is running will stop the
+// prerender, without making any calls to the observer.
+class PrerenderHandle : public base::NonThreadSafe,
+                        public PrerenderContents::Observer {
  public:
+  class Observer {
+   public:
+    // Signals that the prerender has started running.
+    virtual void OnPrerenderStart(PrerenderHandle* handle) = 0;
+
+    // Signals that the prerender has stopped running.
+    virtual void OnPrerenderStop(PrerenderHandle* handle) = 0;
+
+    // Signals the discovery, through redirects, of a new alias for this
+    // prerender.
+    virtual void OnPrerenderAddAlias(PrerenderHandle* handle,
+                                     const GURL& alias_url) = 0;
+
+   protected:
+    Observer();
+    virtual ~Observer();
+  };
+
   // Before calling the destructor, the caller must invalidate the handle by
   // calling either OnNavigateAway or OnCancel.
-  ~PrerenderHandle();
+  virtual ~PrerenderHandle();
+
+  void SetObserver(Observer* observer);
 
   // The launcher is navigating away from the context that launched this
   // prerender. The prerender will likely stay alive briefly though, in case we
-  // are going through a redirect chain that will target it. This call
-  // invalidates the handle. If the prerender handle is already invalid, this
-  // call does nothing.
+  // are going through a redirect chain that will target it.
   void OnNavigateAway();
 
   // The launcher has taken explicit action to remove this prerender (for
@@ -44,16 +64,6 @@ class PrerenderHandle : public base::NonThreadSafe {
   // the handle. If the prerender handle is already invalid, this call does
   // nothing.
   void OnCancel();
-
-  // True if the prerender handle is still connected to a (pending or running)
-  // prerender. Handles can become invalid through explicit requests by the
-  // client, such as calling OnCancel() or OnNavigateAway(), and handles
-  // also become invalid when the PrerenderManager cancels prerenders.
-  bool IsValid() const;
-
-  // True if this prerender was launched by a page that was itself being
-  // prerendered, and so has not yet been started.
-  bool IsPending() const;
 
   // True if this prerender is currently active.
   bool IsPrerendering() const;
@@ -66,7 +76,17 @@ class PrerenderHandle : public base::NonThreadSafe {
 
   explicit PrerenderHandle(PrerenderManager::PrerenderData* prerender_data);
 
-  void SwapPrerenderDataWith(PrerenderHandle* other_prerender_handle);
+  void AdoptPrerenderDataFrom(PrerenderHandle* other_handle);
+
+  // From PrerenderContents::Observer:
+  virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
+  virtual void OnPrerenderStop(PrerenderContents* prerender_contents) OVERRIDE;
+  virtual void OnPrerenderAddAlias(PrerenderContents* prerender_contents,
+                                   const GURL& alias_url) OVERRIDE;
+  virtual void OnPrerenderCreatedMatchCompleteReplacement(
+      PrerenderContents* contents, PrerenderContents* replacement) OVERRIDE;
+
+  Observer* observer_;
 
   base::WeakPtr<PrerenderManager::PrerenderData> prerender_data_;
   base::WeakPtrFactory<PrerenderHandle> weak_ptr_factory_;

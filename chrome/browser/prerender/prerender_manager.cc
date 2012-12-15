@@ -223,7 +223,6 @@ PrerenderManager::~PrerenderManager() {
   // The earlier call to ProfileKeyedService::Shutdown() should have emptied
   // these vectors already.
   DCHECK(active_prerenders_.empty());
-  DCHECK(pending_prerenders_.empty());
   DCHECK(to_delete_prerenders_.empty());
 }
 
@@ -238,7 +237,6 @@ void PrerenderManager::Shutdown() {
   profile_ = NULL;
 
   DCHECK(active_prerenders_.empty());
-  pending_prerenders_.clear();
 }
 
 PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
@@ -278,11 +276,8 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
     // Instead of prerendering from inside of a running prerender, we will defer
     // this request until its launcher is made visible.
     if (PrerenderContents* contents = parent_prerender_data->contents()) {
-      pending_prerenders_.push_back(new PrerenderData(this));
       PrerenderHandle* prerender_handle =
-          new PrerenderHandle(pending_prerenders_.back());
-      DCHECK(prerender_handle->IsPending());
-
+          new PrerenderHandle(static_cast<PrerenderData*>(NULL));
       scoped_ptr<PrerenderContents::PendingPrerenderInfo>
           pending_prerender_info(new PrerenderContents::PendingPrerenderInfo(
               prerender_handle->weak_ptr_factory_.GetWeakPtr(),
@@ -429,7 +424,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
 
   // Start pending prerender requests from the PrerenderContents, if there are
   // any.
-  prerender_contents->StartPendingPrerenders();
+  prerender_contents->PrepareForUse();
 
   WebContents* new_web_contents =
       prerender_contents->ReleasePrerenderContents();
@@ -501,7 +496,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
       ActuallyPrerendering()) {
     // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
     // However, what if new conditions are added and
-    // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
+    // NeedMatchCompleteDummyForFinalStatus is not being updated.  Not sure
     // what's the best thing to do here.  For now, I will just check whether
     // we are actually prerendering.
     (*it)->MakeIntoMatchCompleteReplacement();
@@ -511,7 +506,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   }
 
   // Destroy the old WebContents relatively promptly to reduce resource usage,
-  // and in the case of HTML5 media, reduce the change of playing any sound.
+  // and in the case of HTML5 media, reduce the chance of playing any sound.
   PostCleanupTask();
 }
 
@@ -851,10 +846,6 @@ struct PrerenderManager::PrerenderData::OrderByExpiryTime {
   }
 };
 
-PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager)
-    : manager_(manager), contents_(NULL), handle_count_(0) {
-}
-
 PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager,
                                                PrerenderContents* contents,
                                                base::TimeTicks expiry_time)
@@ -862,6 +853,7 @@ PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager,
       contents_(contents),
       handle_count_(0),
       expiry_time_(expiry_time) {
+  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
 }
 
 PrerenderManager::PrerenderData::~PrerenderData() {
@@ -877,39 +869,29 @@ void PrerenderManager::PrerenderData::MakeIntoMatchCompleteReplacement() {
   manager_->to_delete_prerenders_.push_back(to_delete);
 }
 
-void PrerenderManager::PrerenderData::OnNewHandle() {
-  DCHECK(contents_ || handle_count_ == 0) <<
-      "Cannot create multiple handles to a pending prerender.";
+void PrerenderManager::PrerenderData::OnHandleCreated(PrerenderHandle* handle) {
+  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
   ++handle_count_;
+  contents_->AddObserver(handle);
 }
 
-void PrerenderManager::PrerenderData::OnNavigateAwayByHandle() {
-  if (!contents_) {
-    DCHECK_EQ(1, handle_count_);
-    // Pending prerenders are not maintained in the active_prerenders_, so they
-    // will not get normal expiry. Since this prerender hasn't even been
-    // launched yet, and it's held by a page that is being prerendered, we will
-    // just delete it.
-    manager_->DestroyPendingPrerenderData(this);
-  } else {
-    DCHECK_LE(0, handle_count_);
-    // We intentionally don't decrement the handle count here, so that the
-    // prerender won't be canceled until it times out.
-    manager_->SourceNavigatedAway(this);
-  }
+void PrerenderManager::PrerenderData::OnHandleNavigatedAway(
+    PrerenderHandle* handle) {
+  DCHECK_LT(0, handle_count_);
+  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  // We intentionally don't decrement the handle count here, so that the
+  // prerender won't be canceled until it times out.
+  manager_->SourceNavigatedAway(this);
 }
 
-void PrerenderManager::PrerenderData::OnCancelByHandle() {
-  DCHECK_LE(1, handle_count_);
-  DCHECK(contents_ || handle_count_ == 1);
+void PrerenderManager::PrerenderData::OnHandleCanceled(
+    PrerenderHandle* handle) {
+  DCHECK_LT(0, handle_count_);
+  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
 
   if (--handle_count_ == 0) {
-    if (contents_) {
-      // This will eventually remove this object from active_prerenders_.
-      contents_->Destroy(FINAL_STATUS_CANCELLED);
-    } else {
-      manager_->DestroyPendingPrerenderData(this);
-    }
+    // This will eventually remove this object from active_prerenders_.
+    contents_->Destroy(FINAL_STATUS_CANCELLED);
   }
 }
 
@@ -933,31 +915,24 @@ void PrerenderManager::StartPendingPrerenders(
     PrerenderContents::PendingPrerenderInfo* info = *it;
     PrerenderHandle* existing_prerender_handle =
         info->weak_prerender_handle.get();
-    if (!existing_prerender_handle || !existing_prerender_handle->IsValid())
+    if (!existing_prerender_handle)
       continue;
 
-    DCHECK(existing_prerender_handle->IsPending());
+    DCHECK(!existing_prerender_handle->IsPrerendering());
     DCHECK(process_id == -1 || session_storage_namespace);
 
-    scoped_ptr<PrerenderHandle> swap_prerender_handle(AddPrerender(
+    scoped_ptr<PrerenderHandle> new_prerender_handle(AddPrerender(
         info->origin, process_id,
         info->url, info->referrer, info->size,
         session_storage_namespace));
-    if (swap_prerender_handle.get()) {
+    if (new_prerender_handle) {
       // AddPrerender has returned a new prerender handle to us. We want to make
-      // |existing_prerender_handle| active, so swap the underlying
-      // PrerenderData between the two handles, and delete our old handle (which
-      // will release our entry in the pending_prerender_list_).
-      existing_prerender_handle->SwapPrerenderDataWith(
-          swap_prerender_handle.get());
-      swap_prerender_handle->OnCancel();
+      // |existing_prerender_handle| active, so move the underlying
+      // PrerenderData to our new handle.
+      existing_prerender_handle->AdoptPrerenderDataFrom(
+          new_prerender_handle.get());
       continue;
     }
-
-    // We could not start our Prerender. Canceling the existing handle will make
-    // it return false for PrerenderHandle::IsPending(), and will release the
-    // PrerenderData from pending_prerender_list_.
-    existing_prerender_handle->OnCancel();
   }
 }
 
@@ -974,16 +949,6 @@ void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
       std::min((*it)->expiry_time(),
                GetExpiryTimeForNavigatedAwayPrerender()));
   SortActivePrerenders();
-}
-
-void PrerenderManager::DestroyPendingPrerenderData(
-    PrerenderData* pending_prerender_data) {
-  ScopedVector<PrerenderData>::iterator it =
-      std::find(pending_prerenders_.begin(), pending_prerenders_.end(),
-                pending_prerender_data);
-  if (it == pending_prerenders_.end())
-    return;
-  pending_prerenders_.erase(it);
 }
 
 // private

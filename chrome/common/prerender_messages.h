@@ -45,10 +45,15 @@ IPC_MESSAGE_CONTROL1(PrerenderHostMsg_AbandonLinkRelPrerender,
 IPC_MESSAGE_ROUTED1(PrerenderMsg_SetIsPrerendering,
                     bool /* whether the RenderView is prerendering */)
 
-// Specifies that a URL is currently being prerendered.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_AddPrerenderURL,
+// Signals to launcher that a prerender is running.
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,
+                     int /* prerender_id */)
+
+// Signals to a launcher that a new alias has been added to a prerender.
+IPC_MESSAGE_CONTROL2(PrerenderMsg_OnPrerenderAddAlias,
+                     int /* prerender_id */,
                      GURL /* url */)
 
-// Specifies that a URL is no longer being prerendered.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_RemovePrerenderURL,
-                     GURL /* url */)
+// Signals to a launcher that a prerender is no longer running.
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStop,
+                     int /* prerender_id */)

@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 
+#include <map>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
@@ -11,29 +14,50 @@
 
 namespace prerender {
 
+namespace {
+
+int g_next_prerender_id = 0;
+
+}  // namespace
+
+using WebKit::WebPrerender;
+
+// Since we can't mock out WebKit::WebPrerender in chrome, this test can't test
+// signalling to or from the WebKit side. Instead, it checks only that the
+// messages received from the browser generate consistant state in the
+// PrerenderDispatcher. Since prerenders couldn't even start or stop without the
+// WebKit signalling, we can expect PrerenderBrowserTest to provide adequate
+// coverage of this.
 class PrerenderDispatcherTest : public testing::Test {
  public:
   PrerenderDispatcherTest() {}
 
-  bool is_prerender_url(const GURL& url) const {
+  bool IsPrerenderURL(const GURL& url) const {
     return prerender_dispatcher_.IsPrerenderURL(url);
   }
 
-  const PrerenderDispatcher::PrerenderMap& urls() const {
-    return prerender_dispatcher_.prerender_urls_;
+  const std::map<int, GURL>& prerenders() const {
+    return prerender_dispatcher_.prerenders_;
   }
 
-  void AddURL(const GURL& url) { prerender_dispatcher_.OnAddPrerenderURL(url); }
-  void RemoveURL(const GURL& url) {
-    prerender_dispatcher_.OnRemovePrerenderURL(url);
+  int StartPrerender(const GURL& url) {
+    DCHECK_EQ(0u, prerender_dispatcher_.prerenders_.count(g_next_prerender_id));
+    prerender_dispatcher_.prerenders_[g_next_prerender_id] = url;
+
+    prerender_dispatcher_.OnPrerenderStart(g_next_prerender_id);
+    return g_next_prerender_id++;
+  }
+
+  void AddAliasToPrerender(int prerender_id, const GURL& url) {
+    prerender_dispatcher_.OnPrerenderAddAlias(prerender_id, url);
+  }
+
+  void StopPrerender(int prerender_id) {
+    prerender_dispatcher_.OnPrerenderStop(prerender_id);
   }
 
   int GetCountForURL(const GURL& url) const {
-    PrerenderDispatcher::PrerenderMap::const_iterator entry = urls().find(url);
-    if (entry == urls().end())
-      return 0;
-    EXPECT_GT(entry->second, 0);
-    return entry->second;
+    return prerender_dispatcher_.running_prerender_urls_.count(url);
   }
 
  private:
@@ -42,14 +66,14 @@ class PrerenderDispatcherTest : public testing::Test {
 };
 
 TEST_F(PrerenderDispatcherTest, PrerenderDispatcherEmpty) {
-  EXPECT_EQ(0U, urls().size());
+  EXPECT_TRUE(prerenders().empty());
 }
 
 TEST_F(PrerenderDispatcherTest, PrerenderDispatcherSingleAdd) {
   GURL foo_url = GURL("http://foo.com");
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
+  EXPECT_FALSE(IsPrerenderURL(foo_url));
+  StartPrerender(foo_url);
+  EXPECT_TRUE(IsPrerenderURL(foo_url));
   EXPECT_EQ(1, GetCountForURL(foo_url));
 }
 
@@ -57,69 +81,31 @@ TEST_F(PrerenderDispatcherTest, PrerenderDispatcherMultipleAdd) {
   GURL foo_url = GURL("http://foo.com");
   GURL bar_url = GURL("http://bar.com");
 
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  EXPECT_FALSE(is_prerender_url(bar_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  EXPECT_FALSE(is_prerender_url(bar_url));
+  EXPECT_FALSE(IsPrerenderURL(foo_url));
+  EXPECT_FALSE(IsPrerenderURL(bar_url));
+  int foo_id = StartPrerender(foo_url);
+  EXPECT_TRUE(IsPrerenderURL(foo_url));
+  EXPECT_FALSE(IsPrerenderURL(bar_url));
 
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  EXPECT_FALSE(is_prerender_url(bar_url));
+  AddAliasToPrerender(foo_id, foo_url);
+  EXPECT_TRUE(IsPrerenderURL(foo_url));
+  EXPECT_FALSE(IsPrerenderURL(bar_url));
   EXPECT_EQ(2, GetCountForURL(foo_url));
 
-  AddURL(bar_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  EXPECT_TRUE(is_prerender_url(bar_url));
+  StartPrerender(bar_url);
+  EXPECT_TRUE(IsPrerenderURL(foo_url));
+  EXPECT_TRUE(IsPrerenderURL(bar_url));
   EXPECT_EQ(2, GetCountForURL(foo_url));
   EXPECT_EQ(1, GetCountForURL(bar_url));
 }
 
 TEST_F(PrerenderDispatcherTest, PrerenderDispatcherSingleRemove) {
   GURL foo_url = GURL("http://foo.com");
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  RemoveURL(foo_url);
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  EXPECT_EQ(0, GetCountForURL(foo_url));
-}
-
-TEST_F(PrerenderDispatcherTest, PrerenderDispatcherMultipleRemove) {
-  GURL foo_url = GURL("http://foo.com");
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  EXPECT_EQ(2, GetCountForURL(foo_url));
-
-  RemoveURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  EXPECT_EQ(1, GetCountForURL(foo_url));
-
-  RemoveURL(foo_url);
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  EXPECT_EQ(0, GetCountForURL(foo_url));
-}
-
-TEST_F(PrerenderDispatcherTest, PrerenderDispatcherRemoveWithoutAdd) {
-  GURL foo_url = GURL("http://foo.com");
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  RemoveURL(foo_url);
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  EXPECT_EQ(0, GetCountForURL(foo_url));
-}
-
-TEST_F(PrerenderDispatcherTest, PrerenderDispatcherRemoveTooMany) {
-  GURL foo_url = GURL("http://foo.com");
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  AddURL(foo_url);
-  EXPECT_TRUE(is_prerender_url(foo_url));
-  RemoveURL(foo_url);
-  EXPECT_FALSE(is_prerender_url(foo_url));
-  RemoveURL(foo_url);
-  EXPECT_FALSE(is_prerender_url(foo_url));
+  EXPECT_FALSE(IsPrerenderURL(foo_url));
+  int foo_id = StartPrerender(foo_url);
+  EXPECT_TRUE(IsPrerenderURL(foo_url));
+  StopPrerender(foo_id);
+  EXPECT_FALSE(IsPrerenderURL(foo_url));
   EXPECT_EQ(0, GetCountForURL(foo_url));
 }
 

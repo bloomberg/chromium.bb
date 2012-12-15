@@ -78,6 +78,15 @@ class PrerenderContents : public content::NotificationObserver,
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
 
+    // Signals the discovery, through redirects, of a new alias for this
+    // prerender.
+    virtual void OnPrerenderAddAlias(PrerenderContents* contents,
+                                     const GURL& alias_url);
+
+    // Signals that this prerender has just become a MatchComplete replacement.
+    virtual void OnPrerenderCreatedMatchCompleteReplacement(
+        PrerenderContents* contents, PrerenderContents* replacement);
+
    protected:
     Observer();
     virtual ~Observer() = 0;
@@ -128,13 +137,15 @@ class PrerenderContents : public content::NotificationObserver,
   virtual ~PrerenderContents();
 
   // All observers of a PrerenderContents are removed after the OnPrerenderStop
-  // event is sent, so there is no need for a RemoveObserver() method.
+  // event is sent, so there is no need to call RemoveObserver() in the normal
+  // use case.
   void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // For MatchComplete correctness, create a dummy replacement prerender
   // contents to stand in for this prerender contents that (which we are about
   // to destroy).
-  PrerenderContents* CreateMatchCompleteReplacement() const;
+  PrerenderContents* CreateMatchCompleteReplacement();
 
   bool Init();
 
@@ -267,8 +278,8 @@ class PrerenderContents : public content::NotificationObserver,
       scoped_ptr<PendingPrerenderInfo> pending_prerender_info);
 
   // Reissues any pending prerender requests from the prerendered page.  Also
-  // clears the list of pending requests.
-  void StartPendingPrerenders();
+  // clears the list of pending requests. Sends notifications.
+  void PrepareForUse();
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
@@ -282,6 +293,9 @@ class PrerenderContents : public content::NotificationObserver,
   // that NotifyPrerenderStop() also clears the observer list.
   void NotifyPrerenderStart();
   void NotifyPrerenderStop();
+  void NotifyPrerenderAddAlias(const GURL& alias_url);
+  void NotifyPrerenderCreatedMatchCompleteReplacement(
+      PrerenderContents* replacement);
 
   // Called whenever a RenderViewHost is created for prerendering.  Only called
   // once the RenderViewHost has a RenderView and RenderWidgetHostView.

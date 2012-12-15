@@ -5,14 +5,16 @@
 #include "chrome/browser/prerender/prerender_link_manager.h"
 
 #include <limits>
-#include <queue>
 #include <utility>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/prerender_messages.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/referrer.h"
@@ -21,6 +23,20 @@
 
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
+
+namespace {
+
+void Send(int child_id, IPC::Message* raw_message) {
+  using content::RenderProcessHost;
+  scoped_ptr<IPC::Message> own_message(raw_message);
+
+  RenderProcessHost* render_process_host = RenderProcessHost::FromID(child_id);
+  if (!render_process_host)
+    return;
+  render_process_host->Send(own_message.release());
+}
+
+}  // namespace
 
 namespace prerender {
 
@@ -33,7 +49,9 @@ PrerenderLinkManager::~PrerenderLinkManager() {
        it != ids_to_handle_map_.end();
        ++it) {
     PrerenderHandle* prerender_handle = it->second;
-    prerender_handle->OnCancel();
+    DCHECK(!prerender_handle->IsPrerendering())
+        << "All running prerenders should stop at the same time as the "
+        << "PrerenderManager.";
     delete prerender_handle;
   }
 }
@@ -51,29 +69,25 @@ bool PrerenderLinkManager::OnAddPrerender(int child_id,
            << ", size = (" << size.width() << ", " << size.height() << ")"
            << ", render_view_route_id = " << render_view_route_id;
 
-  const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
-  DCHECK_EQ(0U, ids_to_handle_map_.count(child_and_prerender_id));
 
-  scoped_ptr<PrerenderHandle> prerender_handle(
+  PrerenderHandle* prerender_handle =
       manager_->AddPrerenderFromLinkRelPrerender(
-          child_id, render_view_route_id, url, referrer, size));
-  if (prerender_handle.get()) {
-    std::pair<IdPairToPrerenderHandleMap::iterator, bool> insert_result =
-        ids_to_handle_map_.insert(std::make_pair(
-            child_and_prerender_id, static_cast<PrerenderHandle*>(NULL)));
-    DCHECK(insert_result.second);
-    delete insert_result.first->second;
-    insert_result.first->second = prerender_handle.release();
-    return true;
-  }
-  return false;
+          child_id, render_view_route_id, url, referrer, size);
+  if (!prerender_handle)
+    return false;
+
+  const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
+  DCHECK_EQ(0u, ids_to_handle_map_.count(child_and_prerender_id));
+  ids_to_handle_map_[child_and_prerender_id] = prerender_handle;
+
+  // If we are given a prerender that is already prerendering, we have missed
+  // the start event.
+  if (prerender_handle->IsPrerendering())
+    OnPrerenderStart(prerender_handle);
+  prerender_handle->SetObserver(this);
+  return true;
 }
 
-// TODO(gavinp): Once an observer interface is provided down to the WebKit
-// layer, we should add DCHECK_NE(0L, ids_to_url_map_.count(...)) to both
-// OnCancelPrerender and OnAbandonPrerender. We can't do this now, since
-// the WebKit layer isn't even aware if we didn't add the prerender to the map
-// in OnAddPrerender above.
 void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
   DVLOG(2) << "OnCancelPrerender, child_id = " << child_id
            << ", prerender_id = " << prerender_id;
@@ -86,7 +100,12 @@ void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
   }
   PrerenderHandle* prerender_handle = id_to_handle_iter->second;
   prerender_handle->OnCancel();
-  RemovePrerender(id_to_handle_iter);
+
+  // Because OnCancel() can remove the prerender from the map, we need to
+  // consider our iterator invalid.
+  id_to_handle_iter = ids_to_handle_map_.find(child_and_prerender_id);
+  if (id_to_handle_iter != ids_to_handle_map_.end())
+    RemovePrerender(id_to_handle_iter);
 }
 
 void PrerenderLinkManager::OnAbandonPrerender(int child_id, int prerender_id) {
@@ -99,7 +118,6 @@ void PrerenderLinkManager::OnAbandonPrerender(int child_id, int prerender_id) {
     return;
   PrerenderHandle* prerender_handle = id_to_handle_iter->second;
   prerender_handle->OnNavigateAway();
-  RemovePrerender(id_to_handle_iter);
 }
 
 void PrerenderLinkManager::OnChannelClosing(int child_id) {
@@ -108,18 +126,21 @@ void PrerenderLinkManager::OnChannelClosing(int child_id) {
       child_id, std::numeric_limits<int>::min());
   const ChildAndPrerenderIdPair child_and_maximum_prerender_id(
       child_id, std::numeric_limits<int>::max());
-  std::queue<int> prerender_ids_to_abandon;
-  for (IdPairToPrerenderHandleMap::iterator
-           i = ids_to_handle_map_.lower_bound(child_and_minimum_prerender_id),
-           e = ids_to_handle_map_.upper_bound(child_and_maximum_prerender_id);
-       i != e; ++i) {
-    prerender_ids_to_abandon.push(i->first.second);
-  }
-  while (!prerender_ids_to_abandon.empty()) {
-    DVLOG(4) << "---> abandon prerender_id = "
-             << prerender_ids_to_abandon.front();
-    OnAbandonPrerender(child_id, prerender_ids_to_abandon.front());
-    prerender_ids_to_abandon.pop();
+
+  IdPairToPrerenderHandleMap::iterator
+      it = ids_to_handle_map_.lower_bound(child_and_minimum_prerender_id);
+  IdPairToPrerenderHandleMap::iterator
+      end = ids_to_handle_map_.upper_bound(child_and_maximum_prerender_id);
+  while (it != end) {
+    IdPairToPrerenderHandleMap::iterator next = it;
+    ++next;
+
+    size_t size_before_abandon = ids_to_handle_map_.size();
+    OnAbandonPrerender(child_id, it->first.second);
+    DCHECK_EQ(size_before_abandon, ids_to_handle_map_.size());
+    RemovePrerender(it);
+
+    it = next;
   }
 }
 
@@ -132,6 +153,57 @@ void PrerenderLinkManager::RemovePrerender(
   PrerenderHandle* prerender_handle = id_to_handle_iter->second;
   delete prerender_handle;
   ids_to_handle_map_.erase(id_to_handle_iter);
+}
+
+PrerenderLinkManager::IdPairToPrerenderHandleMap::iterator
+PrerenderLinkManager::FindPrerenderHandle(
+    PrerenderHandle* prerender_handle) {
+  for (IdPairToPrerenderHandleMap::iterator it = ids_to_handle_map_.begin();
+       it != ids_to_handle_map_.end(); ++it) {
+    if (it->second == prerender_handle)
+      return it;
+  }
+  return ids_to_handle_map_.end();
+}
+
+// In practice, this is always called from either
+// PrerenderLinkManager::OnAddPrerender in the regular case, or in the pending
+// prerender case, from PrerenderHandle::AdoptPrerenderDataFrom.
+void PrerenderLinkManager::OnPrerenderStart(
+    PrerenderHandle* prerender_handle) {
+  IdPairToPrerenderHandleMap::iterator it =
+      FindPrerenderHandle(prerender_handle);
+  DCHECK(it != ids_to_handle_map_.end());
+  const int child_id = it->first.first;
+  const int prerender_id = it->first.second;
+
+  Send(child_id, new PrerenderMsg_OnPrerenderStart(prerender_id));
+}
+
+void PrerenderLinkManager::OnPrerenderAddAlias(
+    PrerenderHandle* prerender_handle,
+    const GURL& alias_url) {
+  IdPairToPrerenderHandleMap::iterator it =
+      FindPrerenderHandle(prerender_handle);
+  if (it == ids_to_handle_map_.end())
+    return;
+  const int child_id = it->first.first;
+  const int prerender_id = it->first.second;
+
+  Send(child_id, new PrerenderMsg_OnPrerenderAddAlias(prerender_id, alias_url));
+}
+
+void PrerenderLinkManager::OnPrerenderStop(
+    PrerenderHandle* prerender_handle) {
+  IdPairToPrerenderHandleMap::iterator it =
+      FindPrerenderHandle(prerender_handle);
+  if (it == ids_to_handle_map_.end())
+    return;
+  const int child_id = it->first.first;
+  const int prerender_id = it->first.second;
+
+  Send(child_id, new PrerenderMsg_OnPrerenderStop(prerender_id));
+  RemovePrerender(it);
 }
 
 }  // namespace prerender

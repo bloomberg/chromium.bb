@@ -268,10 +268,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
    public:
     struct OrderByExpiryTime;
 
-    // Constructor for a pending prerender, which will get its contents later.
-    explicit PrerenderData(PrerenderManager* manager);
-
-    // Constructor for an active prerender.
     PrerenderData(PrerenderManager* manager,
                   PrerenderContents* contents,
                   base::TimeTicks expiry_time);
@@ -283,18 +279,18 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     void MakeIntoMatchCompleteReplacement();
 
     // A new PrerenderHandle has been created for this PrerenderData.
-    void OnNewHandle();
+    void OnHandleCreated(PrerenderHandle* prerender_handle);
 
     // The launcher associated with a handle is navigating away from the context
     // that launched this prerender. If the prerender is active, it may stay
     // alive briefly though, in case we we going through a redirect chain that
     // will eventually land at it.
-    void OnNavigateAwayByHandle();
+    void OnHandleNavigatedAway(PrerenderHandle* prerender_handle);
 
     // The launcher associated with a handle has taken explicit action to cancel
     // this prerender. We may well destroy the prerender in this case if no
     // other handles continue to track it.
-    void OnCancelByHandle();
+    void OnHandleCanceled(PrerenderHandle* prerender_handle);
 
     PrerenderContents* contents() { return contents_.get(); }
 
@@ -312,8 +308,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     scoped_ptr<PrerenderContents> contents_;
 
     // The number of distinct PrerenderHandles created for |this|, including
-    // ones that have called PrerenderData::OnNavigateAwayByHandle(), but not
-    // counting the ones that have called PrerenderData::OnCancelByHandle(). For
+    // ones that have called PrerenderData::OnHandleNavigatedAway(), but not
+    // counting the ones that have called PrerenderData::OnHandleCanceled(). For
     // pending prerenders, this will always be 1, since the PrerenderManager
     // only merges handles of running prerenders.
     int handle_count_;
@@ -334,11 +330,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       int process_id,
       ScopedVector<PrerenderContents::PendingPrerenderInfo>* pending_prerenders,
       content::SessionStorageNamespace* session_storage_namespace);
-
-  // Called by a PrerenderData to self-destroy, but only when the PrerenderData
-  // is pending (as in not yet active). Should not be called except for
-  // objects known to be in |pending_prerender_list_|.
-  void DestroyPendingPrerenderData(PrerenderData* pending_prerender_data);
 
   // Called by a PrerenderData to signal that the launcher has navigated away
   // from the context that launched the prerender. A user may have clicked
@@ -518,9 +509,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // All running prerenders. Sorted by expiry time, in ascending order.
   ScopedVector<PrerenderData> active_prerenders_;
-
-  // All pending prerenders.
-  ScopedVector<PrerenderData> pending_prerenders_;
 
   // Prerenders awaiting deletion.
   ScopedVector<PrerenderData> to_delete_prerenders_;

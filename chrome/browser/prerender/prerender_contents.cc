@@ -8,7 +8,6 @@
 #include <functional>
 #include <utility>
 
-#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
@@ -42,33 +41,6 @@ using content::SessionStorageNamespace;
 using content::WebContents;
 
 namespace prerender {
-
-namespace {
-
-// Tells the render process at |child_id| whether |url| is a new prerendered
-// page, or whether |url| is being removed as a prerendered page. Currently
-// this will only inform the render process that created the prerendered page
-// with <link rel="prerender"> tags about it. This means that if the user
-// clicks on a link for a prerendered URL in a different page, the prerender
-// will not be swapped in.
-void InformRenderProcessAboutPrerender(const GURL& url,
-                                       bool is_add,
-                                       int child_id) {
-  if (child_id < 0)
-    return;
-  content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromID(child_id);
-  if (!render_process_host)
-    return;
-  IPC::Message* message = NULL;
-  if (is_add)
-    message = new PrerenderMsg_AddPrerenderURL(url);
-  else
-    message = new PrerenderMsg_RemovePrerenderURL(url);
-  render_process_host->Send(message);
-}
-
-}  // namespace
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -167,6 +139,15 @@ class PrerenderContents::WebContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
+void PrerenderContents::Observer::OnPrerenderAddAlias(
+    PrerenderContents* contents,
+    const GURL& alias_url) {
+}
+
+void PrerenderContents::Observer::OnPrerenderCreatedMatchCompleteReplacement(
+    PrerenderContents* contents, PrerenderContents* replacement) {
+}
+
 PrerenderContents::Observer::Observer() {
 }
 
@@ -193,7 +174,9 @@ void PrerenderContents::AddPendingPrerender(
   pending_prerenders_.push_back(pending_prerender_info.release());
 }
 
-void PrerenderContents::StartPendingPrerenders() {
+void PrerenderContents::PrepareForUse() {
+  NotifyPrerenderStop();
+
   SessionStorageNamespace* session_storage_namespace = NULL;
   if (prerender_contents_) {
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
@@ -232,7 +215,7 @@ PrerenderContents::PrerenderContents(
   DCHECK(prerender_manager != NULL);
 }
 
-PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() const {
+PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() {
   PrerenderContents* new_contents = prerender_manager_->CreatePrerenderContents(
       prerender_url(), referrer(), origin(), experiment_id());
 
@@ -248,6 +231,7 @@ PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() const {
   new_contents->alias_urls_ = alias_urls_;
   new_contents->set_match_complete_status(
       PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
+  NotifyPrerenderCreatedMatchCompleteReplacement(new_contents);
   return new_contents;
 }
 
@@ -275,9 +259,6 @@ void PrerenderContents::StartPrerendering(
   creator_child_id_ = creator_child_id;
   session_storage_namespace_id_ = session_storage_namespace->id();
   size_ = size;
-
-  InformRenderProcessAboutPrerender(prerender_url_, true,
-                                    creator_child_id_);
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -369,11 +350,6 @@ void PrerenderContents::SetFinalStatus(FinalStatus final_status) {
   DCHECK(final_status_ == FINAL_STATUS_MAX);
 
   final_status_ = final_status;
-
-  if (!prerender_manager_->IsControlGroup(experiment_id()) &&
-      prerendering_has_started()) {
-    NotifyPrerenderStop();
-  }
 }
 
 PrerenderContents::~PrerenderContents() {
@@ -385,14 +361,6 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
 
-  if (child_id_ != -1 && route_id_ != -1) {
-    for (std::vector<GURL>::const_iterator it = alias_urls_.begin();
-         it != alias_urls_.end();
-         ++it) {
-      InformRenderProcessAboutPrerender(*it, false, creator_child_id_);
-    }
-  }
-
   // If we still have a WebContents, clean up anything we need to and then
   // destroy it.
   if (prerender_contents_.get())
@@ -402,6 +370,10 @@ PrerenderContents::~PrerenderContents() {
 void PrerenderContents::AddObserver(Observer* observer) {
   DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
   observer_list_.AddObserver(observer);
+}
+
+void PrerenderContents::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void PrerenderContents::Observe(int type,
@@ -500,6 +472,18 @@ void PrerenderContents::NotifyPrerenderStop() {
   observer_list_.Clear();
 }
 
+void PrerenderContents::NotifyPrerenderAddAlias(const GURL& alias_url) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderAddAlias(this,
+                                                                  alias_url));
+}
+
+void PrerenderContents::NotifyPrerenderCreatedMatchCompleteReplacement(
+    PrerenderContents* replacement) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnPrerenderCreatedMatchCompleteReplacement(this,
+                                                               replacement));
+}
+
 void PrerenderContents::DidUpdateFaviconURL(
     int32 page_id,
     const std::vector<content::FaviconURL>& urls) {
@@ -534,7 +518,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   }
 
   alias_urls_.push_back(url);
-  InformRenderProcessAboutPrerender(url, true, creator_child_id_);
+  NotifyPrerenderAddAlias(url);
   return true;
 }
 
@@ -588,6 +572,8 @@ void PrerenderContents::DidFinishLoad(int64 frame_id,
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {
+  DCHECK_NE(final_status, FINAL_STATUS_USED);
+
   if (prerendering_has_been_cancelled_)
     return;
 
@@ -612,6 +598,12 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerendering_has_been_cancelled_ = true;
   prerender_manager_->AddToHistory(this);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
+
+  if (!prerender_manager_->IsControlGroup(experiment_id()) &&
+      (prerendering_has_started() ||
+       match_complete_status() == MATCH_COMPLETE_REPLACEMENT)) {
+    NotifyPrerenderStop();
+  }
 
   // We may destroy the PrerenderContents before we have initialized the
   // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
