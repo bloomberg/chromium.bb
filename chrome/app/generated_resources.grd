@@ -7207,6 +7207,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PEPPER_BROKER_DENY_BUTTON" desc="Text for the deny button on the pepper broker launch prompt">
         Deny
       </message>
+      <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was blocked">
+        An unsandboxed plug-in was prevented from running on this page.
+      </message>
+      <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was allowed">
+        An unsandboxed plug-in was allowed to run running on this page.
+      </message>
+      <message name="IDS_BLOCKED_PPAPI_BROKER_UNBLOCK" desc="Radio button to unblock the Pepper broker">
+        Always allow unsandboxed plug-ins on <ph name="HOST">$1<ex>example.com</ex></ph>
+      </message>
+      <message name="IDS_BLOCKED_PPAPI_BROKER_NO_ACTION" desc="Radio button to keep blocking the Pepper broker">
+        Continue blocking unsandboxed plug-ins
+      </message>
+      <message name="IDS_ALLOWED_PPAPI_BROKER_NO_ACTION" desc="Radio button to keep allowing the Pepper broker">
+        Continue allowing unsandboxed plug-ins
+      </message>
+      <message name="IDS_ALLOWED_PPAPI_BROKER_BLOCK" desc="Radio button to block the Pepper broker">
+        Never allow unsandboxed plug-ins on <ph name="HOST">$1<ex>example.com</ex></ph>
+      </message>
+      <message name="IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK" desc="Link title to manage Pepper broker settings">
+        Manage unsandboxed plug-in blocking...
+      </message>
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
