@@ -172,10 +172,6 @@ UNFILED LINUX INTEL : conformance_canvas_framebuffer_bindings_unaffected_on_resi
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 
-121139 MAC : conformance_textures_texture_size = FAIL
-121139 WIN INTEL : conformance_textures_texture_size = FAIL
-121139 LINUX AMD : conformance_textures_texture_size = FAIL
-
 137892 LINUX INTEL : conformance_glsl_functions_glsl_function_acos = FAIL
 137892 LINUX INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
 137892 LINUX INTEL : conformance_glsl_functions_glsl_function_atan = FAIL
