@@ -68,18 +68,14 @@ class FontSettingsEventRouter {
 };
 
 // The profile-keyed service that manages the font_settings extension API.
-class FontSettingsAPI : public ProfileKeyedService,
-                        public EventRouter::Observer {
+// This is not an EventRouter::Observer (and does not lazily initialize) because
+// doing so caused a regression in perf tests. See crbug.com/163466.
+class FontSettingsAPI : public ProfileKeyedService {
  public:
   explicit FontSettingsAPI(Profile* profile);
   virtual ~FontSettingsAPI();
 
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
  private:
-
-  Profile* profile_;
   scoped_ptr<FontSettingsEventRouter> font_settings_event_router_;
 };
 
