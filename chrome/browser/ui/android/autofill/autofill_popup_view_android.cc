@@ -17,7 +17,13 @@ using base::android::MethodID;
 
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     AutofillPopupController* controller)
-    : controller_(controller) {
+    : controller_(controller) {}
+
+AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {
+  controller_->ViewDestroyed();
+}
+
+void AutofillPopupViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
   content::ContentViewCore* content_view_core = controller_->container_view();
 
@@ -26,17 +32,25 @@ AutofillPopupViewAndroid::AutofillPopupViewAndroid(
       reinterpret_cast<jint>(this),
       content_view_core->GetWindowAndroid()->GetJavaObject().obj(),
       content_view_core->GetContainerViewDelegate().obj()));
-}
 
-AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {
-  controller_->ViewDestroyed();
-}
-
-void AutofillPopupViewAndroid::Show() {
   UpdateBoundsAndRedrawPopup();
+}
+
+void AutofillPopupViewAndroid::Hide() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutofillPopupGlue_dismiss(env, java_object_.obj());
+}
+
+void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutofillPopupGlue_setAnchorRect(env,
+                                       java_object_.obj(),
+                                       controller_->element_bounds().x(),
+                                       controller_->element_bounds().y(),
+                                       controller_->element_bounds().width(),
+                                       controller_->element_bounds().height());
 
   // We need an array of AutofillSuggestion.
-  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jclass> autofill_suggestion_clazz =
       base::android::GetClass(env,
           "org/chromium/chrome/browser/autofill/AutofillSuggestion");
@@ -64,21 +78,6 @@ void AutofillPopupViewAndroid::Show() {
   Java_AutofillPopupGlue_show(env, java_object_.obj(), data_array.obj());
 }
 
-void AutofillPopupViewAndroid::Hide() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillPopupGlue_dismissFromNative(env, java_object_.obj());
-}
-
-void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillPopupGlue_setAnchorRect(env,
-                                       java_object_.obj(),
-                                       controller_->element_bounds().x(),
-                                       controller_->element_bounds().y(),
-                                       controller_->element_bounds().width(),
-                                       controller_->element_bounds().height());
-}
-
 void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
                                                   jobject obj,
                                                   jint list_index,
@@ -90,7 +89,7 @@ void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
                                         list_index);
 }
 
-void AutofillPopupViewAndroid::Dismiss(JNIEnv* env, jobject obj) {
+void AutofillPopupViewAndroid::Dismissed(JNIEnv* env, jobject obj) {
   delete this;
 }
 

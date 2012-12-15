@@ -31,7 +31,7 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
                           jstring value,
                           jint unique_id);
 
-  void Dismiss(JNIEnv *env, jobject obj);
+  void Dismissed(JNIEnv *env, jobject obj);
 
   static bool RegisterAutofillPopupViewAndroid(JNIEnv* env);
 

@@ -99,8 +99,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
         }
 
         @Override
-        public void dismiss() {
-            mAutofillPopup.dismissFromNative();
+        public void dismissed() {
         }
     }
 

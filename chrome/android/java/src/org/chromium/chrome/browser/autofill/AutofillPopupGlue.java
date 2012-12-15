@@ -30,8 +30,8 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     @Override
-    public void dismiss() {
-        nativeDismiss(mNativeAutofillPopup);
+    public void dismissed() {
+        nativeDismissed(mNativeAutofillPopup);
     }
 
     @Override
@@ -40,11 +40,12 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     /**
-     * Dismisses the Autofill Popup and removes its anchor from the ContainerView.
+     * Dismisses the Autofill Popup, removes its anchor from the ContainerView and calls back
+     * to AutofillPopupDelegate.dismiss().
      */
     @CalledByNative
-    public void dismissFromNative() {
-        mAutofillPopup.dismissFromNative();
+    public void dismiss() {
+        mAutofillPopup.dismiss();
     }
 
     /**
@@ -81,7 +82,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
         return new AutofillSuggestion(name, label, uniqueId);
     }
 
-    private native void nativeDismiss(int nativeAutofillPopupViewAndroid);
+    private native void nativeDismissed(int nativeAutofillPopupViewAndroid);
     private native void nativeSuggestionSelected(int nativeAutofillPopupViewAndroid,
             int listIndex, String value, int uniqueId);
 

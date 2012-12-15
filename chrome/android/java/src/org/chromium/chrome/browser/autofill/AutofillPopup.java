@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
@@ -56,9 +57,9 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      */
     public interface AutofillPopupDelegate {
         /**
-         * Handles the dismissal of the AutofillPopup.
+         * Confirms the dismissal of the java AutofillPopup object.
          */
-        public void dismiss();
+        public void dismissed();
 
         /**
          * Handles the selection of an Autofill suggestion from an AutofillPopup.
@@ -81,6 +82,14 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
             super(c);
             mAutofillPopup = autofillPopup;
             mCurrentOrientation = getResources().getConfiguration().orientation;
+
+            addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (v instanceof AnchorView) mAutofillPopup.show();
+                }
+            });
         }
 
         @Override
@@ -90,25 +99,27 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         }
 
         public void setSize(Rect r, int desiredWidth) {
-            setLeft(r.left);
-            // If the desired width is smaller than the text edit box, use the width of the text
-            // editbox.
-            if (desiredWidth < r.right - r.left) {
-                setRight(r.right);
-            } else {
-                // Make sure that the anchor view does not go outside the screen.
-                Point size = new Point();
-                WindowManager wm = (WindowManager) getContext().getSystemService(
-                        Context.WINDOW_SERVICE);
-                wm.getDefaultDisplay().getSize(size);
-                if (r.left + desiredWidth > size.x) {
-                    setRight(size.x);
-                } else {
-                    setRight(r.left + desiredWidth);
-                }
-            }
-            setBottom(r.bottom);
-            setTop(r.top);
+            int width = Math.max(desiredWidth, r.right - r.left);
+
+            // Make sure that the anchor view does not go outside the screen.
+            Point size = new Point();
+            WindowManager wm = (WindowManager) getContext().getSystemService(
+                    Context.WINDOW_SERVICE);
+            wm.getDefaultDisplay().getSize(size);
+            if (r.left + width > size.x) width = size.x - r.left;
+
+            int height = r.bottom - r.top;
+
+            // Get rid of the padding added by ListPopupWindow class.
+            Drawable popupBackground = mAutofillPopup.getBackground();
+            Rect paddingRect = new Rect();
+            if (popupBackground != null) popupBackground.getPadding(paddingRect);
+            width += paddingRect.left + paddingRect.right;
+
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
+            lp.leftMargin = r.left - paddingRect.left;
+            lp.topMargin = r.top;
+            setLayoutParams(lp);
         }
     }
 
@@ -126,14 +137,26 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         mAutofillCallback = autofillCallback;
 
         setOnItemClickListener(this);
-        setWidth(ListPopupWindow.WRAP_CONTENT);
 
         mAnchorView = new AnchorView(mNativeWindow.getContext(), this);
         mContainerViewDelegate.addViewToContainerView(mAnchorView);
+        setAnchorView(mAnchorView);
     }
 
     /**
-     * Sets the Autofill suggestions to display in the popup.
+     * Sets the location and the size of the anchor view that the AutofillPopup will use to attach
+     * itself.
+     * @param x X coordinate of the top left corner of the anchor view.
+     * @param y Y coordinate of the top left corner of the anchor view.
+     * @param width The width of the anchor view.
+     * @param height The height of the anchor view.
+     */
+    public void setAnchorRect(float x, float y, float width, float height) {
+        mAnchorRect = new Rect((int) x, (int) y, (int) (x + width), (int) (y + height));
+    }
+
+    /**
+     * Sets the Autofill suggestions to display in the popup and shows the popup.
      * @param suggestions Autofill suggestion data.
      */
     public void show(AutofillSuggestion[] suggestions) {
@@ -146,33 +169,19 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
                 cleanedData.add(suggestions[i]);
             }
         }
-        mAnchorView.setSize(mAnchorRect, getDesiredWidth(suggestions));
-        setAnchorView(mAnchorView);
-        setContentWidth(mAnchorView.getWidth());
-        Drawable popupBackground = getBackground();
-        if (popupBackground != null) {
-            Rect paddingRect = new Rect();
-            popupBackground.getPadding(paddingRect);
-            setHorizontalOffset(-paddingRect.left);
-        }
         setAdapter(new AutofillListAdapter(mNativeWindow.getContext(), cleanedData));
-        show();
+        // Once the mAnchorRect is resized and placed correctly, it will show the Autofill popup.
+        mAnchorView.setSize(mAnchorRect, getDesiredWidth(suggestions));
     }
 
     /**
-     * Overriding standard behavior to let native AutofillPopupView to deal with dismissing.
+     * Dismisses the popup and calls to mAutofillCallback.dismissed().
      */
     @Override
     public void dismiss() {
-        mAutofillCallback.dismiss();
-    }
-
-    /**
-     * Dismisses the popup and removes it from the anchor from the ContainerView.
-     */
-    public void dismissFromNative() {
         super.dismiss();
         mContainerViewDelegate.removeViewFromContainerView(mAnchorView);
+        mAutofillCallback.dismissed();
     }
 
     /**
@@ -210,18 +219,6 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         // Adding padding.
         return maxTextWidth + (int) (TEXT_PADDING_DP *
                 mNativeWindow.getContext().getResources().getDisplayMetrics().density);
-    }
-
-    /**
-     * Sets the location and the size of the anchor view that the AutofillPopup will use to attach
-     * itself.
-     * @param x X coordinate of the top left corner of the anchor view.
-     * @param y Y coordinate of the top left corner of the anchor view.
-     * @param width The width of the anchor view.
-     * @param height The height of the anchor view.
-     */
-    public void setAnchorRect(float x, float y, float width, float height) {
-        mAnchorRect = new Rect((int) x, (int) y, (int) (x + width), (int) (y + height));
     }
 
     @Override
