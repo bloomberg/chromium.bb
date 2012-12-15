@@ -13,7 +13,6 @@
 struct dirent;
 struct stat;
 class Mount;
-class MountNode;
 
 class MountNode : public RefObject {
  protected:

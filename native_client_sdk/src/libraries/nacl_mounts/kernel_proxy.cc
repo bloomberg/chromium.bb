@@ -17,6 +17,7 @@
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/osstat.h"
 #include "nacl_mounts/path.h"
+#include "nacl_mounts/pepper_interface.h"
 #include "utils/auto_lock.h"
 #include "utils/ref_object.h"
 
@@ -29,10 +30,17 @@
 #define GRP_ID 1003
 
 
-KernelProxy::KernelProxy() : dev_(0) {}
-KernelProxy::~KernelProxy() {}
+KernelProxy::KernelProxy()
+   : dev_(0),
+     ppapi_(NULL) {
+}
 
-void KernelProxy::Init() {
+KernelProxy::~KernelProxy() {
+  delete ppapi_;
+}
+
+void KernelProxy::Init(PepperInterface* ppapi) {
+  ppapi_ = ppapi;
   cwd_ = "/";
   dev_ = 1;
 
@@ -41,9 +49,8 @@ void KernelProxy::Init() {
 
   // Create memory mount at root
   StringMap_t smap;
-  mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap);
+  mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap, ppapi_);
 }
-
 
 int KernelProxy::open(const char *path, int oflags) {
   Path rel;
@@ -225,7 +232,7 @@ int KernelProxy::mount(const char *source, const char *target,
     free(str);
   }
 
-  Mount* mnt = factory->second(dev_++, smap);
+  Mount* mnt = factory->second(dev_++, smap, ppapi_);
   if (mnt) {
     mounts_[abs_targ] = mnt;
     return 0;

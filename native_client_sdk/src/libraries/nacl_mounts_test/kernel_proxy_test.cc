@@ -145,7 +145,7 @@ StringMap_t g_StringMap;
 
 class MountMockInit : public MountMem {
  public:
-  bool Init(int dev, StringMap_t& args) {
+  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
     g_StringMap = args;
     if (args.find("false") != args.end())
       return false;
@@ -154,8 +154,8 @@ class MountMockInit : public MountMem {
 };
 
 class KernelProxyMountMock : public KernelProxy {
-  void Init() {
-    KernelProxy::Init();
+  virtual void Init(PepperInterface* ppapi) {
+    KernelProxy::Init(NULL);
     factories_["initfs"] = MountMockInit::Create<MountMockInit>;
   }
 };

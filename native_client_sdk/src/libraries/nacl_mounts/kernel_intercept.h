@@ -5,6 +5,8 @@
 #ifndef LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_
 #define LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_
 
+#include <ppapi/c/ppb.h>
+#include <ppapi/c/pp_instance.h>
 #include "nacl_mounts/ostypes.h"
 #include "utils/macros.h"
 
@@ -17,6 +19,9 @@ EXTERN_C_BEGIN
 // with NULL will instantiate a default kernel proxy object.  ki_init must
 // be called before any other ki_XXX function can be used.
 void ki_init(void* kernel_proxy);
+void ki_init_ppapi(void* kernel_proxy,
+                   PP_Instance instance,
+                   PPB_GetInterface get_browser_interface);
 int ki_is_initialized();
 
 int ki_chdir(const char* path);

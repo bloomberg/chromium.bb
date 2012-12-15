@@ -26,8 +26,8 @@ MountMem::MountMem()
       max_ino_(0) {
 }
 
-bool MountMem::Init(int dev, StringMap_t& args) {
-  dev_ = dev;
+bool MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+  Mount::Init(dev, args, ppapi);
   root_ = AllocatePath(S_IREAD | S_IWRITE);
   return (bool) (root_ != NULL);
 }

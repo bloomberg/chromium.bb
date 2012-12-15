@@ -24,6 +24,8 @@
         "mount_node_dir.cc",
         "mount_node_mem.cc",
         "path.cc",
+        "pepper_interface.cc",
+        "real_pepper_interface.cc",
       ],
     }
   ],
@@ -44,7 +46,9 @@
         "osdirent.h",
         "osstat.h",
         "ostypes.h",
-        "path.h"
+        "path.h",
+        "pepper_interface.h",
+        "real_pepper_interface.h",
       ],
       'DEST': 'include/nacl_mounts',
     },

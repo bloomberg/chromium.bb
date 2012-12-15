@@ -5,9 +5,9 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
 #include <string>
 #include <sys/stat.h>
-
 
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_dev.h"
@@ -24,7 +24,7 @@ class MountMemMock : public MountMem {
       : MountMem(),
         nodes_(0) {
     StringMap_t map;
-    Init(1, map);
+    Init(1, map, NULL);
   };
 
   MountNode* AllocateData(int mode) {
@@ -45,7 +45,7 @@ class MountDevMock : public MountDev {
  public:
   MountDevMock() : MountDev() {
     StringMap_t map;
-    Init(1, map);
+    Init(1, map, NULL);
   }
 };
 

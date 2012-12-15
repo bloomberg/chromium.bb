@@ -14,7 +14,7 @@ class MountMem : public Mount {
  protected:
   MountMem();
 
-  virtual bool Init(int dev, StringMap_t& args);
+  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
   // The protected functions are only used internally and will not

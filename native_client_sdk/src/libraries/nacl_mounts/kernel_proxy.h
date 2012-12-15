@@ -5,31 +5,36 @@
 #ifndef LIBRARIES_NACL_MOUNTS_KERNEL_PROXY_H_
 #define LIBRARIES_NACL_MOUNTS_KERNEL_PROXY_H_
 
+#include <ppapi/c/pp_instance.h>
+#include <ppapi/c/ppb.h>
 #include <pthread.h>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "nacl_mounts/path.h"
 #include "nacl_mounts/kernel_object.h"
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/ostypes.h"
+#include "nacl_mounts/path.h"
 
 class KernelHandle;
 class Mount;
 class MountNode;
+class PepperInterface;
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
 // proxy will result in IO access to the provided Mount and MountNode objects.
 class KernelProxy : protected KernelObject {
  public:
-  typedef Mount* (*MountFactory_t)(int, StringMap_t&);
+  typedef Mount* (*MountFactory_t)(int, StringMap_t&, PepperInterface*);
   typedef std::map<std::string, std::string> StringMap_t;
   typedef std::map<std::string, MountFactory_t> MountFactoryMap_t;
 
   KernelProxy();
   virtual ~KernelProxy();
-  virtual void Init();
+  // Takes ownership of |ppapi|.
+  // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
+  virtual void Init(PepperInterface* ppapi);
 
   // KernelHandle and FD allocation and manipulation functions.
   virtual int open(const char *path, int oflag);
@@ -83,6 +88,7 @@ class KernelProxy : protected KernelObject {
 protected:
   MountFactoryMap_t factories_;
   int dev_;
+  PepperInterface* ppapi_;
 
   static KernelProxy *s_instance_;
 

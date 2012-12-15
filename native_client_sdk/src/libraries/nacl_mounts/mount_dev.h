@@ -24,7 +24,7 @@ class MountDev : public Mount {
  protected:
   MountDev();
 
-  virtual bool Init(int dev, StringMap_t& args);
+  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
  private:

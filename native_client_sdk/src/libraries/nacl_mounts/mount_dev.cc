@@ -180,8 +180,10 @@ MountDev::MountDev()
       random_node_(NULL) {
 }
 
-bool MountDev::Init(int dev, StringMap_t& args) {
-  dev_ = dev;
+bool MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+  if (!Mount::Init(dev, args, ppapi))
+    return false;
+
   root_ = new MountNodeDir(this, 1, dev_);
   null_node_ = new NullNode(this, 2, dev_);
   root_->AddChild("/null", null_node_);

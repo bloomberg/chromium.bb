@@ -17,6 +17,8 @@
         'mount_node_test.cc',
         'mount_test.cc',
         'path_test.cc',
+        'pepper_interface_mock.cc',
+        'pepper_interface_mock.h',
       ],
       'LIBS': ['ppapi', 'pthread', 'gtest', 'gmock', 'nacl_mounts', 'ppapi_cpp', 'gtest_ppapi']
     }

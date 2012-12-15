@@ -22,8 +22,9 @@ Mount::Mount()
 
 Mount::~Mount() {}
 
-bool Mount::Init(int dev, StringMap_t& args) {
+bool Mount::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   dev_ = dev;
+  ppapi_ = ppapi;
   return true;
 }
 
