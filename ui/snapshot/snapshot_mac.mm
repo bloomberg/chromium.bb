@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "ui/snapshot/snapshot.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,36 +11,39 @@
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/rect.h"
 
-namespace chrome {
-namespace internal {
+namespace ui {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+bool GrabViewSnapshot(gfx::NativeView view,
+                      std::vector<unsigned char>* png_representation,
+                      const gfx::Rect& snapshot_bounds) {
+  NSWindow* window = [view window];
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
-  gfx::Rect window_bounds = gfx::Rect(NSRectToCGRect([window frame]));
+
+
+  // Get the view bounds relative to the screen
+  NSRect frame = [view convertRect:[view bounds] toView:nil];
+  frame.origin = [window convertBaseToScreen:frame.origin];
+
+  gfx::Rect view_bounds = gfx::Rect(NSRectToCGRect(frame));
 
   // Flip window coordinates based on the primary screen.
-  window_bounds.set_y(
-      screen_bounds.height() - window_bounds.y() - window_bounds.height());
+  view_bounds.set_y(
+      screen_bounds.height() - view_bounds.y() - view_bounds.height());
 
   // Convert snapshot bounds relative to window into bounds relative to
   // screen.
   gfx::Rect screen_snapshot_bounds = snapshot_bounds;
-  screen_snapshot_bounds.Offset(window_bounds.OffsetFromOrigin());
+  screen_snapshot_bounds.Offset(view_bounds.OffsetFromOrigin());
 
-  DCHECK_LE(screen_snapshot_bounds.right(), window_bounds.right());
-  DCHECK_LE(screen_snapshot_bounds.bottom(), window_bounds.bottom());
+  DCHECK_LE(screen_snapshot_bounds.right(), view_bounds.right());
+  DCHECK_LE(screen_snapshot_bounds.bottom(), view_bounds.bottom());
 
   png_representation->clear();
 
-  // Make sure to grab the "window frame" view so we get current tab +
-  // tabstrip.
-  NSView* view = [[window contentView] superview];
   base::mac::ScopedCFTypeRef<CGImageRef> windowSnapshot(CGWindowListCreateImage(
       screen_snapshot_bounds.ToCGRect(), kCGWindowListOptionIncludingWindow,
-      [[view window] windowNumber], kCGWindowImageBoundsIgnoreFraming));
+      [window windowNumber], kCGWindowImageBoundsIgnoreFraming));
   if (CGImageGetWidth(windowSnapshot) <= 0)
     return false;
 
@@ -58,5 +61,13 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return true;
 }
 
-}  // namespace internal
-}  // namespace chrome
+bool GrabWindowSnapshot(gfx::NativeWindow window,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
+  // Make sure to grab the "window frame" view so we get current tab +
+  // tabstrip.
+  return GrabViewSnapshot([[window contentView] superview], png_representation,
+      snapshot_bounds);
+}
+
+}  // namespace ui

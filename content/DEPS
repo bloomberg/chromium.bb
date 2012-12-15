@@ -57,6 +57,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/native_theme",
+  "+ui/snapshot",
   "+ui/surface",
   # Content knows about grd files, but the specifics of how to get a resource
   # given its id is left to the embedder.

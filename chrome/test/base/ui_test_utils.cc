@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -73,6 +72,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
+#include "ui/snapshot/snapshot.h"
 #include "ui/ui_controls/ui_controls.h"
 
 #if defined(USE_AURA)
@@ -634,7 +634,7 @@ bool SaveScreenSnapshotToDirectory(const FilePath& directory,
     std::vector<unsigned char> png_data;
     gfx::Rect bounds(
         gfx::Size(rect.right - rect.left, rect.bottom - rect.top));
-    if (chrome::internal::GrabWindowSnapshot(NULL, &png_data, bounds) &&
+    if (ui::GrabWindowSnapshot(NULL, &png_data, bounds) &&
         png_data.size() <= INT_MAX) {
       int bytes = static_cast<int>(png_data.size());
       int written = file_util::WriteFile(

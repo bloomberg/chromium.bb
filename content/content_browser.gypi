@@ -22,6 +22,7 @@
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/zlib/zlib.gyp:zlib',
+    '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/ui.gyp:ui',
     '../ui/ui.gyp:ui_resources',
   ],

@@ -600,6 +600,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #endif
       session_storage_namespace_id_(params->session_storage_namespace_id),
       handling_select_range_(false),
+      next_snapshot_id_(0),
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
@@ -1043,6 +1044,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupDIB,
                         OnReleaseDisambiguationPopupDIB)
+    IPC_MESSAGE_HANDLER(ViewMsg_WindowSnapshotCompleted,
+                        OnWindowSnapshotCompleted)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -1764,6 +1767,20 @@ bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
   message->EnableMessagePumping();  // Runs a nested message loop.
   return Send(message);
+}
+
+void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
+  int id = next_snapshot_id_++;
+  pending_snapshots_.insert(std::make_pair(id, callback));
+  Send(new ViewHostMsg_GetWindowSnapshot(routing_id_, id));
+}
+
+void RenderViewImpl::OnWindowSnapshotCompleted(const int snapshot_id,
+    const gfx::Size& size, const std::vector<unsigned char>& png) {
+  PendingSnapshotMap::iterator it = pending_snapshots_.find(snapshot_id);
+  DCHECK(it != pending_snapshots_.end());
+  it->second.Run(size, png);
+  pending_snapshots_.erase(it);
 }
 
 // WebKit::WebViewClient ------------------------------------------------------

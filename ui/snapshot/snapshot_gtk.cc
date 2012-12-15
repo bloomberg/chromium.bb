@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "ui/snapshot/snapshot.h"
 
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
@@ -27,13 +27,12 @@ cairo_status_t SnapshotCallback(void* closure,
 
 }  // namespace
 
-namespace chrome {
-namespace internal {
+namespace ui {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
+bool GrabViewSnapshot(gfx::NativeView view_handle,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
-  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_handle));
+  GdkWindow* gdk_window = gtk_widget_get_window(view_handle);
   Display* display = GDK_WINDOW_XDISPLAY(gdk_window);
   XID win = GDK_WINDOW_XID(gdk_window);
 
@@ -76,5 +75,11 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   return true;
 }
 
-}  // namespace internal
-}  // namespace chrome
+bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
+  return GrabViewSnapshot(GTK_WIDGET(window_handle), png_representation,
+      snapshot_bounds);
+}
+
+}  // namespace ui

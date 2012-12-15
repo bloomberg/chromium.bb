@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "ui/snapshot/snapshot.h"
 
 namespace chrome {
 
@@ -16,12 +17,12 @@ bool GrabWindowSnapshotForUser(
     const gfx::Rect& snapshot_bounds) {
   if (g_browser_process->local_state()->GetBoolean(prefs::kDisableScreenshots))
     return false;
-  return internal::GrabWindowSnapshot(window, png_representation,
-        snapshot_bounds);
+  return ui::GrabWindowSnapshot(window, png_representation,
+      snapshot_bounds);
 }
 
 void RegisterScreenshotPrefs(PrefService* service) {
   service->RegisterBooleanPref(prefs::kDisableScreenshots, false);
 }
 
-}  // namespace browser
+}  // namespace chrome

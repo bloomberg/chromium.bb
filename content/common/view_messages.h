@@ -1447,6 +1447,12 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupDIB,
                     TransportDIB::Handle /* DIB handle */)
 
+// Notifies the renderer that a snapshot has been retrieved.
+IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
+                    int /* snapshot_id */,
+                    gfx::Size /* size */,
+                    std::vector<unsigned char> /* png */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -1945,6 +1951,10 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     GURL /* source_url */,
                     std::string  /* message */,
                     base::ListValue /* args */)
+
+// Requests a snapshot of the given window.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_GetWindowSnapshot,
+                    int /* snapshot_id */)
 
 // A renderer sends this to the browser process when it wants to create a ppapi
 // plugin.  The browser will create the plugin process if necessary, and will

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "ui/snapshot/snapshot.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -20,7 +20,7 @@
 
 #endif  // 10.7
 
-namespace chrome {
+namespace ui {
 namespace {
 
 typedef PlatformTest GrabWindowSnapshotTest;
@@ -39,7 +39,7 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
   scoped_ptr<std::vector<unsigned char> > png_representation(
       new std::vector<unsigned char>);
   gfx::Rect bounds = gfx::Rect(0, 0, frame.size.width, frame.size.height);
-  EXPECT_TRUE(internal::GrabWindowSnapshot(window, png_representation.get(),
+  EXPECT_TRUE(ui::GrabWindowSnapshot(window, png_representation.get(),
                                            bounds));
 
   // Copy png back into NSData object so we can make sure we grabbed a png.
@@ -59,4 +59,4 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
 }
 
 }  // namespace
-}  // namespace chrome
+}  // namespace ui

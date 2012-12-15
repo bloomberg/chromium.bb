@@ -379,6 +379,13 @@ class CONTENT_EXPORT RenderViewImpl
   // supported PPAPI plug-ins.
   bool HasIMETextFocus();
 
+  // Callback for use with GetWindowSnapshot.
+  typedef base::Callback<void(
+      const gfx::Size&, const std::vector<unsigned char>&)>
+      WindowSnapshotCallback;
+
+  void GetWindowSnapshot(const WindowSnapshotCallback& callback);
+
   // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -1032,6 +1039,9 @@ class CONTENT_EXPORT RenderViewImpl
                             const gfx::Rect& view_frame);
 #endif
 
+  void OnWindowSnapshotCompleted(const int snapshot_id,
+      const gfx::Size& size, const std::vector<unsigned char>& png);
+
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
@@ -1499,6 +1509,12 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
+
+  // State associated with the GetWindowSnapshot function.
+  int next_snapshot_id_;
+  typedef std::map<int, WindowSnapshotCallback>
+      PendingSnapshotMap;
+  PendingSnapshotMap pending_snapshots_;
 
   // Plugins -------------------------------------------------------------------
 
