@@ -128,6 +128,13 @@ void LogToUMA(UmaEntry entry) {
   UMA_HISTOGRAM_ENUMERATION("LevelDBEnv.IOError", entry, kNumEntries);
 }
 
+void LogRandomAccessFileError(base::PlatformFileError error_code) {
+  DCHECK(error_code < 0);
+  UMA_HISTOGRAM_ENUMERATION("LevelDBEnv.IOError.RandomAccessFile",
+                            -error_code,
+                            -base::PLATFORM_FILE_ERROR_MAX);
+}
+
 }  // namespace
 
 namespace leveldb {
@@ -139,7 +146,6 @@ class Thread;
 static const ::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
 
-// TODO(jorlow): This should be moved into Chromium's base.
 const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
   switch (error) {
     case ::base::PLATFORM_FILE_ERROR_FAILED:
@@ -174,6 +180,8 @@ const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
       return "Invalid URL.";
     case ::base::PLATFORM_FILE_OK:
       return "OK.";
+    case ::base::PLATFORM_FILE_ERROR_MAX:
+      NOTREACHED();
   }
   NOTIMPLEMENTED();
   return "Unknown error.";
@@ -337,6 +345,7 @@ class ChromiumEnv : public Env {
     if (error_code != ::base::PLATFORM_FILE_OK) {
       *result = NULL;
       LogToUMA(kNewRandomAccessFile);
+      LogRandomAccessFileError(error_code);
       return Status::IOError(fname, PlatformFileErrorString(error_code));
     }
     *result = new ChromiumRandomAccessFile(fname, file);
@@ -352,7 +361,7 @@ class ChromiumEnv : public Env {
       return Status::IOError(fname, strerror(errno));
     } else {
       if (!sync_parent(fname)) {
-        fclose(f); 
+        fclose(f);
         return Status::IOError(fname, strerror(errno));
       }
       *result = new ChromiumWritableFile(fname, f);
