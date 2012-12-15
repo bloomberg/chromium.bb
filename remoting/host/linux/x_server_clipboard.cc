@@ -54,11 +54,6 @@ void XServerClipboard::Init(Display* display,
                                           0, 0, 1, 1,  // x, y, width, height
                                           0, 0, 0);
 
-  XFixesSelectSelectionInput(display_, clipboard_window_, XA_PRIMARY,
-                             XFixesSetSelectionOwnerNotifyMask);
-  XFixesSelectSelectionInput(display_, clipboard_window_, clipboard_atom_,
-                             XFixesSetSelectionOwnerNotifyMask);
-
   // TODO(lambroslambrou): Use ui::X11AtomCache for this, either by adding a
   // dependency on ui/ or by moving X11AtomCache to base/.
   static const char* const kAtomNames[] = {
@@ -84,6 +79,11 @@ void XServerClipboard::Init(Display* display,
   } else {
     LOG(ERROR) << "XInternAtoms failed";
   }
+
+  XFixesSelectSelectionInput(display_, clipboard_window_, XA_PRIMARY,
+                             XFixesSetSelectionOwnerNotifyMask);
+  XFixesSelectSelectionInput(display_, clipboard_window_, clipboard_atom_,
+                             XFixesSetSelectionOwnerNotifyMask);
 }
 
 void XServerClipboard::SetClipboard(const std::string& mime_type,
