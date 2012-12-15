@@ -104,6 +104,9 @@ SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
   OnSessionLengthLimitChanged();
 }
 
+SessionLengthLimiter::~SessionLengthLimiter() {
+}
+
 void SessionLengthLimiter::OnSessionLengthLimitChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int limit;

@@ -32,6 +32,7 @@ class SessionLengthLimiter {
   static void RegisterPrefs(PrefService* local_state);
 
   SessionLengthLimiter(Delegate* delegate, bool browser_restarted);
+  ~SessionLengthLimiter();
 
  private:
   void OnSessionLengthLimitChanged();
