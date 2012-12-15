@@ -47,10 +47,6 @@ namespace {
 
 static const size_t kEventLogHistorySize = 100;
 
-// Used in test to setup system service.
-google_apis::DriveServiceInterface* g_test_drive_service = NULL;
-const std::string* g_test_cache_root = NULL;
-
 // The sync invalidation object ID for Google Drive.
 const char kDriveInvalidationObjectId[] = "CHANGELOG";
 
@@ -99,36 +95,48 @@ std::string GetDriveUserAgent() {
 
 }  // namespace
 
-DriveSystemService::DriveSystemService(Profile* profile)
+void DriveSystemService::ScopedPtrMallocDestroyCache::operator()(
+    DriveCache* cache) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (cache)
+    cache->Destroy();
+}
+
+DriveSystemService::DriveSystemService(
+    Profile* profile,
+    google_apis::DriveServiceInterface* test_drive_service,
+    const FilePath& test_cache_root,
+    DriveFileSystemInterface* test_file_system)
     : profile_(profile),
       drive_disabled_(false),
       push_notification_registered_(false),
-      cache_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
-}
-
-DriveSystemService::~DriveSystemService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  cache_->Destroy();
-}
-
-void DriveSystemService::Initialize(
-    google_apis::DriveServiceInterface* drive_service,
-    const FilePath& cache_root) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   event_logger_.reset(new EventLogger(kEventLogHistorySize));
-  drive_service_.reset(drive_service);
-  cache_ = new DriveCache(cache_root,
-                          blocking_task_runner_,
-                          NULL /* free_disk_space_getter */);
+  if (test_drive_service) {
+    drive_service_.reset(test_drive_service);
+  } else if (google_apis::util::IsDriveV2ApiEnabled()) {
+    drive_service_.reset(new DriveAPIService(
+        g_browser_process->system_request_context(),
+        GetDriveUserAgent()));
+  } else {
+    drive_service_.reset(new google_apis::GDataWapiService(
+        g_browser_process->system_request_context(),
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+        GetDriveUserAgent()));
+  }
+  cache_.reset(new DriveCache(!test_cache_root.empty() ? test_cache_root :
+                              DriveCache::GetCacheRootPath(profile),
+                              blocking_task_runner_,
+                              NULL /* free_disk_space_getter */));
   uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
-  file_system_.reset(new DriveFileSystem(profile_,
+  file_system_.reset(test_file_system ? test_file_system :
+                     new DriveFileSystem(profile_,
                                          cache(),
                                          drive_service_.get(),
                                          uploader(),
@@ -144,7 +152,14 @@ void DriveSystemService::Initialize(
   sync_client_->AddObserver(prefetcher_.get());
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
                                                               cache()));
+}
 
+DriveSystemService::~DriveSystemService() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void DriveSystemService::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   sync_client_->Initialize();
   drive_service_->Initialize(profile_);
   file_system_->Initialize();
@@ -170,18 +185,6 @@ void DriveSystemService::Shutdown() {
   }
 
   RemoveDriveMountPoint();
-
-  // Shut down the member objects in the reverse order of creation.
-  stale_cache_files_remover_.reset();
-  sync_client_->RemoveObserver(prefetcher_.get());
-  prefetcher_.reset();
-  sync_client_.reset();
-  download_observer_.reset();
-  file_write_helper_.reset();
-  file_system_.reset();
-  webapps_registry_.reset();
-  uploader_.reset();
-  drive_service_.reset();
 }
 
 bool DriveSystemService::IsDriveEnabled() {
@@ -367,6 +370,12 @@ DriveSystemServiceFactory* DriveSystemServiceFactory::GetInstance() {
   return Singleton<DriveSystemServiceFactory>::get();
 }
 
+// static
+void DriveSystemServiceFactory::SetFactoryForTest(
+    const FactoryCallback& factory_for_test) {
+  GetInstance()->factory_for_test_ = factory_for_test;
+}
+
 DriveSystemServiceFactory::DriveSystemServiceFactory()
     : ProfileKeyedServiceFactory("DriveSystemService",
                                  ProfileDependencyManager::GetInstance()) {
@@ -377,48 +386,15 @@ DriveSystemServiceFactory::DriveSystemServiceFactory()
 DriveSystemServiceFactory::~DriveSystemServiceFactory() {
 }
 
-// static
-void DriveSystemServiceFactory::set_drive_service_for_test(
-    google_apis::DriveServiceInterface* drive_service) {
-  if (g_test_drive_service)
-    delete g_test_drive_service;
-  g_test_drive_service = drive_service;
-}
-
-// static
-void DriveSystemServiceFactory::set_cache_root_for_test(
-    const std::string& cache_root) {
-  if (g_test_cache_root)
-    delete g_test_cache_root;
-  g_test_cache_root = !cache_root.empty() ? new std::string(cache_root) : NULL;
-}
-
 ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  DriveSystemService* service = new DriveSystemService(profile);
+  DriveSystemService* service = NULL;
+  if (factory_for_test_.is_null())
+    service = new DriveSystemService(profile, NULL, FilePath(), NULL);
+  else
+    service = factory_for_test_.Run(profile);
 
-  google_apis::DriveServiceInterface* drive_service = g_test_drive_service;
-  g_test_drive_service = NULL;
-  if (!drive_service) {
-    if (google_apis::util::IsDriveV2ApiEnabled()) {
-      drive_service = new DriveAPIService(
-          g_browser_process->system_request_context(),
-          GetDriveUserAgent());
-    } else {
-      drive_service = new google_apis::GDataWapiService(
-          g_browser_process->system_request_context(),
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-          GetDriveUserAgent());
-    }
-  }
-
-  FilePath cache_root =
-      g_test_cache_root ? FilePath(*g_test_cache_root) :
-                          DriveCache::GetCacheRootPath(profile);
-  delete g_test_cache_root;
-  g_test_cache_root = NULL;
-
-  service->Initialize(drive_service, cache_root);
+  service->Initialize();
   return service;
 }
 

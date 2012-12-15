@@ -261,7 +261,7 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
 
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
-  RemoteFileSystemExtensionApiTest() {}
+  RemoteFileSystemExtensionApiTest() : mock_drive_service_(NULL) {}
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
@@ -273,26 +273,26 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
-    drive::DriveSystemServiceFactory::set_cache_root_for_test(
-        test_cache_root_.path().value());
 
-    mock_drive_service_ = new google_apis::MockDriveService();
-
-    // |mock_drive_service_| will eventually get owned by a system service.
-    drive::DriveSystemServiceFactory::set_drive_service_for_test(
-        mock_drive_service_);
+    drive::DriveSystemServiceFactory::SetFactoryForTest(
+        base::Bind(&RemoteFileSystemExtensionApiTest::CreateDriveSystemService,
+                   base::Unretained(this)));
 
     ExtensionApiTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
-    // Let's make sure we don't leak documents service.
-    drive::DriveSystemServiceFactory::set_drive_service_for_test(NULL);
-    drive::DriveSystemServiceFactory::set_cache_root_for_test(std::string());
-    ExtensionApiTest::TearDown();
+ protected:
+  // DriveSystemService factory function for this test.
+  drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
+    EXPECT_FALSE(mock_drive_service_);
+    // |mock_drive_service_| is owned by the DriveSystemService.
+    mock_drive_service_ = new google_apis::MockDriveService();
+    return new drive::DriveSystemService(profile,
+                                         mock_drive_service_,
+                                         test_cache_root_.path(),
+                                         NULL);
   }
 
- protected:
   base::ScopedTempDir test_cache_root_;
   google_apis::MockDriveService* mock_drive_service_;
 };

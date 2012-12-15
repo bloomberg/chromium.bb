@@ -864,6 +864,7 @@
         'browser/chromeos/cros/cros_in_process_browser_test.h',
         'browser/chromeos/cros/cros_mock.cc',
         'browser/chromeos/cros/cros_mock.h',
+        'browser/chromeos/drive/drive_system_service_browsertest.cc',
         'browser/chromeos/drive/drive_test_util.cc',
         'browser/chromeos/drive/drive_test_util.h',
         'browser/chromeos/extensions/echo_private_apitest.cc',

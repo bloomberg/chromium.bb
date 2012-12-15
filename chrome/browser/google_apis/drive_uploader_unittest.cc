@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,122 +47,9 @@ bool CreateFileOfSpecifiedSize(const FilePath& temp_dir,
       static_cast<int>(size);
 }
 
-// Base class for mock DriveService that implements by NOTREACHED() the
-// methods that should not be used from DriveUploader.
-class MockDriveServiceBase : public DriveServiceInterface {
-  // DriveServiceInterface overrides.
-  virtual void Initialize(Profile* profile) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual bool CanStartOperation() const OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-  virtual void CancelAll() OVERRIDE {
-    NOTREACHED();
-  }
-  virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-  virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE {
-    NOTREACHED();
-    return OperationProgressStatusList();
-  }
-  virtual bool HasAccessToken() const OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-  virtual bool HasRefreshToken() const OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-  virtual void GetResourceList(
-      const GURL& feed_url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      bool shared_with_me,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void GetResourceEntry(
-      const std::string& resource_id,
-      const GetResourceEntryCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void GetAccountMetadata(
-      const GetAccountMetadataCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DeleteResource(const GURL& edit_url,
-                              const EntryActionCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DownloadHostedDocument(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void CopyHostedDocument(
-      const std::string& resource_id,
-      const FilePath::StringType& new_name,
-      const GetResourceEntryCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void RenameResource(const GURL& edit_url,
-                              const FilePath::StringType& new_name,
-                              const EntryActionCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void AddResourceToDirectory(
-      const GURL& parent_content_url,
-      const GURL& edit_url,
-      const EntryActionCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
-      const std::string& resource_id,
-      const EntryActionCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void AddNewDirectory(
-      const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
-      const GetResourceEntryCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void AuthorizeApp(const GURL& edit_url,
-                            const std::string& app_id,
-                            const AuthorizeAppCallback& callback) OVERRIDE {
-    NOTREACHED();
-  }
-};
-
 // Mock DriveService that verifies if the uploaded content matches the preset
 // expectation.
-class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
+class MockDriveServiceWithUploadExpectation : public DummyDriveService {
  public:
   // Sets up an expected upload content. InitiateUpload and ResumeUpload will
   // verify that the specified data is correctly uploaded.
@@ -256,7 +143,7 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
 };
 
 // Mock DriveService that returns a failure at InitiateUpload().
-class MockDriveServiceNoConnectionAtInitiate : public MockDriveServiceBase {
+class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
   virtual void InitiateUpload(const InitiateUploadParams& params,
                               const InitiateUploadCallback& callback) OVERRIDE {
@@ -272,7 +159,7 @@ class MockDriveServiceNoConnectionAtInitiate : public MockDriveServiceBase {
 };
 
 // Mock DriveService that returns a failure at ResumeUpload().
-class MockDriveServiceNoConnectionAtResume : public MockDriveServiceBase {
+class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
   virtual void InitiateUpload(const InitiateUploadParams& params,
                               const InitiateUploadCallback& callback) OVERRIDE {

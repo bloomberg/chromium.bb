@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -28,47 +29,18 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
-namespace google_apis {
+namespace drive {
 
-class FakeDriveService : public DriveServiceInterface {
-  virtual void Initialize(Profile* profile) {
-  }
+namespace {
 
-  virtual void AddObserver(DriveServiceObserver* observer) {
-  }
-
-  virtual void RemoveObserver(DriveServiceObserver* observer) {
-  }
-
-  virtual bool CanStartOperation() const {
-    return true;
-  }
-
-  virtual void CancelAll() {
-  }
-
-  virtual bool CancelForFilePath(const FilePath& file_path) {
-    return true;
-  }
-
-  virtual OperationProgressStatusList GetProgressStatusList() const {
-    return OperationProgressStatusList();
-  }
-
-  virtual bool HasAccessToken() const {
-    return true;
-  }
-
-  virtual bool HasRefreshToken() const {
-    return true;
-  }
-
-  virtual void GetResourceList(const GURL& feed_url,
-                               int64 start_changestamp,
-                               const std::string& search_query,
-                               bool shared_with_me,
-                               const std::string& directory_resource_id,
-                               const GetResourceListCallback& callback) {
+class FakeDriveService : public google_apis::DummyDriveService {
+  virtual void GetResourceList(
+      const GURL& feed_url,
+      int64 start_changestamp,
+      const std::string& search_query,
+      bool shared_with_me,
+      const std::string& directory_resource_id,
+      const google_apis::GetResourceListCallback& callback) OVERRIDE {
     // TODO: Make this more flexible.
     if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
       // Make some sample data.
@@ -78,22 +50,19 @@ class FakeDriveService : public DriveServiceInterface {
           google_apis::ResourceList::ExtractAndParse(*feed_data);
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
           base::Bind(callback,
-                     HTTP_SUCCESS,
+                     google_apis::HTTP_SUCCESS,
                      base::Passed(&resource_list)));
     } else {
       scoped_ptr<google_apis::ResourceList> resource_list;
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
           base::Bind(callback,
-                     GDATA_PARSE_ERROR,
+                     google_apis::GDATA_PARSE_ERROR,
                      base::Passed(&resource_list)));
     }
   }
 
-  virtual void GetResourceEntry(const std::string& resource_id,
-                                const GetResourceEntryCallback& callback) {
-  }
-
-  virtual void GetAccountMetadata(const GetAccountMetadataCallback& callback) {
+  virtual void GetAccountMetadata(
+      const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
     // Make some sample data.
     scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
         "gdata/account_metadata.json");
@@ -102,85 +71,21 @@ class FakeDriveService : public DriveServiceInterface {
 
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback,
-                   HTTP_SUCCESS,
+                   google_apis::HTTP_SUCCESS,
                    base::Passed(&account_metadata)));
   }
 
-  virtual void GetApplicationInfo(const GetDataCallback& callback) {
+  virtual void GetApplicationInfo(
+      const google_apis::GetDataCallback& callback) OVERRIDE {
     scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
         "gdata/account_metadata.json");
 
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback,
-                   HTTP_SUCCESS,
+                   google_apis::HTTP_SUCCESS,
                    base::Passed(&data)));
   }
-
-  virtual void DeleteResource(const GURL& edit_url,
-                              const EntryActionCallback& callback) {
-  }
-
-  virtual void DownloadHostedDocument(const FilePath& virtual_path,
-                                      const FilePath& local_cache_path,
-                                      const GURL& content_url,
-                                      DocumentExportFormat format,
-                                      const DownloadActionCallback& callback) {
-  }
-
-  virtual void CopyHostedDocument(const std::string& resource_id,
-                                  const FilePath::StringType& new_name,
-                                  const GetResourceEntryCallback& callback) {
-  }
-
-  virtual void RenameResource(const GURL& edit_url,
-                              const FilePath::StringType& new_name,
-                              const EntryActionCallback& callback) {
-  }
-
-  virtual void AddResourceToDirectory(const GURL& parent_content_url,
-                                      const GURL& edit_url,
-                                      const EntryActionCallback& callback) {
-  }
-
-  virtual void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
-      const std::string& resource_id,
-      const EntryActionCallback& callback) {
-  }
-
-  virtual void AddNewDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetResourceEntryCallback& callback) {
-  }
-
-  virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) {
-  }
-
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) {
-  }
-
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) {
-  }
-
-  virtual void AuthorizeApp(const GURL& edit_url,
-                            const std::string& app_id,
-                            const AuthorizeAppCallback& callback) {
-  }
-
 };
-
-} // namespace google_apis
-
-namespace drive {
-
-namespace {
 
 class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
@@ -254,7 +159,7 @@ class DriveSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
-    fake_drive_service_.reset(new google_apis::FakeDriveService());
+    fake_drive_service_.reset(new FakeDriveService());
     mock_copy_operation_ = new StrictMock<MockCopyOperation>();
     mock_move_operation_ = new StrictMock<MockMoveOperation>();
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
@@ -316,7 +221,7 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
 
   file_system::DriveOperations drive_operations_;
   StrictMock<MockCopyOperation>* mock_copy_operation_;
