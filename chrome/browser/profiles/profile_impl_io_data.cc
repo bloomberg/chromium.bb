@@ -17,7 +17,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/double_get_experiment_interceptor.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
@@ -670,8 +669,6 @@ void ProfileImplIOData::SetUpJobFactory(
 
   job_factory->AddInterceptor(
       new chrome_browser_net::ConnectInterceptor(predictor_.get()));
-  job_factory->AddInterceptor(
-      new DoubleGetExperimentInterceptor(NULL));
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(

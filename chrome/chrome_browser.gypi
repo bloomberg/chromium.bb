@@ -1101,8 +1101,6 @@
         'browser/net/dns_probe_job.h',
         'browser/net/dns_probe_service.cc',
         'browser/net/dns_probe_service.h',
-        'browser/net/double_get_experiment_interceptor.cc',
-        'browser/net/double_get_experiment_interceptor.h',
         'browser/net/gaia/gaia_oauth_consumer.h',
         'browser/net/gaia/gaia_oauth_fetcher.cc',
         'browser/net/gaia/gaia_oauth_fetcher.h',
