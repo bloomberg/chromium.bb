@@ -689,7 +689,14 @@ void Shell::CreateLauncher() {
 }
 
 void Shell::ShowLauncher() {
-  GetPrimaryRootWindowController()->ShowLauncher();
+  if (IsLauncherPerDisplayEnabled()) {
+    RootWindowControllerList controllers = GetAllRootWindowControllers();
+    for (RootWindowControllerList::iterator iter = controllers.begin();
+         iter != controllers.end(); ++iter)
+      (*iter)->ShowLauncher();
+  } else {
+    GetPrimaryRootWindowController()->ShowLauncher();
+  }
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {
