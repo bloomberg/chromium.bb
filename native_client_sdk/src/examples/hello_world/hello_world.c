@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_var.h"
@@ -34,6 +35,7 @@
 #define TCNAME "host"
 #endif
 
+static PPB_Console* ppb_console_interface = NULL;
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
 
@@ -52,6 +54,23 @@ static struct PP_Var CStrToVar(const char* str) {
   return PP_MakeUndefined();
 }
 
+
+/**
+ * Post a message back to our JavaScript
+ */
+static void SendMessage(PP_Instance instance, const char *str) {
+  if (ppb_messaging_interface)
+    ppb_messaging_interface->PostMessage(instance, CStrToVar(str));
+}
+
+/**
+ * Send a message to the JavaScript Console
+ */
+static void LogMessage(PP_Instance instance, const char *str) {
+  if (ppb_console_interface)
+    ppb_console_interface->Log(instance, PP_LOGLEVEL_ERROR,
+                          CStrToVar(str));
+}
 
 /**
  * Called when the NaCl module is instantiated on the web page. The identifier
@@ -80,8 +99,12 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   const char* argn[],
                                   const char* argv[]) {
 
-  const char* message = "alert:Hello World (" TCNAME ")!";
-  ppb_messaging_interface->PostMessage(instance, CStrToVar(message));
+  const char* post_msg = "Hello World (" TCNAME ")!";
+  const char* console_msg = "Hello World (JavsScript Console)!";
+
+  SendMessage(instance, post_msg);
+  LogMessage(instance, console_msg);
+
   return PP_TRUE;
 }
 
@@ -160,6 +183,8 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
  */
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
                                        PPB_GetInterface get_browser) {
+  ppb_console_interface =
+      (PPB_Console*)(get_browser(PPB_CONSOLE_INTERFACE));
   ppb_messaging_interface =
       (PPB_Messaging*)(get_browser(PPB_MESSAGING_INTERFACE));
   ppb_var_interface = (PPB_Var*)(get_browser(PPB_VAR_INTERFACE));

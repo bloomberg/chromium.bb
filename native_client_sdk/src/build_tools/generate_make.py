@@ -217,7 +217,8 @@ DSC_FORMAT = {
         'DEFINES': (list, '', False),
         'LDFLAGS': (list, '', False),
         'INCLUDES': (list, '', False),
-        'LIBS' : (list, '', False)
+        'LIBS' : (list, '', False),
+        'DEPS' : (list, '', False)
     }, True),
     'HEADERS': (list, {
         'FILES': (list, '', True),
@@ -500,7 +501,8 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
 
     # Add Makefile and make.bat
     repdict = GenerateReplacements(desc, tools)
-    WriteReplaced(template, make_path, repdict)
+    if not 'Makefile' in desc.get('DATA', []):
+      WriteReplaced(template, make_path, repdict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))

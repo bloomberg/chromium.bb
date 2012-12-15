@@ -15,15 +15,16 @@ found in the LICENSE file.
 <body data-name="<NAME>" data-tc="<tc>" data-path="<path>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <p>This example demonstrates a complete NaCl PPAPI application.  In
-source file hello_world.c contains the three required PPAPI functions
-  PPP_InitializeModule, PPP_GetInterface, PPP_ShutdownModule which initialize
-the application, provide a string name to callback interface mapping, and
-cleanup on shutdown respectively.</p>
-  <p>The example will query for the Console, PostMessage and Var interfaces to
-send a message to JavaScript which will be added to the output box.  In
-addition, it will send another message to the JavaScript Console to simulate
-logging for development.</p>
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+
+  <p>This example demonstrates using nacl_mounts ppapi_main to simplify the
+  creation of a PPAPI application.  The ppapi_main library handles the creation
+  and initialization of a pp::Instance object.  The nacl_mounts library
+  intercepts standard file IO, allowing the remapping of STDOUT, and
+  STDERR.</p>
+  <p>In main, we write to both STDOUT and STDERR, printing a hello world
+  message.</p>
 
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->

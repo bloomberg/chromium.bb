@@ -602,6 +602,7 @@ EXAMPLE_LIST = [
   'gamepad',
   'geturl',
   'hello_nacl_mounts',
+  'hello_world_stdio',
   'hello_world',
   'hello_world_gles',
   'hello_world_interactive',
@@ -619,6 +620,7 @@ LIBRARY_LIST = [
   'ppapi',
   'ppapi_cpp',
   'ppapi_gles2',
+  'ppapi_main',
   'pthread',
   'zlib',
 ]
@@ -666,7 +668,8 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   # Copy individual files
   files = ['favicon.ico', 'httpd.cmd']
   for filename in files:
-    oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
+    oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename),
+                   exampledir])
 
   args = ['--dstroot=%s' % pepperdir, '--master']
   for toolchain in toolchains:

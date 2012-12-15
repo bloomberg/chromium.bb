@@ -57,10 +57,14 @@ mulithreading...</p></dd>
 """,
   'Tools': """
 <h3>Using the Tools</h3>
-<dd><p>The following "hello_world" examples, show the basic outline of a Native
-Client application.  The make files in each of the examples below show a
-simple way to build a NaCl application using
-<a href="http://www.gnu.org/software/make/manual/make.html">GNU Make</a>.
+<dd><p>The following "hello_world" examples, show the basic outline of a
+several types of Native Client applications.   The simplest, "Hello World Stdio"
+uses several provided libraries to simplify startup and provides a
+simplified make showing a single build configuration.  The other examples in
+this SDK however, are designed to build and run with multiple toolsets, build
+configurations, etc...
+making the build much more complex.  In all cases we are using <a
+href="http://www.gnu.org/software/make/manual/make.html">GNU Make</a>.
 See the link for further information.
 </p></dd>
 """,
