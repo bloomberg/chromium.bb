@@ -164,8 +164,13 @@ void WebMediaPlayerProxy::KeyMessageTask(const std::string& key_system,
                                          const std::string& message,
                                          const std::string& default_url) {
   DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnKeyMessage(key_system, session_id, message, default_url);
+  if (webmediaplayer_) {
+    const GURL default_url_gurl(default_url);
+    DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
+        << "Invalid URL in default_url: " << default_url;
+    webmediaplayer_->OnKeyMessage(key_system, session_id, message,
+                                  default_url_gurl);
+  }
 }
 
 void WebMediaPlayerProxy::NeedKeyTask(const std::string& key_system,

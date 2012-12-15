@@ -175,6 +175,7 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
   status_ = kKeyMessage;
   session_id_ = session_id;
   key_message_ = message;
+  default_url_ = default_url;
 }
 
 void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
@@ -265,16 +266,22 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
-  std::string heartbeat_message =
-      (!next_heartbeat_message_.empty() &&
-       context == &next_heartbeat_message_[0]) ?
-          next_heartbeat_message_ :
-          "ERROR: Invalid timer context found!";
+  std::string heartbeat_message;
+  if (!next_heartbeat_message_.empty() &&
+      context == &next_heartbeat_message_[0]) {
+    heartbeat_message = next_heartbeat_message_;
+  } else {
+    heartbeat_message = "ERROR: Invalid timer context found!";
+  }
+
+  // This URL is only used for testing the code path for defaultURL.
+  // There is no service at this URL, so applications should ignore it.
+  const char url[] = "http://test.externalclearkey.chromium.org";
 
   host_->SendKeyMessage(
       heartbeat_session_id_.data(), heartbeat_session_id_.size(),
       heartbeat_message.data(), heartbeat_message.size(),
-      NULL, 0);
+      url, arraysize(url) - 1);
 
   ScheduleNextHeartBeat();
 }

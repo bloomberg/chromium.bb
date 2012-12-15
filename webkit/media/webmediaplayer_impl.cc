@@ -1090,13 +1090,14 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
 void WebMediaPlayerImpl::OnKeyMessage(const std::string& key_system,
                                       const std::string& session_id,
                                       const std::string& message,
-                                      const std::string& /* default_url */) {
+                                      const GURL& default_url) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   GetClient()->keyMessage(WebString::fromUTF8(key_system),
                           WebString::fromUTF8(session_id),
                           reinterpret_cast<const uint8*>(message.data()),
-                          message.size());
+                          message.size(),
+                          default_url);
 }
 
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {

@@ -11,10 +11,12 @@
 
       function onTimeUpdate() {
         // webkitkeyadded should have been fired before playback.
-        if (!video.hasKeyAdded)
-          failTest('Key not added.');
+        if (!video.receivedKeyAdded)
+          failTest('Key added event not received.');
         if (video.currentTime < 1)
           return;
+        if (video.isHeartbeatExpected && !video.receivedHeartbeat)
+          failTest('Heartbeat keymessage event not received.');
         video.removeEventListener('ended', failTest);
         installTitleEventHandler(video, 'ended');
         video.removeEventListener('timeupdate', onTimeUpdate);

@@ -31,12 +31,17 @@ var failMessage = '';
 // Heart beat message header.
 var HEART_BEAT_HEADER = 'HEARTBEAT';
 
-function isHeartBeatMessage(msg) {
+var EXTERNAL_CLEAR_KEY_KEY_SYSTEM = "org.chromium.externalclearkey";
+// Note that his URL has been normalized from the one in clear_key_cdm.cc.
+var EXTERNAL_CLEAR_KEY_HEARTBEAT_URL =
+    'http://test.externalclearkey.chromium.org/';
+
+function isHeartbeatMessage(msg) {
   if (msg.length < HEART_BEAT_HEADER.length)
     return false;
 
   for (var i = 0; i < HEART_BEAT_HEADER.length; ++i) {
-    if (HEART_BEAT_HEADER[i] != String.fromCharCode(msg[i]))
+    if (String.fromCharCode(msg[i]) != HEART_BEAT_HEADER[i])
       return false;
   }
 
@@ -44,6 +49,7 @@ function isHeartBeatMessage(msg) {
 }
 
 function failTest(msg) {
+  console.log("failTest('" + msg + "')");
   if (msg instanceof Event)
     failMessage = msg.target + '.' + msg.type;
   else
@@ -68,8 +74,10 @@ function loadEncryptedMediaFromURL(video) {
 function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   var keyRequested = false;
   var sourceOpened = false;
-  // Add a property to video to check key was added.
-  video.hasKeyAdded = false;
+  // Add properties to enable verification that events occurred.
+  video.receivedKeyAdded = false;
+  video.receivedHeartbeat = false;
+  video.isHeartbeatExpected = keySystem === EXTERNAL_CLEAR_KEY_KEY_SYSTEM;
 
   if (!(video && mediaFile && keySystem && key))
     failTest('Missing parameters in loadEncryptedMedia().');
@@ -104,18 +112,56 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
     }
   }
 
-  function onKeyAdded() {
-    video.hasKeyAdded = true;
+  function onKeyAdded(e) {
+    e.target.receivedKeyAdded = true;
   }
 
   function onKeyMessage(e) {
-    if (isHeartBeatMessage(e.message)) {
-      console.log('onKeyMessage - heart beat', e);
+    // TODO(ddorwin): Enable after fixing http://crbug.com/166204.
+    if (!e.keySystem && false) {
+      failTest('keymessage without a keySystem: ' + e.keySystem);
       return;
     }
 
+    if (!e.sessionId) {
+      failTest('keymessage without a sessionId: ' + e.sessionId);
+      return;
+    }
+
+    if (!e.message) {
+      failTest('keymessage without a message: ' + e.message);
+      return;
+    }
+
+    if (isHeartbeatMessage(e.message)) {
+      console.log('onKeyMessage - heartbeat', e);
+      e.target.receivedHeartbeat = true;
+      verifyHeartbeatMessage(e);
+      return;
+    }
+
+    // No tested key system returns defaultURL in for key request messages.
+    if (e.defaultURL) {
+      failTest('keymessage unexpectedly has defaultURL: ' + e.defaultURL);
+      return;
+    }
+
+    // keymessage in response to generateKeyRequest. Reply with key.
     console.log('onKeyMessage - key request', e);
     video.webkitAddKey(keySystem, key, e.message);
+  }
+
+  function verifyHeartbeatMessage(e) {
+    // Only External Clear Key sends a HEARTBEAT message.
+    if (e.keySystem != EXTERNAL_CLEAR_KEY_KEY_SYSTEM) {
+      failTest('Unexpected heartbeat from ' + e.keySystem);
+      return;
+    }
+
+    if (e.defaultURL != EXTERNAL_CLEAR_KEY_HEARTBEAT_URL) {
+      failTest('Heartbeat message with unexpected defaultURL: ' + e.defaultURL);
+      return;
+    }
   }
 
   var mediaSource = new WebKitMediaSource();
