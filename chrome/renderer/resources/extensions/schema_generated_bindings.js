@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This script contains privileged chrome extension related javascript APIs.
-// It is loaded by pages whose URL has the chrome-extension protocol.
+// Generates the chrome.* API bindings from a list of schemas.
 
   // TODO(battre): cleanup the usage of packages everywhere, as described here
   // http://codereview.chromium.org/10392008/diff/38/chrome/renderer/resources/extensions/schema_generated_bindings.js
@@ -203,17 +202,13 @@
     var apiDefinitions = GetExtensionAPIDefinition();
 
     // Read api definitions and setup api functions in the chrome namespace.
-    // TODO(rafaelw): Consider defining a json schema for an api definition
-    //   and validating either here, in a unit_test or both.
-    // TODO(rafaelw): Handle synchronous functions.
-    // TODO(rafaelw): Consider providing some convenient override points
-    //   for api functions that wish to insert themselves into the call.
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
       // TODO(kalman): Remove this, or refactor schema_generated_bindings.js so
-      // that it isn't necessary. For now, chrome.app is entirely handwritten.
-      if (apiDef.namespace === 'app')
+      // that it isn't necessary. For now, chrome.app and chrome.webstore are
+      // entirely handwritten.
+      if (['app', 'webstore'].indexOf(apiDef.namespace) >= 0)
         return;
 
       if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
