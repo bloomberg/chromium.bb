@@ -11,6 +11,7 @@ what is used for chromite.bin.* ).
 
 import argparse
 import collections
+import functools
 import logging
 import os
 import optparse
@@ -22,6 +23,7 @@ import tempfile
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
 from chromite.lib import git
+from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
 
@@ -31,32 +33,35 @@ def AbsolutePath(_option, _opt, value):
   return osutils.ExpandPath(value)
 
 
-def NormalizeGSPath(_option, opt, value):
+def NormalizeGSPath(value):
   """Expand paths and make them absolute."""
+  return gs.CanonicalizeURL(value, strict=True).rstrip('/')
+
+
+def OptparseWrapCheck(desc, check_f, _option, opt, value):
+  """Optparse adapter for type checking functionality."""
   try:
-    return gs.CanonicalizeURL(value, strict=True).rstrip('/')
+    return check_f(value)
   except ValueError:
-    raise optparse.OptionValueError("Invalid gs path %s specified for %s"
-                                    % (value, opt))
+    raise optparse.OptionValueError(
+        'Invalid %s given: --%s=%s' % (desc, opt, value))
 
 
-def ValidateLogLevel(_option, opt, value):
-  name = value.upper()
-  if not hasattr(logging, name):
-    raise optparse.OptionValueError("Invalid logging level given: --%s=%s"
-        % (opt, value))
-  return name
+VALID_TYPES = {
+    'path': osutils.ExpandPath,
+    'gs_path': NormalizeGSPath,
+}
 
 
 class Option(optparse.Option):
   """
   Subclass Option class to implement path evaluation, and other useful types.
   """
-  TYPES = optparse.Option.TYPES + ("path", "gs_path", "log_level")
+  _EXTRA_TYPES = ("path", "gs_path")
+  TYPES = optparse.Option.TYPES + _EXTRA_TYPES
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-  TYPE_CHECKER["path"] = AbsolutePath
-  TYPE_CHECKER["gs_path"] = NormalizeGSPath
-  TYPE_CHECKER["log_level"] = ValidateLogLevel
+  for t in _EXTRA_TYPES:
+    TYPE_CHECKER[t] = functools.partial(OptparseWrapCheck, t, VALID_TYPES[t])
 
 
 class FilteringOption(Option):
@@ -172,10 +177,10 @@ class BaseParser(object):
         opts.debug = (value == "DEBUG")
 
     if self.caching:
-      func = self.FindCacheDir if not callable(self.caching) else self.caching
-      opts.cache_dir = func(self, opts)
+      if opts.cache_dir is None:
+        func = self.FindCacheDir if not callable(self.caching) else self.caching
+        opts.cache_dir = func(self, opts)
       if opts.cache_dir is not None:
-        opts.cache_dir = os.path.abspath(func(self, opts))
         self.ConfigureCacheDir(opts.cache_dir)
 
     return opts, args
@@ -188,11 +193,20 @@ class BaseParser(object):
   @staticmethod
   def FindCacheDir(_parser, _opts):
     path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
+    if path is not None:
+      return os.path.abspath(path)
+
+    debug_msg = 'Cache dir lookup: looking for %s checkout root.'
+    logging.debug(debug_msg, 'repo')
+    path = git.FindRepoCheckoutRoot(os.getcwd())
+    path = os.path.join(path, '.cache') if path else path
     if path is None:
-      path = git.FindRepoCheckoutRoot(os.getcwd())
-      path = os.path.join(path, '.cache') if path else path
+      logging.debug(debug_msg, 'gclient')
+      path = gclient.FindGclientCheckoutRoot(os.getcwd())
+      path = os.path.join(path, '.cros_cache') if path else path
     if path is None:
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
+
     return path
 
   def add_option_group(self, *args, **kwargs):
@@ -281,7 +295,7 @@ class FilteringParser(OptionParser):
 
 
 # pylint: disable=R0901
-class ArgumentParser(argparse.ArgumentParser, BaseParser):
+class ArgumentParser(BaseParser, argparse.ArgumentParser):
   """Custom argument parser for use by chromite.
 
   This class additionally exposes logging control by default; if undesired,
@@ -293,7 +307,13 @@ class ArgumentParser(argparse.ArgumentParser, BaseParser):
     BaseParser.__init__(self, **kwargs)
     self.PopUsedArgs(kwargs)
     argparse.ArgumentParser.__init__(self, usage=usage, **kwargs)
+    self._SetupTypes()
     self.SetupOptions()
+
+  def _SetupTypes(self):
+    """Register types with ArgumentParser."""
+    for t, check_f in VALID_TYPES.iteritems():
+      self.register('type', t, check_f)
 
   def add_option_group(self, *args, **kwargs):
     """Return an argument group rather than an option group."""

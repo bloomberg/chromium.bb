@@ -8,7 +8,7 @@ from chromite.lib import commandline
 
 def GetOptions(my_commands):
   """Returns the argparse to use for Cros."""
-  parser = commandline.ArgumentParser()
+  parser = commandline.ArgumentParser(caching=True)
   if not commands:
     return parser
 

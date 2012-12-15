@@ -13,6 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 from chromite.lib import commandline
 from chromite.lib import cros_test_lib
+from chromite.lib import git
+from chromite.lib import gclient
 from chromite.lib import gs
 
 
@@ -66,6 +68,53 @@ class GSPathTest(cros_test_lib.TestCase):
       self.assertRaises2(
           SystemExit, self._RunGSPathTestCase, 'http://badhost.com/path', '',
           check_attrs={'code': 2})
+
+
+class CacheTest(cros_test_lib.MockTestCase):
+  """Test cache dir specification and finding functionality."""
+
+  REPO_ROOT = '/fake/repo/root'
+  GCLIENT_ROOT = '/fake/gclient/root'
+  CACHE_DIR = '/fake/cache/dir'
+
+  def setUp(self):
+    self.PatchObject(commandline.ArgumentParser, 'ConfigureCacheDir')
+    self.PatchObject(git, 'FindRepoCheckoutRoot')
+    self.PatchObject(gclient, 'FindGclientCheckoutRoot')
+    self.parser = commandline.ArgumentParser(caching=True)
+
+  def _SetCheckoutRoots(self, repo_root=None, gclient_root=None):
+    git.FindRepoCheckoutRoot.return_value = repo_root
+    gclient.FindGclientCheckoutRoot.return_value = gclient_root
+
+  def _CheckCall(self, expected):
+    f = self.parser.ConfigureCacheDir
+    self.assertEquals(1, f.call_count)
+    self.assertTrue(f.call_args[0][0].startswith(expected))
+
+  def testRepoRoot(self):
+    """Test when we are inside a repo checkout."""
+    self._SetCheckoutRoots(repo_root=self.REPO_ROOT)
+    self.parser.parse_args([])
+    self._CheckCall(self.REPO_ROOT)
+
+  def testGclientRoot(self):
+    """Test when we are inside a gclient checkout."""
+    self._SetCheckoutRoots(gclient_root=self.GCLIENT_ROOT)
+    self.parser.parse_args([])
+    self._CheckCall(self.GCLIENT_ROOT)
+
+  def testTempdir(self):
+    """Test when we are not in any checkout."""
+    self._SetCheckoutRoots()
+    self.parser.parse_args([])
+    self._CheckCall('/tmp')
+
+  def testSpecifiedDir(self):
+    """Test when user specifies a cache dir."""
+    self._SetCheckoutRoots(repo_root=self.REPO_ROOT)
+    self.parser.parse_args(['--cache-dir', self.CACHE_DIR])
+    self._CheckCall(self.CACHE_DIR)
 
 
 if __name__ == '__main__':
