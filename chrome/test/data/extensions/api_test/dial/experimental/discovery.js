@@ -5,27 +5,13 @@
 onload = function() {
   chrome.test.runTests([
     function discovery() {
-      var discoverNowShouldSucceed = function(result) {
-        if (result)
-          chrome.test.succeed();
-        else
-          chrome.test.fail();
-      };
-
-      var onDeviceList = function(deviceList) {
-        // Unused.
-      };
-
       var discoverNowShouldFail = function(result) {
         if (!result) {
           chrome.test.succeed();
-          chrome.dial.onDeviceList.addListener(onDeviceList);
-          chrome.dial.discoverNow(discoverNowShouldSucceed);
         } else {
           chrome.test.fail();
         }
       };
-
       chrome.dial.discoverNow(discoverNowShouldFail);
     }
   ]);

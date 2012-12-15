@@ -161,6 +161,8 @@
         'browser/extensions/api/dial/dial_device_data.h',
         'browser/extensions/api/dial/dial_registry.cc',
         'browser/extensions/api/dial/dial_registry.h',
+        'browser/extensions/api/dial/dial_service.cc',
+        'browser/extensions/api/dial/dial_service.h',
         'browser/extensions/api/discovery/discovery_api.cc',
         'browser/extensions/api/discovery/discovery_api.h',
         'browser/extensions/api/discovery/suggested_link.cc',

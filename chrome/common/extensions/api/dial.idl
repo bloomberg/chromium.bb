@@ -12,7 +12,7 @@
 // (No polling is done when there are no onDeviceList listeners.)
 //
 // The onDeviceList event is fired when discovery respnses are received and in
-// other circumstances (see docs).
+// other circumstances; see the documentation for onDeviceList.
 //
 // The client can request that network discovery can be done immediately by
 // invoking discoverNow() which is useful for presenting the user with an
@@ -34,11 +34,12 @@ namespace dial {
 
   // Represents a unique device that responded to a DIAL discovery request.
   dictionary DialDevice {
+
     // A label identifying the device within this instance of the browser.
     // Not guaranteed to persist beyond browser instances.
     DOMString deviceLabel;
 
-    // A URL pointing to the device description file for the device.
+    // A URL pointing to the device description resource for the device.
     DOMString deviceDescriptionUrl;
 
     // The uPnP configuration ID reported by the device.  Corresponds to the
@@ -49,23 +50,27 @@ namespace dial {
   callback BooleanCallback = void (boolean result);
 
   interface Functions {
-    // Causes DIAL discovery to happen immediately.  An onDeviceList event is
-    // fired with the resulting device list.  The callback is invoked with
-    // |true| if discovery was successful or |false| otherwise (and
-    // chrome.extension.lastError is set).
+
+    // Requests that DIAL discovery happen immediately.  The request may not be
+    // honored as discovery may already be happening in the background.  The
+    // callback is invoked with |true| if discovery was initiated or |false|
+    // otherwise.
     static void discoverNow(BooleanCallback callback);
   };
 
   interface Events {
-    // Event fired to inform clients of the current set of responsive devices.
-    // May be fired in response to multiple circumstances:
+
+    // Event fired to inform clients of the current, complete set of responsive
+    // devices.  Clients should only need to store the list from the most recent
+    // event.  May be fired in response to multiple circumstances:
     //
     // (1) The DIAL service refreshed its device list through periodic polling.
     // (2) A client invoked discoverNow().
     // (3) An event happened that should invalidate the device list
     //     (e.g., a network interface went offline), in which case it is fired
     //     with an empty array.
+    //
+    // TODO(mfoltz): Rename to onDeviceListReady.
     static void onDeviceList(DialDevice[] result);
   };
-
 };

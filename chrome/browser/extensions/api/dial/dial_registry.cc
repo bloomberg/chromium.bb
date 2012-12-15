@@ -4,38 +4,248 @@
 
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dial/dial_api.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/extensions/api/dial/dial_service.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/common/extensions/api/dial.h"
+
+using base::Time;
+using base::TimeDelta;
 
 namespace extensions {
 
-DialRegistry::DialRegistry(Observer* dial_api)
-  : num_listeners_(0), discovering_(false), dial_api_(dial_api) { }
+DialRegistry::DialRegistry(Observer* dial_api,
+                           const base::TimeDelta& refresh_interval,
+                           const base::TimeDelta& expiration,
+                           const size_t max_devices)
+  : num_listeners_(0), discovery_generation_(0), registry_generation_(0),
+    last_event_discovery_generation_(0), last_event_registry_generation_(0),
+    label_count_(0),
+    refresh_interval_delta_(refresh_interval),
+    expiration_delta_(expiration),
+    max_devices_(max_devices),
+    dial_api_(dial_api) {
+  DCHECK(max_devices_ > 0);
+}
 
 DialRegistry::~DialRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(0, num_listeners_);
+  DCHECK(!dial_.get());
+}
+
+DialService* DialRegistry::CreateDialService() {
+  DCHECK(g_browser_process->net_log());
+  return new DialServiceImpl(g_browser_process->net_log());
+}
+
+base::Time DialRegistry::Now() const {
+  return Time::Now();
 }
 
 void DialRegistry::OnListenerAdded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (++num_listeners_ == 1) {
     DVLOG(1) << "Listener added; starting periodic discovery.";
-    discovering_ = true;
+    StartPeriodicDiscovery();
   }
 }
 
 void DialRegistry::OnListenerRemoved() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(num_listeners_ > 0);
   if (--num_listeners_ == 0) {
     DVLOG(1) << "Listeners removed; stopping periodic discovery.";
-    discovering_ = false;
+    StopPeriodicDiscovery();
   }
 }
 
 bool DialRegistry::DiscoverNow() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return discovering_;
+  if (!dial_.get()) {
+    DLOG(INFO) << "DiscoverNow called without listeners.  Ignoring.";
+    return false;
+  }
+  if (!dial_->HasObserver(this))
+    NOTREACHED() << "DiscoverNow() called without observing dial_";
+  discovery_generation_++;
+  return dial_->Discover();
+}
+
+void DialRegistry::StartPeriodicDiscovery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  dial_ = CreateDialService();
+  dial_->AddObserver(this);
+  DoDiscovery();
+  repeating_timer_.Start(FROM_HERE,
+                         refresh_interval_delta_,
+                         this,
+                         &DialRegistry::DoDiscovery);
+}
+
+void DialRegistry::DoDiscovery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dial_.get());
+  discovery_generation_++;
+  DVLOG(1) << "About to discover! Generation = " << discovery_generation_;
+  dial_->Discover();
+}
+
+void DialRegistry::StopPeriodicDiscovery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dial_.get());
+  repeating_timer_.Stop();
+  dial_->RemoveObserver(this);
+  dial_ = NULL;
+}
+
+bool DialRegistry::PruneExpiredDevices() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool pruned_device = false;
+  DeviceByLabelMap::iterator i = device_by_label_map_.begin();
+  while (i != device_by_label_map_.end()) {
+    linked_ptr<DialDeviceData> device = i->second;
+    if (IsDeviceExpired(*device)) {
+      DVLOG(1) << "Device " << device->label() << " expired, removing";
+      DCHECK(device_by_id_map_.erase(device->device_id()) == 1);
+      device_by_label_map_.erase(i++);
+      pruned_device = true;
+    } else {
+      ++i;
+    }
+  }
+  return pruned_device;
+}
+
+bool DialRegistry::IsDeviceExpired(const DialDeviceData& device) const {
+  Time now = Now();
+
+  // Check against our default expiration timeout.
+  Time default_expiration_time = device.response_time() + expiration_delta_;
+  if (now > default_expiration_time)
+    return true;
+
+  // Check against the device's cache-control header, if set.
+  if (device.has_max_age()) {
+    Time max_age_expiration_time =
+      device.response_time() + TimeDelta::FromSeconds(device.max_age());
+    if (now > max_age_expiration_time)
+      return true;
+  }
+  return false;
+}
+
+void DialRegistry::Clear() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  device_by_id_map_.clear();
+  device_by_label_map_.clear();
+  registry_generation_++;
+}
+
+void DialRegistry::MaybeSendEvent() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // We need to send an event if:
+  // (1) We haven't sent one yet in this round of discovery, or
+  // (2) The device list changed since the last MaybeSendEvent.
+  bool needs_event = last_event_discovery_generation_ < discovery_generation_ ||
+      last_event_registry_generation_ < registry_generation_;
+  DVLOG(1) << "ledg = " << last_event_discovery_generation_ << ", dg = "
+           << discovery_generation_
+           << ", lerg = " << last_event_registry_generation_ << ", rg = "
+           << registry_generation_
+           << ", needs_event = " << needs_event;
+  if (!needs_event)
+    return;
+
+  DeviceList device_list;
+  for (DeviceByLabelMap::const_iterator i = device_by_label_map_.begin();
+       i != device_by_label_map_.end();
+       i++) {
+    device_list.push_back(*(i->second));
+  }
+  dial_api_->OnDialDeviceEvent(device_list);
+
+  // Reset watermarks.
+  last_event_discovery_generation_ = discovery_generation_;
+  last_event_registry_generation_ = registry_generation_;
+}
+
+std::string DialRegistry::NextLabel() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return base::IntToString(++label_count_);
+}
+
+void DialRegistry::OnDiscoveryRequest(DialService* service) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  MaybeSendEvent();
+}
+
+void DialRegistry::OnDeviceDiscovered(DialService* service,
+                                      const DialDeviceData& device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Adds |device| to our list of devices or updates an existing device, unless
+  // |device| is a duplicate. Returns true if the list was modified and
+  // increments the list generation.
+  linked_ptr<DialDeviceData> device_data(new DialDeviceData(device));
+  DCHECK(!device_data->device_id().empty());
+  DCHECK(device_data->label().empty());
+
+  bool did_modify_list = false;
+  DeviceByIdMap::iterator lookup_result =
+      device_by_id_map_.find(device_data->device_id());
+
+  if (lookup_result != device_by_id_map_.end()) {
+    DVLOG(1) << "Found device " << device_data->device_id() << ", merging";
+
+    // Already have previous response.  Merge in data from this response and
+    // track if there were any API visible changes.
+    did_modify_list = lookup_result->second->UpdateFrom(*device_data);
+  } else {
+    did_modify_list = MaybeAddDevice(device_data);
+  }
+
+  if (did_modify_list)
+    registry_generation_++;
+
+  DVLOG(1) << "did_modify_list = " << did_modify_list
+           << ", generation = " << registry_generation_;
+}
+
+bool DialRegistry::MaybeAddDevice(
+    const linked_ptr<DialDeviceData>& device_data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (device_by_id_map_.size() == max_devices_) {
+    DLOG(WARNING) << "Maxmimum registry size reached.  Cannot add device.";
+    return false;
+  }
+  device_data->set_label(NextLabel());
+  device_by_id_map_[device_data->device_id()] = device_data;
+  device_by_label_map_[device_data->label()] = device_data;
+  DVLOG(1) << "Added device, id = " << device_data->device_id()
+           << ", label = " << device_data->label();
+  return true;
+}
+
+void DialRegistry::OnDiscoveryFinished(DialService* service) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (PruneExpiredDevices())
+    registry_generation_++;
+  MaybeSendEvent();
+}
+
+void DialRegistry::OnError(DialService* service, const std::string& msg) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(mfoltz,justinlin): Implement. http://crbug.com/165294
 }
 
 }  // namespace extensions

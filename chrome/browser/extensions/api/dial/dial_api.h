@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_API_H_
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
@@ -89,6 +90,8 @@ class DialDiscoverNowFunction : public AsyncApiFunction {
   // retrieved on the IO thread but the function result is returned on the UI
   // thread.
   bool result_;
+
+  DISALLOW_COPY_AND_ASSIGN(DialDiscoverNowFunction);
 };
 
 }  // namespace api

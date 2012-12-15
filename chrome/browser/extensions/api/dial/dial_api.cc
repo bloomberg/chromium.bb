@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -14,9 +15,20 @@
 #include "chrome/common/extensions/api/dial.h"
 #include "content/public/browser/browser_thread.h"
 
+using base::TimeDelta;
+
 namespace {
 
 const char kDialServiceError[] = "Dial service error.";
+
+// How often to poll for devices.
+const int kDialRefreshIntervalSecs = 120;
+
+// We prune a device if it does not respond after this time.
+const int kDialExpirationSecs = 240;
+
+// The maximum number of devices retained at once in the registry.
+const size_t kDialMaxDevices = 256;
 
 }  // namespace
 
@@ -34,7 +46,10 @@ DialAPI::~DialAPI() {}
 DialRegistry* DialAPI::dial_registry() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!dial_registry_.get()) {
-    dial_registry_.reset(new DialRegistry(this));
+    dial_registry_.reset(new DialRegistry(this,
+        TimeDelta::FromSeconds(kDialRefreshIntervalSecs),
+        TimeDelta::FromSeconds(kDialExpirationSecs),
+        kDialMaxDevices));
   }
   return dial_registry_.get();
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/chrome_switches.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::DialDeviceData;
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
   DialDeviceData device1;
   device1.set_device_id("1");
   device1.set_label("1");
-  device1.set_device_description_url("http://1");
+  device1.set_device_description_url(GURL("http://127.0.0.1/dd.xml"));
 
   devices.push_back(device1);
   api->SendEventOnUIThread(devices);
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
   DialDeviceData device2;
   device2.set_device_id("2");
   device2.set_label("2");
-  device2.set_device_description_url("http://2");
+  device2.set_device_description_url(GURL("http://127.0.0.2/dd.xml"));
 
   devices.push_back(device2);
   api->SendEventOnUIThread(devices);
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
   DialDeviceData device3;
   device3.set_device_id("3");
   device3.set_label("3");
-  device3.set_device_description_url("http://3");
+  device3.set_device_description_url(GURL("http://127.0.0.3/dd.xml"));
 
   devices.push_back(device3);
   api->SendEventOnUIThread(devices);

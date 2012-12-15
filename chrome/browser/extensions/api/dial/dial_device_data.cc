@@ -10,65 +10,41 @@ namespace extensions {
 
 DialDeviceData::DialDeviceData() : max_age_(-1), config_id_(-1) { }
 
-DialDeviceData::DialDeviceData(const DialDeviceData& other_data) {
-  CopyFrom(other_data);
-}
-
-DialDeviceData& DialDeviceData::operator=(const DialDeviceData& other_data) {
-  CopyFrom(other_data);
-  return *this;
-}
-
 DialDeviceData::~DialDeviceData() { }
 
-const std::string& DialDeviceData::device_id() const {
-  return device_id_;
-}
-
-void DialDeviceData::set_device_id(const std::string& id) {
-  device_id_ = id;
-}
-
-const std::string& DialDeviceData::label() const {
-  return label_;
-}
-
-void DialDeviceData::set_label(const std::string& label) {
-  label_ = label;
-}
-
-const std::string& DialDeviceData::device_description_url() const {
+const GURL& DialDeviceData::device_description_url() const {
   return device_description_url_;
 }
 
-void DialDeviceData::set_device_description_url(const std::string& url) {
+void DialDeviceData::set_device_description_url(const GURL& url) {
   device_description_url_ = url;
 }
 
-const base::Time& DialDeviceData::response_time() const {
-  return response_time_;
+// static
+bool DialDeviceData::IsDeviceDescriptionUrl(const GURL& url) {
+  return url.is_valid() && !url.is_empty() &&
+      (url.SchemeIs("http") || url.SchemeIs("https"));
 }
 
-void DialDeviceData::set_response_time(const base::Time& response_time) {
-  response_time_ = response_time;
+bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {
+  DCHECK(new_data.device_id() == device_id_);
+  DCHECK(new_data.label().empty());
+  std::string label_tmp(label_);
+  bool updated_api_visible_field =
+      (new_data.device_description_url() != device_description_url_) ||
+      (new_data.config_id() != config_id_);
+  *this = new_data;
+  label_ = label_tmp;
+  return updated_api_visible_field;
 }
 
 void DialDeviceData::FillDialDevice(api::dial::DialDevice* device) const {
   DCHECK(!device_id_.empty());
-  device->device_label = label();
-  device->device_description_url = device_description_url();
-  if (has_config_id()) {
-    device->config_id.reset(new int(config_id()));
-  }
-}
-
-void DialDeviceData::CopyFrom(const DialDeviceData& other_data) {
-  device_id_ = other_data.device_id_;
-  label_ = other_data.label_;
-  device_description_url_ = other_data.device_description_url_;
-  response_time_ = other_data.response_time_;
-  max_age_ = other_data.max_age_;
-  config_id_ = other_data.config_id_;
+  DCHECK(IsDeviceDescriptionUrl(device_description_url_));
+  device->device_label = label_;
+  device->device_description_url = device_description_url_.spec();
+  if (has_config_id())
+    device->config_id.reset(new int(config_id_));
 }
 
 }  // namespace extensions
