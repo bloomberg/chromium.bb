@@ -89,6 +89,9 @@ class LoginHandlerMac : public LoginHandler,
     SetDialog(NULL);
     SetModel(NULL);
     ReleaseSoon();
+
+    constrained_window_.reset();
+    sheet_controller_.reset();
   }
 
   void OnLoginPressed(const string16& username,
@@ -105,7 +108,12 @@ class LoginHandlerMac : public LoginHandler,
  private:
   friend class LoginPrompt;
 
-  virtual ~LoginHandlerMac() {}
+  virtual ~LoginHandlerMac() {
+    // This class will be deleted on a non UI thread. Ensure that the UI members
+    // have already been deleted.
+    CHECK(!constrained_window_.get());
+    CHECK(!sheet_controller_.get());
+  }
 
   // The Cocoa controller of the GUI.
   scoped_nsobject<LoginHandlerSheet> sheet_controller_;

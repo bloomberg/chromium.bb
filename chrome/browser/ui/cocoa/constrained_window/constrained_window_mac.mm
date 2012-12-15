@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +37,7 @@ ConstrainedWindowMac::ConstrainedWindowMac(
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 void ConstrainedWindowMac::ShowConstrainedWindow() {
