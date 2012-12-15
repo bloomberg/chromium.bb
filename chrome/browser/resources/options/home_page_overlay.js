@@ -99,8 +99,7 @@ cr.define('options', function() {
      */
     updateFavicon_: function() {
       var urlField = $('homepage-url-field');
-      urlField.style.backgroundImage = url('chrome://favicon/' +
-                                           urlField.value);
+      urlField.style.backgroundImage = url(getFaviconURL(urlField.value));
     },
 
     /**
