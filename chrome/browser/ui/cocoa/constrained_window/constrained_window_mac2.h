@@ -16,6 +16,7 @@ namespace content {
 class WebContents;
 }
 class ConstrainedWindowMac2;
+@protocol ConstrainedWindowSheet;
 
 // A delegate for a constrained window. The delegate is notified when the
 // window closes.
@@ -30,9 +31,10 @@ class ConstrainedWindowMacDelegate2 {
 class ConstrainedWindowMac2 : public ConstrainedWindow,
                               public content::NotificationObserver {
  public:
-  ConstrainedWindowMac2(ConstrainedWindowMacDelegate2* delegate,
-                        content::WebContents* web_contents,
-                        NSWindow* window);
+  ConstrainedWindowMac2(
+      ConstrainedWindowMacDelegate2* delegate,
+      content::WebContents* web_contents,
+      id<ConstrainedWindowSheet> sheet);
   virtual ~ConstrainedWindowMac2();
 
   // ConstrainedWindow implementation.
@@ -57,7 +59,7 @@ class ConstrainedWindowMac2 : public ConstrainedWindow,
   // The WebContents that owns and constrains this ConstrainedWindow. Weak.
   content::WebContents* web_contents_;
 
-  scoped_nsobject<NSWindow> window_;
+  scoped_nsprotocol<id<ConstrainedWindowSheet> > sheet_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;

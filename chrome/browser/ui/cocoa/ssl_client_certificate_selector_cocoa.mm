@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -31,7 +32,12 @@ using content::BrowserThread;
 - (void)_dismissWithCode:(NSInteger)code;
 @end
 
-class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver {
+@interface SSLClientCertificateSelectorCocoa ()
+- (void)onConstrainedWindowClosed;
+@end
+
+class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
+                                         public ConstrainedWindowMacDelegate2 {
  public:
   SSLClientAuthObserverCocoaBridge(
       const net::HttpNetworkSession* network_session,
@@ -44,7 +50,18 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver {
 
   // SSLClientAuthObserver implementation:
   virtual void OnCertSelectedByNotification() OVERRIDE {
-    [controller_ onNotification];
+    [controller_ closeSheetWithAnimation:NO];
+  }
+
+  // ConstrainedWindowMacDelegate2 implementation:
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE {
+    // |onConstrainedWindowClosed| will delete the sheet which might be still
+    // in use higher up the call stack. Wait for the next cycle of the event
+    // loop to call this function.
+    [controller_ performSelector:@selector(onConstrainedWindowClosed)
+                      withObject:nil
+                      afterDelay:0];
   }
 
  private:
@@ -59,11 +76,12 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     const SelectCertificateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // The dialog manages its own lifetime.
   SSLClientCertificateSelectorCocoa* selector =
-      [[[SSLClientCertificateSelectorCocoa alloc]
+      [[SSLClientCertificateSelectorCocoa alloc]
           initWithNetworkSession:network_session
                  certRequestInfo:cert_request_info
-                        callback:callback] autorelease];
+                        callback:callback];
   [selector displayForWebContents:contents];
 }
 
@@ -100,12 +118,9 @@ void ShowSSLClientCertificateSelector(
   // Finally, tell the backend which identity (or none) the user selected.
   observer_->StopObserving();
   observer_->CertificateSelected(cert);
-}
 
-- (void)onNotification {
-  // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
-  // method.
-  [panel_ _dismissWithCode:NSFileHandlingPanelCancelButton];
+  if (!closePending_)
+    constrainedWindow_->CloseConstrainedWindow();
 }
 
 - (void)displayForWebContents:(content::WebContents*)webContents {
@@ -125,7 +140,6 @@ void ShowSSLClientCertificateSelector(
   }
 
   // Get the message to display:
-  NSString* title = l10n_util::GetNSString(IDS_CLIENT_CERT_DIALOG_TITLE);
   NSString* message = l10n_util::GetNSStringF(
       IDS_CLIENT_CERT_DIALOG_TEXT,
       ASCIIToUTF16(observer_->cert_request_info()->host_and_port));
@@ -141,16 +155,58 @@ void ShowSSLClientCertificateSelector(
     CFRelease(sslPolicy);
   }
 
-  [panel_ beginSheetForWindow:webContents->GetView()->GetTopLevelNativeWindow()
+  constrainedWindow_.reset(
+      new ConstrainedWindowMac2(observer_.get(), webContents, self));
+}
+
+- (SFChooseIdentityPanel*)panel {
+  return panel_;
+}
+
+- (void)showSheetForWindow:(NSWindow*)window {
+  NSString* title = l10n_util::GetNSString(IDS_CLIENT_CERT_DIALOG_TITLE);
+  overlayWindow_.reset([window retain]);
+  [panel_ beginSheetForWindow:window
                 modalDelegate:self
                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
                   contextInfo:NULL
                    identities:base::mac::CFToNSCast(identities_)
                       message:title];
+  observer_->StartObserving();
 }
 
-- (SFChooseIdentityPanel*)panel {
-  return panel_;
+- (void)closeSheetWithAnimation:(BOOL)withAnimation {
+  closePending_ = YES;
+  overlayWindow_.reset();
+  // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
+  // method.
+  [panel_ _dismissWithCode:NSFileHandlingPanelCancelButton];
+}
+
+- (void)hideSheet {
+  [[overlayWindow_ attachedSheet] setAlphaValue:0.0];
+}
+
+- (void)unhideSheet {
+  [[overlayWindow_ attachedSheet] setAlphaValue:1.0];
+}
+
+- (void)pulseSheet {
+  // NOOP
+}
+
+- (void)makeSheetKeyAndOrderFront {
+  [[overlayWindow_ attachedSheet] makeKeyAndOrderFront:nil];
+}
+
+- (void)updateSheetPosition {
+  // NOOP
+}
+
+- (void)onConstrainedWindowClosed {
+  panel_.reset();
+  constrainedWindow_.reset();
+  [self release];
 }
 
 @end

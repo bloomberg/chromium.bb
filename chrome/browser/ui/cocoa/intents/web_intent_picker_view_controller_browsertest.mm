@@ -62,8 +62,6 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, View) {
   EXPECT_TRUE([controller_ view]);
   EXPECT_TRUE([[controller_ view] superview]);
-  EXPECT_NSEQ(picker_->constrained_window()->GetNativeWindow(),
-              [[controller_ view] window]);
 }
 
 // Test the close button.

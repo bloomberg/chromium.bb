@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
@@ -37,12 +38,14 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
         controller_(NULL),
         tab_view0_(NULL),
         tab_view1_(NULL) {
-    sheet_.reset([[NSWindow alloc]
+    sheet_window_.reset([[NSWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, 30, 30)
                   styleMask:NSTitledWindowMask
                     backing:NSBackingStoreBuffered
                       defer:NO]);
-    [sheet_ setReleasedWhenClosed:NO];
+    [sheet_window_ setReleasedWhenClosed:NO];
+    sheet_.reset([[CustomConstrainedWindowSheet alloc]
+        initWithCustomWindow:sheet_window_]);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -61,7 +64,8 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_nsobject<NSWindow> sheet_;
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
+  scoped_nsobject<NSWindow> sheet_window_;
   content::WebContents* tab0_;
   content::WebContents* tab1_;
   BrowserWindowController* controller_;
@@ -75,11 +79,11 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
   // Show dialog in non active tab.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
   ConstrainedWindowMac2 dialog(&delegate, tab0_, sheet_);
-  EXPECT_EQ(0.0, [sheet_ alphaValue]);
+  EXPECT_EQ(0.0, [sheet_window_ alphaValue]);
 
   // Switch to inactive tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   dialog.CloseConstrainedWindow();
 }
@@ -101,13 +105,13 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
   // Show dialog and verify that it's not visible yet.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
   ConstrainedWindowMac2 dialog(&delegate, tab2, sheet_);
-  EXPECT_FALSE([sheet_ isVisible]);
+  EXPECT_FALSE([sheet_window_ isVisible]);
 
   // Activate the tab and verify that the constrained window is shown.
   browser()->tab_strip_model()->ActivateTabAt(2, true);
   EXPECT_TRUE([tab2->GetNativeView() superview]);
-  EXPECT_TRUE([sheet_ isVisible]);
-  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  EXPECT_TRUE([sheet_window_ isVisible]);
+  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   dialog.CloseConstrainedWindow();
 }
@@ -128,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
   ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
-  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the browser window.
   scoped_nsobject<NSWindow> browser_window(
@@ -142,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
   ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
-  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the tab.
   EXPECT_EQ(2, browser()->tab_count());

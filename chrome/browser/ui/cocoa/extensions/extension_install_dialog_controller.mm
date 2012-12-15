@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -40,8 +41,11 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
       initWithContentRect:[[view_controller_ view] bounds]]);
   [[window contentView] addSubview:[view_controller_ view]];
 
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc]
+          initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac2(
-      this, web_contents, window));
+      this, web_contents, sheet));
 }
 
 ExtensionInstallDialogController::~ExtensionInstallDialogController() {

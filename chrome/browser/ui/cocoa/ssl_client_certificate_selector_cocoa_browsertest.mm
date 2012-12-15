@@ -9,10 +9,11 @@
 #include "base/bind.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -30,26 +31,27 @@ typedef SSLClientCertificateSelectorTestBase
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
-  NSWindow* parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
-  EXPECT_FALSE([parent_window attachedSheet]);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
+  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
 
   net::X509Certificate* cert = NULL;
   int count = 0;
   SSLClientCertificateSelectorCocoa* selector =
-      [[[SSLClientCertificateSelectorCocoa alloc]
+      [[SSLClientCertificateSelectorCocoa alloc]
           initWithNetworkSession:auth_requestor_->http_network_session_
                  certRequestInfo:auth_requestor_->cert_request_info_
                         callback:base::Bind(&OnCertificateSelected,
                                             &cert,
-                                            &count)]
-      autorelease];
+                                            &count)];
   [selector displayForWebContents:web_contents];
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE([selector panel]);
-  EXPECT_TRUE([parent_window attachedSheet]);
+  EXPECT_EQ(1u, constrained_window_tab_helper->constrained_window_count());
 
-  [selector onNotification];
-  chrome::testing::NSRunLoopRunAllPending();
-  EXPECT_FALSE([parent_window attachedSheet]);
+  constrained_window_tab_helper->CloseConstrainedWindows();
+  content::RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
 
   EXPECT_EQ(NULL, cert);
   EXPECT_EQ(1, count);

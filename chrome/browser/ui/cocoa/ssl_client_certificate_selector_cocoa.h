@@ -13,11 +13,15 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 
+class ConstrainedWindowMac2;
 @class SFChooseIdentityPanel;
 class SSLClientAuthObserverCocoaBridge;
 
-@interface SSLClientCertificateSelectorCocoa : NSObject {
+@interface SSLClientCertificateSelectorCocoa
+    : NSObject<ConstrainedWindowSheet> {
  @private
   // The list of identities offered to the user.
   base::mac::ScopedCFTypeRef<CFMutableArrayRef> identities_;
@@ -26,6 +30,9 @@ class SSLClientAuthObserverCocoaBridge;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   scoped_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   scoped_nsobject<SFChooseIdentityPanel> panel_;
+  scoped_ptr<ConstrainedWindowMac2> constrainedWindow_;
+  scoped_nsobject<NSWindow> overlayWindow_;
+  BOOL closePending_;
 }
 
 @property (readonly, nonatomic) SFChooseIdentityPanel* panel;
@@ -33,7 +40,6 @@ class SSLClientAuthObserverCocoaBridge;
 - (id)initWithNetworkSession:(const net::HttpNetworkSession*)networkSession
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
                     callback:(const chrome::SelectCertificateCallback&)callback;
-- (void)onNotification;
 - (void)displayForWebContents:(content::WebContents*)webContents;
 
 @end

@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
-#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,8 +104,11 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 
   // May be NULL during tests.
   if (controller->web_contents()) {
+    scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+        [[CustomConstrainedWindowSheet alloc]
+            initWithCustomWindow:[alert_ window]]);
     window_.reset(new ConstrainedWindowMac2(
-        this, controller->web_contents(), [alert_ window]));
+        this, controller->web_contents(), sheet));
   }
 }
 

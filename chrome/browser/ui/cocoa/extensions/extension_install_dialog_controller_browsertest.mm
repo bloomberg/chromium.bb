@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
                                            prompt);
 
   scoped_nsobject<NSWindow> window(
-      [controller->constrained_window()->GetNativeWindow() retain]);
+      [[[controller->view_controller() view] window] retain]);
   EXPECT_TRUE([window isVisible]);
 
   // Press cancel to close the window

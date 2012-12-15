@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -71,8 +72,11 @@ class LoginHandlerMac : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
+    scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+        [[CustomConstrainedWindowSheet alloc]
+            initWithCustomWindow:[sheet_controller_ window]]);
     constrained_window_.reset(new ConstrainedWindowMac2(
-        this, requesting_contents, [sheet_controller_ window]));
+        this, requesting_contents, sheet));
     SetDialog(constrained_window_.get());
 
     NotifyAuthNeeded();

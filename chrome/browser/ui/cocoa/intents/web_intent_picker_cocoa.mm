@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -40,8 +41,11 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(content::WebContents* web_contents,
   [[window contentView] addSubview:[view_controller_ view]];
   [view_controller_ update];
 
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc]
+          initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac2(
-      this, web_contents, window));
+      this, web_contents, sheet));
 }
 
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {
@@ -83,7 +87,7 @@ void WebIntentPickerCocoa::OnInlineDispositionHandleKeyboardEvent(
   }
   ChromeEventProcessingWindow* window =
       base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(
-          constrained_window_->GetNativeWindow());
+          [[view_controller_ view] window]);
   [window redispatchKeyEvent:event.os_event];
 }
 

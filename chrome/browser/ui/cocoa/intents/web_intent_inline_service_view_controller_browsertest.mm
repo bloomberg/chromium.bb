@@ -33,8 +33,8 @@ class WebIntentInlineServiceViewControllerTest : public InProcessBrowserTest {
         [[WebIntentInlineServiceViewController alloc] initWithPicker:picker_]);
     view_.reset([[view_controller_ view] retain]);
 
-    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
-    [[sheet contentView] addSubview:view_];
+    NSWindow* window = [[picker_->view_controller() view] window];
+    [[window contentView] addSubview:view_];
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

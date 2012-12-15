@@ -9,23 +9,27 @@
 
 #include "base/memory/scoped_nsobject.h"
 
+@protocol ConstrainedWindowSheet;
+
 // Information about a single sheet managed by
-// ConstrainedWindowSheetController.Note, this is a private class not meant for
+// ConstrainedWindowSheetController. Note, this is a private class not meant for
 // public use.
 @interface ConstrainedWindowSheetInfo : NSObject {
  @private
-  scoped_nsobject<NSWindow> sheet_;
+  scoped_nsprotocol<id<ConstrainedWindowSheet> > sheet_;
   scoped_nsobject<NSView> parentView_;
   scoped_nsobject<NSWindow> overlayWindow_;
+  BOOL sheetDidShow_;
 }
 
-@property(nonatomic, readonly) NSWindow* sheet;
+@property(nonatomic, readonly) id<ConstrainedWindowSheet> sheet;
 @property(nonatomic, readonly) NSView* parentView;
 @property(nonatomic, readonly) NSWindow* overlayWindow;
+@property(nonatomic, assign) BOOL sheetDidShow;
 
 // Initializes a info object with for the given |sheet| and associated
 // |parentView| and |overlayWindow|.
-- (id)initWithSheet:(NSWindow*)sheet
+- (id)initWithSheet:(id<ConstrainedWindowSheet>)sheet
          parentView:(NSView*)parentView
       overlayWindow:(NSWindow*)overlayWindow;
 

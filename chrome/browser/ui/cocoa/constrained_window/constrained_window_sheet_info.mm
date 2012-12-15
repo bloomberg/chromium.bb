@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h"
-#include "ui/base/cocoa/window_size_constants.h"
+
+#include "base/mac/foundation_util.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 
 @implementation ConstrainedWindowSheetInfo
 
-- (id)initWithSheet:(NSWindow*)sheet
+@synthesize sheetDidShow = sheetDidShow_;
+
+- (id)initWithSheet:(id<ConstrainedWindowSheet>)sheet
          parentView:(NSView*)parentView
       overlayWindow:(NSWindow*)overlayWindow {
   if ((self = [super init])) {
@@ -18,7 +23,7 @@
   return self;
 }
 
-- (NSWindow*)sheet {
+- (id<ConstrainedWindowSheet>)sheet {
   return sheet_;
 }
 
@@ -31,11 +36,7 @@
 }
 
 - (void)hideSheet {
-  // Hide the sheet by setting alpha to 0 and sizing it to 1x1. This is better
-  // than calling orderOut: because that could cause Spaces activation or
-  // window ordering changes.
-  [sheet_ setAlphaValue:0.0];
-  [[sheet_ contentView] setAutoresizesSubviews:NO];
+  [sheet_ hideSheet];
 
   // Overlay window is already invisible so just stop accepting mouse events.
   [overlayWindow_ setIgnoresMouseEvents:YES];
@@ -46,8 +47,13 @@
 
 - (void)showSheet {
   [overlayWindow_ setIgnoresMouseEvents:NO];
-  [sheet_ setAlphaValue:1.0];
-  [overlayWindow_ makeKeyWindow];
+  if (sheetDidShow_) {
+    [sheet_ unhideSheet];
+  } else {
+    [sheet_ showSheetForWindow:overlayWindow_];
+    sheetDidShow_ = YES;
+  }
+  [sheet_ makeSheetKeyAndOrderFront];
 }
 
 @end

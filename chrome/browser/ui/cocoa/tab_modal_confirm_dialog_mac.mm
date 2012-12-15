@@ -6,8 +6,9 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
-#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -72,7 +73,10 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
   [[alert_ closeButton] setAction:@selector(onCancelButton:)];
   [alert_ layout];
 
-  window_.reset(new ConstrainedWindowMac2(this, web_contents, [alert_ window]));
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc]
+          initWithCustomWindow:[alert_ window]]);
+  window_.reset(new ConstrainedWindowMac2(this, web_contents, sheet));
   delegate->set_window(window_.get());
 }
 

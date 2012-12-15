@@ -24,6 +24,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -81,8 +82,11 @@ CollectedCookiesMac::CollectedCookiesMac(content::WebContents* web_contents) {
       initWithWebContents:web_contents
       collectedCookiesMac:this]);
 
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc]
+          initWithCustomWindow:[sheet_controller_ window]]);
   window_.reset(new ConstrainedWindowMac2(
-      this, web_contents, [sheet_controller_ window]));
+      this, web_contents, sheet));
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {

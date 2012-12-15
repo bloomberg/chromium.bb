@@ -7,8 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#include "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -18,13 +19,13 @@
 ConstrainedWindowMac2::ConstrainedWindowMac2(
     ConstrainedWindowMacDelegate2* delegate,
     content::WebContents* web_contents,
-    NSWindow* window)
+    id<ConstrainedWindowSheet> sheet)
     : delegate_(delegate),
       web_contents_(web_contents),
-      window_([window retain]),
+      sheet_([sheet retain]),
       pending_show_(false) {
   DCHECK(web_contents);
-  DCHECK(window_.get());
+  DCHECK(sheet_.get());
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   constrained_window_tab_helper->AddConstrainedDialog(this);
@@ -48,7 +49,7 @@ void ConstrainedWindowMac2::ShowConstrainedWindow() {
   ConstrainedWindowSheetController* controller =
       [ConstrainedWindowSheetController
           controllerForParentWindow:parent_window];
-  [controller showSheet:window_ forParentView:parent_view];
+  [controller showSheet:sheet_ forParentView:parent_view];
 }
 
 void ConstrainedWindowMac2::CloseConstrainedWindow() {
@@ -56,8 +57,8 @@ void ConstrainedWindowMac2::CloseConstrainedWindow() {
   // Unset |pending_show_| to prevent the window from being reshown.
   pending_show_ = false;
 
-  [[ConstrainedWindowSheetController controllerForSheet:window_]
-      closeSheet:window_];
+  [[ConstrainedWindowSheetController controllerForSheet:sheet_]
+      closeSheet:sheet_];
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->WillClose(this);
@@ -66,12 +67,13 @@ void ConstrainedWindowMac2::CloseConstrainedWindow() {
 }
 
 void ConstrainedWindowMac2::PulseConstrainedWindow() {
-  [[ConstrainedWindowSheetController controllerForSheet:window_]
-      pulseSheet:window_];
+  [[ConstrainedWindowSheetController controllerForSheet:sheet_]
+      pulseSheet:sheet_];
 }
 
 gfx::NativeWindow ConstrainedWindowMac2::GetNativeWindow() {
-  return window_;
+  NOTREACHED();
+  return nil;
 }
 
 bool ConstrainedWindowMac2::CanShowConstrainedWindow() {

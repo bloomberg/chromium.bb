@@ -46,15 +46,17 @@
 }
 
 - (NSRect)frameRectForContentRect:(NSRect)windowContent {
+  id<ConstrainedWindowSheet> sheet = [ConstrainedWindowSheetController
+      sheetForOverlayWindow:[self parentWindow]];
   ConstrainedWindowSheetController* sheetController =
-      [ConstrainedWindowSheetController controllerForSheet:self];
+      [ConstrainedWindowSheetController controllerForSheet:sheet];
 
   // Sheet controller may be nil if this window hasn't been shown yet.
   if (!sheetController)
     return windowContent;
 
   NSRect frame;
-  frame.origin = [sheetController originForSheet:self
+  frame.origin = [sheetController originForSheet:sheet
                                   withWindowSize:windowContent.size];
   frame.size = windowContent.size;
   return frame;
