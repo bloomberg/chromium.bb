@@ -20,11 +20,13 @@
 #include "ash/system/locale/locale_observer.h"
 #include "ash/system/logout_button/logout_button_observer.h"
 #include "ash/system/power/power_status_observer.h"
+#include "ash/system/session_length_limit/session_length_limit_observer.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/network_observer.h"
@@ -71,6 +73,9 @@ public:
   void AddPowerStatusObserver(PowerStatusObserver* observer);
   void RemovePowerStatusObserver(PowerStatusObserver* observer);
 
+  void AddSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
+  void RemoveSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
+
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
@@ -106,6 +111,8 @@ public:
                            const std::string& from_locale,
                            const std::string& to_locale);
   void NotifyPowerStatusChanged(const PowerSupplyStatus& power_status);
+  void NotifySessionStartTimeChanged(const base::Time& session_start_time);
+  void NotifySessionLengthLimitChanged(const base::TimeDelta& limit);
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
 #if defined(OS_CHROMEOS)
@@ -134,6 +141,7 @@ public:
   ObserverList<LocaleObserver> locale_observers_;
   ObserverList<LogoutButtonObserver> logout_button_observers_;
   ObserverList<PowerStatusObserver> power_status_observers_;
+  ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)

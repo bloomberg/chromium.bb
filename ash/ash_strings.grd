@@ -509,6 +509,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Shows a connecting network in the network list.">
 	<ph name="NETWORK">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME" desc="The time remaining until the end of the session. Shown if the session length is limited.">
+        <ph name="hours">$1<ex>01</ex></ph>:<ph name="minutes">$2<ex>35</ex></ph>:<ph name="seconds">$3<ex>12</ex></ph>
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu

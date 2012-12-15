@@ -15,6 +15,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -298,6 +299,14 @@ class SystemTrayDelegate {
   // Sets VolumeControlDelegate.
   virtual void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) = 0;
+
+  // Returns the session start time, or a zero base::Time if no session start
+  // time is set.
+  virtual base::Time GetSessionStartTime() = 0;
+
+  // Returns the session length limit, or a zero base::TimeDelta if no session
+  // length limit is set.
+  virtual base::TimeDelta GetSessionLengthLimit() = 0;
 
   // Creates a dummy delegate for testing.
   static SystemTrayDelegate* CreateDummyDelegate();

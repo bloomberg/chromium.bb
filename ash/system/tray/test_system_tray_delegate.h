@@ -94,6 +94,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
   virtual void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) OVERRIDE;
+  virtual base::Time GetSessionStartTime() OVERRIDE;
+  virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE;
 
  private:
   bool wifi_enabled_;

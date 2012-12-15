@@ -303,5 +303,13 @@ void TestSystemTrayDelegate::SetVolumeControlDelegate(
   volume_control_delegate_ = delegate.Pass();
 }
 
+base::Time TestSystemTrayDelegate::GetSessionStartTime() {
+  return base::Time();
+}
+
+base::TimeDelta TestSystemTrayDelegate::GetSessionLengthLimit() {
+  return base::TimeDelta();
+}
+
 }  // namespace test
 }  // namespace ash

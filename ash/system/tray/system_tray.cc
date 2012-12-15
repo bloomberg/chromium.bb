@@ -20,6 +20,7 @@
 #include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/session_length_limit/tray_session_length_limit.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -128,6 +129,7 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
+  AddTrayItem(new internal::TraySessionLengthLimit(this));
   AddTrayItem(new internal::TrayLogoutButton(this));
   AddTrayItem(new internal::TrayUser(this));
   AddTrayItem(new internal::TrayIME(this));

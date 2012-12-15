@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
+#include <algorithm>
+
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -31,6 +33,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_service_base.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -92,6 +96,12 @@ using drive::DriveSystemServiceFactory;
 namespace chromeos {
 
 namespace {
+
+// The minimum session length limit that can be set.
+const int kSessionLengthLimitMinMs = 30 * 1000; // 30 seconds.
+
+// The maximum session length limit that can be set.
+const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000; // 24 hours.
 
 // Time delay for rechecking gdata operation when we suspect that there will
 // be no upcoming activity notifications that need to be pushed to UI.
@@ -241,6 +251,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     bluetooth_adapter_ = device::BluetoothAdapterFactory::DefaultAdapter();
     bluetooth_adapter_->AddObserver(this);
+
+    local_state_registrar_.Init(g_browser_process->local_state());
+
+    UpdateSessionStartTime();
+    UpdateSessionLengthLimit();
+
+    local_state_registrar_.Add(
+        prefs::kSessionStartTime,
+        base::Bind(&SystemTrayDelegate::UpdateSessionStartTime,
+                   base::Unretained(this)));
+    local_state_registrar_.Add(
+        prefs::kSessionLengthLimit,
+        base::Bind(&SystemTrayDelegate::UpdateSessionLengthLimit,
+                   base::Unretained(this)));
   }
 
   virtual ~SystemTrayDelegate() {
@@ -772,6 +796,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     volume_control_delegate_.swap(delegate);
   }
 
+  virtual base::Time GetSessionStartTime() OVERRIDE {
+    return session_start_time_;
+  }
+
+  virtual base::TimeDelta GetSessionLengthLimit() OVERRIDE {
+    return session_length_limit_;
+  }
+
  private:
   ash::SystemTray* GetPrimarySystemTray() {
     return ash::Shell::GetInstance()->GetPrimarySystemTray();
@@ -791,21 +823,21 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   void SetProfile(Profile* profile) {
     PrefService* prefs = profile->GetPrefs();
-    pref_registrar_.reset(new PrefChangeRegistrar);
-    pref_registrar_->Init(prefs);
-    pref_registrar_->Add(
+    user_pref_registrar_.reset(new PrefChangeRegistrar);
+    user_pref_registrar_->Init(prefs);
+    user_pref_registrar_->Add(
         prefs::kUse24HourClock,
         base::Bind(&SystemTrayDelegate::UpdateClockType,
                    base::Unretained(this)));
-    pref_registrar_->Add(
+    user_pref_registrar_->Add(
         prefs::kLanguageRemapSearchKeyTo,
         base::Bind(&SystemTrayDelegate::OnLanguageRemapSearchKeyToChanged,
                    base::Unretained(this)));
-    pref_registrar_->Add(
+    user_pref_registrar_->Add(
         prefs::kShowLogoutButtonInTray,
         base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
                    base::Unretained(this)));
-    pref_registrar_->Add(
+    user_pref_registrar_->Add(
         prefs::kShouldAlwaysShowAccessibilityMenu,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this),
@@ -826,14 +858,39 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateClockType() {
-    clock_type_ = pref_registrar_->prefs()->GetBoolean(prefs::kUse24HourClock) ?
-        base::k24HourClock : base::k12HourClock;
+    clock_type_ =
+        user_pref_registrar_->prefs()->GetBoolean(prefs::kUse24HourClock) ?
+            base::k24HourClock : base::k12HourClock;
     GetSystemTrayNotifier()->NotifyDateFormatChanged();
   }
 
   void UpdateShowLogoutButtonInTray() {
     GetSystemTrayNotifier()->NotifyShowLoginButtonChanged(
-        pref_registrar_->prefs()->GetBoolean(prefs::kShowLogoutButtonInTray));
+        user_pref_registrar_->prefs()->GetBoolean(
+            prefs::kShowLogoutButtonInTray));
+  }
+
+  void UpdateSessionStartTime() {
+    session_start_time_ = base::Time::FromInternalValue(
+        local_state_registrar_.prefs()->GetInt64(prefs::kSessionStartTime));
+    GetSystemTrayNotifier()->NotifySessionStartTimeChanged(session_start_time_);
+  }
+
+  void UpdateSessionLengthLimit() {
+    const PrefServiceBase::Preference* session_length_limit_pref =
+        local_state_registrar_.prefs()->
+            FindPreference(prefs::kSessionLengthLimit);
+    int limit;
+    if (session_length_limit_pref->IsDefaultValue() ||
+        !session_length_limit_pref->GetValue()->GetAsInteger(&limit)) {
+      session_length_limit_ = base::TimeDelta();
+    } else {
+      session_length_limit_ = base::TimeDelta::FromMilliseconds(
+          std::min(std::max(limit, kSessionLengthLimitMinMs),
+              kSessionLengthLimitMaxMs));
+    }
+    GetSystemTrayNotifier()->NotifySessionLengthLimitChanged(
+        session_length_limit_);
   }
 
   void NotifyRefreshNetwork() {
@@ -1085,7 +1142,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void OnLanguageRemapSearchKeyToChanged() {
-    search_key_mapped_to_ = pref_registrar_->prefs()->GetInteger(
+    search_key_mapped_to_ = user_pref_registrar_->prefs()->GetInteger(
         prefs::kLanguageRemapSearchKeyTo);
   }
 
@@ -1247,13 +1304,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   scoped_ptr<NetworkMenuIcon> network_icon_dark_;
   scoped_ptr<NetworkMenu> network_menu_;
   content::NotificationRegistrar registrar_;
-  scoped_ptr<PrefChangeRegistrar> pref_registrar_;
+  PrefChangeRegistrar local_state_registrar_;
+  scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
   std::string cellular_device_path_;
   std::string active_network_path_;
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;
+  base::Time session_start_time_;
+  base::TimeDelta session_length_limit_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 

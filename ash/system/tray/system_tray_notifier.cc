@@ -107,6 +107,16 @@ void SystemTrayNotifier::RemovePowerStatusObserver(
   power_status_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayNotifier::AddSessionLengthLimitObserver(
+    SessionLengthLimitObserver* observer) {
+  session_length_limit_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
+    SessionLengthLimitObserver* observer) {
+  session_length_limit_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
   update_observers_.AddObserver(observer);
 }
@@ -241,6 +251,20 @@ void SystemTrayNotifier::NotifyPowerStatusChanged(
   FOR_EACH_OBSERVER(PowerStatusObserver,
                     power_status_observers_,
                     OnPowerStatusChanged(power_status));
+}
+
+void SystemTrayNotifier::NotifySessionStartTimeChanged(
+    const base::Time& session_start_time) {
+  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
+                    session_length_limit_observers_,
+                    OnSessionStartTimeChanged(session_start_time));
+}
+
+void SystemTrayNotifier::NotifySessionLengthLimitChanged(
+    const base::TimeDelta& limit) {
+  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
+                    session_length_limit_observers_,
+                    OnSessionLengthLimitChanged(limit));
 }
 
 void SystemTrayNotifier::NotifyUpdateRecommended(
