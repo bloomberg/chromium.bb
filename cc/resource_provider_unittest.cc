@@ -585,6 +585,7 @@ TEST_P(ResourceProviderTest, ScopedSampler)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
     ResourceProvider::ResourceId id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
 
     // Creating a sampler with the default filter should not change any texture
@@ -609,6 +610,32 @@ TEST_P(ResourceProviderTest, ScopedSampler)
         EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         ResourceProvider::ScopedSamplerGL sampler(resourceProvider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
     }
+
+    Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, ManagedResource)
+{
+    // Sampling is only supported for GL textures.
+    if (GetParam() != ResourceProvider::GLTexture)
+        return;
+
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->Context3D());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+
+    gfx::Size size(1, 1);
+    WGC3Denum format = GL_RGBA;
+    int textureId = 1;
+
+    // Check that the texture gets created with the right sampler settings.
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_MANAGED_CHROMIUM));
+    ResourceProvider::ResourceId id = resourceProvider->createManagedResource(size, format, ResourceProvider::TextureUsageAny);
 
     Mock::VerifyAndClearExpectations(context);
 }

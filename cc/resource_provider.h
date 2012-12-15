@@ -72,8 +72,12 @@ public:
     // Creates a resource of the default resource type.
     ResourceId createResource(const gfx::Size&, GLenum format, TextureUsageHint);
 
+    // Creates a resource which is tagged as being managed for GPU memory accounting purposes.
+    ResourceId createManagedResource(const gfx::Size&, GLenum format, TextureUsageHint);
+
     // You can also explicitly create a specific resource type.
-    ResourceId createGLTexture(const gfx::Size&, GLenum format, TextureUsageHint);
+    ResourceId createGLTexture(const gfx::Size&, GLenum format, GLenum texturePool, TextureUsageHint);
+
     ResourceId createBitmap(const gfx::Size&);
     // Wraps an external texture into a GL resource.
     ResourceId createResourceFromExternalTexture(unsigned textureId);

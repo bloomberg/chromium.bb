@@ -149,7 +149,7 @@ ResourceProvider::ResourceId ResourceProvider::createResource(const gfx::Size& s
 {
     switch (m_defaultResourceType) {
     case GLTexture:
-        return createGLTexture(size, format, hint);
+        return createGLTexture(size, format, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM, hint);
     case Bitmap:
         DCHECK(format == GL_RGBA);
         return createBitmap(size);
@@ -159,7 +159,21 @@ ResourceProvider::ResourceId ResourceProvider::createResource(const gfx::Size& s
     return 0;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createGLTexture(const gfx::Size& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createManagedResource(const gfx::Size& size, GLenum format, TextureUsageHint hint)
+{
+    switch (m_defaultResourceType) {
+    case GLTexture:
+        return createGLTexture(size, format, GL_TEXTURE_POOL_MANAGED_CHROMIUM, hint);
+    case Bitmap:
+        DCHECK(format == GL_RGBA);
+        return createBitmap(size);
+    }
+
+    LOG(FATAL) << "Invalid default resource type.";
+    return 0;
+}
+
+ResourceProvider::ResourceId ResourceProvider::createGLTexture(const gfx::Size& size, GLenum format, GLenum texturePool, TextureUsageHint hint)
 {
     DCHECK_LE(size.width(), m_maxTextureSize);
     DCHECK_LE(size.height(), m_maxTextureSize);
@@ -174,6 +188,7 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(const gfx::Size& 
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, texturePool));
 
     if (m_useTextureUsageHint && hint == TextureUsageFramebuffer)
         GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE));

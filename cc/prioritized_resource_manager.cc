@@ -395,7 +395,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::createBacking(gfx::Siz
 {
     DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
     DCHECK(resourceProvider);
-    ResourceProvider::ResourceId resourceId = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceId = resourceProvider->createManagedResource(size, format, ResourceProvider::TextureUsageAny);
     PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(resourceId, resourceProvider, size, format);
     m_memoryUseBytes += backing->bytes();
     return backing;
