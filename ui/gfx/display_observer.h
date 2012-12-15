@@ -25,7 +25,7 @@ class UI_EXPORT DisplayObserver {
   virtual void OnDisplayRemoved(const Display& old_display) = 0;
 
  protected:
-  virtual ~DisplayObserver();
+  virtual ~DisplayObserver() {}
 };
 
 }  // namespace gfx
