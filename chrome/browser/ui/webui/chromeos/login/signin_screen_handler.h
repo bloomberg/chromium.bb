@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -278,6 +279,10 @@ class SigninScreenHandler
                  const std::string& reason,
                  ConnectionType last_network_type);
 
+  // Cancels password changed flow - switches back to login screen.
+  // Called as a callback after cookies are cleared.
+  void CancelPasswordChangedFlowInternal();
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
 
@@ -327,6 +332,7 @@ class SigninScreenHandler
   std::string test_pass_;
 
   BrowsingDataRemover* cookie_remover_;
+  base::Closure cookie_remover_callback_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

@@ -72,7 +72,7 @@ cr.define('login', function() {
       backButton.addEventListener('click', function(e) {
         var screen = $('password-changed');
         if (screen.classList.contains('migrate')) {
-          chrome.send('cancelPasswordChangedFlow');
+          screen.cancel();
         } else {
           // Resync all data UI step.
           screen.classList.remove('resync');
@@ -98,12 +98,8 @@ cr.define('login', function() {
           localStrings.getString('proceedAnywayButton');
       proceedAnywayButton.addEventListener('click', function(e) {
         var screen = $('password-changed');
-        if (screen.classList.contains('migrate')) {
-          screen.classList.remove('resync');
-          screen.classList.add('migrate');
-        } else {
+        if (screen.classList.contains('resync'))
           $('password-changed').resync();
-        }
         e.stopPropagation();
       });
       buttons.push(proceedAnywayButton);
@@ -138,6 +134,16 @@ cr.define('login', function() {
     },
 
     /**
+     * Cancels password migration and drops the user back to the login screen.
+     */
+    cancel: function() {
+      this.disabled = true;
+      // Reset login action bar state.
+      $('login-header-bar').signinUIActive = false;
+      chrome.send('cancelPasswordChangedFlow');
+    },
+
+    /**
      * Starts migration process using old password that user provided.
      */
     migrate: function() {
@@ -166,8 +172,10 @@ cr.define('login', function() {
     // We'll get here after the successful online authentication.
     // It assumes session is about to start so hides login screen controls.
     Oobe.getInstance().headerHidden = false;
-    $('password-changed').classList[
-        showError ? 'add' : 'remove']('password-error');
+    var screen = $('password-changed');
+    screen.classList[showError ? 'add' : 'remove']('password-error');
+    screen.classList.add('migrate');
+    screen.classList.remove('resync');
     $('old-password').value = '';
     $('password-changed').disabled = false;
 

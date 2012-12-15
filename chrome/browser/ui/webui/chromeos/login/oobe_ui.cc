@@ -130,6 +130,7 @@ const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
 const char OobeUI::kScreenAccountPicker[]   = "account-picker";
 const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
+const char OobeUI::kScreenPasswordChanged[] = "password-changed";
 
 OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
@@ -303,6 +304,7 @@ void OobeUI::InitializeScreenMap() {
   screen_map_[kScreenAccountPicker] = SCREEN_ACCOUNT_PICKER;
   screen_map_[kScreenUserImagePicker] = SCREEN_USER_IMAGE_PICKER;
   screen_map_[kScreenTpmError] = SCREEN_TMP_ERROR;
+  screen_map_[kScreenPasswordChanged] = SCREEN_PASSWORD_CHANGED;
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
@@ -339,8 +341,12 @@ void OobeUI::ResetSigninScreenHandlerDelegate() {
 }
 
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
-  if (screen_map_.count(screen))
+  if (screen_map_.count(screen)) {
     current_screen_ = screen_map_[screen];
+  } else {
+    NOTREACHED() << "Screen should be registered in InitializeScreenMap()";
+    current_screen_ = SCREEN_UNKNOWN;
+  }
 }
 
 }  // namespace chromeos

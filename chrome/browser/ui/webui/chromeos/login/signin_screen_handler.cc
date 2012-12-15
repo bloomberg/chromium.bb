@@ -503,7 +503,8 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cookie_remover_ = NULL;
   cookies_cleared_ = true;
-  ShowSigninScreenIfReady();
+  cookie_remover_callback_.Run();
+  cookie_remover_callback_.Reset();
 }
 
 void SigninScreenHandler::OnCapsLockChange(bool enabled) {
@@ -753,6 +754,10 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     ShowSigninScreenIfReady();
   } else {
     StartClearingDnsCache();
+
+    cookie_remover_callback_ = base::Bind(
+        &SigninScreenHandler::ShowSigninScreenIfReady,
+        weak_factory_.GetWeakPtr());
     StartClearingCookies();
   }
 }
@@ -987,11 +992,10 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow(
     const base::ListValue* args) {
-  if (delegate_) {
-    // TODO(nkostylev): Cleanup cookies / cache. http://crbug.com/124699
-    Show(oobe_ui_);
-    delegate_->CancelPasswordChangedFlow();
-  }
+  cookie_remover_callback_ = base::Bind(
+      &SigninScreenHandler::CancelPasswordChangedFlowInternal,
+      weak_factory_.GetWeakPtr());
+  StartClearingCookies();
 }
 
 void SigninScreenHandler::HandleMigrateUserData(const base::ListValue* args) {
@@ -1108,6 +1112,13 @@ void SigninScreenHandler::SendState(const std::string& callback,
   base::FundamentalValue last_network_value(last_network_type);
   web_ui()->CallJavascriptFunction(callback,
       state_value, network_value, reason_value, last_network_value);
+}
+
+void SigninScreenHandler::CancelPasswordChangedFlowInternal() {
+  if (delegate_) {
+    Show(oobe_ui_);
+    delegate_->CancelPasswordChangedFlow();
+  }
 }
 
 }  // namespace chromeos

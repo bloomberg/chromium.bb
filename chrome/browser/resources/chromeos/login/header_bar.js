@@ -80,6 +80,13 @@ cr.define('login', function() {
      * @private
      */
     handleCancelAddUserClick_: function(e) {
+      // Let screen handle cancel itself if that is capable of doing so.
+      if (Oobe.getInstance().currentScreen &&
+          Oobe.getInstance().currentScreen.cancel) {
+        Oobe.getInstance().currentScreen.cancel();
+        return;
+      }
+
       $('login-header-bar').signinUIActive = false;
       $('pod-row').loadLastWallpaper();
 
