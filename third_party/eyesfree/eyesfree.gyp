@@ -26,12 +26,9 @@
             'aidl_import_include': 'src/android/java/src',
           },
           'sources': [
-            'src/android/java/src/com/googlecode/eyesfree/braille/display/BrailleDisplayProperties.aidl',
-            'src/android/java/src/com/googlecode/eyesfree/braille/display/BrailleInputEvent.aidl',
             'src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleService.aidl',
             'src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleServiceCallback.aidl',
             'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/ISelfBrailleService.aidl',
-            'src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/WriteData.aidl',
             'src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorService.aidl',
             'src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorServiceCallback.aidl',
           ],
