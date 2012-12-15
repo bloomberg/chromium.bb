@@ -34,13 +34,21 @@ bool IsMainThread() {
   return pp::Module::Get()->core()->IsMainThread();
 }
 
+// Posts a task to run |cb| on the main thread. The task is posted even if the
+// current thread is the main thread.
+void PostOnMain(pp::CompletionCallback cb) {
+  pp::Module::Get()->core()->CallOnMainThread(0, cb, PP_OK);
+}
+
+// Ensures |cb| is called on the main thread, either because the current thread
+// is the main thread or by posting it to the main thread.
 void CallOnMain(pp::CompletionCallback cb) {
   // TODO(tomfinegan): This is only necessary because PPAPI doesn't allow calls
   // off the main thread yet. Remove this once the change lands.
   if (IsMainThread())
     cb.Run(PP_OK);
   else
-    pp::Module::Get()->core()->CallOnMainThread(0, cb, PP_OK);
+    PostOnMain(cb);
 }
 
 // Configures a cdm::InputBuffer. |subsamples| must exist as long as
@@ -518,6 +526,10 @@ class CdmWrapper : public pp::Instance,
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
+  void SendUnknownKeyError(const std::string& session_id);
+
+  void SendKeyAdded(const std::string& session_id);
+
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
@@ -552,9 +564,6 @@ class CdmWrapper : public pp::Instance,
                       const cdm::Status& status,
                       const LinkedAudioFrames& audio_frames,
                       const PP_DecryptTrackingInfo& tracking_info);
-
-  // Helper function to fire KeyError event on the main thread.
-  void SendUnknownKeyError(const std::string& session_id);
 
   // Helper for SetTimer().
   void TimerExpired(int32_t result, void* context);
@@ -636,7 +645,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
     return;
   }
 
-  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyAdded, session_id));
+  SendKeyAdded(session_id);
 }
 
 void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
@@ -820,11 +829,6 @@ void CdmWrapper::DecryptAndDecode(
   }
 }
 
-void CdmWrapper::SendUnknownKeyError(const std::string& session_id) {
-  CallOnMain(callback_factory_.NewCallback(
-      &CdmWrapper::KeyError, session_id, cdm::kUnknownError, 0));
-}
-
 void CdmWrapper::SetTimer(int64_t delay_ms, void* context) {
   // NOTE: doesn't really need to run on the main thread; could just as well run
   // on a helper thread if |cdm_| were thread-friendly and care was taken.  We
@@ -848,7 +852,7 @@ void CdmWrapper::SendKeyMessage(
     const char* session_id, int32_t session_id_length,
     const char* message, int32_t message_length,
     const char* default_url, int32_t default_url_length) {
-  CallOnMain(callback_factory_.NewCallback(
+  PostOnMain(callback_factory_.NewCallback(
       &CdmWrapper::KeyMessage,
       std::string(session_id, session_id_length),
       std::string(message, message_length),
@@ -859,15 +863,24 @@ void CdmWrapper::SendKeyError(const char* session_id,
                               int32_t session_id_length,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) {
-  CallOnMain(callback_factory_.NewCallback(
+  PostOnMain(callback_factory_.NewCallback(
       &CdmWrapper::KeyError,
       std::string(session_id, session_id_length),
       error_code,
       system_code));
 }
 
+void CdmWrapper::SendUnknownKeyError(const std::string& session_id) {
+  SendKeyError(session_id.data(), session_id.size(), cdm::kUnknownError, 0);
+}
+
+void CdmWrapper::SendKeyAdded(const std::string& session_id) {
+  PostOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyAdded,session_id));
+}
+
 void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
   PP_DCHECK(result == PP_OK);
+  PP_DCHECK(!key_system_.empty());
   pp::ContentDecryptor_Private::KeyAdded(key_system_, session_id);
 }
 
@@ -882,17 +895,17 @@ void CdmWrapper::KeyMessage(int32_t result,
     memcpy(message_array_buffer.Map(), message.data(), message.size());
   }
 
+  PP_DCHECK(!key_system_.empty());
   pp::ContentDecryptor_Private::KeyMessage(
       key_system_, session_id, message_array_buffer, default_url);
 }
 
-// TODO(xhwang): Support MediaKeyError (see spec: http://goo.gl/rbdnR) in CDM
-// interface and in this function.
 void CdmWrapper::KeyError(int32_t result,
                           const std::string& session_id,
                           cdm::MediaKeyError error_code,
                           uint32_t system_code) {
   PP_DCHECK(result == PP_OK);
+  PP_DCHECK(!key_system_.empty());
   pp::ContentDecryptor_Private::KeyError(
       key_system_, session_id, error_code, system_code);
 }

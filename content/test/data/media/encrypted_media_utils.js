@@ -117,8 +117,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   }
 
   function onKeyMessage(e) {
-    // TODO(ddorwin): Enable after fixing http://crbug.com/166204.
-    if (!e.keySystem && false) {
+    if (!e.keySystem) {
       failTest('keymessage without a keySystem: ' + e.keySystem);
       return;
     }
