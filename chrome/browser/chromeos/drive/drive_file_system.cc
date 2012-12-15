@@ -288,7 +288,7 @@ DriveFileSystem::DriveFileSystem(
     DriveCache* cache,
     google_apis::DriveServiceInterface* drive_service,
     google_apis::DriveUploaderInterface* uploader,
-    DriveWebAppsRegistryInterface* webapps_registry,
+    DriveWebAppsRegistry* webapps_registry,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),

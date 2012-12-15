@@ -29,7 +29,7 @@ class DriveCache;
 class DriveFeedLoaderObserver;
 class DriveFeedProcessor;
 class DriveScheduler;
-class DriveWebAppsRegistryInterface;
+class DriveWebAppsRegistry;
 
 // Callback run as a response to SearchFromServer and LoadDirectoryFromServer.
 typedef base::Callback<
@@ -43,7 +43,7 @@ class DriveFeedLoader {
   DriveFeedLoader(
       DriveResourceMetadata* resource_metadata,
       DriveScheduler* scheduler,
-      DriveWebAppsRegistryInterface* webapps_registry,
+      DriveWebAppsRegistry* webapps_registry,
       DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~DriveFeedLoader();
@@ -161,7 +161,7 @@ class DriveFeedLoader {
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
-  DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
+  DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<DriveFeedLoaderObserver> observers_;

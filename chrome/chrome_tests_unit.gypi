@@ -557,8 +557,6 @@
         'browser/chromeos/drive/mock_drive_cache_observer.h',
         'browser/chromeos/drive/mock_drive_file_system.cc',
         'browser/chromeos/drive/mock_drive_file_system.h',
-        'browser/chromeos/drive/mock_drive_web_apps_registry.cc',
-        'browser/chromeos/drive/mock_drive_web_apps_registry.h',
         'browser/chromeos/drive/resource_entry_conversion_unittest.cc',
         'browser/chromeos/drive/stale_cache_files_remover_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',

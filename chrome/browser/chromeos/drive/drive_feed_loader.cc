@@ -234,7 +234,7 @@ struct DriveFeedLoader::GetResourceListUiState {
 DriveFeedLoader::DriveFeedLoader(
     DriveResourceMetadata* resource_metadata,
     DriveScheduler* scheduler,
-    DriveWebAppsRegistryInterface* webapps_registry,
+    DriveWebAppsRegistry* webapps_registry,
     DriveCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : resource_metadata_(resource_metadata),

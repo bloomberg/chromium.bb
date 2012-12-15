@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
-#include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
@@ -216,7 +215,7 @@ class DriveFileSystemTest : public testing::Test {
         cache_(NULL),
         file_system_(NULL),
         mock_drive_service_(NULL),
-        mock_webapps_registry_(NULL),
+        drive_webapps_registry_(NULL),
         expected_error_(DRIVE_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
@@ -253,14 +252,14 @@ class DriveFileSystemTest : public testing::Test {
         fake_free_disk_space_getter_.get());
 
     fake_uploader_.reset(new FakeDriveUploader);
-    mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
+    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_,
                                        mock_drive_service_,
                                        fake_uploader_.get(),
-                                       mock_webapps_registry_.get(),
+                                       drive_webapps_registry_.get(),
                                        blocking_task_runner_);
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
@@ -842,7 +841,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<FakeDriveUploader> fake_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
-  scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
+  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
@@ -885,8 +884,6 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_,
               GetResourceList(Eq(GURL()), _, _, _, _, _)).Times(1);
-
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   file_system_->GetEntryInfoByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
@@ -1226,7 +1223,6 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   // so no request for new feeds (i.e., call to GetResourceList) should happen.
   // Account metadata is already set up in MockDriveService's constructor.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(_, _, _, _, _, _)).Times(0);
 
   // Kicks loading of cached file system and query for server update.
@@ -1239,7 +1235,6 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
       google_apis::test_util::LoadJSONFile(
           "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   file_system_->CheckForUpdates();
   google_apis::test_util::RunBlockingPoolTask();
@@ -1250,7 +1245,6 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
 
   // Account metadata is already set up in MockDriveService's constructor.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   // Make GetResourceList fail for simulating offline situation. This will leave
   // the file system "loaded from cache, but not synced with server" state.
@@ -1267,7 +1261,6 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
       google_apis::test_util::LoadJSONFile(
           "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(_, _, _, _, _, _)).Times(1);
 
   file_system_->CheckForUpdates();
@@ -2513,7 +2506,6 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(Eq(GURL()), _, "", _, _, _))
       .Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -2675,6 +2667,33 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 
   // It must fail.
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+}
+
+// TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We
+// should move this to drive_feed_loader_unittest.cc. crbug.com/161703
+TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
+  SaveTestFileSystem(USE_SERVER_TIMESTAMP);
+
+  // No apps should be found as the webapps registry is empty.
+  ScopedVector<DriveWebAppInfo> apps;
+  drive_webapps_registry_->GetWebAppsForFile(
+      FilePath::FromUTF8Unsafe("foo.ext_1"),
+      "" /* mime_type */,
+      &apps);
+  EXPECT_TRUE(apps.empty());
+
+  // Kicks loading of cached file system and query for server update. This
+  // will cause GetAccountMetadata() to be called, to check the server-side
+  // changestamp, and the webapps registry will be loaded at the same time.
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
+
+  // An app for foo.ext_1 should now be found, as the registry was loaded.
+  drive_webapps_registry_->GetWebAppsForFile(
+      FilePath(FILE_PATH_LITERAL("foo.ext_1")),
+      "" /* mime_type */,
+      &apps);
+  EXPECT_EQ(1U, apps.size());
 }
 
 }   // namespace drive

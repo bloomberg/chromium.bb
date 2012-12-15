@@ -41,7 +41,7 @@ class DriveFileSystemObserver;
 class DriveFunctionRemove;
 class DriveResourceMetadata;
 class DriveScheduler;
-class DriveWebAppsRegistryInterface;
+class DriveWebAppsRegistry;
 class DriveFeedLoader;
 
 namespace file_system {
@@ -59,7 +59,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                   DriveCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
                   google_apis::DriveUploaderInterface* uploader,
-                  DriveWebAppsRegistryInterface* webapps_registry,
+                  DriveWebAppsRegistry* webapps_registry,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
 
@@ -626,7 +626,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   google_apis::DriveServiceInterface* drive_service_;
 
   // The webapps registry owned by DriveSystemService.
-  DriveWebAppsRegistryInterface* webapps_registry_;
+  DriveWebAppsRegistry* webapps_registry_;
 
   // Periodic timer for checking updates.
   base::Timer update_timer_;

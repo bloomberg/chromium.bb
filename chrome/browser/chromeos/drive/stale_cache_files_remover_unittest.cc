@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
-#include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
@@ -53,7 +52,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         cache_(NULL),
         file_system_(NULL),
         mock_drive_service_(NULL),
-        mock_webapps_registry_(NULL),
+        drive_webapps_registry_(NULL),
         root_feed_changestamp_(0) {
   }
 
@@ -79,14 +78,14 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         blocking_task_runner_,
         fake_free_disk_space_getter_.get());
 
-    mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
+    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_,
                                        mock_drive_service_,
                                        NULL,  // drive_uploader
-                                       mock_webapps_registry_.get(),
+                                       drive_webapps_registry_.get(),
                                        blocking_task_runner_);
 
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
@@ -129,7 +128,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   DriveCache* cache_;
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
-  scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
+  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
@@ -165,7 +164,6 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(2);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(Eq(GURL()), _, "", _, _, _))
       .Times(2);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(2);
 
   FilePath unused;
   scoped_ptr<DriveEntryProto> entry_proto;

@@ -50,36 +50,8 @@ struct DriveWebAppInfo {
   bool is_primary_selector;
 };
 
-// DriveWebAppsRegistry abstraction layer.
-// The interface is defined to make DriveWebAppsRegistry mockable.
-class DriveWebAppsRegistryInterface {
- public:
-  virtual ~DriveWebAppsRegistryInterface() {}
-
-  // Gets the list of web |apps| matching |file| and its |mime_type|.
-  virtual void GetWebAppsForFile(const FilePath& file,
-                                 const std::string& mime_type,
-                                 ScopedVector<DriveWebAppInfo>* apps) = 0;
-
-  // Returns a set of filename extensions registered for the given
-  // |web_store_id|.
-  virtual std::set<std::string> GetExtensionsForWebStoreApp(
-      const std::string& web_store_id) = 0;
-
-  // Updates the list of drive-enabled WebApps with freshly fetched account
-  // metadata feed.
-  virtual void UpdateFromFeed(
-      const google_apis::AccountMetadataFeed& metadata) = 0;
-
-  // Updates the list of drive-enabled WebApps with freshly fetched account
-  // metadata feed.
-  virtual void UpdateFromApplicationList(
-      const google_apis::AppList& applist) = 0;
-};
-
-// The production implementation of DriveWebAppsRegistryInterface.
-// Keeps the track of installed drive web application and provider.
-class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
+// Keeps the track of installed drive web application and provider in-memory.
+class DriveWebAppsRegistry {
  public:
   DriveWebAppsRegistry();
   virtual ~DriveWebAppsRegistry();
@@ -87,13 +59,13 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   // DriveWebAppsRegistry overrides.
   virtual void GetWebAppsForFile(const FilePath& file,
                                  const std::string& mime_type,
-                                 ScopedVector<DriveWebAppInfo>* apps) OVERRIDE;
+                                 ScopedVector<DriveWebAppInfo>* apps);
   virtual std::set<std::string> GetExtensionsForWebStoreApp(
-      const std::string& web_store_id) OVERRIDE;
+      const std::string& web_store_id);
   virtual void UpdateFromFeed(
-      const google_apis::AccountMetadataFeed& metadata) OVERRIDE;
+      const google_apis::AccountMetadataFeed& metadata);
   virtual void UpdateFromApplicationList(
-      const google_apis::AppList& applist) OVERRIDE;
+      const google_apis::AppList& applist);
 
  private:
   // Defines WebApp application details that are associated with a given
