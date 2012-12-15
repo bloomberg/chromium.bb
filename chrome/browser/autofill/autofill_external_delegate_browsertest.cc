@@ -85,13 +85,17 @@ class AutofillExternalDelegateBrowserTest
     DISABLED_SwitchTabAndHideAutofillPopup
 #define MAYBE_TestPageNavigationHidingAutofillPopup \
     DISABLED_TestPageNavigationHidingAutofillPopup
-#define MAYBE_CloseWidgetAndNoLeaking \
-    DISABLED_CloseWidgetAndNoLeaking
+#define MAYBE_CloseWidgetAndNoLeaking DISABLED_CloseWidgetAndNoLeaking
 #else
 #define MAYBE_SwitchTabAndHideAutofillPopup SwitchTabAndHideAutofillPopup
 #define MAYBE_TestPageNavigationHidingAutofillPopup \
     TestPageNavigationHidingAutofillPopup
+#if defined(OS_WIN)
+// Failing on trybots: http://crbug.com/166290
+#define MAYBE_CloseWidgetAndNoLeaking DISABLED_CloseWidgetAndNoLeaking
+#else
 #define MAYBE_CloseWidgetAndNoLeaking CloseWidgetAndNoLeaking
+#endif
 #endif
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
