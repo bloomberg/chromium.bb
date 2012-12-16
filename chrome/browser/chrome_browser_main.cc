@@ -1635,9 +1635,16 @@ void RecordBrowserStartupTime() {
   if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
     return;
 
-  RecordPreReadExperimentTime(
+  // Set up to match Startup.BrowserMessageLoopStartTime measurement above.
+  const base::TimeDelta kStartupTimeMin(base::TimeDelta::FromMilliseconds(1));
+  const base::TimeDelta kStartupTimeMax(base::TimeDelta::FromHours(1));
+  static const size_t kStartupTimeBuckets(100);
+  HISTOGRAM_CUSTOM_TIMES(
       "Startup.BrowserMessageLoopStartTimeFromMainEntry",
-      base::Time::Now() - startup_metric_utils::MainEntryStartTime());
+      base::Time::Now() - startup_metric_utils::MainEntryStartTime(),
+      kStartupTimeMin,
+      kStartupTimeMax,
+      kStartupTimeBuckets);
 }
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.
