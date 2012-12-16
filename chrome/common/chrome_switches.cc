@@ -971,6 +971,9 @@ const char kOpenInNewWindow[]               = "new-window";
 // Simulates an organic Chrome install.
 const char kOrganicInstall[]                = "organic";
 
+// Force use of QUIC for requests over the specified port.
+const char kOriginPortToForceQuicOn[]    = "origin-port-to-force-quic-on";
+
 // Packages an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 
