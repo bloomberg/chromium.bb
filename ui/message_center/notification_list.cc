@@ -89,6 +89,10 @@ void NotificationList::UnpackOptionalFields(
     optional_fields->GetString(ui::notifications::kTimestampKey, &time_string);
     base::Time::FromString(time_string.c_str(), &notification->timestamp);
   }
+  // TODO
+  // if (optional_fields->HasKey(ui::notifications::kSecondIconUrlKey))
+  //   optional_fields->GetString(ui::notifications::kSecondIconUrlKey,
+  //                              &notification->second_icon_url);
   if (optional_fields->HasKey(ui::notifications::kUnreadCountKey))
     optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
                                 &notification->unread_count);
@@ -101,6 +105,9 @@ void NotificationList::UnpackOptionalFields(
   if (optional_fields->HasKey(ui::notifications::kExpandedMessageKey))
     optional_fields->GetString(ui::notifications::kExpandedMessageKey,
                                &notification->expanded_message);
+  if (optional_fields->HasKey(ui::notifications::kImageUrlKey))
+    optional_fields->GetString(ui::notifications::kImageUrlKey,
+                               &notification->image_url);
   if (optional_fields->HasKey(ui::notifications::kItemsKey)) {
     const ListValue* items;
     CHECK(optional_fields->GetList(ui::notifications::kItemsKey, &items));
@@ -181,22 +188,12 @@ void NotificationList::SendRemoveNotificationsByExtension(
   }
 }
 
-bool NotificationList::SetNotificationPrimaryIcon(const std::string& id,
-                                                  const gfx::ImageSkia& image) {
+bool NotificationList::SetNotificationImage(const std::string& id,
+                                            const gfx::ImageSkia& image) {
   Notifications::iterator iter;
   if (!GetNotification(id, &iter))
     return false;
-  iter->primary_icon = image;
-  return true;
-}
-
-bool NotificationList::SetNotificationSecondaryIcon(
-    const std::string& id,
-    const gfx::ImageSkia& image) {
-  Notifications::iterator iter;
-  if (!GetNotification(id, &iter))
-    return false;
-  iter->secondary_icon = image;
+  iter->image = image;
   return true;
 }
 

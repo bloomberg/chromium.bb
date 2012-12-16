@@ -4,14 +4,6 @@
 
 #include "ui/notifications/notification_types.h"
 
-namespace {
-
-const char kSimpleType[] = "simple";
-const char kBaseFormatType[] = "base";
-const char kMultipleType[] = "multiple";
-
-}  // namespace
-
 namespace ui {
 
 namespace notifications {
@@ -30,6 +22,10 @@ const char kImageUrlKey[] = "image_url";
 const char kItemsKey[] = "items";
 const char kItemTitleKey[] = "title";
 const char kItemMessageKey[] = "message";
+
+const char kSimpleType[] = "simple";
+const char kBaseFormatType[] = "base";
+const char kMultipleType[] = "multiple";
 
 NotificationType StringToNotificationType(std::string& string_type) {
   if (string_type == kSimpleType)

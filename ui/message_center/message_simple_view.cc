@@ -34,7 +34,7 @@ void MessageSimpleView::SetUpView() {
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
-  icon->SetImage(notification_.primary_icon);
+  icon->SetImage(notification_.image);
 
   views::Label* title = new views::Label(notification_.title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);

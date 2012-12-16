@@ -10,7 +10,7 @@
 
 namespace message_center {
 
-// View that displays multiple-item notifications.
+// An early version of the multiple message notification view.
 //
 // TODO(dharcourt): Rename MessageCenter and MessageView* to NotificationCenter
 // and NotificationView*?
