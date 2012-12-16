@@ -913,6 +913,7 @@
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
+        'browser/chromeos/system/tray_accessibility_browsertest.cc',
         'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',
         'browser/collected_cookies_browsertest.cc',
         'browser/content_settings/content_settings_browsertest.cc',
@@ -1497,6 +1498,7 @@
             # use_aura currently sets use_ash on Windows. So take these tests out
             # for win aura builds.
             # TODO: enable these for win_ash browser tests.
+            'browser/chromeos/system/tray_accessibility_browsertest.cc',
             'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',

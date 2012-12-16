@@ -133,7 +133,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayLogoutButton(this));
   AddTrayItem(new internal::TrayUser(this));
   AddTrayItem(new internal::TrayIME(this));
-  AddTrayItem(new internal::TrayAccessibility(this));
+  tray_accessibility_ = new internal::TrayAccessibility(this);
+  AddTrayItem(tray_accessibility_);
   AddTrayItem(new internal::TrayPower(this));
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayNetwork(this));

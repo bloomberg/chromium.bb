@@ -47,6 +47,7 @@ class SystemTrayItem;
 namespace internal {
 class SystemBubbleWrapper;
 class SystemTrayContainer;
+class TrayAccessibility;
 class TrayGestureHandler;
 }
 
@@ -143,6 +144,10 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
                                   AnchorAlignment anchor_alignment) OVERRIDE;
   virtual void HideBubble(const views::TrayBubbleView* bubble_view) OVERRIDE;
 
+  internal::TrayAccessibility* GetTrayAccessibilityForTest() {
+    return tray_accessibility_;
+  }
+
  private:
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);
@@ -203,6 +208,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Set to true when system notifications should be hidden (e.g. web
   // notification bubble is visible).
   bool hide_notifications_;
+
+  internal::TrayAccessibility* tray_accessibility_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
