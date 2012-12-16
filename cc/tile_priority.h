@@ -18,7 +18,8 @@ enum WhichTree {
   // Note: these must be 0 and 1 because we index with them in various places,
   // e.g. in Tile::priority_.
   ACTIVE_TREE = 0,
-  PENDING_TREE = 1
+  PENDING_TREE = 1,
+  NUM_TREES = 2
 };
 
 enum TileResolution {

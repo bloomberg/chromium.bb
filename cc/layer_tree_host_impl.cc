@@ -1692,7 +1692,7 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
     stats->numMissingTiles = m_cumulativeNumMissingTiles;
 
     if (m_tileManager)
-        m_tileManager->renderingStats(stats);
+        m_tileManager->GetRenderingStats(stats);
 }
 
 void LayerTreeHostImpl::sendManagedMemoryStats(
