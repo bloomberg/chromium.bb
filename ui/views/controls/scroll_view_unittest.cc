@@ -24,6 +24,17 @@ class CustomView : public View {
     return preferred_size_;
   }
 
+  virtual void Layout() OVERRIDE {
+    gfx::Size pref = GetPreferredSize();
+    int width = pref.width();
+    int height = pref.height();
+    if (parent()) {
+      width = std::max(parent()->width(), width);
+      height = std::max(parent()->height(), height);
+    }
+    SetBounds(x(), y(), width, height);
+  }
+
  private:
   gfx::Size preferred_size_;
 
@@ -171,6 +182,36 @@ TEST(ScrollViewTest, ScrollBarsWithHeader) {
   EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
   ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
   EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+}
+
+// Verifies the header scrolls horizontally with the content.
+TEST(ScrollViewTest, HeaderScrollsWithContent) {
+  ScrollView scroll_view;
+  CustomView* contents = new CustomView;
+  scroll_view.SetContents(contents);
+  contents->SetPreferredSize(gfx::Size(500, 500));
+
+  CustomView* header = new CustomView;
+  scroll_view.SetHeader(header);
+  header->SetPreferredSize(gfx::Size(500, 20));
+
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ("0,0", contents->bounds().origin().ToString());
+  EXPECT_EQ("0,0", header->bounds().origin().ToString());
+
+  // Scroll the horizontal scrollbar.
+  ASSERT_TRUE(scroll_view.horizontal_scroll_bar());
+  scroll_view.ScrollToPosition(
+      const_cast<ScrollBar*>(scroll_view.horizontal_scroll_bar()), 1);
+  EXPECT_EQ("-1,0", contents->bounds().origin().ToString());
+  EXPECT_EQ("-1,0", header->bounds().origin().ToString());
+
+  // Scrolling the vertical scrollbar shouldn't effect the header.
+  ASSERT_TRUE(scroll_view.vertical_scroll_bar());
+  scroll_view.ScrollToPosition(
+      const_cast<ScrollBar*>(scroll_view.vertical_scroll_bar()), 1);
+  EXPECT_EQ("-1,-1", contents->bounds().origin().ToString());
+  EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 }
 
 }  // namespace views

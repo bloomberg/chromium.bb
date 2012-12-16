@@ -62,6 +62,20 @@ void CheckScrollBounds(View* viewport, View* view) {
   view->SetBounds(-x, -y, view->width(), view->height());
 }
 
+// Used by ScrollToPosition() to make sure the new position fits within the
+// allowed scroll range.
+int AdjustPosition(int current_position,
+                   int new_position,
+                   int content_size,
+                   int viewport_size) {
+  if (-current_position == new_position)
+    return new_position;
+  if (new_position < 0)
+    return 0;
+  const int max_position = std::max(0, content_size - viewport_size);
+  return (new_position > max_position) ? max_position : new_position;
+}
+
 }  // namespace
 
 // Viewport contains the contents View of the ScrollView.
@@ -307,38 +321,28 @@ std::string ScrollView::GetClassName() const {
   return kViewClassName;
 }
 
-// TODO(ACW): We should really use ScrollWindowEx as needed
 void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
   if (!contents_)
     return;
 
   if (source == horiz_sb_ && horiz_sb_->visible()) {
-    int vw = contents_viewport_->width();
-    int cw = contents_->width();
-    int origin = contents_->x();
-    if (-origin != position) {
-      int max_pos = std::max(0, cw - vw);
-      if (position < 0)
-        position = 0;
-      else if (position > max_pos)
-        position = max_pos;
-      contents_->SetX(-position);
-      contents_->SchedulePaintInRect(contents_->GetVisibleBounds());
+    position = AdjustPosition(contents_->x(), position, contents_->width(),
+                              contents_viewport_->width());
+    if (-contents_->x() == position)
+      return;
+    contents_->SetX(-position);
+    if (header_) {
+      header_->SetX(-position);
+      header_->SchedulePaintInRect(header_->GetVisibleBounds());
     }
   } else if (source == vert_sb_ && vert_sb_->visible()) {
-    int vh = contents_viewport_->height();
-    int ch = contents_->height();
-    int origin = contents_->y();
-    if (-origin != position) {
-      int max_pos = std::max(0, ch - vh);
-      if (position < 0)
-        position = 0;
-      else if (position > max_pos)
-        position = max_pos;
-      contents_->SetY(-position);
-      contents_->SchedulePaintInRect(contents_->GetVisibleBounds());
-    }
+    position = AdjustPosition(contents_->y(), position, contents_->height(),
+                              contents_viewport_->height());
+    if (-contents_->y() == position)
+      return;
+    contents_->SetY(-position);
   }
+  contents_->SchedulePaintInRect(contents_->GetVisibleBounds());
 }
 
 int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
@@ -420,6 +424,8 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
                                         contents_viewport_->height());
 
   contents_->SetX(-new_x);
+  if (header_)
+    header_->SetX(-new_x);
   contents_->SetY(-new_y);
   UpdateScrollBarPositions();
 }
