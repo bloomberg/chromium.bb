@@ -180,7 +180,7 @@ void VideoScheduler::StopOnCaptureThread(const base::Closure& done_task) {
   // otherwise tearing down |capturer_| will crash it.  See crbug.com/163641.
   // TODO(wez): Make it safe to tear down capturer while buffers remain, and
   // remove this work-around.
-  capture_task_runner_->PostTask(FROM_HERE,
+  encode_task_runner_->PostTask(FROM_HERE,
       base::Bind(&VideoScheduler::StopOnEncodeThread, this, done_task));
 }
 
