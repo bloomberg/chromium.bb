@@ -30,6 +30,14 @@ class AutocompleteFieldTrial {
   static bool InDisallowInlineHQPFieldTrialExperimentGroup();
 
   // ---------------------------------------------------------
+  // For the suggest field trial.
+
+  // Fills in |field_trial_hash| with a hash of the active suggest field trial
+  // name, if any.  Returns true if the suggest field trial was active and
+  // |field_trial_hash| was initialized.
+  static bool GetActiveSuggestFieldTrialHash(uint32* field_trial_hash);
+
+  // ---------------------------------------------------------
   // For the History Quick Provider new scoring field trial.
 
   // Returns whether the user is in any field trial group for this

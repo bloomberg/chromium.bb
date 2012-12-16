@@ -129,7 +129,7 @@ message OmniboxEventProto {
                                   // contains the input
       CONTACT = 12;               // One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
-    };
+    }
     optional ResultType result_type = 2;
 
     // The relevance score for this suggestion.
@@ -148,6 +148,7 @@ message OmniboxEventProto {
 
   // A data structure that holds per-provider information, general information
   // not associated with a particular result.
+  // Next tag: 5
   message ProviderInfo {
     // Which provider generated this ProviderInfo entry.
     optional ProviderType provider = 1;
@@ -156,6 +157,22 @@ message OmniboxEventProto {
     // the query.  Providers which don't do any asynchronous processing
     // will always be done.
     optional bool provider_done = 2;
+
+    // The set of field trials that have triggered in the most recent query,
+    // possibly affecting the shown suggestions.  Each element is a hash
+    // of the corresponding field trial name.
+    // See chrome/browser/autocomplete/search_provider.cc for a specific usage
+    // example.
+    repeated fixed32 field_trial_triggered = 3;
+
+    // Same as above except that the set of field trials is a union of all field
+    // trials that have triggered within the current omnibox session including
+    // the most recent query.
+    // See AutocompleteController::ResetSession() for more details on the
+    // definition of a session.
+    // See chrome/browser/autocomplete/search_provider.cc for a specific usage
+    // example.
+    repeated fixed32 field_trial_triggered_in_session = 4;
   }
   // A list of diagnostic information about each provider.  Providers
   // will appear at most once in this list.

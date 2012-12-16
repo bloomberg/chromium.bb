@@ -59,7 +59,7 @@ class TestProvider : public AutocompleteProvider {
   }
 
  private:
-  ~TestProvider() {}
+  virtual ~TestProvider() {}
 
   void Run();
 

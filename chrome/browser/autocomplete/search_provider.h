@@ -73,6 +73,9 @@ class SearchProvider : public AutocompleteProvider,
   // Adds search-provider-specific information to omnibox event logs.
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
+  // Sets |field_trial_triggered_in_session_| to false.
+  virtual void ResetSession() OVERRIDE;
+
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -361,6 +364,18 @@ class SearchProvider : public AutocompleteProvider,
 
   // The |suggestion| parameter passed to FinalizeInstantQuery.
   InstantSuggestion default_provider_suggestion_;
+
+  // Whether a field trial, if any, has triggered in the most recent
+  // autocomplete query.  This field is set to false in Start() and may be set
+  // to true if either the default provider or keyword provider has completed
+  // and their corresponding suggest response contained
+  // '"google:fieldtrialtriggered":true'.
+  // If the autocomplete query has not returned, this field is set to false.
+  bool field_trial_triggered_;
+
+  // Same as above except that it is maintained across the current Omnibox
+  // session.
+  bool field_trial_triggered_in_session_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

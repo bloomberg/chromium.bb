@@ -109,6 +109,9 @@ void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
 void AutocompleteProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 }
 
+void AutocompleteProvider::ResetSession() {
+}
+
 string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
                                                    bool check_accept_lang,
                                                    bool trim_http) const {

@@ -223,18 +223,6 @@ class AutocompleteProvider
   // on the value of |clear_cached_results|.
   virtual void Stop(bool clear_cached_results);
 
-  // Returns the set of matches for the current query.
-  const ACMatches& matches() const { return matches_; }
-
-  // Returns whether the provider is done processing the query.
-  bool done() const { return done_; }
-
-  // Returns this provider's type.
-  Type type() const { return type_; }
-
-  // Returns a string describing this provider's type.
-  const char* GetName() const;
-
   // Returns the enum equivalent to the name of this provider.
   // TODO(derat): Make metrics use AutocompleteProvider::Type directly, or at
   // least move this method to the metrics directory.
@@ -253,12 +241,29 @@ class AutocompleteProvider
   // information it wants to |provider_info|.
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const;
 
+  // Called when a new omnibox session starts or the current session ends.
+  // This gives the opportunity to reset the internal state, if any, associated
+  // with the previous session.
+  virtual void ResetSession();
+
   // A convenience function to call net::FormatUrl() with the current set of
   // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
   // with an empty list.
   string16 StringForURLDisplay(const GURL& url,
                                bool check_accept_lang,
                                bool trim_http) const;
+
+  // Returns the set of matches for the current query.
+  const ACMatches& matches() const { return matches_; }
+
+  // Returns whether the provider is done processing the query.
+  bool done() const { return done_; }
+
+  // Returns this provider's type.
+  Type type() const { return type_; }
+
+  // Returns a string describing this provider's type.
+  const char* GetName() const;
 
 #ifdef UNIT_TEST
   void set_listener(AutocompleteProviderListener* listener) {

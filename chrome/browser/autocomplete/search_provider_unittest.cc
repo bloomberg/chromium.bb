@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/search_provider.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -11,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,6 +57,10 @@ class SearchProviderTest : public testing::Test,
         quit_when_done_(false) {
     io_thread_.Start();
   }
+
+  static void SetUpTestCase();
+
+  static void TearDownTestCase();
 
   // See description above class for what this registers.
   virtual void SetUp();
@@ -124,8 +131,28 @@ class SearchProviderTest : public testing::Test,
   // If true, OnProviderUpdate exits out of the current message loop.
   bool quit_when_done_;
 
+  // Needed for AutucompleteFieldTrial::Activate();
+  static scoped_ptr<base::FieldTrialList> field_trial_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
+
+// static
+scoped_ptr<base::FieldTrialList> SearchProviderTest::field_trial_list_;
+
+// static
+void SearchProviderTest::SetUpTestCase() {
+  // Set up Suggest experiments.
+  field_trial_list_.reset(new base::FieldTrialList(
+      new metrics::SHA1EntropyProvider("foo")));
+  AutocompleteFieldTrial::Activate();
+}
+
+// static
+void SearchProviderTest::TearDownTestCase() {
+  // Make sure the global instance of FieldTrialList is gone.
+  field_trial_list_.reset();
+}
 
 void SearchProviderTest::SetUp() {
   // Make sure that fetchers are automatically ungregistered upon destruction.
@@ -1090,6 +1117,48 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentRequestedUrlInput) {
       EXPECT_EQ(kNotApplicable, cases[i].match_contents[j]);
       EXPECT_EQ(AutocompleteMatch::NUM_TYPES, cases[i].match_types[j]);
     }
+  }
+}
+
+// A basic test that verifies the field trial triggered parsing logic.
+TEST_F(SearchProviderTest, FieldTrialTriggeredParsing) {
+  QueryForInput(ASCIIToUTF16("foo"), string16(), false);
+
+  // Make sure the default providers suggest service was queried.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // Tell the SearchProvider the suggest query is done.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(
+      "[\"foo\",[\"foo bar\"],[\"\"],[],"
+      "{\"google:suggesttype\":[\"QUERY\"],"
+      "\"google:fieldtrialtriggered\":true}]");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  fetcher = NULL;
+
+  // Run till the history results complete.
+  RunTillProviderDone();
+
+  {
+    // Check for the match and field trial triggered bits.
+    AutocompleteMatch match;
+    EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("foo bar"), &match));
+    ProvidersInfo providers_info;
+    provider_->AddProviderInfo(&providers_info);
+    ASSERT_EQ(1U, providers_info.size());
+    EXPECT_EQ(1, providers_info[0].field_trial_triggered_size());
+    EXPECT_EQ(1, providers_info[0].field_trial_triggered_in_session_size());
+  }
+  {
+    // Reset the session and check that bits are reset.
+    provider_->ResetSession();
+    ProvidersInfo providers_info;
+    provider_->AddProviderInfo(&providers_info);
+    ASSERT_EQ(1U, providers_info.size());
+    EXPECT_EQ(1, providers_info[0].field_trial_triggered_size());
+    EXPECT_EQ(0, providers_info[0].field_trial_triggered_in_session_size());
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
+#include "chrome/common/metrics/metrics_util.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 
@@ -231,6 +232,15 @@ bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kDisallowInlineHQPFieldTrialName);
   return group == disallow_inline_hqp_experiment_group;
+}
+
+bool AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
+    uint32* field_trial_hash) {
+  if (!base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2012Q4Name))
+    return false;
+
+  *field_trial_hash = metrics::HashName(kSuggestFieldTrialStarted2012Q4Name);
+  return true;
 }
 
 bool AutocompleteFieldTrial::InHQPNewScoringFieldTrial() {

@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -126,7 +127,9 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       has_suggested_relevance_(false),
       verbatim_relevance_(-1),
       have_suggest_results_(false),
-      instant_finalized_(false) {
+      instant_finalized_(false),
+      field_trial_triggered_(false),
+      field_trial_triggered_in_session_(false) {
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
@@ -199,6 +202,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   matches_.clear();
+  field_trial_triggered_ = false;
 
   instant_finalized_ =
       (input.matches_requested() != AutocompleteInput::ALL_MATCHES);
@@ -343,6 +347,19 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
   new_entry.set_provider(AsOmniboxEventProviderType());
   new_entry.set_provider_done(done_);
+  uint32 field_trial_hash = 0;
+  if (AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
+          &field_trial_hash)) {
+    if (field_trial_triggered_)
+      new_entry.mutable_field_trial_triggered()->Add(field_trial_hash);
+    if (field_trial_triggered_in_session_)
+      new_entry.mutable_field_trial_triggered_in_session()->Add(
+          field_trial_hash);
+  }
+}
+
+void SearchProvider::ResetSession() {
+  field_trial_triggered_in_session_ = false;
 }
 
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -677,6 +694,13 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
 
       extras->GetInteger("google:verbatimrelevance", &verbatim_relevance_);
     }
+
+    // Check if the active suggest field trial (if any) has triggered either
+    // for the default provider or keyword provider.
+    bool triggered = false;
+    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
+    field_trial_triggered_ |= triggered;
+    field_trial_triggered_in_session_ |= triggered;
   }
 
   SuggestResults* suggest_results =

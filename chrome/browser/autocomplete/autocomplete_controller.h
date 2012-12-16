@@ -95,6 +95,22 @@ class AutocompleteController : public AutocompleteProviderListener {
   // the popup to ensure it's not showing an out-of-date query.
   void ExpireCopiedEntries();
 
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
+
+  // Called when an omnibox event log entry is generated.
+  // Populates provider_info with diagnostic information about the status
+  // of various providers.  In turn, calls
+  // AutocompleteProvider::AddProviderInfo() so each provider can add
+  // provider-specific information, information we want to log for a particular
+  // provider but not others.
+  void AddProvidersInfo(ProvidersInfo* provider_info) const;
+
+  // Called when a new omnibox session starts.
+  // We start a new session when the user first begins modifying the omnibox
+  // content; see |OmniboxEditModel::user_input_in_progress_|.
+  void ResetSession();
+
   SearchProvider* search_provider() const { return search_provider_; }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
 
@@ -106,17 +122,6 @@ class AutocompleteController : public AutocompleteProviderListener {
   const base::TimeTicks& last_time_default_match_changed() const {
     return last_time_default_match_changed_;
   }
-
-  // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
-
-  // Called when an omnibox event log entry is generated.
-  // Populates provider_info with diagnostic information about the status
-  // of various providers.  In turn, calls
-  // AutocompleteProvider::AddProviderInfo() so each provider can add
-  // provider-specific information, information we want to log for a particular
-  // provider but not others.
-  void AddProvidersInfo(ProvidersInfo* provider_info) const;
 
  private:
   friend class AutocompleteProviderTest;

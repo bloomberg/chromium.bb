@@ -424,8 +424,10 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     return;
 
   user_input_in_progress_ = in_progress;
-  if (user_input_in_progress_)
+  if (user_input_in_progress_) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
+    autocomplete_controller_->ResetSession();
+  }
   controller_->OnInputInProgress(in_progress);
 
   NotifySearchTabHelper();
