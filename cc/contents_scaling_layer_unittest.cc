@@ -26,7 +26,16 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   }
 
   const gfx::RectF& lastNeedsDisplayRect() const {
-    return m_lastNeedsDisplayRect;
+     return m_lastNeedsDisplayRect;
+  }
+
+  void updateContentsScale(float contentsScale) {
+      // Simulate calcDrawProperties.
+      calculateContentsScale(
+          contentsScale,
+          &drawProperties().contents_scale_x,
+          &drawProperties().contents_scale_y,
+          &drawProperties().content_bounds);
   }
 
  private:
@@ -46,7 +55,7 @@ TEST(ContentsScalingLayerTest, checkContentsBounds) {
   EXPECT_EQ(320, testLayer->contentBounds().width());
   EXPECT_EQ(240, testLayer->contentBounds().height());
 
-  testLayer->setContentsScale(2.0f);
+  testLayer->updateContentsScale(2.0f);
   EXPECT_EQ(640, testLayer->contentBounds().width());
   EXPECT_EQ(480, testLayer->contentBounds().height());
 
@@ -54,24 +63,9 @@ TEST(ContentsScalingLayerTest, checkContentsBounds) {
   EXPECT_EQ(20, testLayer->contentBounds().width());
   EXPECT_EQ(40, testLayer->contentBounds().height());
 
-  testLayer->setContentsScale(1.33f);
+  testLayer->updateContentsScale(1.33f);
   EXPECT_EQ(14, testLayer->contentBounds().width());
   EXPECT_EQ(27, testLayer->contentBounds().height());
-}
-
-TEST(ContentsScalingLayerTest, checkContentsScaleChangeTriggersNeedsDisplay) {
-  scoped_refptr<MockContentsScalingLayer> testLayer =
-      make_scoped_refptr(new MockContentsScalingLayer());
-
-  testLayer->setBounds(gfx::Size(320, 240));
-
-  testLayer->resetNeedsDisplay();
-  EXPECT_FALSE(testLayer->needsDisplay());
-
-  testLayer->setContentsScale(testLayer->contentsScaleX() + 1.f);
-  EXPECT_TRUE(testLayer->needsDisplay());
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 320, 240),
-                       testLayer->lastNeedsDisplayRect());
 }
 
 }  // namespace

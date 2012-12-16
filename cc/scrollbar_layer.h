@@ -33,7 +33,11 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-    virtual void setContentsScale(float contentsScale) OVERRIDE;
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds) OVERRIDE;
 
     virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
 

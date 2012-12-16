@@ -68,11 +68,19 @@ float ScrollbarLayer::clampScaleToMaxTextureSize(float scale) {
     return scale;
 }
 
-void ScrollbarLayer::setContentsScale(float contentsScale) {
-    contentsScale = clampScaleToMaxTextureSize(contentsScale);
-    ContentsScalingLayer::setContentsScale(contentsScale);
-    DCHECK_LE(contentBounds().width(), maxTextureSize());
-    DCHECK_LE(contentBounds().height(), maxTextureSize());
+void ScrollbarLayer::calculateContentsScale(
+  float idealContentsScale,
+  float* contentsScaleX,
+  float* contentsScaleY,
+  gfx::Size* contentBounds)
+{
+    ContentsScalingLayer::calculateContentsScale(
+        clampScaleToMaxTextureSize(idealContentsScale),
+        contentsScaleX,
+        contentsScaleY,
+        contentBounds);
+    DCHECK_LE(contentBounds->width(), maxTextureSize());
+    DCHECK_LE(contentBounds->height(), maxTextureSize());
 }
 
 void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)

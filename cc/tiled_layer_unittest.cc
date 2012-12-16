@@ -763,7 +763,7 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
 
     // Change the contents scale and verify that the content rectangle requiring painting
     // is not scaled.
-    layer->setContentsScale(2);
+    layer->updateContentsScale(2);
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 200, 200);
     EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100), layer->lastNeedsDisplayRect());
 
@@ -1176,7 +1176,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // This makes sure the painting works when the content space is scaled to
     // a different layer space. In this case tiles are scaled to be 200x200
     // pixels, which means none should be occluded.
-    layer->setContentsScale(0.5);
+    layer->updateContentsScale(0.5);
     EXPECT_FLOAT_EQ(layer->contentsScaleX(), layer->contentsScaleY());
     layer->setBounds(gfx::Size(600, 600));
     gfx::Transform drawTransform;
@@ -1577,7 +1577,7 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
     gfx::Rect layerRect(0, 0, 30, 31);
     layer->setPosition(layerRect.origin());
     layer->setBounds(layerRect.size());
-    layer->setContentsScale(1.5);
+    layer->updateContentsScale(1.5);
 
     gfx::Rect contentRect(0, 0, 45, 47);
     EXPECT_EQ(contentRect.size(), layer->contentBounds());
@@ -1608,7 +1608,7 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
     gfx::Rect layerRect(0, 0, 30, 31);
     layer->setPosition(layerRect.origin());
     layer->setBounds(layerRect.size());
-    layer->setContentsScale(1.3f);
+    layer->updateContentsScale(1.3f);
 
     gfx::Rect contentRect(gfx::Point(), layer->contentBounds());
     layer->drawProperties().visible_content_rect = contentRect;

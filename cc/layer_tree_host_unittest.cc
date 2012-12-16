@@ -1221,9 +1221,18 @@ class NoScaleContentLayer : public ContentLayer {
 public:
     static scoped_refptr<NoScaleContentLayer> create(ContentLayerClient* client) { return make_scoped_refptr(new NoScaleContentLayer(client)); }
 
-    virtual gfx::Size contentBounds() const OVERRIDE { return bounds(); }
-    virtual float contentsScaleX() const OVERRIDE { return 1.0; }
-    virtual float contentsScaleY() const OVERRIDE { return 1.0; }
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds) OVERRIDE
+    {
+        Layer::calculateContentsScale(
+             idealContentsScale,
+             contentsScaleX,
+             contentsScaleY,
+             contentBounds);
+    }
 
 private:
     explicit NoScaleContentLayer(ContentLayerClient* client)

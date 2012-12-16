@@ -11,30 +11,28 @@ gfx::Size ContentsScalingLayer::computeContentBoundsForScale(float scaleX, float
   return gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scaleX, scaleY));
 }
 
-ContentsScalingLayer::ContentsScalingLayer()
-    : m_contentsScale(1.0) {
+ContentsScalingLayer::ContentsScalingLayer() {
 }
 
 ContentsScalingLayer::~ContentsScalingLayer() {
 }
 
-gfx::Size ContentsScalingLayer::contentBounds() const {
-  return computeContentBoundsForScale(contentsScaleX(), contentsScaleY());
+void ContentsScalingLayer::calculateContentsScale(
+    float ideal_contents_scale,
+    float* contents_scale_x,
+    float* contents_scale_y,
+    gfx::Size* content_bounds) {
+  *contents_scale_x = ideal_contents_scale;
+  *contents_scale_y = ideal_contents_scale;
+  *content_bounds = computeContentBoundsForScale(
+      ideal_contents_scale,
+      ideal_contents_scale);
 }
 
-float ContentsScalingLayer::contentsScaleX() const {
-  return m_contentsScale;
-}
-
-float ContentsScalingLayer::contentsScaleY() const {
-  return m_contentsScale;
-}
-
-void ContentsScalingLayer::setContentsScale(float contentsScale) {
-  if (m_contentsScale == contentsScale)
-    return;
-  m_contentsScale = contentsScale;
-  setNeedsDisplay();
+void ContentsScalingLayer::didUpdateBounds() {
+  drawProperties().content_bounds = computeContentBoundsForScale(
+      contentsScaleX(),
+      contentsScaleY());
 }
 
 }  // namespace cc

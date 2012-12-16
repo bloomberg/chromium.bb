@@ -138,8 +138,11 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
+        m_layerTreeHost->initializeRendererIfNeeded();
+
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
         m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), m_painter, WebKit::FakeWebScrollbarThemeGeometry::create(), 1);
+        m_scrollbarLayer->setLayerTreeHost(m_layerTreeHost.get());
         m_scrollbarLayer->setBounds(m_bounds);
         m_layerTreeHost->rootLayer()->addChild(m_scrollbarLayer);
 
@@ -152,8 +155,6 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        m_layerTreeHost->initializeRendererIfNeeded();
-
         const int kMaxTextureSize = m_layerTreeHost->rendererCapabilities().maxTextureSize;
 
         // Check first that we're actually testing something.

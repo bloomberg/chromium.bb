@@ -134,29 +134,40 @@ cc::PrioritizedResourceManager* FakeTiledLayer::resourceManager() const
     return m_resourceManager;
 }
 
+void FakeTiledLayer::updateContentsScale(float idealContentsScale)
+{
+    calculateContentsScale(
+        idealContentsScale,
+        &drawProperties().contents_scale_x,
+        &drawProperties().contents_scale_y,
+        &drawProperties().content_bounds);
+}
+
 cc::LayerUpdater* FakeTiledLayer::updater() const
 {
     return m_fakeUpdater.get();
 }
 
-gfx::Size FakeTiledLayerWithScaledBounds::contentBounds() const
+void FakeTiledLayerWithScaledBounds::setContentBounds(const gfx::Size& contentBounds)
 {
-    return m_forcedContentBounds;
+    m_forcedContentBounds = contentBounds;
+    drawProperties().content_bounds = m_forcedContentBounds;
 }
 
-float FakeTiledLayerWithScaledBounds::contentsScaleX() const
+void FakeTiledLayerWithScaledBounds::calculateContentsScale(
+    float idealContentsScale,
+    float* contentsScaleX,
+    float* contentsScaleY,
+    gfx::Size* contentBounds)
 {
-    return static_cast<float>(m_forcedContentBounds.width()) / bounds().width();
+    *contentsScaleX = static_cast<float>(m_forcedContentBounds.width()) / bounds().width();
+    *contentsScaleY = static_cast<float>(m_forcedContentBounds.height()) / bounds().height();
+    *contentBounds = m_forcedContentBounds;
 }
 
-float FakeTiledLayerWithScaledBounds::contentsScaleY() const
+void FakeTiledLayerWithScaledBounds::didUpdateBounds()
 {
-    return static_cast<float>(m_forcedContentBounds.height()) / bounds().height();
-}
-
-void FakeTiledLayerWithScaledBounds::setContentsScale(float)
-{
-    NOTREACHED();
+    drawProperties().content_bounds = m_forcedContentBounds;
 }
 
 } // namespace

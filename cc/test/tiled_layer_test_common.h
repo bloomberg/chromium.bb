@@ -99,6 +99,9 @@ public:
     FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
     gfx::RectF updateRect() { return m_updateRect; }
 
+    // Simulate calcDrawProperties.
+    void updateContentsScale(float idealContentsScale);
+
 protected:
     virtual cc::LayerUpdater* updater() const OVERRIDE;
     virtual void createUpdaterIfNeeded() OVERRIDE { }
@@ -114,11 +117,13 @@ class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
 public:
     explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedResourceManager*);
 
-    void setContentBounds(const gfx::Size& contentBounds) { m_forcedContentBounds = contentBounds; }
-    virtual gfx::Size contentBounds() const OVERRIDE;
-    virtual float contentsScaleX() const OVERRIDE;
-    virtual float contentsScaleY() const OVERRIDE;
-    virtual void setContentsScale(float) OVERRIDE;
+    void setContentBounds(const gfx::Size& contentBounds);
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds) OVERRIDE;
+    virtual void didUpdateBounds() OVERRIDE;
 
 protected:
     virtual ~FakeTiledLayerWithScaledBounds();

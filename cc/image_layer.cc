@@ -74,9 +74,15 @@ LayerUpdater* ImageLayer::updater() const
     return m_updater.get();
 }
 
-gfx::Size ImageLayer::contentBounds() const
+void ImageLayer::calculateContentsScale(
+    float ideal_contents_scale,
+    float* contentsScaleX,
+    float* contentsScaleY,
+    gfx::Size* contentBounds)
 {
-    return gfx::Size(m_bitmap.width(), m_bitmap.height());
+    *contentsScaleX = imageContentsScaleX();
+    *contentsScaleY = imageContentsScaleY();
+    *contentBounds = gfx::Size(m_bitmap.width(), m_bitmap.height());
 }
 
 bool ImageLayer::drawsContent() const
@@ -84,16 +90,16 @@ bool ImageLayer::drawsContent() const
     return !m_bitmap.isNull() && TiledLayer::drawsContent();
 }
 
-float ImageLayer::contentsScaleX() const
+float ImageLayer::imageContentsScaleX() const
 {
-    if (bounds().IsEmpty() || contentBounds().IsEmpty())
+    if (bounds().IsEmpty() || m_bitmap.width() == 0)
         return 1;
     return static_cast<float>(m_bitmap.width()) / bounds().width();
 }
 
-float ImageLayer::contentsScaleY() const
+float ImageLayer::imageContentsScaleY() const
 {
-    if (bounds().IsEmpty() || contentBounds().IsEmpty())
+    if (bounds().IsEmpty() || m_bitmap.height() == 0)
         return 1;
     return static_cast<float>(m_bitmap.height()) / bounds().height();
 }

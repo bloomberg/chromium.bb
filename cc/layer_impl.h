@@ -190,13 +190,11 @@ public:
     void setBounds(const gfx::Size&);
     const gfx::Size& bounds() const { return m_bounds; }
 
-    // ContentBounds may be [0, 1) pixels larger than bounds * contentsScale.
-    // Don't calculate scale from it. Use contentsScale instead for accuracy.
     void setContentBounds(const gfx::Size&);
-    gfx::Size contentBounds() const { return m_contentBounds; }
+    gfx::Size contentBounds() const { return m_drawProperties.content_bounds; }
 
-    float contentsScaleX() const { return m_contentsScaleX; }
-    float contentsScaleY() const { return m_contentsScaleY; }
+    float contentsScaleX() const { return m_drawProperties.contents_scale_x; }
+    float contentsScaleY() const { return m_drawProperties.contents_scale_y; }
     void setContentsScale(float contentsScaleX, float contentsScaleY);
 
     gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
@@ -326,9 +324,6 @@ private:
     gfx::PointF m_anchorPoint;
     float m_anchorPointZ;
     gfx::Size m_bounds;
-    gfx::Size m_contentBounds;
-    float m_contentsScaleX;
-    float m_contentsScaleY;
     gfx::Vector2d m_scrollOffset;
     bool m_scrollable;
     bool m_shouldScrollOnMainThread;

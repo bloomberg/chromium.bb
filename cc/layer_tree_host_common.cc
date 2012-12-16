@@ -379,8 +379,9 @@ gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, cons
     return nextScrollCompensationMatrix;
 }
 
-// There is no contentsScale on impl thread.
-static inline void updateLayerContentsScale(LayerImpl*, const gfx::Transform&, float, float, bool) { }
+static inline void updateLayerContentsScale(LayerImpl* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
+{
+}
 
 static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
 {
@@ -405,15 +406,31 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
     float contentsScale = rasterScale * deviceScaleFactor;
     if (!layer->boundsContainPageScale())
         contentsScale *= pageScaleFactor;
-    layer->setContentsScale(contentsScale);
+    layer->calculateContentsScale(
+        contentsScale,
+        &layer->drawProperties().contents_scale_x,
+        &layer->drawProperties().contents_scale_y,
+        &layer->drawProperties().content_bounds);
 
     Layer* maskLayer = layer->maskLayer();
     if (maskLayer)
-        maskLayer->setContentsScale(contentsScale);
+    {
+        maskLayer->calculateContentsScale(
+            contentsScale,
+            &maskLayer->drawProperties().contents_scale_x,
+            &maskLayer->drawProperties().contents_scale_y,
+            &maskLayer->drawProperties().content_bounds);
+    }
 
     Layer* replicaMaskLayer = layer->replicaLayer() ? layer->replicaLayer()->maskLayer() : 0;
     if (replicaMaskLayer)
-        replicaMaskLayer->setContentsScale(contentsScale);
+    {
+        replicaMaskLayer->calculateContentsScale(
+            contentsScale,
+            &replicaMaskLayer->drawProperties().contents_scale_x,
+            &replicaMaskLayer->drawProperties().contents_scale_y,
+            &replicaMaskLayer->drawProperties().content_bounds);
+    }
 }
 
 template<typename LayerType, typename LayerList>

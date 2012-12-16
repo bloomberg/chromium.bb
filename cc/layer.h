@@ -84,8 +84,9 @@ public:
     // A layer's bounds are in logical, non-page-scaled pixels (however, the
     // root layer's bounds are in physical pixels).
     void setBounds(const gfx::Size&);
+    // TODO(enne): remove this function: http://crbug.com/166023
+    virtual void didUpdateBounds();
     const gfx::Size& bounds() const { return m_bounds; }
-    virtual gfx::Size contentBounds() const;
 
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
@@ -226,9 +227,14 @@ public:
     // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
     // The contentsScale is 1 for the root layer as it is already in physical pixels.
     // By default contentsScale is forced to be 1 except for subclasses of ContentsScalingLayer.
-    virtual float contentsScaleX() const;
-    virtual float contentsScaleY() const;
-    virtual void setContentsScale(float contentsScale) { }
+    float contentsScaleX() const { return m_drawProperties.contents_scale_x; }
+    float contentsScaleY() const { return m_drawProperties.contents_scale_y; }
+    gfx::Size contentBounds() const { return m_drawProperties.content_bounds; }
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds);
 
     // The scale at which contents should be rastered, to match the scale at
     // which they will drawn to the screen. This scale is a component of the

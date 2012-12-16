@@ -21,8 +21,11 @@ public:
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
-    virtual float contentsScaleX() const OVERRIDE;
-    virtual float contentsScaleY() const OVERRIDE;
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds) OVERRIDE;
 
     void setBitmap(const SkBitmap& image);
 
@@ -34,7 +37,8 @@ private:
 
     virtual LayerUpdater* updater() const OVERRIDE;
     virtual void createUpdaterIfNeeded() OVERRIDE;
-    virtual gfx::Size contentBounds() const OVERRIDE;
+    float imageContentsScaleX() const;
+    float imageContentsScaleY() const;
 
     SkBitmap m_bitmap;
 

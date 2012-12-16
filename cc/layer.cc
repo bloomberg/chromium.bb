@@ -216,10 +216,17 @@ void Layer::setBounds(const gfx::Size& size)
 
     m_bounds = size;
 
+    didUpdateBounds();
+
     if (firstResize)
         setNeedsDisplay();
     else
         setNeedsCommit();
+}
+
+void Layer::didUpdateBounds()
+{
+    m_drawProperties.content_bounds = bounds();
 }
 
 Layer* Layer::rootLayer()
@@ -274,9 +281,15 @@ void Layer::setBackgroundColor(SkColor backgroundColor)
     setNeedsCommit();
 }
 
-gfx::Size Layer::contentBounds() const
+void Layer::calculateContentsScale(
+    float idealContentsScale,
+    float* contentsScaleX,
+    float* contentsScaleY,
+    gfx::Size* contentBounds)
 {
-    return bounds();
+    *contentsScaleX = 1;
+    *contentsScaleY = 1;
+    *contentBounds = bounds();
 }
 
 void Layer::setMasksToBounds(bool masksToBounds)
@@ -631,16 +644,6 @@ void Layer::setDebugName(const std::string& debugName)
 {
     m_debugName = debugName;
     setNeedsCommit();
-}
-
-float Layer::contentsScaleX() const
-{
-    return 1.0;
-}
-
-float Layer::contentsScaleY() const
-{
-    return 1.0;
 }
 
 void Layer::setRasterScale(float scale)

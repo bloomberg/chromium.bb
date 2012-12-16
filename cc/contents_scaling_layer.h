@@ -14,19 +14,18 @@ namespace cc {
 // The content bounds are determined by bounds and scale of the contents.
 class CC_EXPORT ContentsScalingLayer : public Layer {
  public:
-  virtual gfx::Size contentBounds() const OVERRIDE;
-  virtual float contentsScaleX() const OVERRIDE;
-  virtual float contentsScaleY() const OVERRIDE;
-  virtual void setContentsScale(float contentsScale) OVERRIDE;
+  virtual void calculateContentsScale(
+      float ideal_contents_scale,
+      float* contents_scale_x,
+      float* contents_scale_y,
+      gfx::Size* content_bounds) OVERRIDE;
+  virtual void didUpdateBounds() OVERRIDE;
 
  protected:
   ContentsScalingLayer();
   virtual ~ContentsScalingLayer();
 
   gfx::Size computeContentBoundsForScale(float scaleX, float scaleY) const;
-
- private:
-  float m_contentsScale;
 };
 
 }  // namespace cc

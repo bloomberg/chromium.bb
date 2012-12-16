@@ -2408,12 +2408,6 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
     setLayerPropertiesForTesting(child3.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(125, 125), gfx::Size(50, 50), false);
 
     const double deviceScaleFactor = 2;
-    root->setContentsScale(deviceScaleFactor);
-    renderSurface1->setContentsScale(deviceScaleFactor);
-    renderSurface2->setContentsScale(deviceScaleFactor);
-    child1->setContentsScale(deviceScaleFactor);
-    child2->setContentsScale(deviceScaleFactor);
-    child3->setContentsScale(deviceScaleFactor);
 
     root->setMasksToBounds(true);
     renderSurface1->setForceRenderSurface(true);
@@ -3978,9 +3972,18 @@ class NoScaleContentLayer : public ContentLayer
 public:
     static scoped_refptr<NoScaleContentLayer> create(ContentLayerClient* client) { return make_scoped_refptr(new NoScaleContentLayer(client)); }
 
-    virtual gfx::Size contentBounds() const OVERRIDE { return bounds(); }
-    virtual float contentsScaleX() const OVERRIDE { return 1.0; }
-    virtual float contentsScaleY() const OVERRIDE { return 1.0; }
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds) OVERRIDE
+    {
+      Layer::calculateContentsScale(
+            idealContentsScale,
+            contentsScaleX,
+            contentsScaleY,
+            contentBounds);
+    }
 
 protected:
     explicit NoScaleContentLayer(ContentLayerClient* client) : ContentLayer(client) { }
@@ -4534,11 +4537,6 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     int dummyMaxTextureSize = 512;
 
     const double deviceScaleFactor = 1.5;
-    parent->setContentsScale(deviceScaleFactor);
-    child->setContentsScale(deviceScaleFactor);
-    duplicateChildNonOwner->setContentsScale(deviceScaleFactor);
-    replica->setContentsScale(deviceScaleFactor);
-
     LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // We should have two render surfaces. The root's render surface and child's
@@ -4617,11 +4615,6 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     int dummyMaxTextureSize = 512;
 
     const float deviceScaleFactor = 1.7f;
-    parent->setContentsScale(deviceScaleFactor);
-    child->setContentsScale(deviceScaleFactor);
-    duplicateChildNonOwner->setContentsScale(deviceScaleFactor);
-    replica->setContentsScale(deviceScaleFactor);
-
     LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // We should have two render surfaces. The root's render surface and child's

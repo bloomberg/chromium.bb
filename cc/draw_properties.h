@@ -24,6 +24,8 @@ struct CC_EXPORT DrawProperties {
         , can_use_lcd_text(false)
         , is_clipped(false)
         , render_target(0)
+        , contents_scale_x(1)
+        , contents_scale_y(1)
         , num_descendants_that_draw_content(0)
     {
     }
@@ -74,6 +76,14 @@ struct CC_EXPORT DrawProperties {
     // layer. This value is used to avoid unnecessarily changing GL scissor
     // state.
     gfx::Rect clip_rect;
+
+    // The scale used to move between layer space and content space, and bounds
+    // of the space. One is always a function of the other, but which one
+    // depends on the layer type. For picture layers, this is an ideal scale,
+    // and not always the one used.
+    float contents_scale_x;
+    float contents_scale_y;
+    gfx::Size content_bounds;
 
     // Does not include this layer itself, only its children and descendants.
     int num_descendants_that_draw_content;

@@ -29,8 +29,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
     , m_layerTreeImpl(treeImpl)
     , m_anchorPoint(0.5, 0.5)
     , m_anchorPointZ(0)
-    , m_contentsScaleX(1.0)
-    , m_contentsScaleY(1.0)
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
@@ -677,20 +675,20 @@ bool LayerImpl::transformIsAnimating() const
 
 void LayerImpl::setContentBounds(const gfx::Size& contentBounds)
 {
-    if (m_contentBounds == contentBounds)
+    if (this->contentBounds() == contentBounds)
         return;
 
-    m_contentBounds = contentBounds;
+    m_drawProperties.content_bounds = contentBounds;
     noteLayerPropertyChanged();
 }
 
 void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
 {
-    if (m_contentsScaleX == contentsScaleX && m_contentsScaleY == contentsScaleY)
+    if (this->contentsScaleX() == contentsScaleX && this->contentsScaleY() == contentsScaleY)
         return;
 
-    m_contentsScaleX = contentsScaleX;
-    m_contentsScaleY = contentsScaleY;
+    m_drawProperties.contents_scale_x = contentsScaleX;
+    m_drawProperties.contents_scale_y = contentsScaleY;
     noteLayerPropertyChanged();
 }
 
