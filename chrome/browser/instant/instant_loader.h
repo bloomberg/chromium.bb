@@ -86,6 +86,10 @@ class InstantLoader : public InstantClient::Delegate,
   // to the history service had this WebContents not been used for Instant.
   void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
 
+  // Returns true if the loader is using
+  // InstantController::kLocalOmniboxPopupURL as the |instant_url_|.
+  bool IsUsingLocalPreview() const;
+
   // Calls through to methods of the same name on InstantClient.
   void Update(const string16& text,
               size_t selection_start,

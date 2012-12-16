@@ -1872,6 +1872,8 @@
         'browser/ui/webui/set_as_default_browser_ui.h',
         'browser/ui/webui/net_internals/net_internals_ui.cc',
         'browser/ui/webui/net_internals/net_internals_ui.h',
+        'browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.cc',
+        'browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.h',
         'browser/ui/webui/ntp/app_launcher_handler.cc',
         'browser/ui/webui/ntp/app_launcher_handler.h',
         'browser/ui/webui/ntp/favicon_webui_handler.cc',

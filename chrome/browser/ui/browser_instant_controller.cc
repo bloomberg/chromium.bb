@@ -39,7 +39,8 @@ namespace chrome {
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
       instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-               chrome::search::IsInstantExtendedAPIEnabled(browser->profile())),
+               chrome::search::IsInstantExtendedAPIEnabled(browser->profile()),
+               browser->profile()->IsOffTheRecord()),
       instant_unload_handler_(browser),
       initialized_theme_info_(false),
       theme_area_height_(0) {

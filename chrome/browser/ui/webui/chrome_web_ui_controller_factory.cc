@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
+#include "chrome/browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
@@ -204,6 +205,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
     return &NewWebUI<InstantUI>;
+  if (url.host() == chrome::kChromeUILocalOmniboxPopupHost)
+    return &NewWebUI<LocalOmniboxPopupUI>;
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return &NewWebUI<MediaInternalsUI>;
 #if !defined(DISABLE_NACL)

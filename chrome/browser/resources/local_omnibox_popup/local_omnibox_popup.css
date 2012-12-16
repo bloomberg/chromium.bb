@@ -1,0 +1,41 @@
+/* Copyright 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  background-color: #EFEFEF;
+  cursor: default;
+  margin: 0;
+  overflow: hidden;
+}
+
+.restricted-id {
+  display: none
+}
+
+.suggestion {
+  -webkit-margin-start: 91px;
+  font: 16px arial;
+  line-height: 20px;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+.contents {
+  -webkit-padding-start: 29px
+}
+
+.selected {
+  background-color: rgb(217, 228, 247);
+}
+
+.clock {
+  -webkit-margin-start: 5px;
+  background-image: -webkit-image-set(
+      url('images/history_icon.png') 1x,
+      url('images/2x/history_icon.png') 2x);
+  height: 19px;
+  margin-bottom: 2px;
+  position: absolute;
+  width: 19px;
+}

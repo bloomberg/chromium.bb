@@ -20,10 +20,6 @@ bool IsInstantExtendedAPIEnabled(const Profile* profile) {
 }
 
 uint64 EmbeddedSearchPageVersion(const Profile* profile) {
-  // Incognito windows do not currently use the embedded search API.
-  if (profile->IsOffTheRecord())
-    return 0;
-
   // Check Finch field trials.
   base::FieldTrial* trial = base::FieldTrialList::Find("InstantExtended");
   if (trial && StartsWithASCII(trial->group_name(), "Group", true)) {

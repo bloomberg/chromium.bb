@@ -44,8 +44,14 @@ class WebContents;
 // BrowserInstantController.
 class InstantController {
  public:
+  // The URL for the local omnibox popup.
+  static const char* kLocalOmniboxPopupURL;
+
+  // |use_local_preview_only| will force the use of kLocalOmniboxPopupURL as the
+  // instant URL and is only applicable if |extended_enabled| is true.
   InstantController(chrome::BrowserInstantController* browser,
-                    bool extended_enabled);
+                    bool extended_enabled,
+                    bool use_local_preview_only);
   ~InstantController();
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
@@ -174,10 +180,13 @@ class InstantController {
 
   // Creates a new loader if necessary, using the instant_url property of the
   // |template_url| (for example, if the Instant URL has changed since the last
-  // time the loader was created). Returns false if the |template_url| doesn't
-  // have a valid Instant URL; true otherwise.
+  // time the loader was created). If |fallback_to_local| is true will use
+  // kLocalOmniboxPopupURL as the fallback url (in extended mode) in case
+  // the |template_url| doesn't have a valid Instant URL. Returns true if an
+  // instant URL could be determined.
   bool ResetLoader(const TemplateURL* template_url,
-                   const content::WebContents* active_tab);
+                   const content::WebContents* active_tab,
+                   bool fallback_to_local);
 
   // Ensures that the |loader_| uses the default Instant URL, recreating it if
   // necessary, and returns true. Returns false if the Instant URL could not be
@@ -227,6 +236,9 @@ class InstantController {
   // Instant is effectively disabled.
   const bool extended_enabled_;
   bool instant_enabled_;
+
+  // If true, the instant URL is set to kLocalOmniboxPopupURL.
+  const bool use_local_preview_only_;
 
   // The state of the preview page, i.e., the page owned by |loader_|. Ignored
   // if |instant_tab_| is in use.

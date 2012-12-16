@@ -138,6 +138,17 @@
         <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       </if>
+
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_HTML" file="resources\local_omnibox_popup\local_omnibox_popup.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_CSS" file="resources\local_omnibox_popup\local_omnibox_popup.css" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_JS" file="resources\local_omnibox_popup\local_omnibox_popup.js" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_HISTORY_ICON_PNG" file="resources\local_omnibox_popup\images\history_icon.png" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG" file="resources\local_omnibox_popup\images\page_icon.png" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG" file="resources\local_omnibox_popup\images\search_icon.png" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_HISTORY_ICON_PNG" file="resources\local_omnibox_popup\images\2x\history_icon.png" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG" file="resources\local_omnibox_popup\images\2x\page_icon.png" type="BINDATA" />
+      <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG" file="resources\local_omnibox_popup\images\2x\search_icon.png" type="BINDATA" />
+
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />

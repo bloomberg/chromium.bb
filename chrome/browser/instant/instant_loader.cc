@@ -228,6 +228,10 @@ void InstantLoader::DidNavigate(
   last_navigation_ = add_page_args;
 }
 
+bool InstantLoader::IsUsingLocalPreview() const {
+  return instant_url_ == InstantController::kLocalOmniboxPopupURL;
+}
+
 void InstantLoader::Update(const string16& text,
                            size_t selection_start,
                            size_t selection_end,

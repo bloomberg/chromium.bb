@@ -20,7 +20,9 @@ InstantSuggestion::InstantSuggestion(const string16& in_text,
 InstantSuggestion::~InstantSuggestion() {
 }
 
-InstantAutocompleteResult::InstantAutocompleteResult() : relevance(0) {
+InstantAutocompleteResult::InstantAutocompleteResult()
+    : transition(content::PAGE_TRANSITION_LINK),
+      relevance(0) {
 }
 
 InstantAutocompleteResult::~InstantAutocompleteResult() {

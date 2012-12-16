@@ -147,11 +147,17 @@ bool IsFullHeight(const InstantModel& model) {
 
 }  // namespace
 
+// static
+const char* InstantController::kLocalOmniboxPopupURL =
+    "chrome://local-omnibox-popup/local-omnibox-popup.html";
+
 InstantController::InstantController(chrome::BrowserInstantController* browser,
-                                     bool extended_enabled)
+                                     bool extended_enabled,
+                                     bool use_local_preview_only)
     : browser_(browser),
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
+      use_local_preview_only_(use_local_preview_only),
       model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
@@ -410,7 +416,7 @@ void InstantController::HandleAutocompleteResults(
       result.relevance = match->relevance;
       DVLOG(1) << "    " << result.relevance << " " << result.type << " "
                << result.provider << " " << result.destination_url << " '"
-               << result.description << "'";
+               << result.description << "' " <<  result.transition;
       results.push_back(result);
     }
   }
@@ -465,6 +471,10 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   }
 
   if (!IsPreviewingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
+    return false;
+
+  // Never commit the local omnibox.
+  if (loader_->IsUsingLocalPreview())
     return false;
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
@@ -881,10 +891,16 @@ void InstantController::NavigateToURL(const GURL& url,
 }
 
 bool InstantController::ResetLoader(const TemplateURL* template_url,
-                                    const content::WebContents* active_tab) {
+                                    const content::WebContents* active_tab,
+                                    bool fallback_to_local) {
   std::string instant_url;
-  if (!GetInstantURL(template_url, &instant_url))
-    return false;
+  if (!GetInstantURL(template_url, &instant_url)) {
+    if (!fallback_to_local || !extended_enabled_)
+      return false;
+
+    // If we are in extended mode, fallback to the local popup.
+    instant_url = kLocalOmniboxPopupURL;
+  }
 
   if (loader_ && loader_->instant_url() == instant_url)
     return true;
@@ -920,10 +936,14 @@ bool InstantController::CreateDefaultLoader() {
       Profile::FromBrowserContext(active_tab->GetBrowserContext()))->
       GetDefaultSearchProvider();
 
-  return ResetLoader(template_url, active_tab);
+  return ResetLoader(template_url, active_tab, true);
 }
 
 void InstantController::OnStaleLoader() {
+  // The local popup is never stale.
+  if (loader_ && loader_->IsUsingLocalPreview())
+    return;
+
   // If the preview is showing or the omnibox has focus, don't delete the
   // loader. It will get refreshed the next time the preview is hidden or the
   // omnibox loses focus.
@@ -965,9 +985,12 @@ bool InstantController::ResetLoaderForMatch(const AutocompleteMatch& match) {
     return false;
 
   // Try to create a loader for the instant_url in the TemplateURL of |match|.
+  // Do not fallback to the local preview because if the keyword specific
+  // instant URL fails, we want to first try the default instant URL which
+  // happens in the CreateDefaultLoader call below.
   const TemplateURL* template_url = match.GetTemplateURL(
       Profile::FromBrowserContext(active_tab->GetBrowserContext()), false);
-  if (ResetLoader(template_url, active_tab))
+  if (ResetLoader(template_url, active_tab, false))
     return true;
 
   // In non-extended mode, stop if we couldn't get a loader for the |match|.
@@ -1041,11 +1064,13 @@ void InstantController::ShowLoader(InstantShownReason reason,
   }
 
   // Show at 100% height except in the following cases:
+  // - The local omnibox popup is being loaded.
   // - Instant is disabled. The page needs to be able to show only a dropdown.
   // - The page wants to show custom NTP content.
   // - The page is over a website other than search or an NTP, and is not
   //   already showing at 100% height.
-  if (!instant_enabled_ || reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
+  if (loader_->IsUsingLocalPreview() || !instant_enabled_ ||
+      reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
       (search_mode_.is_origin_default() && !IsFullHeight(model_)))
     model_.SetPreviewState(search_mode_, height, units);
   else
@@ -1088,6 +1113,11 @@ void InstantController::SendPopupBoundsToPage() {
 
 bool InstantController::GetInstantURL(const TemplateURL* template_url,
                                       std::string* instant_url) const {
+  if (extended_enabled_ && use_local_preview_only_) {
+    *instant_url = kLocalOmniboxPopupURL;
+    return true;
+  }
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantURL)) {
     *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);

@@ -170,6 +170,7 @@ const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIIPCHost[] = "ipc";
 const char kChromeUIKeyboardHost[] = "keyboard";
 const char kChromeUIKillHost[] = "kill";
+const char kChromeUILocalOmniboxPopupHost[] = "local-omnibox-popup";
 const char kChromeUIMediaInternalsHost[] = "media-internals";
 const char kChromeUIMemoryHost[] = "memory";
 const char kChromeUIMemoryRedirectHost[] = "memory-redirect";
