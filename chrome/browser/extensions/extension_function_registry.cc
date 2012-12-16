@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
@@ -159,17 +159,19 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<RemoveWebSQLFunction>();
 
   // Bookmarks.
-  RegisterFunction<GetBookmarksFunction>();
-  RegisterFunction<GetBookmarkChildrenFunction>();
-  RegisterFunction<GetBookmarkRecentFunction>();
-  RegisterFunction<GetBookmarkTreeFunction>();
-  RegisterFunction<GetBookmarkSubTreeFunction>();
-  RegisterFunction<SearchBookmarksFunction>();
-  RegisterFunction<RemoveBookmarkFunction>();
-  RegisterFunction<RemoveTreeBookmarkFunction>();
-  RegisterFunction<CreateBookmarkFunction>();
-  RegisterFunction<MoveBookmarkFunction>();
-  RegisterFunction<UpdateBookmarkFunction>();
+  RegisterFunction<extensions::GetBookmarksFunction>();
+  RegisterFunction<extensions::GetBookmarkChildrenFunction>();
+  RegisterFunction<extensions::GetBookmarkRecentFunction>();
+  RegisterFunction<extensions::GetBookmarkTreeFunction>();
+  RegisterFunction<extensions::GetBookmarkSubTreeFunction>();
+  RegisterFunction<extensions::ImportBookmarksFunction>();
+  RegisterFunction<extensions::ExportBookmarksFunction>();
+  RegisterFunction<extensions::SearchBookmarksFunction>();
+  RegisterFunction<extensions::RemoveBookmarkFunction>();
+  RegisterFunction<extensions::RemoveTreeBookmarkFunction>();
+  RegisterFunction<extensions::CreateBookmarkFunction>();
+  RegisterFunction<extensions::MoveBookmarkFunction>();
+  RegisterFunction<extensions::UpdateBookmarkFunction>();
 
   // Infobars.
   RegisterFunction<ShowInfoBarFunction>();
@@ -179,8 +181,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<CutBookmarkManagerFunction>();
   RegisterFunction<PasteBookmarkManagerFunction>();
   RegisterFunction<CanPasteBookmarkManagerFunction>();
-  RegisterFunction<ImportBookmarksFunction>();
-  RegisterFunction<ExportBookmarksFunction>();
   RegisterFunction<SortChildrenBookmarkManagerFunction>();
   RegisterFunction<BookmarkManagerGetStringsFunction>();
   RegisterFunction<StartDragBookmarkManagerFunction>();

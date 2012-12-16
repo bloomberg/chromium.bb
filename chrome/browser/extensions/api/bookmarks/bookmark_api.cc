@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_extension_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -20,12 +20,12 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
-#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -42,8 +42,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = bookmark_extension_api_constants;
-namespace bookmarks = extensions::api::bookmarks;
+namespace extensions {
+
+namespace keys = bookmark_api_constants;
+namespace bookmarks = api::bookmarks;
 
 using base::TimeDelta;
 using bookmarks::BookmarkTreeNode;
@@ -99,7 +101,7 @@ void BookmarksFunction::Run() {
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-        content::Source<const extensions::Extension>(GetExtension()),
+        content::Source<const Extension>(GetExtension()),
         content::Details<const BookmarksFunction>(this));
   }
   SendResponse(success);
@@ -135,18 +137,17 @@ void BookmarksFunction::Observe(int type,
   Release();  // Balanced in Run().
 }
 
-BookmarkExtensionEventRouter::BookmarkExtensionEventRouter(
-    BookmarkModel* model) : model_(model) {
+BookmarkEventRouter::BookmarkEventRouter(BookmarkModel* model) : model_(model) {
   model_->AddObserver(this);
 }
 
-BookmarkExtensionEventRouter::~BookmarkExtensionEventRouter() {
+BookmarkEventRouter::~BookmarkEventRouter() {
   if (model_) {
     model_->RemoveObserver(this);
   }
 }
 
-void BookmarkExtensionEventRouter::DispatchEvent(
+void BookmarkEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
@@ -156,23 +157,20 @@ void BookmarkExtensionEventRouter::DispatchEvent(
   }
 }
 
-void BookmarkExtensionEventRouter::Loaded(BookmarkModel* model,
-                                          bool ids_reassigned) {
+void BookmarkEventRouter::Loaded(BookmarkModel* model, bool ids_reassigned) {
   // TODO(erikkay): Perhaps we should send this event down to the extension
   // so they know when it's safe to use the API?
 }
 
-void BookmarkExtensionEventRouter::BookmarkModelBeingDeleted(
-    BookmarkModel* model) {
+void BookmarkEventRouter::BookmarkModelBeingDeleted(BookmarkModel* model) {
   model_ = NULL;
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeMoved(
-    BookmarkModel* model,
-    const BookmarkNode* old_parent,
-    int old_index,
-    const BookmarkNode* new_parent,
-    int new_index) {
+void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
+                                            const BookmarkNode* old_parent,
+                                            int old_index,
+                                            const BookmarkNode* new_parent,
+                                            int new_index) {
   scoped_ptr<ListValue> args(new ListValue());
   const BookmarkNode* node = new_parent->GetChild(new_index);
   args->Append(new StringValue(base::Int64ToString(node->id())));
@@ -188,24 +186,23 @@ void BookmarkExtensionEventRouter::BookmarkNodeMoved(
   DispatchEvent(model->profile(), keys::kOnBookmarkMoved, args.Pass());
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeAdded(BookmarkModel* model,
-                                                     const BookmarkNode* parent,
-                                                     int index) {
+void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
+                                            const BookmarkNode* parent,
+                                            int index) {
   scoped_ptr<ListValue> args(new ListValue());
   const BookmarkNode* node = parent->GetChild(index);
   args->Append(new StringValue(base::Int64ToString(node->id())));
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   args->Append(tree_node->ToValue().release());
 
   DispatchEvent(model->profile(), keys::kOnBookmarkCreated, args.Pass());
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index,
-    const BookmarkNode* node) {
+void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
+                                              const BookmarkNode* parent,
+                                              int index,
+                                              const BookmarkNode* node) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
@@ -217,8 +214,8 @@ void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
   DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, args.Pass());
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeChanged(
-    BookmarkModel* model, const BookmarkNode* node) {
+void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
+                                              const BookmarkNode* node) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(new StringValue(base::Int64ToString(node->id())));
 
@@ -236,13 +233,14 @@ void BookmarkExtensionEventRouter::BookmarkNodeChanged(
   DispatchEvent(model->profile(), keys::kOnBookmarkChanged, args.Pass());
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeFaviconChanged(
-    BookmarkModel* model, const BookmarkNode* node) {
+void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                                     const BookmarkNode* node) {
   // TODO(erikkay) anything we should do here?
 }
 
-void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
-    BookmarkModel* model, const BookmarkNode* node) {
+void BookmarkEventRouter::BookmarkNodeChildrenReordered(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(new StringValue(base::Int64ToString(node->id())));
   int childCount = node->child_count();
@@ -260,20 +258,49 @@ void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
                 args.Pass());
 }
 
-void BookmarkExtensionEventRouter::
-    ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
+void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
+    BookmarkModel* model) {
   scoped_ptr<ListValue> args(new ListValue());
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportBegan,
                 args.Pass());
 }
 
-void BookmarkExtensionEventRouter::ExtensiveBookmarkChangesEnded(
-    BookmarkModel* model) {
+void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   scoped_ptr<ListValue> args(new ListValue());
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportEnded,
                 args.Pass());
+}
+
+BookmarkAPI::BookmarkAPI(Profile* profile) : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkCreated);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkRemoved);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkChanged);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkMoved);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkChildrenReordered);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkImportBegan);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBookmarkImportEnded);
+}
+
+BookmarkAPI::~BookmarkAPI() {
+}
+
+void BookmarkAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void BookmarkAPI::OnListenerAdded(const EventListenerInfo& details) {
+  bookmark_event_router_.reset(new BookmarkEventRouter(
+      BookmarkModelFactory::GetForProfile(profile_)));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 bool GetBookmarksFunction::RunImpl() {
@@ -297,7 +324,7 @@ bool GetBookmarksFunction::RunImpl() {
         error_ = keys::kNoNodeError;
         return false;
       } else {
-        bookmark_extension_helpers::AddNode(node, &nodes, false);
+        bookmark_api_helpers::AddNode(node, &nodes, false);
       }
     }
   } else {
@@ -309,7 +336,7 @@ bool GetBookmarksFunction::RunImpl() {
       error_ = keys::kNoNodeError;
       return false;
     }
-    bookmark_extension_helpers::AddNode(node, &nodes, false);
+    bookmark_api_helpers::AddNode(node, &nodes, false);
   }
 
   results_ = bookmarks::Get::Results::Create(nodes);
@@ -335,7 +362,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    bookmark_extension_helpers::AddNode(child, &nodes, false);
+    bookmark_api_helpers::AddNode(child, &nodes, false);
   }
 
   results_ = bookmarks::GetChildren::Results::Create(nodes);
@@ -359,7 +386,7 @@ bool GetBookmarkRecentFunction::RunImpl() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    bookmark_extension_helpers::AddNode(node, &tree_nodes, false);
+    bookmark_api_helpers::AddNode(node, &tree_nodes, false);
   }
 
   results_ = bookmarks::GetRecent::Results::Create(tree_nodes);
@@ -370,7 +397,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(profile())->root_node();
-  bookmark_extension_helpers::AddNode(node, &nodes, true);
+  bookmark_api_helpers::AddNode(node, &nodes, true);
   results_ = bookmarks::GetTree::Results::Create(nodes);
   return true;
 }
@@ -392,7 +419,7 @@ bool GetBookmarkSubTreeFunction::RunImpl() {
   }
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  bookmark_extension_helpers::AddNode(node, &nodes, true);
+  bookmark_api_helpers::AddNode(node, &nodes, true);
   results_ = bookmarks::GetSubTree::Results::Create(nodes);
   return true;
 }
@@ -415,7 +442,7 @@ bool SearchBookmarksFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
   for (std::vector<const BookmarkNode*>::iterator node_iter = nodes.begin();
        node_iter != nodes.end(); ++node_iter) {
-    bookmark_extension_helpers::AddNode(*node_iter, &tree_nodes, false);
+    bookmark_api_helpers::AddNode(*node_iter, &tree_nodes, false);
   }
 
   results_ = bookmarks::Search::Results::Create(tree_nodes);
@@ -456,7 +483,7 @@ bool RemoveBookmarkFunction::RunImpl() {
     recursive = true;
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  if (!bookmark_extension_helpers::RemoveNode(model, id, recursive, &error_))
+  if (!bookmark_api_helpers::RemoveNode(model, id, recursive, &error_))
     return false;
 
   return true;
@@ -527,7 +554,7 @@ bool CreateBookmarkFunction::RunImpl() {
   }
 
   scoped_ptr<BookmarkTreeNode> ret(
-      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   results_ = bookmarks::Create::Results::Create(*ret);
 
   return true;
@@ -601,7 +628,7 @@ bool MoveBookmarkFunction::RunImpl() {
   model->Move(node, parent, index);
 
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   results_ = bookmarks::Move::Results::Create(*tree_node);
 
   return true;
@@ -664,7 +691,7 @@ bool UpdateBookmarkFunction::RunImpl() {
     model->SetURL(node, url);
 
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   results_ = bookmarks::Update::Results::Create(*tree_node);
   return true;
 }
@@ -965,3 +992,5 @@ void ExportBookmarksFunction::FileSelected(const FilePath& path,
 #endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
+
+}  // namespace extensions

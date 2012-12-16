@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 
-namespace bookmark_extension_api_constants {
+namespace extensions {
+namespace bookmark_api_constants {
 
 const char kIdKey[] = "id";
 const char kIndexKey[] = "index";
@@ -45,4 +46,5 @@ const char kOnBookmarkDragEnter[] = "bookmarkManagerPrivate.onDragEnter";
 const char kOnBookmarkDragLeave[] = "bookmarkManagerPrivate.onDragLeave";
 const char kOnBookmarkDrop[] = "bookmarkManagerPrivate.onDrop";
 
-}  // namespace bookmark_extension_api_constants
+}  // namespace bookmark_api_constants
+}  // namespace extensions

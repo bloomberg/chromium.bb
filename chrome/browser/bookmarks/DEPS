@@ -10,12 +10,14 @@ include_rules = [
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
+  "!chrome/browser/extensions/api/bookmarks/bookmark_api.h",
+  "!chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h",
+  "!chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h",
   "!chrome/browser/extensions/event_router.h",
   "!chrome/browser/extensions/extension_function.h",
   "!chrome/browser/extensions/extension_function_dispatcher.h",
   "!chrome/browser/extensions/extension_system.h",
   "!chrome/browser/extensions/extension_web_ui.h",
-  "!chrome/browser/extensions/extensions_quota_service.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/favicon/favicon_service_factory.h",
   "!chrome/browser/history/history.h",

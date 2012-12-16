@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
 
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+// TODO (rdevlin.cronin): Move BookmarkManagerAPI to
+// chrome/browser/extensions/api/bookmark so these two aren't interdependent.
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
@@ -53,7 +55,7 @@ class BookmarkManagerExtensionEventRouter
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerExtensionEventRouter);
 };
 
-class ClipboardBookmarkManagerFunction : public BookmarksFunction {
+class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
  protected:
   virtual ~ClipboardBookmarkManagerFunction() {}
 
@@ -82,7 +84,7 @@ class CutBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class PasteBookmarkManagerFunction : public BookmarksFunction {
+class PasteBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.paste");
 
@@ -93,7 +95,7 @@ class PasteBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CanPasteBookmarkManagerFunction : public BookmarksFunction {
+class CanPasteBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canPaste");
 
@@ -104,7 +106,8 @@ class CanPasteBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SortChildrenBookmarkManagerFunction : public BookmarksFunction {
+class SortChildrenBookmarkManagerFunction
+    : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.sortChildren");
 
@@ -126,7 +129,7 @@ class BookmarkManagerGetStringsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class StartDragBookmarkManagerFunction : public BookmarksFunction {
+class StartDragBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.startDrag");
 
@@ -137,7 +140,7 @@ class StartDragBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DropBookmarkManagerFunction : public BookmarksFunction {
+class DropBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.drop");
 
@@ -148,7 +151,7 @@ class DropBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetSubtreeBookmarkManagerFunction : public BookmarksFunction {
+class GetSubtreeBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.getSubtree");
 
@@ -159,7 +162,7 @@ class GetSubtreeBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CanEditBookmarkManagerFunction : public BookmarksFunction {
+class CanEditBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canEdit");
 
@@ -170,7 +173,7 @@ class CanEditBookmarkManagerFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RecordLaunchBookmarkFunction : public BookmarksFunction {
+class RecordLaunchBookmarkFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.recordLaunch")
 
@@ -181,7 +184,7 @@ class RecordLaunchBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CanOpenNewWindowsBookmarkFunction : public BookmarksFunction {
+class CanOpenNewWindowsBookmarkFunction : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canOpenNewWindows");
 

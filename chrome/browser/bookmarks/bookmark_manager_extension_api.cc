@@ -10,12 +10,14 @@
 #include "base/prefs/public/pref_service_base.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
-#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+// TODO (rdevlin.cronin): Move BookmarkManagerAPI to
+// chrome/browser/extensions/api so these two aren't interdependent.
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -34,7 +36,7 @@
 #include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
-namespace keys = bookmark_extension_api_constants;
+namespace keys = extensions::bookmark_api_constants;
 
 using content::WebContents;
 
@@ -490,11 +492,11 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
   }
   scoped_ptr<ListValue> json(new ListValue());
   if (folders_only) {
-    bookmark_extension_helpers::AddNodeFoldersOnly(node,
+    extensions::bookmark_api_helpers::AddNodeFoldersOnly(node,
                                                    json.get(),
                                                    true);
   } else {
-    bookmark_extension_helpers::AddNode(node, json.get(), true);
+    extensions::bookmark_api_helpers::AddNode(node, json.get(), true);
   }
   SetResult(json.release());
   return true;

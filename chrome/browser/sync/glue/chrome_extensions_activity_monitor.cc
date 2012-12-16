@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 
 #include "base/bind.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,8 +53,8 @@ void ChromeExtensionsActivityMonitor::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const extensions::Extension* extension =
       content::Source<const extensions::Extension>(source).ptr();
-  const BookmarksFunction* f =
-      content::Details<const BookmarksFunction>(details).ptr();
+  const extensions::BookmarksFunction* f =
+      content::Details<const extensions::BookmarksFunction>(details).ptr();
   if (f->name() == "bookmarks.update" ||
       f->name() == "bookmarks.move" ||
       f->name() == "bookmarks.create" ||

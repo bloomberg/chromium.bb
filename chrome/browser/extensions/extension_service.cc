@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
@@ -523,8 +522,6 @@ void ExtensionService::InitEventRouters() {
 
 #if defined(ENABLE_EXTENSIONS)
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
-  bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
-      BookmarkModelFactory::GetForProfile(profile_)));
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

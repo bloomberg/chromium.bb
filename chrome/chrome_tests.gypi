@@ -846,7 +846,6 @@
         'browser/autofill/form_structure_browsertest.cc',
         'browser/automation/automation_misc_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',
-        'browser/bookmarks/bookmark_extension_apitest.cc',
         'browser/bookmarks/bookmark_manager_extension_apitest.cc',
         'browser/browser_encoding_browsertest.cc',
         'browser/browsing_data/browsing_data_database_helper_browsertest.cc',
@@ -923,6 +922,7 @@
         'browser/extensions/api/app_window/app_window_apitest.cc',
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
+        'browser/extensions/api/bookmarks/bookmark_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc',
         'browser/extensions/api/content_settings/content_settings_apitest.cc',
@@ -1358,7 +1358,7 @@
             }],
             ['OS=="win"', {
               # TODO(halyavin) NaCl on Windows can't open debug stub socket
-              # in browser process as needed by this test. 
+              # in browser process as needed by this test.
               # See http://crbug.com/157312.
               'sources!': [
                 'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',

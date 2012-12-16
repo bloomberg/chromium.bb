@@ -40,7 +40,6 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
-class BookmarkExtensionEventRouter;
 class CommandLine;
 class ExtensionErrorUI;
 class ExtensionSyncData;
@@ -955,8 +954,6 @@ class ExtensionService
   // TODO(yoz): None of these should be owned by ExtensionService.
   // crbug.com/159265
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
-
-  scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>

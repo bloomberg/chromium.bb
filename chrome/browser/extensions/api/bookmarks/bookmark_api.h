@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_
 
 #include <list>
 #include <string>
@@ -12,7 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/dialogs/select_file_dialog.h"
@@ -23,12 +25,14 @@ namespace base {
 class ListValue;
 }
 
+namespace extensions {
+
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
-class BookmarkExtensionEventRouter : public BookmarkModelObserver {
+class BookmarkEventRouter : public BookmarkModelObserver {
  public:
-  explicit BookmarkExtensionEventRouter(BookmarkModel* model);
-  virtual ~BookmarkExtensionEventRouter();
+  explicit BookmarkEventRouter(BookmarkModel* model);
+  virtual ~BookmarkEventRouter();
 
   // BookmarkModelObserver:
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
@@ -62,7 +66,27 @@ class BookmarkExtensionEventRouter : public BookmarkModelObserver {
 
   BookmarkModel* model_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkExtensionEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
+};
+
+class BookmarkAPI : public ProfileKeyedService,
+                    public EventRouter::Observer {
+ public:
+  explicit BookmarkAPI(Profile* profile);
+  virtual ~BookmarkAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details)
+      OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<BookmarkEventRouter> bookmark_event_router_;
 };
 
 class BookmarksFunction : public AsyncExtensionFunction,
@@ -292,4 +316,6 @@ class ExportBookmarksFunction : public BookmarksIOFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_

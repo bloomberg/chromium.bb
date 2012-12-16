@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 
 #include <math.h>  // For floor()
 #include <vector>
@@ -10,45 +10,45 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 
-using extensions::api::bookmarks::BookmarkTreeNode;
+namespace extensions {
 
-namespace keys = bookmark_extension_api_constants;
+namespace keys = bookmark_api_constants;
+using api::bookmarks::BookmarkTreeNode;
+
+namespace bookmark_api_helpers {
 
 namespace {
 
-void AddNode(const BookmarkNode* node,
-             std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
-             bool recurse,
-             bool only_folders) {
+void AddNodeHelper(const BookmarkNode* node,
+                   std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
+                   bool recurse,
+                   bool only_folders) {
   if (node->IsVisible()) {
-    linked_ptr<BookmarkTreeNode> new_node(
-        bookmark_extension_helpers::GetBookmarkTreeNode(node,
-                                                        recurse,
-                                                        only_folders));
+    linked_ptr<BookmarkTreeNode> new_node(GetBookmarkTreeNode(node,
+                                                              recurse,
+                                                              only_folders));
     nodes->push_back(new_node);
   }
 }
 
 // TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
 // refactored to use the JSON schema compiler.
-void AddNode(const BookmarkNode* node,
-             base::ListValue* list,
-             bool recurse,
-             bool only_folders) {
+void AddNodeHelper(const BookmarkNode* node,
+                   base::ListValue* list,
+                   bool recurse,
+                   bool only_folders) {
   if (node->IsVisible()) {
-    base::DictionaryValue* dict = bookmark_extension_helpers::GetNodeDictionary(
-        node, recurse, only_folders);
+    base::DictionaryValue* dict =
+        GetNodeDictionary(node, recurse, only_folders);
     list->Append(dict);
   }
 }
 
 }  // namespace
-
-namespace bookmark_extension_helpers {
 
 BookmarkTreeNode* GetBookmarkTreeNode(const BookmarkNode* node,
                                       bool recurse,
@@ -144,23 +144,23 @@ base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
 void AddNode(const BookmarkNode* node,
              std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
              bool recurse) {
-  return ::AddNode(node, nodes, recurse, false);
+  return AddNodeHelper(node, nodes, recurse, false);
 }
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
                         std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
                         bool recurse) {
-  return ::AddNode(node, nodes, recurse, true);
+  return AddNodeHelper(node, nodes, recurse, true);
 }
 
 void AddNode(const BookmarkNode* node, base::ListValue* list, bool recurse) {
-  return ::AddNode(node, list, recurse, false);
+  return AddNodeHelper(node, list, recurse, false);
 }
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
                         base::ListValue* list,
                         bool recurse) {
-  return ::AddNode(node, list, recurse, true);
+  return AddNodeHelper(node, list, recurse, true);
 }
 
 bool RemoveNode(BookmarkModel* model,
@@ -186,4 +186,5 @@ bool RemoveNode(BookmarkModel* model,
   return true;
 }
 
-}  // namespace bookmark_extension_helpers
+}  // namespace bookmark_api_helpers
+}  // namespace extensions

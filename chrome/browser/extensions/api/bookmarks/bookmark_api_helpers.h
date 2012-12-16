@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_HELPERS_H_
 
 #include <string>
 #include <vector>
@@ -15,10 +15,11 @@ class BookmarkModel;
 class BookmarkNode;
 
 // Helper functions.
-namespace bookmark_extension_helpers {
+namespace extensions {
+namespace bookmark_api_helpers {
 
 // The returned value is owned by the caller.
-extensions::api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
+api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
     const BookmarkNode* node,
     bool recurse,
     bool only_folders);
@@ -31,14 +32,12 @@ base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
 
 // Add a JSON representation of |node| to the JSON |nodes|.
 void AddNode(const BookmarkNode* node,
-             std::vector<linked_ptr<
-                 extensions::api::bookmarks::BookmarkTreeNode> >* nodes,
+             std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> >* nodes,
              bool recurse);
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
                         std::vector<linked_ptr<
-                            extensions::api::bookmarks::BookmarkTreeNode> >*
-                                nodes,
+                            api::bookmarks::BookmarkTreeNode> >* nodes,
                         bool recurse);
 
 // TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
@@ -58,6 +57,7 @@ bool RemoveNode(BookmarkModel* model,
                 bool recursive,
                 std::string* error);
 
-}  // namespace bookmark_extension_helpers
+}  // namespace bookmark_api_helpers
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_HELPERS_H_
