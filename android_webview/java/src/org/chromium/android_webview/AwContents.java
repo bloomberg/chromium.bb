@@ -29,6 +29,7 @@ import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
+import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.net.X509Util;
@@ -404,8 +405,8 @@ public class AwContents {
         // If we are reloading the same url, then set transition type as reload.
         if (params.getUrl() != null &&
             params.getUrl().equals(mContentViewCore.getUrl()) &&
-            params.getTransitionType() == ContentViewCore.PAGE_TRANSITION_LINK) {
-            params.setTransitionType(ContentViewCore.PAGE_TRANSITION_RELOAD);
+            params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
+            params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
 
         mContentViewCore.loadUrl(params);

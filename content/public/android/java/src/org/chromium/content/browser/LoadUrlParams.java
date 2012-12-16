@@ -49,7 +49,7 @@ public class LoadUrlParams {
 
         mUrl = url;
         mLoadUrlType = LOAD_TYPE_DEFAULT;
-        mTransitionType = ContentViewCore.PAGE_TRANSITION_LINK;
+        mTransitionType = PageTransitionTypes.PAGE_TRANSITION_LINK;
         mUaOverrideOption = UA_OVERRIDE_INHERIT;
         mPostData = null;
         mBaseUrlForDataUrl = null;
@@ -74,7 +74,7 @@ public class LoadUrlParams {
 
         LoadUrlParams params = new LoadUrlParams(dataUrl.toString());
         params.setLoadType(LoadUrlParams.LOAD_TYPE_DATA);
-        params.setTransitionType(ContentViewCore.PAGE_TRANSITION_TYPED);
+        params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_TYPED);
         return params;
     }
 
@@ -114,7 +114,7 @@ public class LoadUrlParams {
             String url, byte[] postData) {
         LoadUrlParams params = new LoadUrlParams(url);
         params.setLoadType(LOAD_TYPE_BROWSER_INITIATED_HTTP_POST);
-        params.setTransitionType(ContentViewCore.PAGE_TRANSITION_TYPED);
+        params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_TYPED);
         params.setPostData(postData);
         return params;
     }

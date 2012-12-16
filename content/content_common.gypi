@@ -63,6 +63,7 @@
     'public/common/media_stream_request.h',
     'public/common/page_transition_types.cc',
     'public/common/page_transition_types.h',
+    'public/common/page_transition_types_list.h',
     'public/common/page_type.h',
     'public/common/page_zoom.h',
     'public/common/password_form.cc',
