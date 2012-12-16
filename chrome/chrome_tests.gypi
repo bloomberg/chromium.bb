@@ -668,9 +668,19 @@
       ],
     },
     {
+      # Third-party support sources for chromedriver2_lib.
+      'target_name': 'chromedriver2_support',
+      'type': 'static_library',
+      'sources': [
+        '../third_party/webdriver/atoms.cc',
+        '../third_party/webdriver/atoms.h',
+      ],
+    },
+    {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
       'dependencies': [
+        'chromedriver2_support',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',

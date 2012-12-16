@@ -71,6 +71,10 @@ class ChromeDriver(object):
   def Load(self, url):
     self._ExecuteSessionCommand('get', {'url': url})
 
+  def ExecuteScript(self, script, *args):
+    return self._ExecuteSessionCommand(
+         'executeScript', {'script': script, 'args': args})
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self._ExecuteSessionCommand('quit')

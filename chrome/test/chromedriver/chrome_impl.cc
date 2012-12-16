@@ -18,6 +18,7 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/webdriver/atoms.h"
 
 namespace {
 
@@ -74,6 +75,24 @@ Status ChromeImpl::Load(const std::string& url) {
   return client_->SendCommand("Page.navigate", params);
 }
 
+Status ChromeImpl::EvaluateScript(const std::string& expression,
+                                  scoped_ptr<base::Value>* result) {
+  return internal::EvaluateScript(client_.get(), expression, result);
+}
+
+Status ChromeImpl::CallFunction(const std::string& function,
+                                const base::ListValue& args,
+                                scoped_ptr<base::Value>* result) {
+  std::string json;
+  base::JSONWriter::Write(&args, &json);
+  std::string expression = base::StringPrintf(
+      "(%s).apply(null, [%s, %s])",
+      webdriver::atoms::asString(webdriver::atoms::EXECUTE_SCRIPT).c_str(),
+      function.c_str(),
+      json.c_str());
+  return EvaluateScript(expression, result);
+}
+
 Status ChromeImpl::Quit() {
   if (!base::KillProcess(process_, 0, true))
     return Status(kUnknownError, "cannot kill Chrome");
@@ -102,6 +121,52 @@ Status ParsePagesInfo(const std::string& data,
     internal_urls.push_back(debugger_url);
   }
   debugger_urls->swap(internal_urls);
+  return Status(kOk);
+}
+
+Status EvaluateScript(DevToolsClient* client,
+                      const std::string& expression,
+                      scoped_ptr<base::Value>* result) {
+  base::DictionaryValue params;
+  params.SetString("expression", expression);
+  params.SetBoolean("returnByValue", true);
+  scoped_ptr<base::DictionaryValue> cmd_result;
+  Status status = client->SendCommandAndGetResult(
+      "Runtime.evaluate", params, &cmd_result);
+  if (status.IsError())
+    return status;
+
+  bool was_thrown;
+  if (!cmd_result->GetBoolean("wasThrown", &was_thrown))
+    return Status(kUnknownError, "Runtime.evaluate missing 'wasThrown'");
+  if (was_thrown) {
+    std::string description = "unknown";
+    cmd_result->GetString("result.description", &description);
+    return Status(kUnknownError,
+                  "Runtime.evaluate threw exception: " + description);
+  }
+
+  std::string type;
+  if (!cmd_result->GetString("result.type", &type))
+    return Status(kUnknownError, "Runtime.evaluate missing result.type");
+
+  if (type == "undefined") {
+    result->reset(base::Value::CreateNullValue());
+  } else {
+    int status_code;
+    if (!cmd_result->GetInteger("result.value.status", &status_code)) {
+      return Status(kUnknownError,
+                    "Runtime.evaluate missing result.value.status");
+    }
+    if (status_code != kOk)
+      return Status(static_cast<StatusCode>(status_code));
+    base::Value* unscoped_value;
+    if (!cmd_result->Get("result.value.value", &unscoped_value)) {
+      return Status(kUnknownError,
+                    "Runtime.evaluate missing result.value.value");
+    }
+    result->reset(unscoped_value->DeepCopy());
+  }
   return Status(kOk);
 }
 

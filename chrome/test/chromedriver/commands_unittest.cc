@@ -30,6 +30,15 @@ class StubChrome : public Chrome {
   virtual Status Load(const std::string& url) OVERRIDE {
     return Status(kOk);
   }
+  virtual Status EvaluateScript(const std::string& function,
+                                scoped_ptr<base::Value>* result) OVERRIDE {
+    return Status(kOk);
+  }
+  virtual Status CallFunction(const std::string& function,
+                              const base::ListValue& args,
+                              scoped_ptr<base::Value>* result) OVERRIDE {
+    return Status(kOk);
+  }
   virtual Status Quit() OVERRIDE {
     return Status(kOk);
   }

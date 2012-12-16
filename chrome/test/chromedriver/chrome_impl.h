@@ -16,6 +16,11 @@
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
+namespace base {
+class ListValue;
+class Value;
+}
+
 class DevToolsClient;
 class Status;
 class URLRequestContextGetter;
@@ -33,6 +38,11 @@ class ChromeImpl : public Chrome {
 
   // Overridden from Chrome:
   virtual Status Load(const std::string& url) OVERRIDE;
+  virtual Status EvaluateScript(const std::string& expression,
+                                scoped_ptr<base::Value>* result) OVERRIDE;
+  virtual Status CallFunction(const std::string& function,
+                              const base::ListValue& args,
+                              scoped_ptr<base::Value>* result) OVERRIDE;
   virtual Status Quit() OVERRIDE;
 
  private:
@@ -48,6 +58,9 @@ namespace internal {
 
 Status ParsePagesInfo(const std::string& data,
                       std::list<std::string>* debugger_urls);
+Status EvaluateScript(DevToolsClient* client,
+                      const std::string& expression,
+                      scoped_ptr<base::Value>* result);
 
 }  // namespace internal
 

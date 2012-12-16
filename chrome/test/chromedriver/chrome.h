@@ -7,6 +7,13 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class ListValue;
+class Value;
+}
+
 class Status;
 
 class Chrome {
@@ -14,6 +21,11 @@ class Chrome {
   virtual ~Chrome() {}
 
   virtual Status Load(const std::string& url) = 0;
+  virtual Status EvaluateScript(const std::string& expression,
+                                scoped_ptr<base::Value>* result) = 0;
+  virtual Status CallFunction(const std::string& function,
+                              const base::ListValue& args,
+                              scoped_ptr<base::Value>* result) = 0;
   virtual Status Quit() = 0;
 };
 

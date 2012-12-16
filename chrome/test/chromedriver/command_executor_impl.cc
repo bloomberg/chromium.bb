@@ -43,6 +43,8 @@ void CommandExecutorImpl::Init() {
           &session_map_);
   command_map_.Set("get", base::Bind(execute_session_command,
       base::Bind(&ExecuteGet)));
+  command_map_.Set("executeScript", base::Bind(execute_session_command,
+      base::Bind(&ExecuteExecuteScript)));
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
   command_map_.Set("quit", quit_command);

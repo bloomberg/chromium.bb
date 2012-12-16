@@ -24,6 +24,27 @@ class ChromeDriverTest(unittest.TestCase):
     driver.Load('http://www.google.com')
     driver.Quit()
 
+  def testEvaluateScript(self):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+    self.assertEquals(1, driver.ExecuteScript('return 1'))
+    self.assertEquals(None, driver.ExecuteScript(''))
+    driver.Quit()
+
+  def testEvaluateScriptWithArgs(self):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+    script = ('document.body.innerHTML = "<div>b</div><div>c</div>";' +
+              'return {stuff: document.querySelectorAll("div")};')
+    stuff = driver.ExecuteScript(script)['stuff']
+    script = 'return arguments[0].innerHTML + arguments[1].innerHTML';
+    self.assertEquals('bc', driver.ExecuteScript(script, stuff[0], stuff[1]))
+    driver.Quit()
+
+  def testEvaluateInvalidScript(self):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+    self.assertRaises(chromedriver.ChromeDriverException,
+                      driver.ExecuteScript, '{{{')
+    driver.Quit()
+
 
 if __name__ == '__main__':
   if len(sys.argv) != 2 and len(sys.argv) != 3:

@@ -52,4 +52,10 @@ Status ExecuteGet(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Evaluates a given script with arguments.
+Status ExecuteExecuteScript(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

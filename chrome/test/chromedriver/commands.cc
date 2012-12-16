@@ -88,3 +88,18 @@ Status ExecuteGet(
     return Status(kUnknownError, "'url' must be a string");
   return session->chrome->Load(url);
 }
+
+Status ExecuteExecuteScript(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string script;
+  if (!params.GetString("script", &script))
+    return Status(kUnknownError, "'script' must be a string");
+  const base::ListValue* args;
+  if (!params.GetList("args", &args))
+    return Status(kUnknownError, "'args' must be a list");
+
+  return session->chrome->CallFunction(
+      "function(){" + script + "}", *args, value);
+}
