@@ -5,12 +5,11 @@
 #include "content/browser/system_message_window_win.h"
 
 #include <dbt.h>
-#include <ks.h>
-#include <ksmedia.h>
 
 #include "base/logging.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
+#include "media/audio/win/core_audio_util_win.h"
 
 namespace content {
 
@@ -45,7 +44,15 @@ class SystemMessageWindowWin::DeviceNotifications {
     DEV_BROADCAST_DEVICEINTERFACE filter = {0};
     filter.dbcc_size = sizeof(filter);
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+    bool core_audio_support = media::CoreAudioUtil::IsSupported();
     for (int i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
+      // If CoreAudio is supported, AudioDeviceListenerWin will
+      // take care of monitoring audio devices.
+      if (core_audio_support &&
+          KSCATEGORY_AUDIO == kDeviceCategoryMap[i].device_category) {
+        continue;
+      }
+
       filter.dbcc_classguid = kDeviceCategoryMap[i].device_category;
       DCHECK_EQ(notifications_[i], static_cast<HDEVNOTIFY>(NULL));
       notifications_[i] = RegisterDeviceNotification(
