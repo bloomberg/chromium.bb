@@ -7,5 +7,5 @@ Name: libdrm_nouveau
 Description: Userspace interface to nouveau kernel DRM services
 Version: 2.4.33
 Libs: -L${libdir} -ldrm_nouveau
-Cflags: -I${includedir} -I${includedir}/libdrm -I${includedir}/nouveau
+Cflags: -I${includedir} -I${includedir}/libdrm
 Requires.private: libdrm
