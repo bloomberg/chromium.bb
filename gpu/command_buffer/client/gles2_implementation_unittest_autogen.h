@@ -38,6 +38,20 @@ TEST_F(GLES2ImplementationTest, BindBuffer) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 
+TEST_F(GLES2ImplementationTest, BindFramebuffer) {
+  struct Cmds {
+    BindFramebuffer cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_FRAMEBUFFER, 2);
+
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  ClearCommands();
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, 2);
+  EXPECT_TRUE(NoCommandsWritten());
+}
+
 TEST_F(GLES2ImplementationTest, BindRenderbuffer) {
   struct Cmds {
     BindRenderbuffer cmd;

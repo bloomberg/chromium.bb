@@ -232,6 +232,7 @@
       'sources': [
         '<@(gles2_c_lib_source_files)',
         'command_buffer/tests/gl_bind_uniform_location_unittest.cc',
+        'command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc',
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_query_unittests.cc',

@@ -1188,8 +1188,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindFramebuffer',
     'gl_test_func': 'glBindFramebufferEXT',
     'gen_func': 'GenFramebuffersEXT',
-    # TODO(gman): remove this once client side caching works.
-    'client_test': False,
   },
   'BindRenderbuffer': {
     'type': 'Bind',

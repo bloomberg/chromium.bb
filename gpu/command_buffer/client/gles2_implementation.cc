@@ -80,7 +80,8 @@ GLES2Implementation::GLES2Implementation(
       bool bind_generates_resource)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
-      angle_pack_reverse_row_order_status(kUnknownExtensionStatus),
+      angle_pack_reverse_row_order_status_(kUnknownExtensionStatus),
+      chromium_framebuffer_multisample_(kUnknownExtensionStatus),
       pack_alignment_(4),
       unpack_alignment_(4),
       unpack_flip_y_(false),
@@ -90,6 +91,7 @@ GLES2Implementation::GLES2Implementation(
       pack_reverse_row_order_(false),
       active_texture_unit_(0),
       bound_framebuffer_(0),
+      bound_read_framebuffer_(0),
       bound_renderbuffer_(0),
       current_program_(0),
       bound_array_buffer_id_(0),
@@ -273,21 +275,32 @@ bool GLES2Implementation::IsExtensionAvailable(const char* ext) {
   }
 }
 
-bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
-  switch (angle_pack_reverse_row_order_status) {
+bool GLES2Implementation::IsExtensionAvailableHelper(
+    const char* extension, ExtensionStatus* status) {
+  switch (*status) {
     case kAvailableExtensionStatus:
       return true;
     case kUnavailableExtensionStatus:
       return false;
-    default:
-      if (IsExtensionAvailable("GL_ANGLE_pack_reverse_row_order")) {
-          angle_pack_reverse_row_order_status = kAvailableExtensionStatus;
-          return true;
-      } else {
-          angle_pack_reverse_row_order_status = kUnavailableExtensionStatus;
-          return false;
-      }
+    default: {
+      bool available = IsExtensionAvailable(extension);
+      *status = available ? kAvailableExtensionStatus :
+                            kUnavailableExtensionStatus;
+      return available;
+    }
   }
+}
+
+bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
+  return IsExtensionAvailableHelper(
+      "GL_ANGLE_pack_reverse_row_order",
+      &angle_pack_reverse_row_order_status_);
+}
+
+bool GLES2Implementation::IsChromiumFramebufferMultisampleAvailable() {
+  return IsExtensionAvailableHelper(
+      "GL_CHROMIUM_framebuffer_multisample",
+      &chromium_framebuffer_multisample_);
 }
 
 const std::string& GLES2Implementation::GetLogPrefix() const {
@@ -595,6 +608,13 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_FRAMEBUFFER_BINDING:
       if (share_group_->bind_generates_resource()) {
         *params = bound_framebuffer_;
+        return true;
+      }
+      return false;
+    case GL_READ_FRAMEBUFFER_BINDING:
+      if (IsChromiumFramebufferMultisampleAvailable() &&
+          share_group_->bind_generates_resource()) {
+        *params = bound_read_framebuffer_;
         return true;
       }
       return false;
@@ -2214,22 +2234,40 @@ bool GLES2Implementation::BindBufferHelper(
 bool GLES2Implementation::BindFramebufferHelper(
     GLenum target, GLuint framebuffer) {
   // TODO(gman): See note #1 above.
-  // TODO(gman): Change this to false once we figure out why it's failing
-  //      on lumpy.
-  bool changed = true;
+  bool changed = false;
   switch (target) {
     case GL_FRAMEBUFFER:
+      if (bound_framebuffer_ != framebuffer ||
+          bound_read_framebuffer_ != framebuffer) {
+        bound_framebuffer_ = framebuffer;
+        bound_read_framebuffer_ = framebuffer;
+        changed = true;
+      }
+      break;
+    case GL_READ_FRAMEBUFFER:
+      if (!IsChromiumFramebufferMultisampleAvailable()) {
+        SetGLErrorInvalidEnum("glBindFramebuffer", target, "target");
+        return false;
+      }
+      if (bound_read_framebuffer_ != framebuffer) {
+        bound_read_framebuffer_ = framebuffer;
+        changed = true;
+      }
+      break;
+    case GL_DRAW_FRAMEBUFFER:
+      if (!IsChromiumFramebufferMultisampleAvailable()) {
+        SetGLErrorInvalidEnum("glBindFramebuffer", target, "target");
+        return false;
+      }
       if (bound_framebuffer_ != framebuffer) {
         bound_framebuffer_ = framebuffer;
         changed = true;
       }
       break;
     default:
-      changed = true;
-      break;
+      SetGLErrorInvalidEnum("glBindFramebuffer", target, "target");
+      return false;
   }
-  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
-  // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kFramebuffers)->MarkAsUsedForBind(framebuffer);
   return changed;
 }
@@ -2348,6 +2386,9 @@ void GLES2Implementation::DeleteFramebuffersHelper(
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (framebuffers[ii] == bound_framebuffer_) {
       bound_framebuffer_ = 0;
+    }
+    if (framebuffers[ii] == bound_read_framebuffer_) {
+      bound_read_framebuffer_ = 0;
     }
   }
 }
@@ -2711,6 +2752,8 @@ const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
   return reinterpret_cast<const GLchar*>(result);
 }
 
+// TODO(gman): Remove this command. It's here for WebGL but is incompatible
+// with VirtualGL contexts.
 void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRequestExtensionCHROMIUM("
@@ -2718,9 +2761,28 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
   SetBucketAsCString(kResultBucketId, extension);
   helper_->RequestExtensionCHROMIUM(kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
-  if (kUnavailableExtensionStatus == angle_pack_reverse_row_order_status &&
-      !strcmp(extension, "GL_ANGLE_pack_reverse_row_order")) {
-    angle_pack_reverse_row_order_status = kUnknownExtensionStatus;
+
+  struct ExtensionCheck {
+    const char* extension;
+    ExtensionStatus* status;
+  };
+  const ExtensionCheck checks[] = {
+    {
+      "GL_ANGLE_pack_reverse_row_order",
+      &angle_pack_reverse_row_order_status_,
+    },
+    {
+      "GL_CHROMIUM_framebuffer_multisample",
+       &chromium_framebuffer_multisample_,
+    },
+  };
+  const size_t kNumChecks = sizeof(checks)/sizeof(checks[0]);
+  for (size_t ii = 0; ii < kNumChecks; ++ii) {
+    const ExtensionCheck& check = checks[ii];
+    if (*check.status == kUnavailableExtensionStatus &&
+        !strcmp(extension, check.extension)) {
+      *check.status = kUnknownExtensionStatus;
+    }
   }
 }
 

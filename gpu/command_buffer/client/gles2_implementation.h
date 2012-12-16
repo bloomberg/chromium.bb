@@ -347,6 +347,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
   bool IsAnglePackReverseRowOrderAvailable();
+  bool IsChromiumFramebufferMultisampleAvailable();
+
+  bool IsExtensionAvailableHelper(
+      const char* extension, ExtensionStatus* status);
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
@@ -501,7 +505,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   std::queue<int32> swap_buffers_tokens_;
   std::queue<int32> rate_limit_tokens_;
 
-  ExtensionStatus angle_pack_reverse_row_order_status;
+  ExtensionStatus angle_pack_reverse_row_order_status_;
+  ExtensionStatus chromium_framebuffer_multisample_;
 
   GLStaticState static_state_;
   ClientContextState state_;
@@ -533,6 +538,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   GLuint active_texture_unit_;
 
   GLuint bound_framebuffer_;
+  GLuint bound_read_framebuffer_;
   GLuint bound_renderbuffer_;
 
   // The program in use by glUseProgram
