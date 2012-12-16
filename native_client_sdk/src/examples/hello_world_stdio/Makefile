@@ -42,7 +42,7 @@ SOURCES=hello_world.c
 # Notice that pthread and libc are implied and come last through standard
 # compiler/link switches, for example -pthread.
 # 
-LIBS=ppapi_main ppapi_cpp ppapi
+LIBS=ppapi_main nacl_mounts ppapi_cpp ppapi
 
 
 #

@@ -50,6 +50,7 @@ void KernelProxy::Init(PepperInterface* ppapi) {
   // Create memory mount at root
   StringMap_t smap;
   mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap, ppapi_);
+  mounts_["/dev"] = MountDev::Create<MountDev>(dev_++, smap, ppapi_);
 }
 
 int KernelProxy::open(const char *path, int oflags) {

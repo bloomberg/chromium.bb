@@ -5,12 +5,15 @@
 
 #include "nacl_mounts/real_pepper_interface.h"
 #include <assert.h>
+#include <stdio.h>
+
 #include <ppapi/c/pp_errors.h>
+#include <ppapi/c/ppb_console.h>
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/ppb_file_ref.h>
 #include <ppapi/c/ppb_file_system.h>
+#include <ppapi/c/ppb_messaging.h>
 #include <ppapi/c/ppb_var.h>
-#include <stdio.h>
 
 #define DEFINE_CONSTRUCTOR(Class, Interface) \
     Class::Class(const Interface* interface) : interface_(interface) {}
@@ -45,6 +48,35 @@
     }
 
 
+#define DEFINE_VMETHOD1(Class, MethodName, Type0) \
+    void Class::MethodName(Type0 arg0) { \
+      interface_->MethodName(arg0); \
+    }
+
+#define DEFINE_VMETHOD2(Class, MethodName, Type0, Type1) \
+    void Class::MethodName(Type0 arg0, Type1 arg1) { \
+      interface_->MethodName(arg0, arg1); \
+    }
+
+#define DEFINE_VMETHOD3(Class, MethodName, Type0, Type1, Type2) \
+    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2) { \
+      interface_->MethodName(arg0, arg1, arg2); \
+    }
+
+#define DEFINE_VMETHOD4(Class, MethodName, Type0, Type1, Type2, Type3) \
+    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2, \
+                                 Type3 arg3) { \
+      interface_->MethodName(arg0, arg1, arg2, arg3); \
+    }
+
+#define DEFINE_VMETHOD5(Class, MethodName, Type0, Type1, Type2, Type3, Type4) \
+    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2, \
+                                 Type3 arg3, Type4 arg4) { \
+      interface_->MethodName(arg0, arg1, arg2, arg3, arg4); \
+    }
+
+
+
 class RealFileSystemInterface : public FileSystemInterface {
  public:
   explicit RealFileSystemInterface(const PPB_FileSystem* filesystem_interface);
@@ -59,6 +91,18 @@ DEFINE_METHOD2(RealFileSystemInterface, PP_Resource, Create, PP_Instance,
     PP_FileSystemType)
 DEFINE_METHOD3(RealFileSystemInterface, int32_t, Open, PP_Resource, int64_t,
     PP_CompletionCallback)
+
+
+class RealConsoleInterface : public ConsoleInterface {
+ public:
+  explicit RealConsoleInterface(const PPB_Console* console_interface);
+  virtual void Log(PP_Instance, PP_LogLevel, struct PP_Var);
+ private:
+  const PPB_Console* interface_;
+};
+DEFINE_CONSTRUCTOR(RealConsoleInterface, PPB_Console)
+DEFINE_VMETHOD3(RealConsoleInterface, Log, PP_Instance, PP_LogLevel,
+    struct PP_Var);
 
 
 class RealFileRefInterface : public FileRefInterface {
@@ -141,13 +185,29 @@ class RealVarInterface : public VarInterface {
  public:
   explicit RealVarInterface(const PPB_Var* var_interface);
 
+  virtual struct PP_Var VarFromUtf8(const char *, uint32_t);
   virtual const char* VarToUtf8(PP_Var, uint32_t*);
 
  private:
   const PPB_Var* interface_;
 };
 DEFINE_CONSTRUCTOR(RealVarInterface, PPB_Var)
+DEFINE_METHOD2(RealVarInterface, struct PP_Var, VarFromUtf8, const char *,
+    uint32_t)
 DEFINE_METHOD2(RealVarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
+
+class RealMessagingInterface : public MessagingInterface {
+ public:
+  explicit RealMessagingInterface(const PPB_Messaging* messaging_interface);
+
+  virtual void PostMessage(PP_Instance, struct PP_Var);
+
+private:
+  const PPB_Messaging* interface_;
+};
+DEFINE_CONSTRUCTOR(RealMessagingInterface, PPB_Messaging);
+DEFINE_VMETHOD2(RealMessagingInterface, PostMessage, PP_Instance, struct
+    PP_Var);
 
 
 RealPepperInterface::RealPepperInterface(PP_Instance instance,
@@ -162,6 +222,9 @@ RealPepperInterface::RealPepperInterface(PP_Instance instance,
   assert(core_interface_);
   assert(message_loop_interface_);
 
+  console_interface_ = new RealConsoleInterface(
+      static_cast<const PPB_Console*>(get_browser_interface(
+          PPB_CONSOLE_INTERFACE)));
   directory_reader_interface_ = new RealDirectoryReaderInterface(
       static_cast<const PPB_DirectoryReader_Dev*>(get_browser_interface(
           PPB_DIRECTORYREADER_DEV_INTERFACE)));
@@ -172,6 +235,9 @@ RealPepperInterface::RealPepperInterface(PP_Instance instance,
   filesystem_interface_ = new RealFileSystemInterface(
       static_cast<const PPB_FileSystem*>(get_browser_interface(
           PPB_FILESYSTEM_INTERFACE)));
+  messaging_interface_ = new RealMessagingInterface(
+      static_cast<const PPB_Messaging*>(get_browser_interface(
+          PPB_MESSAGING_INTERFACE)));
   var_interface_= new RealVarInterface(
       static_cast<const PPB_Var*>(get_browser_interface(
           PPB_VAR_INTERFACE)));
@@ -191,6 +257,10 @@ void RealPepperInterface::ReleaseResource(PP_Resource resource) {
     core_interface_->ReleaseResource(resource);
 }
 
+ConsoleInterface* RealPepperInterface::GetConsoleInterface() {
+  return console_interface_;
+}
+
 FileSystemInterface* RealPepperInterface::GetFileSystemInterface() {
   return filesystem_interface_;
 }
@@ -205,6 +275,10 @@ FileIoInterface* RealPepperInterface::GetFileIoInterface() {
 
 DirectoryReaderInterface* RealPepperInterface::GetDirectoryReaderInterface() {
   return directory_reader_interface_;
+}
+
+MessagingInterface* RealPepperInterface::GetMessagingInterface() {
+  return messaging_interface_;
 }
 
 VarInterface* RealPepperInterface::GetVarInterface() {

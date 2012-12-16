@@ -76,6 +76,7 @@ class DirectoryReaderInterfaceMock : public DirectoryReaderInterface {
 
 class VarInterfaceMock : public VarInterface {
  public:
+  MOCK_METHOD2(VarFromUtf8, PP_Var(const char*, uint32_t));
   MOCK_METHOD2(VarToUtf8, const char*(PP_Var, uint32_t*));
 };
 

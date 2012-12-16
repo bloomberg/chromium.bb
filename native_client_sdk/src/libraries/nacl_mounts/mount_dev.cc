@@ -6,12 +6,13 @@
 #define _CRT_RAND_S
 #endif
 
-#include "nacl_mounts/mount_dev.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include "nacl_mounts/mount_dev.h"
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/mount_node_dir.h"
+#include "nacl_mounts/pepper_interface.h"
 #include "utils/auto_lock.h"
 
 #if defined(__native_client__)
@@ -35,6 +36,25 @@ class NullNode : public MountNode {
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);
 };
+
+class ConsoleNode : public NullNode {
+ public:
+  ConsoleNode(Mount* mount, int ino, int dev, PP_LogLevel level);
+
+  virtual int Write(size_t offs, const void* buf, size_t count);
+
+private:
+  PP_LogLevel level_;
+};
+
+
+class TtyNode : public NullNode {
+ public:
+  TtyNode(Mount* mount, int ino, int dev);
+
+  virtual int Write(size_t offs, const void* buf, size_t count);
+};
+
 
 class ZeroNode : public MountNode {
  public:
@@ -69,6 +89,45 @@ int NullNode::Read(size_t offs, void* buf, size_t count) {
 int NullNode::Write(size_t offs, const void* buf, size_t count) {
   return count;
 }
+
+ConsoleNode::ConsoleNode(Mount* mount, int ino, int dev, PP_LogLevel level)
+    : NullNode(mount, ino, dev),
+    level_(level) {
+}
+
+int ConsoleNode::Write(size_t offs, const void* buf, size_t count) {
+  ConsoleInterface* con_intr = mount_->ppapi()->GetConsoleInterface();
+  VarInterface* var_intr = mount_->ppapi()->GetVarInterface();
+
+  if (var_intr && con_intr) {
+    const char* data = static_cast<const char *>(buf);
+    uint32_t len = static_cast<uint32_t>(count);
+    struct PP_Var val = var_intr->VarFromUtf8(data, len);
+    con_intr->Log(mount_->ppapi()->GetInstance(), level_, val);
+    return count;
+  }
+  return 0;
+}
+
+
+TtyNode::TtyNode(Mount* mount, int ino, int dev)
+    : NullNode(mount, ino, dev) {
+}
+
+int TtyNode::Write(size_t offs, const void* buf, size_t count) {
+  MessagingInterface* msg_intr = mount_->ppapi()->GetMessagingInterface();
+  VarInterface* var_intr = mount_->ppapi()->GetVarInterface();
+
+  if (var_intr && msg_intr) {
+    const char* data = static_cast<const char *>(buf);
+    uint32_t len = static_cast<uint32_t>(count);
+    struct PP_Var val = var_intr->VarFromUtf8(data, len);
+    msg_intr->PostMessage(mount_->ppapi()->GetInstance(), val);
+    return count;
+  }
+  return 0;
+}
+
 
 ZeroNode::ZeroNode(Mount* mount, int ino, int dev)
     : MountNode(mount, ino, dev) {
@@ -132,6 +191,8 @@ int UrandomNode::Write(size_t offs, const void* buf, size_t count) {
   return count;
 }
 
+
+
 }  // namespace
 
 MountNode *MountDev::Open(const Path& path, int mode) {
@@ -177,7 +238,12 @@ int MountDev::Remove(const Path& path) {
 MountDev::MountDev()
     : null_node_(NULL),
       zero_node_(NULL),
-      random_node_(NULL) {
+      random_node_(NULL),
+      console0_node_(NULL),
+      console1_node_(NULL),
+      console2_node_(NULL),
+      console3_node_(NULL),
+      tty_node_(NULL) {
 }
 
 bool MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
@@ -191,10 +257,27 @@ bool MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   root_->AddChild("/zero", zero_node_);
   random_node_ = new UrandomNode(this, 4, dev_);
   root_->AddChild("/urandom", random_node_);
+
+  console0_node_ = new ConsoleNode(this, 5, dev_, PP_LOGLEVEL_TIP);
+  root_->AddChild("/console0", console0_node_);
+  console1_node_ = new ConsoleNode(this, 6, dev_, PP_LOGLEVEL_LOG);
+  root_->AddChild("/console1", console1_node_);
+  console2_node_ = new ConsoleNode(this, 7, dev_, PP_LOGLEVEL_WARNING);
+  root_->AddChild("/console2", console2_node_);
+  console3_node_ = new ConsoleNode(this, 8, dev_, PP_LOGLEVEL_ERROR);
+  root_->AddChild("/console3", console3_node_);
+
+  tty_node_ = new TtyNode(this, 9, dev_);
+  root_->AddChild("/tty", tty_node_);
   return true;
 }
 
 void MountDev::Destroy() {
+  ReleaseAndNullNode(&tty_node_);
+  ReleaseAndNullNode(&console3_node_);
+  ReleaseAndNullNode(&console2_node_);
+  ReleaseAndNullNode(&console1_node_);
+  ReleaseAndNullNode(&console0_node_);
   ReleaseAndNullNode(&random_node_);
   ReleaseAndNullNode(&zero_node_);
   ReleaseAndNullNode(&null_node_);

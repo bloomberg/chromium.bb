@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <cstdlib>
 #include <cstring>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "nacl_mounts/kernel_intercept.h"
 
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
@@ -18,6 +23,7 @@
 
 #include "ppapi_main/ppapi_instance.h"
 #include "ppapi_main/ppapi_main.h"
+
 
 struct StartInfo {
   uint32_t argc_;
@@ -67,10 +73,7 @@ bool PPAPIInstance::Init(uint32_t arg,
 
   si->argc_ = 1;
   si->argv_ = new const char *[arg*2+1];
-
-  char *name = new char[5];
-  strcpy(name, "NEXE");
-  si->argv_[0] = name;
+  si->argv_[0] = NULL;
 
   for (uint32_t i=0; i < arg; i++) {
     // If we start with PM prefix set the instance argument map
@@ -78,9 +81,17 @@ bool PPAPIInstance::Init(uint32_t arg,
       std::string key = argn[i];
       std::string val = argv[i];
       properties_[key] = val;
+      continue;
     }
-    // Otherwise turn it into arguments
+
+    // If this is the 'src' tag, then get the NMF name.
+    if (!strcmp("src", argn[i])) {
+      char *name = new char[strlen(argv[i]) + 1];
+      strcpy(name, argv[i]);
+      si->argv_[0] = name;
+    }
     else {
+      // Otherwise turn it into arguments
       char *key = new char[strlen(argn[i]) + 3];
       key[0] = '-';
       key[1] = '-';
@@ -95,7 +106,12 @@ bool PPAPIInstance::Init(uint32_t arg,
     }
   }
 
-//  ki_init();
+  // If src was not found, set the first arg to something
+  if (NULL == si->argv_[0]) {
+    char *name = new char[5];
+    strcpy(name, "NMF?");
+    si->argv_[0] = name;
+  }
 
   if (ProcessProperties()) {
     pthread_t main_thread;
@@ -116,11 +132,16 @@ const char* PPAPIInstance::GetProperty(const char* key, const char* def) {
 }
 
 bool PPAPIInstance::ProcessProperties() {
-#if 0
-  const char* stdin_path = GetProperty("PM_STDIO", "/dev/tty");
-  const char* stdout_path = GetProperty("PM_STDOUT", "/dev/console0");
+  const char* stdin_path = GetProperty("PM_STDIO", "/dev/null");
+  const char* stdout_path = GetProperty("PM_STDOUT", "/dev/tty");
   const char* stderr_path = GetProperty("PM_STDERR", "/dev/console3");
-#endif
+
+  ki_init_ppapi(NULL, PPAPI_GetInstanceId(), PPAPI_GetInterface);
+  int f1 = open(stdin_path, O_RDONLY);
+  int f2 = open(stdout_path, O_WRONLY);
+  int f3 = open(stderr_path, O_WRONLY);
+
+  return true;
 }
 
 void PPAPIInstance::HandleMessage(const pp::Var& message) {

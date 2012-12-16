@@ -32,6 +32,11 @@ class MountDev : public Mount {
   MountNode* null_node_;
   MountNode* zero_node_;
   MountNode* random_node_;
+  MountNode* console0_node_;
+  MountNode* console1_node_;
+  MountNode* console2_node_;
+  MountNode* console3_node_;
+  MountNode* tty_node_;
 
   friend class Mount;
 };

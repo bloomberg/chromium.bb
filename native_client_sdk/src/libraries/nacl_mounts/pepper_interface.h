@@ -10,12 +10,17 @@
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/pp_var.h>
+#include <ppapi/c/ppb_console.h>
+#include <ppapi/c/ppb_messaging.h>
+
 #include <utils/macros.h>
 
+class ConsoleInterface;
 class DirectoryReaderInterface;
 class FileIoInterface;
 class FileRefInterface;
 class FileSystemInterface;
+class MessagingInterface;
 class VarInterface;
 
 class PepperInterface {
@@ -24,11 +29,19 @@ class PepperInterface {
   virtual PP_Instance GetInstance() = 0;
   virtual void AddRefResource(PP_Resource) = 0;
   virtual void ReleaseResource(PP_Resource) = 0;
+  virtual ConsoleInterface* GetConsoleInterface() = 0;
   virtual FileSystemInterface* GetFileSystemInterface() = 0;
   virtual FileRefInterface* GetFileRefInterface() = 0;
   virtual FileIoInterface* GetFileIoInterface() = 0;
   virtual DirectoryReaderInterface* GetDirectoryReaderInterface() = 0;
+  virtual MessagingInterface* GetMessagingInterface() = 0;
   virtual VarInterface* GetVarInterface() = 0;
+};
+
+class ConsoleInterface {
+ public:
+  virtual ~ConsoleInterface() {}
+  virtual void Log(PP_Instance, PP_LogLevel, struct PP_Var) = 0;
 };
 
 class FileSystemInterface {
@@ -74,9 +87,16 @@ class DirectoryReaderInterface {
       PP_CompletionCallback) = 0;
 };
 
+class MessagingInterface {
+ public:
+  virtual ~MessagingInterface() {}
+  virtual void PostMessage(PP_Instance, struct PP_Var ) = 0;
+};
+
 class VarInterface {
  public:
   virtual ~VarInterface() {}
+  virtual struct PP_Var VarFromUtf8(const char*, uint32_t) = 0;
   virtual const char* VarToUtf8(PP_Var, uint32_t*) = 0;
 };
 
