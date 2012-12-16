@@ -1906,6 +1906,8 @@ size_t WebTouchState::UpdateTouchPoints(
     }
   }
   touch_event_.changedTouchesLength = 0;
+  touch_event_.modifiers = content::EventFlagsToWebEventModifiers(
+      ui::GetModifiersFromKeyState());
 
   // Consume all events of the same type and add them to the changed list.
   int last_type = 0;
