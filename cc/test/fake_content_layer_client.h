@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "cc/content_layer_client.h"
 
-namespace WebKitTests {
+namespace cc {
 
 class FakeContentLayerClient : public cc::ContentLayerClient {
 public:
@@ -22,6 +22,6 @@ private:
     bool m_paintAllOpaque;
 };
 
-}  // namespace WebKitTests
+}  // namespace cc
 
 #endif  // CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_

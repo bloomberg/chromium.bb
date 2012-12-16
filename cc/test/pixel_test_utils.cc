@@ -10,7 +10,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace cc {
-namespace test {
 
 bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
   std::vector<unsigned char> png_data;
@@ -76,6 +75,4 @@ bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path) {
   return true;
 }
 
-}  // namespace test
 }  // namespace cc
-

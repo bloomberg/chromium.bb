@@ -12,7 +12,6 @@
 class MessageLoop;
 
 namespace cc {
-namespace test {
 
 class CCTestSuite : public base::TestSuite {
  public:
@@ -30,7 +29,6 @@ class CCTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(CCTestSuite);
 };
 
-}  // namespace test
 }  // namespace cc
 
 #endif  // CC_TEST_CC_TEST_SUITE_H_

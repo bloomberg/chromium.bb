@@ -18,7 +18,6 @@
 #include <public/WebFilterOperations.h>
 
 using namespace WebKit;
-using namespace WebKitTests;
 
 namespace cc {
 namespace {

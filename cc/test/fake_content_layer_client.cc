@@ -6,7 +6,7 @@
 
 #include "ui/gfx/rect.h"
 
-namespace WebKitTests {
+namespace cc {
 
 FakeContentLayerClient::FakeContentLayerClient()
     : m_paintAllOpaque(false)
@@ -19,4 +19,4 @@ void FakeContentLayerClient::paintContents(SkCanvas*, const gfx::Rect& rect, gfx
     opaqueRect = rect;
 }
 
-}  // namespace WebKitTests
+}  // namespace cc

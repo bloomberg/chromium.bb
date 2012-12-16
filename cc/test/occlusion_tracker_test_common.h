@@ -9,7 +9,7 @@
 #include "cc/render_surface.h"
 #include "cc/render_surface_impl.h"
 
-namespace WebKitTests {
+namespace cc {
 
 // A subclass to expose the total current occlusion.
 template<typename LayerType, typename RenderSurfaceType>
@@ -30,6 +30,6 @@ public:
 typedef TestOcclusionTrackerBase<cc::Layer, cc::RenderSurface> TestOcclusionTracker;
 typedef TestOcclusionTrackerBase<cc::LayerImpl, cc::RenderSurfaceImpl> TestOcclusionTrackerImpl;
 
-}
+}  // namespace cc
 
 #endif  // CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_

@@ -34,5 +34,4 @@ class PixelTestOutputSurface : public OutputSurface {
 
 }  // namespace cc
 
-
 #endif  // CC_TEST_PIXEL_TEST_GRAPHICS_CONTEXT_H_

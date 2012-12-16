@@ -21,8 +21,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace WebKit;
-using namespace WebKitTests;
 
 namespace cc {
 namespace {

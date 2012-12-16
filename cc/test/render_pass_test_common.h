@@ -11,7 +11,7 @@ namespace cc {
 class ResourceProvider;
 }
 
-namespace WebKitTests {
+namespace cc {
 
 class TestRenderPass : public cc::RenderPass {
  public:
@@ -32,6 +32,6 @@ class TestRenderPass : public cc::RenderPass {
   TestRenderPass() : RenderPass() {}
 };
 
-}  // namespace WebKitTests
+}  // namespace cc
 
 #endif  // CC_TEST_RENDER_PASS_TEST_COMMON_H_

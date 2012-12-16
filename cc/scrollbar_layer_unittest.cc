@@ -53,7 +53,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
         scoped_refptr<Layer> layerTreeRoot = Layer::create();
         scoped_refptr<Layer> child1 = Layer::create();
-        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child1->id());
+        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), child1->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -70,7 +70,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
         scoped_refptr<Layer> layerTreeRoot = Layer::create();
         scoped_refptr<Layer> child2 = Layer::create();
-        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child2->id());
+        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), child2->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -93,7 +93,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
     scoped_refptr<Layer> contentLayer = Layer::create();
-    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
+    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
     layerTreeRoot->addChild(contentLayer);
     layerTreeRoot->addChild(scrollbarLayer);
 
@@ -141,7 +141,7 @@ public:
         m_layerTreeHost->initializeRendererIfNeeded();
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), m_painter, WebKit::FakeWebScrollbarThemeGeometry::create(), 1);
+        m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), m_painter, FakeWebScrollbarThemeGeometry::create(), 1);
         m_scrollbarLayer->setLayerTreeHost(m_layerTreeHost.get());
         m_scrollbarLayer->setBounds(m_bounds);
         m_layerTreeHost->rootLayer()->addChild(m_scrollbarLayer);
@@ -178,7 +178,7 @@ private:
 };
 
 TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
-    WebKit::FakeWebGraphicsContext3D context;
+    FakeWebGraphicsContext3D context;
     int max_size = 0;
     context.getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     setScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));

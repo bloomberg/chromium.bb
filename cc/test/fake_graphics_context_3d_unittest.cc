@@ -8,6 +8,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace cc {
+namespace {
+
 class ContextThatCountsMakeCurrents : public WebKit::FakeWebGraphicsContext3D {
 public:
     ContextThatCountsMakeCurrents() : m_makeCurrentCount(0) { }
@@ -29,3 +32,6 @@ TEST(FakeGraphicsContext3DTest, ContextCreationShouldNotMakeCurrent)
     EXPECT_TRUE(context.get());
     EXPECT_EQ(0, context->makeCurrentCount());
 }
+
+}  // namespace
+}  // namespace cc

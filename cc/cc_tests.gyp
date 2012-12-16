@@ -63,6 +63,7 @@
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
       'test/animation_test_common.h',
+      'test/compositor_fake_web_graphics_context_3d.cc',
       'test/compositor_fake_web_graphics_context_3d.h',
       'test/fake_content_layer_client.cc',
       'test/fake_content_layer_client.h',
@@ -83,7 +84,9 @@
       'test/fake_output_surface.h',
       'test/fake_software_output_device.cc',
       'test/fake_software_output_device.h',
+      'test/fake_web_graphics_context_3d.cc',
       'test/fake_web_graphics_context_3d.h',
+      'test/fake_web_scrollbar_theme_geometry.cc',
       'test/fake_web_scrollbar_theme_geometry.h',
       'test/geometry_test_utils.cc',
       'test/geometry_test_utils.h',

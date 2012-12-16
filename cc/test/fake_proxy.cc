@@ -57,4 +57,4 @@ void FakeProxy::setMaxPartialTextureUpdates(size_t max)
 }
 
 
-} // namespace cc
+}  // namespace cc

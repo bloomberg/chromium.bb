@@ -6,7 +6,6 @@
 #define CC_TEST_PATHS_H_
 
 namespace cc {
-namespace test {
 
 enum {
   PATH_START = 5000,
@@ -20,7 +19,6 @@ enum {
 // Call once to register the provider for the path keys defined above.
 void RegisterPathProvider();
 
-}  // namespace test
 }  // namespace cc
 
 #endif  // CC_TEST_PATHS_H_

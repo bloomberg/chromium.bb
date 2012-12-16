@@ -17,9 +17,9 @@ scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
     if (m_useDelegatingRenderer)
-        return FakeOutputSurface::CreateDelegating3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateDelegating3d(CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 
-    return FakeOutputSurface::Create3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 }
 
 scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()
@@ -29,7 +29,7 @@ scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()
 
 scoped_ptr<FontAtlas> FakeLayerImplTreeHostClient::createFontAtlas()
 {
-	return scoped_ptr<FontAtlas>();
+    return scoped_ptr<FontAtlas>();
 }
 
-}
+}  // namespace cc

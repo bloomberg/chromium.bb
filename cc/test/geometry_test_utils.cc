@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-namespace WebKitTests {
+namespace cc {
 
 // NOTE: even though transform data types use double precision, we only check
 // for equality within single-precision error bounds because many transforms
@@ -57,4 +57,4 @@ void ExpectTransformationMatrixEq(const gfx::Transform& expected,
     EXPECT_FLOAT_EQ((expected).matrix().getDouble(3, 3), (actual).matrix().getDouble(3, 3));
 }
 
-} // namespace WebKitTests
+}  // namespace cc

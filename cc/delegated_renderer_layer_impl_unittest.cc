@@ -24,10 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using WebKit::FakeWebGraphicsContext3D;
-
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

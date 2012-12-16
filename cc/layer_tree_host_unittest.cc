@@ -30,9 +30,6 @@
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
 
-using namespace WebKit;
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 
@@ -1868,8 +1865,8 @@ public:
         setTestLayerPropertiesForTesting(child2.get(), rootLayer.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(10, 70), gfx::Size(500, 500), true);
 
         {
-            WebFilterOperations filters;
-            filters.append(WebFilterOperation::createOpacityFilter(0.5));
+            WebKit::WebFilterOperations filters;
+            filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5));
             child->setFilters(filters);
         }
 
@@ -1893,8 +1890,8 @@ public:
         setTestLayerPropertiesForTesting(child2.get(), rootLayer.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(10, 70), gfx::Size(500, 500), true);
 
         {
-            WebFilterOperations filters;
-            filters.append(WebFilterOperation::createBlurFilter(10));
+            WebKit::WebFilterOperations filters;
+            filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
             child->setFilters(filters);
         }
 
@@ -2193,7 +2190,7 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLayerAddedWithAnimation)
 
-class LayerTreeHostTestScrollChildLayer : public LayerTreeHostTest, public WebLayerScrollClient {
+class LayerTreeHostTestScrollChildLayer : public LayerTreeHostTest, public WebKit::WebLayerScrollClient {
 public:
     LayerTreeHostTestScrollChildLayer(float deviceScaleFactor)
         : m_deviceScaleFactor(deviceScaleFactor)
@@ -2934,7 +2931,7 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLostContextAfterEvictTextures)
 
-class CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext : public WebKit::CompositorFakeWebGraphicsContext3D {
+class CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext : public CompositorFakeWebGraphicsContext3D {
 public:
     static scoped_ptr<CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext> create(Attributes attrs)
     {
@@ -2944,8 +2941,8 @@ public:
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { m_contextLostCallback = callback; }
     virtual bool isContextLost() { return m_isContextLost; }
 
-    virtual void beginQueryEXT(WGC3Denum, WebGLId) { }
-    virtual void endQueryEXT(WGC3Denum)
+    virtual void beginQueryEXT(WebKit::WGC3Denum, WebKit::WebGLId) { }
+    virtual void endQueryEXT(WebKit::WGC3Denum)
     {
         // Lose context.
         if (!m_isContextLost) {
@@ -2953,7 +2950,7 @@ public:
             m_isContextLost = true;
         }
     }
-    virtual void getQueryObjectuivEXT(WebGLId, WGC3Denum pname, WGC3Duint* params)
+    virtual void getQueryObjectuivEXT(WebKit::WebGLId, WebKit::WGC3Denum pname, WebKit::WGC3Duint* params)
     {
         // Context is lost. We need to behave as if result is available.
         if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)

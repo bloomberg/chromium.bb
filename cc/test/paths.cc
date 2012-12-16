@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 
 namespace cc {
-namespace test {
 
 bool PathProvider(int key, FilePath* result) {
   FilePath cur;
@@ -40,5 +39,4 @@ void RegisterPathProvider() {
   PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
-}  // namespace test
 }  // namespace cc

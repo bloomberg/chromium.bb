@@ -13,7 +13,7 @@ namespace WebKit {
 class WebTransformationMatrix;
 }
 
-namespace WebKitTests {
+namespace cc {
 
 // These are macros instead of functions so that we get useful line numbers where a test failed.
 #define EXPECT_FLOAT_RECT_EQ(expected, actual) \
@@ -70,9 +70,9 @@ void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expecte
 #define EXPECT_TRANSFORMATION_MATRIX_EQ(expected, actual)            \
     {                                                                \
         SCOPED_TRACE("");                                            \
-        WebKitTests::ExpectTransformationMatrixEq(expected, actual); \
+        cc::ExpectTransformationMatrixEq(expected, actual);          \
     }
 
-} // namespace WebKitTests
+}  // namespace cc
 
 #endif  // CC_TEST_GEOMETRY_TEST_UTILS_H_

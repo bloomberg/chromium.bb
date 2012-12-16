@@ -13,6 +13,7 @@ namespace gfx {
 class Rect;
 }
 
+namespace cc {
 namespace LayerTestCommon {
 
 extern const char* quadString;
@@ -20,4 +21,6 @@ extern const char* quadString;
 void verifyQuadsExactlyCoverRect(const cc::QuadList&, const gfx::Rect&);
 
 } // namespace LayerTestCommon
+} // namespace cc
+
 #endif  // CC_TEST_LAYER_TEST_COMMON_H_

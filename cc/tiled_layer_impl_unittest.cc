@@ -15,10 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace LayerTestCommon;
-
 namespace cc {
-
 namespace {
 
 class TiledLayerImplTest : public testing::Test
@@ -179,7 +176,7 @@ public:
         QuadList quads;
         SharedQuadStateList sharedStates;
         getQuads(quads, sharedStates, gfx::Size(100, 100), layerSize, borders, gfx::Rect(gfx::Point(), layerSize));
-        verifyQuadsExactlyCoverRect(quads, gfx::Rect(gfx::Point(), layerSize));
+        LayerTestCommon::verifyQuadsExactlyCoverRect(quads, gfx::Rect(gfx::Point(), layerSize));
     }
 
     void coverageVisibleRectIntersectsTiles(LayerTilingData::BorderTexelOption borders)
@@ -193,7 +190,7 @@ public:
         QuadList quads;
         SharedQuadStateList sharedStates;
         getQuads(quads, sharedStates, gfx::Size(50, 50), gfx::Size(250, 250), LayerTilingData::NoBorderTexels, visibleContentRect);
-        verifyQuadsExactlyCoverRect(quads, visibleContentRect);
+        LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visibleContentRect);
     }
 
     void coverageVisibleRectIntersectsBounds(LayerTilingData::BorderTexelOption borders)
@@ -203,7 +200,7 @@ public:
         QuadList quads;
         SharedQuadStateList sharedStates;
         getQuads(quads, sharedStates, gfx::Size(100, 100), layerSize, LayerTilingData::NoBorderTexels, visibleContentRect);
-        verifyQuadsExactlyCoverRect(quads, visibleContentRect);
+        LayerTestCommon::verifyQuadsExactlyCoverRect(quads, visibleContentRect);
     }
 };
 WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectOnTileBoundaries);
@@ -223,10 +220,10 @@ TEST_F(TiledLayerImplTest, textureInfoForLayerNoBorders)
     for (size_t i = 0; i < quads.size(); ++i) {
         const TileDrawQuad* quad = TileDrawQuad::MaterialCast(quads[i]);
 
-        EXPECT_NE(0u, quad->resource_id) << quadString << i;
-        EXPECT_EQ(gfx::RectF(gfx::PointF(), tileSize), quad->tex_coord_rect) << quadString << i;
-        EXPECT_EQ(tileSize, quad->texture_size) << quadString << i;
-        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect) << quadString << i;
+        EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quadString << i;
+        EXPECT_EQ(gfx::RectF(gfx::PointF(), tileSize), quad->tex_coord_rect) << LayerTestCommon::quadString << i;
+        EXPECT_EQ(tileSize, quad->texture_size) << LayerTestCommon::quadString << i;
+        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect) << LayerTestCommon::quadString << i;
     }
 }
 

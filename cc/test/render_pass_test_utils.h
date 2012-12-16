@@ -14,30 +14,27 @@ class Rect;
 class Transform;
 }
 
-namespace WebKitTests {
-class TestRenderPass;
-}
-
 namespace cc {
 
 class SolidColorDrawQuad;
+class TestRenderPass;
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.
-WebKitTests::TestRenderPass* addRenderPass(
+TestRenderPass* addRenderPass(
     ScopedPtrVector<RenderPass>& passList,
     RenderPass::Id id,
     const gfx::Rect& outputRect,
     const gfx::Transform& rootTransform);
 
 // Adds a solid quad to a given render pass.
-SolidColorDrawQuad* addQuad(WebKitTests::TestRenderPass* pass,
+SolidColorDrawQuad* addQuad(TestRenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color);
 
 // Adds a render pass quad to an existing render pass.
-void addRenderPassQuad(WebKitTests::TestRenderPass* toPass,
-                       WebKitTests::TestRenderPass* contributingPass);
+void addRenderPassQuad(TestRenderPass* toPass,
+                       TestRenderPass* contributingPass);
 
 }  // namespace cc
 

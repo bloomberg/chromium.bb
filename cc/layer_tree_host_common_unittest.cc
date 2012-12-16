@@ -23,8 +23,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

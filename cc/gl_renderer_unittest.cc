@@ -19,7 +19,6 @@
 #include "ui/gfx/transform.h"
 
 using namespace WebKit;
-using namespace WebKitTests;
 
 using testing::_;
 using testing::AnyNumber;

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace WebKitTests {
+namespace cc {
 
 void FakeTimeSourceClient::onTimerTick()
 {
@@ -79,4 +79,4 @@ base::TimeTicks FakeDelayBasedTimeSource::now() const
     return m_now;
 }
 
-}
+}  // namespace cc

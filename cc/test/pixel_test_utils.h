@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CC_TEST_PIXEL_TEST_UTILS_H_
+#define CC_TEST_PIXEL_TEST_UTILS_H_
+
 #include "base/file_path.h"
 
 class SkBitmap;
 
 namespace cc {
-namespace test {
 
 // Encodes a bitmap into a PNG and write to disk. Returns true on success. The
 // parent directory does not have to exist.
@@ -21,5 +23,6 @@ bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap);
 // the given image. |ref_img_path| is absolute.
 bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path);
 
-}  // namespace test
 }  // namespace cc
+
+#endif  // CC_TEST_PIXEL_TEST_UTILS_H_

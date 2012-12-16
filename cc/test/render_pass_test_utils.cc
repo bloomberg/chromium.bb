@@ -13,8 +13,6 @@
 #include "cc/test/render_pass_test_common.h"
 #include "ui/gfx/rect.h"
 
-using WebKitTests::TestRenderPass;
-
 namespace cc {
 
 TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList,

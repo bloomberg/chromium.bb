@@ -23,9 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKit;
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 
@@ -233,8 +230,8 @@ protected:
     typename Types::LayerType* createSurface(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         typename Types::LayerType* layer = createLayer(parent, transform, position, bounds);
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createGrayscaleFilter(0.5));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
         layer->setFilters(filters);
         return layer;
     }
@@ -280,8 +277,8 @@ protected:
     typename Types::ContentLayerType* createDrawingSurface(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
     {
         typename Types::ContentLayerType* layer = createDrawingLayer(parent, transform, position, bounds, opaque);
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createGrayscaleFilter(0.5));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
         layer->setFilters(filters);
         return layer;
     }
@@ -1270,16 +1267,16 @@ protected:
         typename Types::ContentLayerType* opaqueLayer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
         typename Types::ContentLayerType* opacityLayer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
 
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(10));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
         blurLayer->setFilters(filters);
 
         filters.clear();
-        filters.append(WebFilterOperation::createGrayscaleFilter(0.5));
+        filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
         opaqueLayer->setFilters(filters);
 
         filters.clear();
-        filters.append(WebFilterOperation::createOpacityFilter(0.5));
+        filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5));
         opacityLayer->setFilters(filters);
 
         this->calcDrawEtc(parent);
@@ -2605,8 +2602,8 @@ protected:
         typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(10));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
         filteredSurface->setBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
@@ -2732,8 +2729,8 @@ protected:
         typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(100, 100), gfx::Size(50, 50), true);
 
         // Filters make the layers own surfaces.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(1));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(1));
         filteredSurface1->setBackgroundFilters(filters);
         filteredSurface2->setBackgroundFilters(filters);
 
@@ -2787,8 +2784,8 @@ protected:
         typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface. This filter is large enough that it goes outside the bottom of the clippingSurface.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(12));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(12));
         filteredSurface->setBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
@@ -2918,8 +2915,8 @@ protected:
         this->createReplicaLayer(filteredSurface, this->identityMatrix, gfx::PointF(300, 0), gfx::Size());
 
         // Filters make the layer own a surface.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(3));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
         filteredSurface->setBackgroundFilters(filters);
 
         this->calcDrawEtc(parent);
@@ -2966,8 +2963,8 @@ protected:
         typename Types::LayerType* aboveReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(200, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(3));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
         filteredSurface->setBackgroundFilters(filters);
 
         this->calcDrawEtc(parent);
@@ -3015,8 +3012,8 @@ protected:
         typename Types::LayerType* besideReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(200, 40), gfx::Size(10, 10), true);
 
         // Filters make the layer own a surface.
-        WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(3));
+        WebKit::WebFilterOperations filters;
+        filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
         filteredSurface->setBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.

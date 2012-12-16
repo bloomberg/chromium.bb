@@ -23,7 +23,7 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/skia_util.h"
 
-using cc::test::IsSameAsPNGFile;
+using cc::IsSameAsPNGFile;
 
 namespace ui {
 

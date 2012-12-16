@@ -64,10 +64,10 @@ class GLRendererPixelTest : public testing::Test {
     renderer_->getFramebufferPixels(pixels, viewport_rect);
 
     FilePath test_data_dir;
-    if (!PathService::Get(cc::test::DIR_TEST_DATA, &test_data_dir))
+    if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
       return false;
 
-    return test::IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file));
+    return IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file));
   }
 
   scoped_ptr<OutputSurface> output_surface_;

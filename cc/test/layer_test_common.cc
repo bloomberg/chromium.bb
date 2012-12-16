@@ -14,6 +14,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
+namespace cc {
 namespace LayerTestCommon {
 
 // Align with expected and actual output
@@ -55,3 +56,4 @@ void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
 }
 
 }  // namespace LayerTestCommon
+}  // namespace cc

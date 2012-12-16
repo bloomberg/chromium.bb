@@ -170,4 +170,4 @@ void FakeTiledLayerWithScaledBounds::didUpdateBounds()
     drawProperties().content_bounds = m_forcedContentBounds;
 }
 
-} // namespace
+}  // namespace cc

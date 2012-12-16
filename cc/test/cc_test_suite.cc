@@ -8,7 +8,6 @@
 #include "cc/test/paths.h"
 
 namespace cc {
-namespace test {
 
 CCTestSuite::CCTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
@@ -27,5 +26,4 @@ void CCTestSuite::Shutdown() {
   base::TestSuite::Shutdown();
 }
 
-}  // namespace test
 }  // namespace cc

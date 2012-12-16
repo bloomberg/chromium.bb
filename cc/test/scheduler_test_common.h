@@ -11,7 +11,7 @@
 #include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace WebKitTests {
+namespace cc {
 
 class FakeTimeSourceClient : public cc::TimeSourceClient {
 public:
@@ -120,6 +120,6 @@ public:
     int numFramesPending() const { return m_numFramesPending; }
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_TEST_SCHEDULER_TEST_COMMON_H_

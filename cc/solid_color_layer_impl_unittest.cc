@@ -15,8 +15,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace LayerTestCommon;
-
 namespace cc {
 namespace {
 
@@ -38,7 +36,7 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
 
-    verifyQuadsExactlyCoverRect(quadCuller.quadList(), visibleContentRect);
+    LayerTestCommon::verifyQuadsExactlyCoverRect(quadCuller.quadList(), visibleContentRect);
 }
 
 TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)

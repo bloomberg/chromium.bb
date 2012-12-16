@@ -35,21 +35,21 @@ scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFake
     return make_scoped_ptr(new CompositorFakeWebGraphicsContext3DWithTextureTracking(attrs));
 }
 
-WebGLId CompositorFakeWebGraphicsContext3DWithTextureTracking::createTexture()
+WebKit::WebGLId CompositorFakeWebGraphicsContext3DWithTextureTracking::createTexture()
 {
-    WebGLId texture = m_textures.size() + 1;
+    WebKit::WebGLId texture = m_textures.size() + 1;
     m_textures.push_back(texture);
     return texture;
 }
 
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::deleteTexture(WebGLId texture)
+void CompositorFakeWebGraphicsContext3DWithTextureTracking::deleteTexture(WebKit::WebGLId texture)
 {
-    std::vector<WebGLId>::iterator i(std::find(m_textures.begin(), m_textures.end(), texture));
+    std::vector<WebKit::WebGLId>::iterator i(std::find(m_textures.begin(), m_textures.end(), texture));
     if (i != m_textures.end())
       m_textures.erase(i);
 }
 
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::bindTexture(WGC3Denum /* target */, WebGLId texture)
+void CompositorFakeWebGraphicsContext3DWithTextureTracking::bindTexture(WebKit::WGC3Denum /* target */, WebKit::WebGLId texture)
 {
     m_usedTextures.insert(texture);
 }

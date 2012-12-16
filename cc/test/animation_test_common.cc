@@ -19,7 +19,7 @@ using cc::KeyframedTransformAnimationCurve;
 using cc::TimingFunction;
 using cc::TransformKeyframe;
 
-namespace {
+namespace cc {
 
 static int nextAnimationId = 0;
 
@@ -67,10 +67,6 @@ int addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY
     target.addAnimation(animation.Pass());
     return id;
 }
-
-} // namespace
-
-namespace cc {
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
     : m_duration(1)

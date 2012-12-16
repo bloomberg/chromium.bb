@@ -38,4 +38,4 @@ SharedQuadState* MockQuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> 
     return rawPtr;
 }
 
-} // namespace cc
+}  // namespace cc

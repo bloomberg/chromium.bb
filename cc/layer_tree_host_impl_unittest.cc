@@ -45,10 +45,6 @@
 #include <public/WebVideoFrame.h>
 #include <public/WebVideoFrameProvider.h>
 
-using namespace LayerTestCommon;
-using namespace WebKit;
-using namespace WebKitTests;
-
 using media::VideoFrame;
 using ::testing::Mock;
 using ::testing::Return;
@@ -1613,13 +1609,13 @@ class BlendStateTrackerContext: public FakeWebGraphicsContext3D {
 public:
     BlendStateTrackerContext() : m_blend(false) { }
 
-    virtual void enable(WGC3Denum cap)
+    virtual void enable(WebKit::WGC3Denum cap)
     {
         if (cap == GL_BLEND)
             m_blend = true;
     }
 
-    virtual void disable(WGC3Denum cap)
+    virtual void disable(WebKit::WGC3Denum cap)
     {
         if (cap == GL_BLEND)
             m_blend = false;
@@ -1917,7 +1913,7 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(0u, numGutterQuads);
         EXPECT_EQ(1u, frame.renderPasses[0]->quad_list.size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
@@ -1940,7 +1936,7 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(1u, numGutterQuads);
         EXPECT_EQ(1u, frame.renderPasses[0]->quad_list.size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
@@ -1963,7 +1959,7 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(4u, numGutterQuads);
         EXPECT_EQ(5u, frame.renderPasses[0]->quad_list.size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
+        LayerTestCommon::verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quad_list, gfx::Rect(gfx::Point(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
@@ -2022,12 +2018,12 @@ public:
         m_partialSwapRect = gfx::Rect(x, y, width, height);
     }
 
-    virtual WebString getString(WGC3Denum name)
+    virtual WebKit::WebString getString(WebKit::WGC3Denum name)
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_set_visibility");
+            return WebKit::WebString("GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_set_visibility");
 
-        return WebString();
+        return WebKit::WebString();
     }
 
     gfx::Rect partialSwapRect() const { return m_partialSwapRect; }
@@ -2137,8 +2133,6 @@ TEST_P(LayerTreeHostImplTest, rootLayerDoesntCreateExtraSurface)
     m_hostImpl->didDrawAllLayers(frame);
 }
 
-} // namespace
-
 class FakeLayerWithQuads : public LayerImpl {
 public:
     static scoped_ptr<LayerImpl> create(LayerTreeImpl* treeImpl, int id) { return scoped_ptr<LayerImpl>(new FakeLayerWithQuads(treeImpl, id)); }
@@ -2161,19 +2155,17 @@ private:
     }
 };
 
-namespace {
-
 class MockContext : public FakeWebGraphicsContext3D {
 public:
-    MOCK_METHOD1(useProgram, void(WebGLId program));
-    MOCK_METHOD5(uniform4f, void(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w));
-    MOCK_METHOD4(uniformMatrix4fv, void(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value));
-    MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
-    MOCK_METHOD1(getString, WebString(WGC3Denum name));
-    MOCK_METHOD0(getRequestableExtensionsCHROMIUM, WebString());
-    MOCK_METHOD1(enable, void(WGC3Denum cap));
-    MOCK_METHOD1(disable, void(WGC3Denum cap));
-    MOCK_METHOD4(scissor, void(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height));
+    MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
+    MOCK_METHOD5(uniform4f, void(WebKit::WGC3Dint location, WebKit::WGC3Dfloat x, WebKit::WGC3Dfloat y, WebKit::WGC3Dfloat z, WebKit::WGC3Dfloat w));
+    MOCK_METHOD4(uniformMatrix4fv, void(WebKit::WGC3Dint location, WebKit::WGC3Dsizei count, WebKit::WGC3Dboolean transpose, const WebKit::WGC3Dfloat* value));
+    MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode, WebKit::WGC3Dsizei count, WebKit::WGC3Denum type, WebKit::WGC3Dintptr offset));
+    MOCK_METHOD1(getString, WebKit::WebString(WebKit::WGC3Denum name));
+    MOCK_METHOD0(getRequestableExtensionsCHROMIUM, WebKit::WebString());
+    MOCK_METHOD1(enable, void(WebKit::WGC3Denum cap));
+    MOCK_METHOD1(disable, void(WebKit::WGC3Denum cap));
+    MOCK_METHOD4(scissor, void(WebKit::WGC3Dint x, WebKit::WGC3Dint y, WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height));
 };
 
 class MockContextHarness {
@@ -2199,14 +2191,14 @@ public:
 
         // Any other strings are empty
         EXPECT_CALL(*m_context, getString(_))
-            .WillRepeatedly(Return(WebString()));
+            .WillRepeatedly(Return(WebKit::WebString()));
 
         // Support for partial swap, if needed
         EXPECT_CALL(*m_context, getString(GL_EXTENSIONS))
-            .WillRepeatedly(Return(WebString("GL_CHROMIUM_post_sub_buffer")));
+            .WillRepeatedly(Return(WebKit::WebString("GL_CHROMIUM_post_sub_buffer")));
 
         EXPECT_CALL(*m_context, getRequestableExtensionsCHROMIUM())
-            .WillRepeatedly(Return(WebString("GL_CHROMIUM_post_sub_buffer")));
+            .WillRepeatedly(Return(WebKit::WebString("GL_CHROMIUM_post_sub_buffer")));
 
         // Any un-sanctioned calls to enable() are OK
         EXPECT_CALL(*m_context, enable(_))
@@ -2255,7 +2247,7 @@ public:
 
 TEST_P(LayerTreeHostImplTest, noPartialSwap)
 {
-    scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
+    scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
     MockContext* mockContext = static_cast<MockContext*>(outputSurface->Context3D());
     MockContextHarness harness(mockContext);
 
@@ -2324,20 +2316,20 @@ TEST_P(LayerTreeHostImplTest, partialSwap)
 
 class PartialSwapContext : public FakeWebGraphicsContext3D {
 public:
-    WebString getString(WGC3Denum name)
+    WebKit::WebString getString(WebKit::WGC3Denum name)
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_post_sub_buffer");
-        return WebString();
+            return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
+        return WebKit::WebString();
     }
 
-    WebString getRequestableExtensionsCHROMIUM()
+    WebKit::WebString getRequestableExtensionsCHROMIUM()
     {
-        return WebString("GL_CHROMIUM_post_sub_buffer");
+        return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
     }
 
     // Unlimited texture size.
-    virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value)
+    virtual void getIntegerv(WebKit::WGC3Denum pname, WebKit::WGC3Dint* value)
     {
         if (pname == GL_MAX_TEXTURE_SIZE)
             *value = 8192;
@@ -2553,7 +2545,7 @@ TEST_P(LayerTreeHostImplTest, context3DLostDuringInitialize)
     EXPECT_TRUE(m_hostImpl->resourceProvider());
 }
 
-// Fake WebGraphicsContext3D that will cause a failure if trying to use a
+// Fake WebKit::WebGraphicsContext3D that will cause a failure if trying to use a
 // resource that wasn't created by it (resources created by
 // FakeWebGraphicsContext3D have an id of 1).
 class StrictWebGraphicsContext3D : public FakeWebGraphicsContext3D {
@@ -2564,51 +2556,51 @@ public:
         m_nextTextureId = 8; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
     }
 
-    virtual WebGLId createBuffer() { return 2; }
-    virtual WebGLId createFramebuffer() { return 3; }
-    virtual WebGLId createProgram() { return 4; }
-    virtual WebGLId createRenderbuffer() { return 5; }
-    virtual WebGLId createShader(WGC3Denum) { return 6; }
+    virtual WebKit::WebGLId createBuffer() { return 2; }
+    virtual WebKit::WebGLId createFramebuffer() { return 3; }
+    virtual WebKit::WebGLId createProgram() { return 4; }
+    virtual WebKit::WebGLId createRenderbuffer() { return 5; }
+    virtual WebKit::WebGLId createShader(WebKit::WGC3Denum) { return 6; }
 
-    static const WebGLId kExternalTextureId = 7;
+    static const WebKit::WebGLId kExternalTextureId = 7;
 
-    virtual void deleteBuffer(WebGLId id)
+    virtual void deleteBuffer(WebKit::WebGLId id)
     {
         if (id != 2)
             ADD_FAILURE() << "Trying to delete buffer id " << id;
     }
 
-    virtual void deleteFramebuffer(WebGLId id)
+    virtual void deleteFramebuffer(WebKit::WebGLId id)
     {
         if (id != 3)
             ADD_FAILURE() << "Trying to delete framebuffer id " << id;
     }
 
-    virtual void deleteProgram(WebGLId id)
+    virtual void deleteProgram(WebKit::WebGLId id)
     {
         if (id != 4)
             ADD_FAILURE() << "Trying to delete program id " << id;
     }
 
-    virtual void deleteRenderbuffer(WebGLId id)
+    virtual void deleteRenderbuffer(WebKit::WebGLId id)
     {
         if (id != 5)
             ADD_FAILURE() << "Trying to delete renderbuffer id " << id;
     }
 
-    virtual void deleteShader(WebGLId id)
+    virtual void deleteShader(WebKit::WebGLId id)
     {
         if (id != 6)
             ADD_FAILURE() << "Trying to delete shader id " << id;
     }
 
-    virtual WebGLId createTexture()
+    virtual WebKit::WebGLId createTexture()
     {
         unsigned textureId = FakeWebGraphicsContext3D::createTexture();
         m_allocatedTextureIds.insert(textureId);
         return textureId;
     }
-    virtual void deleteTexture(WebGLId id)
+    virtual void deleteTexture(WebKit::WebGLId id)
     {
         if (id == kExternalTextureId)
             ADD_FAILURE() << "Trying to delete external texture";
@@ -2617,37 +2609,37 @@ public:
         m_allocatedTextureIds.erase(id);
     }
 
-    virtual void bindBuffer(WGC3Denum, WebGLId id)
+    virtual void bindBuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
     {
         if (id != 2 && id)
             ADD_FAILURE() << "Trying to bind buffer id " << id;
     }
 
-    virtual void bindFramebuffer(WGC3Denum, WebGLId id)
+    virtual void bindFramebuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
     {
         if (id != 3 && id)
             ADD_FAILURE() << "Trying to bind framebuffer id " << id;
     }
 
-    virtual void useProgram(WebGLId id)
+    virtual void useProgram(WebKit::WebGLId id)
     {
         if (id != 4)
             ADD_FAILURE() << "Trying to use program id " << id;
     }
 
-    virtual void bindRenderbuffer(WGC3Denum, WebGLId id)
+    virtual void bindRenderbuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
     {
         if (id != 5 && id)
             ADD_FAILURE() << "Trying to bind renderbuffer id " << id;
     }
 
-    virtual void attachShader(WebGLId program, WebGLId shader)
+    virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader)
     {
         if ((program != 4) || (shader != 6))
             ADD_FAILURE() << "Trying to attach shader id " << shader << " to program id " << program;
     }
 
-    virtual void bindTexture(WGC3Denum, WebGLId id)
+    virtual void bindTexture(WebKit::WGC3Denum, WebKit::WebGLId id)
     {
         if (id && id != kExternalTextureId && !ContainsKey(m_allocatedTextureIds, id))
             ADD_FAILURE() << "Trying to bind texture id " << id;
@@ -2657,8 +2649,8 @@ private:
     base::hash_set<unsigned> m_allocatedTextureIds;
 };
 
-// Fake WebVideoFrame wrapper of media::VideoFrame.
-class FakeVideoFrame: public WebVideoFrame {
+// Fake WebKit::WebVideoFrame wrapper of media::VideoFrame.
+class FakeVideoFrame: public WebKit::WebVideoFrame {
 public:
     explicit FakeVideoFrame(const scoped_refptr<VideoFrame>& frame) : m_frame(frame) { }
     virtual ~FakeVideoFrame() { }
@@ -2674,7 +2666,7 @@ public:
     virtual WebKit::WebRect visibleRect() const { NOTREACHED(); return WebKit::WebRect(0, 0, 0, 0); }
     virtual WebKit::WebSize textureSize() const { NOTREACHED(); return WebKit::WebSize(4, 4); }
 
-    static VideoFrame* toVideoFrame(WebVideoFrame* web_video_frame) {
+    static VideoFrame* toVideoFrame(WebKit::WebVideoFrame* web_video_frame) {
         FakeVideoFrame* wrapped_frame =
             static_cast<FakeVideoFrame*>(web_video_frame);
         if (wrapped_frame)
@@ -2687,7 +2679,7 @@ private:
 };
 
 // Fake video frame provider that always provides the same FakeVideoFrame.
-class FakeVideoFrameProvider: public WebVideoFrameProvider {
+class FakeVideoFrameProvider: public WebKit::WebVideoFrameProvider {
 public:
     FakeVideoFrameProvider() : m_frame(0), m_client(0) { }
     virtual ~FakeVideoFrameProvider()
@@ -2697,46 +2689,46 @@ public:
     }
 
     virtual void setVideoFrameProviderClient(Client* client) { m_client = client; }
-    virtual WebVideoFrame* getCurrentFrame() { return m_frame; }
-    virtual void putCurrentFrame(WebVideoFrame*) { }
+    virtual WebKit::WebVideoFrame* getCurrentFrame() { return m_frame; }
+    virtual void putCurrentFrame(WebKit::WebVideoFrame*) { }
 
-    void setFrame(WebVideoFrame* frame) { m_frame = frame; }
+    void setFrame(WebKit::WebVideoFrame* frame) { m_frame = frame; }
 
 private:
-    WebVideoFrame* m_frame;
+    WebKit::WebVideoFrame* m_frame;
     Client* m_client;
 };
 
 class StrictWebGraphicsContext3DWithIOSurface : public StrictWebGraphicsContext3D {
 public:
-    virtual WebString getString(WGC3Denum name) OVERRIDE
+    virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
+            return WebKit::WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
-        return WebString();
+        return WebKit::WebString();
     }
 };
 
 class FakeWebGraphicsContext3DWithIOSurface : public FakeWebGraphicsContext3D {
 public:
-    virtual WebString getString(WGC3Denum name) OVERRIDE
+    virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
+            return WebKit::WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
-        return WebString();
+        return WebKit::WebString();
     }
 };
 
 class FakeWebScrollbarThemeGeometryNonEmpty : public FakeWebScrollbarThemeGeometry {
-    virtual WebRect trackRect(WebScrollbar*) OVERRIDE { return WebRect(0, 0, 10, 10); }
-    virtual WebRect thumbRect(WebScrollbar*) OVERRIDE { return WebRect(0, 5, 5, 2); }
-    virtual void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) OVERRIDE
+    virtual WebKit::WebRect trackRect(WebKit::WebScrollbar*) OVERRIDE { return WebKit::WebRect(0, 0, 10, 10); }
+    virtual WebKit::WebRect thumbRect(WebKit::WebScrollbar*) OVERRIDE { return WebKit::WebRect(0, 5, 5, 2); }
+    virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE
     {
-        thumb = WebRect(0, 5, 5, 2);
-        startTrack = WebRect(0, 5, 0, 5);
-        endTrack = WebRect(0, 0, 0, 5);
+        thumb = WebKit::WebRect(0, 5, 5, 2);
+        startTrack = WebKit::WebRect(0, 5, 0, 5);
+        endTrack = WebKit::WebRect(0, 0, 0, 5);
     }
 };
 
@@ -2922,7 +2914,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostOutputSurface)
 
     unsigned numResources = m_hostImpl->resourceProvider()->numResources();
 
-    // Lose the WebGraphicsContext3D, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
+    // Lose the WebKit::WebGraphicsContext3D, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
     // that will warn if any resource from the previous context gets used.
     m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<OutputSurface>());
 
@@ -2931,7 +2923,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostOutputSurface)
     for (unsigned i = 0; i < numResources; ++i)
         m_hostImpl->resourceProvider()->createResourceFromExternalTexture(StrictWebGraphicsContext3D::kExternalTextureId);
 
-    // The WebVideoFrameProvider is expected to recreate its textures after a
+    // The WebKit::WebVideoFrameProvider is expected to recreate its textures after a
     // lost output surface (or not serve a frame).
     hwProvider.setFrame(0);
     providerScaled.setFrame(0);
@@ -2955,7 +2947,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostOutputSurface)
     m_hostImpl->swapBuffers();
 }
 
-// Fake WebGraphicsContext3D that tracks the number of textures in use.
+// Fake WebKit::WebGraphicsContext3D that tracks the number of textures in use.
 class TrackingWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 public:
     TrackingWebGraphicsContext3D()
@@ -2963,16 +2955,16 @@ public:
         , m_numTextures(0)
     { }
 
-    virtual WebGLId createTexture() OVERRIDE
+    virtual WebKit::WebGLId createTexture() OVERRIDE
     {
-        WebGLId id = FakeWebGraphicsContext3D::createTexture();
+        WebKit::WebGLId id = FakeWebGraphicsContext3D::createTexture();
 
         m_textures[id] = true;
         ++m_numTextures;
         return id;
     }
 
-    virtual void deleteTexture(WebGLId id) OVERRIDE
+    virtual void deleteTexture(WebKit::WebGLId id) OVERRIDE
     {
         if (m_textures.find(id) == m_textures.end())
             return;
@@ -2981,18 +2973,18 @@ public:
         --m_numTextures;
     }
 
-    virtual WebString getString(WGC3Denum name) OVERRIDE
+    virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
+            return WebKit::WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
-        return WebString();
+        return WebKit::WebString();
     }
 
     unsigned numTextures() const { return m_numTextures; }
 
 private:
-    base::hash_map<WebGLId, bool> m_textures;
+    base::hash_map<WebKit::WebGLId, bool> m_textures;
     unsigned m_numTextures;
 };
 
@@ -3063,8 +3055,8 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
 
 class MockDrawQuadsToFillScreenContext : public FakeWebGraphicsContext3D {
 public:
-    MOCK_METHOD1(useProgram, void(WebGLId program));
-    MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
+    MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
+    MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode, WebKit::WGC3Dsizei count, WebKit::WGC3Denum type, WebKit::WGC3Dintptr offset));
 };
 
 TEST_P(LayerTreeHostImplTest, hasTransparentBackground)
@@ -4897,7 +4889,7 @@ protected:
     {
         // Creates an output surface with a parent to use a delegating renderer.
         WebKit::WebGraphicsContext3D::Attributes attrs;
-        return FakeOutputSurface::CreateDelegating3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateDelegating3d(CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
     }
 
     void drawFrameAndTestDamage(const gfx::RectF& expectedDamage) {

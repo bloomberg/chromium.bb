@@ -64,7 +64,7 @@ private:
 static inline scoped_ptr<cc::OutputSurface> createFakeOutputSurface()
 {
     return FakeOutputSurface::Create3d(
-        WebKit::CompositorFakeWebGraphicsContext3D::create(
+        CompositorFakeWebGraphicsContext3D::create(
             WebKit::WebGraphicsContext3D::Attributes())
         .PassAs<WebKit::WebGraphicsContext3D>())
         .PassAs<cc::OutputSurface>();

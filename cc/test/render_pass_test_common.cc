@@ -17,9 +17,7 @@
 #include "cc/resource_provider.h"
 #include "ui/gfx/transform.h"
 
-namespace WebKitTests {
-
-using cc::DrawQuad;
+namespace cc {
 
 void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProvider) {
   gfx::Rect rect(0, 0, 100, 100);
@@ -170,4 +168,4 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
   AppendSharedQuadState(shared_state.Pass());
 }
 
-}  // namespace WebKitTests
+}  // namespace cc

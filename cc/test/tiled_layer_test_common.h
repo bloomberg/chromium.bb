@@ -130,5 +130,6 @@ protected:
     gfx::Size m_forcedContentBounds;
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_TEST_TILED_LAYER_TEST_COMMON_H_

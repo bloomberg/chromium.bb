@@ -9,6 +9,7 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
+namespace {
 
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
@@ -118,4 +119,5 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsBothScale) {
   VerifyTilesExactlyCoverRect(scale, gfx::Rect(2014, 1579, 867, 1033));
 }
 
+}  // namespace
 }  // namespace cc

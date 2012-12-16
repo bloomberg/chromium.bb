@@ -9,6 +9,7 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
+namespace {
 
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
@@ -41,4 +42,5 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   EXPECT_TRUE(remaining.IsEmpty());
 }
 
+}  // namespace
 }  // namespace cc

@@ -67,4 +67,4 @@ TEST_F(HashPairTest, IntegerPairs) {
                    (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
 }
 
-}  // anonymous namespace
+}  // namespace

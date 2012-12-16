@@ -16,7 +16,7 @@
 
 using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;
-using WebKitTests::TestRenderPass;
+using cc::TestRenderPass;
 
 namespace cc {
 namespace {

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 
-namespace WebKit {
+namespace cc {
 
 // Test stub for WebGraphicsContext3D. Returns canned values needed for compositor initialization.
 class CompositorFakeWebGraphicsContext3D : public FakeWebGraphicsContext3D {
@@ -18,11 +18,11 @@ public:
         return make_scoped_ptr(new CompositorFakeWebGraphicsContext3D(attrs));
     }
 
-    virtual bool makeContextCurrent() { return true; }
-    virtual WebGLId createProgram() { return 1; }
-    virtual WebGLId createShader(WGC3Denum) { return 1; }
-    virtual void getShaderiv(WebGLId, WGC3Denum, WGC3Dint* value) { *value = 1; }
-    virtual void getProgramiv(WebGLId, WGC3Denum, WGC3Dint* value) { *value = 1; }
+    virtual bool makeContextCurrent();
+    virtual WebKit::WebGLId createProgram();
+    virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
+    virtual void getShaderiv(WebKit::WebGLId, WebKit::WGC3Denum, WebKit::WGC3Dint* value);
+    virtual void getProgramiv(WebKit::WebGLId, WebKit::WGC3Denum, WebKit::WGC3Dint* value);
 
 protected:
     explicit CompositorFakeWebGraphicsContext3D(Attributes attrs)
@@ -31,6 +31,6 @@ protected:
     }
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_TEST_COMPOSITOR_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

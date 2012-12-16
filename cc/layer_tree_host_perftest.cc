@@ -106,7 +106,7 @@ class LayerTreeHostPerfTest : public ThreadedTest {
   base::TimeTicks start_time_;
   int num_draws_;
   std::string test_name_;
-  WebKitTests::FakeContentLayerClient fake_delegate_;
+  FakeContentLayerClient fake_delegate_;
 };
 
 class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
@@ -241,7 +241,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
   void readTestFile(std::string name) {
     test_name_ = name;
     FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(cc::test::DIR_TEST_DATA, &test_data_dir));
+    ASSERT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
     FilePath json_file = test_data_dir.AppendASCII(name + ".json");
     std::string json;
     ASSERT_TRUE(file_util::ReadFileToString(json_file, &json));

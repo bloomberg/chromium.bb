@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
+namespace {
 
 TEST(TilePriorityTest, TimeForBoundsToIntersectWithScroll) {
   gfx::Rect target(0, 0, 800, 600);
@@ -60,4 +61,5 @@ TEST(TilePriorityTest, ManhattanDistanceBetweenRects) {
       gfx::Rect(0, 0, 100, 100), gfx::Rect(200, 200, 100, 100)));
 }
 
+}  // namespace
 }  // namespace cc

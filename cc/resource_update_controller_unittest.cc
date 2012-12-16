@@ -14,7 +14,6 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using namespace WebKit;
-using namespace WebKitTests;
 using testing::Test;
 
 namespace cc {

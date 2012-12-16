@@ -29,4 +29,4 @@ void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
     tile_size_ = tile_size;
 }
 
-}
+}  // namespace cc
