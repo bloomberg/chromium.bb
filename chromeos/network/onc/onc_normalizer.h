@@ -33,7 +33,8 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
   // Dispatch to the right normalization function according to |signature|.
   virtual scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
-      const base::DictionaryValue& onc_object) OVERRIDE;
+      const base::DictionaryValue& onc_object,
+      bool* error) OVERRIDE;
 
   void NormalizeIPsec(base::DictionaryValue* ipsec);
   void NormalizeVPN(base::DictionaryValue* vpn);

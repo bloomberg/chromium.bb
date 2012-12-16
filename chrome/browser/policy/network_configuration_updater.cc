@@ -11,12 +11,10 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
-
-const char NetworkConfigurationUpdater::kEmptyConfiguration[] =
-    "{\"NetworkConfigurations\":[],\"Certificates\":[]}";
 
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     PolicyService* policy_service,
@@ -96,7 +94,7 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
   // An empty string is not a valid ONC and generates warnings and
   // errors. Replace by a valid empty configuration.
   if (new_network_config.empty())
-    new_network_config = kEmptyConfiguration;
+    new_network_config = chromeos::onc::kEmptyUnencryptedConfiguration;
 
   network_library_->LoadOncNetworks(new_network_config, "", onc_source,
                                     allow_web_trust_);

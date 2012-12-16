@@ -1026,6 +1026,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              const std::string& passphrase,
                                              onc::ONCSource source,
                                              bool allow_web_trust_from_policy) {
+  VLOG(2) << __func__ << ": called on " << onc_blob;
   NetworkProfile* profile = NULL;
   bool from_policy = (source == onc::ONC_SOURCE_USER_POLICY ||
                       source == onc::ONC_SOURCE_DEVICE_POLICY);
@@ -1037,19 +1038,17 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   if (from_policy) {
     profile = GetProfileForType(GetProfileTypeForSource(source));
     if (profile == NULL) {
-      DLOG(WARNING) << "Profile for ONC source "
-                    << onc::GetSourceAsString(source)
-                    << " doesn't exist.";
-      return false;
+      VLOG(2) << "Profile for ONC source " << onc::GetSourceAsString(source)
+              << " doesn't exist.";
+      return true;
     }
   }
 
-  VLOG(2) << __func__ << ": called on " << onc_blob;
   scoped_ptr<base::DictionaryValue> root_dict =
       onc::ReadDictionaryFromJson(onc_blob);
   if (root_dict.get() == NULL) {
-    LOG(WARNING) << "ONC loaded from " << onc::GetSourceAsString(source)
-                 << " is not a valid JSON dictionary.";
+    LOG(ERROR) << "ONC loaded from " << onc::GetSourceAsString(source)
+               << " is not a valid JSON dictionary.";
     return false;
   }
 
@@ -1059,8 +1058,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   if (onc_type == onc::kEncryptedConfiguration) {
     root_dict = onc::Decrypt(passphrase, *root_dict);
     if (root_dict.get() == NULL) {
-      LOG(WARNING) << "Couldn't decrypt the ONC from "
-                   << onc::GetSourceAsString(source);
+      LOG(ERROR) << "Couldn't decrypt the ONC from "
+                 << onc::GetSourceAsString(source);
       return false;
     }
   }
@@ -1073,19 +1072,22 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                            from_policy);
 
   // Unknown fields are removed from the result.
-  scoped_ptr<base::DictionaryValue> validation_result =
-      validator.ValidateAndRepairObject(
-          &onc::kUnencryptedConfigurationSignature,
-          *root_dict);
+  onc::Validator::Result validation_result;
+  validator.ValidateAndRepairObject(&onc::kToplevelConfigurationSignature,
+                                    *root_dict,
+                                    &validation_result);
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
-                          validation_result.get() != NULL);
+                          validation_result == onc::Validator::VALID);
   }
 
-  if (validation_result.get() == NULL) {
-    LOG(WARNING) << "ONC from source " << source
-                 << " is invalid and couldn't be repaired.";
+  if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
+    LOG(WARNING) << "ONC from " << onc::GetSourceAsString(source)
+                 << " produced warnings.";
+  } else if (validation_result == onc::Validator::INVALID) {
+    LOG(ERROR) << "ONC from " << onc::GetSourceAsString(source)
+               << " is invalid and couldn't be repaired.";
   }
 
   const base::ListValue* certificates;
@@ -1097,19 +1099,14 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       onc::kNetworkConfigurations,
       &network_configs);
 
-  // At least one of NetworkConfigurations or Certificates is required.
-  LOG_IF(WARNING, (!has_network_configurations && !has_certificates))
-      << "ONC from source " << source
-      << " has neither NetworkConfigurations nor Certificates.";
-
   if (has_certificates) {
     VLOG(2) << "ONC file has " << certificates->GetSize() << " certificates";
 
     onc::CertificateImporter cert_importer(source, allow_web_trust_from_policy);
     if (cert_importer.ParseAndStoreCertificates(*certificates) !=
         onc::CertificateImporter::IMPORT_OK) {
-      LOG(WARNING) << "Cannot parse some of the certificates in the ONC from "
-                   << onc::GetSourceAsString(source);
+      LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
+                 << onc::GetSourceAsString(source);
       return false;
     }
   }
@@ -1129,8 +1126,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       bool marked_for_removal = false;
       Network* network = parser.ParseNetwork(i, &marked_for_removal);
       if (!network) {
-        LOG(WARNING) << "Error during parsing network at index " << i
-                     << " from ONC source " << onc::GetSourceAsString(source);
+        LOG(ERROR) << "Error during ONC parsing network at index " << i
+                   << " from " << onc::GetSourceAsString(source);
         return false;
       }
 
@@ -1201,8 +1198,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
         if (ethernet) {
           CallConfigureService(ethernet->unique_id(), &dict);
         } else {
-          DLOG(WARNING) << "Tried to import ONC with an Ethernet network when "
-                        << "there is no active Ethernet connection.";
+          LOG(WARNING) << "Tried to import ONC with an Ethernet network when "
+                       << "there is no active Ethernet connection.";
         }
       } else {
         CallConfigureService(network->unique_id(), &dict);

@@ -49,9 +49,6 @@ class NetworkConfigurationUpdater
   // request it.
   void set_allow_web_trust(bool allow) { allow_web_trust_ = allow; }
 
-  // Empty network configuration blob.
-  static const char kEmptyConfiguration[];
-
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
   // changed.

@@ -1,0 +1,8 @@
+{   "GUID": "guid",
+    "Recommended": ["Name"],
+    "Type": "Ethernet",
+    "Name": "name",
+    "Ethernet": {
+        "Authentication": "None"
+    }
+}

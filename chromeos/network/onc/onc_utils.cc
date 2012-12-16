@@ -27,6 +27,10 @@ const char kUnableToDecode[] = "Unable to decode encrypted ONC";
 
 }  // namespace
 
+const char kEmptyUnencryptedConfiguration[] =
+    "{\"Type\":\"UnencryptedConfiguration\",\"NetworkConfigurations\":[],"
+    "\"Certificates\":[]}";
+
 scoped_ptr<base::DictionaryValue> ReadDictionaryFromJson(
     const std::string& json) {
   std::string error;
@@ -64,7 +68,7 @@ scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
       !root.GetInteger(encrypted::kIterations, &iterations) ||
       !root.GetString(encrypted::kSalt, &salt) ||
       !root.GetString(encrypted::kStretch, &stretch_method) ||
-      !root.GetString(encrypted::kType, &onc_type) ||
+      !root.GetString(kType, &onc_type) ||
       onc_type != kEncryptedConfiguration) {
 
     ONC_LOG_ERROR("Encrypted ONC malformed.");

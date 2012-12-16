@@ -123,7 +123,7 @@ std::string ValueTypeToString(Value::Type type) {
     "dictionary",
     "list"
   };
-  DCHECK(static_cast<size_t>(type) < arraysize(strings));
+  CHECK(static_cast<size_t>(type) < arraysize(strings));
   return std::string(strings[type]);
 }
 

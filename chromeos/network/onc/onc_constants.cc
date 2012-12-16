@@ -99,7 +99,6 @@ const char kPBKDF2[] = "PBKDF2";
 const char kSHA1[] = "SHA1";
 const char kSalt[] = "Salt";
 const char kStretch[] = "Stretch";
-const char kType[] = "Type";
 }  // namespace encrypted
 
 namespace eap {

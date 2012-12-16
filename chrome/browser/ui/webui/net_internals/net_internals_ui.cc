@@ -1493,8 +1493,8 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   chromeos::NetworkLibrary* cros_network =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (!cros_network->LoadOncNetworks(onc_blob, passcode,
-                                chromeos::onc::ONC_SOURCE_USER_IMPORT,
-                                false)) {  // allow web trust from policy
+                                     chromeos::onc::ONC_SOURCE_USER_IMPORT,
+                                     false)) {  // allow web trust from policy
     LOG(ERROR) << "Unable to load ONC.";
     error = "Unable to load ONC configuration.";
   }

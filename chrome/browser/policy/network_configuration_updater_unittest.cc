@@ -10,6 +10,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,8 +24,6 @@ using testing::_;
 namespace policy {
 
 static const char kFakeONC[] = "{ \"GUID\": \"1234\" }";
-static const char* kEmptyConfiguration =
-    NetworkConfigurationUpdater::kEmptyConfiguration;
 
 class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*>{
@@ -68,7 +67,7 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
   // Initially, only the device policy is applied. The user policy is only
   // applied after the user profile was initialized.
   const char* device_onc = GetParam() == key::kDeviceOpenNetworkConfiguration ?
-      kFakeONC : kEmptyConfiguration;
+      kFakeONC : chromeos::onc::kEmptyUnencryptedConfiguration;
   EXPECT_CALL(network_library_, LoadOncNetworks(
       device_onc, "", chromeos::onc::ONC_SOURCE_DEVICE_POLICY, _));
 
@@ -82,7 +81,10 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
     EXPECT_CALL(network_library_, LoadOncNetworks(
         kFakeONC, "", NameToONCSource(GetParam()), _));
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _));
+        chromeos::onc::kEmptyUnencryptedConfiguration,
+        "",
+        Ne(NameToONCSource(GetParam())),
+        _));
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 
@@ -138,7 +140,10 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
 
     // In the current implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _));
+        chromeos::onc::kEmptyUnencryptedConfiguration,
+        "",
+        Ne(NameToONCSource(GetParam())),
+        _));
 
     PolicyMap policy;
     policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -149,11 +154,11 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     // Another update is expected if the policy goes away. In the current
     // implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "",
+        chromeos::onc::kEmptyUnencryptedConfiguration, "",
         chromeos::onc::ONC_SOURCE_DEVICE_POLICY, _));
 
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "",
+        chromeos::onc::kEmptyUnencryptedConfiguration, "",
         chromeos::onc::ONC_SOURCE_USER_POLICY, _));
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));

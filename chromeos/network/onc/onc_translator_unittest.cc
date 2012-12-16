@@ -41,7 +41,7 @@ INSTANTIATE_TEST_CASE_P(
     ONCTranslatorOncToShillTest,
     ONCTranslatorOncToShillTest,
     ::testing::Values(
-        std::make_pair("valid.onc", "shill_ethernet.json"),
+        std::make_pair("managed_ethernet.onc", "shill_ethernet.json"),
         std::make_pair("valid_l2tpipsec.onc", "shill_l2tpipsec.json"),
         std::make_pair("valid_openvpn.onc", "shill_openvpn.json")));
 

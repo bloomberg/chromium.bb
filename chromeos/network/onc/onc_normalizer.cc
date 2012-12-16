@@ -25,14 +25,19 @@ scoped_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
     const OncValueSignature* object_signature,
     const base::DictionaryValue& onc_object) {
   CHECK(object_signature != NULL);
-  return MapObject(*object_signature, onc_object);
+  bool error = false;
+  scoped_ptr<base::DictionaryValue> result =
+      MapObject(*object_signature, onc_object, &error);
+  DCHECK(!error);
+  return result.Pass();
 }
 
 scoped_ptr<base::DictionaryValue> Normalizer::MapObject(
     const OncValueSignature& signature,
-    const base::DictionaryValue& onc_object) {
+    const base::DictionaryValue& onc_object,
+    bool* error) {
   scoped_ptr<base::DictionaryValue> normalized =
-      Mapper::MapObject(signature, onc_object);
+      Mapper::MapObject(signature, onc_object, error);
 
   if (normalized.get() == NULL)
     return scoped_ptr<base::DictionaryValue>();

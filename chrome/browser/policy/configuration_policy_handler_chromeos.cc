@@ -52,7 +52,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     scoped_ptr<base::DictionaryValue> root_dict =
         onc::ReadDictionaryFromJson(onc_blob);
     if (root_dict.get() == NULL) {
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR);
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
       return false;
     }
 
@@ -64,16 +64,18 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
                              true);  // Validate for managed ONC
 
     // ONC policies are always unencrypted.
+    onc::Validator::Result validation_result;
     root_dict = validator.ValidateAndRepairObject(
-        &onc::kUnencryptedConfigurationSignature,
-        *root_dict);
-
-    if (root_dict.get() == NULL) {
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR);
-      // Don't reject the policy, as some networks or certificates could still
-      // be applied.
-      return true;
+        &onc::kToplevelConfigurationSignature, *root_dict, &validation_result);
+    if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
+      errors->AddError(policy_name(),
+                       IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
+    } else if (validation_result == onc::Validator::INVALID) {
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED);
     }
+
+    // In any case, don't reject the policy as some networks or certificates
+    // could still be applied.
   }
 
   return true;

@@ -28,12 +28,6 @@ const OncValueSignature kStringListSignature = {
 const OncValueSignature kIPConfigListSignature = {
   Value::TYPE_LIST, NULL, &kIPConfigSignature
 };
-const OncValueSignature kCertificateListSignature = {
-  Value::TYPE_LIST, NULL, &kCertificateSignature
-};
-const OncValueSignature kNetworkConfigurationListSignature = {
-  Value::TYPE_LIST, NULL, &kNetworkConfigurationSignature
-};
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
   { certificate::kCommonName, NULL, &kStringSignature },
@@ -236,10 +230,18 @@ const OncFieldSignature certificate_fields[] = {
   { NULL }
 };
 
-const OncFieldSignature unencrypted_configuration_fields[] = {
+const OncFieldSignature toplevel_configuration_fields[] = {
   { kCertificates, NULL, &kCertificateListSignature },
   { kNetworkConfigurations, NULL, &kNetworkConfigurationListSignature },
   { kType, NULL, &kStringSignature },
+  { encrypted::kCipher, NULL, &kStringSignature },
+  { encrypted::kCiphertext, NULL, &kStringSignature },
+  { encrypted::kHMAC, NULL, &kStringSignature },
+  { encrypted::kHMACMethod, NULL, &kStringSignature },
+  { encrypted::kIV, NULL, &kStringSignature },
+  { encrypted::kIterations, NULL, &kIntegerSignature },
+  { encrypted::kSalt, NULL, &kStringSignature },
+  { encrypted::kStretch, NULL, &kStringSignature },
   { NULL }
 };
 
@@ -293,8 +295,14 @@ const OncValueSignature kCertificateSignature = {
 const OncValueSignature kNetworkConfigurationSignature = {
   Value::TYPE_DICTIONARY, network_configuration_fields, NULL
 };
-const OncValueSignature kUnencryptedConfigurationSignature = {
-  Value::TYPE_DICTIONARY, unencrypted_configuration_fields, NULL
+const OncValueSignature kCertificateListSignature = {
+  Value::TYPE_LIST, NULL, &kCertificateSignature
+};
+const OncValueSignature kNetworkConfigurationListSignature = {
+  Value::TYPE_LIST, NULL, &kNetworkConfigurationSignature
+};
+const OncValueSignature kToplevelConfigurationSignature = {
+  Value::TYPE_DICTIONARY, toplevel_configuration_fields, NULL
 };
 
 const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,

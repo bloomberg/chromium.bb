@@ -18,6 +18,10 @@ class DictionaryValue;
 namespace chromeos {
 namespace onc {
 
+// A valid but empty (no networks and no certificates) and unencrypted
+// configuration.
+CHROMEOS_EXPORT extern const char kEmptyUnencryptedConfiguration[];
+
 // Parses |json| according to the JSON format. If |json| is a JSON formatted
 // dictionary, the function returns the dictionary as a DictionaryValue.
 // Otherwise returns NULL.

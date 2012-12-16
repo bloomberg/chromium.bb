@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <string>
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -15,6 +17,33 @@
 
 namespace chromeos {
 namespace onc {
+
+namespace {
+
+std::string ValueToString(const base::Value& value) {
+  std::string json;
+  base::JSONWriter::Write(&value, &json);
+  return json;
+}
+
+// Copied from policy/configuration_policy_handler.cc.
+// TODO(pneubeck): move to a common place like base/.
+std::string ValueTypeToString(Value::Type type) {
+  static const char* strings[] = {
+    "null",
+    "boolean",
+    "integer",
+    "double",
+    "string",
+    "binary",
+    "dictionary",
+    "list"
+  };
+  CHECK(static_cast<size_t>(type) < arraysize(strings));
+  return strings[type];
+}
+
+}  // namespace
 
 Validator::Validator(
     bool error_on_unknown_field,
@@ -32,10 +61,23 @@ Validator::~Validator() {
 
 scoped_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
     const OncValueSignature* object_signature,
-    const base::DictionaryValue& onc_object) {
+    const base::DictionaryValue& onc_object,
+    Result* result) {
   CHECK(object_signature != NULL);
+  *result = VALID;
+  error_or_warning_found_ = false;
+  bool error = false;
   scoped_ptr<base::Value> result_value =
-      MapValue(*object_signature, onc_object);
+      MapValue(*object_signature, onc_object, &error);
+  if (error) {
+    *result = INVALID;
+    result_value.reset();
+  } else if (error_or_warning_found_) {
+    *result = VALID_WITH_WARNINGS;
+  }
+  // The return value should be NULL if, and only if, |result| equals INVALID.
+  DCHECK_EQ(result_value.get() == NULL, *result == INVALID);
+
   base::DictionaryValue* result_dict = NULL;
   if (result_value.get() != NULL) {
     result_value.release()->GetAsDictionary(&result_dict);
@@ -47,14 +89,19 @@ scoped_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
 
 scoped_ptr<base::Value> Validator::MapValue(
     const OncValueSignature& signature,
-    const base::Value& onc_value) {
+    const base::Value& onc_value,
+    bool* error) {
   if (onc_value.GetType() != signature.onc_type) {
-    DVLOG(1) << "Wrong type. Expected " << signature.onc_type
-             << ", but found " << onc_value.GetType();
+    LOG(ERROR) << ErrorHeader() << "Found value '" << onc_value
+               << "' of type '" << ValueTypeToString(onc_value.GetType())
+               << "', but type '" << ValueTypeToString(signature.onc_type)
+               << "' is required.";
+    error_or_warning_found_ = *error = true;
     return scoped_ptr<base::Value>();
   }
 
-  scoped_ptr<base::Value> repaired = Mapper::MapValue(signature, onc_value);
+  scoped_ptr<base::Value> repaired =
+      Mapper::MapValue(signature, onc_value, error);
   if (repaired.get() != NULL)
     CHECK_EQ(repaired->GetType(), signature.onc_type);
   return repaired.Pass();
@@ -62,11 +109,14 @@ scoped_ptr<base::Value> Validator::MapValue(
 
 scoped_ptr<base::DictionaryValue> Validator::MapObject(
     const OncValueSignature& signature,
-    const base::DictionaryValue& onc_object) {
+    const base::DictionaryValue& onc_object,
+    bool* error) {
   scoped_ptr<base::DictionaryValue> repaired(new base::DictionaryValue);
 
   bool valid;
-  if (&signature == &kNetworkConfigurationSignature)
+  if (&signature == &kToplevelConfigurationSignature)
+    valid = ValidateToplevelConfiguration(onc_object, repaired.get());
+  else if (&signature == &kNetworkConfigurationSignature)
     valid = ValidateNetworkConfiguration(onc_object, repaired.get());
   else if (&signature == &kEthernetSignature)
     valid = ValidateEthernet(onc_object, repaired.get());
@@ -93,10 +143,52 @@ scoped_ptr<base::DictionaryValue> Validator::MapObject(
   else
     valid = ValidateObjectDefault(signature, onc_object, repaired.get());
 
-  if (valid)
+  if (valid) {
     return repaired.Pass();
-  else
+  } else {
+    error_or_warning_found_ = *error = true;
     return scoped_ptr<base::DictionaryValue>();
+  }
+}
+
+scoped_ptr<base::Value> Validator::MapField(
+    const std::string& field_name,
+    const OncValueSignature& object_signature,
+    const base::Value& onc_value,
+    bool* found_unknown_field,
+    bool* error) {
+  path_.push_back(field_name);
+  bool current_field_unknown = false;
+  scoped_ptr<base::Value> result = Mapper::MapField(
+      field_name, object_signature, onc_value, &current_field_unknown, error);
+
+  DCHECK_EQ(field_name, path_.back());
+  path_.pop_back();
+
+  if (current_field_unknown) {
+    error_or_warning_found_ = *found_unknown_field = true;
+    std::string message = MessageHeader(error_on_unknown_field_)
+        + "Field name '" + field_name + "' is unknown.";
+    if (error_on_unknown_field_)
+      LOG(ERROR) << message;
+    else
+      LOG(WARNING) << message;
+  }
+
+  return result.Pass();
+}
+
+scoped_ptr<base::Value> Validator::MapEntry(int index,
+                                            const OncValueSignature& signature,
+                                            const base::Value& onc_value,
+                                            bool* error) {
+  std::string str = base::IntToString(index);
+  path_.push_back(str);
+  scoped_ptr<base::Value> result =
+      Mapper::MapEntry(index, signature, onc_value, error);
+  DCHECK_EQ(str, path_.back());
+  path_.pop_back();
+  return result.Pass();
 }
 
 bool Validator::ValidateObjectDefault(
@@ -107,16 +199,14 @@ bool Validator::ValidateObjectDefault(
   bool nested_error_occured = false;
   MapFields(signature, onc_object, &found_unknown_field, &nested_error_occured,
             result);
+
+  if (found_unknown_field && error_on_unknown_field_) {
+    DVLOG(1) << "Unknown field names are errors: Aborting.";
+    return false;
+  }
+
   if (nested_error_occured)
     return false;
-
-  if (found_unknown_field) {
-    if (error_on_unknown_field_) {
-      DVLOG(1) << "Unknown field name. Aborting.";
-      return false;
-    }
-    DVLOG(1) << "Unknown field name. Ignoring.";
-  }
 
   return ValidateRecommendedField(signature, result);
 }
@@ -140,8 +230,8 @@ bool Validator::ValidateRecommendedField(
   recommended.reset(recommended_list);
 
   if (!managed_onc_) {
-    DVLOG(1) << "Found a " << onc::kRecommended
-             << " field in unmanaged ONC. Removing it.";
+    LOG(WARNING) << WarningHeader() << "Found the field '" << onc::kRecommended
+                 << "' in an unmanaged ONC. Removing it.";
     return true;
   }
 
@@ -169,13 +259,19 @@ bool Validator::ValidateRecommendedField(
     }
 
     if (found_error) {
-      DVLOG(1) << "Found " << error_cause << " field name '" << field_name
-               << "' in kRecommended array. "
-               << (error_on_wrong_recommended_ ? "Aborting." : "Ignoring.");
-      if (error_on_wrong_recommended_)
+      error_or_warning_found_ = true;
+      path_.push_back(onc::kRecommended);
+      std::string message = MessageHeader(error_on_wrong_recommended_) +
+          "The " + error_cause + " field '" + field_name +
+          "' cannot be recommended.";
+      path_.pop_back();
+      if (error_on_wrong_recommended_) {
+        LOG(ERROR) << message;
         return false;
-      else
+      } else {
+        LOG(WARNING) << message;
         continue;
+      }
     }
 
     repaired_recommended->Append((*it)->DeepCopy());
@@ -195,33 +291,94 @@ std::string JoinStringRange(const char** range_begin,
   return JoinString(string_vector, separator);
 }
 
-bool RequireAnyOf(const std::string &actual, const char** valid_values) {
+}  // namespace
+
+bool Validator::FieldExistsAndHasNoValidValue(
+    const base::DictionaryValue& object,
+    const std::string &field_name,
+    const char** valid_values) {
+  std::string actual_value;
+  if (!object.GetStringWithoutPathExpansion(field_name, &actual_value))
+    return false;
+
   const char** it = valid_values;
   for (; *it != NULL; ++it) {
-    if (actual == *it)
-      return true;
+    if (actual_value == *it)
+      return false;
   }
-  DVLOG(1) << "Found " << actual << ", but expected one of "
-           << JoinStringRange(valid_values, it, ", ");
-  return false;
+  error_or_warning_found_ = true;
+  std::string valid_values_str =
+      "[" + JoinStringRange(valid_values, it, ", ") + "]";
+  path_.push_back(field_name);
+  LOG(ERROR) << ErrorHeader() << "Found value '" << actual_value <<
+      "', but expected one of the values " << valid_values_str;
+  path_.pop_back();
+  return true;
 }
 
-bool IsInRange(int actual, int lower_bound, int upper_bound) {
-  if (lower_bound <= actual && actual <= upper_bound)
+bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
+                                           const std::string &field_name,
+                                           int lower_bound,
+                                           int upper_bound) {
+  int actual_value;
+  if (!object.GetIntegerWithoutPathExpansion(field_name, &actual_value) ||
+      (lower_bound <= actual_value && actual_value <= upper_bound)) {
+    return false;
+  }
+  error_or_warning_found_ = true;
+  path_.push_back(field_name);
+  LOG(ERROR) << ErrorHeader() << "Found value '" << actual_value
+             << "', but expected a value in the range [" << lower_bound
+             << ", " << upper_bound << "] (boundaries inclusive)";
+  path_.pop_back();
+  return true;
+}
+
+bool Validator::RequireField(const base::DictionaryValue& dict,
+                             const std::string& field_name) {
+  if (dict.HasKey(field_name))
     return true;
-  DVLOG(1) << "Found " << actual << ", which is out of range [" << lower_bound
-           << ", " << upper_bound << "]";
+  error_or_warning_found_ = true;
+  LOG(ERROR) << ErrorHeader() << "The required field '" << field_name
+             << "' is missing.";
   return false;
 }
 
-bool RequireField(const base::DictionaryValue& dict, std::string key) {
-  if (dict.HasKey(key))
-    return true;
-  DVLOG(1) << "Required field " << key << " missing.";
-  return false;
-}
+bool Validator::ValidateToplevelConfiguration(
+    const base::DictionaryValue& onc_object,
+    base::DictionaryValue* result) {
+  if (!ValidateObjectDefault(kToplevelConfigurationSignature,
+                             onc_object, result)) {
+    return false;
+  }
 
-}  // namespace
+  static const char* kValidTypes[] =
+      { kUnencryptedConfiguration, kEncryptedConfiguration, NULL };
+  if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes))
+    return false;
+
+  bool allRequiredExist = true;
+
+  // Not part of the ONC spec yet:
+  // We don't require the type field and default to UnencryptedConfiguration.
+  std::string type = kUnencryptedConfiguration;
+  result->GetStringWithoutPathExpansion(kType, &type);
+  if (type == kUnencryptedConfiguration &&
+      !result->HasKey(kNetworkConfigurations) &&
+      !result->HasKey(kCertificates)) {
+    error_or_warning_found_ = true;
+    std::string message = MessageHeader(error_on_missing_field_) +
+        "Neither the field '" + kNetworkConfigurations + "' nor '" +
+        kCertificates + "is present, but at least one is required.";
+    if (error_on_missing_field_)
+      LOG(ERROR) << message;
+    else
+      LOG(WARNING) << message;
+    allRequiredExist = false;
+  }
+
+  return !error_on_missing_field_ || allRequiredExist;
+}
 
 bool Validator::ValidateNetworkConfiguration(
     const base::DictionaryValue& onc_object,
@@ -231,12 +388,9 @@ bool Validator::ValidateNetworkConfiguration(
     return false;
   }
 
-  std::string type;
   static const char* kValidTypes[] = { kEthernet, kVPN, kWiFi, NULL };
-  if (result->GetStringWithoutPathExpansion(kType, &type) &&
-      !RequireAnyOf(type, kValidTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes))
     return false;
-  }
 
   bool allRequiredExist = RequireField(*result, kGUID);
 
@@ -245,6 +399,9 @@ bool Validator::ValidateNetworkConfiguration(
   if (!remove) {
     allRequiredExist &= RequireField(*result, kName);
     allRequiredExist &= RequireField(*result, kType);
+
+    std::string type;
+    result->GetStringWithoutPathExpansion(kType, &type);
     allRequiredExist &= type.empty() || RequireField(*result, type);
   }
 
@@ -258,14 +415,15 @@ bool Validator::ValidateEthernet(
   if (!ValidateObjectDefault(kEthernetSignature, onc_object, result))
     return false;
 
-  std::string auth;
   static const char* kValidAuthentications[] = { kNone, k8021X, NULL };
-  if (result->GetStringWithoutPathExpansion(kAuthentication, &auth) &&
-      !RequireAnyOf(auth, kValidAuthentications)) {
+  if (FieldExistsAndHasNoValidValue(*result, kAuthentication,
+                                    kValidAuthentications)) {
     return false;
   }
 
   bool allRequiredExist = true;
+  std::string auth;
+  result->GetStringWithoutPathExpansion(kAuthentication, &auth);
   if (auth == k8021X)
     allRequiredExist &= RequireField(*result, kEAP);
 
@@ -279,19 +437,17 @@ bool Validator::ValidateIPConfig(
   if (!ValidateObjectDefault(kIPConfigSignature, onc_object, result))
     return false;
 
-  std::string type;
   static const char* kValidTypes[] = { kIPv4, kIPv6, NULL };
-  if (result->GetStringWithoutPathExpansion(ipconfig::kType, &type) &&
-      !RequireAnyOf(type, kValidTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, ipconfig::kType, kValidTypes))
     return false;
-  }
 
-  int routing_prefix;
+  std::string type;
+  result->GetStringWithoutPathExpansion(ipconfig::kType, &type);
   int lower_bound = 1;
   // In case of missing type, choose higher upper_bound.
   int upper_bound = (type == kIPv4) ? 32 : 128;
-  if (result->GetIntegerWithoutPathExpansion(kRoutingPrefix, &routing_prefix) &&
-      !IsInRange(routing_prefix, lower_bound, upper_bound)) {
+  if (FieldExistsAndIsNotInRange(*result, kRoutingPrefix,
+                                 lower_bound, upper_bound)) {
     return false;
   }
 
@@ -309,16 +465,16 @@ bool Validator::ValidateWiFi(
   if (!ValidateObjectDefault(kWiFiSignature, onc_object, result))
     return false;
 
-  std::string security;
   static const char* kValidSecurities[] =
       { kNone, kWEP_PSK, kWEP_8021X, kWPA_PSK, kWPA_EAP, NULL };
-  if (result->GetStringWithoutPathExpansion(kSecurity, &security) &&
-      !RequireAnyOf(security, kValidSecurities)) {
+  if (FieldExistsAndHasNoValidValue(*result, kSecurity, kValidSecurities))
     return false;
-  }
 
   bool allRequiredExist = RequireField(*result, kSecurity) &
       RequireField(*result, kSSID);
+
+  std::string security;
+  result->GetStringWithoutPathExpansion(kSecurity, &security);
   if (security == kWEP_8021X || security == kWPA_EAP)
     allRequiredExist &= RequireField(*result, kEAP);
   else if (security == kWEP_PSK || security == kWPA_PSK)
@@ -334,16 +490,14 @@ bool Validator::ValidateVPN(
   if (!ValidateObjectDefault(kVPNSignature, onc_object, result))
     return false;
 
-  std::string type;
   static const char* kValidTypes[] =
       { kIPsec, kTypeL2TP_IPsec, kOpenVPN, NULL };
-  if (result->GetStringWithoutPathExpansion(vpn::kType, &type) &&
-      !RequireAnyOf(type, kValidTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, vpn::kType, kValidTypes))
     return false;
-  }
 
   bool allRequiredExist = RequireField(*result, vpn::kType);
-
+  std::string type;
+  result->GetStringWithoutPathExpansion(vpn::kType, &type);
   if (type == kOpenVPN) {
     allRequiredExist &= RequireField(*result, kOpenVPN);
   } else if (type == kIPsec) {
@@ -364,26 +518,26 @@ bool Validator::ValidateIPsec(
   if (!ValidateObjectDefault(kIPsecSignature, onc_object, result))
     return false;
 
-  std::string auth;
   static const char* kValidAuthentications[] = { kPSK, kCert, NULL };
-  if (result->GetStringWithoutPathExpansion(kAuthenticationType, &auth) &&
-      !RequireAnyOf(auth, kValidAuthentications)) {
-    return false;
-  }
-
-  std::string cert_type;
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
-  if (result->GetStringWithoutPathExpansion(kClientCertType, &cert_type) &&
-      !RequireAnyOf(cert_type, kValidCertTypes)) {
+  // Using strict bit-wise OR to check all conditions.
+  if (FieldExistsAndHasNoValidValue(*result, kAuthenticationType,
+                                    kValidAuthentications) |
+      FieldExistsAndHasNoValidValue(*result, kClientCertType,
+                                    kValidCertTypes)) {
     return false;
   }
 
   bool allRequiredExist = RequireField(*result, kAuthenticationType) &
       RequireField(*result, kIKEVersion);
+  std::string auth;
+  result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
   if (auth == kCert) {
     allRequiredExist &= RequireField(*result, kClientCertType) &
         RequireField(*result, kServerCARef);
   }
+  std::string cert_type;
+  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
@@ -401,31 +555,25 @@ bool Validator::ValidateOpenVPN(
   if (!ValidateObjectDefault(kOpenVPNSignature, onc_object, result))
     return false;
 
-  std::string auth_retry;
   static const char* kValidAuthRetryValues[] =
       { openvpn::kNone, kInteract, kNoInteract, NULL };
-  if (result->GetStringWithoutPathExpansion(kAuthRetry, &auth_retry) &&
-      !RequireAnyOf(auth_retry, kValidAuthRetryValues)) {
-    return false;
-  }
-
-  std::string cert_type;
   static const char* kValidCertTypes[] =
       { certificate::kNone, kRef, kPattern, NULL };
-  if (result->GetStringWithoutPathExpansion(kClientCertType, &cert_type) &&
-      !RequireAnyOf(cert_type, kValidCertTypes)) {
-    return false;
-  }
-
-  std::string cert_tls;
   static const char* kValidCertTlsValues[] =
       { openvpn::kNone, openvpn::kServer, NULL };
-  if (result->GetStringWithoutPathExpansion(kRemoteCertTLS, &cert_tls) &&
-      !RequireAnyOf(cert_tls, kValidCertTlsValues)) {
+
+  // Using strict bit-wise OR to check all conditions.
+  if (FieldExistsAndHasNoValidValue(*result, kAuthRetry,
+                                    kValidAuthRetryValues) |
+      FieldExistsAndHasNoValidValue(*result, kClientCertType, kValidCertTypes) |
+      FieldExistsAndHasNoValidValue(*result, kRemoteCertTLS,
+                                    kValidCertTlsValues)) {
     return false;
   }
 
   bool allRequiredExist = RequireField(*result, kClientCertType);
+  std::string cert_type;
+  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
@@ -444,9 +592,15 @@ bool Validator::ValidateCertificatePattern(
   bool allRequiredExist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
       !result->HasKey(kIssuerCARef)) {
+    error_or_warning_found_ = true;
     allRequiredExist = false;
-    DVLOG(1) << "None of the fields " << kSubject << ", " << kIssuer << ", and "
-             << kIssuerCARef << " exists, but at least one is required.";
+    std::string message = MessageHeader(error_on_missing_field_) +
+        "None of the fields '" + kSubject + "', '" + kIssuer + "', and '" +
+        kIssuerCARef + "' is present, but at least one is required.";
+    if (error_on_missing_field_)
+      LOG(ERROR) << message;
+    else
+      LOG(WARNING) << message;
   }
 
   return !error_on_missing_field_ || allRequiredExist;
@@ -458,15 +612,13 @@ bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
   if (!ValidateObjectDefault(kProxySettingsSignature, onc_object, result))
     return false;
 
-  std::string type;
   static const char* kValidTypes[] = { kDirect, kManual, kPAC, kWPAD, NULL };
-  if (result->GetStringWithoutPathExpansion(proxy::kType, &type) &&
-      !RequireAnyOf(type, kValidTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, proxy::kType, kValidTypes))
     return false;
-  }
 
   bool allRequiredExist = RequireField(*result, proxy::kType);
-
+  std::string type;
+  result->GetStringWithoutPathExpansion(proxy::kType, &type);
   if (type == kManual)
     allRequiredExist &= RequireField(*result, kManual);
   else if (type == kPAC)
@@ -494,32 +646,24 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
   if (!ValidateObjectDefault(kEAPSignature, onc_object, result))
     return false;
 
-  std::string inner;
   static const char* kValidInnerValues[] =
       { kAutomatic, kMD5, kMSCHAPv2, kPAP, NULL };
-  if (result->GetStringWithoutPathExpansion(kInner, &inner) &&
-      !RequireAnyOf(inner, kValidInnerValues)) {
-    return false;
-  }
-
-  std::string outer;
   static const char* kValidOuterValues[] =
       { kPEAP, kEAP_TLS, kEAP_TTLS, kLEAP, kEAP_SIM, kEAP_FAST, kEAP_AKA,
         NULL };
-  if (result->GetStringWithoutPathExpansion(kOuter, &outer) &&
-      !RequireAnyOf(outer, kValidOuterValues)) {
-    return false;
-  }
-
-  std::string cert_type;
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
-  if (result->GetStringWithoutPathExpansion(kClientCertType, &cert_type) &&
-      !RequireAnyOf(cert_type, kValidCertTypes )) {
+
+  // Using strict bit-wise OR to check all conditions.
+  if (FieldExistsAndHasNoValidValue(*result, kInner, kValidInnerValues) |
+      FieldExistsAndHasNoValidValue(*result, kOuter, kValidOuterValues) |
+      FieldExistsAndHasNoValidValue(*result, kClientCertType,
+                                    kValidCertTypes)) {
     return false;
   }
 
   bool allRequiredExist = RequireField(*result, kOuter);
-
+  std::string cert_type;
+  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
@@ -535,12 +679,9 @@ bool Validator::ValidateCertificate(
   if (!ValidateObjectDefault(kCertificateSignature, onc_object, result))
     return false;
 
-  std::string type;
   static const char* kValidTypes[] = { kClient, kServer, kAuthority, NULL };
-  if (result->GetStringWithoutPathExpansion(certificate::kType, &type) &&
-      !RequireAnyOf(type, kValidTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, certificate::kType, kValidTypes))
     return false;
-  }
 
   bool allRequiredExist = RequireField(*result, kGUID);
 
@@ -549,6 +690,8 @@ bool Validator::ValidateCertificate(
   if (!remove) {
     allRequiredExist &= RequireField(*result, certificate::kType);
 
+    std::string type;
+    result->GetStringWithoutPathExpansion(certificate::kType, &type);
     if (type == kClient)
       allRequiredExist &= RequireField(*result, kPKCS12);
     else if (type == kServer || type == kAuthority)
@@ -556,6 +699,20 @@ bool Validator::ValidateCertificate(
   }
 
   return !error_on_missing_field_ || allRequiredExist;
+}
+
+std::string Validator::WarningHeader() {
+  return MessageHeader(false);
+}
+
+std::string Validator::ErrorHeader() {
+  return MessageHeader(true);
+}
+
+std::string Validator::MessageHeader(bool is_error) {
+  std::string path = path_.empty() ? "toplevel" : JoinString(path_, ".");
+  std::string message = "At " + path + ": ";
+  return message;
 }
 
 }  // namespace onc
