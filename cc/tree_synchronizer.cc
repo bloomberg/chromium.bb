@@ -15,6 +15,8 @@ namespace cc {
 
 scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
 {
+    DCHECK(treeImpl);
+
     TRACE_EVENT0("cc", "TreeSynchronizer::synchronizeTrees");
     ScopedPtrLayerImplMap oldLayers;
     RawPtrLayerImplMap newLayers;
