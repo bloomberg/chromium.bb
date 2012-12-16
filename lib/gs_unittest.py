@@ -29,7 +29,9 @@ def PatchGS(*args, **kwargs):
 class GSContextMock(partial_mock.PartialCmdMock):
   """Used to mock out the GSContext class."""
   TARGET = 'chromite.lib.gs.GSContext'
-  ATTRS = ('_DoCommand', '__init__', 'DEFAULT_SLEEP_TIME', 'DEFAULT_RETRIES')
+  ATTRS = ('_DoCommand', '__init__', 'DEFAULT_SLEEP_TIME', 'DEFAULT_RETRIES',
+           'DEFAULT_BOTO_FILE', 'DEFAULT_GSUTIL_BIN',
+           'DEFAULT_GSUTIL_BUILDER_BIN')
   DEFAULT_ATTR = '_DoCommand'
 
   GSResponsePreconditionFailed = """
@@ -39,6 +41,10 @@ class GSContextMock(partial_mock.PartialCmdMock):
 
   DEFAULT_SLEEP_TIME = 0
   DEFAULT_RETRIES = 2
+  TMP_ROOT = '/tmp/cros_unittest'
+  DEFAULT_BOTO_FILE = '%s/boto_file' % TMP_ROOT
+  DEFAULT_GSUTIL_BIN = '%s/gsutil_bin' % TMP_ROOT
+  DEFAULT_GSUTIL_BUILDER_BIN = DEFAULT_GSUTIL_BIN
 
   def PreStart(self):
     os.environ.pop("BOTO_CONFIG", None)
@@ -246,6 +252,10 @@ details about activating the Google Cloud Storage service and then run the
   GS_LS_BENIGN = """\
 "GSResponseError: status=400, code=MissingSecurityHeader, reason=Bad Request,
 detail=A nonempty x-goog-project-id header is required for this request."""
+
+  def setUp(self):
+    self.boto_file = os.path.join(self.tempdir, 'boto_file')
+    self.ctx = gs.GSContext(boto_file=self.boto_file)
 
   def testInitGSLsSkippableError(self):
     """Benign GS error."""

@@ -798,7 +798,7 @@ class MockTestCase(TestCase):
   def tearDown(self):
     # We can't just run stopall() by itself, and need to stop our patchers
     # manually since stopall() doesn't handle repatching.
-    SafeRun([p.stop for p in self._patchers] + [mock.patch.stopall])
+    SafeRun([p.stop for p in reversed(self._patchers)] + [mock.patch.stopall])
 
   def StartPatcher(self, patcher):
     """Call start() on the patcher, and stop() in tearDown."""
@@ -806,8 +806,13 @@ class MockTestCase(TestCase):
     self._patchers.append(patcher)
 
 
-class MockTempDirTestCase(TempDirTestCase, MockTestCase):
-  """Convenience class mixing TempDir and Mock"""
+# MockTestCase must be before TempDirTestCase in this inheritance order,
+# because MockTestCase.StartPatcher() calls may be for PartialMocks, which
+# create their own temporary directory.  The teardown for those directories
+# occurs during MockTestCase.tearDown(), which needs to be run before
+# TempDirTestCase.tearDown().
+class MockTempDirTestCase(MockTestCase, TempDirTestCase):
+  """Convenience class mixing TempDir and Mock."""
 
 
 def FindTests(directory, module_namespace=''):
