@@ -19,8 +19,9 @@ namespace chrome {
 namespace {
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-void AddDelegateToMTPDeviceMapService(const std::string& device_location,
-                                      fileapi::MTPDeviceDelegate* delegate) {
+void AddDelegateToMTPDeviceMapService(
+    const FilePath::StringType& device_location,
+    fileapi::MTPDeviceDelegate* delegate) {
   fileapi::MTPDeviceMapService::GetInstance()->AddDelegate(device_location,
                                                            delegate);
 }
@@ -39,13 +40,13 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
       pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
   scoped_refptr<base::SequencedTaskRunner> media_task_runner =
       pool->GetSequencedTaskRunner(media_sequence_token);
-  CreateMTPDeviceDelegateCallback cb =
+  CreateMTPDeviceDelegateCallback callback =
       base::Bind(&AddDelegateToMTPDeviceMapService, device_location_);
   media_task_runner->PostTask(FROM_HERE,
                               base::Bind(&CreateMTPDeviceDelegate,
                                          device_location_,
                                          media_task_runner,
-                                         cb));
+                                         callback));
 #endif
 }
 

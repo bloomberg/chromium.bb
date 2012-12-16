@@ -8,7 +8,6 @@
 #include "base/file_path.h"
 #include "base/system_monitor/system_monitor.h"
 
-
 namespace chrome {
 
 // Base class for platform-specific instances watching for removable storage

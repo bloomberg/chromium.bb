@@ -159,8 +159,7 @@ SequencedTaskRunner* MTPDeviceDelegateImplLinux::GetMediaTaskRunner() {
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Caution: This function is called on the UI thread. Access only the thread
-  // safe member variables in this function. Do all the clean up operations in
-  // DeleteDelegateOnTaskRunner().
+  // safe member variables in this function.
   on_shutdown_event_.Signal();
   on_task_completed_event_.Signal();
   media_task_runner_->DeleteSoon(FROM_HERE, this);
