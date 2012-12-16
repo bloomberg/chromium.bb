@@ -43,7 +43,7 @@ namespace ui {
 namespace {
 
 // Font sizes relative to base font.
-const int kSmallFontSizeDelta = -2;
+const int kSmallFontSizeDelta = -1;
 const int kMediumFontSizeDelta = 3;
 const int kLargeFontSizeDelta = 8;
 
