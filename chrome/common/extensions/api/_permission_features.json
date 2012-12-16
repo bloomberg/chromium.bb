@@ -127,8 +127,9 @@
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
-      "onpogbcnheabnhmnkgielnjpanneejmi",
-      "pkedcjkdefgpdelpbcmbmeomcjbeemfm"
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
     ]
   },
   "experimental": {
@@ -319,10 +320,18 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "tabCapture": {
+  "tabCapture": [{
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"]
-  },
+  }, {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app"],
+    "whitelist": [
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
+    ]
+  }],
   "terminalPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
