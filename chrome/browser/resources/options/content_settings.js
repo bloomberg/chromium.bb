@@ -78,8 +78,8 @@ cr.define('options', function() {
       $('content-settings-overlay-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
 
-      $('pepper-flash-cameramic-section').style.display = 'none';
-      $('pepper-flash-cameramic-exceptions-div').style.display = 'none';
+      $('media-pepper-flash-default').hidden = true;
+      $('media-pepper-flash-exceptions').hidden = true;
 
       $('media-select-mic').addEventListener('change',
           ContentSettings.setDefaultMicrophone_);
@@ -216,14 +216,24 @@ cr.define('options', function() {
   };
 
   /**
-   * Enables the Pepper Flash camera and microphone settings.
-   * Please note that whether the settings are actually showed or not is also
+   * Shows/hides the link to the Pepper Flash camera and microphone default
+   * settings.
+   * Please note that whether the link is actually showed or not is also
    * affected by the style class pepper-flash-settings.
    */
-  ContentSettings.enablePepperFlashCameraMicSettings = function() {
-    $('pepper-flash-cameramic-section').style.display = '';
-    $('pepper-flash-cameramic-exceptions-div').style.display = '';
-  };
+  ContentSettings.showMediaPepperFlashDefaultLink = function(show) {
+    $('media-pepper-flash-default').hidden = !show;
+  }
+
+  /**
+   * Shows/hides the link to the Pepper Flash camera and microphone
+   * site-specific settings.
+   * Please note that whether the link is actually showed or not is also
+   * affected by the style class pepper-flash-settings.
+   */
+  ContentSettings.showMediaPepperFlashExceptionsLink = function(show) {
+    $('media-pepper-flash-exceptions').hidden = !show;
+  }
 
   /**
    * Updates the microphone/camera devices menu with the given entries.

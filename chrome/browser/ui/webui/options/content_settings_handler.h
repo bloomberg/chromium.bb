@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CONTENT_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CONTENT_SETTINGS_HANDLER_H_
 
-#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -51,38 +51,50 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 
  private:
-  // Extends ContentSettingsType with some other types that will be also
-  // displayed in the content settings UI.
-  class ExContentSettingsType;
-  struct ExContentSettingsTypeNameEntry;
+  // Used to determine whether we should show links to Flash camera and
+  // microphone settings.
+  struct MediaSettingsInfo {
+    MediaSettingsInfo();
+    ~MediaSettingsInfo();
 
-  struct CachedPepperFlashSettings {
-    CachedPepperFlashSettings();
-    ~CachedPepperFlashSettings();
+    // Cached Pepper Flash settings.
+    ContentSetting flash_default_setting;
+    MediaExceptions flash_exceptions;
+    bool flash_settings_initialized;
+    uint32_t last_flash_refresh_request_id;
 
-    PP_Flash_BrowserOperations_Permission default_permission;
+    // Whether the links to Flash settings pages are showed.
+    bool show_flash_default_link;
+    bool show_flash_exceptions_link;
 
-    typedef std::map<std::string, PP_Flash_BrowserOperations_Permission>
-        SiteMap;
-    SiteMap sites;
+    // Cached Chrome media settings.
+    ContentSetting default_setting;
+    bool policy_disable_audio;
+    bool policy_disable_video;
+    bool default_setting_initialized;
+    MediaExceptions exceptions;
+    bool exceptions_initialized;
+  };
 
-    bool initialized;
-    uint32_t last_refresh_request_id;
+  // Used by ShowFlashMediaLink() to specify which link to show/hide.
+  enum LinkType {
+    DEFAULT_SETTING = 0,
+    EXCEPTIONS,
   };
 
   // Functions that call into the page -----------------------------------------
 
   // Updates the page with the default settings (allow, ask, block, etc.)
-  void UpdateSettingDefaultFromModel(const ExContentSettingsType& type);
+  void UpdateSettingDefaultFromModel(ContentSettingsType type);
 
   // Updates the media radio buttons according to the enabled split prefs.
   void UpdateMediaSettingsView();
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
-  void UpdateExceptionsViewFromModel(const ExContentSettingsType& type);
+  void UpdateExceptionsViewFromModel(ContentSettingsType type);
   // Clobbers and rebuilds the specific content setting type exceptions
   // OTR table.
-  void UpdateOTRExceptionsViewFromModel(const ExContentSettingsType& type);
+  void UpdateOTRExceptionsViewFromModel(ContentSettingsType type);
   // Clobbers and rebuilds all the exceptions tables in the page (both normal
   // and OTR tables).
   void UpdateAllExceptionsViewsFromModel();
@@ -92,9 +104,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   void UpdateGeolocationExceptionsView();
   // Clobbers and rebuilds just the desktop notification exception table.
   void UpdateNotificationExceptionsView();
-  // Clobbers and rebuilds just the Pepper Flash camera and microphone exception
-  // table.
-  void UpdateFlashCameraMicExceptionsView();
   // Clobbers and rebuilds just the Media device exception table.
   void UpdateMediaExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
@@ -111,16 +120,13 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Removes one notification exception.
   void RemoveNotificationException(const base::ListValue* args,
                                    size_t arg_index);
-  // Removes one Pepper Flash camera and microphone exception.
-  void RemoveFlashCameraMicException(const base::ListValue* args,
-                                     size_t arg_index);
   // Removes one media camera and microphone exception.
   void RemoveMediaException(const base::ListValue* args, size_t arg_index);
   // Removes one exception of |type| from the host content settings map.
   void RemoveExceptionFromHostContentSettingsMap(
       const base::ListValue* args,
       size_t arg_index,
-      const ExContentSettingsType& type);
+      ContentSettingsType type);
 
   // Callbacks used by the page ------------------------------------------------
 
@@ -157,15 +163,13 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // Gets the default setting in string form. If |provider_id| is not NULL, the
   // id of the provider which provided the default setting is assigned to it.
-  std::string GetSettingDefaultFromModel(const ExContentSettingsType& type,
+  std::string GetSettingDefaultFromModel(ContentSettingsType type,
                                          std::string* provider_id);
 
   // Gets the ProtocolHandlerRegistry for the normal profile.
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
-  // The method does nothing if |force| is false and the cache has been
-  // initialized.
-  void RefreshFlashSettingsCache(bool force);
+  void RefreshFlashMediaSettings();
 
   // Fills in |exceptions| with Values for the given |type| from |map|.
   void GetExceptionsFromHostContentSettingsMap(
@@ -173,20 +177,18 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       ContentSettingsType type,
       base::ListValue* exceptions);
 
-  static ExContentSettingsType ExContentSettingsTypeFromGroupName(
-      const std::string& name);
-  static std::string ExContentSettingsTypeToGroupName(
-      const ExContentSettingsType& type);
+  void OnPepperFlashPrefChanged();
+
+  void ShowFlashMediaLink(LinkType link_type, bool show);
+
+  void UpdateFlashMediaLinksVisibility();
 
   // Member variables ---------------------------------------------------------
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
-  CachedPepperFlashSettings flash_cameramic_settings_;
-
-  static const ExContentSettingsTypeNameEntry
-      kExContentSettingsTypeGroupNames[];
+  MediaSettingsInfo media_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };

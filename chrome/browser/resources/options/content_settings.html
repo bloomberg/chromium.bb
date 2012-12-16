@@ -378,29 +378,6 @@
         </div>
       </div>
     </section>
-    <!-- Pepper Flash camera and microphone filter -->
-    <section id="pepper-flash-cameramic-section" class="pepper-flash-settings">
-      <h3 i18n-content="pepperFlashCameramicTabLabel"></h3>
-      <div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="pepper-flash-cameramic" value="ask">
-            <span i18n-content="pepperFlashCameramicAsk"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="pepper-flash-cameramic" value="block">
-            <span i18n-content="pepperFlashCameramicBlock"></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <button class="exceptions-list-button"
-              contentType="pepper-flash-cameramic"
-              i18n-content="manageExceptions"></button>
-        </div>
-      </div>
-    </section>
 <if expr="pp_ifdef('chromeos')">
     <!-- Protected Content filter -->
     <section guest-visibility="disabled">
@@ -466,6 +443,11 @@
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="media-stream"
               i18n-content="manageExceptions"></button>
+        </div>
+        <div id="media-pepper-flash-default" class="pepper-flash-settings">
+          <span i18n-content="mediaPepperFlashDefaultDivergedLabel"></span>
+          <a target="_blank" i18n-content="mediaPepperFlashChangeLink"
+              i18n-values="href:mediaPepperFlashGlobalPrivacyURL"></a>
         </div>
       </div>
     </section>
