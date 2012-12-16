@@ -21,6 +21,7 @@ import org.chromium.ui.gfx.NativeWindow;
 @JNINamespace("content")
 public class ShellManager extends FrameLayout {
 
+    private static boolean sStartup = true;
     private NativeWindow mWindow;
     private Shell mActiveShell;
 
@@ -38,7 +39,10 @@ public class ShellManager extends FrameLayout {
         mContentViewRenderView = new ContentViewRenderView(context) {
             @Override
             protected void onReadyToRender() {
-                mActiveShell.loadUrl(mStartupUrl);
+                if (sStartup) {
+                    mActiveShell.loadUrl(mStartupUrl);
+                    sStartup = false;
+                }
             }
         };
     }
