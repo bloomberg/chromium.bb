@@ -10,14 +10,18 @@ cr.define('ntp', function() {
 
   /**
    * Creates a new Most Visited object for tiling.
+   * @param {Object=} opt_data The data representing the most visited page.
    * @constructor
    * @extends {Thumbnail}
    * @extends {HTMLAnchorElement}
    */
-  function MostVisited() {
+  function MostVisited(opt_data) {
     var el = cr.doc.createElement('a');
     el.__proto__ = MostVisited.prototype;
     el.initialize();
+
+    if (opt_data)
+      el.data = opt_data;
 
     return el;
   }

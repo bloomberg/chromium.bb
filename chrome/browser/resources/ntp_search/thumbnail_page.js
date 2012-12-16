@@ -10,14 +10,18 @@ cr.define('ntp', function() {
 
   /**
    * Creates a new Thumbnail object for tiling.
+   * @param {Object=} opt_data The data representing the thumbnail.
    * @constructor
    * @extends {Tile}
    * @extends {HTMLAnchorElement}
    */
-  function Thumbnail() {
+  function Thumbnail(opt_data) {
     var el = cr.doc.createElement('a');
     el.__proto__ = Thumbnail.prototype;
     el.initialize();
+
+    if (opt_data)
+      el.data = opt_data;
 
     return el;
   }

@@ -126,12 +126,11 @@ cr.define('ntp', function() {
    * @constructor
    * @extends {HTMLDivElement}
    * @param {HTMLElement} tile Tile element that will be associated to the cell.
-   * @param {Object} config TilePage configuration object.
    */
-  function TileCell(tile, config) {
+  function TileCell(tile) {
     var tileCell = cr.doc.createElement('div');
     tileCell.__proto__ = TileCell.prototype;
-    tileCell.initialize(tile, config);
+    tileCell.initialize(tile);
 
     return tileCell;
   }
@@ -142,9 +141,8 @@ cr.define('ntp', function() {
     /**
      * Initializes a TileCell.
      * @param {Tile} tile The Tile that will be assigned to this TileCell.
-     * @param {Object} config TilePage configuration object.
      */
-    initialize: function(tile, config) {
+    initialize: function(tile) {
       this.className = 'tile-cell';
       this.assign(tile);
     },
@@ -451,7 +449,7 @@ cr.define('ntp', function() {
      * @protected
      */
     createTile_: function() {
-      return new this.TileClass(this.config);
+      return new this.TileClass();
     },
 
     /**
@@ -596,14 +594,18 @@ cr.define('ntp', function() {
      * This method should be called every time the contents of the grid changes,
      * that is, when the number, contents or order of the tiles has changed.
      * @param {number=} opt_colCount The number of columns.
+     * @param {number=} opt_tileCount Forces a particular number of tiles to
+     *   be drawn. This is useful for cases like the restoration/insertion
+     *   of tiles when you need to place a tile in a place of the grid that
+     *   is not rendered at the moment.
      * @protected
      */
-    renderGrid: function(opt_colCount) {
+    renderGrid: function(opt_colCount, opt_tileCount) {
       var colCount = opt_colCount || this.colCount_;
 
       var tileGridContent = this.tileGridContent_;
       var tiles = this.tiles_;
-      var tileCount = tiles.length;
+      var tileCount = opt_tileCount || tiles.length;
 
       var rowCount = Math.ceil(tileCount / colCount);
       var tileRows = tileGridContent.getElementsByClassName('tile-row');
@@ -636,13 +638,13 @@ cr.define('ntp', function() {
             tileCell = tileRowTiles[col];
           } else {
             var span = cr.doc.createElement('span');
-            tileCell = new TileCell(span, this.config);
+            tileCell = new TileCell(span);
           }
 
           // Render Tiles.
-          if (tile < tileCount) {
+          tileElement = tiles[tile];
+          if (tile < tileCount && tileElement) {
             tileCell.classList.remove('filler');
-            tileElement = tiles[tile];
             if (!tileCell.tile)
               tileCell.appendChild(tileElement);
             else if (tileElement != tileCell.tile)
@@ -670,7 +672,12 @@ cr.define('ntp', function() {
       this.colCount_ = colCount;
       this.rowCount_ = rowCount;
 
-      this.onScroll();
+      // If we are manually changing the tile count (which can happen during
+      // the restoration/insertion animation) we should not fire the scroll
+      // event once some cells might contain dummy tiles which will cause
+      // an error.
+      if (!opt_tileCount)
+        this.onScroll();
     },
 
     // layout
@@ -846,7 +853,13 @@ cr.define('ntp', function() {
       var tiles = this.tiles_;
       var tileCount = tiles.length;
 
-      var tileCells = this.querySelectorAll('.tile-cell');
+      var tileCells = this.getElementsByClassName('tile-cell');
+
+      // If the desired position is outside the grid, then the grid must be
+      // expanded so there will be a cell in the desired position.
+      if (index >= tileCells.length)
+        this.renderGrid(null, index + 1);
+
       var extraTileIndex = Math.min(tileCount, this.config.maxTileCount - 1);
       var extraCell = tileCells[extraTileIndex];
       var extraTileData = newDataList[extraTileIndex + 1];
@@ -858,6 +871,9 @@ cr.define('ntp', function() {
 
       var restoredData = newDataList[index];
       var tileBeingRestored = createTile(this, restoredData);
+
+      // Temporarily assume the |index| cell so the tile can be animated in
+      // the right spot.
       tileCells[index].appendChild(tileBeingRestored);
 
       if (this.config.scrollable)
@@ -1084,8 +1100,7 @@ cr.define('ntp', function() {
     var tile;
     if (opt_data) {
       // If there's data, the new tile will be a real one (not a filler).
-      tile = new tilePage.TileClass(tilePage.config);
-      tile.data = opt_data;
+      tile = new tilePage.TileClass(opt_data);
     } else {
       // Otherwise, it will be a fake filler tile.
       tile = cr.doc.createElement('span');

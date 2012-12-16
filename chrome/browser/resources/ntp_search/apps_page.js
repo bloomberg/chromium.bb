@@ -185,14 +185,17 @@ cr.define('ntp', function() {
 
   /**
    * Creates a new App object.
+   * @param {Object=} opt_data The data representing the app.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function App(data) {
+  function App(opt_data) {
     var el = cr.doc.createElement('div');
     el.__proto__ = App.prototype;
     el.initialize_();
-    el.data = data;
+
+    if (opt_data)
+      el.data = opt_data;
 
     return el;
   }
@@ -591,7 +594,7 @@ cr.define('ntp', function() {
       // The start margin of a cell (left or right according to text direction).
       cellMarginStart: 20,
       // The maximum number of Tiles to be displayed.
-      maxTileCount: 20,
+      maxTileCount: 512,
       // Whether the TilePage content will be scrollable.
       scrollable: true,
     },

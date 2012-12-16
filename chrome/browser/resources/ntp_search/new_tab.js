@@ -482,7 +482,8 @@ cr.define('ntp', function() {
         this.highlightAppId = null;
       }
 
-      var pageIndex = data.page_index || 0;
+      if (!this.appsLoaded_)
+        opt_highlight = false;
 
       var app = $(data.id);
       if (app) {
@@ -505,7 +506,9 @@ cr.define('ntp', function() {
       assert(loadTimeData.getBoolean('showApps'));
 
       for (var i = 0; i < data.apps.length; ++i) {
-        $(data.apps[i].id).data = data.apps[i];
+        var element = $(data.apps[i].id);
+        if (element)
+          element.data = data.apps[i];
       }
     },
 
@@ -793,6 +796,10 @@ cr.define('ntp', function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function onLoad() {
+
+    if (!loadTimeData.getBoolean('showApps'))
+      cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+
     // Load the current theme colors.
     themeChanged();
 
@@ -877,7 +884,7 @@ cr.define('ntp', function() {
    * The number of sections to wait on.
    * @type {number}
    */
-  var sectionsToWaitFor = 1;
+  var sectionsToWaitFor = 2;
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
