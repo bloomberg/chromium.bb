@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
@@ -1072,14 +1073,19 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                            from_policy);
 
   // Unknown fields are removed from the result.
-  root_dict = validator.ValidateAndRepairObject(
-      &onc::kUnencryptedConfigurationSignature,
-      *root_dict);
+  scoped_ptr<base::DictionaryValue> validation_result =
+      validator.ValidateAndRepairObject(
+          &onc::kUnencryptedConfigurationSignature,
+          *root_dict);
 
-  if (root_dict.get() == NULL) {
+  if (from_policy) {
+    UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
+                          validation_result.get() != NULL);
+  }
+
+  if (validation_result.get() == NULL) {
     LOG(WARNING) << "ONC from source " << source
                  << " is invalid and couldn't be repaired.";
-    return false;
   }
 
   const base::ListValue* certificates;
