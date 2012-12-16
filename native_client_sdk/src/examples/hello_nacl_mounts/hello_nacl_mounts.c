@@ -3,15 +3,15 @@
  * found in the LICENSE file.
  */
 
+#include "hello_nacl_mounts.h"
+
 #include <assert.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -21,9 +21,9 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "nacl_mounts/kernel_intercept.h"
 
+#include "handlers.h"
 
-#define MAX_OPEN_FILES 10
-#define MAX_PARAMS 4
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 #if defined(WIN32)
@@ -31,23 +31,15 @@
 #endif
 
 
-typedef int (*HandleFunc)(int num_params, char** params, char** output);
 typedef struct {
   const char* name;
   HandleFunc function;
 } FuncNameMapping;
 
 
-int HandleFopen(int num_params, char** params, char** output);
-int HandleFwrite(int num_params, char** params, char** output);
-int HandleFread(int num_params, char** params, char** output);
-int HandleFseek(int num_params, char** params, char** output);
-int HandleFclose(int num_params, char** params, char** output);
-
-
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
-static FILE* g_OpenFiles[MAX_OPEN_FILES];
+
 static FuncNameMapping g_FunctionMap[] = {
   { "fopen", HandleFopen },
   { "fwrite", HandleFwrite },
@@ -58,14 +50,23 @@ static FuncNameMapping g_FunctionMap[] = {
 };
 
 
-static struct PP_Var CStrToVar(const char* str) {
+/**
+ * Create a new PP_Var from a C string.
+ * @param[in] str The string to convert.
+ * @return A new PP_Var with the contents of |str|. */
+struct PP_Var CStrToVar(const char* str) {
   if (ppb_var_interface != NULL) {
     return ppb_var_interface->VarFromUtf8(str, strlen(str));
   }
   return PP_MakeUndefined();
 }
 
-static char* VprintfToNewString(const char* format, va_list args) {
+/**
+ * Printf to a newly allocated C string.
+ * @param[in] format A printf format string.
+ * @param[in] args The printf arguments.
+ * @return The newly constructed string. Caller takes ownership. */
+char* VprintfToNewString(const char* format, va_list args) {
   va_list args_copy;
   int length;
   char* buffer;
@@ -79,7 +80,12 @@ static char* VprintfToNewString(const char* format, va_list args) {
   return buffer;
 }
 
-static char* PrintfToNewString(const char* format, ...) {
+/**
+ * Printf to a newly allocated C string.
+ * @param[in] format A print format string.
+ * @param[in] ... The printf arguments.
+ * @return The newly constructed string. Caller takes ownership. */
+char* PrintfToNewString(const char* format, ...) {
   va_list args;
   char* result;
   va_start(args, format);
@@ -88,7 +94,12 @@ static char* PrintfToNewString(const char* format, ...) {
   return result;
 }
 
-static struct PP_Var PrintfToVar(const char* format, ...) {
+/**
+ * Printf to a new PP_Var.
+ * @param[in] format A print format string.
+ * @param[in] ... The printf arguments.
+ * @return A new PP_Var. */
+struct PP_Var PrintfToVar(const char* format, ...) {
   if (ppb_var_interface != NULL) {
     char* string;
     va_list args;
@@ -107,7 +118,13 @@ static struct PP_Var PrintfToVar(const char* format, ...) {
   return PP_MakeUndefined();
 }
 
-static uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length) {
+/**
+ * Convert a PP_Var to a C string, given a buffer.
+ * @param[in] var The PP_Var to convert.
+ * @param[out] buffer The buffer to write to.
+ * @param[in] length The length of |buffer|.
+ * @return The number of characters written. */
+uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length) {
   if (ppb_var_interface != NULL) {
     uint32_t var_length;
     const char* str = ppb_var_interface->VarToUtf8(var, &var_length);
@@ -122,199 +139,27 @@ static uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length) {
   return 0;
 }
 
-static int AddFileToMap(FILE* file) {
-  int i;
-  assert(file != NULL);
-  for (i = 0; i < MAX_OPEN_FILES; ++i) {
-    if (g_OpenFiles[i] == NULL) {
-      g_OpenFiles[i] = file;
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-static void RemoveFileFromMap(int i) {
-  assert(i >= 0 && i < MAX_OPEN_FILES);
-  g_OpenFiles[i] = NULL;
-}
-
-static FILE* GetFileFromMap(int i) {
-  assert(i >= 0 && i < MAX_OPEN_FILES);
-  return g_OpenFiles[i];
-}
-
-static FILE* GetFileFromIndexString(const char* s, int* file_index) {
-  char* endptr;
-  int result = strtol(s, &endptr, 10);
-  if (endptr != s + strlen(s)) {
-    /* Garbage at the end of the number...? */
-    return NULL;
-  }
-
-  if (file_index)
-    *file_index = result;
-
-  return GetFileFromMap(result);
-}
-
-int HandleFopen(int num_params, char** params, char** output) {
-  FILE* file;
-  int file_index;
-  const char* filename;
-  const char* mode;
-
-  if (num_params != 2) {
-    *output = PrintfToNewString("Error: fopen takes 2 parameters.");
-    return 1;
-  }
-
-  filename = params[0];
-  mode = params[1];
-
-  file = fopen(filename, mode);
-  if (!file) {
-    *output = PrintfToNewString("Error: fopen returned a NULL FILE*.");
-    return 2;
-  }
-
-  file_index = AddFileToMap(file);
-  if (file_index == -1) {
-    *output = PrintfToNewString(
-        "Error: Example only allows %d open file handles.", MAX_OPEN_FILES);
-    return 3;
-  }
-
-  *output = PrintfToNewString("fopen\1%s\1%d", filename, file_index);
-  return 0;
-}
-
-int HandleFwrite(int num_params, char** params, char** output) {
-  FILE* file;
-  const char* file_index_string;
-  const char* data;
-  size_t data_len;
-  size_t bytes_written;
-
-  if (num_params != 2) {
-    *output = PrintfToNewString("Error: fwrite takes 2 parameters.");
-    return 1;
-  }
-
-  file_index_string = params[0];
-  file = GetFileFromIndexString(file_index_string, NULL);
-  data = params[1];
-  data_len = strlen(data);
-
-  if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
-    return 2;
-  }
-
-  bytes_written = fwrite(data, 1, data_len, file);
-
-  *output = PrintfToNewString("fwrite\1%s\1%d", file_index_string,
-                              bytes_written);
-  return 0;
-}
-
-int HandleFread(int num_params, char** params, char** output) {
-  FILE* file;
-  const char* file_index_string;
-  char* buffer;
-  size_t data_len;
-  size_t bytes_read;
-
-  if (num_params != 2) {
-    *output = PrintfToNewString("Error: fread takes 2 parameters.");
-    return 1;
-  }
-
-  file_index_string = params[0];
-  file = GetFileFromIndexString(file_index_string, NULL);
-  data_len = strtol(params[1], NULL, 10);
-
-  if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
-    return 2;
-  }
-
-  buffer = (char*)malloc(data_len + 1);
-  bytes_read = fread(buffer, 1, data_len, file);
-  buffer[bytes_read] = 0;
-
-  *output = PrintfToNewString("fread\1%s\1%s", file_index_string, buffer);
-  free(buffer);
-  return 0;
-}
-
-int HandleFseek(int num_params, char** params, char** output) {
-  FILE* file;
-  const char* file_index_string;
-  long offset;
-  int whence;
-  int result;
-
-  if (num_params != 3) {
-    *output = PrintfToNewString("Error: fseek takes 3 parameters.");
-    return 1;
-  }
-
-  file_index_string = params[0];
-  file = GetFileFromIndexString(file_index_string, NULL);
-  offset = strtol(params[1], NULL, 10);
-  whence = strtol(params[2], NULL, 10);
-
-  if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
-    return 2;
-  }
-
-  result = fseek(file, offset, whence);
-  if (result) {
-    *output = PrintfToNewString("Error: fseek returned error %d.", result);
-    return 3;
-  }
-
-  *output = PrintfToNewString("fseek\1%d", file_index_string);
-  return 0;
-}
-
-int HandleFclose(int num_params, char** params, char** output) {
-  FILE* file;
-  int file_index;
-  const char* file_index_string;
-  int result;
-
-  if (num_params != 1) {
-    *output = PrintfToNewString("Error: fclose takes 1 parameters.");
-    return 1;
-  }
-
-  file_index_string = params[0];
-  file = GetFileFromIndexString(file_index_string, &file_index);
-  if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
-    return 2;
-  }
-
-  result = fclose(file);
-  if (result) {
-    *output = PrintfToNewString("Error: fclose returned error %d.", result);
-    return 3;
-  }
-
-  RemoveFileFromMap(file_index);
-
-  *output = PrintfToNewString("fclose\1%s", file_index_string);
-  return 0;
-}
-
+/**
+ * Given a message from JavaScript, parse it for functions and parameters.
+ *
+ * The format of the message is:
+ *   function, param1, param2, param3, etc.
+ * where each element is separated by the \1 character.
+ *
+ * e.g.
+ *   "function\1first parameter\1second parameter"
+ *
+ * How to use:
+ *   char* function;
+ *   char* params[4];
+ *   int num_params = ParseMessage(msg, &function, &params, 4);
+ *
+ * @param[in, out] message The message to parse. This string is modified
+ *     in-place.
+ * @param[out] out_function The function name.
+ * @param[out] out_params An array of strings, one for each parameter parsed.
+ * @param[in] max_params The maximum number of parameters to parse.
+ * @return The number of parameters parsed. */
 static size_t ParseMessage(char* message,
                            char** out_function,
                            char** out_params,
@@ -347,6 +192,10 @@ static size_t ParseMessage(char* message,
   return num_params;
 }
 
+/**
+ * Given a function name, look up its handler function.
+ * @param[in] function_name The function name to look up.
+ * @return The handler function mapped to |function_name|. */
 static HandleFunc GetFunctionByName(const char* function_name) {
   FuncNameMapping* map_iter = g_FunctionMap;
   for (; map_iter->name; ++map_iter) {
@@ -363,7 +212,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
                                   const char* argn[],
                                   const char* argv[]) {
-
+  /* Initialize nacl mounts. */
   ki_init(NULL);
   return PP_TRUE;
 }
@@ -396,8 +245,10 @@ static void Messaging_HandleMessage(PP_Instance instance,
   int result;
   HandleFunc function;
 
+  /* Read the message from JavaScript. */
   VarToCStr(message, &buffer[0], 1024);
 
+  /* Parse it */
   num_params = ParseMessage(buffer, &function_name, &params[0], MAX_PARAMS);
 
   function = GetFunctionByName(function_name);
@@ -407,6 +258,7 @@ static void Messaging_HandleMessage(PP_Instance instance,
         instance, PrintfToVar("Error: Unknown function \"%s\"", function));
   }
 
+  /* Function name was found, call it. */
   result = (*function)(num_params, &params[0], &output);
   if (result != 0) {
     /* Error. */
@@ -415,11 +267,13 @@ static void Messaging_HandleMessage(PP_Instance instance,
       var = PrintfToVar(
           "Error: Function \"%s\" returned error %d. "
           "Additional output: %s", function_name, result, output);
+      free(output);
     } else {
       var = PrintfToVar("Error: Function \"%s\" returned error %d.",
                         function_name, result);
     }
 
+    /* Post the error to JavaScript, so the user can see it. */
     ppb_messaging_interface->PostMessage(instance, var);
     return;
   }

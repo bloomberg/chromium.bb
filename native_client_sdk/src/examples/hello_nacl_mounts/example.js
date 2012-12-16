@@ -116,6 +116,11 @@ function fseek(e) {
   nacl_module.postMessage(makeCall('fseek', filehandle, offset, whence));
 }
 
+function fseek_result(filehandle, filepos) {
+  var filename = filehandle_map[filehandle];
+  logMessage('Seeked to location ' + filepos + ' in file ' + filename + '.');
+}
+
 /**
  * Return true when |s| starts with the string |prefix|.
  *

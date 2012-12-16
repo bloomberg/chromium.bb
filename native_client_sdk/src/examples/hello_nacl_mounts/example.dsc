@@ -4,7 +4,12 @@
     {
       'NAME' : 'hello_nacl_mounts',
       'TYPE' : 'main',
-      'SOURCES' : ['hello_nacl_mounts.c'],
+      'SOURCES' : [
+        'handlers.c',
+        'handlers.h',
+        'hello_nacl_mounts.c',
+        'hello_nacl_mounts.h',
+      ],
       'LIBS': ['ppapi', 'pthread', 'nacl_mounts']
     }
   ],
