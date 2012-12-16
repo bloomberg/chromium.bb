@@ -77,13 +77,10 @@ def Main():
 
   # Run java tests for chromedriver.
   print '@@@BUILD_STEP chromedriver2_java_tests@@@'
-  # Running all tests will leave lots of chrome windows opened. So just run one.
-  test_filter = 'ElementFindingTest#testShouldReturnTitleOfPageIfSet'
   cmd = [
     sys.executable,
     os.path.join(_THIS_DIR, 'run_java_tests.py'),
     '--chromedriver_path=' + os.path.join(build_dir, chromedriver),
-    '--filter=' + test_filter
   ]
   # Set the built chrome binary.
   if chrome_binary is not None:

@@ -42,7 +42,7 @@ class ChromeDriver(object):
           }
         }
       }
-    self._session_id = self._ExecuteCommand('newSession', params)
+    self._session_id = self._ExecuteCommand('newSession', params)['sessionId']
 
   def _ExecuteCommand(self, name, params={}, session_id=''):
     cmd = {
@@ -63,10 +63,10 @@ class ChromeDriver(object):
     response = json.loads(response_json)
     if response['status'] != 0:
       raise _ExceptionForResponse(response)
-    return response['value']
+    return response
 
   def _ExecuteSessionCommand(self, name, params={}):
-    return self._ExecuteCommand(name, params, self._session_id)
+    return self._ExecuteCommand(name, params, self._session_id)['value']
 
   def Load(self, url):
     self._ExecuteSessionCommand('get', {'url': url})

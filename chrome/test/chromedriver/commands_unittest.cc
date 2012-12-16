@@ -69,16 +69,18 @@ TEST(CommandsTest, NewSession) {
       ExecuteNewSession(&map, &launcher, params, "", &value, &session_id);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(value);
-  std::string id;
-  ASSERT_TRUE(value->GetAsString(&id));
-  ASSERT_EQ(32u, id.length());
-  ASSERT_STREQ(id.c_str(), session_id.c_str());
+  base::DictionaryValue* dict;
+  ASSERT_TRUE(value->GetAsDictionary(&dict));
+  std::string browserName;
+  ASSERT_TRUE(dict->GetString("browserName", &browserName));
+  ASSERT_STREQ("chrome", browserName.c_str());
+
   scoped_refptr<SessionAccessor> accessor;
-  ASSERT_TRUE(map.Get(id, &accessor));
+  ASSERT_TRUE(map.Get(session_id, &accessor));
   scoped_ptr<base::AutoLock> lock;
   Session* session = accessor->Access(&lock);
   ASSERT_TRUE(session);
-  ASSERT_STREQ(id.c_str(), session->id.c_str());
+  ASSERT_STREQ(session_id.c_str(), session->id.c_str());
   ASSERT_TRUE(session->chrome);
 }
 

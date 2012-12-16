@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, 'pylib'))
 from common import chrome_paths
 from common import util
 
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
 
 class TestResult(object):
   """A result for an attempted single test case."""
@@ -90,14 +92,20 @@ def _Run(src_dir, java_tests_src_dir, test_filter,
                'webdriver.chrome.driver=' + chromedriver_path]
   if chrome_path is not None:
     sys_props += ['webdriver.chrome.binary=' + chrome_path]
-  if test_filter is not None:
-    parts = test_filter.split('#')
-    if len(parts) > 2:
-      raise RuntimeError('Filter should be of form: SomeClass#testMethod')
-    elif len(parts) == 2:
-      sys_props += ['method=' + parts[1]]
-    if len(parts[0]) > 0:
-      sys_props += ['only_run=' + parts[0]]
+  if test_filter != '' and test_filter != '*':
+    classes = []
+    methods = []
+    cases = test_filter.split(',')
+    for case in cases:
+      parts = case.split('#')
+      if len(parts) > 2:
+        raise RuntimeError('Filter should be of form: SomeClass#testMethod')
+      elif len(parts) == 2:
+        methods += [parts[1]]
+      if len(parts[0]) > 0:
+        classes += [parts[0]]
+    sys_props += ['only_run=' + ','.join(classes)]
+    sys_props += ['method=' + ','.join(methods)]
 
   # Make a copy of chormedriver library, because java expects a different name.
   expected_chromedriver_map = {
@@ -132,6 +140,7 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
       return '<sysproperty key="%s" value="%s"/>' % (key, value)
     jvmarg = ''
     if util.IsMac():
+      # In Mac, the chromedriver library is a 32-bit build. So run 32-bit java.
       jvmarg = '<jvmarg value="-d32"/>'
     return '\n'.join([
         '<project>',
@@ -208,15 +217,24 @@ def main():
       '', '--chrome_path', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
-      '', '--filter', type='string', default='*',
-      help='Filter for specifying what tests to run. E.g., ' +
-           'ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
+      '', '--filter', type='string', default=None,
+      help='Filter for specifying what tests to run, "*" will run all. E.g., ' +
+           'AppCacheTest,ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
   options, args = parser.parse_args()
 
   if (options.chromedriver_path is None or
       not os.path.exists(options.chromedriver_path)):
     parser.error('chromedriver_path is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
+
+  # Run passed tests when filter is not provided.
+  test_filter = options.filter
+  if test_filter is None:
+    passed_java_tests_file = open(
+        os.path.join(_THIS_DIR, 'passed_java_tests.txt'))
+    passed_java_tests = [line.strip('\n') for line in passed_java_tests_file]
+    passed_java_tests_file.close()
+    test_filter = ','.join(passed_java_tests)
 
   java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                     'chromedriver', 'third_party', 'java_tests')
@@ -229,7 +247,7 @@ def main():
   return PrintTestResults(_Run(
       src_dir=chrome_paths.GetSrc(),
       java_tests_src_dir=java_tests_src_dir,
-      test_filter=options.filter,
+      test_filter=test_filter,
       chromedriver_path=options.chromedriver_path,
       chrome_path=options.chrome_path))
 

@@ -48,7 +48,9 @@ Status ExecuteNewSession(
       new SessionAccessorImpl(session.Pass()));
   session_map->Set(new_id, accessor);
 
-  out_value->reset(new base::StringValue(new_id));
+  base::DictionaryValue* returned_value = new base::DictionaryValue();
+  returned_value->SetString("browserName", "chrome");
+  out_value->reset(returned_value);
   *out_session_id = new_id;
   return Status(kOk);
 }
