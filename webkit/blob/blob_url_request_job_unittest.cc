@@ -180,7 +180,7 @@ class BlobURLRequestJobTest : public testing::Test {
         true,  // create
         base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
                    base::Unretained(this)));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare files on file system.

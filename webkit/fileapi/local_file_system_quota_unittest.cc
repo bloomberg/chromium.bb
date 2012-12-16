@@ -96,7 +96,7 @@ class LocalFileSystemQuotaTest
         test_helper_.origin(), test_helper_.storage_type(),
         base::Bind(&LocalFileSystemQuotaTest::OnGetUsageAndQuota,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   bool FileExists(const FilePath& virtual_path) {
@@ -243,7 +243,7 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
   operation()->Truncate(URLForPath(grandchild_file2_path_), 2,
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   const int64 all_file_size = 5000 + 400 + 30 + 2;
 
@@ -256,7 +256,7 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_dir_path.Append(
@@ -291,7 +291,7 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
   operation()->Truncate(URLForPath(grandchild_file2_path_), 5,
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   const int64 child_file_size = 8000 + 700;
   const int64 grandchild_file_size = 60 + 5;
@@ -307,7 +307,7 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir1_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   expected_usage += all_file_size +
       child_path_cost_ + grandchild_path_cost_;
 
@@ -333,7 +333,7 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
 
   operation()->Copy(URLForPath(child_dir_path_), URLForPath(dest_dir2_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   expected_usage += grandchild_file_size + grandchild_path_cost_;

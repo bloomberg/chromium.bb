@@ -53,7 +53,7 @@ class MockQuotaManagerTest : public testing::Test {
   void TearDown() {
     // Make sure the quota manager cleans up correctly.
     manager_ = NULL;
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void GetModifiedOrigins(StorageType type, base::Time since) {
@@ -162,7 +162,7 @@ TEST_F(MockQuotaManagerTest, OriginDeletion) {
       base::Time::Now());
 
   DeleteOriginData(kOrigin2, kTemporary, kClientFile);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(1, deletion_callback_count());
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
@@ -172,7 +172,7 @@ TEST_F(MockQuotaManagerTest, OriginDeletion) {
   EXPECT_TRUE(manager()->OriginHasData(kOrigin3, kTemporary, kClientDB));
 
   DeleteOriginData(kOrigin3, kTemporary, kClientFile | kClientDB);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(2, deletion_callback_count());
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
@@ -189,13 +189,13 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   base::TimeDelta a_minute = base::TimeDelta::FromMilliseconds(60000);
 
   GetModifiedOrigins(kTemporary, then);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(origins().empty());
 
   manager()->AddOrigin(kOrigin1, kTemporary, kClientFile, now - an_hour);
 
   GetModifiedOrigins(kTemporary, then);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());
   EXPECT_EQ(1UL, origins().size());
@@ -205,7 +205,7 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   manager()->AddOrigin(kOrigin2, kTemporary, kClientFile, now);
 
   GetModifiedOrigins(kTemporary, then);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());
   EXPECT_EQ(2UL, origins().size());
@@ -213,7 +213,7 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   EXPECT_EQ(1UL, origins().count(kOrigin2));
 
   GetModifiedOrigins(kTemporary, now - a_minute);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(kTemporary, type());
   EXPECT_EQ(1UL, origins().size());

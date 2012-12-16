@@ -121,7 +121,7 @@ class CppBoundClassTest : public testing::Test, public WebKit::WebFrameClient {
     html.append(javascript);
     html.append("</script></body></html>");
     webframe()->loadHTMLString(html, GURL("about:blank"));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   // Executes the specified JavaScript and checks to be sure that the resulting

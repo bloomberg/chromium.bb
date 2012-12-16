@@ -44,13 +44,13 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   // Drop the first reference, the file and reference should still be there.
   reference1 = NULL;
   EXPECT_TRUE(ShareableFileReference::Get(file).get());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(file));
 
   // Drop the second reference, the file and reference should get deleted.
   reference2 = NULL;
   EXPECT_FALSE(ShareableFileReference::Get(file).get());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(file_util::PathExists(file));
 
   // TODO(michaeln): add a test for files that aren't deletable behavior.

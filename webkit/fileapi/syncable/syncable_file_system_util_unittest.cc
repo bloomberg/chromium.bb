@@ -139,7 +139,7 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   RevokeSyncableFileSystem(kServiceName);
   sync_context->ShutdownOnUIThread();
   sync_context = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace fileapi

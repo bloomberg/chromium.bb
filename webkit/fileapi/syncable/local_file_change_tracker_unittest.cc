@@ -50,7 +50,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
       sync_context_->ShutdownOnUIThread();
     sync_context_ = NULL;
 
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     file_system_.TearDown();
     // Make sure we don't leave the external filesystem.
     // (CannedSyncableFileSystem::TearDown does not do this as there may be

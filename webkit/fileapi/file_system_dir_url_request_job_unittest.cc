@@ -62,7 +62,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemDirURLRequestJobTest::OnValidateFileSystem,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemDirURLRequestJobFactory);
@@ -287,7 +287,7 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   TestRequestNoRun(CreateFileSystemURL("foo/"));
   // Run StartAsync() and only StartAsync().
   MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 

@@ -73,7 +73,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemURLRequestJobTest::OnValidateFileSystem,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemURLRequestJobFactory);
@@ -87,7 +87,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
       pending_job_ = NULL;
     }
     // FileReader posts a task to close the file in destructor.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void OnValidateFileSystem(base::PlatformFileError result) {
@@ -341,7 +341,7 @@ TEST_F(FileSystemURLRequestJobTest, Cancel) {
 
   // Run StartAsync() and only StartAsync().
   MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 

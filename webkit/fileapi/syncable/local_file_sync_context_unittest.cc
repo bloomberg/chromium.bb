@@ -167,7 +167,7 @@ class LocalFileSyncContextTest : public testing::Test {
 
   base::PlatformFileError WaitUntilModifyFileIsDone() {
     while (!async_modify_finished_)
-      MessageLoop::current()->RunAllPending();
+      MessageLoop::current()->RunUntilIdle();
     return file_error_;
   }
 

@@ -215,7 +215,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       origin(), test_helper_.storage_type(),
       base::Bind(&ObfuscatedFileUtilTest::OnGetUsage,
                  weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     EXPECT_EQ(quota::kQuotaStatusOk, quota_status_);
   }
 

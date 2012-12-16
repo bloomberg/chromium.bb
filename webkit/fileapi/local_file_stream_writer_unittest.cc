@@ -82,7 +82,7 @@ TEST_F(LocalFileStreamWriterTest, Write) {
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "bar"));
   writer.reset();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(path));
   EXPECT_EQ("foobar", GetFileContent(path));
 }
@@ -92,7 +92,7 @@ TEST_F(LocalFileStreamWriterTest, WriteMiddle) {
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 2));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(path));
   EXPECT_EQ("foxxxr", GetFileContent(path));
 }
@@ -102,7 +102,7 @@ TEST_F(LocalFileStreamWriterTest, WriteEnd) {
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 6));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(file_util::PathExists(path));
   EXPECT_EQ("foobarxxx", GetFileContent(path));
 }
@@ -113,7 +113,7 @@ TEST_F(LocalFileStreamWriterTest, WriteFailForNonexistingFile) {
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, WriteStringToWriter(writer.get(), "foo"));
   writer.reset();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(file_util::PathExists(path));
 }
 
@@ -135,7 +135,7 @@ TEST_F(LocalFileStreamWriterTest, CancelAfterFinishedOperation) {
   EXPECT_EQ(net::ERR_UNEXPECTED, cancel_result);
 
   writer.reset();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   // Write operation is already completed.
   EXPECT_TRUE(file_util::PathExists(path));
   EXPECT_EQ("foo", GetFileContent(path));

@@ -134,7 +134,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Write 8 bytes at offset 0 (-> length=8).
     std::string data("12345678");
     Write(0, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -155,7 +155,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Write 5 bytes at offset 5 (-> length=10).
     data = "55555";
     Write(5, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -174,7 +174,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Write 7 bytes at offset 8 (-> length=15).
     data = "9012345";
     Write(8, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -193,7 +193,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Write 2 bytes at offset 2 (-> length=15).
     data = "33";
     Write(2, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -211,7 +211,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Write 4 bytes at offset 20 (-> length=24).
     data = "XXXX";
     Write(20, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -232,7 +232,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Quota error case.  Write 7 bytes at offset 23 (-> length is unchanged)
     data = "ABCDEFG";
     Write(23, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
     EXPECT_EQ(5, quota_plugin_delegate()->available_space());
@@ -241,7 +241,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Overlapping write.  Write 6 bytes at offset 2 (-> length is unchanged)
     data = "ABCDEF";
     Write(2, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -251,7 +251,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     // Overlapping + extending the file size, but within the quota.
     // Write 6 bytes at offset 23 (-> length=29).
     Write(23, data, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -270,7 +270,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     quota_plugin_delegate()->set_available_space(100);
 
     SetLength(0, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(0, GetPlatformFileSize());
@@ -278,7 +278,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     reset_results();
 
     SetLength(8, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 8, quota_plugin_delegate()->available_space());
@@ -292,7 +292,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     }
 
     SetLength(16, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 16, quota_plugin_delegate()->available_space());
@@ -306,7 +306,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     }
 
     SetLength(4, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 4, quota_plugin_delegate()->available_space());
@@ -320,7 +320,7 @@ class QuotaFileIOTest : public PpapiUnittest {
     }
 
     SetLength(0, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100, quota_plugin_delegate()->available_space());
@@ -337,7 +337,7 @@ class QuotaFileIOTest : public PpapiUnittest {
 
     // Quota error case.
     SetLength(7, will_operation);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
     EXPECT_EQ(5, quota_plugin_delegate()->available_space());
@@ -458,7 +458,7 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
   Write(0, data1[0], false);
   Write(5, data1[1], false);
   Write(8, data1[2], false);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(ARRAYSIZE_UNSAFE(data1), num_results());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data1); ++i) {
@@ -479,7 +479,7 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
   };
   Write(2, data2[0], false);
   Write(20, data2[1], false);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(ARRAYSIZE_UNSAFE(data2), num_results());
   EXPECT_EQ(static_cast<int>(data2[0].size()), bytes_written().front());

@@ -313,7 +313,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
@@ -337,7 +337,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.

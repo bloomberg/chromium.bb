@@ -174,7 +174,7 @@ TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
       operation->DirectoryExists(url, base::Bind(&ExpectEqHelper, expectation));
     else
       operation->FileExists(url, base::Bind(&ExpectEqHelper, expectation));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 }
 
@@ -188,7 +188,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   bool completed = false;
   NewOperation(url)->ReadDirectory(
       url, base::Bind(&DidReadDirectory, &content, &completed));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(completed);
   EXPECT_EQ(5u, content.size());
 

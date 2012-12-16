@@ -42,7 +42,7 @@ void TestShellTest::TearDown() {
   test_shell_->DestroyWindow(test_shell_->mainWnd());
 
   // Flush the MessageLoop of any residual tasks.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 void TestShellTest::CreateEmptyWindow() {

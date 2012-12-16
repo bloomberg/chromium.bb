@@ -232,7 +232,7 @@ class LocalFileSystemOperationTest
         test_helper_.storage_type(),
         base::Bind(&LocalFileSystemOperationTest::DidGetUsageAndQuota,
                    &status, usage, quota));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(quota::kQuotaStatusOk, status);
   }
 
@@ -246,7 +246,7 @@ class LocalFileSystemOperationTest
                         false /* recursive */,
                         base::Bind(&AssertFileErrorEq,
                                    base::PLATFORM_FILE_OK));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     int64 total_usage;
     GetUsageAndQuota(&total_usage, NULL);
@@ -324,7 +324,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   FileSystemURL dest(URLForPath(FilePath(FILE_PATH_LITERAL("b"))));
   change_observer()->ResetCount();
   operation()->Move(src, dest, RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -334,7 +334,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureContainsPath) {
   FilePath dest_dir_path(CreateUniqueDirInDir(src_dir_path));
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -347,7 +347,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -361,7 +361,7 @@ TEST_F(LocalFileSystemOperationTest,
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -374,7 +374,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
 
   operation()->Move(URLForPath(src_file_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -387,7 +387,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(nonexisting_file),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -400,7 +400,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
 
   operation()->Move(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
 
@@ -421,7 +421,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
 
   operation()->Move(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
 
@@ -436,7 +436,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(DirectoryExists(src_dir_path));
 
@@ -458,7 +458,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_child_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(DirectoryExists(src_dir_path));
   EXPECT_TRUE(DirectoryExists(dest_child_dir_path));
@@ -478,7 +478,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_dir_path.Append(
       VirtualPath::BaseName(child_dir_path))));
@@ -497,7 +497,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   operation()->Copy(URLForPath(FilePath(FILE_PATH_LITERAL("a"))),
                     URLForPath(FilePath(FILE_PATH_LITERAL("b"))),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -507,7 +507,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureContainsPath) {
   FilePath dest_dir_path(CreateUniqueDirInDir(src_dir_path));
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -520,7 +520,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -534,7 +534,7 @@ TEST_F(LocalFileSystemOperationTest,
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -547,7 +547,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
 
   operation()->Copy(URLForPath(src_file_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -563,7 +563,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   operation()->Copy(URLForPath(src_dir_path),
                     URLForPath(nonexisting_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -584,7 +584,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureByQuota) {
 
   operation()->Truncate(URLForPath(src_file_path), 6,
                         RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   AddQuota(6 + dest_path_cost - 1);
@@ -594,7 +594,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureByQuota) {
 
   operation()->Copy(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
   EXPECT_FALSE(FileExists(dest_file_path));
 }
@@ -607,7 +607,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
 
   operation()->Copy(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
@@ -624,7 +624,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
 
   operation()->Copy(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
@@ -639,7 +639,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   // Make sure we've overwritten but not copied the source under the |dest_dir|.
@@ -661,7 +661,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_child_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_child_dir_path));
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
@@ -679,7 +679,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   FilePath dest_dir_path(CreateUniqueDir());
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_dir_path.Append(
       VirtualPath::BaseName(child_dir_path))));
@@ -711,7 +711,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileSuccess) {
   operation()->CopyInForeignFile(src_local_disk_file_path,
                                  dest_file_url,
                                  RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, change_observer()->create_file_count());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
@@ -746,7 +746,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileFailureByQuota) {
   operation()->CopyInForeignFile(src_local_disk_file_path,
                                  dest_file_url,
                                  RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(!FileExists(dest_file_path));
   EXPECT_EQ(0, change_observer()->create_file_count());
@@ -759,7 +759,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileFailure) {
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->CreateFile(URLForPath(file_path), true,
                           RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -770,7 +770,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileExists) {
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->CreateFile(URLForPath(file_path), false,
                           RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(file_path));
 
@@ -784,7 +784,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessExclusive) {
   FilePath file_path(dir_path.Append(FILE_PATH_LITERAL("FileDoesntExist")));
   operation()->CreateFile(URLForPath(file_path), true,
                           RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(file_path));
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
@@ -796,7 +796,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   FilePath file_path(dir_path.Append(FILE_PATH_LITERAL("FileDoesntExist")));
   operation()->CreateFile(URLForPath(file_path), false,
                           RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
 }
@@ -810,7 +810,7 @@ TEST_F(LocalFileSystemOperationTest,
       FILE_PATH_LITERAL("FileDoesntExist")));
   operation()->CreateDirectory(URLForPath(nonexisting_file_path), false, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -820,7 +820,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureDirExists) {
   FilePath src_dir_path(CreateUniqueDir());
   operation()->CreateDirectory(URLForPath(src_dir_path), true, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -831,7 +831,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureFileExists) {
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->CreateDirectory(URLForPath(file_path), true, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -841,7 +841,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccess) {
   FilePath dir_path(CreateUniqueDir());
   operation()->CreateDirectory(URLForPath(dir_path), false, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
@@ -850,7 +850,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccess) {
       FILE_PATH_LITERAL("nonexistingdir")));
   operation()->CreateDirectory(URLForPath(nonexisting_dir_path), false, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(nonexisting_dir_path));
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
@@ -863,7 +863,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccessExclusive) {
 
   operation()->CreateDirectory(URLForPath(nonexisting_dir_path), true, false,
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(nonexisting_dir_path));
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
@@ -875,18 +875,18 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataFailure) {
       FILE_PATH_LITERAL("nonexistingdir")));
   operation()->GetMetadata(URLForPath(nonexisting_dir_path),
                            RecordMetadataCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
   operation()->FileExists(URLForPath(nonexisting_dir_path),
                           RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
   operation()->DirectoryExists(URLForPath(nonexisting_dir_path),
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
@@ -897,12 +897,12 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
 
   operation()->DirectoryExists(URLForPath(dir_path),
                                RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   ++read_access;
 
   operation()->GetMetadata(URLForPath(dir_path), RecordMetadataCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(info().is_directory);
   EXPECT_EQ(FilePath(), path());
@@ -910,12 +910,12 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
 
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->FileExists(URLForPath(file_path), RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   ++read_access;
 
   operation()->GetMetadata(URLForPath(file_path), RecordMetadataCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(PlatformPath(file_path), path());
@@ -929,13 +929,13 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
 TEST_F(LocalFileSystemOperationTest, TestTypeMismatchErrors) {
   FilePath dir_path(CreateUniqueDir());
   operation()->FileExists(URLForPath(dir_path), RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
 
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   ASSERT_FALSE(file_path.empty());
   operation()->DirectoryExists(URLForPath(file_path), RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
 
@@ -946,7 +946,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
   operation()->ReadDirectory(URLForPath(nonexisting_dir_path),
                              RecordReadDirectoryCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
   // File exists.
@@ -954,7 +954,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->ReadDirectory(URLForPath(file_path),
                              RecordReadDirectoryCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   // TODO(kkanetkar) crbug.com/54309 to change the error code.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -972,7 +972,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirSuccess) {
 
   operation()->ReadDirectory(URLForPath(parent_dir_path),
                              RecordReadDirectoryCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_EQ(2u, entries().size());
 
@@ -997,7 +997,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
 
   operation()->Remove(URLForPath(nonexisting_path), false /* recursive */,
                       RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
   // It's an error to try to remove a non-empty directory if recursive flag
@@ -1013,7 +1013,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
 
   operation()->Remove(URLForPath(parent_dir_path), false /* recursive */,
                       RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
             status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -1025,7 +1025,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
 
   operation()->Remove(URLForPath(empty_dir_path), false /* recursive */,
                       RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(DirectoryExists(empty_dir_path));
 
@@ -1044,7 +1044,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
 
   operation()->Remove(URLForPath(parent_dir_path), true /* recursive */,
                       RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(DirectoryExists(parent_dir_path));
 
@@ -1068,7 +1068,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncate) {
 
   // Check that its length is the size of the data written.
   operation()->GetMetadata(URLForPath(file_path), RecordMetadataCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(data_size, info().size);
@@ -1076,7 +1076,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncate) {
   // Extend the file by truncating it.
   int length = 17;
   operation()->Truncate(URLForPath(file_path), length, RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -1100,7 +1100,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncate) {
   // Shorten the file by truncating it.
   length = 3;
   operation()->Truncate(URLForPath(file_path), length, RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -1128,7 +1128,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncateFailureByQuota) {
   AddQuota(10);
 
   operation()->Truncate(URLForPath(file_path), 10, RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -1137,7 +1137,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncateFailureByQuota) {
   EXPECT_EQ(10, info.size);
 
   operation()->Truncate(URLForPath(file_path), 11, RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
@@ -1166,7 +1166,7 @@ TEST_F(LocalFileSystemOperationTest, TestTouchFile) {
   operation()->TouchFile(
       URLForPath(file_path), new_accessed_time, new_modified_time,
       RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
@@ -1186,7 +1186,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
                                RecordStatusCallback());
   FilePath file_path(CreateUniqueFileInDir(dir_path));
   operation()->FileExists(URLForPath(file_path), RecordStatusCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   // See if we can get a 'snapshot' file info for the file.
@@ -1195,7 +1195,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
   // as the file itself.
   operation()->CreateSnapshotFile(URLForPath(file_path),
                                   RecordSnapshotFileCallback());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(PlatformPath(file_path), path());

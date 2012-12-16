@@ -48,7 +48,7 @@ class DomStorageContextTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void VerifySingleOriginRemains(const GURL& origin) {
@@ -104,7 +104,7 @@ TEST_F(DomStorageContextTest, UsageInfo) {
       OpenStorageArea(kOrigin)->SetItem(kKey, kValue, &old_value));
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Create a new context that points to the same directory, see that
   // it knows about the origin that we stored data for.
@@ -136,7 +136,7 @@ TEST_F(DomStorageContextTest, SessionOnly) {
       OpenStorageArea(kSessionOnlyOrigin)->SetItem(kKey, kValue, &old_value));
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Verify that the session-only origin data is gone.
   VerifySingleOriginRemains(kOrigin);
@@ -154,7 +154,7 @@ TEST_F(DomStorageContextTest, SetForceKeepSessionState) {
   context_->SetForceKeepSessionState();  // Should override clear behavior.
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   VerifySingleOriginRemains(kSessionOnlyOrigin);
 }
@@ -214,7 +214,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   // Destroy and recreate the DomStorageContext.
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   context_ = new DomStorageContext(temp_dir_.path(),
                                    temp_dir_.path(),
                                    storage_policy_,
@@ -239,7 +239,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   // Destroy and recreate again.
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   context_ = new DomStorageContext(temp_dir_.path(),
                                    temp_dir_.path(),
                                    storage_policy_,
@@ -256,7 +256,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   dom_namespace->CloseStorageArea(area);
   context_->Shutdown();
   context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace dom_storage

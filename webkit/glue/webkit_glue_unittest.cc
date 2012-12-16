@@ -106,7 +106,7 @@ TEST(WebkitGlueTest, SuspendResumeSharedTimer) {
   platform_support.SuspendSharedTimer();
   // The above timer would have posted a task which can be processed out of the
   // message loop.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   // Set a mock time after 1 second to simulate timers suspended for 1 second.
   double new_time = base::Time::Now().ToDoubleT() + 1;
   platform_support.set_mock_monotonically_increasing_time(new_time);

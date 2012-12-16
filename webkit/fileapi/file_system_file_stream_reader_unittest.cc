@@ -80,14 +80,14 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL(kURLOrigin), kFileSystemTypeTemporary, true,  // create
         base::Bind(&OnValidateFileSystem));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     WriteFile(kTestFileName, kTestData, kTestDataSize,
               &test_file_modification_time_);
   }
 
   virtual void TearDown() OVERRIDE {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
  protected:

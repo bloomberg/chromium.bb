@@ -141,7 +141,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return usage_;
   }
 
@@ -153,7 +153,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         type,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -166,7 +166,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         type, host,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -179,7 +179,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return delete_status_ == quota::kQuotaStatusOk;
   }
 

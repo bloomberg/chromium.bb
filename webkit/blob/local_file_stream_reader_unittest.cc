@@ -75,7 +75,7 @@ class LocalFileStreamReaderTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Give another chance for deleted streams to perform Close.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     file_thread_.Stop();
   }
 

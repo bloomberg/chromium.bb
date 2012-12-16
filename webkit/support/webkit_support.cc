@@ -362,7 +362,7 @@ void SetUpTestEnvironmentForUnitTests(
 void TearDownTestEnvironment() {
   // Flush any remaining messages before we kill ourselves.
   // http://code.google.com/p/chromium/issues/detail?id=9500
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   BeforeShutdown();
   if (RunningOnValgrind())
@@ -562,7 +562,7 @@ void QuitMessageLoopNow() {
 }
 
 void RunAllPendingMessages() {
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 bool MessageLoopNestableTasksAllowed() {
@@ -576,7 +576,7 @@ void MessageLoopSetNestableTasksAllowed(bool allowed) {
 void DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
   MessageLoop::ScopedNestableTaskAllower allow(current);
-  current->RunAllPending();
+  current->RunUntilIdle();
 }
 
 WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
