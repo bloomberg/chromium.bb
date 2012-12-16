@@ -225,6 +225,25 @@ ExtensionTabsTest.*
 ExtensionModuleApiTest.*
 ExperimentalApiTest.*
 LocaleTestTraditionalChinese.*
+# DrM-i#1052-c#38
+FileSystemApiTest.*
+WebIntentPickerControllerIncognitoBrowserTest.*
+GlobalErrorServiceBrowserTest.*
+PerformanceMonitorUncleanExitBrowserTest.*
+PerformanceMonitorSessionRestoreBrowserTest.*
+AppNotificationTest.*
+ExtensionCloudPrintPrivateApiTest.*
+ViewSourceTest.*
+CommandLineWebstoreInstall.*
+BluetoothApiTest.*
+MediaGalleriesPrivateApiTest.*
+SerialApiTest.*
+ExtensionManagementTest.*
+ExtensionManagementApiEscalationTest.*
+ExtensionContextMenuBrowserLazyTest.*
+SystemInfoDisplayApiTest.*
+# DrM-i#1052-c#39
+ExtensionIdltestApiTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -284,3 +303,5 @@ ClipboardApiTest.*
 ExtensionDevToolsBrowserTest.*
 # DrM-i#1052-c#37
 IFrameTest.*
+# DrM-i#1052-c#39
+CloudPrintPolicyTest.*
