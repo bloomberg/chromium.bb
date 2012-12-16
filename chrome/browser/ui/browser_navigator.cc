@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -46,8 +47,8 @@ using content::WebContents;
 
 class BrowserNavigatorWebContentsAdoption {
  public:
-  static void AdoptAsTabContents(content::WebContents* contents) {
-    Browser::Adoption::AdoptAsTabContents(contents);
+  static void AttachTabHelpers(content::WebContents* contents) {
+    BrowserTabContents::AttachTabHelpers(contents);
   }
 };
 
@@ -493,7 +494,7 @@ void Navigate(NavigateParams* params) {
       // New tabs can have WebUI URLs that will make calls back to arbitrary
       // tab helpers, so the entire set of tab helpers needs to be set up
       // immediately.
-      BrowserNavigatorWebContentsAdoption::AdoptAsTabContents(
+      BrowserNavigatorWebContentsAdoption::AttachTabHelpers(
           params->target_contents);
       // This function takes ownership of |params->target_contents| until it
       // is added to a TabStripModel.

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
@@ -84,7 +85,7 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
 
 void BrowserTabStripModelDelegate::WillAddWebContents(
     content::WebContents* contents) {
-  Browser::Adoption::AdoptAsTabContents(contents);
+  BrowserTabContents::AttachTabHelpers(contents);
 }
 
 int BrowserTabStripModelDelegate::GetDragActions() const {

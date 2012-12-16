@@ -18,10 +18,12 @@
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 
@@ -34,7 +36,7 @@ const char kTabHelpersInitializedUserDataKey[] =
 
 }  // namespace
 
-void TabAndroid::InitTabHelpers(WebContents* contents) {
+void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   // If already initialized, nothing to be done.
   base::SupportsUserData::Data* initialization_tag =
       contents->GetUserData(&kTabHelpersInitializedUserDataKey);
@@ -44,6 +46,9 @@ void TabAndroid::InitTabHelpers(WebContents* contents) {
   // Mark as initialized.
   contents->SetUserData(&kTabHelpersInitializedUserDataKey,
                             new base::SupportsUserData::Data());
+
+  // Set the view type.
+  chrome::SetViewType(contents, chrome::VIEW_TYPE_TAB_CONTENTS);
 
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
@@ -72,6 +77,10 @@ void TabAndroid::InitTabHelpers(WebContents* contents) {
   TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
   WindowAndroidHelper::CreateForWebContents(contents);
+}
+
+void TabAndroid::InitTabHelpers(WebContents* contents) {
+  BrowserTabContents::AttachTabHelpers(contents);
 }
 
 WebContents* TabAndroid::InitWebContentsFromView(JNIEnv* env,

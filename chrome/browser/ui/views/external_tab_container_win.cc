@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -218,7 +219,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
   content::WebContentsObserver::Observe(existing_contents);
 
-  Browser::Adoption::AdoptAsTabContents(existing_contents);
+  BrowserTabContents::AttachTabHelpers(existing_contents);
   web_contents_.reset(existing_contents);
 
   if (!infobars_enabled) {

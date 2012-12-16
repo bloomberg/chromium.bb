@@ -93,6 +93,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -102,6 +103,7 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -110,6 +112,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -124,6 +127,7 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
@@ -138,6 +142,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -1567,7 +1572,7 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   // requests for its initial navigation will start immediately. The WebContents
   // will later be inserted into this browser using Browser::Navigate via
   // AddNewContents.
-  Adoption::AdoptAsTabContents(new_contents);
+  BrowserTabContents::AttachTabHelpers(new_contents);
 
   // Notify.
   RetargetingDetails details;
@@ -2220,6 +2225,21 @@ bool Browser::CanCloseWithInProgressDownloads() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted utility functions (private):
+
+void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
+  // WebContents...
+  web_contents->SetDelegate(delegate);
+
+  // ...and all the helpers.
+  BlockedContentTabHelper::FromWebContents(web_contents)->
+      set_delegate(delegate);
+  BookmarkTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
+  ConstrainedWindowTabHelper::FromWebContents(web_contents)->
+      set_delegate(delegate);
+  CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
+  SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
+  ZoomController::FromWebContents(web_contents)->set_observer(delegate);
+}
 
 void Browser::CloseFrame() {
   window_->Close();

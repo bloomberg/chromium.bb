@@ -18,6 +18,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/url_constants.h"
@@ -272,7 +273,7 @@ void PrerenderContents::StartPrerendering(
   prerendering_has_started_ = true;
 
   prerender_contents_.reset(CreateWebContents(session_storage_namespace));
-  Browser::Adoption::AdoptAsTabContents(prerender_contents_.get());
+  BrowserTabContents::AttachTabHelpers(prerender_contents_.get());
   content::WebContentsObserver::Observe(prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
