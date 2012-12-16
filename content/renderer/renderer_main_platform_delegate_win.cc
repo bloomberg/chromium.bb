@@ -4,8 +4,6 @@
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
-#include <signal.h>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -42,26 +40,12 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
   }
 }
 
-void __cdecl ForceCrashOnSigAbort(int) {
-  *((int*)0) = 0x1337;
-}
-
 void InitExitInterceptions() {
   // If code subsequently tries to exit using exit(), _exit(), abort(), or
   // ExitProcess(), force a crash (since otherwise these would be silent
   // terminations and fly under the radar).
   base::win::SetShouldCrashOnProcessDetach(true);
-
-  // Prevent CRT's abort code from prompting a dialog or trying to "report" it.
-  // Disabling the _CALL_REPORTFAULT behavior is important since otherwise it
-  // has the sideffect of clearing our exception filter, which means we
-  // don't get any crash.
-  _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
-
-  // Set a SIGABRT handler for good measure. We will crash even if the default
-  // is left in place, however this allows us to crash earlier. And it also
-  // lets us crash in response to code which might directly call raise(SIGABRT)
-  signal(SIGABRT, ForceCrashOnSigAbort);
+  base::win::SetAbortBehaviorForCrashReporting();
 }
 
 }  // namespace

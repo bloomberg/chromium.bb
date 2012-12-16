@@ -35,6 +35,7 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "content/common/sandbox_init_mac.h"
@@ -78,6 +79,11 @@ PpapiThread::~PpapiThread() {
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
   WebKit::shutdown();
+
+#if defined(OS_WIN)
+  if (permissions_.HasPermission(ppapi::PERMISSION_FLASH))
+    base::win::SetShouldCrashOnProcessDetach(false);
+#endif
 }
 
 bool PpapiThread::Send(IPC::Message* msg) {
@@ -269,6 +275,15 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
   }
 
 #if defined(OS_WIN)
+  // If code subsequently tries to exit using abort(), force a crash (since
+  // otherwise these would be silent terminations and fly under the radar).
+  base::win::SetAbortBehaviorForCrashReporting();
+  if (permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
+    // Force a crash for exit(), _exit(), or ExitProcess(), but only do that for
+    // Pepper Flash.
+    base::win::SetShouldCrashOnProcessDetach(true);
+  }
+
   // Once we lower the token the sandbox is locked down and no new modules
   // can be loaded. TODO(cpu): consider changing to the loading style of
   // regular plugins.
