@@ -13,17 +13,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif
-
 namespace chrome {
 class SadTab;
 }
 
-#if defined(OS_MACOSX)
-class SadTabController;
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 namespace views {
 class Widget;
 }
@@ -58,18 +52,9 @@ class SadTabHelper : public content::WebContentsObserver,
   // Used to get notifications about renderers coming and going.
   content::NotificationRegistrar registrar_;
 
-  // The platform views used to render the sad tab, non-NULL if visible.
-#if defined(OS_MACOSX)
-  class ScopedPtrRelease {
-   public:
-    inline void operator()(void* x) const {
-      base::mac::NSObjectRelease(x);
-    }
-  };
-  scoped_ptr_malloc<SadTabController, ScopedPtrRelease> sad_tab_;
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   scoped_ptr<views::Widget> sad_tab_;
-#elif defined(TOOLKIT_GTK)
+#elif defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   scoped_ptr<chrome::SadTab> sad_tab_;
 #endif
 

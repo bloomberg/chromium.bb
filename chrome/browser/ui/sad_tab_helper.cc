@@ -12,9 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -51,15 +49,13 @@ void SadTabHelper::Observe(int type,
                            const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_CONNECTED, type);
   if (sad_tab_) {
-#if defined(OS_MACOSX)
-    sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
     sad_tab_->Close();
     // See http://crbug.com/117668. When the Widget is being destructed, we
     // want calls to sad_tab() to return NULL.
     scoped_ptr<views::Widget> local_sad_tab;
     local_sad_tab.swap(sad_tab_);
-#elif defined(TOOLKIT_GTK)
+#elif defined(TOOLKIT_GTK) || defined(OS_MACOSX)
     sad_tab_->Close();
 #else
 #error Unknown platform
@@ -69,15 +65,10 @@ void SadTabHelper::Observe(int type,
 }
 
 void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
   chrome::SadTabKind kind =
       (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) ?
           chrome::SAD_TAB_KIND_KILLED : chrome::SAD_TAB_KIND_CRASHED;
-#endif
-#if defined(OS_MACOSX)
-  sad_tab_.reset(
-      sad_tab_controller_mac::CreateSadTabController(web_contents()));
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   views::Widget::InitParams sad_tab_params(
       views::Widget::InitParams::TYPE_CONTROL);
   // It is not possible to create a native_widget_win that has no parent in
@@ -103,7 +94,7 @@ void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   gfx::Rect bounds;
   web_contents()->GetView()->GetContainerBounds(&bounds);
   sad_tab_->SetBounds(gfx::Rect(bounds.size()));
-#elif defined(TOOLKIT_GTK)
+#elif defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   sad_tab_.reset(chrome::SadTab::Create(web_contents(), kind));
   sad_tab_->Show();
 #else
