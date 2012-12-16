@@ -84,7 +84,6 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_ASYNC;
 
 const char kFileBrowserExtensionId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
-const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 
 // Returns process id of the process the extension is running in.
 int ExtractProcessFromExtensionId(const std::string& extension_id,
@@ -104,7 +103,8 @@ int ExtractProcessFromExtensionId(const std::string& extension_id,
 
 bool IsBuiltinTask(const FileBrowserHandler* task) {
   return (task->extension_id() == kFileBrowserExtensionId ||
-          task->extension_id() == kQuickOfficeExtensionId);
+          task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||
+          task->extension_id() == extension_misc::kQuickOfficeExtensionId);
 }
 
 bool MatchesAllURLs(const FileBrowserHandler* handler) {
@@ -366,25 +366,31 @@ void FindDefaultTasks(Profile* profile,
     }
   }
 
+  const FileBrowserHandler* builtin_task = NULL;
   // Convert the default task IDs collected above to one of the handler pointers
   // from common_tasks.
   for (FileBrowserHandlerSet::const_iterator task_iter = common_tasks.begin();
        task_iter != common_tasks.end(); ++task_iter) {
     std::string task_id = MakeTaskID((*task_iter)->extension_id(), kTaskFile,
                                      (*task_iter)->id());
-    for (std::set<std::string>::iterator default_iter = default_ids.begin();
-         default_iter != default_ids.end(); ++default_iter) {
-      if (task_id == *default_iter) {
-        default_tasks->insert(*task_iter);
-        break;
-      }
-    }
-    // If it's a built in task, then we want to always insert it so that we have
-    // an initial default for all file types we can handle with built in
-    // handlers.
-    if (IsBuiltinTask(*task_iter))
+    std::set<std::string>::iterator default_iter = default_ids.find(task_id);
+    if (default_iter != default_ids.end()) {
       default_tasks->insert(*task_iter);
+      continue;
+    }
+
+    // If it's a built in task, remember it. If there are no default tasks among
+    // common tasks, builtin task will be used as a fallback.
+    // Note that builtin tasks are not overlapping, so there can be at most one
+    // builtin tasks for each set of files.
+    if (IsBuiltinTask(*task_iter))
+      builtin_task = *task_iter;
   }
+
+  // If there are no default tasks found, use builtin task (if found) as a
+  // default.
+  if (builtin_task && default_tasks->empty())
+    default_tasks->insert(builtin_task);
 }
 
 // Given the list of selected files, returns array of context menu tasks
@@ -454,6 +460,9 @@ bool GetTaskForURL(
   if (!FindCommonTasks(profile, file_urls, &common_tasks))
     return false;
 
+  if (common_tasks.empty())
+    return false;
+
   FindDefaultTasks(profile, file_urls, common_tasks, &default_tasks);
 
   // If there's none, or more than one, then we don't have a canonical default.
@@ -465,7 +474,11 @@ bool GetTaskForURL(
     return true;
   }
 
-  return false;
+  // If there are no default tasks, use first task in the list (file manager
+  // does the same in this situation).
+  // TODO(tbarzic): This is so not optimal behaviour.
+  *handler = *common_tasks.begin();
+  return true;
 }
 
 class ExtensionTaskExecutor : public FileTaskExecutor {
