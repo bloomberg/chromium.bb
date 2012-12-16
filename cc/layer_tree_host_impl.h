@@ -204,6 +204,7 @@ public:
     void readback(void* pixels, const gfx::Rect&);
 
     LayerTreeImpl* activeTree() { return m_activeTree.get(); }
+    LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
 
     // TODO(nduca): Remove these in favor of LayerTreeImpl.
     void setRootLayer(scoped_ptr<LayerImpl>);
@@ -354,6 +355,7 @@ private:
     scoped_ptr<Renderer> m_renderer;
     scoped_ptr<TileManager> m_tileManager;
 
+    scoped_ptr<LayerTreeImpl> m_pendingTree;
     scoped_ptr<LayerTreeImpl> m_activeTree;
 
     bool m_scrollDeltaIsInViewportSpace;

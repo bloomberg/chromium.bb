@@ -14,13 +14,27 @@ PictureLayerTilingSet::PictureLayerTilingSet(
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
-void PictureLayerTilingSet::CloneFrom(const PictureLayerTilingSet& other) {
+void PictureLayerTilingSet::CloneAll(
+    const PictureLayerTilingSet& other,
+    const Region& invalidation) {
   layer_bounds_ = other.layer_bounds_;
   tilings_.clear();
   tilings_.reserve(other.tilings_.size());
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
     tilings_.append(other.tilings_[i]->Clone());
+    tilings_.last()->Invalidate(invalidation);
   }
+}
+
+void PictureLayerTilingSet::Clone(
+    const PictureLayerTiling* tiling,
+    const Region& invalidation) {
+
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    DCHECK_NE(tilings_[i]->contents_scale(), tiling->contents_scale());
+
+  tilings_.append(tiling->Clone());
+  tilings_.last()->Invalidate(invalidation);
 }
 
 void PictureLayerTilingSet::SetLayerBounds(gfx::Size layer_bounds) {
@@ -43,11 +57,13 @@ void PictureLayerTilingSet::Invalidate(const Region& invalidation) {
     tilings_[i]->Invalidate(invalidation);
 }
 
-void PictureLayerTilingSet::AddTiling(float contents_scale,
-                                      gfx::Size tile_size) {
+const PictureLayerTiling* PictureLayerTilingSet::AddTiling(
+    float contents_scale,
+    gfx::Size tile_size) {
   tilings_.append(PictureLayerTiling::Create(contents_scale, tile_size));
   tilings_.last()->SetClient(client_);
   tilings_.last()->SetLayerBounds(layer_bounds_);
+  return tilings_.last();
 }
 
 void PictureLayerTilingSet::Reset() {

@@ -129,13 +129,15 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 
 void PictureLayerImpl::didUpdateTransforms() {
   if (drawsContent()) {
-    // TODO(enne): Add more tilings during pinch zoom.
+    // TODO(enne): Add tilings during pinch zoom
+    // TODO(enne): Consider culling old tilings after pinch finishes.
     if (!tilings_.num_tilings()) {
       gfx::Size tile_size = layerTreeImpl()->settings().defaultTileSize;
-      tilings_.AddTiling(contentsScaleX(), tile_size);
-      // TODO(enne): handle invalidations, create new tiles
+      AddTiling(contentsScaleX(), tile_size);
+      // TODO(enne): Add a low-res tiling as well.
     }
   } else {
+    // TODO(enne): This should be unnecessary once there are two trees.
     tilings_.Reset();
   }
 
@@ -181,8 +183,46 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       tiling->contents_scale()));
 }
 
+void PictureLayerImpl::SyncFromActiveLayer() {
+  DCHECK(layerTreeImpl()->IsPendingTree());
+  if (!drawsContent())
+    return;
+
+  // If there is an active tree version of this layer, get a copy of its
+  // tiles.  This needs to be done last, after setting invalidation and the
+  // pile.
+  PictureLayerImpl* active_twin = static_cast<PictureLayerImpl*>(
+      layerTreeImpl()->FindActiveTreeLayerById(id()));
+  if (!active_twin)
+    return;
+  SyncFromActiveLayer(active_twin);
+}
+
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
-  tilings_.CloneFrom(other->tilings_);
+  tilings_.CloneAll(other->tilings_, invalidation_);
+}
+
+void PictureLayerImpl::SyncTiling(
+    const PictureLayerTiling* tiling) {
+  tilings_.Clone(tiling, invalidation_);
+}
+
+void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
+  const PictureLayerTiling* tiling = tilings_.AddTiling(
+      contents_scale,
+      tile_size);
+
+  // If a new tiling is created on the active tree, sync it to the pending tree
+  // so that it can share the same tiles.
+  if (layerTreeImpl()->IsActiveTree())
+    return;
+
+  PictureLayerImpl* pending_twin = static_cast<PictureLayerImpl*>(
+      layerTreeImpl()->FindPendingTreeLayerById(id()));
+  if (!pending_twin)
+    return;
+  DCHECK_EQ(id(), pending_twin->id());
+  pending_twin->SyncTiling(tiling);
 }
 
 }  // namespace cc

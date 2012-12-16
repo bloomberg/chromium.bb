@@ -40,13 +40,17 @@ class CC_EXPORT LayerTreeImpl {
   }
   virtual ~LayerTreeImpl();
 
-  // Methods called by the layer tree that pass-through to LHTI.
+  // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   FrameRateCounter* frame_rate_counter() const;
+  bool IsActiveTree() const;
+  bool IsPendingTree() const;
+  LayerImpl* FindActiveTreeLayerById(int id);
+  LayerImpl* FindPendingTreeLayerById(int id);
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

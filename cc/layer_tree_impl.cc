@@ -106,6 +106,28 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return layer_tree_host_impl_->fpsCounter();
 }
 
+bool LayerTreeImpl::IsActiveTree() const {
+  return layer_tree_host_impl_->activeTree() == this;
+}
+
+bool LayerTreeImpl::IsPendingTree() const {
+  return layer_tree_host_impl_->pendingTree() == this;
+}
+
+LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
+  LayerTreeImpl* tree = layer_tree_host_impl_->activeTree();
+  if (!tree)
+    return NULL;
+  return tree->LayerById(id);
+}
+
+LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
+  LayerTreeImpl* tree = layer_tree_host_impl_->pendingTree();
+  if (!tree)
+    return NULL;
+  return tree->LayerById(id);
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->setNeedsRedraw();
 }

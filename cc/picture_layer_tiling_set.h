@@ -18,14 +18,20 @@ class CC_EXPORT PictureLayerTilingSet {
   ~PictureLayerTilingSet();
 
   // Shallow copies all data (except client) from other.
-  void CloneFrom(const PictureLayerTilingSet& other);
+  void CloneAll(
+     const PictureLayerTilingSet& other,
+     const Region& invalidation);
+  void Clone(const PictureLayerTiling* tiling, const Region& invalidation);
+
+  // TODO(enne): Remove this once syncing happens to the pending tree.
+  void Invalidate(const Region& invalidation);
 
   void SetLayerBounds(gfx::Size layer_bounds);
   gfx::Size LayerBounds() const;
 
-  void Invalidate(const Region& invalidation);
-
-  void AddTiling(float contents_scale, gfx::Size tile_size);
+  const PictureLayerTiling* AddTiling(
+      float contents_scale,
+      gfx::Size tile_size);
   size_t num_tilings() const { return tilings_.size(); }
 
   void Reset();
@@ -76,6 +82,7 @@ class CC_EXPORT PictureLayerTilingSet {
   PictureLayerTilingClient* client_;
   gfx::Size layer_bounds_;
   ScopedPtrVector<PictureLayerTiling> tilings_;
+  Region invalidation_;
 
   friend class Iterator;
 };

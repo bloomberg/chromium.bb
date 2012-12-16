@@ -38,13 +38,17 @@ public:
                                          gfx::Rect) OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree
-  void SyncFromActiveLayer(const PictureLayerImpl* other);
+  void SyncFromActiveLayer();
+  void SyncTiling(const PictureLayerTiling* tiling);
 
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
+  void AddTiling(float contents_scale, gfx::Size tile_size);
+  void SyncFromActiveLayer(const PictureLayerImpl* other);
 
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;
+  Region invalidation_;
 
   gfx::Transform last_screen_space_transform_;
   double last_update_time_;

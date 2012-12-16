@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/picture_layer.h"
+
+#include "cc/layer_tree_impl.h"
 #include "cc/picture_layer_impl.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -29,15 +31,21 @@ scoped_ptr<LayerImpl> PictureLayer::createLayerImpl(LayerTreeImpl* treeImpl) {
 
 void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   Layer::pushPropertiesTo(base_layer);
+
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  layer_impl->didUpdateBounds();
+  layer_impl->tilings_.SetLayerBounds(bounds());
+  layer_impl->invalidation_.Clear();
+  layer_impl->invalidation_.Swap(pile_invalidation_);
   pile_.PushPropertiesTo(layer_impl->pile_);
 
-  // TODO(enne): Once we have two trees on the impl side, we need to
-  // sync the active layer's tiles prior to this Invalidate call since it
-  // will make new tiles for anything intersecting the invalidation.
-  layer_impl->tilings_.Invalidate(pile_invalidation_);
-  pile_invalidation_.Clear();
+  // TODO(enne): Remove this once syncing happens to the pending tree rather
+  // than the active one.
+  if (layer_impl->layerTreeImpl()->IsActiveTree()) {
+    layer_impl->tilings_.Invalidate(layer_impl->invalidation_);
+    return;
+  }
+
+  layer_impl->SyncFromActiveLayer();
 }
 
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
