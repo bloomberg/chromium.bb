@@ -1310,6 +1310,10 @@ public:
         m_childLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_layerTreeHost->setRootLayer(m_rootLayer);
+
+        ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
+        ResourceUpdateQueue queue;
+        m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
     }
 
@@ -1407,6 +1411,9 @@ public:
         m_layerTreeHost->setRootLayer(m_layer);
         m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
 
+        ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
+        ResourceUpdateQueue queue;
+        m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
         postSetNeedsRedrawToMainThread();
     }
@@ -1511,6 +1518,9 @@ public:
         setLayerPropertiesForTesting(m_parent.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 20), true);
         setLayerPropertiesForTesting(m_child.get(), m_parent.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 10), gfx::Size(10, 10), false);
 
+        ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
+        ResourceUpdateQueue queue;
+        m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
         postSetNeedsRedrawToMainThread();
     }
