@@ -323,13 +323,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(profile);
     ASSERT_TRUE(bookmark_model);
-
-    if (!bookmark_model->IsLoaded()) {
-      content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                    content::Source<Profile>(profile));
-      content::RunMessageLoop();
-    }
+    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
 
     GURL url(entry.url);
     // Add everything in order of time. We don't want to have a time that
@@ -385,7 +379,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
       case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       case chrome::NOTIFICATION_TAB_PARENTED:
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
-      case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       case chrome::NOTIFICATION_HISTORY_LOADED:
       case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
