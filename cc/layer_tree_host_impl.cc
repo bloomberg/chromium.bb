@@ -701,7 +701,15 @@ static void removeRenderPassesRecursive(RenderPass::Id removeRenderPassId, Layer
 
 bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRenderPass(const RenderPassDrawQuad& quad, const FrameData&) const
 {
-    return quad.contents_changed_since_last_frame.IsEmpty() && m_renderer.haveCachedResourcesForRenderPassId(quad.render_pass_id);
+    if (!quad.contents_changed_since_last_frame.IsEmpty()) {
+        TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have damage");
+        return false;
+    } else if (!m_renderer.haveCachedResourcesForRenderPassId(quad.render_pass_id)) {
+        TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have no texture");
+        return false;
+    }
+    TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures dropped!");
+    return true;
 }
 
 bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(const RenderPassDrawQuad& quad, const FrameData& frame) const

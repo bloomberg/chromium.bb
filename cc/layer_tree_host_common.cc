@@ -270,12 +270,16 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
 
     // If the layer flattens its subtree (i.e. the layer doesn't preserve-3d), but it is
     // treated as a 3D object by its parent (i.e. parent does preserve-3d).
-    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && numDescendantsThatDrawContent > 0)
+    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && numDescendantsThatDrawContent > 0) {
+        TRACE_EVENT_INSTANT0("cc", "LayerTreeHostCommon::requireSurface flattening");
         return true;
+    }
 
     // If the layer clips its descendants but it is not axis-aligned with respect to its parent.
-    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && numDescendantsThatDrawContent > 0)
+    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && numDescendantsThatDrawContent > 0) {
+        TRACE_EVENT_INSTANT0("cc", "LayerTreeHostCommon::requireSurface clipping");
         return true;
+    }
 
     // If the layer has some translucency and does not have a preserves-3d transform style.
     // This condition only needs a render surface if two or more layers in the
@@ -285,8 +289,10 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
     bool atLeastTwoLayersInSubtreeDrawContent = layer->hasDelegatedContent() ||
         (numDescendantsThatDrawContent > 0 && (layer->drawsContent() || numDescendantsThatDrawContent > 1));
 
-    if (layer->opacity() != 1 && !layer->preserves3D() && atLeastTwoLayersInSubtreeDrawContent)
+    if (layer->opacity() != 1 && !layer->preserves3D() && atLeastTwoLayersInSubtreeDrawContent) {
+        TRACE_EVENT_INSTANT0("cc", "LayerTreeHostCommon::requireSurface opacity");
         return true;
+    }
 
     return false;
 }
