@@ -19,8 +19,18 @@ or
 "endure_<webapp_name>_wpr_test <test_name>" (Web Page Replay tests)
 
 For example: "endure_gmail_wpr_test testGmailComposeDiscard"
+
+This script accepts either a URL or a local path as a buildbot location.
+It switches its behavior if a URL is given, or a local path is given.
+
+When a URL is given, it gets buildbot logs from the buildbot builders URL
+e.g. http://build.chromium.org/p/chromium.endure/builders/.
+
+When a local path is given, it gets buildbot logs from buildbot's internal
+files in the directory e.g. /home/chrome-bot/buildbot.
 """
 
+import cPickle
 import getpass
 import logging
 import optparse
@@ -28,6 +38,7 @@ import os
 import re
 import simplejson
 import socket
+import string
 import sys
 import time
 import urllib
@@ -51,7 +62,7 @@ BUILDER_URL_BASE = 'http://build.chromium.org/p/chromium.endure/builders/'
 LAST_BUILD_NUM_PROCESSED_FILE = os.path.join(os.path.dirname(__file__),
                                              '_parser_last_processed.txt')
 LOCAL_GRAPH_DIR = '/home/%s/www/chrome_endure_clean' % getpass.getuser()
-
+MANGLE_TRANSLATION = string.maketrans(' ()', '___')
 
 def SetupBaseGraphDirIfNeeded(webapp_name, test_name, dest_dir):
   """Sets up the directory containing results for a particular test, if needed.
@@ -223,8 +234,8 @@ def OutputEventData(revision, event_dict, dest_dir):
   WriteToDataFile(new_line, existing_lines, revision, data_file)
 
 
-def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
-                                     only_dmp=False):
+def UpdatePerfDataFromFetchedContent(
+    revision, content, webapp_name, test_name, graph_dir, only_dmp=False):
   """Update perf data from fetched stdio data.
 
   Args:
@@ -232,6 +243,7 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
     content: Fetched stdio data.
     webapp_name: A name of the webapp.
     test_name: A name of the test.
+    graph_dir: A path to the graph directory.
     only_dmp: True if only Deep Memory Profiler results should be used.
   """
   perf_data_raw = []
@@ -253,23 +265,38 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
   for match in re.findall(
       r'RESULT ([^:]+): ([^=]+)= ([-\d\.]+) (\S+)', content):
     if (not only_dmp) or match[0].endswith('-DMP'):
-      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], None,
-                        webapp_name, webapp_name)
+      try:
+        match2 = eval(match[2])
+      except SyntaxError:
+        match2 = None
+      if match2:
+        AppendRawPerfData(match[0], match[1], match2, match[3], None,
+                          webapp_name, webapp_name)
 
   # Next scan for long-running perf test results.
   for match in re.findall(
       r'RESULT ([^:]+): ([^=]+)= (\[[^\]]+\]) (\S+) (\S+)', content):
     if (not only_dmp) or match[0].endswith('-DMP'):
+      try:
+        match2 = eval(match[2])
+      except SyntaxError:
+        match2 = None
       # TODO(dmikurube): Change the condition to use stacked graph when we
       # determine how to specify it.
-      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
-                        webapp_name, test_name, match[0].endswith('-DMP'))
+      if match2:
+        AppendRawPerfData(match[0], match[1], match2, match[3], match[4],
+                          webapp_name, test_name, match[0].endswith('-DMP'))
 
   # Next scan for events in the test results.
   for match in re.findall(
       r'RESULT _EVENT_: ([^=]+)= (\[[^\]]+\])', content):
-    AppendRawPerfData('_EVENT_', match[0], eval(match[1]), None, None,
-                      webapp_name, test_name)
+    try:
+      match1 = eval(match[1])
+    except SyntaxError:
+      match1 = None
+    if match1:
+      AppendRawPerfData('_EVENT_', match[0], match1, None, None,
+                        webapp_name, test_name)
 
   # For each graph_name/description pair that refers to a long-running test
   # result or an event, concatenate all the results together (assume results
@@ -310,7 +337,7 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
   for perf_data_key in perf_data:
     perf_data_dict = perf_data[perf_data_key]
 
-    dest_dir = os.path.join(LOCAL_GRAPH_DIR, perf_data_dict['webapp_name'])
+    dest_dir = os.path.join(graph_dir, perf_data_dict['webapp_name'])
     if not os.path.exists(dest_dir):
       os.mkdir(dest_dir)  # Webapp name directory.
       os.chmod(dest_dir, 0755)
@@ -328,76 +355,108 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
                      perf_data_dict['stack'], perf_data_dict['stack_order'])
 
 
-def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
-  """Process updated perf data for a particular slave and build number.
+def SlaveLocation(master_location, slave_info):
+  """Returns slave location for |master_location| and |slave_info|."""
+  if master_location.startswith('http://'):
+    return master_location + urllib.quote(slave_info['slave_name'])
+  else:
+    return os.path.join(master_location,
+                        slave_info['slave_name'].translate(MANGLE_TRANSLATION))
+
+
+def GetRevisionAndLogs(slave_location, build_num):
+  """Get a revision number and log locations.
 
   Args:
-    slave_info: A dictionary containing information about the slave to process.
-    build_num: The particular build number on the slave to process.
+    slave_location: A URL or a path to the build slave data.
+    build_num: A build number.
 
   Returns:
-    True if the perf data for the given slave/build is updated properly, or
-    False if any critical error occurred.
+    A pair of the revision number and a list of strings that contain locations
+    of logs.  (False, []) in case of error.
   """
-  logging.debug('  %s, build %d.', slave_info['slave_name'], build_num)
-  build_url = (BUILDER_URL_BASE + urllib.quote(slave_info['slave_name']) +
-               '/builds/' + str(build_num))
-  is_dbg = '(dbg)' in slave_info['slave_name']
+  if slave_location.startswith('http://'):
+    location = slave_location + '/builds/' + str(build_num)
+  else:
+    location = os.path.join(slave_location, str(build_num))
 
-  url_contents = ''
   fp = None
   try:
-    fp = urllib2.urlopen(build_url, timeout=60)
-    url_contents = fp.read()
+    if location.startswith('http://'):
+      fp = urllib2.urlopen(location)
+      contents = fp.read()
+      revisions = re.findall(r'<td class="left">got_revision</td>\s+'
+                             '<td>(\d+)</td>\s+<td>Source</td>', contents)
+      revision = revisions[0]
+      logs = [location + link + '/text' for link
+              in re.findall(r'(/steps/endure[^/]+/logs/stdio)', contents)]
+    else:
+      fp = open(location, 'rb')
+      build = cPickle.load(fp)
+      revision = build.getProperty('got_revision')
+      candidates = os.listdir(slave_location)
+      logs = [os.path.join(slave_location, filename) for filename in candidates
+              if re.match(r'%d-log-endure[^/]+-stdio' % build_num, filename)]
   except urllib2.URLError, e:
-    logging.exception('Error reading build URL "%s": %s', build_url, str(e))
-    return False
+    logging.exception('Error reading build URL "%s": %s', location, str(e))
+    return False, []
+  except (IOError, OSError), e:
+    logging.exception('Error reading build file "%s": %s', location, str(e))
+    return False, []
   finally:
     if fp:
       fp.close()
 
-  # Extract the revision number for this build.
-  revision = re.findall(
-      r'<td class="left">got_revision</td>\s+<td>(\d+)</td>\s+<td>Source</td>',
-      url_contents)
-  if not revision:
-    logging.warning('Could not get revision number. Assuming build is too new '
-                    'or was cancelled.')
-    return True  # Do not fail the script in this case; continue with next one.
-  revision = revision[0]
+  return revision, logs
 
-  # Extract any Chrome Endure stdio links for this build.
-  stdio_urls = []
-  links = re.findall(r'(/steps/endure[^/]+/logs/stdio)', url_contents)
-  for link in links:
-    link_unquoted = urllib.unquote(link)
-    found_wpr_result = False
-    match = re.findall(r'endure_([^_]+)_test ([^/]+)/', link_unquoted)
-    if not match:
-      match = re.findall(r'endure_([^_]+)_wpr_test ([^/]+)/', link_unquoted)
-      if match:
-        found_wpr_result = True
-      else:
-        logging.error('Test name not in expected format in link: ' +
-                      link_unquoted)
-        return False
-    match = match[0]
-    webapp_name = match[0] + '_wpr' if found_wpr_result else match[0]
-    webapp_name = webapp_name + '_dbg' if is_dbg else webapp_name
-    test_name = match[1]
-    stdio_urls.append({
-      'link': build_url + link + '/text',
+
+def ExtractTestNames(log_location, is_dbg):
+  """Extract test names from |log_location|.
+
+  Returns:
+    A dict of a log location, webapp's name and test's name.  False if error.
+  """
+  if log_location.startswith('http://'):
+    location = urllib.unquote(log_location)
+    test_pattern = r'endure_([^_]+)_test ([^/]+)/'
+    wpr_test_pattern = r'endure_([^_]+)_wpr_test ([^/]+)/'
+  else:
+    location = log_location
+    test_pattern = r'endure_([^_]+)_test_([^/]+)-stdio'
+    wpr_test_pattern = 'endure_([^_]+)_wpr_test_([^/]+)-stdio'
+
+  found_wpr_result = False
+  match = re.findall(test_pattern, location)
+  if not match:
+    match = re.findall(wpr_test_pattern, location)
+    if match:
+      found_wpr_result = True
+    else:
+      logging.error('Test name not in expected format: ' + location)
+      return False
+  match = match[0]
+  webapp_name = match[0] + '_wpr' if found_wpr_result else match[0]
+  webapp_name = webapp_name + '_dbg' if is_dbg else webapp_name
+  test_name = match[1]
+
+  return {
+      'location': log_location,
       'webapp_name': webapp_name,
       'test_name': test_name,
-    })
+      }
 
-  # For each test stdio link, parse it and look for new perf data to be graphed.
-  for stdio_url_data in stdio_urls:
-    stdio_url = stdio_url_data['link']
-    url_contents = ''
-    fp = None
-    try:
-      fp = urllib2.urlopen(stdio_url, timeout=60)
+
+def GetStdioContents(stdio_location):
+  """Gets appropriate stdio contents.
+
+  Returns:
+    A content string of the stdio log.  None in case of error.
+  """
+  fp = None
+  contents = ''
+  try:
+    if stdio_location.startswith('http://'):
+      fp = urllib2.urlopen(stdio_location, timeout=60)
       # Since in-progress test output is sent chunked, there's no EOF.  We need
       # to specially handle this case so we don't hang here waiting for the
       # test to complete.
@@ -406,31 +465,151 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
         data = fp.read(1024)
         if not data:
           break
-        url_contents += data
+        contents += data
         if time.time() - start_time >= 30:  # Read for at most 30 seconds.
           break
-    except (urllib2.URLError, socket.error), e:
-      # Issue warning but continue to the next stdio link.
-      logging.warning('Error reading test stdio URL "%s": %s', stdio_url,
-                      str(e))
-    finally:
-      if fp:
-        fp.close()
+    else:
+      fp = open(stdio_location)
+      data = fp.read()
+      contents = ''
+      index = 0
 
-    UpdatePerfDataFromFetchedContent(revision, url_contents,
-                                     stdio_url_data['webapp_name'],
-                                     stdio_url_data['test_name'],
-                                     is_dbg)
+      # Buildbot log files are stored in the netstring format.
+      # http://en.wikipedia.org/wiki/Netstring
+      while index < len(data):
+        index2 = index
+        while data[index2].isdigit():
+          index2 += 1
+        if data[index2] != ':':
+          logging.error('Log file is not in expected format: %s' %
+                        stdio_location)
+          contents = None
+          break
+        length = int(data[index:index2])
+        index = index2 + 1
+        channel = int(data[index])
+        index += 1
+        if data[index+length-1] != ',':
+          logging.error('Log file is not in expected format: %s' %
+                        stdio_location)
+          contents = None
+          break
+        if channel == 0:
+          contents += data[index:(index+length-1)]
+        index += length
+
+  except (urllib2.URLError, socket.error, IOError, OSError), e:
+    # Issue warning but continue to the next stdio link.
+    logging.warning('Error reading test stdio data "%s": %s',
+                    stdio_location, str(e))
+  finally:
+    if fp:
+      fp.close()
+
+  return contents
+
+
+def UpdatePerfDataForSlaveAndBuild(
+    slave_info, build_num, graph_dir, master_location):
+  """Process updated perf data for a particular slave and build number.
+
+  Args:
+    slave_info: A dictionary containing information about the slave to process.
+    build_num: The particular build number on the slave to process.
+    graph_dir: A path to the graph directory.
+    master_location: A URL or a path to the build master data.
+
+  Returns:
+    True if the perf data for the given slave/build is updated properly, or
+    False if any critical error occurred.
+  """
+  if not master_location.startswith('http://'):
+    # Source is a file.
+    from buildbot.status import builder
+
+  slave_location = SlaveLocation(master_location, slave_info)
+  logging.debug('  %s, build %d.', slave_info['slave_name'], build_num)
+  is_dbg = '(dbg)' in slave_info['slave_name']
+
+  revision, logs = GetRevisionAndLogs(slave_location, build_num)
+  if not revision:
+    return False
+
+  stdios = []
+  for log_location in logs:
+    stdio = ExtractTestNames(log_location, is_dbg)
+    if not stdio:
+      return False
+    stdios.append(stdio)
+
+  for stdio in stdios:
+    stdio_location = stdio['location']
+    contents = GetStdioContents(stdio_location)
+
+    if contents:
+      UpdatePerfDataFromFetchedContent(revision, contents,
+                                       stdio['webapp_name'],
+                                       stdio['test_name'],
+                                       graph_dir, is_dbg)
 
   return True
 
 
-def UpdatePerfDataFiles():
+def GetMostRecentBuildNum(master_location, slave_name):
+  """Gets the most recent buld number for |slave_name| in |master_location|."""
+  most_recent_build_num = None
+
+  if master_location.startswith('http://'):
+    slave_url = master_location + urllib.quote(slave_name)
+
+    url_contents = ''
+    fp = None
+    try:
+      fp = urllib2.urlopen(slave_url, timeout=60)
+      url_contents = fp.read()
+    except urllib2.URLError, e:
+      logging.exception('Error reading builder URL: %s', str(e))
+      return None
+    finally:
+      if fp:
+        fp.close()
+
+    matches = re.findall(r'/(\d+)/stop', url_contents)
+    if matches:
+      most_recent_build_num = int(matches[0])
+    else:
+      matches = re.findall(r'#(\d+)</a></td>', url_contents)
+      if matches:
+        most_recent_build_num = sorted(map(int, matches), reverse=True)[0]
+
+  else:
+    slave_path = os.path.join(master_location,
+                              slave_name.translate(MANGLE_TRANSLATION))
+    files = os.listdir(slave_path)
+    number_files = [int(filename) for filename in files if filename.isdigit()]
+    if number_files:
+      most_recent_build_num = sorted(number_files, reverse=True)[0]
+
+  if most_recent_build_num:
+    logging.debug('%s most recent build number: %s',
+                  slave_name, most_recent_build_num)
+  else:
+    logging.error('Could not identify latest build number for slave %s.',
+                  slave_name)
+
+  return most_recent_build_num
+
+
+def UpdatePerfDataFiles(graph_dir, master_location):
   """Updates the Chrome Endure graph data files with the latest test results.
 
   For each known Chrome Endure slave, we scan its latest test results looking
   for any new test data.  Any new data that is found is then appended to the
   data files used to display the Chrome Endure graphs.
+
+  Args:
+    graph_dir: A path to the graph directory.
+    master_location: A URL or a path to the build master data.
 
   Returns:
     True if all graph data files are updated properly, or
@@ -448,35 +627,8 @@ def UpdatePerfDataFiles():
   logging.debug('Searching for latest build numbers for each slave...')
   for slave in slave_list:
     slave_name = slave['slave_name']
-    slave_url = BUILDER_URL_BASE + urllib.quote(slave_name)
-
-    url_contents = ''
-    fp = None
-    try:
-      fp = urllib2.urlopen(slave_url, timeout=60)
-      url_contents = fp.read()
-    except urllib2.URLError, e:
-      logging.exception('Error reading builder URL: %s', str(e))
-      return False
-    finally:
-      if fp:
-        fp.close()
-
-    matches = re.findall(r'/(\d+)/stop', url_contents)
-    if matches:
-      slave['most_recent_build_num'] = int(matches[0])
-    else:
-      matches = re.findall(r'#(\d+)</a></td>', url_contents)
-      if matches:
-        slave['most_recent_build_num'] = sorted(map(int, matches),
-                                                reverse=True)[0]
-      else:
-        logging.error('Could not identify latest build number for slave %s.',
-                      slave_name)
-        return False
-
-    logging.debug('%s most recent build number: %s', slave_name,
-                  slave['most_recent_build_num'])
+    slave['most_recent_build_num'] = GetMostRecentBuildNum(
+        master_location, slave_name)
 
   # Identify the last-processed build number for each slave.
   logging.debug('Identifying last processed build numbers...')
@@ -510,8 +662,11 @@ def UpdatePerfDataFiles():
                   slave_info['most_recent_build_num'])
     curr_build_num = slave_info['last_processed_build_num']
     while curr_build_num <= slave_info['most_recent_build_num']:
-      if not UpdatePerfDataForSlaveAndBuild(slave_info, curr_build_num):
-        return False
+      if not UpdatePerfDataForSlaveAndBuild(slave_info, curr_build_num,
+                                            graph_dir, master_location):
+        # Do not give up.  The first files might be removed by buildbot.
+        logging.warning('Logs do not exist in buildbot for #%d of %s.' %
+                        (curr_build_num, slave_info['slave_name']))
       curr_build_num += 1
 
   # Log the newly-processed build numbers.
@@ -524,8 +679,12 @@ def UpdatePerfDataFiles():
   return True
 
 
-def GenerateIndexPage():
-  """Generates a summary (landing) page for the Chrome Endure graphs."""
+def GenerateIndexPage(graph_dir):
+  """Generates a summary (landing) page for the Chrome Endure graphs.
+
+  Args:
+    graph_dir: A path to the graph directory.
+  """
   logging.debug('Generating new index.html page...')
 
   # Page header.
@@ -556,9 +715,9 @@ def GenerateIndexPage():
       time.strftime('%A, %B %d, %Y at %I:%M:%S %p %Z'))
 
   # Links for each webapp.
-  webapp_names = [x for x in os.listdir(LOCAL_GRAPH_DIR) if
-                  x not in ['js', 'old_data'] and
-                  os.path.isdir(os.path.join(LOCAL_GRAPH_DIR, x))]
+  webapp_names = [x for x in os.listdir(graph_dir) if
+                  x not in ['js', 'old_data', '.svn', '.git'] and
+                  os.path.isdir(os.path.join(graph_dir, x))]
   webapp_names = sorted(webapp_names)
 
   page += '<p> ['
@@ -575,7 +734,7 @@ def GenerateIndexPage():
 
     # Links for each test for this webapp.
     test_names = [x for x in
-                  os.listdir(os.path.join(LOCAL_GRAPH_DIR, webapp_name))]
+                  os.listdir(os.path.join(graph_dir, webapp_name))]
     test_names = sorted(test_names)
 
     page += '<p> ['
@@ -589,7 +748,7 @@ def GenerateIndexPage():
     for test_name in test_names:
       # Get the set of graph names for this test.
       graph_names = [x[:x.find('-summary.dat')] for x in
-                     os.listdir(os.path.join(LOCAL_GRAPH_DIR,
+                     os.listdir(os.path.join(graph_dir,
                                              webapp_name, test_name))
                      if '-summary.dat' in x and '_EVENT_' not in x]
       graph_names = sorted(graph_names)
@@ -616,7 +775,7 @@ def GenerateIndexPage():
   </html>
   """
 
-  index_file = os.path.join(LOCAL_GRAPH_DIR, 'index.html')
+  index_file = os.path.join(graph_dir, 'index.html')
   with open(index_file, 'w')  as f:
     f.write(page)
   os.chmod(index_file, 0755)
@@ -630,6 +789,17 @@ def main():
   parser.add_option(
       '-s', '--stdin', action='store_true', default=False,
       help='Input from stdin instead of slaves for testing this script.')
+  parser.add_option(
+      '-b', '--buildbot', dest='buildbot', metavar="BUILDBOT",
+      default=BUILDER_URL_BASE,
+      help='Use log files in a buildbot at BUILDBOT.  BUILDBOT can be a '
+           'buildbot\'s builder URL or a local path to a buildbot directory.  '
+           'Both an absolute path and a relative path are available, e.g. '
+           '"/home/chrome-bot/buildbot" or "../buildbot".  '
+           '[default: %default]')
+  parser.add_option(
+      '-g', '--graph', dest='graph_dir', metavar="DIR", default=LOCAL_GRAPH_DIR,
+      help='Output graph data files to DIR.  [default: %default]')
   options, _ = parser.parse_args(sys.argv)
 
   logging_level = logging.DEBUG if options.verbose else logging.INFO
@@ -638,14 +808,25 @@ def main():
 
   if options.stdin:
     content = sys.stdin.read()
-    UpdatePerfDataFromFetchedContent('12345', content, 'webapp', 'test')
+    UpdatePerfDataFromFetchedContent(
+        '12345', content, 'webapp', 'test', options.graph_dir)
   else:
-    success = UpdatePerfDataFiles()
+    if options.buildbot.startswith('http://'):
+      master_location = options.buildbot
+    else:
+      build_dir = os.path.join(options.buildbot, 'build')
+      third_party_dir = os.path.join(build_dir, 'third_party')
+      sys.path.append(third_party_dir)
+      sys.path.append(os.path.join(third_party_dir, 'buildbot_8_4p1'))
+      sys.path.append(os.path.join(third_party_dir, 'twisted_10_2'))
+      master_location = os.path.join(build_dir, 'masters',
+                                     'master.chromium.endure')
+    success = UpdatePerfDataFiles(options.graph_dir, master_location)
     if not success:
       logging.error('Failed to update perf data files.')
       sys.exit(0)
 
-  GenerateIndexPage()
+  GenerateIndexPage(options.graph_dir)
   logging.debug('All done!')
 
 
