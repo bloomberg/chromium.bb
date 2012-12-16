@@ -18,19 +18,26 @@ void InitializeGLExtensionBindingsGLX(GLContext* context);
 void InitializeDebugGLBindingsGLX();
 void ClearGLBindingsGLX();
 
-class GL_EXPORT RealGLXApi : public GLXApi {
+class GL_EXPORT GLXApiBase : public GLXApi {
  public:
-  RealGLXApi();
-  virtual ~RealGLXApi();
-  void Initialize(DriverGLX* driver);
-
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gl_bindings_api_autogen_glx.h"
 
- private:
+ protected:
+  GLXApiBase();
+  virtual ~GLXApiBase();
+  void InitializeBase(DriverGLX* driver);
+
   DriverGLX* driver_;
+};
+
+class GL_EXPORT RealGLXApi : public GLXApiBase {
+ public:
+  RealGLXApi();
+  virtual ~RealGLXApi();
+  void Initialize(DriverGLX* driver);
 };
 
 }  // namespace gfx

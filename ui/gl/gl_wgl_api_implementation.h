@@ -18,19 +18,26 @@ void InitializeGLExtensionBindingsWGL(GLContext* context);
 void InitializeDebugGLBindingsWGL();
 void ClearGLBindingsWGL();
 
-class GL_EXPORT RealWGLApi : public WGLApi {
+class GL_EXPORT WGLApiBase : public WGLApi {
  public:
-  RealWGLApi();
-  virtual ~RealWGLApi();
-  void Initialize(DriverWGL* driver);
-
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gl_bindings_api_autogen_wgl.h"
 
- private:
+ protected:
+  WGLApiBase();
+  virtual ~WGLApiBase();
+  void InitializeBase(DriverWGL* driver);
+
   DriverWGL* driver_;
+};
+
+class GL_EXPORT RealWGLApi : public WGLApiBase {
+ public:
+  RealWGLApi();
+  virtual ~RealWGLApi();
+  void Initialize(DriverWGL* driver);
 };
 
 }  // namespace gfx

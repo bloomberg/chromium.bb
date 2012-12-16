@@ -26,44 +26,47 @@ void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
 
-// Implemenents the GL API by calling directly into the driver.
-class GL_EXPORT RealGLApi : public GLApi {
+class GL_EXPORT GLApiBase : public GLApi {
  public:
-  RealGLApi();
-  virtual ~RealGLApi();
-  void Initialize(DriverGL* driver);
-
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gl_bindings_api_autogen_gl.h"
 
- private:
+ protected:
+  GLApiBase();
+  virtual ~GLApiBase();
+  void InitializeBase(DriverGL* driver);
+
   DriverGL* driver_;
+};
+
+// Implemenents the GL API by calling directly into the driver.
+class GL_EXPORT RealGLApi : public GLApiBase {
+ public:
+  RealGLApi();
+  virtual ~RealGLApi();
+  void Initialize(DriverGL* driver);
 };
 
 // Implementents the GL API using co-operative state restoring.
 // Assumes there is only one real GL context and that multiple virtual contexts
 // are implemented above it. Restores the needed state from the current context.
-class GL_EXPORT VirtualGLApi : public GLApi {
+class GL_EXPORT VirtualGLApi : public GLApiBase {
  public:
   VirtualGLApi();
   virtual ~VirtualGLApi();
   void Initialize(DriverGL* driver, GLContext* real_context);
-
-  // Include the auto-generated part of this class. We split this because
-  // it means we can easily edit the non-auto generated parts right here in
-  // this file instead of having to edit some template or the code generator.
-  #include "gl_bindings_api_autogen_gl.h"
 
   // Sets the current virutal context.
   bool MakeCurrent(GLContext* virtual_context, GLSurface* surface);
 
   void OnDestroyVirtualContext(GLContext* virtual_context);
 
- private:
-  DriverGL* driver_;
+  // Overridden functions from GLApiBase
+  virtual const GLubyte* glGetStringFn(GLenum name) OVERRIDE;
 
+ private:
   // The real context we're running on.
   GLContext* real_context_;
 

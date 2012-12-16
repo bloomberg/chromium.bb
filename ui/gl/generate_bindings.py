@@ -1484,7 +1484,7 @@ namespace gfx {
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
-    file.write('%s Real%sApi::%sFn(%s) {\n' %
+    file.write('%s %sApiBase::%sFn(%s) {\n' %
         (return_type, set_name.upper(), names[0], arguments))
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)

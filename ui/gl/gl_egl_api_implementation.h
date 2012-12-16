@@ -18,19 +18,26 @@ void InitializeGLExtensionBindingsEGL(GLContext* context);
 void InitializeDebugGLBindingsEGL();
 void ClearGLBindingsEGL();
 
-class GL_EXPORT RealEGLApi : public EGLApi {
+class GL_EXPORT EGLApiBase : public EGLApi {
  public:
-  RealEGLApi();
-  virtual ~RealEGLApi();
-  void Initialize(DriverEGL* driver);
-
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gl_bindings_api_autogen_egl.h"
 
- private:
+ protected:
+  EGLApiBase();
+  virtual ~EGLApiBase();
+  void InitializeBase(DriverEGL* driver);
+
   DriverEGL* driver_;
+};
+
+class GL_EXPORT RealEGLApi : public EGLApiBase {
+ public:
+  RealEGLApi();
+  virtual ~RealEGLApi();
+  void Initialize(DriverEGL* driver);
 };
 
 }  // namespace gfx
