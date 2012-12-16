@@ -8,9 +8,10 @@
 #include "android_webview/native/cookie_manager.h"
 
 namespace android_webview {
+class AwURLRequestJobFactory;
 
 void OnNetworkStackInitialized(net::URLRequestContext* context,
-                               net::URLRequestJobFactory* job_factory) {
+                               AwURLRequestJobFactory* job_factory) {
   RegisterAndroidProtocolsOnIOThread(context, job_factory);
   SetCookieMonsterOnNetworkStackInit(context, job_factory);
 }

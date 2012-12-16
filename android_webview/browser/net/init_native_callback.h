@@ -7,16 +7,16 @@
 
 namespace net {
 class URLRequestContext;
-class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
+class AwURLRequestJobFactory;
 
 // This is called on the IO thread when the network URLRequestContext has been
 // initialized but not used. Note that the UI thread is blocked during this
 // call.
 void OnNetworkStackInitialized(net::URLRequestContext* context,
-                               net::URLRequestJobFactory* job_factory);
+                               AwURLRequestJobFactory* job_factory);
 
 }  // namespace android_webview
 

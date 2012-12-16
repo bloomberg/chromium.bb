@@ -350,7 +350,7 @@ static void SetAcceptFileSchemeCookies(JNIEnv* env, jobject obj,
 
 void SetCookieMonsterOnNetworkStackInit(
     net::URLRequestContext* context,
-    net::URLRequestJobFactory* job_factory) {
+    AwURLRequestJobFactory* job_factory) {
   CookieManager::GetInstance()->SetCookieMonster(context);
 }
 

@@ -95,15 +95,15 @@ void AwURLRequestContextGetter::Init() {
 
   url_request_context_.reset(builder.Build());
 
-  job_factory_.reset(new AwURLRequestJobFactory);
-  bool set_protocol = job_factory_->SetProtocolHandler(
+  scoped_ptr<AwURLRequestJobFactory> job_factory(new AwURLRequestJobFactory);
+  bool set_protocol = job_factory->SetProtocolHandler(
       chrome::kFileScheme, new net::FileProtocolHandler());
   DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
+  set_protocol = job_factory->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
-  job_factory_->AddInterceptor(new AwRequestInterceptor());
-  url_request_context_->set_job_factory(job_factory_.get());
+  job_factory->AddInterceptor(new AwRequestInterceptor());
+  url_request_context_->set_job_factory(job_factory.get());
 
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
@@ -119,7 +119,8 @@ void AwURLRequestContextGetter::Init() {
   url_request_context_->set_http_transaction_factory(main_cache);
 
   OnNetworkStackInitialized(url_request_context_.get(),
-                            job_factory_.get());
+                            job_factory.get());
+  job_factory_ = job_factory.Pass();
 }
 
 void AwURLRequestContextGetter::PopulateNetworkSessionParams(

@@ -9,13 +9,13 @@
 
 namespace net {
 class URLRequestContext;
-class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
+class AwURLRequestJobFactory;
 
 void SetCookieMonsterOnNetworkStackInit(net::URLRequestContext* context,
-                                        net::URLRequestJobFactory* job_factory);
+                                        AwURLRequestJobFactory* job_factory);
 
 bool RegisterCookieManager(JNIEnv* env);
 

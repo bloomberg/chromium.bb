@@ -5,6 +5,7 @@
 #include "android_webview/native/android_protocol_handler.h"
 
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
+#include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/native/input_stream_impl.h"
 #include "base/android/jni_android.h"
@@ -20,7 +21,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_job_factory.h"
 
 using android_webview::InputStream;
 using android_webview::InputStreamImpl;
@@ -237,7 +237,7 @@ bool RegisterAndroidProtocolHandler(JNIEnv* env) {
 // static
 void RegisterAndroidProtocolsOnIOThread(
     net::URLRequestContext* context,
-    net::URLRequestJobFactory* job_factory) {
+    AwURLRequestJobFactory* job_factory) {
   // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is
   // granted via ChildProcessSecurityPolicy::GrantScheme(). This is done in

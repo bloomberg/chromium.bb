@@ -9,10 +9,10 @@
 
 namespace net {
 class URLRequestContext;
-class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
+class AwURLRequestJobFactory;
 
 // This class adds support for Android WebView-specific protocol schemes:
 //
@@ -26,7 +26,7 @@ namespace android_webview {
 //      WebSettings.html#setAllowFileAccess(boolean)
 void RegisterAndroidProtocolsOnIOThread(
     net::URLRequestContext* context,
-    net::URLRequestJobFactory* job_factory);
+    AwURLRequestJobFactory* job_factory);
 
 bool RegisterAndroidProtocolHandler(JNIEnv* env);
 }  // namespace android_webview
