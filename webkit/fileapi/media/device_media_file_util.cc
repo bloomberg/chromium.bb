@@ -175,12 +175,12 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(file_info);
   DCHECK(local_path);
   DCHECK(snapshot_policy);
+  // We return a temporary file as a snapshot.
+  *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
+
   MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
   if (!delegate)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-  // We return a temporary file as a snapshot.
-  *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
 
   // Create a temp file in "profile_path_/kDeviceMediaFileUtilTempDir".
   FilePath isolated_media_file_system_dir_path =
