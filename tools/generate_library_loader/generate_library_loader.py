@@ -44,8 +44,6 @@ class %(class_name)s {
 
   bool Load(const std::string& library_name) WARN_UNUSED_RESULT;
 
-  bool loaded() const { return loaded_; }
-
 %(member_decls)s
 
  private:

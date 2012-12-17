@@ -2428,7 +2428,6 @@
           'dependencies': [
             'mtp_file_entry_proto',
             'mtp_storage_info_proto',
-            '../build/linux/system.gyp:libspeechd',
             '../build/linux/system.gyp:udev',
           ],
           'sources': [
