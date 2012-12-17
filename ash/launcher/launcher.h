@@ -130,8 +130,7 @@ class ASH_EXPORT Launcher: public views::WidgetObserver  {
   void WillActivateAsFallback() { activating_as_fallback_ = true; }
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) OVERRIDE;
 
  private:
   class DelegateView;
