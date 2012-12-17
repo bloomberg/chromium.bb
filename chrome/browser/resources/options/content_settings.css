@@ -99,6 +99,7 @@ div[role='section-header'] > h3 {
 
 .media-device-control > select {
   display: table-cell;
+  margin: 5px 0;
   width: 12em;
 }
 
