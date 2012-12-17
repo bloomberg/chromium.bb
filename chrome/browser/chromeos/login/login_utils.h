@@ -31,6 +31,11 @@ class LoginUtils {
    public:
     // Called after profile is loaded and prepared for the session.
     virtual void OnProfilePrepared(Profile* profile) = 0;
+
+#if defined(ENABLE_RLZ)
+    // Called after post-profile RLZ initialization.
+    virtual void OnRlzInitialized(Profile* profile) {}
+#endif
   };
 
   // Get LoginUtils singleton object. If it was not set before, new default

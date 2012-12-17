@@ -711,6 +711,8 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
       first_run::GetPingDelayPrefName().c_str());
   RLZTracker::InitRlzFromProfileDelayed(
       user_profile, UserManager::Get()->IsCurrentUserNew(), ping_delay);
+  if (delegate_)
+    delegate_->OnRlzInitialized(user_profile);
 #endif
 }
 

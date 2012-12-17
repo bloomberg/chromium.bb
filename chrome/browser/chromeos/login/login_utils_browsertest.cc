@@ -354,6 +354,12 @@ class LoginUtilsTest : public testing::Test,
     prepared_profile_ = profile;
   }
 
+#if defined(ENABLE_RLZ)
+  virtual void OnRlzInitialized(Profile* profile) OVERRIDE {
+    rlz_initialized_cb_.Run();
+  }
+#endif
+
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE {
     FAIL() << "OnLoginFailure not expected";
   }
@@ -475,6 +481,8 @@ class LoginUtilsTest : public testing::Test,
   MockCryptohomeLibrary* cryptohome_;
   Profile* prepared_profile_;
 
+  base::Closure rlz_initialized_cb_;
+
  private:
   base::ScopedTempDir scoped_temp_dir_;
 
@@ -523,6 +531,32 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
   EXPECT_EQ(kUsernameOtherDomain, user_manager->GetLoggedInUser()->email());
 }
+
+#if defined(ENABLE_RLZ)
+TEST_F(LoginUtilsTest, RlzInitialized) {
+  // No RLZ brand code set initially.
+  EXPECT_FALSE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));
+
+  base::RunLoop wait_for_rlz_init;
+  rlz_initialized_cb_ = wait_for_rlz_init.QuitClosure();
+
+  PrepareProfile(kUsername);
+
+  wait_for_rlz_init.Run();
+  // Wait for blocking RLZ tasks to complete.
+  RunUntilIdle();
+
+  // RLZ brand code has been set to empty string.
+  EXPECT_TRUE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));
+  EXPECT_EQ(std::string(), local_state_.Get()->GetString(prefs::kRLZBrand));
+
+  // RLZ value for homepage access point should have been initialized.
+  string16 rlz_string;
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
+      RLZTracker::CHROME_HOME_PAGE, &rlz_string));
+  EXPECT_EQ(string16(), rlz_string);
+}
+#endif
 
 TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
