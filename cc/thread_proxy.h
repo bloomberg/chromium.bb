@@ -54,7 +54,6 @@ public:
     virtual size_t maxPartialTextureUpdates() const OVERRIDE;
     virtual void acquireLayerTextures() OVERRIDE;
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
-    virtual bool commitPendingForTesting() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -108,10 +107,6 @@ private:
         void* pixels;
         gfx::Rect rect;
     };
-    struct CommitPendingRequest {
-        CompletionEvent completion;
-        bool commitPending;
-    };
     void forceBeginFrameOnImplThread(CompletionEvent*);
     void beginFrameCompleteOnImplThread(CompletionEvent*, ResourceUpdateQueue*);
     void beginFrameAbortedOnImplThread();
@@ -132,7 +127,6 @@ private:
     ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapInternal(bool forcedDraw);
     void forceSerializeOnSwapBuffersOnImplThread(CompletionEvent*);
     void setNeedsForcedCommitOnImplThread();
-    void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
 
     // Accessed on main thread only.
     bool m_animateRequested; // Set only when setNeedsAnimate is called.

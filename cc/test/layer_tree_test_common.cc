@@ -272,6 +272,7 @@ ThreadedTest::ThreadedTest()
     : m_beginning(false)
     , m_endWhenBeginReturns(false)
     , m_timedOut(false)
+    , m_finished(false)
     , m_scheduled(false)
     , m_started(false)
     , m_implThread(0)
@@ -284,6 +285,8 @@ ThreadedTest::~ThreadedTest()
 
 void ThreadedTest::endTest()
 {
+    m_finished = true;
+
     // For the case where we endTest during beginTest(), set a flag to indicate that
     // the test should end the second beginTest regains control.
     if (m_beginning)
@@ -371,7 +374,7 @@ void ThreadedTest::timeout()
 
 void ThreadedTest::scheduleComposite()
 {
-    if (!m_started || m_scheduled)
+    if (!m_started || m_scheduled || m_finished)
         return;
     m_scheduled = true;
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchComposite, base::Unretained(this)));
@@ -379,17 +382,15 @@ void ThreadedTest::scheduleComposite()
 
 void ThreadedTest::realEndTest()
 {
-    if (m_layerTreeHost && m_layerTreeHost->proxy()->commitPendingForTesting()) {
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::realEndTest, base::Unretained(this)));
-        return;
-    }
-        
     MessageLoop::current()->Quit();
 }
 
 void ThreadedTest::dispatchSetNeedsAnimate()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
+
+    if (m_finished)
+        return;
 
     if (m_layerTreeHost.get())
         m_layerTreeHost->setNeedsAnimate();
@@ -399,6 +400,9 @@ void ThreadedTest::dispatchAddInstantAnimation()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
 
+    if (m_finished)
+        return;
+
     if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
         addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 0, 0, 0.5, false);
 }
@@ -406,6 +410,9 @@ void ThreadedTest::dispatchAddInstantAnimation()
 void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
 {
     DCHECK(!proxy() || proxy()->isMainThread());
+
+    if (m_finished)
+        return;
 
     if (layerToReceiveAnimation)
         addOpacityTransitionToLayer(*layerToReceiveAnimation, 10, 0, 0.5, true);
@@ -415,6 +422,9 @@ void ThreadedTest::dispatchSetNeedsCommit()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
 
+    if (m_finished)
+        return;
+
     if (m_layerTreeHost.get())
         m_layerTreeHost->setNeedsCommit();
 }
@@ -422,6 +432,9 @@ void ThreadedTest::dispatchSetNeedsCommit()
 void ThreadedTest::dispatchAcquireLayerTextures()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
+
+    if (m_finished)
+        return;
 
     if (m_layerTreeHost.get())
         m_layerTreeHost->acquireLayerTextures();
@@ -431,6 +444,9 @@ void ThreadedTest::dispatchSetNeedsRedraw()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
 
+    if (m_finished)
+        return;
+
     if (m_layerTreeHost.get())
         m_layerTreeHost->setNeedsRedraw();
 }
@@ -439,6 +455,9 @@ void ThreadedTest::dispatchSetVisible(bool visible)
 {
     DCHECK(!proxy() || proxy()->isMainThread());
 
+    if (m_finished)
+        return;
+
     if (m_layerTreeHost.get())
         m_layerTreeHost->setVisible(visible);
 }
@@ -446,13 +465,16 @@ void ThreadedTest::dispatchSetVisible(bool visible)
 void ThreadedTest::dispatchComposite()
 {
     m_scheduled = false;
-    if (m_layerTreeHost.get())
+    if (m_layerTreeHost.get() && !m_finished)
         m_layerTreeHost->composite();
 }
 
 void ThreadedTest::dispatchDidAddAnimation()
 {
     DCHECK(!proxy() || proxy()->isMainThread());
+
+    if (m_finished)
+        return;
 
     if (m_layerTreeHost.get())
         m_layerTreeHost->didAddAnimation();

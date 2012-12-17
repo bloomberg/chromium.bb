@@ -983,23 +983,4 @@ ThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState()
 {
 }
 
-bool ThreadProxy::commitPendingForTesting()
-{
-    DCHECK(isMainThread());
-    CommitPendingRequest commitPendingRequest;
-    {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::commitPendingOnImplThreadForTesting, base::Unretained(this), &commitPendingRequest));
-        commitPendingRequest.completion.wait();
-    }
-    return commitPendingRequest.commitPending;
-}
-
-void ThreadProxy::commitPendingOnImplThreadForTesting(CommitPendingRequest* request)
-{
-    DCHECK(isImplThread());
-    request->commitPending = m_schedulerOnImplThread->commitPending();
-    request->completion.signal();
-}
-
 }  // namespace cc

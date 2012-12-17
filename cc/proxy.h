@@ -100,7 +100,6 @@ public:
 
     // Testing hooks
     virtual void loseOutputSurface() = 0;
-    virtual bool commitPendingForTesting() = 0;
 
 protected:
     explicit Proxy(scoped_ptr<Thread> implThread);
