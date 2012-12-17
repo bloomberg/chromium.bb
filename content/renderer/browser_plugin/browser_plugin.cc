@@ -152,6 +152,51 @@ void BrowserPlugin::Cleanup() {
     FreeDamageBuffer(&pending_damage_buffer_);
 }
 
+bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
+                        OnGuestContentWindowReady)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
+                        OnShouldAcceptTouchEvents)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void BrowserPlugin::UpdateDOMAttribute(
+    const std::string& attribute_name,
+    const std::string& attribute_value) {
+  if (!container())
+    return;
+
+  WebKit::WebElement element = container()->element();
+  WebKit::WebString web_attribute_name =
+      WebKit::WebString::fromUTF8(attribute_name);
+  std::string current_value(element.getAttribute(web_attribute_name).utf8());
+  if (current_value == attribute_value)
+    return;
+
+  if (attribute_value.empty()) {
+    element.removeAttribute(web_attribute_name);
+  } else {
+    element.setAttribute(web_attribute_name,
+        WebKit::WebString::fromUTF8(attribute_value));
+  }
+}
+
+
 bool BrowserPlugin::SetSrcAttribute(const std::string& src,
                                     std::string* error_message) {
   if (!valid_partition_id_) {
@@ -262,25 +307,221 @@ bool BrowserPlugin::DamageBufferMatches(
 }
 #endif
 
-void BrowserPlugin::UpdateDOMAttribute(
-    const std::string& attribute_name,
-    const std::string& attribute_value) {
-  if (!container())
-    return;
+void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
+  DCHECK(render_view_);
+  render_view_->GetWebView()->advanceFocus(reverse);
+}
 
-  WebKit::WebElement element = container()->element();
-  WebKit::WebString web_attribute_name =
-      WebKit::WebString::fromUTF8(attribute_name);
-  std::string current_value(element.getAttribute(web_attribute_name).utf8());
-  if (current_value == attribute_value)
-    return;
+void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
+                                            int content_window_routing_id) {
+  DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
+  content_window_routing_id_ = content_window_routing_id;
+}
 
-  if (attribute_value.empty()) {
-    element.removeAttribute(web_attribute_name);
-  } else {
-    element.setAttribute(web_attribute_name,
-        WebKit::WebString::fromUTF8(attribute_value));
+void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
+  // We fire the event listeners before painting the sad graphic to give the
+  // developer an opportunity to display an alternative overlay image on crash.
+  std::string termination_status = TerminationStatusToString(
+      static_cast<base::TerminationStatus>(status));
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  props[kReason] = base::Value::CreateStringValue(termination_status);
+
+  // Event listeners may remove the BrowserPlugin from the document. If that
+  // happens, the BrowserPlugin will be scheduled for later deletion (see
+  // BrowserPlugin::destroy()). That will clear the container_ reference,
+  // but leave other member variables valid below.
+  TriggerEvent(kEventExit, &props);
+
+  guest_crashed_ = true;
+  // We won't paint the contents of the current backing store again so we might
+  // as well toss it out and save memory.
+  backing_store_.reset();
+  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+  // NULL so we shouldn't attempt to access it.
+  if (container_)
+    container_->invalidate();
+}
+
+void BrowserPlugin::OnGuestResponsive(int instance_id, int process_id) {
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  TriggerEvent(kEventResponsive, &props);
+}
+
+void BrowserPlugin::OnGuestUnresponsive(int instance_id, int process_id) {
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  TriggerEvent(kEventUnresponsive, &props);
+}
+
+void BrowserPlugin::OnLoadAbort(int instance_id,
+                                const GURL& url,
+                                bool is_top_level,
+                                const std::string& type) {
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
+  props[kReason] = base::Value::CreateStringValue(type);
+  TriggerEvent(kEventLoadAbort, &props);
+}
+
+void BrowserPlugin::OnLoadCommit(
+    int instance_id,
+    const BrowserPluginMsg_LoadCommit_Params& params) {
+  // If the guest has just committed a new navigation then it is no longer
+  // crashed.
+  guest_crashed_ = false;
+  if (params.is_top_level) {
+    src_ = params.url.spec();
+    UpdateDOMAttribute(kSrc, src_.c_str());
   }
+  process_id_ = params.process_id;
+  current_nav_entry_index_ = params.current_entry_index;
+  nav_entry_count_ = params.entry_count;
+
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(params.url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(params.is_top_level);
+  TriggerEvent(kEventLoadCommit, &props);
+}
+
+void BrowserPlugin::OnLoadRedirect(int instance_id,
+                                   const GURL& old_url,
+                                   const GURL& new_url,
+                                   bool is_top_level) {
+  std::map<std::string, base::Value*> props;
+  props[kOldURL] = base::Value::CreateStringValue(old_url.spec());
+  props[kNewURL] = base::Value::CreateStringValue(new_url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
+  TriggerEvent(kEventLoadRedirect, &props);
+}
+
+void BrowserPlugin::OnLoadStart(int instance_id,
+                                const GURL& url,
+                                bool is_top_level) {
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
+
+  TriggerEvent(kEventLoadStart, &props);
+}
+
+void BrowserPlugin::OnLoadStop(int instance_id) {
+  TriggerEvent(kEventLoadStop, NULL);
+}
+
+void BrowserPlugin::OnSetCursor(int instance_id, const WebCursor& cursor) {
+  cursor_ = cursor;
+}
+
+void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
+  if (container()) {
+    container()->requestTouchEventType(accept ?
+        WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
+        WebKit::WebPluginContainer::TouchEventRequestTypeNone);
+  }
+}
+
+void BrowserPlugin::OnUpdateRect(
+    int instance_id,
+    int message_id,
+    const BrowserPluginMsg_UpdateRect_Params& params) {
+  bool use_new_damage_buffer = !backing_store_;
+  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
+  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
+  // If we have a pending damage buffer, and the guest has begun to use the
+  // damage buffer then we know the guest will no longer use the current
+  // damage buffer. At this point, we drop the current damage buffer, and
+  // mark the pending damage buffer as the current damage buffer.
+  if (DamageBufferMatches(pending_damage_buffer_,
+                          params.damage_buffer_identifier)) {
+    SwapDamageBuffers();
+    use_new_damage_buffer = true;
+  }
+  if ((!auto_size_ &&
+       (width() != params.view_size.width() ||
+        height() != params.view_size.height())) ||
+      (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
+    if (pending_damage_buffer_) {
+      // The guest has not yet responded to the last resize request, and
+      // so we don't want to do anything at this point other than ACK the guest.
+      PopulateAutoSizeParameters(&auto_size_params);
+    } else {
+      // If we have no pending damage buffer, then the guest has not caught up
+      // with the BrowserPlugin container. We now tell the guest about the new
+      // container size.
+      pending_damage_buffer_ =
+          GetDamageBufferWithSizeParams(&auto_size_params,
+                                        &resize_guest_params);
+    }
+    browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
+        render_view_routing_id_,
+        instance_id_,
+        message_id,
+        auto_size_params,
+        resize_guest_params));
+    return;
+  }
+
+  if (auto_size_ && (params.view_size != last_view_size_)) {
+    if (backing_store_)
+      backing_store_->Clear(SK_ColorWHITE);
+    gfx::Size old_view_size = last_view_size_;
+    last_view_size_ = params.view_size;
+    // Schedule a SizeChanged instead of calling it directly to ensure that
+    // the backing store has been updated before the developer attempts to
+    // resize to avoid flicker. |size_changed_in_flight_| acts as a form of
+    // flow control for SizeChanged events. If the guest's view size is changing
+    // rapidly before a SizeChanged event fires, then we avoid scheduling
+    // another SizeChanged event. SizeChanged reads the new size from
+    // |last_view_size_| so we can be sure that it always fires an event
+    // with the last seen view size.
+    if (container_ && !size_changed_in_flight_) {
+      size_changed_in_flight_ = true;
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&BrowserPlugin::SizeChangedDueToAutoSize,
+                     base::Unretained(this),
+                     old_view_size));
+    }
+  }
+
+  // If we are now using a new damage buffer, then that means that the guest
+  // has updated its size state in response to a resize request. We change
+  // the backing store's size to accomodate the new damage buffer size.
+  if (use_new_damage_buffer) {
+    int backing_store_width = auto_size_ ? max_width_ : width();
+    int backing_store_height = auto_size_ ? max_height_: height();
+    backing_store_.reset(
+        new BrowserPluginBackingStore(
+            gfx::Size(backing_store_width, backing_store_height),
+            params.scale_factor));
+  }
+
+  // Update the backing store.
+  if (!params.scroll_rect.IsEmpty()) {
+    backing_store_->ScrollBackingStore(params.scroll_delta,
+                                       params.scroll_rect,
+                                       params.view_size);
+  }
+  for (unsigned i = 0; i < params.copy_rects.size(); i++) {
+    backing_store_->PaintToBackingStore(params.bitmap_rect,
+                                        params.copy_rects,
+                                        current_damage_buffer_);
+  }
+  // Invalidate the container.
+  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+  // NULL so we shouldn't attempt to access it.
+  if (container_)
+    container_->invalidate();
+  PopulateAutoSizeParameters(&auto_size_params);
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
+      render_view_routing_id_,
+      instance_id_,
+      message_id,
+      auto_size_params,
+      resize_guest_params));
 }
 
 void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
@@ -496,203 +737,6 @@ void BrowserPlugin::Reload() {
                                       instance_id_));
 }
 
-void BrowserPlugin::SetCursor(const WebCursor& cursor) {
-  cursor_ = cursor;
-}
-
-void BrowserPlugin::UpdateRect(
-    int message_id,
-    const BrowserPluginMsg_UpdateRect_Params& params) {
-  bool use_new_damage_buffer = !backing_store_;
-  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
-  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  // If we have a pending damage buffer, and the guest has begun to use the
-  // damage buffer then we know the guest will no longer use the current
-  // damage buffer. At this point, we drop the current damage buffer, and
-  // mark the pending damage buffer as the current damage buffer.
-  if (DamageBufferMatches(pending_damage_buffer_,
-                          params.damage_buffer_identifier)) {
-    SwapDamageBuffers();
-    use_new_damage_buffer = true;
-  }
-  if ((!auto_size_ &&
-       (width() != params.view_size.width() ||
-        height() != params.view_size.height())) ||
-      (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
-    if (pending_damage_buffer_) {
-      // The guest has not yet responded to the last resize request, and
-      // so we don't want to do anything at this point other than ACK the guest.
-      PopulateAutoSizeParameters(&auto_size_params);
-    } else {
-      // If we have no pending damage buffer, then the guest has not caught up
-      // with the BrowserPlugin container. We now tell the guest about the new
-      // container size.
-      pending_damage_buffer_ =
-          GetDamageBufferWithSizeParams(&auto_size_params,
-                                        &resize_guest_params);
-    }
-    browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-        render_view_routing_id_,
-        instance_id_,
-        message_id,
-        auto_size_params,
-        resize_guest_params));
-    return;
-  }
-
-  if (auto_size_ && (params.view_size != last_view_size_)) {
-    if (backing_store_)
-      backing_store_->Clear(SK_ColorWHITE);
-    gfx::Size old_view_size = last_view_size_;
-    last_view_size_ = params.view_size;
-    // Schedule a SizeChanged instead of calling it directly to ensure that
-    // the backing store has been updated before the developer attempts to
-    // resize to avoid flicker. |size_changed_in_flight_| acts as a form of
-    // flow control for SizeChanged events. If the guest's view size is changing
-    // rapidly before a SizeChanged event fires, then we avoid scheduling
-    // another SizeChanged event. SizeChanged reads the new size from
-    // |last_view_size_| so we can be sure that it always fires an event
-    // with the last seen view size.
-    if (container_ && !size_changed_in_flight_) {
-      size_changed_in_flight_ = true;
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&BrowserPlugin::SizeChangedDueToAutoSize,
-                     base::Unretained(this),
-                     old_view_size));
-    }
-  }
-
-  // If we are now using a new damage buffer, then that means that the guest
-  // has updated its size state in response to a resize request. We change
-  // the backing store's size to accomodate the new damage buffer size.
-  if (use_new_damage_buffer) {
-    int backing_store_width = auto_size_ ? max_width_ : width();
-    int backing_store_height = auto_size_ ? max_height_: height();
-    backing_store_.reset(
-        new BrowserPluginBackingStore(
-            gfx::Size(backing_store_width, backing_store_height),
-            params.scale_factor));
-  }
-
-  // Update the backing store.
-  if (!params.scroll_rect.IsEmpty()) {
-    backing_store_->ScrollBackingStore(params.scroll_delta,
-                                       params.scroll_rect,
-                                       params.view_size);
-  }
-  for (unsigned i = 0; i < params.copy_rects.size(); i++) {
-    backing_store_->PaintToBackingStore(params.bitmap_rect,
-                                        params.copy_rects,
-                                        current_damage_buffer_);
-  }
-  // Invalidate the container.
-  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
-  // NULL so we shouldn't attempt to access it.
-  if (container_)
-    container_->invalidate();
-  PopulateAutoSizeParameters(&auto_size_params);
-  browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-      render_view_routing_id_,
-      instance_id_,
-      message_id,
-      auto_size_params,
-      resize_guest_params));
-}
-
-void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
-  // We fire the event listeners before painting the sad graphic to give the
-  // developer an opportunity to display an alternative overlay image on crash.
-  std::string termination_status = TerminationStatusToString(status);
-  std::map<std::string, base::Value*> props;
-  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
-  props[kReason] = base::Value::CreateStringValue(termination_status);
-
-  // Event listeners may remove the BrowserPlugin from the document. If that
-  // happens, the BrowserPlugin will be scheduled for later deletion (see
-  // BrowserPlugin::destroy()). That will clear the container_ reference,
-  // but leave other member variables valid below.
-  TriggerEvent(kEventExit, &props);
-
-  guest_crashed_ = true;
-  // We won't paint the contents of the current backing store again so we might
-  // as well toss it out and save memory.
-  backing_store_.reset();
-  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
-  // NULL so we shouldn't attempt to access it.
-  if (container_)
-    container_->invalidate();
-}
-
-void BrowserPlugin::GuestUnresponsive(int process_id) {
-  std::map<std::string, base::Value*> props;
-  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
-  TriggerEvent(kEventUnresponsive, &props);
-}
-
-void BrowserPlugin::GuestResponsive(int process_id) {
-  std::map<std::string, base::Value*> props;
-  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
-  TriggerEvent(kEventResponsive, &props);
-}
-
-void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
-  std::map<std::string, base::Value*> props;
-  props[kURL] = base::Value::CreateStringValue(url.spec());
-  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
-
-  TriggerEvent(kEventLoadStart, &props);
-}
-
-void BrowserPlugin::LoadCommit(
-    const BrowserPluginMsg_LoadCommit_Params& params) {
-  // If the guest has just committed a new navigation then it is no longer
-  // crashed.
-  guest_crashed_ = false;
-  if (params.is_top_level) {
-    src_ = params.url.spec();
-    UpdateDOMAttribute(kSrc, src_.c_str());
-  }
-  process_id_ = params.process_id;
-  current_nav_entry_index_ = params.current_entry_index;
-  nav_entry_count_ = params.entry_count;
-
-  std::map<std::string, base::Value*> props;
-  props[kURL] = base::Value::CreateStringValue(params.url.spec());
-  props[kIsTopLevel] = base::Value::CreateBooleanValue(params.is_top_level);
-  TriggerEvent(kEventLoadCommit, &props);
-}
-
-void BrowserPlugin::LoadStop() {
-  // Construct the loadStop event object.
-  TriggerEvent(kEventLoadStop, NULL);
-}
-
-void BrowserPlugin::LoadAbort(const GURL& url,
-                              bool is_top_level,
-                              const std::string& type) {
-  std::map<std::string, base::Value*> props;
-  props[kURL] = base::Value::CreateStringValue(url.spec());
-  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
-  props[kReason] = base::Value::CreateStringValue(type);
-  TriggerEvent(kEventLoadAbort, &props);
-}
-
-void BrowserPlugin::LoadRedirect(const GURL& old_url,
-                                 const GURL& new_url,
-                                 bool is_top_level) {
-  std::map<std::string, base::Value*> props;
-  props[kOldURL] = base::Value::CreateStringValue(old_url.spec());
-  props[kNewURL] = base::Value::CreateStringValue(new_url.spec());
-  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
-  TriggerEvent(kEventLoadRedirect, &props);
-}
-
-void BrowserPlugin::AdvanceFocus(bool reverse) {
-  DCHECK(render_view_);
-  render_view_->GetWebView()->advanceFocus(reverse);
-}
-
 void BrowserPlugin::SetEmbedderFocus(bool focused) {
   if (embedder_focused_ == focused)
     return;
@@ -716,19 +760,6 @@ void BrowserPlugin::UpdateGuestFocusState() {
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   return plugin_focused_ && embedder_focused_;
-}
-
-void BrowserPlugin::GuestContentWindowReady(int content_window_routing_id) {
-  DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
-  content_window_routing_id_ = content_window_routing_id;
-}
-
-void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
-  if (container()) {
-    container()->requestTouchEventType(accept ?
-        WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
-        WebKit::WebPluginContainer::TouchEventRequestTypeNone);
-  }
 }
 
 WebKit::WebPluginContainer* BrowserPlugin::container() const {

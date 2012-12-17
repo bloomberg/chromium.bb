@@ -36,6 +36,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called only by tests to clean up before we blow away the MockRenderProcess.
   void Cleanup();
 
+  virtual bool OnMessageReceived(const IPC::Message& msg);
+
   // Update Browser Plugin's DOM Node attribute |attribute_name| with the value
   // |attribute_value|.
   void UpdateDOMAttribute(const std::string& attribute_name,
@@ -84,46 +86,12 @@ class CONTENT_EXPORT BrowserPlugin :
   bool SetPartitionAttribute(const std::string& partition_id,
                              std::string* error_message);
 
-  // Inform the BrowserPlugin to update its backing store with the pixels in
-  // its damage buffer.
-  void UpdateRect(int message_id,
-                  const BrowserPluginMsg_UpdateRect_Params& params);
-  // Inform the BrowserPlugin that its guest process is gone.
-  void GuestGone(int process_id, base::TerminationStatus status);
-  // Inform the BrowserPlugin that the guest process is unresponsive.
-  void GuestUnresponsive(int process_id);
-  // Inform the BrowserPlugin that the guest process is responsive again after
-  // being reported as unresponsive.
-  void GuestResponsive(int process_id);
-  // Inform the BrowserPlugin that the guest has navigated to a new URL.
-  void LoadCommit(const BrowserPluginMsg_LoadCommit_Params& params);
-  // Inform the BrowserPlugin that the guest has started loading a new page.
-  void LoadStart(const GURL& url, bool is_top_level);
-  // Inform the BrowserPlugin that the guest has finished loading a new page.
-  void LoadStop();
-  // Inform the BrowserPlugin that the guest has aborted loading a new page.
-  void LoadAbort(const GURL& url, bool is_top_level, const std::string& type);
-  // Inform the BrowserPlugin that the guest has redirected a navigation.
-  void LoadRedirect(const GURL& old_url,
-                    const GURL& new_url,
-                    bool is_top_level);
-  // Tells the BrowserPlugin to advance the focus to the next (or previous)
-  // element.
-  void AdvanceFocus(bool reverse);
   // Inform the BrowserPlugin of the focus state of the embedder RenderView.
   void SetEmbedderFocus(bool focused);
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
-
-  // Inform the BrowserPlugin that the guest's contentWindow is ready,
-  // and provide it with a routing ID to grab it.
-  void GuestContentWindowReady(int content_window_routing_id);
-
-  // Informs the BrowserPlugin that the guest has started/stopped accepting
-  // touch events.
-  void SetAcceptTouchEvents(bool accept);
 
   // Tells the BrowserPlugin to tell the guest to navigate to the previous
   // navigation entry in the navigation history.
@@ -141,9 +109,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void Stop();
   // A request from Javascript has been made to reload the page.
   void Reload();
-
-  // Informs the BrowserPlugin of the cursor that the guest has requested.
-  void SetCursor(const WebCursor& cursor);
 
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
@@ -271,6 +236,32 @@ class CONTENT_EXPORT BrowserPlugin :
       const TransportDIB* damage_buffer,
       const TransportDIB::Handle& other_damage_buffer_handle);
 #endif
+
+  // IPC message handlers.
+  // Please keep in alphabetical order.
+  void OnAdvanceFocus(int instance_id, bool reverse);
+  void OnGuestContentWindowReady(int instance_id,
+                                 int content_window_routing_id);
+  void OnGuestGone(int instance_id, int process_id, int status);
+  void OnGuestResponsive(int instance_id, int process_id);
+  void OnGuestUnresponsive(int instance_id, int process_id);
+  void OnLoadAbort(int instance_id,
+                   const GURL& url,
+                   bool is_top_level,
+                   const std::string& type);
+  void OnLoadCommit(int instance_id,
+                    const BrowserPluginMsg_LoadCommit_Params& params);
+  void OnLoadRedirect(int instance_id,
+                      const GURL& old_url,
+                      const GURL& new_url,
+                      bool is_top_level);
+  void OnLoadStart(int instance_id, const GURL& url, bool is_top_level);
+  void OnLoadStop(int instance_id);
+  void OnSetCursor(int instance_id, const WebCursor& cursor);
+  void OnShouldAcceptTouchEvents(int instance_id, bool accept);
+  void OnUpdateRect(int instance_id,
+                    int message_id,
+                    const BrowserPluginMsg_UpdateRect_Params& params);
 
   int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;

@@ -24,7 +24,7 @@ BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return new BrowserPlugin(browser_plugin_counter_++,
+  return new BrowserPlugin(++browser_plugin_counter_,
                            render_view,
                            frame,
                            params);
@@ -36,25 +36,21 @@ bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
 
 bool BrowserPluginManagerImpl::OnMessageReceived(
     const IPC::Message& message) {
+  if (ShouldForwardToBrowserPlugin(message)) {
+    int instance_id = 0;
+    // All allowed messages must have instance_id as their first parameter.
+    PickleIterator iter(message);
+    bool success = iter.ReadInt(&instance_id);
+    DCHECK(success);
+    BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+    if (plugin && plugin->OnMessageReceived(message))
+      return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
-                        OnGuestContentWindowReady)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
-                        OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_PluginAtPositionRequest,
                         OnPluginAtPositionRequest);
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -88,101 +84,28 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
        local_position));
 }
 
-void BrowserPluginManagerImpl::OnUpdateRect(
-    int instance_id,
-    int message_id,
-    const BrowserPluginMsg_UpdateRect_Params& params) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->UpdateRect(message_id, params);
+// static
+bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
+    const IPC::Message& message) {
+  switch (message.type()) {
+    case BrowserPluginMsg_UpdateRect::ID:
+    case BrowserPluginMsg_GuestGone::ID:
+    case BrowserPluginMsg_AdvanceFocus::ID:
+    case BrowserPluginMsg_GuestContentWindowReady::ID:
+    case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
+    case BrowserPluginMsg_LoadStart::ID:
+    case BrowserPluginMsg_LoadAbort::ID:
+    case BrowserPluginMsg_LoadRedirect::ID:
+    case BrowserPluginMsg_LoadCommit::ID:
+    case BrowserPluginMsg_LoadStop::ID:
+    case BrowserPluginMsg_SetCursor::ID:
+    case BrowserPluginMsg_GuestUnresponsive::ID:
+    case BrowserPluginMsg_GuestResponsive::ID:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
-void BrowserPluginManagerImpl::OnGuestGone(int instance_id,
-                                           int process_id,
-                                           int status) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->GuestGone(process_id, static_cast<base::TerminationStatus>(status));
-}
-
-void BrowserPluginManagerImpl::OnAdvanceFocus(int instance_id, bool reverse) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->AdvanceFocus(reverse);
-}
-
-void BrowserPluginManagerImpl::OnGuestContentWindowReady(int instance_id,
-                                                         int guest_routing_id) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->GuestContentWindowReady(guest_routing_id);
-}
-
-void BrowserPluginManagerImpl::OnShouldAcceptTouchEvents(int instance_id,
-                                                         bool accept) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->SetAcceptTouchEvents(accept);
-}
-
-void BrowserPluginManagerImpl::OnLoadStart(int instance_id,
-                                           const GURL& url,
-                                           bool is_top_level) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->LoadStart(url, is_top_level);
-}
-
-void BrowserPluginManagerImpl::OnLoadCommit(
-    int instance_id,
-    const BrowserPluginMsg_LoadCommit_Params& params) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->LoadCommit(params);
-}
-
-void BrowserPluginManagerImpl::OnLoadStop(int instance_id) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->LoadStop();
-}
-
-void BrowserPluginManagerImpl::OnLoadAbort(int instance_id,
-                                           const GURL& url,
-                                           bool is_top_level,
-                                           const std::string& type) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->LoadAbort(url, is_top_level, type);
-}
-
-void BrowserPluginManagerImpl::OnLoadRedirect(int instance_id,
-                                              const GURL& old_url,
-                                              const GURL& new_url,
-                                              bool is_top_level) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->LoadRedirect(old_url, new_url, is_top_level);
-}
-
-void BrowserPluginManagerImpl::OnSetCursor(int instance_id,
-                                           const WebCursor& cursor) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->SetCursor(cursor);
-}
-
-void BrowserPluginManagerImpl::OnGuestUnresponsive(int instance_id,
-                                                   int process_id) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->GuestUnresponsive(process_id);
-}
-
-void BrowserPluginManagerImpl::OnGuestResponsive(int instance_id,
-                                                 int process_id) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->GuestResponsive(process_id);
-}
 }  // namespace content

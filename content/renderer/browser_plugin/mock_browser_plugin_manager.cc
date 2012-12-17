@@ -21,10 +21,10 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return new MockBrowserPlugin(browser_plugin_counter_++,
-                           render_view,
-                           frame,
-                           params);
+  return new MockBrowserPlugin(++browser_plugin_counter_,
+                               render_view,
+                               frame,
+                               params);
 }
 
 void MockBrowserPluginManager::Cleanup() {

@@ -127,15 +127,17 @@ TEST_F(BrowserPluginTest, InitialResize) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   // Verify that the information based on ResizeGuest is correct, and
   // use its TransportDIB::Id to paint.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetUniqueMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = -1;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
-  EXPECT_EQ(640, params.view_size.width());
-  EXPECT_EQ(480, params.view_size.height());
+  int instance_id = 0;
+  {
+    const IPC::Message* msg =
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_ResizeGuest::ID);
+    ASSERT_TRUE(msg);
+    BrowserPluginHostMsg_ResizeGuest_Params params;
+    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+    EXPECT_EQ(640, params.view_size.width());
+    EXPECT_EQ(480, params.view_size.height());
+  }
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -156,7 +158,8 @@ TEST_F(BrowserPluginTest, InitialResize) {
   update_rect_params.view_size = gfx::Size(640, 480);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
-  browser_plugin->UpdateRect(0, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+  browser_plugin->OnMessageReceived(msg);
   EXPECT_FALSE(browser_plugin->pending_damage_buffer_);
 }
 
@@ -177,7 +180,7 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
         BrowserPluginHostMsg_NavigateGuest::ID);
     ASSERT_TRUE(msg);
 
-    int instance_id = -1;
+    int instance_id = 0;
     std::string src;
     BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
     EXPECT_EQ("foo", src);
@@ -200,7 +203,7 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
           BrowserPluginHostMsg_NavigateGuest::ID);
     ASSERT_TRUE(msg);
 
-    int instance_id = -1;
+    int instance_id = 0;
     std::string src;
     BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
     EXPECT_EQ("bar", src);
@@ -213,7 +216,7 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
 
 TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  int instance_id = -1;
+  int instance_id = 0;
   {
     // Ensure we get a NavigateGuest on the initial navigation and grab the
     // BrowserPlugin's instance_id from there.
@@ -246,7 +249,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    browser_plugin->UpdateRect(0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_);
   }
 
@@ -288,7 +292,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    browser_plugin->UpdateRect(0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    browser_plugin->OnMessageReceived(msg);
     // This tells us that the BrowserPlugin is still expecting another
     // UpdateRect with the most recent size.
     EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
@@ -306,7 +311,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    browser_plugin->UpdateRect(0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    browser_plugin->OnMessageReceived(msg);
     // The BrowserPlugin has finally received an UpdateRect that satisifes
     // its current size, and so it is happy.
     EXPECT_FALSE(browser_plugin->pending_damage_buffer_);
@@ -317,14 +323,15 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
   // Grab the BrowserPlugin's instance ID from its resize message.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = -1;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
-
+  int instance_id = 0;
+  {
+    const IPC::Message* msg =
+        browser_plugin_manager()->sink().GetFirstMessageMatching(
+            BrowserPluginHostMsg_ResizeGuest::ID);
+    ASSERT_TRUE(msg);
+    BrowserPluginHostMsg_ResizeGuest_Params params;
+    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  }
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
@@ -349,13 +356,21 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   ExecuteJavaScript(kAddEventListener);
 
   // Pretend that the guest has terminated normally.
-  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
+  {
+    BrowserPluginMsg_GuestGone msg(
+        0, 0, 0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
+    browser_plugin->OnMessageReceived(msg);
+  }
 
   // Verify that our event listener has fired.
   EXPECT_EQ("normal", ExecuteScriptAndReturnString("msg"));
 
   // Pretend that the guest has crashed.
-  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_PROCESS_CRASHED);
+  {
+    BrowserPluginMsg_GuestGone msg(
+        0, 0, 0, base::TERMINATION_STATUS_PROCESS_CRASHED);
+    browser_plugin->OnMessageReceived(msg);
+  }
 
   // Verify that our event listener has fired.
   EXPECT_EQ("crashed", ExecuteScriptAndReturnString("msg"));
@@ -403,7 +418,7 @@ TEST_F(BrowserPluginTest, CustomEvents) {
       browser_plugin_manager()->sink().GetFirstMessageMatching(
           BrowserPluginHostMsg_ResizeGuest::ID);
   ASSERT_TRUE(msg);
-  int instance_id = -1;
+  int instance_id = 0;
   BrowserPluginHostMsg_ResizeGuest_Params params;
   BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
 
@@ -417,7 +432,8 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     navigate_params.is_top_level = true;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    browser_plugin->LoadCommit(navigate_params);
+    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString(kGetSrc));
     EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
@@ -428,7 +444,8 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     navigate_params.is_top_level = false;
     navigate_params.url = GURL(kGoogleNewsURL);
     navigate_params.process_id = 42;
-    browser_plugin->LoadCommit(navigate_params);
+    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
     // listener.
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
@@ -570,7 +587,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
         BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_TRUE(create_msg);
 
-    int create_instance_id = -1;
+    int create_instance_id = 0;
     BrowserPluginHostMsg_CreateGuest_Params params;
     BrowserPluginHostMsg_CreateGuest::Read(
         create_msg,
@@ -584,7 +601,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
             BrowserPluginHostMsg_NavigateGuest::ID);
     ASSERT_TRUE(msg);
 
-    int instance_id = -1;
+    int instance_id = 0;
     std::string src;
     BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
     EXPECT_STREQ("bar", src.c_str());
@@ -633,7 +650,7 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
       browser_plugin_manager()->sink().GetFirstMessageMatching(
           BrowserPluginHostMsg_ResizeGuest::ID);
   ASSERT_TRUE(msg);
-  int instance_id = -1;
+  int instance_id = 0;
   BrowserPluginHostMsg_ResizeGuest_Params params;
   BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
 
@@ -646,7 +663,8 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    browser_plugin->LoadCommit(navigate_params);
+    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
   }
@@ -654,7 +672,8 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleNewsURL);
     navigate_params.process_id = 42;
-    browser_plugin->LoadCommit(navigate_params);
+    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
     // listener.
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
@@ -688,7 +707,7 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
       browser_plugin_manager()->sink().GetFirstMessageMatching(
           BrowserPluginHostMsg_ResizeGuest::ID);
   ASSERT_TRUE(msg);
-  int instance_id = -1;
+  int instance_id = 0;
   BrowserPluginHostMsg_ResizeGuest_Params params;
   BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
 
@@ -701,7 +720,8 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    browser_plugin->LoadCommit(navigate_params);
+    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(2, ExecuteScriptAndReturnInt("count"));
     EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
   }
@@ -711,13 +731,15 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
   // Grab the BrowserPlugin's instance ID from its resize message.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = -1;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  int instance_id = 0;
+  {
+    const IPC::Message* msg =
+        browser_plugin_manager()->sink().GetFirstMessageMatching(
+            BrowserPluginHostMsg_ResizeGuest::ID);
+    ASSERT_TRUE(msg);
+    BrowserPluginHostMsg_ResizeGuest_Params params;
+    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  }
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -737,7 +759,9 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
   ExecuteJavaScript(kAddEventListener);
 
   // Pretend that the guest has crashed.
-  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+  BrowserPluginMsg_GuestGone msg(
+      0, instance_id, 0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+  browser_plugin->OnMessageReceived(msg);
 
   ProcessPendingMessages();
 
@@ -759,7 +783,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   const char* kDisableAutoSize =
     "document.getElementById('browserplugin').autoSize = false;";
 
-  int instance_id = -1;
+  int instance_id = 0;
   // Set some autosize parameters before navigating then navigate.
   // Verify that the BrowserPluginHostMsg_CreateGuest message contains
   // the correct autosize parameters.
@@ -810,7 +834,8 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   update_rect_params.view_size = gfx::Size(1337, 1338);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
-  browser_plugin->UpdateRect(0, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+  browser_plugin->OnMessageReceived(msg);
 
   // Verify that the autosize state has been updated.
   {
@@ -819,7 +844,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
         BrowserPluginHostMsg_UpdateRect_ACK::ID);
     ASSERT_TRUE(auto_size_msg);
 
-    int instance_id = -1;
+    int instance_id = 0;
     int message_id = 0;
     BrowserPluginHostMsg_AutoSize_Params auto_size_params;
     BrowserPluginHostMsg_ResizeGuest_Params resize_params;
