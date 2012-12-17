@@ -45,11 +45,9 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   virtual content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) OVERRIDE;
-  virtual views::NativeWidget* CreateNativeWidget(
-      views::Widget::InitParams::Type type,
-      views::internal::NativeWidgetDelegate* delegate,
-      gfx::NativeView parent,
-      gfx::NativeView context) OVERRIDE;
+  virtual void OnBeforeWidgetInit(
+      views::Widget::InitParams* params,
+      views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);

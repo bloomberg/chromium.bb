@@ -187,6 +187,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // TODO(beng): Figure out if there's a better way to expose this, e.g. get
     // rid of NW subclasses and do this all via message handling.
     DesktopRootWindowHost* desktop_root_window_host;
+    // Whether this window is intended to be a toplevel window with no
+    // attachment to any other window. (This may be a transient window is
+    // |parent| is set.)
     bool top_level;
     // Only used by NativeWidgetAura. Specifies the type of layer for the
     // aura::Window. Default is LAYER_TEXTURED.
