@@ -1794,12 +1794,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
       """Archives test results when they are ready."""
       got_symbols = self._WaitForBreakpadSymbols()
       for test_results in self._GetTestResults():
-        if got_symbols:
-          filenames = commands.GenerateMinidumpStackTraces(buildroot,
-                                                           board, test_results,
-                                                           archive_path)
-          for filename in filenames:
-            upload_queue.put([filename])
+        filenames = commands.GenerateStackTraces(buildroot, board, test_results,
+                                                 archive_path, got_symbols)
+        for filename in filenames:
+          upload_queue.put([filename])
         upload_queue.put([commands.ArchiveFile(test_results, archive_path)])
 
     def ArchiveDebugSymbols():

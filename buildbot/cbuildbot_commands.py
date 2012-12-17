@@ -505,15 +505,16 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
     cros_build_lib.RunCommand(cmd)
 
 
-def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
-                                archive_dir):
-  """Generates stack traces for all minidumps in the gzipped_test_tarball.
+def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
+                        archive_dir, got_symbols):
+  """Generates stack traces for logs in |gzipped_test_tarball|
 
   Arguments:
     buildroot: Root directory where build occurs.
     board: Name of the board being worked on.
     gzipped_test_tarball: Path to the gzipped test tarball.
     archive_dir: Local directory for archiving.
+    got_symbols: True if breakpad symbols have been generated.
 
   Returns:
     List of stack trace file names.
@@ -533,25 +534,53 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
   # build process.
   tar_cmd = cros_build_lib.RunCommand(
       ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir,
-       '--wildcards', '*.dmp'], error_code_ok=True, redirect_stderr=True)
+       '--wildcards', '*.dmp', '*asan_log.*'],
+      error_code_ok=True, redirect_stderr=True)
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
+    board_path = os.path.join('/build', board)
     for curr_dir, _subdirs, files in os.walk(temp_dir):
       for curr_file in files:
-        # Skip crash files that were purposely generated.
-        if curr_file.find('crasher_nobreakpad') == 0:
-          continue
-
         full_file_path = os.path.join(curr_dir, curr_file)
-        minidump = git.ReinterpretPathForChroot(full_file_path)
-        minidump_stack_trace = '%s.txt' % full_file_path
-        cwd = os.path.join(buildroot, 'src', 'scripts')
-        cros_build_lib.RunCommand(
-            ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
-            enter_chroot=True, error_code_ok=True, redirect_stderr=True,
-            log_stdout_to_file=minidump_stack_trace)
-        filename = ArchiveFile(minidump_stack_trace, archive_dir)
+        processed_file_path = '%s.txt' % full_file_path
+
+        # Distinguish whether the current file is a minidump or asan_log.
+        if curr_file.endswith('.dmp'):
+          # Skip crash files that were purposely generated or if
+          # breakpad symbols are absent.
+          if not got_symbols or curr_file.find('crasher_nobreakpad') == 0:
+            continue
+          # Precess the minidump from within chroot.
+          minidump = git.ReinterpretPathForChroot(full_file_path)
+          cwd = os.path.join(buildroot, 'src', 'scripts')
+          cros_build_lib.RunCommand(
+              ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
+              enter_chroot=True, error_code_ok=True, redirect_stderr=True,
+              log_stdout_to_file=processed_file_path)
+        # Process asan log.
+        else:
+          # Prepend '/chrome/$board' path to the stack trace in log.
+          log_content = ''
+          with open(full_file_path) as f:
+            for line in f:
+              # Stack frame line example to be matched here:
+              #    #0 0x721d1831 (/opt/google/chrome/chrome+0xb837831)
+              stackline_match = re.search('^ *#[0-9]* 0x.* \(', line);
+              if stackline_match:
+                frame_end = stackline_match.span()[1]
+                line = line[:frame_end] + board_path + line[frame_end:];
+              log_content += line
+          # Symbolize and demangle it.
+          raw = cros_build_lib.RunCommandCaptureOutput(
+              ['asan_symbolize.py'], input=log_content, enter_chroot=True)
+          cros_build_lib.RunCommand(['c++filt'],
+                                    input=raw.output,
+                                    cwd=buildroot, redirect_stderr=True,
+                                    log_stdout_to_file=processed_file_path)
+
+        # Append the processed file to archive.
+        filename = ArchiveFile(processed_file_path, archive_dir)
         stack_trace_filenames.append(filename)
     cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
                                '--directory=%s' % temp_dir, '.'])
