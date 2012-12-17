@@ -12,6 +12,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
@@ -73,6 +74,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   PasswordManager::CreateForWebContentsAndDelegate(
       contents, PasswordManagerDelegateImpl::FromWebContents(contents));
   PrefsTabHelper::CreateForWebContents(contents);
+  prerender::PrerenderTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
