@@ -236,8 +236,8 @@ class DownloadItemView : public views::ButtonListener,
   // The model we query for display information
   content::DownloadItem* download_;
 
-  // Our parent view that owns us.
-  DownloadShelfView* parent_;
+  // The download shelf that owns us.
+  DownloadShelfView* shelf_;
 
   // Elements of our particular download
   string16 status_text_;

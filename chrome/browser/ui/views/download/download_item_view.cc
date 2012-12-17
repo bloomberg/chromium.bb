@@ -87,7 +87,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     DownloadItemModel* model)
   : warning_icon_(NULL),
     download_(download),
-    parent_(parent),
+    shelf_(parent),
     status_text_(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)),
     body_state_(NORMAL),
     drop_down_state_(NORMAL),
@@ -202,18 +202,10 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   body_hover_animation_.reset(new ui::SlideAnimation(this));
   drop_hover_animation_.reset(new ui::SlideAnimation(this));
 
-  UpdateDropDownButtonPosition();
-
-  tooltip_text_ = model_->GetTooltipText(font_, kTooltipMaxWidth);
-
-  if (model_->IsDangerous())
-    ShowWarningDialog();
-
-  UpdateAccessibleName();
   set_accessibility_focusable(true);
 
-  // Set up our animation.
-  StartDownloadProgress();
+  OnDownloadUpdated(download_);
+  UpdateDropDownButtonPosition();
 }
 
 DownloadItemView::~DownloadItemView() {
@@ -244,7 +236,7 @@ void DownloadItemView::StopDownloadProgress() {
 
 void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
   if (icon_bitmap)
-    parent()->SchedulePaint();
+    shelf_->SchedulePaint();
 }
 
 // DownloadObserver interface.
@@ -260,7 +252,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   } else if (!IsShowingWarningDialog() && model_->IsDangerous()) {
     ShowWarningDialog();
     // Force the shelf to layout again as our size has changed.
-    parent_->Layout();
+    shelf_->Layout();
     SchedulePaint();
   } else {
     string16 status_text = model_->GetStatusText();
@@ -281,7 +273,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
         break;
       case DownloadItem::COMPLETE:
         if (download_->GetAutoOpened()) {
-          parent_->RemoveDownloadView(this);  // This will delete us!
+          shelf_->RemoveDownloadView(this);  // This will delete us!
           return;
         }
         StopDownloadProgress();
@@ -313,11 +305,11 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
   // are spaces between each DownloadItemView that the parent is responsible
   // for painting.
-  parent()->SchedulePaint();
+  shelf_->SchedulePaint();
 }
 
 void DownloadItemView::OnDownloadDestroyed(DownloadItem* download) {
-  parent_->RemoveDownloadView(this);  // This will delete us!
+  shelf_->RemoveDownloadView(this);  // This will delete us!
 }
 
 void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
@@ -330,7 +322,7 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
       base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
 
   // Notify our parent.
-  parent_->OpenedDownload(this);
+  shelf_->OpenedDownload(this);
 }
 
 // View overrides
@@ -911,7 +903,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
   if (!context_menu_.get()) {
     context_menu_.reset(
         new DownloadShelfContextMenuView(model_.get(),
-                                         parent_->GetNavigator()));
+                                         shelf_->GetNavigator()));
   }
   context_menu_->Run(GetWidget()->GetTopLevelWidget(),
                      gfx::Rect(point, size));
@@ -1039,8 +1031,8 @@ void DownloadItemView::ClearWarningDialog() {
   LoadIcon();
 
   // Force the shelf to layout again as our size has changed.
-  parent_->Layout();
-  parent_->SchedulePaint();
+  shelf_->Layout();
+  shelf_->SchedulePaint();
 
   TooltipTextChanged();
 }
