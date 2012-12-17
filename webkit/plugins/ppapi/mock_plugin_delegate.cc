@@ -371,10 +371,6 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 
-double MockPluginDelegate::GetLocalTimeZoneOffset(base::Time t) {
-  return 0.0;
-}
-
 base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
     uint32_t size) {
   return NULL;

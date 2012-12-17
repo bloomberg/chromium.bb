@@ -33,6 +33,9 @@ class PPAPI_PROXY_EXPORT FlashResource
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,
                                PP_Var value) OVERRIDE;
+  virtual double GetLocalTimeZoneOffset(PP_Instance instance,
+                                        PP_Time t) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashResource);
 };

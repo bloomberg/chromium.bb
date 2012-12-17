@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -71,8 +70,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
                            const URLRequestInfoData& data,
                            const char* target,
                            PP_Bool from_user_action) OVERRIDE;
-  virtual double GetLocalTimeZoneOffset(PP_Instance instance,
-                                        PP_Time t) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
@@ -92,8 +89,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
                          const std::string& target,
                          PP_Bool from_user_action,
                          int32_t* result);
-  void OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance, PP_Time t,
-                                       double* result);
   void OnHostMsgIsRectTopmost(PP_Instance instance,
                               PP_Rect rect,
                               PP_Bool* result);

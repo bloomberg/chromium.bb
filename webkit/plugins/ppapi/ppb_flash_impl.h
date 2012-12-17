@@ -44,8 +44,6 @@ class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
                            const ::ppapi::URLRequestInfoData& data,
                            const char* target,
                            PP_Bool from_user_action) OVERRIDE;
-  virtual double GetLocalTimeZoneOffset(PP_Instance instance,
-                                        PP_Time t) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,

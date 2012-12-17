@@ -4,15 +4,10 @@
 
 #include "ppapi/proxy/ppb_flash_proxy.h"
 
-#include <math.h>
-
 #include <limits>
 
-#include "base/containers/mru_cache.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/time.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
@@ -31,7 +26,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
-#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
@@ -46,23 +40,6 @@ namespace ppapi {
 namespace proxy {
 
 namespace {
-
-struct LocalTimeZoneOffsetEntry {
-  base::TimeTicks expiration;
-  double offset;
-};
-
-class LocalTimeZoneOffsetCache
-    : public base::MRUCache<PP_Time, LocalTimeZoneOffsetEntry> {
- public:
-  LocalTimeZoneOffsetCache()
-      : base::MRUCache<PP_Time, LocalTimeZoneOffsetEntry>(kCacheSize) {}
- private:
-  static const size_t kCacheSize = 100;
-};
-
-base::LazyInstance<LocalTimeZoneOffsetCache>::Leaky
-    g_local_time_zone_offset_cache = LAZY_INSTANCE_INITIALIZER;
 
 void InvokePrinting(PP_Instance instance) {
   ProxyAutoLock lock;
@@ -105,8 +82,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_DrawGlyphs,
                         OnHostMsgDrawGlyphs)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnHostMsgNavigate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
-                        OnHostMsgGetLocalTimeZoneOffset)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
                         OnHostMsgIsRectTopmost)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
@@ -191,57 +166,6 @@ int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_Navigate(
       API_ID_PPB_FLASH, instance, data, target, from_user_action, &result));
   return result;
-}
-
-double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
-                                               PP_Time t) {
-  LocalTimeZoneOffsetCache& cache = g_local_time_zone_offset_cache.Get();
-
-  // Get the minimum PP_Time value that shares the same minute as |t|.
-  // Use cached offset if cache hasn't expired and |t| is in the same minute as
-  // the time for the cached offset (assume offsets change on minute
-  // boundaries).
-  PP_Time t_minute_base = floor(t / 60.0) * 60.0;
-  LocalTimeZoneOffsetCache::iterator iter = cache.Get(t_minute_base);
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (iter != cache.end() && now < iter->second.expiration)
-    return iter->second.offset;
-
-  // Cache the local offset for ten seconds, since it's slow on XP and Linux.
-  // Note that TimeTicks does not continue counting across sleep/resume on all
-  // platforms. This may be acceptable for 10 seconds, but if in the future this
-  // is changed to one minute or more, then we should consider using base::Time.
-  const int64 kMaxCachedLocalOffsetAgeInSeconds = 10;
-  base::TimeDelta expiration_delta =
-      base::TimeDelta::FromSeconds(kMaxCachedLocalOffsetAgeInSeconds);
-
-  LocalTimeZoneOffsetEntry cache_entry;
-  cache_entry.expiration = now + expiration_delta;
-  cache_entry.offset = 0.0;
-
-  // TODO(shess): Figure out why OSX needs the access, the sandbox
-  // warmup should handle it.  http://crbug.com/149006
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // On Linux localtime needs access to the filesystem, which is prohibited
-  // by the sandbox. It would be better to go directly to the browser process
-  // for this message rather than proxy it through some instance in a renderer.
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset(
-      API_ID_PPB_FLASH, instance, t, &cache_entry.offset));
-#else
-  base::Time cur = PPTimeToTime(t);
-  base::Time::Exploded exploded = { 0 };
-  base::Time::Exploded utc_exploded = { 0 };
-  cur.LocalExplode(&exploded);
-  cur.UTCExplode(&utc_exploded);
-  if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
-    base::Time adj_time = base::Time::FromUTCExploded(exploded);
-    base::Time cur = base::Time::FromUTCExploded(utc_exploded);
-    cache_entry.offset = (adj_time - cur).InSecondsF();
-  }
-#endif
-
-  cache.Put(t_minute_base, cache_entry);
-  return cache_entry.offset;
 }
 
 PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
@@ -346,18 +270,6 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
   host_dispatcher->set_allow_plugin_reentrancy();
   *result = enter_instance.functions()->GetFlashAPI()->Navigate(
       instance, data, target.c_str(), from_user_action);
-}
-
-void PPB_Flash_Proxy::OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance,
-                                                  PP_Time t,
-                                                  double* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->GetLocalTimeZoneOffset(
-        instance, t);
-  } else {
-    *result = 0.0;
-  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,

@@ -168,21 +168,6 @@ int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
   return instance_->Navigate(data, target, PP_ToBool(from_user_action));
 }
 
-double PPB_Flash_Impl::GetLocalTimeZoneOffset(PP_Instance instance,
-                                              PP_Time t) {
-  // Evil hack. The time code handles exact "0" values as special, and produces
-  // a "null" Time object. This will represent some date hundreds of years ago
-  // and will give us funny results at 1970 (there are some tests where this
-  // comes up, but it shouldn't happen in real life). To work around this
-  // special handling, we just need to give it some nonzero value.
-  if (t == 0.0)
-    t = 0.0000000001;
-
-  // We can't do the conversion here because on Linux, the localtime calls
-  // require filesystem access prohibited by the sandbox.
-  return instance_->delegate()->GetLocalTimeZoneOffset(PPTimeToTime(t));
-}
-
 PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
                                       const PP_Rect* rect) {
   return PP_FromBool(instance_->IsRectTopmost(

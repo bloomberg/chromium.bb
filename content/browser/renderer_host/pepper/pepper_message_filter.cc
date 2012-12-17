@@ -138,8 +138,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER(PepperMsg_GetLocalTimeZoneOffset,
-                        OnGetLocalTimeZoneOffset)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_PPBInstance_GetFontFamilies,
                                     OnGetFontFamilies)
     // TCP messages.
@@ -243,28 +241,6 @@ void PepperMessageFilter::RemoveTCPServerSocket(uint32 socket_id) {
 PepperMessageFilter::~PepperMessageFilter() {
   if (!network_monitor_ids_.empty())
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-}
-
-void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,
-                                                   double* result) {
-  // Explode it to local time and then unexplode it as if it were UTC. Also
-  // explode it to UTC and unexplode it (this avoids mismatching rounding or
-  // lack thereof). The time zone offset is their difference.
-  //
-  // The reason for this processing being in the browser process is that on
-  // Linux, the localtime calls require filesystem access prohibited by the
-  // sandbox.
-  base::Time::Exploded exploded = { 0 };
-  base::Time::Exploded utc_exploded = { 0 };
-  t.LocalExplode(&exploded);
-  t.UTCExplode(&utc_exploded);
-  if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
-    base::Time adj_time = base::Time::FromUTCExploded(exploded);
-    base::Time cur = base::Time::FromUTCExploded(utc_exploded);
-    *result = (adj_time - cur).InSecondsF();
-  } else {
-    *result = 0.0;
-  }
 }
 
 void PepperMessageFilter::OnGetFontFamilies(IPC::Message* reply_msg) {

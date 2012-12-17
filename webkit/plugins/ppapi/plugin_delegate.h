@@ -616,8 +616,6 @@ class PluginDelegate {
   // Tells the browser to bring up SaveAs dialog to save specified URL.
   virtual void SaveURLAs(const GURL& url) = 0;
 
-  virtual double GetLocalTimeZoneOffset(base::Time t) = 0;
-
   // Create an anonymous shared memory segment of size |size| bytes, and return
   // a pointer to it, or NULL on error.  Caller owns the returned pointer.
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size) = 0;

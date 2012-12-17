@@ -170,7 +170,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
   virtual void SaveURLAs(const GURL& url);
-  virtual double GetLocalTimeZoneOffset(base::Time t);
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
   virtual ::ppapi::Preferences GetPreferences();
   virtual bool LockMouse(PluginInstance* instance);

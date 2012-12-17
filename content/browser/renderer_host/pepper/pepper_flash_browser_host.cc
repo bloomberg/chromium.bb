@@ -4,12 +4,14 @@
 
 #include "content/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
+#include "base/time.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
+#include "ppapi/shared_impl/time_conversion.h"
 
 #ifdef OS_WIN
 #include <windows.h>
@@ -35,6 +37,8 @@ int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFlashBrowserHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
                                         OnMsgUpdateActivity);
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
+                                      OnMsgGetLocalTimeZoneOffset);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -54,6 +58,17 @@ int32_t PepperFlashBrowserHost::OnMsgUpdateActivity(
 #else
   // TODO(brettw) implement this for other platforms.
 #endif
+  return PP_OK;
+}
+
+int32_t PepperFlashBrowserHost::OnMsgGetLocalTimeZoneOffset(
+    ppapi::host::HostMessageContext* host_context,
+    const base::Time& t) {
+  // The reason for this processing being in the browser process is that on
+  // Linux, the localtime calls require filesystem access prohibited by the
+  // sandbox.
+  host_context->reply_msg = PpapiPluginMsg_Flash_GetLocalTimeZoneOffsetReply(
+      ppapi::PPGetLocalTimeZoneOffset(t));
   return PP_OK;
 }
 

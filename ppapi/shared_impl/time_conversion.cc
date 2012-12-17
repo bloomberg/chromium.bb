@@ -52,4 +52,20 @@ double PPTimeTicksToEventTime(PP_TimeTicks t) {
   return t - GetTimeToTimeTicksDeltaInSeconds();
 }
 
+double PPGetLocalTimeZoneOffset(const base::Time& time) {
+  // Explode it to local time and then unexplode it as if it were UTC. Also
+  // explode it to UTC and unexplode it (this avoids mismatching rounding or
+  // lack thereof). The time zone offset is their difference.
+  base::Time::Exploded exploded = { 0 };
+  base::Time::Exploded utc_exploded = { 0 };
+  time.LocalExplode(&exploded);
+  time.UTCExplode(&utc_exploded);
+  if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
+    base::Time adj_time = base::Time::FromUTCExploded(exploded);
+    base::Time cur = base::Time::FromUTCExploded(utc_exploded);
+    return (adj_time - cur).InSecondsF();
+  }
+  return 0.0;
+}
+
 }  // namespace ppapi

@@ -87,10 +87,10 @@ void QuitMessageLoop(PP_Instance instance) {
 }
 
 double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
   if (enter.failed())
     return 0.0;
-  return enter.functions()->GetFlashAPI()->GetLocalTimeZoneOffset(instance, t);
+  return enter.functions()->GetLocalTimeZoneOffset(instance, t);
 }
 
 PP_Var GetCommandLineArgs(PP_Module /* pp_module */) {

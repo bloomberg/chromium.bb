@@ -1601,6 +1601,13 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_GetProxyForURL, std::string /* url */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetProxyForURLReply,
                      std::string /* proxy */)
 
+// Queries the browser for the local time zone offset for a given time.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
+                     base::Time /* time */)
+// Reply to GetLocalTimeZoneOffset containing the time zone offset as a double.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetLocalTimeZoneOffsetReply,
+                     double /* offset */)
+
 // Device enumeration messages used by audio input and video capture.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_DeviceEnumeration_EnumerateDevices)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply,

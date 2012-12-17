@@ -14,7 +14,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/time.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/net_util.h"
@@ -136,7 +135,6 @@ class PepperMessageFilter
   // notifications.
   typedef std::set<uint32> NetworkMonitorIdSet;
 
-  void OnGetLocalTimeZoneOffset(base::Time t, double* result);
   void OnGetFontFamilies(IPC::Message* reply);
 
   void OnTCPCreate(int32 routing_id,

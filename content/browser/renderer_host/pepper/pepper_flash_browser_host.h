@@ -9,6 +9,10 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 
+namespace base {
+class Time;
+}
+
 namespace content {
 
 class BrowserPpapiHost;
@@ -27,6 +31,9 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
 
  private:
   int32_t OnMsgUpdateActivity(ppapi::host::HostMessageContext* host_context);
+  int32_t OnMsgGetLocalTimeZoneOffset(
+      ppapi::host::HostMessageContext* host_context,
+      const base::Time& t);
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHost);
 };

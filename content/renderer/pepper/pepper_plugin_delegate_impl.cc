@@ -1364,13 +1364,6 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
       render_view_->routing_id(), url, referrer));
 }
 
-double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
-  double result = 0.0;
-  render_view_->Send(new PepperMsg_GetLocalTimeZoneOffset(
-      t, &result));
-  return result;
-}
-
 PP_FlashLSORestrictions PepperPluginDelegateImpl::GetLocalDataRestrictions(
     const GURL& document_url,
     const GURL& plugin_url) {

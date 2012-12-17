@@ -23,6 +23,11 @@ PPAPI_SHARED_EXPORT PP_TimeTicks TimeTicksToPPTimeTicks(base::TimeTicks t);
 PPAPI_SHARED_EXPORT PP_TimeTicks EventTimeToPPTimeTicks(double event_time);
 PPAPI_SHARED_EXPORT double PPTimeTicksToEventTime(PP_TimeTicks t);
 
+// Gets the local time zone offset for a given time. This works in the plugin
+// process only on Windows (the sandbox prevents this from working properly on
+// other platforms).
+PPAPI_SHARED_EXPORT double PPGetLocalTimeZoneOffset(const base::Time& time);
+
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_TIME_CONVERSION_H_
