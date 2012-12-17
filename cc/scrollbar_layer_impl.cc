@@ -20,7 +20,7 @@ scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::create(LayerTreeImpl* treeImp
 }
 
 ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
-    : LayerImpl(treeImpl, id)
+    : ScrollbarLayerImplBase(treeImpl, id)
     , m_scrollbar(this)
     , m_backTrackResourceId(0)
     , m_foreTrackResourceId(0)
@@ -63,6 +63,26 @@ void ScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
     scrollbar->getTickmarks(m_tickmarks);
 
     m_geometry->update(scrollbar);
+}
+
+float ScrollbarLayerImpl::currentPos() const
+{
+    return m_currentPos;
+}
+
+int ScrollbarLayerImpl::totalSize() const
+{
+    return m_totalSize;
+}
+
+int ScrollbarLayerImpl::maximum() const
+{
+    return m_maximum;
+}
+
+WebKit::WebScrollbar::Orientation ScrollbarLayerImpl::orientation() const
+{
+    return m_orientation;
 }
 
 static gfx::RectF toUVRect(const gfx::Rect& r, const gfx::Rect& bounds)
