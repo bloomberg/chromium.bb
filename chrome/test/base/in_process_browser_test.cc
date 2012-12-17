@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
@@ -59,6 +60,10 @@ namespace {
 
 // Passed as value of kTestType.
 const char kBrowserTestType[] = "browser";
+
+// Used when running in single-process mode.
+base::LazyInstance<chrome::ChromeContentRendererClient>::Leaky
+    g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -111,10 +116,8 @@ void InProcessBrowserTest::SetUp() {
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    single_process_renderer_client_.reset(
-        new chrome::ChromeContentRendererClient);
     content::GetContentClient()->set_renderer_for_testing(
-        single_process_renderer_client_.get());
+        &g_chrome_content_renderer_client.Get());
   }
 
 #if defined(OS_CHROMEOS)

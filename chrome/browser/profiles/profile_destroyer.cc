@@ -35,9 +35,15 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
     if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
       GetHostsForProfile(profile->GetOffTheRecordProfile(), &hosts);
   }
-  // This should never happen for non Off the record profile, this means that
-  // there is a leak in a render process host that MUST BE FIXED!!!
-  DCHECK(hosts.empty() || profile->IsOffTheRecord());
+  // Generally, !hosts.empty() means that there is a leak in a render process
+  // host that MUST BE FIXED!!!
+  //
+  // However, off-the-record profiles are destroyed before their
+  // RenderProcessHosts in order to erase private data quickly, and
+  // RenderProcessHostImpl::Release() avoids destroying RenderProcessHosts in
+  // --single-process mode to avoid race conditions.
+  DCHECK(hosts.empty() || profile->IsOffTheRecord() ||
+         content::RenderProcessHost::run_renderer_in_process());
   // Note that we still test for !profile->IsOffTheRecord here even though we
   // DCHECK'd above because we want to protect Release builds against this even
   // we need to identify if there are leaks when we run Debug builds.

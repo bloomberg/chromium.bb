@@ -188,9 +188,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // Browser created from CreateBrowser.
   Browser* browser_;
 
-  // ContentRendererClient when running in single-process mode.
-  scoped_ptr<content::ContentRendererClient> single_process_renderer_client_;
-
   // Host resolver to use during the test.
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;
 
