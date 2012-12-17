@@ -42,6 +42,9 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DROPARROW" file="app_droparrow.png" />
+      <if expr="pp_ifdef('enable_settings_app')">
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="app_list_tab_overlay.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB" file="nub.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" />

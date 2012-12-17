@@ -51,6 +51,12 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Loads extension icon.
   void LoadImage(const extensions::Extension* extension);
 
+  // Whether or not the app item has an overlay.
+  bool HasOverlay();
+
+  // Sets the app item's icon, if necessary adding an overlay.
+  void SetIconWithOverlay(const gfx::ImageSkia& icon);
+
   void ShowExtensionOptions();
   void ShowExtensionDetails();
   void StartExtensionUninstall();

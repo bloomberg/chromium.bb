@@ -25,7 +25,10 @@
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 
 using extensions::Extension;
@@ -212,13 +215,50 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 }
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
+  int icon_size = extension_misc::EXTENSION_ICON_MEDIUM;
+  if (HasOverlay())
+    icon_size = extension_misc::EXTENSION_ICON_SMALL;
+
   icon_.reset(new extensions::IconImage(
       extension,
       extension->icons(),
-      extension_misc::EXTENSION_ICON_MEDIUM,
+      icon_size,
       Extension::GetDefaultIcon(true),
       this));
-  SetIcon(icon_->image_skia());
+  SetIconWithOverlay(icon_->image_skia());
+}
+
+bool ExtensionAppItem::HasOverlay() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return !GetExtension()->is_platform_app();
+#endif
+}
+
+void ExtensionAppItem::SetIconWithOverlay(const gfx::ImageSkia& icon) {
+  using extension_misc::EXTENSION_ICON_SMALL;
+  using extension_misc::EXTENSION_ICON_MEDIUM;
+
+  if (!HasOverlay()) {
+    SetIcon(icon);
+    return;
+  }
+
+  const int kIconOffset = (EXTENSION_ICON_MEDIUM - EXTENSION_ICON_SMALL) / 2;
+
+  // The tab overlay is not vertically symmetric, to position the app in the
+  // middle of the overlay we need a slight adjustment.
+  const int kVerticalAdjust = 4;
+  gfx::Canvas icon_canvas(gfx::Size(EXTENSION_ICON_MEDIUM,
+                                    EXTENSION_ICON_MEDIUM),
+                          ui::SCALE_FACTOR_100P, false);
+  icon_canvas.DrawImageInt(icon, kIconOffset, kIconOffset + kVerticalAdjust);
+  icon_canvas.DrawImageInt(
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_APP_LIST_TAB_OVERLAY),
+      0, 0);
+  SetIcon(gfx::ImageSkia(icon_canvas.ExtractImageRep()));
 }
 
 void ExtensionAppItem::ShowExtensionOptions() {
@@ -254,7 +294,7 @@ void ExtensionAppItem::StartExtensionUninstall() {
 void ExtensionAppItem::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   DCHECK(icon_.get() == image);
-  SetIcon(icon_->image_skia());
+  SetIconWithOverlay(icon_->image_skia());
 }
 
 bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {
