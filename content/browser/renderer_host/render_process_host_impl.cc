@@ -777,6 +777,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,
+    switches::kEnableNewDialogStyle,
     switches::kEnablePepperTesting,
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,

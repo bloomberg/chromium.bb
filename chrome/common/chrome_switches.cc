@@ -520,9 +520,6 @@ const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 // Enables or disables showing extensions in the action box.
 const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 
-// Applies the chrome style to any dialog based on ConstrainedWindowViews.
-const char kEnableChromeStyleDialogs[]      = "enable-chrome-style-dialogs";
-
 // By default, cookies are not allowed on file://. They are needed for testing,
 // for example page cycler and layout tests. See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
@@ -1620,19 +1617,3 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 // -----------------------------------------------------------------------------
 
 }  // namespace switches
-
-namespace chrome {
-
-bool UseChromeStyleDialogs() {
-#if defined(OS_MACOSX)
-  return true;
-#elif defined(OS_WIN)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromeStyleDialogs);
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromeStyleDialogs);
-#endif
-}
-
-}  // namespace chrome

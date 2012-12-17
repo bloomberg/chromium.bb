@@ -6605,12 +6605,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION" desc="Description for the flag to enable fancy translucent windows.">
         Enable translucent window frames.
       </message>
-      <message name="IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_NAME" desc="Title for the flag to enable Google-style dialog frames.">
-        Google-style dialogs
-      </message>
-      <message name="IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION" desc="Description for the flag to enable Google-style dialog frames.">
-        Enable Google-style dialog frames.
-      </message>
       <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME" desc="Name for the option to enable/disable the auto window placement functionality.">
         Automatic window placement.
       </message>
@@ -6831,17 +6825,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_CHROMEBOOK_FUNCTION_KEY_DESCRIPTION" desc="Description of the flag to enable the option for using the Search key as a Function key.">
         Adds an option to the Keyboard settings to allow using the Search key on a ChromeOS laptop keyboard for accessing extended keyboard shortcuts such as Delete, Home, and End.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_NAME" desc="Name of the flag to use the new dialog style.">
+        Enable New Dialog Style.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_DESCRIPTION" desc="Description of the flag to use the new dialog style.">
+        Enables a new visual style on certain dialogs.
+      </message>
       <message name="IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_NAME" desc="Name of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
         Enable Views Textfield.
       </message>
       <message name="IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_DESCRIPTION" desc="Description of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
         Enables an experimental textfield for application UI; does not affect web content.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_NAME" desc="Name of the flag to use when drawing constrained dialogs using the new frameless style.">
-        Enable Experimental Frameless Dialogs.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION" desc="Description of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
-        Enables an experimental frame treatment on certain dialogs.
       </message>
       <message name="IDS_FLAGS_ENABLE_CONTACTS_NAME" desc="Name of the 'Enable contacts' lab.">
         Enable contacts integration.

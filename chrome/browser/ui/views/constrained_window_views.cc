@@ -27,6 +27,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
@@ -59,7 +60,6 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #endif
@@ -645,7 +645,7 @@ void ConstrainedWindowViews::NotifyTabHelperWillClose() {
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 #if defined(USE_ASH)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
+  if (command_line->HasSwitch(switches::kEnableNewDialogStyle))
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
   ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
   frame->Init(this);

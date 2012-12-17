@@ -79,6 +79,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/display.h"
@@ -631,7 +632,7 @@ bool Shell::IsSystemModalWindowOpen() const {
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAuraGoogleDialogFrames)) {
+          ::switches::kEnableNewDialogStyle)) {
     return new internal::DialogFrameView;
   }
   // Use translucent-style window frames for dialogs.

@@ -6,11 +6,19 @@
 
 namespace switches {
 
+// Disable touch adjustment.
+const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
+
 // Enable support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
-// Disable touch adjustment.
-const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
+// Enables the new dialog style wherever it is available.
+const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
+
+// Enables new menu UI.
+const char kEnableNewMenuStyle[] = "enable-new-menu-style";
+
+const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
@@ -67,9 +75,6 @@ const char kTouchOptimizedUIEnabled[] = "enabled";
 //   disabled: never optimized for touch.
 const char kTouchOptimizedUIDisabled[] = "disabled";
 
-// Enables new menu UI.
-const char kEnableNewMenuStyle[] = "enable-new-menu-style";
-
 #if defined(USE_XI2_MT)
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";
@@ -90,7 +95,5 @@ const char kDisableCoreAnimationPlugins[] =
 // devices can be retrieved from 'xinput list'.
 const char kTouchDevices[] = "touch-devices";
 #endif
-
-const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
 }  // namespace switches

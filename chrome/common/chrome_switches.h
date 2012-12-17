@@ -139,7 +139,6 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBundledPpapiFlash[];
-extern const char kEnableChromeStyleDialogs[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableContacts[];
 extern const char kEnableCrxlessWebApps[];
@@ -467,13 +466,5 @@ extern const char kEnablePrintPreview[];
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 
 }  // namespace switches
-
-namespace chrome {
-
-// Returns true if the chrome style dialog is enabled.
-// TODO(sail): Remove this once the feature is fully baked.
-bool UseChromeStyleDialogs();
-
-}  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

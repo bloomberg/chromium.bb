@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -307,14 +308,14 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  // TODO(wittman): Remove this function entirely once new style constrained
+  // TODO(msw|wittman): Remove this function entirely once new style constrained
   // window is enabled on the other platforms.
 #if defined(OS_MACOSX) || defined(OS_WIN)
   return;
 #endif
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromeStyleDialogs)) {
+          switches::kEnableNewDialogStyle)) {
     bool already_deemphasized = !!dimmed_color_overlay_.get();
     if (already_deemphasized == deemphasized)
       return;

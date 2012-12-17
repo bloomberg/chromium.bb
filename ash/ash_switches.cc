@@ -82,9 +82,6 @@ const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
-// Use Google-style dialog box frames.
-const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
-
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we
 // lock the screen or shutdown the system immediately in response to a press

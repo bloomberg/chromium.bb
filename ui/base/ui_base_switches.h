@@ -12,8 +12,11 @@
 
 namespace switches {
 
-UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kDisableTouchAdjustment[];
+UI_EXPORT extern const char kEnableBezelTouch[];
+UI_EXPORT extern const char kEnableNewDialogStyle[];
+UI_EXPORT extern const char kEnableNewMenuStyle[];
+UI_EXPORT extern const char kEnableTouchDragDrop[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kForceDeviceScaleFactor[];
 UI_EXPORT extern const char kHighlightMissingScaledResources[];
@@ -29,7 +32,6 @@ UI_EXPORT extern const char kTouchOptimizedUI[];
 UI_EXPORT extern const char kTouchOptimizedUIAuto[];
 UI_EXPORT extern const char kTouchOptimizedUIDisabled[];
 UI_EXPORT extern const char kTouchOptimizedUIEnabled[];
-UI_EXPORT extern const char kEnableNewMenuStyle[];
 
 #if defined(USE_XI2_MT)
 UI_EXPORT extern const char kTouchCalibration[];
@@ -49,7 +51,6 @@ UI_EXPORT extern const char kDisableCoreAnimationPlugins[];
 UI_EXPORT extern const char kTouchDevices[];
 #endif
 
-UI_EXPORT extern const char kEnableTouchDragDrop[];
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

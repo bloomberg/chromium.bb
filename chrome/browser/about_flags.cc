@@ -76,12 +76,6 @@ void AddOsStrings(unsigned bitmask, ListValue* list) {
       list->Append(new StringValue(kBitsToOs[i].name));
 }
 
-// Names for former Chrome OS Labs experiments, shared with prefs migration
-// code.
-const char kMediaPlayerExperimentName[] = "media-player";
-const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
-const char kVerticalTabsExperimentName[] = "vertical-tabs";
-
 const Experiment::Choice kOmniboxHistoryQuickProviderNewScoringChoices[] = {
   { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_AUTOMATIC, "", "" },
   { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_ENABLED,
@@ -637,13 +631,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_ASH)
   {
-    "aura-google-dialog-frames",
-    IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_NAME,
-    IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
-  },
-  {
     "ash-disable-auto-window-placement",
     IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME,
     IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION,
@@ -985,11 +972,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kOldCheckboxStyle),
   },
   {
-    "enable-chrome-style-dialogs",
-    IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_NAME,
-    IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION,
+    "enable-new-dialog-style",
+    IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_NAME,
+    IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableChromeStyleDialogs),
+    SINGLE_VALUE_TYPE(switches::kEnableNewDialogStyle),
   },
   { "disable-accelerated-video-decode",
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME,
