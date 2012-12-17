@@ -8,7 +8,7 @@ import portage
 import sys
 from parallel_emerge import DepGraphGenerator
 
-def FlattenDepTree(deptree, pkgtable={}, parentcpv=None):
+def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
   """
   Turn something like this (the parallel_emerge DepsTree format):
 {
@@ -46,9 +46,11 @@ def FlattenDepTree(deptree, pkgtable={}, parentcpv=None):
   }
 }
   """
+  if pkgtable is None:
+    pkgtable = {}
   for cpv, record in deptree.items():
     if cpv not in pkgtable:
-      cat, nam, ver, rev = portage.catpkgsplit(cpv)
+      cat, nam, ver, rev = portage.versions.catpkgsplit(cpv)
       pkgtable[cpv] = {"deps": [],
                        "rev_deps": [],
                        "name": nam,
@@ -101,5 +103,5 @@ def main(argv):
 
   deps = DepGraphGenerator()
   deps.Initialize(argv)
-  deps_tree, deps_info = deps.GenDependencyTree()
+  deps_tree, _deps_info = deps.GenDependencyTree()
   print json.dumps(FlattenDepTree(deps_tree), sort_keys=True, indent=2)

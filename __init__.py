@@ -8,15 +8,14 @@ import sys
 # Add the third_party/ dir to our search path so that we can find the
 # modules in there automatically.  This isn't normal, so don't replicate
 # this pattern elsewhere.
-third_party = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(
+_third_party = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(
     __file__)), 'third_party'))
-sys.path.insert(0, third_party)
+sys.path.insert(0, _third_party)
 
 # List of third_party packages that might need subpaths added to search.
-paths = [
+_paths = [
     'pyelftools',
 ]
-for path in paths:
-  sys.path.insert(1, os.path.join(third_party, path))
+for _path in _paths:
+  sys.path.insert(1, os.path.join(_third_party, _path))
 
-del path, paths, third_party

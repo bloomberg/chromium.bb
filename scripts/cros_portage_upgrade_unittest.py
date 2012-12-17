@@ -30,9 +30,9 @@ from portage.tests.resolver import ResolverPlayground as respgnd
 # Enable color invariably. Since we rely on color for error/warn message
 # recognition, leaving this to be decided based on stdout being a tty
 # will make the tests fail/succeed based on how they are run.
+# pylint: disable=W0102,W0212,E1120,E1101
 cpu.oper._color._enabled = True
 
-# pylint: disable=W0212,R0904,W0102,W0201,E1120,E1101
 DEFAULT_PORTDIR = '/usr/portage'
 
 # Configuration for generating a temporary valid ebuild hierarchy.

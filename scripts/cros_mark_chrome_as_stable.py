@@ -25,9 +25,10 @@ import time
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
+from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git
-from chromite.lib.cros_build_lib import RunCommand, Info, Warning
+from chromite.lib.cros_build_lib import RunCommand
 from chromite.scripts import cros_mark_as_stable
 
 # Helper regex's for finding ebuilds.
@@ -66,7 +67,7 @@ def  _GetTipOfTrunkSvnRevision(base_url):
     match = revision_re.search(line)
     if match:
       svn_revision = match.group(1)
-      Info('Found SVN Revision %s' % svn_revision)
+      cros_build_lib.Info('Found SVN Revision %s' % svn_revision)
       return svn_revision
 
   raise Exception('Could not find revision information from %s' % svn_url)
@@ -106,8 +107,8 @@ def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
     if time.time() - start > time_to_wait:
       raise Exception('Timeout Exceeeded')
 
-    Info('Repository only has version %s, looking for %s.  Sleeping...' %
-         (repo_version, revision))
+    msg = 'Repository only has version %s, looking for %s.  Sleeping...'
+    cros_build_lib.Info(msg, repo_version, revision)
     time.sleep(30)
     repo_version = _GetTipOfTrunkSvnRevision(base_url)
 
@@ -176,7 +177,7 @@ def _GetStickyEBuild(stable_ebuilds):
   if not sticky_ebuilds:
     raise Exception('No sticky ebuilds found')
   elif len(sticky_ebuilds) > 1:
-    Warning('More than one sticky ebuild found')
+    cros_build_lib.Warning('More than one sticky ebuild found')
 
   return portage_utilities.BestEBuild(sticky_ebuilds)
 
@@ -214,7 +215,7 @@ def FindChromeCandidates(overlay_dir):
     if path.endswith('.ebuild'):
       ebuild = ChromeEBuild(path)
       if not ebuild.chrome_version:
-        Warning('Poorly formatted ebuild found at %s' % path)
+        cros_build_lib.Warning('Poorly formatted ebuild found at %s' % path)
       else:
         if '9999' in ebuild.version:
           unstable_ebuilds.append(ebuild)
@@ -225,7 +226,7 @@ def FindChromeCandidates(overlay_dir):
   if not unstable_ebuilds:
     raise Exception('Missing 9999 ebuild for %s' % overlay_dir)
   if not stable_ebuilds:
-    Warning('Missing stable ebuild for %s' % overlay_dir)
+    cros_build_lib.Warning('Missing stable ebuild for %s' % overlay_dir)
 
   return portage_utilities.BestEBuild(unstable_ebuilds), stable_ebuilds
 
@@ -384,7 +385,8 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
   # Determine whether this is ebuild is redundant.
   if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
-    Info('Previous ebuild with same version found and ebuild is redundant.')
+    msg = 'Previous ebuild with same version found and ebuild is redundant.'
+    cros_build_lib.Info(msg)
     os.unlink(new_ebuild_path)
     return None
 
@@ -417,7 +419,7 @@ def ParseMaxRevision(revision_list):
   return max_revision.rpartition('@')[2]
 
 
-def main(argv):
+def main(_argv):
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
@@ -452,7 +454,7 @@ def main(argv):
 
     version_to_uprev = _GetTipOfTrunkVersionFile(chrome_root)
     commit_to_use = 'Unknown'
-    Info('Using local source, versioning is untrustworthy.')
+    cros_build_lib.Info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
     commit_to_use = options.force_revision
     if '@' in commit_to_use: commit_to_use = ParseMaxRevision(commit_to_use)
@@ -474,9 +476,9 @@ def main(argv):
                                               sticky_branch)
 
   if stable_candidate:
-    Info('Stable candidate found %s' % stable_candidate)
+    cros_build_lib.Info('Stable candidate found %s' % stable_candidate)
   else:
-    Info('No stable candidate found.')
+    cros_build_lib.Info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
   existing_branch = git.GetCurrentBranch(overlay_dir)

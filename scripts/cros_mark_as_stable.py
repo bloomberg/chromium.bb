@@ -6,7 +6,6 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
-import multiprocessing
 import optparse
 import os
 import sys
@@ -19,9 +18,6 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
-# TODO(sosa): Remove during OO refactor.
-VERBOSE = False
-
 # Dictionary of valid commands with usage information.
 COMMAND_DICTIONARY = {
                         'commit':
@@ -32,12 +28,6 @@ COMMAND_DICTIONARY = {
 
 
 # ======================= Global Helper Functions ========================
-
-
-def _Print(message):
-  """Verbose print function."""
-  if VERBOSE:
-    cros_build_lib.Info(message)
 
 
 def CleanStalePackages(boards, package_atoms):
@@ -86,7 +76,7 @@ def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
   return output[0] != output[1]
 
 
-def _CheckSaneArguments(package_list, command, options):
+def _CheckSaneArguments(command, options):
   """Checks to make sure the flags are sane.  Dies if arguments are not sane."""
   if not command in COMMAND_DICTIONARY.keys():
     _PrintUsageAndDie('%s is not a valid command' % command)
@@ -194,7 +184,7 @@ class GitBranch(object):
     return branch in branches.split()
 
 
-def main(argv):
+def main(_argv):
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
                     help='Mark all packages as stable.')
@@ -215,8 +205,6 @@ def main(argv):
                     help='Prints out debug info.')
   (options, args) = parser.parse_args()
 
-  global VERBOSE
-  VERBOSE = options.verbose
   portage_utilities.EBuild.VERBOSE = options.verbose
 
   if len(args) != 1:
@@ -227,7 +215,7 @@ def main(argv):
   if options.packages:
     package_list = options.packages.split(':')
 
-  _CheckSaneArguments(package_list, command, options)
+  _CheckSaneArguments(command, options)
   if options.overlays:
     overlays = {}
     for path in options.overlays.split(':'):
@@ -304,8 +292,9 @@ def main(argv):
                                     print_cmd=False, cwd=overlay)
 
         for ebuild in ebuilds:
+          if options.verbose:
+            cros_build_lib.Info('Working on %s', ebuild.package)
           try:
-            _Print('Working on %s' % ebuild.package)
             new_package = ebuild.RevWorkOnEBuild(options.srcroot)
             if new_package:
               revved_packages.append(ebuild.package)
