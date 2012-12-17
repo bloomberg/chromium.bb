@@ -45,7 +45,26 @@ class WebContentsDelegate;
 class WebContentsView;
 struct RendererPreferences;
 
-// Describes what goes in the main content area of a tab.
+// WebContents is the core class in content/. A WebContents renders web content
+// (usually HTML) in a rectangular area.
+//
+// Instantiating one is simple:
+//   scoped_ptr<content::WebContents> web_contents(
+//       content::WebContents::Create(
+//           content::WebContents::CreateParams(browser_context)));
+//   gfx::NativeView view = web_contents->GetView()->GetNativeView();
+//   // |view| is an HWND, NSView*, GtkWidget*, etc.; insert it into the view
+//   // hierarchy wherever it needs to go.
+//
+// That's it; go to your kitchen, grab a scone, and chill. WebContents will do
+// all the multi-process stuff behind the scenes. More details are at
+// http://www.chromium.org/developers/design-documents/multi-process-architecture .
+//
+// Each WebContents has exactly one NavigationController; each
+// NavigationController belongs to one WebContents. The NavigationController can
+// be obtained from GetController(), and is used to load URLs into the
+// WebContents, navigate it backwards/forwards, etc. See navigation_controller.h
+// for more details.
 class WebContents : public PageNavigator,
                     public IPC::Sender,
                     public base::SupportsUserData {

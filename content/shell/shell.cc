@@ -129,8 +129,8 @@ void Shell::LoadURL(const GURL& url) {
   web_contents_->GetController().LoadURL(
       url,
       Referrer(),
-      static_cast<PageTransition>(
-          PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      PageTransitionFromInt(PAGE_TRANSITION_TYPED |
+                            PAGE_TRANSITION_FROM_ADDRESS_BAR),
       std::string());
   web_contents_->Focus();
 }
