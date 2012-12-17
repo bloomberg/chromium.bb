@@ -6424,3 +6424,15 @@
    fun:_ZN10extensions11DataDeleter13StartDeletingEP7ProfileRKSsRK4GURL
    fun:_ZN16ExtensionService18UninstallExtensionESsbPSbItN4base20string16_char_traitsESaItEE
 }
+{
+   bug_166485
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorI8FilePathE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseI8FilePathSaIS0_EE11_M_allocateEm
+   fun:_ZNSt6vectorI8FilePathSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_
+   fun:_ZNSt6vectorI8FilePathSaIS0_EE9push_backERKS0_
+   fun:_ZN9file_util15CreateDirectoryERK8FilePath
+   fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
+   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
+}
