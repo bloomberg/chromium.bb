@@ -222,6 +222,11 @@ void LayerTreeHost::updateAnimations(base::TimeTicks frameBeginTime)
     m_renderingStats.numAnimationFrames++;
 }
 
+void LayerTreeHost::didStopFlinging()
+{
+  m_proxy->mainThreadHasStoppedFlinging();
+}
+
 void LayerTreeHost::layout()
 {
     m_client->layout();

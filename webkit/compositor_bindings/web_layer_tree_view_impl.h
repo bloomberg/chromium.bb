@@ -47,6 +47,7 @@ public:
     virtual bool commitRequested() const OVERRIDE;
     virtual void composite() OVERRIDE;
     virtual void updateAnimations(double frameBeginTime) OVERRIDE;
+    virtual void didStopFlinging() OVERRIDE;
     virtual bool compositeAndReadback(void *pixels, const WebRect&) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual void setDeferCommits(bool deferCommits) OVERRIDE;

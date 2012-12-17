@@ -156,6 +156,11 @@ void WebLayerTreeViewImpl::updateAnimations(double frameBeginTimeSeconds)
     m_layerTreeHost->updateAnimations(frameBeginTime);
 }
 
+void WebLayerTreeViewImpl::didStopFlinging()
+{
+    m_layerTreeHost->didStopFlinging();
+}
+
 bool WebLayerTreeViewImpl::compositeAndReadback(void *pixels, const WebRect& rect)
 {
     return m_layerTreeHost->compositeAndReadback(pixels, rect);

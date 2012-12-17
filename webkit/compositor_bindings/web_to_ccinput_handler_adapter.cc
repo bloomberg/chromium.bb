@@ -110,4 +110,9 @@ void WebToCCInputHandlerAdapter::animate(base::TimeTicks time)
     m_handler->animate(monotonicTimeSeconds);
 }
 
+void WebToCCInputHandlerAdapter::mainThreadHasStoppedFlinging()
+{
+    m_handler->mainThreadHasStoppedFlinging();
+}
+
 }  // namespace WebKit

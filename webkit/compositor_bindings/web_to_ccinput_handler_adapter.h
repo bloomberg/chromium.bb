@@ -19,6 +19,7 @@ public:
     // cc::InputHandler implementation.
     virtual void bindToClient(cc::InputHandlerClient*) OVERRIDE;
     virtual void animate(base::TimeTicks time) OVERRIDE;
+    virtual void mainThreadHasStoppedFlinging() OVERRIDE;
 
 private:
     explicit WebToCCInputHandlerAdapter(scoped_ptr<WebInputHandler>);

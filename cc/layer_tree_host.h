@@ -86,6 +86,7 @@ public:
     void willBeginFrame() { m_client->willBeginFrame(); }
     void didBeginFrame() { m_client->didBeginFrame(); }
     void updateAnimations(base::TimeTicks monotonicFrameBeginTime);
+    void didStopFlinging();
     void layout();
     void beginCommitOnImplThread(LayerTreeHostImpl*);
     void finishCommitOnImplThread(LayerTreeHostImpl*);

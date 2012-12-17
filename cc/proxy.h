@@ -82,6 +82,8 @@ public:
 
     virtual void didAddAnimation() = 0;
 
+    virtual void mainThreadHasStoppedFlinging() = 0;
+
     virtual bool commitRequested() const = 0;
 
     virtual void start() = 0; // Must be called before using the proxy.

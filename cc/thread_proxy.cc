@@ -431,6 +431,12 @@ void ThreadProxy::setNeedsRedrawOnImplThread()
     m_schedulerOnImplThread->setNeedsRedraw();
 }
 
+void ThreadProxy::mainThreadHasStoppedFlinging()
+{
+    if (m_inputHandlerOnImplThread)
+        m_inputHandlerOnImplThread->mainThreadHasStoppedFlinging();
+}
+
 void ThreadProxy::start()
 {
     DCHECK(isMainThread());

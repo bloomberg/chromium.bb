@@ -81,6 +81,7 @@ public:
 
     virtual void bindToClient(InputHandlerClient*) = 0;
     virtual void animate(base::TimeTicks time) = 0;
+    virtual void mainThreadHasStoppedFlinging() = 0;
 
 protected:
     InputHandler() { }
