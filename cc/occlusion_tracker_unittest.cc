@@ -489,8 +489,8 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 30, 70, 70)));
@@ -539,8 +539,8 @@ protected:
         this->visitLayer(layer2, occlusion);
         this->enterLayer(layer1, occlusion);
 
-        EXPECT_EQ(gfx::Rect(20, 20, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(20, 20, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(20, 20, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // This checks cases where the quads don't match their "containing"
         // layers, e.g. in terms of transforms or clip rect. This is typical for
@@ -581,8 +581,8 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 30, 70, 70)));
@@ -631,8 +631,8 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(50, 50, 50, 50)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(49, 50, 50, 50)));
@@ -698,14 +698,14 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
@@ -776,8 +776,8 @@ protected:
         this->visitLayer(occluder, occlusion);
         this->enterLayer(layer2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 25, 25), occlusion.unoccludedLayerContentRect(layer2, gfx::Rect(0, 0, 25, 25)));
         EXPECT_RECT_EQ(gfx::Rect(10, 25, 15, 25), occlusion.unoccludedLayerContentRect(layer2, gfx::Rect(10, 25, 25, 25)));
@@ -814,25 +814,25 @@ protected:
 
         this->visitLayer(child2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 30, 60, 20).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 30, 60, 20).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 60, 20).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(layer, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 60, 10), gfx::Rect(30, 40, 70, 60)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 440, 20, 60).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->enterContributingSurface(child, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 60, 10), gfx::Rect(30, 40, 70, 60)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 440, 20, 60).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // Occlusion in |child2| should get merged with the |child| surface we are leaving now.
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 60, 10), gfx::Rect(30, 40, 70, 60)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 60, 10), gfx::Rect(30, 40, 70, 60)).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 60, 10), gfx::Rect(30, 40, 70, 60)).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_RECT_EQ(gfx::Rect(90, 30, 10, 10), occlusion.unoccludedLayerContentRect(parent, gfx::Rect(30, 30, 70, 70)));
@@ -921,8 +921,8 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);
 
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(clippedLayerInChild.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(clippedLayerInChild.ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
@@ -946,8 +946,8 @@ protected:
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(75, 55, 1, 1)));
         EXPECT_RECT_EQ(gfx::Rect(75, 55, 1, 1), occlusion.unoccludedLayerContentRect(parent, gfx::Rect(75, 55, 1, 1)));
@@ -982,8 +982,8 @@ protected:
         this->visitLayer(layer1, occlusion);
         this->enterContributingSurface(child, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(10, 430, 60, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(10, 430, 60, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(9, 430, 60, 70)));
@@ -1000,8 +1000,8 @@ protected:
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 70, 60).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
@@ -1067,8 +1067,8 @@ protected:
         this->visitLayer(layer2, occlusion);
         this->enterContributingSurface(child2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(20, 30, 80, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
@@ -1091,8 +1091,8 @@ protected:
         this->visitLayer(layer1, occlusion);
         this->enterContributingSurface(child1, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 20, 70, 10), gfx::Rect(20, 30, 80, 70)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(-10, 430, 80, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 430, 70, 80).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(-10, 430, 80, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(-10, 430, 80, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-11, 430, 80, 70)));
@@ -1106,8 +1106,8 @@ protected:
         this->leaveContributingSurface(child1, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 20, 70, 10), gfx::Rect(20, 30, 80, 70)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(UnionRegions(gfx::Rect(30, 20, 70, 10), gfx::Rect(20, 30, 80, 70)).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 20, 70, 10), gfx::Rect(20, 30, 80, 70)).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(20, 20, 80, 80)));
 
@@ -1177,8 +1177,8 @@ protected:
         this->visitLayer(layer2, occlusion);
         this->enterLayer(child2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(20, 30, 80, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
@@ -1196,8 +1196,8 @@ protected:
         this->visitLayer(layer1, occlusion);
         this->enterContributingSurface(child1, occlusion);
 
-        EXPECT_EQ(gfx::Rect(10, 20, 90, 80).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(420, -20, 80, 90).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(420, -10, 70, 80).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(420, -20, 80, 90).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(420, -20, 80, 90)));
         EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(419, -20, 80, 90)));
@@ -1213,8 +1213,8 @@ protected:
         this->leaveContributingSurface(child1, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_EQ(gfx::Rect(10, 20, 90, 80).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(10, 20, 90, 80).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(10, 20, 90, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(10, 20, 90, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(9, 20, 90, 80)));
@@ -1288,42 +1288,42 @@ protected:
         this->visitLayer(opacityLayer, occlusion);
         this->enterContributingSurface(opacityLayer, occlusion);
 
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
 
         // And has nothing to contribute to its parent surface.
         this->leaveContributingSurface(opacityLayer, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
 
         // Opaque layer will contribute to occlusion.
         this->visitLayer(opaqueLayer, occlusion);
         this->enterContributingSurface(opaqueLayer, occlusion);
 
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 430, 70, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_EQ(gfx::Rect(0, 430, 70, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // And it gets translated to the parent surface.
         this->leaveContributingSurface(opaqueLayer, occlusion);
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The blur layer needs to throw away any occlusion from outside its subtree.
         this->enterLayer(blurLayer, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
 
         // And it won't contribute to occlusion.
         this->leaveLayer(blurLayer, occlusion);
         this->enterContributingSurface(blurLayer, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
 
         // But the opaque layer's occlusion is preserved on the parent. 
         this->leaveContributingSurface(blurLayer, occlusion);
         this->enterLayer(parent, occlusion);
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_EQ(gfx::Rect(30, 30, 70, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -1345,14 +1345,13 @@ protected:
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 100, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The surface and replica should both be occluding the parent.
-        EXPECT_EQ(UnionRegions(gfx::Rect(0, 100, 50, 50), gfx::Rect(50, 150, 50, 50)).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(0, 100, 50, 50), gfx::Rect(50, 150, 50, 50)).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -1375,14 +1374,13 @@ protected:
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 100, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The surface and replica should both be occluding the parent.
-        EXPECT_EQ(UnionRegions(gfx::Rect(0, 100, 50, 50), gfx::Rect(50, 150, 50, 20)).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(0, 100, 50, 50), gfx::Rect(50, 150, 50, 20)).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -1405,14 +1403,13 @@ protected:
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 100, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The replica should not be occluding the parent, since it has a mask applied to it.
-        EXPECT_EQ(gfx::Rect(0, 100, 50, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 100, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -1819,7 +1816,7 @@ protected:
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
     }
 };
 
@@ -1843,7 +1840,7 @@ protected:
             this->visitLayer(layer, occlusion);
             this->enterLayer(parent, occlusion);
 
-            EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(), occlusion.occlusionInScreenSpace().ToString());
+            EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -1858,7 +1855,7 @@ protected:
             this->visitLayer(layer, occlusion);
             this->enterLayer(parent, occlusion);
 
-            EXPECT_EQ(gfx::Rect(120, 120, 180, 180).ToString(), occlusion.occlusionInScreenSpace().ToString());
+            EXPECT_EQ(gfx::Rect(120, 120, 180, 180).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -1873,7 +1870,7 @@ protected:
             this->visitLayer(layer, occlusion);
             this->enterLayer(parent, occlusion);
 
-            EXPECT_EQ(gfx::Rect(250, 250, 50, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
+            EXPECT_EQ(gfx::Rect(250, 250, 50, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -1935,12 +1932,12 @@ protected:
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         this->visitLayer(child2, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
 
         this->visitLayer(child1, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
     }
 };
 
@@ -2033,8 +2030,8 @@ protected:
         // The |layer| is entirely behind the camera and should not occlude.
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
-        EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
-        EXPECT_TRUE(occlusion.occlusionInScreenSpace().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromInsideTarget().IsEmpty());
+        EXPECT_TRUE(occlusion.occlusionFromOutsideTarget().IsEmpty());
     }
 };
 
@@ -2066,8 +2063,8 @@ protected:
         // Ensure that those pixels don't occlude things outside the clipRect.
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionInTargetSurface().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionInScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
     }
 };
 
@@ -2213,39 +2210,40 @@ protected:
         this->visitLayer(surface2, occlusion);
         this->enterContributingSurface(surface2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(), occlusion.occlusionInScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->leaveContributingSurface(surface2, occlusion);
         this->enterLayer(surfaceChild2, occlusion);
 
         // surfaceChild2 is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
-        // It also means that things occluding in screen space (e.g. surface2) cannot occlude this layer.
+        // It also means that things occluding from outside the target (e.g. surface2) cannot occlude this layer.
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 300), occlusion.unoccludedLayerContentRect(surfaceChild2, gfx::Rect(0, 0, 100, 300)));
         EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, gfx::Rect(0, 0, 50, 300)));
 
         this->leaveLayer(surfaceChild2, occlusion);
         this->enterLayer(surfaceChild, occlusion);
         EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, gfx::Rect(0, 0, 100, 300)));
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(), occlusion.occlusionFromInsideTarget().ToString());
         EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
-        // The surfaceChild is occluded by the surfaceChild2, but is moving relative its target and the screen, so it
-        // can't be occluded.
+        // The surfaceChild is occluded by the surfaceChild2, but is moving relative its target, so it can't be occluded.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 300), occlusion.unoccludedLayerContentRect(surfaceChild, gfx::Rect(0, 0, 200, 300)));
         EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, gfx::Rect(0, 0, 50, 300)));
 
         this->leaveLayer(surfaceChild, occlusion);
         this->enterLayer(surface, occlusion);
-        // The surfaceChild is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        // The surfaceChild is moving in screen space but not relative to its target, so occlusion should happen from within the target only.
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(), occlusion.occlusionFromInsideTarget().ToString());
         EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
         this->leaveLayer(surface, occlusion);
-        // The surface's owning layer is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 300, 300).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        // The surface's owning layer is moving in screen space but not relative to its target, so occlusion should happen within the target only.
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 300, 300).ToString(), occlusion.occlusionFromInsideTarget().ToString());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
         this->enterContributingSurface(surface, occlusion);
@@ -2289,18 +2287,18 @@ protected:
         this->visitLayer(surface2, occlusion);
         this->visitContributingSurface(surface2, occlusion);
 
-        EXPECT_EQ(gfx::Rect(50, 50, 200, 200).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(50, 50, 200, 200).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(50, 50, 200, 200).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // Clear any stored occlusion.
-        occlusion.setOcclusionInScreenSpace(Region());
-        occlusion.setOcclusionInTargetSurface(Region());
+        occlusion.setOcclusionFromOutsideTarget(Region());
+        occlusion.setOcclusionFromInsideTarget(Region());
 
         this->visitLayer(surface, occlusion);
         this->visitContributingSurface(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 400, 400).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 400, 400).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 400, 400).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -2323,8 +2321,8 @@ protected:
         this->visitLayer(surface, occlusion);
         this->visitContributingSurface(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 300, 200).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 300, 200).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 300, 200).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 
@@ -2348,13 +2346,13 @@ protected:
         // |topmost| occludes the replica, but not the surface itself.
         this->visitLayer(topmost, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 100, 100, 100).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 100, 100, 100).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 100, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 200).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 100, 100, 100).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2383,13 +2381,13 @@ protected:
         // |topmost| occludes the surface, but not the entire surface's replica.
         this->visitLayer(topmost, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 110).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 110).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 110).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 110).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 110).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2421,13 +2419,13 @@ protected:
         this->visitLayer(overReplica, occlusion);
         this->visitLayer(overSurface, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(0, 0, 40, 100), gfx::Rect(0, 100, 50, 100)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(UnionRegions(gfx::Rect(0, 0, 40, 100), gfx::Rect(0, 100, 50, 100)).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(0, 0, 40, 100), gfx::Rect(0, 100, 50, 100)).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(surface, occlusion);
 
-        EXPECT_EQ(UnionRegions(gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 100, 50, 100)).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(0, 0, 40, 100), gfx::Rect(0, 100, 50, 100)).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2458,15 +2456,15 @@ protected:
         // |topmost| occludes everything partially so we know occlusion is happening at all.
         this->visitLayer(topmost, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(surfaceChild, occlusion);
 
         // surfaceChild increases the occlusion in the screen by a narrow sliver.
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(0, -10, 100, 50).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         // In its own surface, surfaceChild is at 0,0 as is its occlusion.
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The root layer always has a clipRect. So the parent of |surface| has a clipRect. However, the owning layer for |surface| does not
         // mask to bounds, so it doesn't have a clipRect of its own. Thus the parent of |surfaceChild| exercises different code paths
@@ -2480,8 +2478,8 @@ protected:
 
         // When the surfaceChild's occlusion is transformed up to its parent, make sure it is not clipped away inappropriately also.
         this->enterLayer(surface, occlusion);
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 60).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 10, 100, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 10, 100, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
         this->leaveLayer(surface, occlusion);
 
         this->enterContributingSurface(surface, occlusion);
@@ -2553,14 +2551,14 @@ protected:
         // |topmost| occludes everything partially so we know occlusion is happening at all.
         this->visitLayer(topmost, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 80, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 80, 50).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 80, 50).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // surfaceChild is not opaque and does not occlude, so we have a non-empty unoccluded area on surface.
         this->visitLayer(surfaceChild, occlusion);
 
-        EXPECT_EQ(gfx::Rect(0, 0, 80, 50).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 80, 50).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The root layer always has a clipRect. So the parent of |surface| has a clipRect. However, the owning layer for |surface| does not
         // mask to bounds, so it doesn't have a clipRect of its own. Thus the parent of |surfaceChild| exercises different code paths
@@ -2568,13 +2566,13 @@ protected:
 
         this->enterContributingSurface(surfaceChild, occlusion);
         // The surfaceChild's parent does not have a clipRect as it owns a render surface.
-        EXPECT_RECT_EQ(gfx::Rect(0, 50, 80, 50), occlusion.unoccludedContributingSurfaceContentRect(surfaceChild, false, gfx::Rect(0, 0, 100, 100)));
+        EXPECT_EQ(gfx::Rect(0, 50, 80, 50).ToString(), occlusion.unoccludedContributingSurfaceContentRect(surfaceChild, false, gfx::Rect(0, 0, 100, 100)).ToString());
         this->leaveContributingSurface(surfaceChild, occlusion);
 
         this->visitLayer(surface, occlusion);
         this->enterContributingSurface(surface, occlusion);
         // The surface's parent does have a clipRect as it is the root layer.
-        EXPECT_RECT_EQ(gfx::Rect(0, 50, 80, 50), occlusion.unoccludedContributingSurfaceContentRect(surface, false, gfx::Rect(0, 0, 100, 100)));
+        EXPECT_EQ(gfx::Rect(0, 50, 80, 50).ToString(), occlusion.unoccludedContributingSurfaceContentRect(surface, false, gfx::Rect(0, 0, 100, 100)).ToString());
     }
 };
 
@@ -2630,8 +2628,8 @@ protected:
         expectedOcclusion.Union(gfx::Rect(250, 50, 50, 50));
         expectedOcclusion.Union(gfx::Rect(0, 100, 300, 50));
 
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
@@ -2647,8 +2645,15 @@ protected:
         this->leaveLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        Region expectedOcclusionOutsideSurface;
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, -50, 300, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, 0, 50, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(50, 0, 100, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(200, 0, 50, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, 50, 300, 50));
+
+        EXPECT_EQ(expectedOcclusionOutsideSurface.ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The surface has a background blur, so it needs pixels that are currently considered occluded in order to be drawn. So the pixels
         // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
@@ -2663,8 +2668,8 @@ protected:
         expectedBlurredOcclusion.Union(gfx::Rect(250 + outsetRight, 50 - outsetTop, 50 - outsetRight, 50 + outsetTop + outsetBottom));
         expectedBlurredOcclusion.Union(gfx::Rect(0, 100 + outsetBottom, 300, 50 - outsetBottom));
 
-        EXPECT_EQ(expectedBlurredOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(expectedBlurredOcclusion.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedBlurredOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
         gfx::Rect outsetRect;
         gfx::Rect testRect;
@@ -2672,40 +2677,40 @@ protected:
         // Nothing in the blur outsets for the filteredSurface is occluded.
         outsetRect = gfx::Rect(50 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         testRect = outsetRect;
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
 
         // Stuff outside the blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.Inset(0, 0, -1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(0, 0, 0, -1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(-1, 0, 0, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(0, -1, 0, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
 
         // Nothing in the blur outsets for the filteredSurface's replica is occluded.
         outsetRect = gfx::Rect(200 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         testRect = outsetRect;
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
 
         // Stuff outside the blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.Inset(0, 0, -1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(0, 0, 0, -1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(-1, 0, 0, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
         testRect = outsetRect;
         testRect.Inset(0, -1, 0, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
+        EXPECT_EQ(outsetRect.ToString(), occlusion.unoccludedLayerContentRect(parent, testRect).ToString());
     }
 };
 
@@ -2744,8 +2749,8 @@ protected:
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
 
         this->visitLayer(occludingLayerAbove, occlusion);
-        EXPECT_EQ(gfx::Rect(100 / 2, 100 / 2, 50 / 2, 50 / 2).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(100 / 2, 100 / 2, 50 / 2, 50 / 2).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(100 / 2, 100 / 2, 50 / 2, 50 / 2).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         this->visitLayer(filteredSurface2, occlusion);
         this->visitContributingSurface(filteredSurface2, occlusion);
@@ -2754,10 +2759,10 @@ protected:
 
         // Test expectations in the target.
         gfx::Rect expectedOcclusion = gfx::Rect(100 / 2 + outsetRight * 2, 100 / 2 + outsetBottom * 2, 50 / 2 - (outsetLeft + outsetRight) * 2, 50 / 2 - (outsetTop + outsetBottom) * 2);
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // Test expectations in the screen are the same as in the target, as the render surface is 1:1 with the screen.
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
+        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromOutsideTarget().ToString());
     }
 };
 
@@ -2812,8 +2817,8 @@ protected:
         expectedOcclusion.Union(gfx::Rect(250, 50, 50, 50));
         expectedOcclusion.Union(gfx::Rect(0, 100, 300, 50));
 
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
@@ -2829,8 +2834,15 @@ protected:
         this->leaveLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
-        EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        Region expectedOcclusionOutsideSurface;
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, -50, 300, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, 0, 50, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(50, 0, 100, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(200, 0, 50, 50));
+        expectedOcclusionOutsideSurface.Union(gfx::Rect(-50, 50, 300, 50));
+
+        EXPECT_EQ(expectedOcclusionOutsideSurface.ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The surface has a background blur, so it needs pixels that are currently considered occluded in order to be drawn. So the pixels
         // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
@@ -2845,8 +2857,8 @@ protected:
         expectedBlurredOcclusion.Union(gfx::Rect(250 + outsetRight, 50 - outsetTop, 50 - outsetRight, 20 + outsetTop + outsetBottom));
         expectedBlurredOcclusion.Union(gfx::Rect(0, 100 + 5, 300, 50 - 5));
 
-        EXPECT_EQ(expectedBlurredOcclusion.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedBlurredOcclusion.ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         gfx::Rect outsetRect;
         gfx::Rect clippedOutsetRect;
@@ -2937,8 +2949,9 @@ protected:
         gfx::Rect occlusionBehindReplica = gfx::Rect(210, 60, 30, 30);
 
         Region expectedOpaqueBounds = UnionRegions(occlusionBehindSurface, occlusionBehindReplica);
-        EXPECT_EQ(expectedOpaqueBounds.ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(expectedOpaqueBounds.ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(expectedOpaqueBounds.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
     }
 };
 
@@ -2975,17 +2988,30 @@ protected:
         this->visitLayer(aboveReplicaLayer, occlusion);
         this->visitLayer(aboveSurfaceLayer, occlusion);
 
-        // The surface has a background blur, so it blurs non-opaque pixels below it.
         this->visitLayer(filteredSurface, occlusion);
+
+        {
+            // The layers above the filtered surface occlude from outside.
+            gfx::Rect occlusionAboveSurface = gfx::Rect(0, 0, 50, 50);
+            gfx::Rect occlusionAboveReplica = gfx::Rect(150, 0, 50, 50);
+            Region expectedOpaqueRegion = UnionRegions(occlusionAboveSurface, occlusionAboveReplica);
+
+            EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
+            EXPECT_EQ(expectedOpaqueRegion.ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        }
+
+        // The surface has a background blur, so it blurs non-opaque pixels below it.
         this->visitContributingSurface(filteredSurface, occlusion);
 
-        // The filter is completely occluded, so it should not blur anything and reduce any occlusion.
-        gfx::Rect occlusionAboveSurface = gfx::Rect(50, 50, 50, 50);
-        gfx::Rect occlusionAboveReplica = gfx::Rect(200, 50, 50, 50);
+        {
+            // The filter is completely occluded, so it should not blur anything and reduce any occlusion.
+            gfx::Rect occlusionAboveSurface = gfx::Rect(50, 50, 50, 50);
+            gfx::Rect occlusionAboveReplica = gfx::Rect(200, 50, 50, 50);
+            Region expectedOpaqueRegion = UnionRegions(occlusionAboveSurface, occlusionAboveReplica);
 
-        Region expectedOpaqueRegion = UnionRegions(occlusionAboveSurface, occlusionAboveReplica);
-        EXPECT_EQ(expectedOpaqueRegion, occlusion.occlusionInScreenSpace());
-        EXPECT_EQ(expectedOpaqueRegion, occlusion.occlusionInTargetSurface());
+            EXPECT_EQ(expectedOpaqueRegion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+            EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        }
     }
 };
 
@@ -3049,16 +3075,13 @@ protected:
         expectedOcclusion.Union(occlusionBesideSurface);
         expectedOcclusion.Union(occlusionBesideReplica);
 
-        ASSERT_EQ(expectedOcclusion, occlusion.occlusionInTargetSurface());
-        ASSERT_EQ(expectedOcclusion, occlusion.occlusionInScreenSpace());
+        ASSERT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
         Region::Iterator expectedRects(expectedOcclusion);
-        Region::Iterator screenSpaceRects(occlusion.occlusionInScreenSpace());
-        Region::Iterator targetSurfaceRects(occlusion.occlusionInTargetSurface());
-        for (; expectedRects.has_rect(); expectedRects.next(), screenSpaceRects.next(), targetSurfaceRects.next()) {
-            ASSERT_TRUE(screenSpaceRects.has_rect());
+        Region::Iterator targetSurfaceRects(occlusion.occlusionFromInsideTarget());
+        for (; expectedRects.has_rect(); expectedRects.next(), targetSurfaceRects.next()) {
             ASSERT_TRUE(targetSurfaceRects.has_rect());
-            EXPECT_EQ(expectedRects.rect(), screenSpaceRects.rect());
             EXPECT_EQ(expectedRects.rect(), targetSurfaceRects.rect());
         }
     }
@@ -3087,14 +3110,14 @@ protected:
         // The small layer is not tracked because it is too small.
         this->visitLayer(small, occlusion);
 
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         // The large layer is tracked as it is large enough.
         this->visitLayer(large, occlusion);
 
-        EXPECT_EQ(gfx::Rect(gfx::Point(), trackingSize).ToString(), occlusion.occlusionInScreenSpace().ToString());
-        EXPECT_EQ(gfx::Rect(gfx::Point(), trackingSize).ToString(), occlusion.occlusionInTargetSurface().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
+        EXPECT_EQ(gfx::Rect(gfx::Point(), trackingSize).ToString(), occlusion.occlusionFromInsideTarget().ToString());
     }
 };
 

@@ -30,11 +30,15 @@ public:
         : OcclusionTracker(gfx::Rect(0, 0, 1000, 1000), true)
         , m_layerClipRectInTarget(gfx::Rect(0, 0, 1000, 1000))
     {
-        // Pretend we have visited a render surface.
         m_stack.push_back(StackObject());
     }
 
-    void setOcclusion(const Region& occlusion) { m_stack.back().occlusionInTarget = occlusion; }
+    void setRenderTarget(Layer* renderTarget)
+    {
+        m_stack.back().target = renderTarget;
+    }
+
+    void setOcclusion(const Region& occlusion) { m_stack.back().occlusionFromInsideTarget = occlusion; }
 
 protected:
     virtual gfx::Rect layerClipRectInTarget(const Layer* layer) const OVERRIDE { return m_layerClipRectInTarget; }
@@ -59,6 +63,8 @@ public:
         m_proxy = m_layerTreeHost->proxy();
         m_resourceManager = PrioritizedResourceManager::create(m_proxy);
         m_layerTreeHost->initializeRendererIfNeeded();
+        m_layerTreeHost->setRootLayer(Layer::create());
+
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
         m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
         m_hostImpl = make_scoped_ptr(new FakeLayerTreeHostImpl(m_proxy));
@@ -67,32 +73,12 @@ public:
     virtual ~TiledLayerTest()
     {
         resourceManagerClearAllMemory(m_resourceManager.get(), m_resourceProvider.get());
+
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
         m_resourceProvider.reset();
         m_hostImpl.reset();
     }
 
-    class ScopedFakeTiledLayerImpl {
-    public:
-        ScopedFakeTiledLayerImpl(LayerTreeImpl* treeImpl, int id)
-        {
-            m_layerImpl = new FakeTiledLayerImpl(treeImpl, id);
-        }
-        ~ScopedFakeTiledLayerImpl()
-        {
-            delete m_layerImpl;
-        }
-        FakeTiledLayerImpl* get()
-        {
-            return m_layerImpl;
-        }
-        FakeTiledLayerImpl* operator->()
-        {
-            return m_layerImpl;
-        }
-    private:
-        FakeTiledLayerImpl* m_layerImpl;
-    };
     void resourceManagerClearAllMemory(PrioritizedResourceManager* resourceManager, ResourceProvider* resourceProvider)
     {
         {
@@ -127,17 +113,52 @@ public:
         layer->update(*m_queue.get(), occluded, m_stats);
     }
 
-    bool updateAndPush(FakeTiledLayer* layer1,
-                       FakeTiledLayerImpl* layerImpl1,
-                       FakeTiledLayer* layer2 = 0,
-                       FakeTiledLayerImpl* layerImpl2 = 0)
+    void calcDrawProps(const scoped_refptr<FakeTiledLayer>& layer1)
+    {
+        scoped_refptr<FakeTiledLayer> layer2;
+        calcDrawProps(layer1, layer2);
+    }
+
+    void calcDrawProps(const scoped_refptr<FakeTiledLayer>& layer1,
+                       const scoped_refptr<FakeTiledLayer>& layer2)
+    {
+        if (layer1 && !layer1->parent())
+            m_layerTreeHost->rootLayer()->addChild(layer1);
+        if (layer2 && !layer1->parent())
+            m_layerTreeHost->rootLayer()->addChild(layer2);
+        if (m_occlusion)
+            m_occlusion->setRenderTarget(m_layerTreeHost->rootLayer());
+
+        std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+        LayerTreeHostCommon::calculateDrawProperties(
+            m_layerTreeHost->rootLayer(),
+            m_layerTreeHost->deviceViewportSize(),
+            m_layerTreeHost->deviceScaleFactor(),
+            1, // page_scale_factor
+            m_layerTreeHost->rendererCapabilities().maxTextureSize,
+            false, // can_use_lcd_text
+            renderSurfaceLayerList);
+    }
+
+    bool updateAndPush(const scoped_refptr<FakeTiledLayer>& layer1,
+                       const scoped_ptr<FakeTiledLayerImpl>& layerImpl1)
+    {
+        scoped_refptr<FakeTiledLayer> layer2;
+        scoped_ptr<FakeTiledLayerImpl> layerImpl2;
+        return updateAndPush(layer1, layerImpl1, layer2, layerImpl2);
+    }
+
+    bool updateAndPush(const scoped_refptr<FakeTiledLayer>& layer1,
+                       const scoped_ptr<FakeTiledLayerImpl>& layerImpl1,
+                       const scoped_refptr<FakeTiledLayer>& layer2,
+                       const scoped_ptr<FakeTiledLayerImpl>& layerImpl2)
     {
         // Get textures
         m_resourceManager->clearPriorities();
         if (layer1)
             layer1->setTexturePriorities(m_priorityCalculator);
         if (layer2)
-            layer2->setTexturePriorities(m_priorityCalculator);     
+            layer2->setTexturePriorities(m_priorityCalculator);
         m_resourceManager->prioritizeTextures();
 
         // Update content
@@ -155,9 +176,9 @@ public:
         // Update textures and push.
         updateTextures();
         if (layer1)
-            layerPushPropertiesTo(layer1, layerImpl1);
+            layerPushPropertiesTo(layer1.get(), layerImpl1.get());
         if (layer2)
-            layerPushPropertiesTo(layer2, layerImpl2);
+            layerPushPropertiesTo(layer2.get(), layerImpl2.get());
 
         return needsUpdate;
     }
@@ -180,13 +201,13 @@ public:
 TEST_F(TiledLayerTest, pushDirtyTiles)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(gfx::Size(100, 200));
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer->invalidateContentRect(gfx::Rect(0, 0, 100, 200));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -196,7 +217,7 @@ TEST_F(TiledLayerTest, pushDirtyTiles)
     layer->setBounds(gfx::Size(100, 200));
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
     layer->invalidateContentRect(gfx::Rect(0, 0, 100, 200));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should only have the first tile since the other tile was invalidated but not painted.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -206,7 +227,7 @@ TEST_F(TiledLayerTest, pushDirtyTiles)
 TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
     TestOcclusionTracker occluded;
     m_occlusion = &occluded;
 
@@ -215,7 +236,7 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer->drawProperties().drawable_content_rect = gfx::Rect(0, 0, 100, 200);
     layer->invalidateContentRect(gfx::Rect(0, 0, 100, 200));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000, 1);
@@ -229,7 +250,7 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     layer->invalidateContentRect(gfx::Rect(0, 0, 50, 50));
     // ....but the area is occluded.
     occluded.setOcclusion(gfx::Rect(0, 0, 50, 50));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 2500, 1);
@@ -243,13 +264,13 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
 TEST_F(TiledLayerTest, pushDeletedTiles)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(gfx::Size(100, 200));
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer->invalidateContentRect(gfx::Rect(0, 0, 100, 200));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -268,7 +289,7 @@ TEST_F(TiledLayerTest, pushDeletedTiles)
 
     // This should recreate and update one of the deleted textures.
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have one tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -278,14 +299,14 @@ TEST_F(TiledLayerTest, pushDeletedTiles)
 TEST_F(TiledLayerTest, pushIdlePaintTiles)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // The tile size is 100x100. Setup 5x5 tiles with one visible tile in the center.
     // This paints 1 visible of the 25 invalid tiles.
     layer->setBounds(gfx::Size(500, 500));
     layer->drawProperties().visible_content_rect = gfx::Rect(200, 200, 100, 100);
     layer->invalidateContentRect(gfx::Rect(0, 0, 500, 500));
-    bool needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+    bool needsUpdate = updateAndPush(layer, layerImpl);
     // We should need idle-painting for surrounding tiles.
     EXPECT_TRUE(needsUpdate);
 
@@ -294,13 +315,13 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
 
     // For the next four updates, we should detect we still need idle painting.
     for (int i = 0; i < 4; i++) {
-        needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        needsUpdate = updateAndPush(layer, layerImpl);
         EXPECT_TRUE(needsUpdate);
     }
 
     // We should always finish painting eventually.
     for (int i = 0; i < 20; i++)
-        needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        needsUpdate = updateAndPush(layer, layerImpl);
 
     // We should have pre-painted all of the surrounding tiles.
     for (int i = 0; i < 5; i++) {
@@ -314,7 +335,7 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
 TEST_F(TiledLayerTest, predictivePainting)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // Prepainting should occur in the scroll direction first, and the
     // visible rect should be extruded only along the dominant axis.
@@ -352,13 +373,13 @@ TEST_F(TiledLayerTest, predictivePainting)
         layer->setBounds(contentBounds);
         layer->drawProperties().visible_content_rect = previousVisibleRect;
         layer->invalidateContentRect(contentRect);
-        bool needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        bool needsUpdate = updateAndPush(layer, layerImpl);
 
         // Invalidate and move the visibleRect in the scroll direction.
         // Check that the correct tiles have been painted in the visible pass.
         layer->invalidateContentRect(contentRect);
         layer->drawProperties().visible_content_rect = visibleRect;
-        needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        needsUpdate = updateAndPush(layer, layerImpl);
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++)
                 EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedVisibleTiles[k].Contains(i, j));
@@ -369,7 +390,7 @@ TEST_F(TiledLayerTest, predictivePainting)
         // Ignore diagonal scrolls here (k > 3) as these have new visible content now.
         if (k <= 3) {
             layer->drawProperties().visible_content_rect = nextVisibleRect;
-            needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+            needsUpdate = updateAndPush(layer, layerImpl);
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++)
                     EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedPrepaintTiles[k].Contains(i, j));
@@ -378,7 +399,7 @@ TEST_F(TiledLayerTest, predictivePainting)
 
         // We should always finish painting eventually.
         for (int i = 0; i < 20; i++)
-            needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+            needsUpdate = updateAndPush(layer, layerImpl);
         EXPECT_FALSE(needsUpdate);
     }
 }
@@ -388,9 +409,9 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
     // Start with 2mb of memory, but the test is going to try to use just more than 1mb, so we reduce to 1mb later.
     m_resourceManager->setMaxMemoryLimitBytes(2 * 1024 * 1024);
     scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl1(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl1 = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
     scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl2(m_hostImpl->activeTree(), 2);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl2 = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 2));
 
     // For this test we have two layers. layer1 exhausts most texture memory, leaving room for 2 more tiles from
     // layer2, but not all three tiles. First we paint layer1, and one tile from layer2. Then when we idle paint
@@ -407,8 +428,8 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
     layer1->drawProperties().visible_content_rect = layer1Rect;
     layer2->setBounds(layer2Rect.size());
     layer2->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
-    bool needsUpdate = updateAndPush(layer1.get(), layerImpl1.get(),
-                                     layer2.get(), layerImpl2.get());
+    bool needsUpdate = updateAndPush(layer1, layerImpl1,
+                                     layer2, layerImpl2);
     // We should need idle-painting for both remaining tiles in layer2.
     EXPECT_TRUE(needsUpdate);
 
@@ -418,8 +439,8 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
     // Now idle paint layer2. We are going to run out of memory though!
     // Oh well, commit the frame and push.
     for (int i = 0; i < 4; i++) {
-        needsUpdate = updateAndPush(layer1.get(), layerImpl1.get(),
-                                    layer2.get(), layerImpl2.get());
+        needsUpdate = updateAndPush(layer1, layerImpl1,
+                                    layer2, layerImpl2);
     }
 
     // Sanity check, we should have textures for the big layer.
@@ -440,7 +461,7 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
 TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
     TestOcclusionTracker occluded;
     m_occlusion = &occluded;
     
@@ -448,8 +469,9 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
     occluded.setOcclusion(gfx::Rect(0, 0, 100, 100));
 
     layer->setBounds(gfx::Size(100, 100));
+    calcDrawProps(layer);
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have the prepainted tile on the impl side, but culled it during paint.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -459,15 +481,16 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
 TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     // However, during the paint, we invalidate one of the tiles. This should
     // not prevent the tile from being pushed.
     layer->fakeLayerUpdater()->setRectToInvalidate(gfx::Rect(0, 50, 100, 50), layer.get());
     layer->setBounds(gfx::Size(100, 200));
+    calcDrawProps(layer);
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -478,17 +501,18 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
 {
     scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layer1Impl(m_hostImpl->activeTree(), 1);
-    ScopedFakeTiledLayerImpl layer2Impl(m_hostImpl->activeTree(), 2);
+    scoped_ptr<FakeTiledLayerImpl> layer1Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
+    scoped_ptr<FakeTiledLayerImpl> layer2Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 2));
 
     // Invalidate a tile on layer1, during update of layer 2.
     layer2->fakeLayerUpdater()->setRectToInvalidate(gfx::Rect(0, 50, 100, 50), layer1.get());
     layer1->setBounds(gfx::Size(100, 200));
-    layer1->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer2->setBounds(gfx::Size(100, 200));
+    calcDrawProps(layer1, layer2);
+    layer1->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer2->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
-    updateAndPush(layer1.get(), layer1Impl.get(),
-                  layer2.get(), layer2Impl.get());
+    updateAndPush(layer1, layer1Impl,
+                  layer2, layer2Impl);
 
     // We should have both tiles on the impl side for all layers.
     EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
@@ -501,16 +525,17 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
 {
     scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layer1Impl(m_hostImpl->activeTree(), 1);
-    ScopedFakeTiledLayerImpl layer2Impl(m_hostImpl->activeTree(), 2);
+    scoped_ptr<FakeTiledLayerImpl> layer1Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
+    scoped_ptr<FakeTiledLayerImpl> layer2Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 2));
 
     layer1->fakeLayerUpdater()->setRectToInvalidate(gfx::Rect(0, 50, 100, 50), layer2.get());
     layer1->setBounds(gfx::Size(100, 200));
-    layer1->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer2->setBounds(gfx::Size(100, 200));
+    calcDrawProps(layer1, layer2);
+    layer1->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
     layer2->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
-    updateAndPush(layer1.get(), layer1Impl.get(),
-                  layer2.get(), layer2Impl.get());
+    updateAndPush(layer1, layer1Impl,
+                  layer2, layer2Impl);
 
     // We should have both tiles on the impl side for all layers.
     EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
@@ -543,7 +568,7 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
         m_resourceManager->setMaxMemoryLimitBytes(memoryForLayer);
 
         scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
         // Full size layer with half being visible.
         gfx::Size contentBounds(layerWidth, layerHeight);
@@ -585,7 +610,7 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
 TEST_F(TiledLayerTest, idlePaintOutOfMemory)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // We have enough memory for only the visible rect, so we will run out of memory in first idle paint.
     int memoryLimit = 4 * 100 * 100; // 1 tiles, 4 bytes per pixel.
@@ -594,9 +619,10 @@ TEST_F(TiledLayerTest, idlePaintOutOfMemory)
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     bool needsUpdate = false;
     layer->setBounds(gfx::Size(300, 300));
+    calcDrawProps(layer);
     layer->drawProperties().visible_content_rect = gfx::Rect(100, 100, 100, 100);
     for (int i = 0; i < 2; i++)
-        needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        needsUpdate = updateAndPush(layer, layerImpl);
 
     // Idle-painting should see no more priority tiles for painting.
     EXPECT_FALSE(needsUpdate);
@@ -608,7 +634,7 @@ TEST_F(TiledLayerTest, idlePaintOutOfMemory)
 TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     bool animating[2] = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -618,8 +644,9 @@ TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
         // The layer's bounds are empty.
         // Empty layers don't paint or idle-paint.
         layer->setBounds(gfx::Size());
+        calcDrawProps(layer);
         layer->drawProperties().visible_content_rect = gfx::Rect();
-        bool needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        bool needsUpdate = updateAndPush(layer, layerImpl);
         
         // Empty layers don't have tiles.
         EXPECT_EQ(0u, layer->numPaintedTiles());
@@ -635,7 +662,7 @@ TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
 TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // Alternate between not visible and visible.
     gfx::Rect v(0, 0, 100, 100);
@@ -649,11 +676,12 @@ TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
     
     for (int i = 0; i < 10; i++) {
         layer->setBounds(gfx::Size(100, 100));
+        calcDrawProps(layer);
         layer->drawProperties().visible_content_rect = visibleRect[i];
 
         if (invalidate[i])
             layer->invalidateContentRect(gfx::Rect(0, 0, 100, 100));
-        bool needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        bool needsUpdate = updateAndPush(layer, layerImpl);
         
         // We should never signal idle paint, as we painted the entire layer
         // or the layer was not visible.
@@ -665,12 +693,13 @@ TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
 TEST_F(TiledLayerTest, invalidateFromPrepare)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(gfx::Size(100, 200));
+    calcDrawProps(layer);
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -679,19 +708,19 @@ TEST_F(TiledLayerTest, invalidateFromPrepare)
     layer->fakeLayerUpdater()->clearPrepareCount();
     // Invoke update again. As the layer is valid update shouldn't be invoked on
     // the LayerUpdater.
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
     EXPECT_EQ(0, layer->fakeLayerUpdater()->prepareCount());
 
     // setRectToInvalidate triggers invalidateContentRect() being invoked from update.
     layer->fakeLayerUpdater()->setRectToInvalidate(gfx::Rect(25, 25, 50, 50), layer.get());
     layer->fakeLayerUpdater()->clearPrepareCount();
     layer->invalidateContentRect(gfx::Rect(0, 0, 50, 50));
-    updateAndPush(layer.get(), layerImpl.get());
+    updateAndPush(layer, layerImpl);
     EXPECT_EQ(1, layer->fakeLayerUpdater()->prepareCount());
     layer->fakeLayerUpdater()->clearPrepareCount();
 
     // The layer should still be invalid as update invoked invalidate.
-    updateAndPush(layer.get(), layerImpl.get()); // visible
+    updateAndPush(layer, layerImpl); // visible
     EXPECT_EQ(1, layer->fakeLayerUpdater()->prepareCount());
 }
 
@@ -738,7 +767,7 @@ TEST_F(TiledLayerTest, verifyUpdateRectWhenContentBoundsAreScaled)
 TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+    scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
 
     // Create a layer with one tile.
     layer->setBounds(gfx::Size(100, 100));
@@ -890,7 +919,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     m_layerTreeHost->updateLayers(
         *m_queue.get(), std::numeric_limits<size_t>::max());
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         EXPECT_EQ(6, m_queue->fullUploadSize());
         EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
@@ -905,7 +934,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     layer->invalidateContentRect(gfx::Rect(0, 0, 300, 150));
     m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         EXPECT_EQ(3, m_queue->fullUploadSize());
         EXPECT_EQ(3, m_queue->partialUploadSize());
         updateTextures();
@@ -919,7 +948,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     // Partial update of 6 tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(2, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
@@ -934,7 +963,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     // Checkerboard all tiles.
     layer->invalidateContentRect(gfx::Rect(0, 0, 300, 200));
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
     m_layerTreeHost->commitComplete();
@@ -942,7 +971,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     // Partial update of 6 checkerboard tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(6, m_queue->fullUploadSize());
         EXPECT_EQ(0, m_queue->partialUploadSize());
@@ -957,7 +986,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     // Partial update of 4 tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 100, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(m_hostImpl->activeTree(), 1);
+        scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(0, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
@@ -993,10 +1022,12 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
+    m_occlusion = &occluded;
 
     // The tile size is 100x100.
 
     layer->setBounds(gfx::Size(600, 600));
+    calcDrawProps(layer);
 
     occluded.setOcclusion(gfx::Rect(200, 200, 300, 100));
     layer->drawProperties().drawable_content_rect = gfx::Rect(gfx::Point(), layer->contentBounds());
@@ -1043,10 +1074,12 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
+    m_occlusion = &occluded;
 
     // The tile size is 100x100.
 
     layer->setBounds(gfx::Size(600, 600));
+    calcDrawProps(layer);
 
     // The partially occluded tiles (by the 150 occlusion height) are visible beyond the occlusion, so not culled.
     occluded.setOcclusion(gfx::Rect(200, 200, 300, 150));
@@ -1101,10 +1134,12 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
+    m_occlusion = &occluded;
 
     // The tile size is 100x100.
 
     layer->setBounds(gfx::Size(600, 600));
+    calcDrawProps(layer);
 
     occluded.setOcclusion(gfx::Rect(200, 200, 300, 100));
     layer->drawProperties().drawable_content_rect = gfx::Rect(0, 0, 600, 600);
@@ -1139,12 +1174,14 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
+    m_occlusion = &occluded;
 
     // The tile size is 100x100.
 
     // This makes sure the painting works when the occluded region (in screen space)
     // is transformed differently than the layer.
     layer->setBounds(gfx::Size(600, 600));
+    calcDrawProps(layer);
     gfx::Transform screenTransform;
     screenTransform.Scale(0.5, 0.5);
     layer->drawProperties().screen_space_transform = screenTransform;
@@ -1168,15 +1205,17 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
 {
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
+    m_occlusion = &occluded;
 
     // The tile size is 100x100.
 
     // This makes sure the painting works when the content space is scaled to
     // a different layer space. In this case tiles are scaled to be 200x200
     // pixels, which means none should be occluded.
-    layer->updateContentsScale(0.5);
-    EXPECT_FLOAT_EQ(layer->contentsScaleX(), layer->contentsScaleY());
     layer->setBounds(gfx::Size(600, 600));
+    layer->setRasterScale(0.5);
+    calcDrawProps(layer);
+    EXPECT_FLOAT_EQ(layer->contentsScaleX(), layer->contentsScaleY());
     gfx::Transform drawTransform;
     double invScaleFactor = 1 / layer->contentsScaleX();
     drawTransform.Scale(invScaleFactor, invScaleFactor);
@@ -1437,9 +1476,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerUpdater()->clearUpdateCount();
         child2->fakeLayerUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(m_hostImpl->activeTree(), root->id());
-        ScopedFakeTiledLayerImpl childImpl(m_hostImpl->activeTree(), child->id());
-        ScopedFakeTiledLayerImpl child2Impl(m_hostImpl->activeTree(), child2->id());
+        scoped_ptr<FakeTiledLayerImpl> rootImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), root->id()));
+        scoped_ptr<FakeTiledLayerImpl> childImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child->id()));
+        scoped_ptr<FakeTiledLayerImpl> child2Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child2->id()));
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());
@@ -1472,9 +1511,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerUpdater()->clearUpdateCount();
         child2->fakeLayerUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(m_hostImpl->activeTree(), root->id());
-        ScopedFakeTiledLayerImpl childImpl(m_hostImpl->activeTree(), child->id());
-        ScopedFakeTiledLayerImpl child2Impl(m_hostImpl->activeTree(), child2->id());
+        scoped_ptr<FakeTiledLayerImpl> rootImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), root->id()));
+        scoped_ptr<FakeTiledLayerImpl> childImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child->id()));
+        scoped_ptr<FakeTiledLayerImpl> child2Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child2->id()));
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());
@@ -1508,9 +1547,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerUpdater()->clearUpdateCount();
         child2->fakeLayerUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(m_hostImpl->activeTree(), root->id());
-        ScopedFakeTiledLayerImpl childImpl(m_hostImpl->activeTree(), child->id());
-        ScopedFakeTiledLayerImpl child2Impl(m_hostImpl->activeTree(), child2->id());
+        scoped_ptr<FakeTiledLayerImpl> rootImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), root->id()));
+        scoped_ptr<FakeTiledLayerImpl> childImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child->id()));
+        scoped_ptr<FakeTiledLayerImpl> child2Impl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), child2->id()));
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());

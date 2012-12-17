@@ -26,7 +26,7 @@ class RenderSurface;
 template<typename LayerType, typename RenderSurfaceType>
 class CC_EXPORT OcclusionTrackerBase {
 public:
-    OcclusionTrackerBase(gfx::Rect rootTargetRect, bool recordMetricsForFrame);
+    OcclusionTrackerBase(gfx::Rect screenSpaceClipRect, bool recordMetricsForFrame);
     ~OcclusionTrackerBase();
 
     // Called at the beginning of each step in the LayerIterator's front-to-back traversal.
@@ -47,7 +47,10 @@ public:
     OverdrawMetrics& overdrawMetrics() const { return *m_overdrawMetrics.get(); }
 
     // Gives the region of the screen that is not occluded by something opaque.
-    Region computeVisibleRegionInScreen() const { return SubtractRegions(m_rootTargetRect, m_stack.back().occlusionInScreen); }
+    Region computeVisibleRegionInScreen() const {
+        DCHECK(!m_stack.back().target->parent());
+        return SubtractRegions(m_screenSpaceClipRect, m_stack.back().occlusionFromInsideTarget);
+    }
 
     void setMinimumTrackingSize(const gfx::Size& size) { m_minimumTrackingSize = size; }
 
@@ -60,8 +63,8 @@ protected:
         StackObject() : target(0) { }
         StackObject(const LayerType* target) : target(target) { }
         const LayerType* target;
-        Region occlusionInScreen;
-        Region occlusionInTarget;
+        Region occlusionFromOutsideTarget;
+        Region occlusionFromInsideTarget;
     };
 
     // The stack holds occluded regions for subtrees in the RenderSurfaceImpl-Layer tree, so that when we leave a subtree we may
@@ -91,7 +94,7 @@ private:
     // Add the layer's occlusion to the tracked state.
     void markOccludedBehindLayer(const LayerType*);
 
-    gfx::Rect m_rootTargetRect;
+    gfx::Rect m_screenSpaceClipRect;
     scoped_ptr<OverdrawMetrics> m_overdrawMetrics;
     gfx::Size m_minimumTrackingSize;
 
