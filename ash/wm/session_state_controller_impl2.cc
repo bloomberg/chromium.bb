@@ -11,7 +11,10 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/timer.h"
 #include "ui/aura/root_window.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/corewm/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
@@ -19,6 +22,115 @@
 #endif
 
 namespace ash {
+
+namespace {
+
+aura::Window* GetBackground() {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  return Shell::GetContainer(root_window,
+      internal::kShellWindowId_DesktopBackgroundContainer);
+}
+
+bool IsBackgroundHidden() {
+  return !GetBackground()->IsVisible();
+}
+
+void ShowBackground() {
+  ui::ScopedLayerAnimationSettings settings(
+      GetBackground()->layer()->GetAnimator());
+  settings.SetTransitionDuration(base::TimeDelta());
+  GetBackground()->Show();
+}
+
+void HideBackground() {
+  ui::ScopedLayerAnimationSettings settings(
+      GetBackground()->layer()->GetAnimator());
+  settings.SetTransitionDuration(base::TimeDelta());
+  GetBackground()->Hide();
+}
+
+// This observer is intended to use in cases when some action has to be taken
+// once some animation successfully completes (i.e. it was not aborted).
+// Observer will count a number of sequences it is attached to, and a number of
+// finished sequences (either Ended or Aborted). Once these two numbers are
+// equal, observer will delete itself, calling callback passed to constructor if
+// there were no aborted animations.
+// This way it can be either used to wait for some animation to be finished in
+// multiple layers, to wait once a sequence of animations is finished in one
+// layer or the mixture of both.
+class AnimationFinishedObserver : public ui::LayerAnimationObserver {
+ public:
+  explicit AnimationFinishedObserver(base::Closure &callback)
+      : callback_(callback),
+        sequences_attached_(0),
+        sequences_completed_(0),
+        paused_(false) {
+  }
+
+  // Pauses observer: no checks will be made while paused. It can be used when
+  // a sequence has some immediate animations in the beginning.
+  void Pause() {
+    paused_ = true;
+  }
+
+  // Unpauses observer. It does a check and calls callback if conditions are
+  // met.
+  void Unpause() {
+    if (!paused_)
+      return;
+    paused_ = false;
+    if (sequences_completed_ == sequences_attached_) {
+      callback_.Run();
+      delete this;
+    }
+  }
+
+ private:
+  virtual ~AnimationFinishedObserver() {
+  }
+
+  // LayerAnimationObserver implementation
+  virtual void OnLayerAnimationEnded(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    sequences_completed_++;
+    if ((sequences_completed_ == sequences_attached_) && !paused_) {
+      callback_.Run();
+      delete this;
+    }
+  }
+
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    sequences_completed_++;
+    if ((sequences_completed_ == sequences_attached_) && !paused_)
+      delete this;
+  }
+
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+  }
+
+  virtual void OnAttachedToSequence(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    LayerAnimationObserver::OnAttachedToSequence(sequence);
+    sequences_attached_++;
+  }
+
+  // Callback to be called.
+  base::Closure callback_;
+
+  // Number of sequences this observer was attached to.
+  int sequences_attached_;
+
+  // Number of sequences either ended or aborted.
+  int sequences_completed_;
+
+  bool paused_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationFinishedObserver);
+};
+
+} // namespace
 
 SessionStateControllerImpl2::TestApi::TestApi(
     SessionStateControllerImpl2* controller)
@@ -32,7 +144,9 @@ SessionStateControllerImpl2::SessionStateControllerImpl2()
     : login_status_(user::LOGGED_IN_NONE),
       system_is_locked_(false),
       shutting_down_(false),
-      shutdown_after_lock_(false) {
+      shutdown_after_lock_(false),
+      animating_lock_(false),
+      can_cancel_lock_animation_(false) {
   Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
@@ -50,6 +164,7 @@ void SessionStateControllerImpl2::OnLoginStateChanged(
 void SessionStateControllerImpl2::OnAppTerminating() {
   // If we hear that Chrome is exiting but didn't request it ourselves, all we
   // can really hope for is that we'll have time to clear the screen.
+  // This is also the case when the user signs off.
   if (!shutting_down_) {
     shutting_down_ = true;
     Shell* shell = ash::Shell::GetInstance();
@@ -69,22 +184,10 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
   system_is_locked_ = locked;
 
   if (locked) {
-    base::Callback<void(void)> callback =
-        base::Bind(&SessionStateControllerImpl2::OnLockScreenAnimationFinished,
-        base::Unretained(this));
-    animator_->StartAnimationWithCallback(
-        internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-        internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
-        internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-        callback);
-    lock_timer_.Stop();
+    StartPostLockAnimation();
     lock_fail_timer_.Stop();
   } else {
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-        internal::SessionStateAnimator::LAUNCHER,
-        internal::SessionStateAnimator::ANIMATION_DROP,
-        internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+    StartUnlockAnimationAfterUIDestroyed();
   }
 }
 
@@ -93,68 +196,27 @@ void SessionStateControllerImpl2::SetLockScreenDisplayedCallback(
   lock_screen_displayed_callback_ = callback;
 }
 
-void SessionStateControllerImpl2::OnLockScreenAnimationFinished() {
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(
-          SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
-  if (!lock_screen_displayed_callback_.is_null()) {
-    lock_screen_displayed_callback_.Run();
-    lock_screen_displayed_callback_.Reset();
-  }
-  if (shutdown_after_lock_) {
-    shutdown_after_lock_ = false;
-    StartLockToShutdownTimer();
-  }
-}
-
 void SessionStateControllerImpl2::OnStartingLock() {
   if (shutting_down_ || system_is_locked_)
     return;
-
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-      internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_LIFT,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
-  // Hide the screen locker containers so we can raise them later.
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
-      internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+  if (animating_lock_)
+    return;
+  StartImmediatePreLockAnimation();
 }
 
 void SessionStateControllerImpl2::StartLockAnimationAndLockImmediately() {
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-      internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_LIFT,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
-  OnLockTimeout();
+  if (animating_lock_)
+    return;
+  StartImmediatePreLockAnimation();
 }
 
 void SessionStateControllerImpl2::StartLockAnimation(bool shutdown_after_lock) {
+  if (animating_lock_)
+    return;
   shutdown_after_lock_ = shutdown_after_lock;
+  can_cancel_lock_animation_ = true;
 
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-      internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_LIFT,
-      internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(
-          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
-  StartLockTimer();
-}
-
-void SessionStateControllerImpl2::StartShutdownAnimation() {
-  animator_->StartGlobalAnimation(
-      internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
-      internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
-  StartPreShutdownAnimationTimer();
+  StartCancellablePreLockAnimation();
 }
 
 bool SessionStateControllerImpl2::LockRequested() {
@@ -166,25 +228,25 @@ bool SessionStateControllerImpl2::ShutdownRequested() {
 }
 
 bool SessionStateControllerImpl2::CanCancelLockAnimation() {
-  return lock_timer_.IsRunning();
+  return can_cancel_lock_animation_;
 }
 
 void SessionStateControllerImpl2::CancelLockAnimation() {
   if (!CanCancelLockAnimation())
     return;
   shutdown_after_lock_ = false;
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-      internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_DROP,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  lock_timer_.Stop();
+  animating_lock_ = false;
+  CancelPreLockAnimation();
 }
 
 bool SessionStateControllerImpl2::CanCancelShutdownAnimation() {
   return pre_shutdown_timer_.IsRunning() ||
          shutdown_after_lock_ ||
          lock_to_shutdown_timer_.IsRunning();
+}
+
+void SessionStateControllerImpl2::StartShutdownAnimation() {
+  StartCancellableShutdownAnimation();
 }
 
 void SessionStateControllerImpl2::CancelShutdownAnimation() {
@@ -217,10 +279,7 @@ void SessionStateControllerImpl2::RequestShutdownImpl() {
   shell->env_filter()->set_cursor_hidden_by_filter(false);
   shell->cursor_manager()->ShowCursor(false);
 
-  animator_->StartGlobalAnimation(
-      internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
-      internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
-  StartRealShutdownTimer();
+  StartShutdownAnimationImpl();
 }
 
 void SessionStateControllerImpl2::OnRootWindowHostCloseRequested(
@@ -228,31 +287,10 @@ void SessionStateControllerImpl2::OnRootWindowHostCloseRequested(
   Shell::GetInstance()->delegate()->Exit();
 }
 
-void SessionStateControllerImpl2::StartLockTimer() {
-  lock_timer_.Stop();
-  lock_timer_.Start(
-      FROM_HERE,
-      animator_->GetDuration(
-          internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE),
-      this, &SessionStateControllerImpl2::OnLockTimeout);
-}
-
-void SessionStateControllerImpl2::OnLockTimeout() {
-  delegate_->RequestLockScreen();
-  lock_fail_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs),
-      this, &SessionStateControllerImpl2::OnLockFailTimeout);
-}
-
 void SessionStateControllerImpl2::OnLockFailTimeout() {
   DCHECK(!system_is_locked_);
   // Undo lock animation.
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::LAUNCHER |
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_DROP,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  StartUnlockAnimationAfterUIDestroyed();
 }
 
 void SessionStateControllerImpl2::StartLockToShutdownTimer() {
@@ -264,34 +302,58 @@ void SessionStateControllerImpl2::StartLockToShutdownTimer() {
       this, &SessionStateControllerImpl2::OnLockToShutdownTimeout);
 }
 
-
 void SessionStateControllerImpl2::OnLockToShutdownTimeout() {
   DCHECK(system_is_locked_);
-  StartShutdownAnimation();
+  StartCancellableShutdownAnimation();
+}
+
+void SessionStateControllerImpl2::StartCancellableShutdownAnimation() {
+  animator_->StartGlobalAnimation(
+      internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
+      internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
+  StartPreShutdownAnimationTimer();
+}
+
+void SessionStateControllerImpl2::StartShutdownAnimationImpl() {
+  animator_->StartGlobalAnimation(
+      internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
+      internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
+  StartRealShutdownTimer(true);
 }
 
 void SessionStateControllerImpl2::StartPreShutdownAnimationTimer() {
   pre_shutdown_timer_.Stop();
   pre_shutdown_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kShutdownTimeoutMs),
-      this, &SessionStateControllerImpl2::OnPreShutdownAnimationTimeout);
+      animator_->
+          GetDuration(internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN),
+      this,
+      &SessionStateControllerImpl2::OnPreShutdownAnimationTimeout);
 }
 
 void SessionStateControllerImpl2::OnPreShutdownAnimationTimeout() {
-  if (!shutting_down_)
-    RequestShutdownImpl();
+  shutting_down_ = true;
+
+  Shell* shell = ash::Shell::GetInstance();
+  shell->env_filter()->set_cursor_hidden_by_filter(false);
+  shell->cursor_manager()->ShowCursor(false);
+
+  StartRealShutdownTimer(false);
 }
 
-void SessionStateControllerImpl2::StartRealShutdownTimer() {
+void SessionStateControllerImpl2::StartRealShutdownTimer(
+    bool with_animation_time) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
-  duration += animator_->GetDuration(
-      internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
+  if (with_animation_time) {
+    duration += animator_->GetDuration(
+        internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
+  }
   real_shutdown_timer_.Start(
       FROM_HERE,
       duration,
-      this, &SessionStateControllerImpl2::OnRealShutdownTimeout);
+      this,
+      &SessionStateControllerImpl2::OnRealShutdownTimeout);
 }
 
 void SessionStateControllerImpl2::OnRealShutdownTimeout() {
@@ -310,11 +372,242 @@ void SessionStateControllerImpl2::OnRealShutdownTimeout() {
 
 void SessionStateControllerImpl2::OnLockScreenHide(
   base::Callback<void(void)>& callback) {
+  StartUnlockAnimationBeforeUIDestroyed(callback);
+}
+
+void SessionStateControllerImpl2::LockAnimationCancelled() {
+  can_cancel_lock_animation_ = false;
+  RestoreUnlockedProperties();
+}
+
+void SessionStateControllerImpl2::PreLockAnimationFinished() {
+  can_cancel_lock_animation_ = false;
+
+  delegate_->RequestLockScreen();
+  lock_fail_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs),
+      this,
+      &SessionStateControllerImpl2::OnLockFailTimeout);
+}
+
+void SessionStateControllerImpl2::PostLockAnimationFinished() {
+  animating_lock_ = false;
+
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(
+          SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
+  if (!lock_screen_displayed_callback_.is_null()) {
+    lock_screen_displayed_callback_.Run();
+    lock_screen_displayed_callback_.Reset();
+  }
+  if (shutdown_after_lock_) {
+    shutdown_after_lock_ = false;
+    StartLockToShutdownTimer();
+  }
+}
+
+void SessionStateControllerImpl2::UnlockAnimationAfterUIDestroyedFinished() {
+  RestoreUnlockedProperties();
+}
+
+void SessionStateControllerImpl2::StartImmediatePreLockAnimation() {
+  animating_lock_ = true;
+
+  StoreUnlockedProperties();
+
+  base::Closure next_animation_starter =
+      base::Bind(&SessionStateControllerImpl2::PreLockAnimationFinished,
+      base::Unretained(this));
+  ui::LayerAnimationObserver* observer =
+      new AnimationFinishedObserver(next_animation_starter);
+
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_LIFT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_FADE_OUT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  // Hide the screen locker containers so we can raise them later.
+  animator_->StartAnimation(
+      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
+      internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+  AnimateBackgroundAppearanceIfNecessary(
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+}
+
+void SessionStateControllerImpl2::StartCancellablePreLockAnimation() {
+  animating_lock_ = true;
+  StoreUnlockedProperties();
+
+  base::Closure next_animation_starter =
+      base::Bind(&SessionStateControllerImpl2::PreLockAnimationFinished,
+      base::Unretained(this));
+  AnimationFinishedObserver* observer =
+      new AnimationFinishedObserver(next_animation_starter);
+
+  observer->Pause();
+
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_LIFT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE,
+      observer);
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_FADE_OUT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE,
+      observer);
+  // Hide the screen locker containers so we can raise them later.
+  animator_->StartAnimation(
+      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
+      internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+  AnimateBackgroundAppearanceIfNecessary(
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE,
+      observer);
+
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(
+          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
+  observer->Unpause();
+}
+
+void SessionStateControllerImpl2::CancelPreLockAnimation() {
+  base::Closure next_animation_starter =
+      base::Bind(&SessionStateControllerImpl2::LockAnimationCancelled,
+      base::Unretained(this));
+  AnimationFinishedObserver* observer =
+      new AnimationFinishedObserver(next_animation_starter);
+
+  observer->Pause();
+
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_UNDO_LIFT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_FADE_IN,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  AnimateBackgroundHidingIfNecessary(
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  observer->Unpause();
+}
+
+void SessionStateControllerImpl2::StartPostLockAnimation() {
+  base::Closure next_animation_starter =
+      base::Bind(&SessionStateControllerImpl2::PostLockAnimationFinished,
+      base::Unretained(this));
+
+  ui::LayerAnimationObserver* observer =
+      new AnimationFinishedObserver(next_animation_starter);
+
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+}
+
+void SessionStateControllerImpl2::StartUnlockAnimationBeforeUIDestroyed(
+    base::Closure& callback) {
   animator_->StartAnimationWithCallback(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_LIFT,
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
       callback);
+}
+
+void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
+  base::Closure next_animation_starter =
+      base::Bind(
+          &SessionStateControllerImpl2::UnlockAnimationAfterUIDestroyedFinished,
+      base::Unretained(this));
+
+  ui::LayerAnimationObserver* observer =
+      new AnimationFinishedObserver(next_animation_starter);
+
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_DROP,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  animator_->StartAnimationWithObserver(
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_FADE_IN,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+  AnimateBackgroundHidingIfNecessary(
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      observer);
+}
+
+void SessionStateControllerImpl2::StoreUnlockedProperties() {
+  if (!unlocked_properties_.get()) {
+    unlocked_properties_.reset(new UnlockedStateProperties());
+    unlocked_properties_->background_is_hidden = IsBackgroundHidden();
+  }
+  if (unlocked_properties_->background_is_hidden) {
+    // Hide background so that it can be animated later.
+    animator_->StartAnimation(
+        internal::SessionStateAnimator::DESKTOP_BACKGROUND,
+        internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
+        internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+    ShowBackground();
+  }
+}
+
+void SessionStateControllerImpl2::RestoreUnlockedProperties() {
+  if (!unlocked_properties_.get())
+    return;
+  if (unlocked_properties_->background_is_hidden) {
+    HideBackground();
+    // Restore background visibility.
+    animator_->StartAnimation(
+        internal::SessionStateAnimator::DESKTOP_BACKGROUND,
+        internal::SessionStateAnimator::ANIMATION_FADE_IN,
+        internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+  }
+  unlocked_properties_.reset();
+}
+
+void SessionStateControllerImpl2::AnimateBackgroundAppearanceIfNecessary(
+    internal::SessionStateAnimator::AnimationSpeed speed,
+    ui::LayerAnimationObserver* observer) {
+  if (unlocked_properties_.get() &&
+      unlocked_properties_->background_is_hidden) {
+    animator_->StartAnimationWithObserver(
+        internal::SessionStateAnimator::DESKTOP_BACKGROUND,
+        internal::SessionStateAnimator::ANIMATION_FADE_IN,
+        speed,
+        observer);
+  }
+}
+
+void SessionStateControllerImpl2::AnimateBackgroundHidingIfNecessary(
+    internal::SessionStateAnimator::AnimationSpeed speed,
+    ui::LayerAnimationObserver* observer) {
+  if (unlocked_properties_.get() &&
+      unlocked_properties_->background_is_hidden) {
+    animator_->StartAnimationWithObserver(
+        internal::SessionStateAnimator::DESKTOP_BACKGROUND,
+        internal::SessionStateAnimator::ANIMATION_FADE_OUT,
+        speed,
+        observer);
+  }
 }
 
 }  // namespace ash

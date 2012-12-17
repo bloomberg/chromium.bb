@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_animation_observer.h"
 
 namespace gfx {
 class Rect;
@@ -34,11 +35,13 @@ class ASH_EXPORT SessionStateAnimator {
     ANIMATION_UNDO_PARTIAL_CLOSE,
     ANIMATION_FULL_CLOSE,
     ANIMATION_FADE_IN,
+    ANIMATION_FADE_OUT,
     ANIMATION_HIDE_IMMEDIATELY,
     ANIMATION_RESTORE,
     // Animations that raise/lower windows to/from area "in front" of the
     // screen.
     ANIMATION_LIFT,
+    ANIMATION_UNDO_LIFT,
     ANIMATION_DROP,
     // Animations that raise/lower windows from/to area "behind" of the screen.
     ANIMATION_RAISE_TO_SCREEN,
@@ -97,8 +100,6 @@ class ASH_EXPORT SessionStateAnimator {
     // Multiple system layers belong here like status, menu, tooltip
     // and overlay layers.
     LOCK_SCREEN_RELATED_CONTAINERS = 1 << 5,
-
-    LOCK_SCREEN_SYSTEM_FOREGROUND = 1 << 6,
   };
 
   // Helper class used by tests to access internal state.
@@ -158,6 +159,13 @@ class ASH_EXPORT SessionStateAnimator {
                                   AnimationType type,
                                   AnimationSpeed speed,
                                   base::Callback<void(void)>& callback);
+
+//  Apply animation |type| to all containers included in |container_mask| with
+// specified |speed| and add |observer| to all animations.
+  void StartAnimationWithObserver(int container_mask,
+                                  AnimationType type,
+                                  AnimationSpeed speed,
+                                  ui::LayerAnimationObserver* observer);
 
   // Applies animation |type| whith specified |speed| to the root container.
   void StartGlobalAnimation(AnimationType type,
