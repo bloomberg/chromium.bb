@@ -49,6 +49,7 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
   MOCK_METHOD3(GetOffTheRecordCommandLine,
                std::string(const GURL&, const CommandLine&, CommandLine*));
+  MOCK_METHOD1(InitRlzDelayed, void(Profile*));
 };
 
 }  // namespace chromeos

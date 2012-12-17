@@ -28,6 +28,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -49,6 +50,10 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(ENABLE_RLZ)
+#include "rlz/lib/rlz_value_store.h"
+#endif
 
 namespace chromeos {
 
@@ -264,6 +269,11 @@ class LoginUtilsTest : public testing::Test,
                                         NULL, NULL));
     browser_process_->SetIOThread(io_thread_state_.get());
 
+#if defined(ENABLE_RLZ)
+    rlz_lib::testing::SetRlzStoreDirectory(scoped_temp_dir_.path());
+    RLZTracker::EnableZeroDelayForTesting();
+#endif
+
     RunUntilIdle();
   }
 
@@ -275,6 +285,9 @@ class LoginUtilsTest : public testing::Test,
 
     InvokeOnIO(
         base::Bind(&LoginUtilsTest::TearDownOnIO, base::Unretained(this)));
+
+    // LoginUtils instance must not outlive Profile instances.
+    LoginUtils::Set(NULL);
 
     // These trigger some tasks that have to run while BrowserThread::UI
     // exists. Delete all the profiles before deleting the connector.

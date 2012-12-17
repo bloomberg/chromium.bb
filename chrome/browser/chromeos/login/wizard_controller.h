@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -290,8 +289,6 @@ class WizardController : public ScreenObserver {
   ObserverList<Observer> observer_list_;
 
   bool login_screen_started_;
-
-  base::WeakPtrFactory<WizardController> weak_ptr_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);

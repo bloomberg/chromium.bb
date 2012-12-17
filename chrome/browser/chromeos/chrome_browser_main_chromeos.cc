@@ -70,6 +70,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -496,6 +497,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
                                   &tracker_);
 #endif
 
+#if defined(ENABLE_RLZ)
+  if (parsed_command_line().HasSwitch(::switches::kTestType))
+    RLZTracker::EnableZeroDelayForTesting();
+#endif
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
@@ -521,6 +527,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
         profile()->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
     if (use_shared_proxies_pref->IsDefaultValue())
       profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
+
+    // This is done in LoginUtils::OnProfileCreated during normal login.
+    LoginUtils::Get()->InitRlzDelayed(profile());
   }
 
   // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC

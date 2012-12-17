@@ -905,6 +905,8 @@
         'browser/chromeos/login/network_screen_browsertest.cc',
         'browser/chromeos/login/screen_locker_tester.cc',
         'browser/chromeos/login/screen_locker_tester.h',
+        'browser/chromeos/login/test_login_utils.cc',
+        'browser/chromeos/login/test_login_utils.h',
         'browser/chromeos/login/update_screen_browsertest.cc',
         'browser/chromeos/login/user_image_manager_browsertest.cc',
         'browser/chromeos/login/wizard_controller_browsertest.cc',

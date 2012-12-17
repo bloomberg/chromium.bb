@@ -123,6 +123,9 @@ class LoginUtils {
   // Stops background fetchers.
   virtual void StopBackgroundFetchers() = 0;
 
+  // Initialize RLZ.
+  virtual void InitRlzDelayed(Profile* user_profile) = 0;
+
  protected:
   friend class ::BrowserGuestSessionNavigatorTest;
 

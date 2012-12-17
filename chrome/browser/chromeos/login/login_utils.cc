@@ -22,7 +22,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/task_runner_util.h"
+#include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "cc/switches.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/google/google_util_chromeos.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -187,6 +189,15 @@ void TransferDefaultAuthCacheOnIOThread(
       http_transaction_factory()->GetSession()->http_auth_cache());
 }
 
+#if defined(ENABLE_RLZ)
+// Flag file that disables RLZ tracking, when present.
+const char kRLZDisabledFlagName[] = FILE_PATH_LITERAL(".rlz_disabled");
+
+FilePath GetRlzDisabledFlagPath() {
+  return file_util::GetHomeDir().Append(kRLZDisabledFlagName);
+}
+#endif
+
 }  // namespace
 
 // Used to request a restart to switch to the guest mode.
@@ -299,6 +310,7 @@ class LoginUtilsImpl
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
+  virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
   // OAuth1TokenFetcher::Delegate overrides.
   void OnOAuth1AccessTokenAvailable(const std::string& token,
@@ -368,6 +380,9 @@ class LoginUtilsImpl
   // Callback for asynchronous profile creation.
   void OnProfileCreated(Profile* profile,
                         Profile::CreateStatus status);
+
+  // Initializes RLZ. If |disabled| is true, financial pings are turned off.
+  void InitRlz(Profile* user_profile, bool disabled);
 
   std::string password_;
   bool pending_requests_;
@@ -656,13 +671,7 @@ void LoginUtilsImpl::OnProfileCreated(
       content::NotificationService::AllSources(),
       content::Details<Profile>(user_profile));
 
-#if defined(ENABLE_RLZ)
-  // Init the RLZ library.
-  int ping_delay = user_profile->GetPrefs()->GetInteger(
-      first_run::GetPingDelayPrefName().c_str());
-  RLZTracker::InitRlzFromProfileDelayed(
-      user_profile, UserManager::Get()->IsCurrentUserNew(), ping_delay);
-#endif
+  InitRlzDelayed(user_profile);
 
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
@@ -672,6 +681,36 @@ void LoginUtilsImpl::OnProfileCreated(
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(user_profile);
+}
+
+void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
+#if defined(ENABLE_RLZ)
+  if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
+    // Read brand code asynchronously from an OEM file and repost ourselves.
+    google_util::chromeos::SetBrandFromFile(
+        base::Bind(&LoginUtilsImpl::InitRlzDelayed, AsWeakPtr(), user_profile));
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      base::WorkerPool::GetTaskRunner(false /* task_is_slow */),
+      FROM_HERE,
+      base::Bind(&file_util::PathExists, GetRlzDisabledFlagPath()),
+      base::Bind(&LoginUtilsImpl::InitRlz, AsWeakPtr(), user_profile));
+#endif
+}
+
+void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
+#if defined(ENABLE_RLZ)
+  if (disabled) {
+    // Empty brand code turns financial pings off.
+    google_util::chromeos::ClearBrandForCurrentSession();
+  }
+  // Init the RLZ library.
+  int ping_delay = user_profile->GetPrefs()->GetInteger(
+      first_run::GetPingDelayPrefName().c_str());
+  RLZTracker::InitRlzFromProfileDelayed(
+      user_profile, UserManager::Get()->IsCurrentUserNew(), ping_delay);
+#endif
 }
 
 void LoginUtilsImpl::StartTokenServices(Profile* user_profile) {

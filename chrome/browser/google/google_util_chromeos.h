@@ -16,6 +16,10 @@ namespace chromeos {
 // partner. Returns empty string if the information is not available.
 std::string GetBrand();
 
+// Clears brand code for the current session (not persisted through browser
+// restart). Future calls to GetBrand() will return an empty string.
+void ClearBrandForCurrentSession();
+
 // Reads the brand code from a board-specific file and stores it to Local State.
 // |callback| is invoked on the calling thread after that.
 void SetBrandFromFile(const base::Closure& callback);

@@ -57,6 +57,11 @@ using content::NavigationEntry;
 
 namespace {
 
+// Maximum and minimum delay for financial ping we would allow to be set through
+// master preferences. Somewhat arbitrary, may need to be adjusted in future.
+const int kMaxDelay = 200 * 1000;
+const int kMinDelay = 20 * 1000;
+
 bool IsGoogleUrl(const GURL& url) {
   return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
 }
@@ -180,9 +185,11 @@ RLZTracker::RLZTracker()
       is_google_default_search_(false),
       is_google_homepage_(false),
       is_google_in_startpages_(false),
+      worker_pool_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
       already_ran_(false),
       omnibox_used_(false),
-      homepage_used_(false) {
+      homepage_used_(false),
+      min_delay_(kMinDelay) {
 }
 
 RLZTracker::~RLZTracker() {
@@ -259,13 +266,8 @@ bool RLZTracker::Init(bool first_run,
     delay = -delay;
   }
 
-  // Maximum and minimum delay we would allow to be set through master
-  // preferences. Somewhat arbitrary, may need to be adjusted in future.
-  const int kMaxDelay = 200 * 1000;
-  const int kMinDelay = 20 * 1000;
-
   delay *= 1000;
-  delay = (delay < kMinDelay) ? kMinDelay : delay;
+  delay = (delay < min_delay_) ? min_delay_ : delay;
   delay = (delay > kMaxDelay) ? kMaxDelay : delay;
 
   if (google_util::GetBrand(&brand_) && !IsBrandOrganic(brand_)) {
@@ -294,15 +296,14 @@ bool RLZTracker::Init(bool first_run,
 void RLZTracker::ScheduleDelayedInit(int delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
-  BrowserThread::GetBlockingPool()->PostDelayedTask(
+  BrowserThread::GetBlockingPool()->PostDelayedSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(delay));
 }
 
 void RLZTracker::DelayedInit() {
-  worker_pool_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
-
   bool schedule_ping = false;
 
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
@@ -328,6 +329,10 @@ void RLZTracker::DelayedInit() {
 
   if (schedule_ping)
     ScheduleFinancialPing();
+}
+
+void RLZTracker::EnableZeroDelayForTesting() {
+  GetInstance()->min_delay_ = 0;
 }
 
 void RLZTracker::ScheduleFinancialPing() {
@@ -432,10 +437,6 @@ bool RLZTracker::ScheduleRecordProductEvent(rlz_lib::Product product,
                                             rlz_lib::Event event_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
-  if (!already_ran_) {
-    LOG(ERROR) << "Attempted recording RLZ event before RLZ init.";
-    return true;
-  }
 
   BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
       worker_pool_token_,

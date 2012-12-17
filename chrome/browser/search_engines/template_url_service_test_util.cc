@@ -23,6 +23,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/google/google_util_chromeos.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -175,6 +179,10 @@ void TemplateURLServiceTestUtil::SetUp() {
       TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(), TestingTemplateURLService::Build));
   service->AddObserver(this);
+
+#if defined(OS_CHROMEOS)
+  google_util::chromeos::ClearBrandForCurrentSession();
+#endif
 }
 
 void TemplateURLServiceTestUtil::TearDown() {

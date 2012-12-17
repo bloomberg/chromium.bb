@@ -39,7 +39,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/google/google_util_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -148,8 +147,7 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
       skip_update_enroll_after_eula_(false),
-      login_screen_started_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      login_screen_started_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -477,21 +475,6 @@ void WizardController::OnEulaAccepted() {
 #endif
   }
 
-  // TODO(ivankr): post-AU action when |kRLZBrand| is unset.
-#if defined(ENABLE_RLZ)
-  LoadBrandCodeFromFile();
-#else
-  OnEulaBlockingTasksDone();
-#endif
-}
-
-void WizardController::LoadBrandCodeFromFile() {
-  google_util::chromeos::SetBrandFromFile(
-      base::Bind(&WizardController::OnEulaBlockingTasksDone,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WizardController::OnEulaBlockingTasksDone() {
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
     PerformPostUpdateActions();

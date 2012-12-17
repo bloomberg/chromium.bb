@@ -75,6 +75,9 @@ class RLZTracker : public content::NotificationObserver {
   // This method is public for use by the Singleton class.
   static RLZTracker* GetInstance();
 
+  // Enables zero delay for InitRlzFromProfileDelayed. For testing only.
+  static void EnableZeroDelayForTesting();
+
   // The following methods are made protected so that they can be used for
   // testing purposes. Production code should never need to call these.
  protected:
@@ -197,6 +200,9 @@ class RLZTracker : public content::NotificationObserver {
   std::string reactivation_brand_;
 
   content::NotificationRegistrar registrar_;
+
+  // Minimum delay before sending financial ping after initialization.
+  int min_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };
