@@ -157,8 +157,15 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
       bubble_->SetWarmUpMode();
       break;
     case REQUEST_SET_RECORDING_MODE:
-      DCHECK(bubble_.get());
-      bubble_->SetRecordingMode();
+      if (!bubble_.get()) {
+        // We've seen this on crash/ but don't yet understand why this happen.
+        // TODO(tommi): It would be nice to figure this out properly and fix
+        // but since this feature is being deprecated, removing the code
+        // altogether is probably a simpler and more permanent fix :)
+        DLOG(ERROR) << "NULL bubble in REQUEST_SET_RECORDING_MODE!";
+      } else {
+        bubble_->SetRecordingMode();
+      }
       break;
     case REQUEST_SET_RECOGNIZING_MODE:
       DCHECK(bubble_.get());
