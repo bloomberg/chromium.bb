@@ -34,13 +34,14 @@ void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
 }
 
 void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
-                                          int64 delta) {
+                                    int64 delta) {
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
   FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
     return;
-  FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
+  if (delta != 0)
+    FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
   if (quota_manager_proxy_) {
     quota_manager_proxy_->NotifyStorageModified(
         quota::QuotaClient::kFileSystem,
