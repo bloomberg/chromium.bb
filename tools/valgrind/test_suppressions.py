@@ -8,8 +8,6 @@ import os
 import re
 import sys
 
-import path_utils
-
 import suppressions
 
 
@@ -49,32 +47,7 @@ def ReadReportsFromFile(filename):
 
 
 def main(argv):
-  suppressions_root = path_utils.ScriptDir()
-  JOIN = os.path.join
-
-  supp_filename = JOIN(suppressions_root, "memcheck", "suppressions.txt")
-  vg_common = suppressions.ReadSuppressionsFromFile(supp_filename)
-  supp_filename = JOIN(suppressions_root, "tsan", "suppressions.txt")
-  tsan_common = suppressions.ReadSuppressionsFromFile(supp_filename)
-  common_suppressions = vg_common + tsan_common
-
-  supp_filename = JOIN(suppressions_root, "memcheck", "suppressions_mac.txt")
-  vg_mac = suppressions.ReadSuppressionsFromFile(supp_filename)
-  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_mac.txt")
-  tsan_mac = suppressions.ReadSuppressionsFromFile(supp_filename)
-  mac_suppressions = vg_mac + tsan_mac
-
-  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_win32.txt")
-  tsan_win = suppressions.ReadSuppressionsFromFile(supp_filename)
-  win_suppressions = tsan_win
-
-  supp_filename = JOIN(suppressions_root, "..", "heapcheck", "suppressions.txt")
-  heapcheck_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
-
-  supp_filename = JOIN(suppressions_root, "drmemory", "suppressions.txt")
-  drmem_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
-  supp_filename = JOIN(suppressions_root, "drmemory", "suppressions_full.txt")
-  drmem_full_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
+  supp = suppressions.GetSuppressions()
 
   # all_reports is a map {report: list of urls containing this report}
   all_reports = defaultdict(list)
@@ -88,21 +61,21 @@ def main(argv):
 
   reports_count = 0
   for r in all_reports:
-    cur_supp = common_suppressions
+    cur_supp = supp['common_suppressions']
     if all([re.search("%20Mac%20|mac_valgrind", url)
             for url in all_reports[r]]):
       # Include mac suppressions if the report is only present on Mac
-      cur_supp += mac_suppressions
+      cur_supp += supp['mac_suppressions']
     elif all([re.search("Windows%20", url) for url in all_reports[r]]):
       # Include win32 suppressions if the report is only present on Windows
-      cur_supp += win_suppressions
+      cur_supp += supp['win_suppressions']
     elif all([re.search("%20Heapcheck", url)
               for url in all_reports[r]]):
-      cur_supp += heapcheck_suppressions
+      cur_supp += supp['heapcheck_suppressions']
     if all(["DrMemory" in url for url in all_reports[r]]):
-      cur_supp += drmem_suppressions
+      cur_supp += supp['drmem_suppressions']
     if all(["DrMemory%20full" in url for url in all_reports[r]]):
-      cur_supp += drmem_full_suppressions
+      cur_supp += supp['drmem_full_suppressions']
 
     match = False
     for s in cur_supp:
