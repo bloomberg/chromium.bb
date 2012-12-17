@@ -136,7 +136,7 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
         }
 
         chrome::OpenAll(parent_widget()->GetNativeWindow(), navigator,
-                        selection(), NEW_FOREGROUND_TAB);
+                        selection(), NEW_FOREGROUND_TAB, profile_to_use);
         bookmark_utils::RecordBookmarkLaunch(
             bookmark_utils::LAUNCH_CONTEXT_MENU);
         return;

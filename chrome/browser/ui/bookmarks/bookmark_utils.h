@@ -30,13 +30,15 @@ namespace chrome {
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
-             WindowOpenDisposition initial_disposition);
+             WindowOpenDisposition initial_disposition,
+             content::BrowserContext* browser_context);
 
 // Convenience for OpenAll() with a single BookmarkNode.
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
              const BookmarkNode* node,
-             WindowOpenDisposition initial_disposition);
+             WindowOpenDisposition initial_disposition,
+             content::BrowserContext* browser_context);
 
 // Asks the user before deleting a non-empty bookmark folder.
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,

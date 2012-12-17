@@ -244,7 +244,8 @@ gboolean BookmarkMenuController::OnMenuButtonPressedOrReleased(
       menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
 
   if (event->button == 2 && node && node->is_folder()) {
-    chrome::OpenAll(parent_window_, page_navigator_, node, NEW_BACKGROUND_TAB);
+    chrome::OpenAll(parent_window_, page_navigator_, node, NEW_BACKGROUND_TAB,
+                    browser_->profile());
     gtk_menu_popdown(GTK_MENU(menu_));
     return TRUE;
   } else if (event->button == 3) {

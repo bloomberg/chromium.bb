@@ -95,6 +95,7 @@ class BookmarkContextMenuTest : public testing::Test {
   // a
   // F1
   //  f1a
+  // -f1b as "chrome://settings"
   //  F11
   //   f11a
   // F2
@@ -107,7 +108,8 @@ class BookmarkContextMenuTest : public testing::Test {
     model_->AddURL(bb_node, 0, ASCIIToUTF16("a"), GURL(test_base + "a"));
     const BookmarkNode* f1 = model_->AddFolder(bb_node, 1, ASCIIToUTF16("F1"));
     model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddFolder(f1, 1, ASCIIToUTF16("F11"));
+    model_->AddURL(f1, 1, ASCIIToUTF16("f1b"), GURL("chrome://settings"));
+    const BookmarkNode* f11 = model_->AddFolder(f1, 2, ASCIIToUTF16("F11"));
     model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
     model_->AddFolder(bb_node, 2, ASCIIToUTF16("F2"));
     model_->AddFolder(bb_node, 3, ASCIIToUTF16("F3"));
@@ -133,9 +135,19 @@ TEST_F(BookmarkContextMenuTest, DeleteURL) {
 // Tests open all on a folder with a couple of bookmarks.
 TEST_F(BookmarkContextMenuTest, OpenAll) {
   const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
-  chrome::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
+  chrome::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB, NULL);
 
   // Should have navigated to F1's child but not F11's child.
+  ASSERT_EQ(static_cast<size_t>(2), navigator_.urls_.size());
+  ASSERT_TRUE(folder->GetChild(0)->url() == navigator_.urls_[0]);
+}
+
+// Tests open all on a folder with a couple of bookmarks in incognito window.
+TEST_F(BookmarkContextMenuTest, OpenAllIngonito) {
+  const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
+  chrome::OpenAll(NULL, &navigator_, folder, OFF_THE_RECORD, NULL);
+
+  // Should have navigated to only f1a but not f2a.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());
   ASSERT_TRUE(folder->GetChild(0)->url() == navigator_.urls_[0]);
 }

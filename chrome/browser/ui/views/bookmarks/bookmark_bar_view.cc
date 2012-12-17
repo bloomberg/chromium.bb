@@ -1166,7 +1166,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     page_navigator_->OpenURL(params);
   } else {
     chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,
-        disposition_from_event_flags);
+                    disposition_from_event_flags, browser_->profile());
   }
 
   bookmark_utils::RecordBookmarkLaunch(IsDetached() ?

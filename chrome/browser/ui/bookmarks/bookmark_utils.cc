@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -61,8 +62,16 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
 void OpenAllImpl(const BookmarkNode* node,
                  WindowOpenDisposition initial_disposition,
                  content::PageNavigator** navigator,
-                 bool* opened_url) {
+                 bool* opened_url,
+                 content::BrowserContext* browser_context) {
   if (node->is_url()) {
+    // When |initial_disposition| is OFF_THE_RECORD, a node which can't be
+    // opened in incognito window, it is detected using |browser_context|, is
+    // not opened.
+    if (initial_disposition == OFF_THE_RECORD &&
+        !IsURLAllowedInIncognito(node->url(), browser_context))
+        return;
+
     WindowOpenDisposition disposition;
     if (*opened_url)
       disposition = NEW_BACKGROUND_TAB;
@@ -84,7 +93,8 @@ void OpenAllImpl(const BookmarkNode* node,
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child_node = node->GetChild(i);
       if (child_node->is_url())
-        OpenAllImpl(child_node, initial_disposition, navigator, opened_url);
+        OpenAllImpl(child_node, initial_disposition, navigator, opened_url,
+                    browser_context);
     }
   }
 }
@@ -130,22 +140,25 @@ void GetURLsForOpenTabs(Browser* browser,
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
-             WindowOpenDisposition initial_disposition) {
+             WindowOpenDisposition initial_disposition,
+             content::BrowserContext* browser_context) {
   if (!ShouldOpenAll(parent, nodes))
     return;
 
   bool opened_url = false;
   for (size_t i = 0; i < nodes.size(); ++i)
-    OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
+    OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url,
+                browser_context);
 }
 
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
              const BookmarkNode* node,
-             WindowOpenDisposition initial_disposition) {
+             WindowOpenDisposition initial_disposition,
+             content::BrowserContext* browser_context) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(node);
-  OpenAll(parent, navigator, nodes, initial_disposition);
+  OpenAll(parent, navigator, nodes, initial_disposition, browser_context);
 }
 
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,

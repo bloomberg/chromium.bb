@@ -131,7 +131,8 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   selection.push_back(node);
 
   chrome::OpenAll(parent_->GetNativeWindow(), page_navigator_, selection,
-      chrome::DispositionFromEventFlags(mouse_event_flags));
+                  chrome::DispositionFromEventFlags(mouse_event_flags),
+                  profile_);
   bookmark_utils::RecordBookmarkLaunch(location_);
 }
 

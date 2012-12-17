@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -120,7 +121,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   if (!node || !browser)
     return; // shouldn't be reached
 
-  chrome::OpenAll(NULL, browser, node, disposition);
+  chrome::OpenAll(NULL, browser, node, disposition, browser->profile());
 
   if (disposition == NEW_FOREGROUND_TAB) {
     content::RecordAction(UserMetricsAction("OpenAllBookmarks"));

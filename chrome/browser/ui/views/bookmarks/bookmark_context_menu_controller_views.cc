@@ -69,7 +69,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
             UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
       chrome::OpenAll(parent_widget_->GetNativeWindow(), navigator_,
-                      selection_, initial_disposition);
+                      selection_, initial_disposition, profile_);
       bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_CONTEXT_MENU);
       break;
     }

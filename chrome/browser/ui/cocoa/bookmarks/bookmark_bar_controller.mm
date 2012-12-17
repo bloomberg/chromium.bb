@@ -2678,7 +2678,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition {
   [self closeFolderAndStopTrackingMenus];
-  chrome::OpenAll([[self view] window], browser_, node, disposition);
+  chrome::OpenAll([[self view] window], browser_, node, disposition,
+                  browser_->profile());
 }
 
 - (void)addButtonForNode:(const BookmarkNode*)node
