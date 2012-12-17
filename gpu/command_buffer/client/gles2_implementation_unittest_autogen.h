@@ -1786,5 +1786,16 @@ TEST_F(GLES2ImplementationTest, DiscardFramebufferEXT) {
   gl_->DiscardFramebufferEXT(1, 2, &expected.data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
+  struct Cmds {
+    LoseContextCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->LoseContextCHROMIUM(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 

@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -97,7 +98,12 @@ void GLES2DecoderTestBase::InitDecoder(
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
       DisallowedFeatures(), extensions);
 
-  EXPECT_TRUE(group_->Initialize(DisallowedFeatures(), NULL));
+  // We initialize the ContextGroup with a MockGLES2Decoder so that
+  // we can use the ContextGroup to figure out how the real GLES2Decoder
+  // will initialize itself.
+  mock_decoder_.reset(new MockGLES2Decoder());
+  EXPECT_TRUE(
+      group_->Initialize(mock_decoder_.get(), DisallowedFeatures(), NULL));
 
   AddExpectationsForVertexAttribManager();
 
@@ -295,7 +301,7 @@ void GLES2DecoderTestBase::TearDown() {
 
   decoder_->Destroy(true);
   decoder_.reset();
-  group_->Destroy(false);
+  group_->Destroy(mock_decoder_.get(), false);
   engine_.reset();
   ::gfx::GLInterface::SetGLInterface(NULL);
   gl_.reset();

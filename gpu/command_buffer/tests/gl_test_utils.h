@@ -12,6 +12,8 @@
 
 class GLTestHelper {
  public:
+  static const uint8 kCheckClearValue = 123u;
+
   static bool HasExtension(const char* extension);
   static bool CheckGLError(const char* msg, int line);
 

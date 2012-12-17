@@ -715,6 +715,9 @@ void GLES2DiscardFramebufferEXT(
     GLenum target, GLsizei count, const GLenum* attachments) {
   gles2::GetGLContext()->DiscardFramebufferEXT(target, count, attachments);
 }
+void GLES2LoseContextCHROMIUM(GLenum current, GLenum other) {
+  gles2::GetGLContext()->LoseContextCHROMIUM(current, other);
+}
 
 namespace gles2 {
 
@@ -1048,6 +1051,8 @@ NameToFunc g_gles2_function_table[] = {
       glAsyncTexImage2DCHROMIUM), },
   { "glDiscardFramebufferEXT", reinterpret_cast<GLES2FunctionPointer>(
       glDiscardFramebufferEXT), },
+  { "glLoseContextCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glLoseContextCHROMIUM), },
   { NULL, NULL, },
 };
 

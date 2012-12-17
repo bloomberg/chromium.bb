@@ -238,6 +238,7 @@
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_query_unittests.cc',
+        'command_buffer/tests/gl_lose_context_chromium_unittests.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
         'command_buffer/tests/gl_pointcoord_unittest.cc',

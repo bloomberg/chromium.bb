@@ -244,6 +244,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_copy_texture");
   AddExtensionString("GL_CHROMIUM_discard_backbuffer");
   AddExtensionString("GL_CHROMIUM_get_error_query");
+  AddExtensionString("GL_CHROMIUM_lose_context");
   AddExtensionString("GL_CHROMIUM_pixel_transfer_buffer_object");
   AddExtensionString("GL_CHROMIUM_rate_limit_offscreen_context");
   AddExtensionString("GL_CHROMIUM_resize");

@@ -1980,5 +1980,12 @@
     }
   }
 
+  void LoseContextCHROMIUM(GLenum current, GLenum other) {
+    gles2::LoseContextCHROMIUM* c = GetCmdSpace<gles2::LoseContextCHROMIUM>();
+    if (c) {
+      c->Init(current, other);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

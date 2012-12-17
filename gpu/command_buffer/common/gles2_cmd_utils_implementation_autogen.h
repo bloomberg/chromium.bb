@@ -1134,6 +1134,16 @@ std::string GLES2Util::GetStringRenderBufferTarget(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringResetStatus(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_GUILTY_CONTEXT_RESET_ARB, "GL_GUILTY_CONTEXT_RESET_ARB" },
+    { GL_INNOCENT_CONTEXT_RESET_ARB, "GL_INNOCENT_CONTEXT_RESET_ARB" },
+    { GL_UNKNOWN_CONTEXT_RESET_ARB, "GL_UNKNOWN_CONTEXT_RESET_ARB" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringShaderBinaryFormat(uint32 value) {
   return GLES2Util::GetQualifiedEnumString(
       NULL, 0, value);

@@ -10,6 +10,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// GCC requires these declarations, but MSVC requires they not be present.
+#ifndef COMPILER_MSVC
+const uint8 GLTestHelper::kCheckClearValue;
+#endif
+
 bool GLTestHelper::HasExtension(const char* extension) {
   std::string extensions(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
@@ -108,7 +113,7 @@ bool GLTestHelper::CheckPixels(
     const uint8* color) {
   GLsizei size = width * height * 4;
   scoped_array<uint8> pixels(new uint8[size]);
-  memset(pixels.get(), 123, size);
+  memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
   bool same = true;
   for (GLint yy = 0; yy < height; ++yy) {

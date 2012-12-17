@@ -336,6 +336,12 @@ static GLenum valid_render_buffer_target_table[] = {
   GL_RENDERBUFFER,
 };
 
+static GLenum valid_reset_status_table[] = {
+  GL_GUILTY_CONTEXT_RESET_ARB,
+  GL_INNOCENT_CONTEXT_RESET_ARB,
+  GL_UNKNOWN_CONTEXT_RESET_ARB,
+};
+
 static GLenum valid_shader_parameter_table[] = {
   GL_SHADER_TYPE,
   GL_DELETE_STATUS,
@@ -597,6 +603,8 @@ Validators::Validators()
       render_buffer_target(
           valid_render_buffer_target_table, arraysize(
               valid_render_buffer_target_table)),
+      reset_status(
+          valid_reset_status_table, arraysize(valid_reset_status_table)),
       shader_binary_format(),
       shader_parameter(
           valid_shader_parameter_table, arraysize(

@@ -29,10 +29,12 @@ GLManager::Options::Options()
       share_group_manager(NULL),
       share_mailbox_manager(NULL),
       virtual_manager(NULL),
-      bind_generates_resource(false) {
+      bind_generates_resource(false),
+      context_lost_allowed(false) {
 }
 
-GLManager::GLManager() {
+GLManager::GLManager()
+    : context_lost_allowed_(false) {
 }
 
 GLManager::~GLManager() {
@@ -44,6 +46,8 @@ void GLManager::Initialize(const GLManager::Options& options) {
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
   const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
   const bool kShareResources = true;
+
+  context_lost_allowed_ = options.context_lost_allowed;
 
   gles2::MailboxManager* mailbox_manager = NULL;
   if (options.share_mailbox_manager) {
@@ -198,7 +202,9 @@ void GLManager::PumpCommands() {
   decoder_->MakeCurrent();
   gpu_scheduler_->PutChanged();
   ::gpu::CommandBuffer::State state = command_buffer_->GetState();
-  ASSERT_EQ(::gpu::error::kNoError, state.error);
+  if (!context_lost_allowed_) {
+    ASSERT_EQ(::gpu::error::kNoError, state.error);
+  }
 }
 
 bool GLManager::GetBufferChanged(int32 transfer_buffer_id) {

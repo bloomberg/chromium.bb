@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +37,7 @@ class ContextGroupTest : public testing::Test {
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
+    decoder_.reset(new MockGLES2Decoder());
     group_ = ContextGroup::Ref(new ContextGroup(NULL, NULL, NULL, true));
   }
 
@@ -45,6 +47,7 @@ class ContextGroupTest : public testing::Test {
   }
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
+  scoped_ptr<MockGLES2Decoder> decoder_;
   ContextGroup::Ref group_;
 };
 
@@ -68,7 +71,7 @@ TEST_F(ContextGroupTest, Basic) {
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
       DisallowedFeatures(), "");
-  group_->Initialize(DisallowedFeatures(), "");
+  group_->Initialize(decoder_.get(), DisallowedFeatures(), "");
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumVertexAttribs),
             group_->max_vertex_attribs());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumTextureUnits),
@@ -90,7 +93,7 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
   EXPECT_TRUE(group_->program_manager() != NULL);
   EXPECT_TRUE(group_->shader_manager() != NULL);
 
-  group_->Destroy(false);
+  group_->Destroy(decoder_.get(), false);
   EXPECT_TRUE(group_->buffer_manager() == NULL);
   EXPECT_TRUE(group_->framebuffer_manager() == NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
@@ -100,10 +103,11 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
 }
 
 TEST_F(ContextGroupTest, MultipleContexts) {
+  scoped_ptr<MockGLES2Decoder> decoder2_(new MockGLES2Decoder());
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
       DisallowedFeatures(), "");
-  group_->Initialize(DisallowedFeatures(), "");
-  group_->Initialize(DisallowedFeatures(), "");
+  group_->Initialize(decoder_.get(), DisallowedFeatures(), "");
+  group_->Initialize(decoder2_.get(), DisallowedFeatures(), "");
 
   EXPECT_TRUE(group_->buffer_manager() != NULL);
   EXPECT_TRUE(group_->framebuffer_manager() != NULL);
@@ -112,7 +116,7 @@ TEST_F(ContextGroupTest, MultipleContexts) {
   EXPECT_TRUE(group_->program_manager() != NULL);
   EXPECT_TRUE(group_->shader_manager() != NULL);
 
-  group_->Destroy(false);
+  group_->Destroy(decoder_.get(), false);
 
   EXPECT_TRUE(group_->buffer_manager() != NULL);
   EXPECT_TRUE(group_->framebuffer_manager() != NULL);
@@ -121,7 +125,7 @@ TEST_F(ContextGroupTest, MultipleContexts) {
   EXPECT_TRUE(group_->program_manager() != NULL);
   EXPECT_TRUE(group_->shader_manager() != NULL);
 
-  group_->Destroy(false);
+  group_->Destroy(decoder2_.get(), false);
 
   EXPECT_TRUE(group_->buffer_manager() == NULL);
   EXPECT_TRUE(group_->framebuffer_manager() == NULL);

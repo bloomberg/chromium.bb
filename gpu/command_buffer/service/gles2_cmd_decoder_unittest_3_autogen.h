@@ -66,5 +66,7 @@
 
 // TODO(gman): DiscardFramebufferEXT
 // TODO(gman): DiscardFramebufferEXTImmediate
+// TODO(gman): LoseContextCHROMIUM
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 

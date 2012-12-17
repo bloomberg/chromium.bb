@@ -85,6 +85,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetTotalProcessingCommandsTime, base::TimeDelta());
   MOCK_METHOD1(AddProcessingCommandsTime, void(base::TimeDelta));
   MOCK_METHOD0(WasContextLost, bool());
+  MOCK_METHOD1(LoseContext, void(uint32 reset_status));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);
 };

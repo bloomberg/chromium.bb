@@ -36,7 +36,6 @@ ContextGroup::ContextGroup(
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
       image_manager_(image_manager ? image_manager : new ImageManager),
       memory_tracker_(memory_tracker),
-      num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnforceGLMinimums)),
       bind_generates_resource_(bind_generates_resource),
@@ -71,10 +70,13 @@ static void GetIntegerv(GLenum pname, uint32* var) {
   *var = value;
 }
 
-bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
-                              const char* allowed_features) {
-  if (num_contexts_ > 0) {
-    ++num_contexts_;
+bool ContextGroup::Initialize(
+    GLES2Decoder* decoder,
+    const DisallowedFeatures& disallowed_features,
+    const char* allowed_features) {
+  // If we've already initialized the group just add the context.
+  if (HaveContexts()) {
+    decoders_.push_back(base::AsWeakPtr<GLES2Decoder>(decoder));
     return true;
   }
 
@@ -201,14 +203,31 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     return false;
   }
 
-  ++num_contexts_;
+  decoders_.push_back(base::AsWeakPtr<GLES2Decoder>(decoder));
   return true;
 }
 
-void ContextGroup::Destroy(bool have_context) {
-  DCHECK(num_contexts_ > 0);
-  if (--num_contexts_ > 0)
+namespace {
+
+bool IsNull(const base::WeakPtr<gles2::GLES2Decoder>& decoder) {
+  return !decoder;
+}
+
+}  // namespace anonymous
+
+bool ContextGroup::HaveContexts() {
+  decoders_.erase(std::remove_if(decoders_.begin(), decoders_.end(), IsNull),
+                  decoders_.end());
+  return !decoders_.empty();
+}
+
+void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
+  decoders_.erase(std::remove(decoders_.begin(), decoders_.end(), decoder),
+                  decoders_.end());
+  // If we still have contexts do nothing.
+  if (HaveContexts()) {
     return;
+  }
 
   if (buffer_manager_ != NULL) {
     buffer_manager_->Destroy(have_context);
@@ -263,8 +282,16 @@ uint32 ContextGroup::GetMemRepresented() const {
   return total;
 }
 
+void ContextGroup::LoseContexts(GLenum reset_status) {
+  for (size_t ii = 0; ii < decoders_.size(); ++ii) {
+    if (decoders_[ii]) {
+      decoders_[ii]->LoseContext(reset_status);
+    }
+  }
+}
+
 ContextGroup::~ContextGroup() {
-  CHECK(num_contexts_ == 0);
+  CHECK(!HaveContexts());
 }
 
 bool ContextGroup::CheckGLFeature(GLint min_required, GLint* v) {

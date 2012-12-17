@@ -1114,6 +1114,14 @@ _ENUM_LISTS = {
       'true',
     ],
   },
+  'ResetStatus': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_GUILTY_CONTEXT_RESET_ARB',
+      'GL_INNOCENT_CONTEXT_RESET_ARB',
+      'GL_UNKNOWN_CONTEXT_RESET_ARB',
+    ],
+  },
 }
 
 # This table specifies the different pepper interfaces that are supported for
@@ -2296,6 +2304,12 @@ _FUNCTION_INFO = {
     'client_test': False,
     'extension': True,
   },
+  'LoseContextCHROMIUM': {
+    'type': 'Manual',
+    'impl_func': True,
+    'extension': True,
+    'chromium': True,
+  },
 }
 
 
@@ -3354,7 +3368,8 @@ class ManualHandler(CustomHandler):
 
   def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    pass
+    if func.GetInfo('impl_func'):
+      super(ManualHandler, self).WriteGLES2Implementation(func, file)
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""

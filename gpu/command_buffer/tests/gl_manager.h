@@ -48,6 +48,8 @@ class GLManager {
     GLManager* virtual_manager;
     // Whether or not glBindXXX generates a resource.
     bool bind_generates_resource;
+    // Whether or not it's ok to lose the context.
+    bool context_lost_allowed;
   };
   GLManager();
   ~GLManager();
@@ -87,6 +89,7 @@ class GLManager {
   scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
+  bool context_lost_allowed_;
 };
 
 }  // namespace gpu

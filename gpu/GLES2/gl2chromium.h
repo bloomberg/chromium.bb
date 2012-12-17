@@ -227,6 +227,7 @@
 #define glAsyncTexSubImage2DCHROMIUM GLES2_GET_FUN(AsyncTexSubImage2DCHROMIUM)
 #define glAsyncTexImage2DCHROMIUM GLES2_GET_FUN(AsyncTexImage2DCHROMIUM)
 #define glDiscardFramebufferEXT GLES2_GET_FUN(DiscardFramebufferEXT)
+#define glLoseContextCHROMIUM GLES2_GET_FUN(LoseContextCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_H_
 

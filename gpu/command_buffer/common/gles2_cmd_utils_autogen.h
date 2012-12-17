@@ -42,6 +42,7 @@ static std::string GetStringReadPixelType(uint32 value);
 static std::string GetStringRenderBufferFormat(uint32 value);
 static std::string GetStringRenderBufferParameter(uint32 value);
 static std::string GetStringRenderBufferTarget(uint32 value);
+static std::string GetStringResetStatus(uint32 value);
 static std::string GetStringShaderBinaryFormat(uint32 value);
 static std::string GetStringShaderParameter(uint32 value);
 static std::string GetStringShaderPrecision(uint32 value);

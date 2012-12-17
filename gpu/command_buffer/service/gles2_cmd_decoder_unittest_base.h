@@ -466,6 +466,7 @@ class GLES2DecoderTestBase : public testing::Test {
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
   scoped_refptr<gfx::GLContextStub> context_;
+  scoped_ptr<GLES2Decoder> mock_decoder_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;

@@ -627,5 +627,8 @@ void GLES2InterfaceStub::DiscardFramebufferEXT(
     GLenum /* target */, GLsizei /* count */,
     const GLenum* /* attachments */) {
 }
+void GLES2InterfaceStub::LoseContextCHROMIUM(
+    GLenum /* current */, GLenum /* other */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

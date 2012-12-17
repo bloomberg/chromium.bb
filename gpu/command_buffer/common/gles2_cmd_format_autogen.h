@@ -10830,6 +10830,44 @@ COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, target) == 4,
 COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, count) == 8,
                OffsetOf_DiscardFramebufferEXTImmediate_count_not_8);
 
+struct LoseContextCHROMIUM {
+  typedef LoseContextCHROMIUM ValueType;
+  static const CommandId kCmdId = kLoseContextCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _current, GLenum _other) {
+    SetHeader();
+    current = _current;
+    other = _other;
+  }
+
+  void* Set(void* cmd, GLenum _current, GLenum _other) {
+    static_cast<ValueType*>(cmd)->Init(_current, _other);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 current;
+  uint32 other;
+};
+
+COMPILE_ASSERT(sizeof(LoseContextCHROMIUM) == 12,
+               Sizeof_LoseContextCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, header) == 0,
+               OffsetOf_LoseContextCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, current) == 4,
+               OffsetOf_LoseContextCHROMIUM_current_not_4);
+COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, other) == 8,
+               OffsetOf_LoseContextCHROMIUM_other_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

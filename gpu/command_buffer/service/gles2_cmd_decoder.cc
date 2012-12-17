@@ -1469,8 +1469,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // the tracing system.
   size_t GetBackbufferMemoryTotal();
 
-  // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
   virtual bool WasContextLost() OVERRIDE;
+  virtual void LoseContext(uint32 reset_status) OVERRIDE;
 
 #if defined(OS_MACOSX)
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
@@ -2162,7 +2162,7 @@ bool GLES2DecoderImpl::Initialize(
   context_ = context;
   surface_ = surface;
 
-  if (!group_->Initialize(disallowed_features, allowed_extensions)) {
+  if (!group_->Initialize(this, disallowed_features, allowed_extensions)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
@@ -3059,7 +3059,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   }
 
   if (group_) {
-    group_->Destroy(have_context);
+    group_->Destroy(this, have_context);
     group_ = NULL;
   }
 
@@ -8869,6 +8869,9 @@ error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
 }
 
 bool GLES2DecoderImpl::WasContextLost() {
+  if (reset_status_ != GL_NO_ERROR) {
+    return true;
+  }
   if (context_->WasAllocatedUsingRobustnessExtension()) {
     GLenum status = GL_NO_ERROR;
     if (has_robustness_extension_)
@@ -8877,12 +8880,51 @@ bool GLES2DecoderImpl::WasContextLost() {
       // The graphics card was reset. Signal a lost context to the application.
       reset_status_ = status;
       LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
-                 << " context lost via ARB/EXT_robustness. Reset status = 0x"
-                 << std::hex << status << std::dec;
+                 << " context lost via ARB/EXT_robustness. Reset status = "
+                 << GLES2Util::GetStringEnum(status);
       return true;
     }
   }
   return false;
+}
+
+void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
+  // Only loses the context once.
+  if (reset_status_ != GL_NO_ERROR) {
+    return;
+  }
+
+  // Marks this context as lost.
+  reset_status_ = reset_status;
+  current_decoder_error_ = error::kLostContext;
+
+  // Loses the parent's context.
+  if (parent_) {
+    parent_->LoseContext(reset_status);
+  }
+
+  // Loses any child contexts.
+  for (ChildList::iterator it = children_.begin();
+       it != children_.end();
+       ++it) {
+    (*it)->LoseContext(reset_status);
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleLoseContextCHROMIUM(
+    uint32 immediate_data_size, const gles2::LoseContextCHROMIUM& c) {
+  GLenum current = static_cast<GLenum>(c.current);
+  GLenum other = static_cast<GLenum>(c.other);
+  if (!validators_->reset_status.IsValid(current)) {
+    SetGLErrorInvalidEnum("glLoseContextCHROMIUM", current, "current");
+  }
+  if (!validators_->reset_status.IsValid(other)) {
+    SetGLErrorInvalidEnum("glLoseContextCHROMIUM", other, "other");
+  }
+  group_->LoseContexts(other);
+  reset_status_ = current;
+  current_decoder_error_ = error::kLostContext;
+  return error::kLostContext;
 }
 
 bool GLES2DecoderImpl::GenQueriesEXTHelper(
