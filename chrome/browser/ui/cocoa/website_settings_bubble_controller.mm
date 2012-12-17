@@ -1090,6 +1090,11 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 - (void)setCookieInfo:(const CookieInfoList&)cookieInfoList {
+  // The contents of the permissions view can cause the whole window to get
+  // bigger, but currently permissions are always set before cookie info.
+  // Check to make sure that's still the case.
+  DCHECK_GT([[permissionsView_ subviews] count], 0U);
+
   [cookiesView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
@@ -1120,11 +1125,6 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 - (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList {
-  // The contents of the permissions view can cause the whole window to get
-  // bigger, but currently permissions are always set before cookie info.
-  // Check to make sure that's still the case.
-  DCHECK_EQ(0U, [[cookiesView_ subviews] count]);
-
   [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
