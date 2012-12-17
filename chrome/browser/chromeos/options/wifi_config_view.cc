@@ -902,7 +902,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   layout->StartRow(0, column_view_set_id);
   views::Label* title = new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS));
-  title->SetFont(title->font().DeriveFont(1, gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   layout->AddView(title, 5, 1);
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
