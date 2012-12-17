@@ -408,6 +408,16 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns the card at a particular index.
+     * @param {number} index The index of the card to return.
+     * @return {!Element} The card at the given index.
+     */
+    getCardAtIndex: function(index) {
+      this.assertValidIndex_(index);
+      return this.cards_[index];
+    },
+
+    /**
      * Removes a card by index from the card slider. If the card to be removed
      * is the current card or in front of the current card, the current card
      * will be updated (to current card - 1).

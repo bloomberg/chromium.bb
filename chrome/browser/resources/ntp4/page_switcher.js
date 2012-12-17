@@ -74,12 +74,14 @@ cr.define('ntp', function() {
     },
 
     shouldAcceptDrag: function(e) {
-      // We allow all drags to trigger the page switching effect.
-      return true;
+      // Only allow page switching when a drop could happen on the page being
+      // switched to.
+      var nextPage = ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
+      return nextPage.shouldAcceptDrag(e);
     },
 
     doDragEnter: function(e) {
-      this.scheduleDelayedSwitch_();
+      this.scheduleDelayedSwitch_(e);
       this.doDragOver(e);
     },
 
@@ -115,12 +117,17 @@ cr.define('ntp', function() {
      * cancelled by cancelDelayedSwitch_.
      * @private
      */
-    scheduleDelayedSwitch_: function() {
+    scheduleDelayedSwitch_: function(e) {
+      // Stop switching when the next page can't be dropped onto.
+      var nextPage = ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
+      if (!nextPage.shouldAcceptDrag(e))
+        return;
+
       var self = this;
       function navPageClearTimeout() {
         self.activate_();
         self.dragNavTimeout_ = null;
-        self.scheduleDelayedSwitch_();
+        self.scheduleDelayedSwitch_(e);
       }
       this.dragNavTimeout_ = window.setTimeout(navPageClearTimeout, 500);
     },
