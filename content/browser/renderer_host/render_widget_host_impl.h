@@ -30,6 +30,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class WebCursor;
+struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_BeginSmoothScroll_Params;
@@ -391,8 +392,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   static void AcknowledgeBufferPresent(
       int32 route_id,
       int gpu_host_id,
-      uint64 surface_handle,
-      uint32 sync_point);
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params);
 
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped for
   // platforms that support deferred GPU process descheduling. This does

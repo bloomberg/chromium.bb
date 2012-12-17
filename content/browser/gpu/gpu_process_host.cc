@@ -118,11 +118,15 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
 
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host) {
-    if (alive)
+    if (alive) {
+      AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+      ack_params.surface_handle = surface_handle;
+      ack_params.sync_point = 0;
       host->Send(new AcceleratedSurfaceMsg_BufferPresented(
-          route_id, surface_handle, 0));
-    else
+          route_id, ack_params));
+    } else {
       host->ForceShutdown();
+    }
   }
 }
 

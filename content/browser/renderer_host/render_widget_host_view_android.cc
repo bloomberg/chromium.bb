@@ -441,8 +441,12 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
 
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      params.route_id, gpu_host_id, previous_buffer, sync_point);
+
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.surface_handle = previous_buffer;
+  ack_params.sync_point = sync_point;
+   RenderWidgetHostImpl::AcknowledgeBufferPresent(
+      params.route_id, gpu_host_id, ack_params);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(

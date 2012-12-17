@@ -7,6 +7,7 @@
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/browser_plugin_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -109,10 +110,12 @@ void BrowserPluginEmbedderHelper::OnUpdateRectACK(
 void BrowserPluginEmbedderHelper::OnSwapBuffersACK(int route_id,
                                                    int gpu_host_id,
                                                    uint32 sync_point) {
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.surface_handle = 0; // TODO
+  ack_params.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_host_id,
-                                                 true,
-                                                 sync_point);
+                                                 ack_params);
 }
 
 void BrowserPluginEmbedderHelper::OnSetFocus(int instance_id, bool focused) {

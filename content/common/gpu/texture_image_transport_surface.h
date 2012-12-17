@@ -48,8 +48,7 @@ class TextureImageTransportSurface :
  protected:
   // ImageTransportSurface implementation.
   virtual void OnBufferPresented(
-      uint64 surface_handle,
-      uint32 sync_point) OVERRIDE;
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 

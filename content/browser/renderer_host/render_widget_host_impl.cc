@@ -1488,10 +1488,12 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
   if (!view_) {
+    AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+    ack_params.surface_handle = surface_handle;
+    ack_params.sync_point = 0;
     RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                    gpu_process_host_id,
-                                                   surface_handle,
-                                                   0);
+                                                   ack_params);
     return;
   }
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params gpu_params;
@@ -2270,12 +2272,13 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 
 // static
 void RenderWidgetHostImpl::AcknowledgeBufferPresent(
-    int32 route_id, int gpu_host_id, uint64 surface_handle, uint32 sync_point) {
+    int32 route_id, int gpu_host_id,
+    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
-  if (ui_shim)
+  if (ui_shim) {
     ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id,
-                                                            surface_handle,
-                                                            sync_point));
+                                                            params));
+  }
 }
 
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {

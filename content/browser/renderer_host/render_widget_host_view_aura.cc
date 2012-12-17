@@ -1950,8 +1950,11 @@ void RenderWidgetHostViewAura::InsertSyncPointAndACK(
     sync_point = ImageTransportFactory::GetInstance()->InsertSyncPoint();
   }
 
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.surface_handle = params.surface_handle;
+  ack_params.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      params.route_id, params.gpu_host_id, params.surface_handle, sync_point);
+      params.route_id, params.gpu_host_id, ack_params);
 }
 
 void RenderWidgetHostViewAura::AddingToRootWindow() {

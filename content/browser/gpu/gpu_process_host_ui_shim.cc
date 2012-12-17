@@ -329,12 +329,13 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
-
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.surface_handle = params.surface_handle;
+  ack_params.sync_point = 0;
   ScopedSendOnIOThread delayed_send(
       host_id_,
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                params.surface_handle,
-                                                0));
+                                                ack_params));
 
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
@@ -356,11 +357,13 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
   TRACE_EVENT0("renderer",
       "GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer");
 
-  ScopedSendOnIOThread delayed_send(
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.surface_handle = params.surface_handle;
+  ack_params.sync_point = 0;
+   ScopedSendOnIOThread delayed_send(
       host_id_,
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                params.surface_handle,
-                                                0));
+                                                ack_params));
 
   RenderWidgetHostViewPort* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);

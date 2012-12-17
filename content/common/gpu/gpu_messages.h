@@ -82,6 +82,11 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
+  IPC_STRUCT_MEMBER(uint64, surface_handle)
+  IPC_STRUCT_MEMBER(uint32, sync_point)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
   IPC_STRUCT_MEMBER(int32, id)
   IPC_STRUCT_MEMBER(std::string, message)
@@ -276,9 +281,8 @@ IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
 // buffers or post sub-buffer request. A non-zero sync point means
 // that we should wait for the sync point. The surface_handle identifies
 // that buffer that has finished presented, i.e. the buffer being returned.
-IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_BufferPresented,
-                    uint64 /* surface_handle */,
-                    uint32 /* sync_point */)
+IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_BufferPresented,
+                    AcceleratedSurfaceMsg_BufferPresented_Params)
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)

@@ -50,8 +50,8 @@ class PbufferImageTransportSurface
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnBufferPresented(uint64 surface_handle,
-                                 uint32 sync_point) OVERRIDE;
+  virtual void OnBufferPresented(
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
@@ -207,8 +207,8 @@ void PbufferImageTransportSurface::SendBuffersSwapped() {
   is_swap_buffers_pending_ = true;
 }
 
-void PbufferImageTransportSurface::OnBufferPresented(uint64 surface_handle,
-                                                     uint32 sync_point) {
+void PbufferImageTransportSurface::OnBufferPresented(
+    const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
   is_swap_buffers_pending_ = false;
   if (did_unschedule_) {
     did_unschedule_ = false;

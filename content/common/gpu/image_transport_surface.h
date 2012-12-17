@@ -22,6 +22,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/surface/transport_dib.h"
 
+struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
@@ -60,7 +61,8 @@ class ImageTransportSurface {
  public:
   ImageTransportSurface();
 
-  virtual void OnBufferPresented(uint64 surface_handle, uint32 sync_point) = 0;
+  virtual void OnBufferPresented(
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
@@ -141,7 +143,8 @@ class ImageTransportHelper
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
-  void OnBufferPresented(uint64 surface_handle, uint32 sync_point);
+  void OnBufferPresented(
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params);
   void OnResizeViewACK();
 
   // Backbuffer resize callback.
@@ -177,8 +180,8 @@ class PassThroughImageTransportSurface
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
 
   // ImageTransportSurface implementation.
-  virtual void OnBufferPresented(uint64 surface_handle,
-                                 uint32 sync_point) OVERRIDE;
+  virtual void OnBufferPresented(
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;

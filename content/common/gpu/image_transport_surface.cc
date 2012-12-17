@@ -203,9 +203,9 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
   return stub_->decoder();
 }
 
-void ImageTransportHelper::OnBufferPresented(uint64 surface_handle,
-                                             uint32 sync_point) {
-  surface_->OnBufferPresented(surface_handle, sync_point);
+void ImageTransportHelper::OnBufferPresented(
+    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
+  surface_->OnBufferPresented(params);
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -308,8 +308,7 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 }
 
 void PassThroughImageTransportSurface::OnBufferPresented(
-    uint64 /* surface_handle */,
-    uint32 /* sync_point */) {
+    const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
   DCHECK(transport_);
   helper_->SetScheduled(true);
 }

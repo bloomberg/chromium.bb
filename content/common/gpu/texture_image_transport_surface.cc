@@ -287,16 +287,16 @@ unsigned TextureImageTransportSurface::GetFormat() {
   return surface_.get() ? surface_->GetFormat() : 0;
 }
 
-void TextureImageTransportSurface::OnBufferPresented(uint64 surface_handle,
-                                                     uint32 sync_point) {
-  if (sync_point == 0) {
-    BufferPresentedImpl(surface_handle);
+void TextureImageTransportSurface::OnBufferPresented(
+    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
+  if (params.sync_point == 0) {
+    BufferPresentedImpl(params.surface_handle);
   } else {
     helper_->manager()->sync_point_manager()->AddSyncPointCallback(
-        sync_point,
+        params.sync_point,
         base::Bind(&TextureImageTransportSurface::BufferPresentedImpl,
                    this,
-                   surface_handle));
+                   params.surface_handle));
   }
 
   // Careful, we might get deleted now if we were only waiting for
