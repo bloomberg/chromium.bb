@@ -72,7 +72,7 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   void NotifyChange();
   void NotifyBrowserActionChange();
   void NotifyLocationBarChange();
-  void NotifyStatusTrayChange();
+  void NotifySystemIndicatorChange();
   bool SetVisible(bool visible);
 
   // Extension-related information for |tab_id_|.

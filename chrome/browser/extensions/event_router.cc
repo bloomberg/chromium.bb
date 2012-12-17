@@ -356,7 +356,6 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     const EventListener* listener = *it;
     if (restrict_to_extension_id.empty() ||
         restrict_to_extension_id == listener->extension_id) {
-
       if (listener->process) {
         EventDispatchIdentifier dispatch_id(
             listener->process->GetBrowserContext(), listener->extension_id);
@@ -608,6 +607,16 @@ Event::Event(const std::string& event_name,
     : event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_profile(NULL),
+      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
+  DCHECK(this->event_args.get());
+}
+
+Event::Event(const std::string& event_name,
+             scoped_ptr<base::ListValue> event_args,
+             Profile* restrict_to_profile)
+    : event_name(event_name),
+      event_args(event_args.Pass()),
+      restrict_to_profile(restrict_to_profile),
       user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
 }

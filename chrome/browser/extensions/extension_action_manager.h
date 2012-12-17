@@ -49,6 +49,7 @@ class ExtensionActionManager : public ProfileKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
+  Profile* profile_;
 
   // Keyed by Extension ID.  These maps are populated lazily when their
   // ExtensionAction is first requested, and the entries are removed when the

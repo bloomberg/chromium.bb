@@ -575,6 +575,11 @@ enum NotificationType {
   // ExtensionAction* that changed. The details are a WebContents*.
   NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
 
+  // Sent when a system indicator action's state has changed. The source is the
+  // Profile* that the browser action belongs to. The details are the
+  // ExtensionAction* that changed.
+  NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
+
   // Sent when an extension command has been removed. The source is the profile
   // and the details is a std::pair of two std::string objects (an extension ID
   // and the name of the command being removed).

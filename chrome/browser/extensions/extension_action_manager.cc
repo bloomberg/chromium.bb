@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
+#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
+#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -55,7 +57,8 @@ ExtensionActionManagerFactory::GetInstance() {
 
 }  // namespace
 
-ExtensionActionManager::ExtensionActionManager(Profile* profile) {
+ExtensionActionManager::ExtensionActionManager(Profile* profile)
+    : profile_(profile) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -82,6 +85,7 @@ void ExtensionActionManager::Observe(
       page_actions_.erase(extension->id());
       browser_actions_.erase(extension->id());
       script_badges_.erase(extension->id());
+      system_indicators_.erase(extension->id());
       break;
     }
   }
@@ -139,6 +143,13 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
 
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(
     const extensions::Extension& extension) const {
+  // If it does not already exist, create the SystemIndicatorManager for the
+  // given profile.  This could return NULL if the system indicator area is
+  // unavailable on the current system.  If so, return NULL to signal that
+  // the system indicator area is unusable.
+  if (!extensions::SystemIndicatorManagerFactory::GetForProfile(profile_))
+    return NULL;
+
   return GetOrCreateOrNull(&system_indicators_, extension.id(),
                            Extension::ActionInfo::TYPE_SYSTEM_INDICATOR,
                            extension.system_indicator_info());

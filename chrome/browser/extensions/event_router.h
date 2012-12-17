@@ -270,6 +270,10 @@ struct Event {
 
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
+        Profile* restrict_to_profile);
+
+  Event(const std::string& event_name,
+        scoped_ptr<base::ListValue> event_args,
         Profile* restrict_to_profile,
         const GURL& event_url,
         EventRouter::UserGestureState user_gesture,

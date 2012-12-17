@@ -1,0 +1,13 @@
+{
+  "name": "chrome.systemIndicator.unloaded",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Ensure clicks work even after app is unloaded",
+  "app" : {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "system_indicator": {},
+  "permissions": ["systemIndicator"]
+}

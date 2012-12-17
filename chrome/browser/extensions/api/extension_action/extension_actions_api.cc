@@ -392,7 +392,7 @@ void ExtensionActionFunction::NotifyChange() {
       NotifyLocationBarChange();
       return;
     case extensions::Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
-      NotifyStatusTrayChange();
+      NotifySystemIndicatorChange();
       return;
   }
   NOTREACHED();
@@ -410,9 +410,11 @@ void ExtensionActionFunction::NotifyLocationBarChange() {
       location_bar_controller()->NotifyChange();
 }
 
-void ExtensionActionFunction::NotifyStatusTrayChange() {
-  // TODO(dewittj) Implement status tray behavior here.
-  // See http://crbug.com/142450.
+void ExtensionActionFunction::NotifySystemIndicatorChange() {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
+      content::Source<Profile>(profile()),
+      content::Details<ExtensionAction>(extension_action_));
 }
 
 // static
@@ -453,6 +455,8 @@ bool ExtensionActionFunction::ParseCSSColorString(
 }
 
 bool ExtensionActionFunction::SetVisible(bool visible) {
+  if (extension_action_->GetIsVisible(tab_id_) == visible)
+    return true;
   extension_action_->SetAppearance(
       tab_id_, visible ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   NotifyChange();
