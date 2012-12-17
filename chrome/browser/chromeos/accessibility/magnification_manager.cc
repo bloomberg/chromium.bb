@@ -64,10 +64,9 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (profile_) {
       PrefService* prefs = profile_->GetPrefs();
       if (prefs) {
-        std::string typeString =
-            accessibility::ScreenMagnifierNameFromType(type);
-        if (typeString != prefs->GetString(prefs::kMagnifierType)) {
-          prefs->SetString(prefs::kMagnifierType, typeString);
+        bool enabled = (type != ash::MAGNIFIER_OFF);
+        if (enabled != prefs->GetBoolean(prefs::kScreenMagnifierEnabled)) {
+          prefs->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
           prefs->CommitPendingWrite();
         }
       }
@@ -120,8 +119,8 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (!prefs)
       return ash::MAGNIFIER_OFF;
 
-    return accessibility::MagnifierTypeFromName(
-        prefs->GetString(prefs::kMagnifierType).c_str());
+    return prefs->GetBoolean(prefs::kScreenMagnifierEnabled) ?
+        ash::MAGNIFIER_FULL : ash::MAGNIFIER_OFF;
   }
 
   void SetProfile(Profile* profile) {
@@ -133,7 +132,7 @@ class MagnificationManagerImpl : public MagnificationManager,
       pref_change_registrar_.reset(new PrefChangeRegistrar);
       pref_change_registrar_->Init(profile->GetPrefs());
       pref_change_registrar_->Add(
-          prefs::kMagnifierType,
+          prefs::kScreenMagnifierEnabled,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierStatus,
                      base::Unretained(this)));
     }
@@ -143,30 +142,6 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   void UpdateMagnifierStatus() {
-    // Historycally, from r162080 to r170956, screen magnifier had been enabled
-    // with 1.0x scale on login screen by default, hence some users
-    // unintentionally have the pref to enable magnifier. Now, the default scale
-    // is 2.0x on login screen (same as other screens), so despite them, with
-    // the old pref, their screen might be magnified with 2.0x scale.
-    // The following code prevents it. If the user on login screen has full
-    // screen magnifier pref but no scale pref, doesn't make magnifier enabled.
-    // TODO(yoshiki): remove this in the near future: crbug.com/164627
-    if (first_time_update_) {
-      first_time_update_ = false;
-      UserManager* manager = UserManager::Get();
-      if (profile_ &&
-          !profile_->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale) &&
-          accessibility::MagnifierTypeFromName(profile_->GetPrefs()->GetString(
-              prefs::kMagnifierType).c_str()) == ash::MAGNIFIER_FULL &&
-          manager &&
-          !manager->IsSessionStarted()) {
-        SetMagnifier(ash::MAGNIFIER_OFF);
-        profile_->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale,
-                                        kInitialMagnifiedScale);
-        return;
-      }
-    }
-
     ash::MagnifierType type = GetMagnifierTypeFromPref();
     SetMagnifier(type);
   }

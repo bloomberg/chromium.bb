@@ -732,10 +732,10 @@ const char kLanguageXkbAutoRepeatInterval[] =
 const char kSpokenFeedbackEnabled[] = "settings.accessibility";
 // A boolean pref which determines whether high conrast is enabled.
 const char kHighContrastEnabled[] = "settings.a11y.high_contrast_enabled";
+// A boolean pref which determines whether screen magnifier is enabled.
+const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
 // A double pref which determines a zooming scale of the screen magnifier.
 const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
-// A string pref which determines what type of screen magnifier is enabled.
-const char kMagnifierType[] = "settings.a11y.screen_magnifier_type";
 // A boolean pref which determines whether virtual keyboard is enabled.
 // TODO(hashimoto): Remove this pref.
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";

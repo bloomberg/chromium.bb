@@ -404,11 +404,6 @@ cr.define('options', function() {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
-
-        $('accessibility-screen-magnifier-type').onchange = function(event) {
-          chrome.send('screenMagnifierChange',
-                      [$('accessibility-screen-magnifier-type').value]);
-        };
       }
 
       // Display management section (CrOS only).
@@ -1186,14 +1181,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the initial state of the screen magnifier dropdown.
-     * @private
-     */
-    setMagnifierTypeState_: function(type) {
-      $('accessibility-screen-magnifier-type').value = type;
-    },
-
-    /**
      * Set the initial state of the virtual keyboard checkbox.
      * @private
      */
@@ -1335,7 +1322,6 @@ cr.define('options', function() {
     'setMetricsReportingSettingVisibility',
     'setPasswordGenerationSettingVisibility',
     'setProfilesInfo',
-    'setMagnifierTypeState',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',

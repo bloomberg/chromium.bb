@@ -66,8 +66,8 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
   }
 
   void SetScreenManagnifierTypeToPref(ash::MagnifierType type) {
-    prefs()->SetString(prefs::kMagnifierType,
-                       accessibility::ScreenMagnifierNameFromType(type));
+    prefs()->SetBoolean(prefs::kScreenMagnifierEnabled,
+                        (type != ash::MAGNIFIER_OFF) ? true : false);
   }
 
   void SetFullScreenMagnifierScale(double scale) {
@@ -325,13 +325,6 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ChangingTypeInvokesObserver) {
   EXPECT_TRUE(observed_);
   EXPECT_EQ(observed_type_, ash::MAGNIFIER_FULL);
   CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
-
-  // Enables partial screen magnifier and confirms observer is invoked.
-  observed_ = false;
-  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_PARTIAL);
-  EXPECT_TRUE(observed_);
-  EXPECT_EQ(observed_type_, ash::MAGNIFIER_PARTIAL);
-  CheckCurrentMagnifierType(ash::MAGNIFIER_PARTIAL);
 
   // Disables magnifier again and confirms observer is invoked.
   observed_ = false;

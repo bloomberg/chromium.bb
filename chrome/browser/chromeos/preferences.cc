@@ -104,15 +104,15 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }
+  if (prefs->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
+                               false,
+                               PrefService::SYNCABLE_PREF);
+  }
   if (prefs->FindPreference(prefs::kScreenMagnifierScale) == NULL) {
     prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
                               std::numeric_limits<double>::min(),
                               PrefService::UNSYNCABLE_PREF);
-  }
-  if (prefs->FindPreference(prefs::kMagnifierType) == NULL) {
-    prefs->RegisterStringPref(prefs::kMagnifierType,
-                              "",
-                              PrefService::SYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kShouldAlwaysShowAccessibilityMenu) ==
       NULL) {
@@ -307,7 +307,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
       prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, callback);
-  screen_magnifier_type_.Init(prefs::kMagnifierType, prefs, callback);
+  screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
+                                 prefs, callback);
   screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale, prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);

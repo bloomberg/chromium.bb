@@ -101,6 +101,7 @@ class Preferences {
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
+  BooleanPrefMember screen_magnifier_enabled_;
   DoublePrefMember screen_magnifier_scale_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember mouse_sensitivity_;
@@ -118,7 +119,6 @@ class Preferences {
   StringPrefMember current_input_method_;
   StringPrefMember previous_input_method_;
   StringPrefMember filtered_extension_imes_;
-  StringPrefMember screen_magnifier_type_;
 
   BooleanPrefMember chewing_boolean_prefs_[
       language_prefs::kNumChewingBooleanPrefs];
