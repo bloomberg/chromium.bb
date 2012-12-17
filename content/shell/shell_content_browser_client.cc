@@ -91,7 +91,7 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
     webkit_glue::WebPreferences* prefs) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  WebKitTestController::Get()->web_preferences().Apply(prefs);
+  WebKitTestController::Get()->web_preferences().Export(prefs);
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {

@@ -47,6 +47,7 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
+using WebTestRunner::WebPreferences;
 using WebTestRunner::WebTask;
 
 namespace content {
@@ -235,6 +236,17 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
   return webkit_base::FilePathToWebString(path);
 }
 
+WebPreferences* WebKitTestRunner::preferences() {
+  return &prefs_;
+}
+
+void WebKitTestRunner::applyPreferences() {
+  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
+  prefs_.Export(&prefs);
+  render_view()->SetWebkitPreferences(prefs);
+  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
@@ -276,9 +288,9 @@ void WebKitTestRunner::Display() {
 }
 
 void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
-  prefs_.xss_auditor_enabled = enabled;
+  prefs_.XSSAuditorEnabled = enabled;
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  prefs_.Apply(&prefs);
+  prefs_.Export(&prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
 }
@@ -340,9 +352,9 @@ void WebKitTestRunner::NotImplemented(const std::string& object,
 }
 
 void WebKitTestRunner::Reset() {
-  prefs_ = ShellWebPreferences();
+  prefs_.reset();
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  prefs_.Apply(&prefs);
+  prefs_.Export(&prefs);
   render_view()->SetWebkitPreferences(prefs);
 }
 

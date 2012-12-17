@@ -18,6 +18,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/shell_webpreferences.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/support/webkit_support_gfx.h"
 
@@ -186,7 +187,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   is_printing_ = false;
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
-  prefs_ = ShellWebPreferences();
+  prefs_.reset(new ShellWebPreferences);
   {
     base::AutoLock lock(lock_);
     can_open_windows_ = false;
@@ -361,7 +362,7 @@ void WebKitTestController::OnPrintMessage(const std::string& message) {
 
 void WebKitTestController::OnOverridePreferences(
     const ShellWebPreferences& prefs) {
-  prefs_ = prefs;
+  *prefs_.get() = prefs;
 }
 
 void WebKitTestController::OnNotifyDone() {

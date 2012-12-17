@@ -14,10 +14,10 @@
 #define IPC_MESSAGE_START ShellMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(content::ShellWebPreferences)
-  IPC_STRUCT_TRAITS_MEMBER(allow_universal_access_from_file_urls)
-  IPC_STRUCT_TRAITS_MEMBER(dom_paste_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(javascript_can_access_clipboard)
-  IPC_STRUCT_TRAITS_MEMBER(xss_auditor_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(allowUniversalAccessFromFileURLs)
+  IPC_STRUCT_TRAITS_MEMBER(DOMPasteAllowed)
+  IPC_STRUCT_TRAITS_MEMBER(javaScriptCanAccessClipboard)
+  IPC_STRUCT_TRAITS_MEMBER(XSSAuditorEnabled)
 IPC_STRUCT_TRAITS_END()
 
 // Sets the current working directory to use for layout tests.

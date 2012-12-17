@@ -5,22 +5,16 @@
 #ifndef CONTENT_SHELL_SHELL_WEBPREFERENCES_H_
 #define CONTENT_SHELL_SHELL_WEBPREFERENCES_H_
 
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
+
 namespace webkit_glue {
 struct WebPreferences;
 }
 
 namespace content {
 
-struct ShellWebPreferences {
-  bool allow_universal_access_from_file_urls;
-  bool dom_paste_enabled;
-  bool javascript_can_access_clipboard;
-  bool xss_auditor_enabled;
-
-  ShellWebPreferences();
-  ~ShellWebPreferences();
-
-  void Apply(webkit_glue::WebPreferences* prefs) const;
+struct ShellWebPreferences : public WebTestRunner::WebPreferences {
+  void Export(webkit_glue::WebPreferences* prefs) const;
 };
 
 }  // namespace content
