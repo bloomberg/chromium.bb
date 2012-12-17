@@ -30,6 +30,12 @@ PP_Time TimeToPPTime(base::Time t) {
 }
 
 base::Time PPTimeToTime(PP_Time t) {
+  // The time code handles exact "0" values as special, and produces
+  // a "null" Time object. But calling code would expect t==0 to represent the
+  // epoch (according to the description of PP_Time). Hence we just return the
+  // epoch in this case.
+  if (t == 0.0)
+    return base::Time::UnixEpoch();
   return base::Time::FromDoubleT(t);
 }
 

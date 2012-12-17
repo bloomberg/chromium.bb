@@ -391,7 +391,6 @@
         '../../plugins/ppapi/ppapi_unittest.cc',
         '../../plugins/ppapi/ppapi_unittest.h',
         '../../plugins/ppapi/quota_file_io_unittest.cc',
-        '../../plugins/ppapi/time_conversion_unittest.cc',
         '../../user_agent/user_agent_unittest.cc',
         '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',

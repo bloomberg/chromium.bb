@@ -50,4 +50,24 @@ TEST(TimeConversion, EventTime) {
                 ppapi::EventTimeToPPTimeTicks(event_now));
 }
 
+TEST(TimeConversion, EpochTime) {
+  // Should be able to round-trip from epoch time.
+  base::Time epoch = base::Time::UnixEpoch();
+  base::Time converted = ppapi::PPTimeToTime(TimeToPPTime(epoch));
+  EXPECT_GE(kTimeInternalValueSlop,
+            abs(static_cast<int>((converted - epoch).ToInternalValue())));
+
+  // Units should be in seconds.
+  base::Time one_second_from_epoch = epoch + base::TimeDelta::FromSeconds(1);
+  double converted_one_second_from_epoch =
+      ppapi::TimeToPPTime(one_second_from_epoch) - ppapi::TimeToPPTime(epoch);
+  EXPECT_GE(kTimeSecondsSlop, fabs(converted_one_second_from_epoch - 1));
+
+  // Epoch time should be equal to a PP_Time of 0.0.
+  EXPECT_GE(kTimeSecondsSlop, fabs(ppapi::TimeToPPTime(epoch) - 0.0));
+  EXPECT_GE(kTimeInternalValueSlop,
+            abs(static_cast<int>(
+                (ppapi::PPTimeToTime(0.0) - epoch).ToInternalValue())));
+}
+
 }  // namespace ppapi
