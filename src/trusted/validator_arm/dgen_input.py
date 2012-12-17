@@ -15,7 +15,7 @@ table_file ::= classdef* table+ eof ;
 
 action         ::= decoder_action | decoder_method | '"'
 action_actual  := 'actual' ':=' id
-action_arch    ::= 'arch' ':=' id
+action_arch    ::= 'arch' ':=' id | '(' id (',' id)* ')'
 action_baseline::= 'actual' ':=' id
 action_option  ::= (action_actual |
                     action_baseline |
@@ -198,12 +198,21 @@ class Parser(object):
     self._define('actual', self._id(), context)
 
   def _action_arch(self, context):
-    """action_arch    ::= 'arch' ':=' id
+    """action_arch    ::= 'arch' ':=' id | '(' id (',' id)* ')'
 
        Adds architecture to context."""
     self._read_token('arch')
     self._read_token(':=')
-    self._define('arch', self._id(), context)
+    if self._next_token().kind == '(':
+      self._read_token('(')
+      names = [ self._id() ]
+      while self._next_token().kind == ',':
+        self._read_token(',')
+        names.append(self._id())
+      self._read_token(')')
+      self._define('arch', names, context)
+    else:
+      self._define('arch', self._id(), context)
 
   def _action_baseline(self, context):
     """action_baseline ::= 'actual' ':=' id"""

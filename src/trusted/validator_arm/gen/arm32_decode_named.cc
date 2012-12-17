@@ -3378,21 +3378,21 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   if ((inst.Bits() & 0x00000100) == 0x00000000 /* C(8)=0 */ &&
       (inst.Bits() & 0x00E00000) == 0x00000000 /* A(23:21)=000 */ &&
       (inst.Bits() & 0x0000006F) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000 */) {
-    return MoveVfpRegisterOp_Vmov_Rule_330_A1_P648_instance_;
+    return MoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00000000 /* L(20)=0 */ &&
       (inst.Bits() & 0x00000100) == 0x00000000 /* C(8)=0 */ &&
       (inst.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21)=111 */ &&
       (inst.Bits() & 0x000F00EF) == 0x00010000 /* $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000 */) {
-    return VfpUsesRegOp_Vmsr_Rule_336_A1_P660_instance_;
+    return VfpUsesRegOp_VMSR_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00000000 /* L(20)=0 */ &&
       (inst.Bits() & 0x00000100) == 0x00000100 /* C(8)=1 */ &&
       (inst.Bits() & 0x00800000) == 0x00000000 /* A(23:21)=0xx */ &&
       (inst.Bits() & 0x0000000F) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return MoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644_instance_;
+    return MoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00000000 /* L(20)=0 */ &&
@@ -3400,20 +3400,20 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
       (inst.Bits() & 0x00800000) == 0x00800000 /* A(23:21)=1xx */ &&
       (inst.Bits() & 0x00000040) == 0x00000000 /* B(6:5)=0x */ &&
       (inst.Bits() & 0x0000000F) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return DuplicateToAdvSIMDRegisters_Vdup_Rule_303_A1_P594_instance_;
+    return DuplicateToAdvSIMDRegisters_VDUP_arm_core_register_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00100000 /* L(20)=1 */ &&
       (inst.Bits() & 0x00000100) == 0x00000000 /* C(8)=0 */ &&
       (inst.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21)=111 */ &&
       (inst.Bits() & 0x000F00EF) == 0x00010000 /* $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000 */) {
-    return VfpMrsOp_Vmrs_Rule_335_A1_P658_instance_;
+    return VfpMrsOp_VMRS_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00100000 /* L(20)=1 */ &&
       (inst.Bits() & 0x00000100) == 0x00000100 /* C(8)=1 */ &&
       (inst.Bits() & 0x0000000F) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646_instance_;
+    return MoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register_instance_;
   }
 
   if (true &&

@@ -174,7 +174,6 @@ class Arm32DecoderState : DecoderState {
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
-  const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
   const Forbidden Forbidden_instance_;
   const ForbiddenCondDecoder ForbiddenCondDecoder_instance_;
@@ -278,6 +277,7 @@ class Arm32DecoderState : DecoderState {
   const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;
+  const VfpUsesRegOp VfpUsesRegOp_instance_;
   const NotImplemented not_implemented_;
 };
 

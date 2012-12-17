@@ -42,7 +42,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
-  , DontCareInstRdNotPc_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
@@ -146,6 +145,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorUnary2RegisterDup_instance_()
   , VfpMrsOp_instance_()
   , VfpOp_instance_()
+  , VfpUsesRegOp_instance_()
   , not_implemented_()
 {}
 
@@ -2293,7 +2293,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
       (inst.Bits() & 0x00000100) == 0x00000000 /* C(8)=0 */ &&
       (inst.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21)=111 */ &&
       (inst.Bits() & 0x000F00EF) == 0x00010000 /* $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000 */) {
-    return DontCareInstRdNotPc_instance_;
+    return VfpUsesRegOp_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00000000 /* L(20)=0 */ &&

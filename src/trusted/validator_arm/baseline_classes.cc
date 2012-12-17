@@ -1780,11 +1780,11 @@ RegisterList VfpUsesRegOp::defs(Instruction i) const {
   return RegisterList();
 }
 
-// VfpMsrOp
-SafetyLevel VfpMrsOp::safety(Instruction i) const {
-  return CondVfpOp::safety(i);
+RegisterList VfpUsesRegOp::uses(Instruction i) const {
+  return RegisterList(t.reg(i));
 }
 
+// VfpMrsOp
 RegisterList VfpMrsOp::defs(Instruction i) const {
   return RegisterList(t.reg(i).Equals(Register::Pc())
                       ? Register::Conditions() : t.reg(i));
@@ -1803,6 +1803,12 @@ RegisterList MoveVfpRegisterOp::defs(Instruction i) const {
   RegisterList defs;
   if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i));
   return defs;
+}
+
+RegisterList MoveVfpRegisterOp::uses(Instruction i) const {
+  RegisterList uses;
+  if (!to_arm_reg.IsDefined(i)) uses.Add(t.reg(i));
+  return uses;
 }
 
 // MoveVfpRegisterOpWithTypeSel
@@ -1854,6 +1860,10 @@ SafetyLevel DuplicateToAdvSIMDRegisters::safety(Instruction i) const {
     return UNPREDICTABLE;
 
   return MAY_BE_SAFE;
+}
+
+RegisterList DuplicateToAdvSIMDRegisters::uses(Instruction i) const {
+  return RegisterList(t.reg(i));
 }
 
 // VectorLoadStoreMultiple

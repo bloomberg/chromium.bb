@@ -1978,37 +1978,111 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                             cccc11010d11nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8)
+*VmovSnRt
+  { cond(31:28), op(20), Vn(19:16), Rt(15:12), N(7) }
+  baseline := MoveVfpRegisterOp;
+  to_arm_register := op=1; t := Rt; n := Vn:N;
+  defs := {Rt if to_arm_register else None};
+  uses := {Rt if not to_arm_register else None};
+  safety := t == Pc => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
+*UsesRt
+  { cond(31:28), Rt(15:12) }
+  baseline := VfpUsesRegOp;
+  t := Rt;
+  defs := {};
+  uses := {Rt};
+  safety := t == Pc => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
+*Vdup
+  { cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), D(7), E(5) }
+  baseline := DuplicateToAdvSIMDRegisters;
+  d := D:Vd; t := Rt; regs := 1 if Q=0 else 2;
+  sel := B:E;
+  esize := 32  if sel=00 else
+           16  if sel=01 else
+           8   if sel=10 else
+           0;  # i.e. undefined.
+  elements := 2  if sel=00 else
+              4  if sel=01 else
+              8  if sel=10 else
+              0; # i.e. undeifned.
+  defs := {};
+  uses := {Rt};
+  safety := Q=1 & Vd(0)=1 => UNDEFINED &
+            sel=11 => UNDEFINED &
+            t == Pc => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
+*VmovDdRt
+  { cond(31:28), opc1(22:21), Vd(19:16), Rt(15:12), D(7), opc2(6:5) }
+  baseline := MoveVfpRegisterOpWithTypeSel;
+  sel := opc1:opc2;
+  advsimd := sel in bitset {1xxx, 0xx1};
+  esize := 8   if sel=1xxx else
+           16  if sel=0xx1 else
+           32  if sel=0x00 else
+           0;  # i.e. undefined.
+  index := opc1(0):opc2    if sel=1xxx else
+           opc1(0):opc2(1) if sel=0xx1 else
+           opc1(0)         if sel=0x00 else
+           0;              # i.e undefined.
+  d := D:Vd; t := Rt;
+  defs := {};
+  uses := {Rt};
+  safety := sel=0x10 => UNDEFINED &
+            t == Pc => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
+*VmovRtFPSCR
+  { cond(31:28), Rt(15:12) }
+  baseline := VfpMrsOp;
+  t := Rt;
+  defs := {NZCV if t == Pc else Rt};
+  # TODO(karl): Add vector defs/uses etc.
+*VmovRtDd
+  { cond(31:28), U(23), opc1(22:21), Vn(19:16), Rt(15:12), N(7), opc2(6:5) }
+  baseline := MoveVfpRegisterOpWithTypeSel;
+  sel := U:opc1:opc2;
+  advsimd := sel in bitset {x1xxx, x0xx1};
+  esize := 8   if sel=x1xxx else
+           16  if sel=x0xx1 else
+           32  if sel=00x00 else
+           0;  # i.e. undefined.
+  index := opc1(0):opc2    if sel=x1xxx else
+           opc1(0):opc2(1) if sel=x0xx1 else
+           opc1(0)         if sel=00x00 else
+           0;              # i.e. undefined
+  t := Rt; n := N:Vn; unsigned := U=1;
+  defs := {Rt};
+  safety := sel in bitset {10x00, x0x10} => UNDEFINED &
+            t == Pc => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
++--
 | L(20) C(8) A(23:21) B(6:5)
-| 0     0    000      -      = MoveVfpRegisterOp
-                               Vmov_Rule_330_A1_P648
-                               cccc11100000nnnntttt1010n0010000 (VFPv2)
-| "     "    111      -      = VfpUsesRegOp => DontCareInstRdNotPc
-                               Vmsr_Rule_336_A1_P660
-                               cccc111011100001tttt101000010000 (VFPv2, AdvSIMD)
-| 0     1    0xx      -      = MoveVfpRegisterOpWithTypeSel
-                               # Bit 23 is 0, we can use the baseline class'
-                               # safety function and remain correct.
-                               Vmov_Rule_328_A1_P644
-                               # TODO(jfb) Only the word version
-                               #           (opc1:opc2=='0x00') is VFPv2.
-                               cccc11100ii0ddddtttt1011dii10000 (VFPv2, AdvSIMD)
-| "     "    1xx      0x     = DuplicateToAdvSIMDRegisters
-                               Vdup_Rule_303_A1_P594
-                               cccc11101bq0ddddtttt1011d0e10000 (AdvSIMD)
-| 1     0    000      -      = MoveVfpRegisterOp
-                               Vmov_Rule_330_A1_P648
-                               cccc11100001nnnntttt1010n0010000 (VFPv2)
-| "     "    111      -      = VfpMrsOp
-                               Vmrs_Rule_335_A1_P658
-                               cccc111011110001tttt101000010000 (VFPv2, AdvSIMD)
-| "     1    xxx      -      = MoveVfpRegisterOpWithTypeSel
-                               Vmov_Rule_329_A1_P646
-                               # TODO(jfb) Only the word version
-                               #           (U:opc1:opc2=='00x00') is VFPv2.
-                               cccc1110iii1nnnntttt1011nii10000 (VFPv2, AdvSIMD)
-| else:                      = Undefined  # Note on page A7-31
+| 0     0    000      -      =
+        *VmovSnRt  pattern := cccc1110000onnnntttt1010n0010000;
+        rule := VMOV_between_ARM_core_register_and_single_precision_register;
+        arch := VFPv2;
+| "     "    111      -      =
+        *UsesRt  pattern := cccc111011100001tttt101000010000;
+        rule := VMSR; arch := (VFPv2, AdvSIMD);
+| 0     1    0xx      -      =
+        *VmovDdRt  pattern := cccc11100ii0ddddtttt1011dii10000;
+        rule := VMOV_ARM_core_register_to_scalar;  arch := (VFPv2, AdvSIMD);
+| "     "    1xx      0x     = 
+        *Vdup  pattern := cccc11101bq0ddddtttt1011d0e10000;
+        rule := VDUP_arm_core_register;  arch := AdvSIMD;
+| 1     0    000      -      =
+        *VmovSnRt  pattern := cccc1110000xnnnntttt1010n0010000;
+        rule := VMOV_between_ARM_core_register_and_single_precision_register;
+        arch := VFPv2;
+| "     "    111      -      =
+        *VmovRtFPSCR  pattern := cccc111011110001tttt101000010000;
+        rule := VMRS;  arch := (VFPv2, AdvSIMD);
+| "     1    xxx      -      =
+        *VmovRtDd pattern := cccc1110iii1nnnntttt1011nii10000;
+        rule := MOVE_scalar_to_ARM_core_register;  arch := (VFPv2, AdvSIMD);
+| else: = Undefined  # Note on table description.
 +--
 
 # TODO(karl): Add uses to corresponding classes.

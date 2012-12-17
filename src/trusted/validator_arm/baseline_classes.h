@@ -3109,6 +3109,7 @@ class VfpUsesRegOp : public CondVfpOp {
   VfpUsesRegOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VfpUsesRegOp);
@@ -3134,7 +3135,6 @@ class VfpMrsOp : public CondVfpOp {
 
   // Methods for class.
   VfpMrsOp() {}
-  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -3167,6 +3167,7 @@ class MoveVfpRegisterOp : public CondVfpOp {
   MoveVfpRegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOp);
@@ -3231,6 +3232,7 @@ class DuplicateToAdvSIMDRegisters : public CondAdvSIMDOp {
   // Methods for class
   DuplicateToAdvSIMDRegisters() {}
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
   uint32_t be_value(const Instruction& i) const {
     return (b.value(i) << 1) | e.value(i);
