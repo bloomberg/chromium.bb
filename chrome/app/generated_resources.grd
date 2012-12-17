@@ -7945,7 +7945,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         (Go back to original screenshot)
       </message>
       <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
-        To help fix your issue, often having the source file on hand helps.&lt;br&gt;
+        The attached file is uploaded to Google servers for debugging.&lt;br&gt;
         Note: You can attach one file per feedback report (3 MB limit)
       </message>
       <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
