@@ -149,7 +149,7 @@
     },
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
-        'chrome/browser/net/sqlite_persistent_cookie_store',
+                  'chrome/browser/net/sqlite_persistent_cookie_store',
     },
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
@@ -162,8 +162,8 @@
     },
     'dns': {
       'filepath': 'net/base/host_resolver|' \
-        'net/base/host_cache|' \
-        'net/dns/'
+                  'net/base/host_cache|' \
+                  'net/dns/'
     },
     'domui_options': {
       'filepath': 'chrome/browser/resources/options/|'\
@@ -172,30 +172,34 @@
     },
     'download': {
       'filepath': 'chrome/browser/download/|'\
-        'content/browser/download/',
+                  'content/browser/download/',
     },
+    'downloads_ext': {
+      'filepath': 'chrome/browser/extensions/api/downloads/|'\
+                  'chrome/common/extensions/api/downloads.idl',
+    }
     'downloads_ui': {
-      'filepath': 'chrome/browser/resources/.*downloads\.' \
-                  '|chrome/browser/ui/webui/.*downloads' \
-                  '|chrome/browser/ui/views/download/' \
-                  '|chrome/browser/ui/cocoa/download/' \
-                  '|chrome/browser/ui/gtk/download/'
+      'filepath': 'chrome/browser/resources/downloads/|' \
+                  'chrome/browser/ui/webui/.*downloads|' \
+                  'chrome/browser/ui/views/download/|' \
+                  'chrome/browser/ui/cocoa/download/|' \
+                  'chrome/browser/ui/gtk/download/'
     },
     'drive': {
-      'filepath': 'chrome/browser/chromeos/drive/' \
-                  '|chrome/browser/google_apis/'
+      'filepath': 'chrome/browser/chromeos/drive/|' \
+                  'chrome/browser/google_apis/'
     },
     'extension': {
       'filepath': 'extension',
     },
     'fileapi': {
-      'filepath': 'file_system/' \
-                  '|fileapi/'
+      'filepath': 'file_system/|' \
+                  'fileapi/'
     },
     'filebrowse': {
-      'filepath': 'file_browser' \
-                  '|file_manager' \
-                  '|filebrowse'
+      'filepath': 'file_browser|' \
+                  'file_manager|' \
+                  'filebrowse'
     },
     'ftp': {
       'filepath': 'ftp',
@@ -554,8 +558,9 @@
                  'vsevik@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
-    'download': ['rdsmith+dwatch@chromium.org'],
-    'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
+    'download': ['rdsmith+dwatch@chromium.org', 'benjhayden+dwatch@chromium.org'],
+    'downloads_ext': ['benjhayden+dwatch@chromium.org'],
+    'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org', 'benjhayden+dwatch@chromium.org'],
     'drive': ['achuith+watch@chromium.org'],
     'extension': ['aa@chromium.org',
                   'chromium-apps-reviews@chromium.org'],
