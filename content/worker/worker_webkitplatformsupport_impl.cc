@@ -34,7 +34,6 @@ using WebKit::WebKitPlatformSupport;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
 using WebKit::WebSandboxSupport;
-using WebKit::WebSharedWorkerRepository;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
