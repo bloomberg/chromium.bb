@@ -129,6 +129,9 @@ NSString* GetPlatform() {
 #pragma mark -
 
 - (void)start:(BOOL)onCurrentThread {
+  if (started)
+    return;
+  started_ = YES;
   void(^startBlock)() = ^{
       assert(!breakpadRef_);
       breakpadRef_ = BreakpadCreate(configuration_);
@@ -136,8 +139,6 @@ NSString* GetPlatform() {
         BreakpadAddUploadParameter(breakpadRef_, @"platform", GetPlatform());
       }
   };
-  NSAssert(!started_, @"Start cannot be called more than once.");
-  started_ = YES;
   if (onCurrentThread)
     startBlock();
   else
@@ -145,8 +146,8 @@ NSString* GetPlatform() {
 }
 
 - (void)stop {
-  NSAssert(started_,
-      @"The controller must be started before it can be stopped");
+  if (!started)
+    return;
   started_ = NO;
   dispatch_sync(queue_, ^{
       if (breakpadRef_) {
