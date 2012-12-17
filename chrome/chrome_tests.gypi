@@ -1056,7 +1056,6 @@
         'browser/extensions/requirements_checker_browsertest.cc',
         'browser/extensions/sandboxed_pages_apitest.cc',
         'browser/extensions/settings/settings_apitest.cc',
-        'browser/extensions/shadow_dom_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/subscribe_page_action_browsertest.cc',
         'browser/extensions/system/system_apitest.cc',

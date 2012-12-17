@@ -11,7 +11,7 @@ if (!chrome.searchBox) {
     chrome.searchBoxOnWindowReady = function() {
       // |searchBoxOnWindowReady| is used for initializing window context and
       // should be called only once per context.
-      safeObjects.ShadowRoot = window.WebKitShadowRoot;
+      safeObjects.createShadowRoot = Element.prototype.webkitCreateShadowRoot;
       safeObjects.defineProperty = Object.defineProperty;
       delete window.chrome.searchBoxOnWindowReady;
     };
@@ -61,7 +61,7 @@ if (!chrome.searchBox) {
     // Returns the |restrictedText| wrapped in a ShadowDOM.
     function SafeWrap(restrictedText) {
       var node = document.createElement('div');
-      var nodeShadow = new safeObjects.ShadowRoot(node);
+      var nodeShadow = safeObjects.createShadowRoot.apply(node);
       nodeShadow.applyAuthorStyles = true;
       nodeShadow.innerHTML =
           '<div style="width:700px!important;' +

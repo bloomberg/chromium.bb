@@ -44,7 +44,7 @@ window.addEventListener('DOMContentLoaded', function() {
  */
 function WebView(node) {
   this.node_ = node;
-  var shadowRoot = new WebKitShadowRoot(node);
+  var shadowRoot = node.webkitCreateShadowRoot();
 
   this.objectNode_ = document.createElement('object');
   this.objectNode_.type = 'application/browser-plugin';
