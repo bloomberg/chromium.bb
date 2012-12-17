@@ -43,25 +43,31 @@ CertificateImporter::CertificateImporter(
 
 CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
     const base::ListValue& certificates) {
+  size_t successful_imports = 0;
   for (size_t i = 0; i < certificates.GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
     if (!certificates.GetDictionary(i, &certificate)) {
       ONC_LOG_ERROR("Certificate data malformed");
-      return i > 0 ? IMPORT_INCOMPLETE : IMPORT_FAILED;
+      continue;
     }
 
-    if (VLOG_IS_ON(2))
-      VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
+    VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
     if (!ParseAndStoreCertificate(*certificate)) {
       ONC_LOG_ERROR(
           base::StringPrintf("Cannot parse certificate at index %zu", i));
-      return i > 0 ? IMPORT_INCOMPLETE : IMPORT_FAILED;
+    } else {
+      VLOG(2) << "Successfully imported certificate at index " << i;
+      ++successful_imports;
     }
-
-    VLOG(2) << "Successfully imported certificate at index " << i;
   }
-  return IMPORT_OK;
+
+  if (successful_imports == certificates.GetSize())
+    return IMPORT_OK;
+  else if (successful_imports == 0)
+    return IMPORT_FAILED;
+  else
+    return IMPORT_INCOMPLETE;
 }
 
 bool CertificateImporter::ParseAndStoreCertificate(
@@ -76,7 +82,7 @@ bool CertificateImporter::ParseAndStoreCertificate(
   bool remove = false;
   if (certificate.GetBoolean(kRemove, &remove) && remove) {
     if (!DeleteCertAndKeyByNickname(guid)) {
-      ONC_LOG_WARNING("Unable to delete certificate");
+      ONC_LOG_ERROR("Unable to delete certificate");
       return false;
     } else {
       return true;

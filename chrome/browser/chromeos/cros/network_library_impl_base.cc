@@ -1071,7 +1071,6 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                            true,  // Fail on missing fields.
                            from_policy);
 
-  // Unknown fields are removed from the result.
   onc::Validator::Result validation_result;
   validator.ValidateAndRepairObject(&onc::kToplevelConfigurationSignature,
                                     *root_dict,
@@ -1082,12 +1081,14 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                           validation_result == onc::Validator::VALID);
   }
 
+  bool success = true;
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
     LOG(WARNING) << "ONC from " << onc::GetSourceAsString(source)
                  << " produced warnings.";
   } else if (validation_result == onc::Validator::INVALID) {
     LOG(ERROR) << "ONC from " << onc::GetSourceAsString(source)
                << " is invalid and couldn't be repaired.";
+    success = false;
   }
 
   const base::ListValue* certificates;
@@ -1107,7 +1108,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
         onc::CertificateImporter::IMPORT_OK) {
       LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
                  << onc::GetSourceAsString(source);
-      return false;
+      success = false;
     }
   }
 
@@ -1128,7 +1129,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       if (!network) {
         LOG(ERROR) << "Error during ONC parsing network at index " << i
                    << " from " << onc::GetSourceAsString(source);
-        return false;
+        success = false;
+        continue;
       }
 
       // Disallow anything but WiFi and Ethernet for device-level policy (which
@@ -1215,14 +1217,11 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     // ONC blob. We first collect the networks and do the actual deletion later
     // because ForgetNetwork() changes the remembered network vectors.
     ForgetNetworksById(source, network_ids, false);
-  } else if (source == onc::ONC_SOURCE_USER_IMPORT) {
-    if (removal_ids.empty())
-      return true;
-
+  } else if (source == onc::ONC_SOURCE_USER_IMPORT && !removal_ids.empty()) {
     ForgetNetworksById(source, removal_ids, true);
   }
 
-  return true;
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////////////

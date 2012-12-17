@@ -53,7 +53,7 @@ void NetworkConfigurationUpdater::OnProfileListChanged() {
 }
 
 void NetworkConfigurationUpdater::OnUserPolicyInitialized() {
-  VLOG(1) << "User policy initialized, applying policies. Ignoring.";
+  VLOG(1) << "User policy initialized, applying policies.";
   user_policy_initialized_ = true;
   ApplyNetworkConfigurations();
 }
@@ -62,7 +62,8 @@ void NetworkConfigurationUpdater::OnPolicyChanged(
     chromeos::onc::ONCSource onc_source,
     const base::Value* previous,
     const base::Value* current) {
-  VLOG(1) << "Policy for ONC source " << onc_source << " changed.";
+  VLOG(1) << "Policy for ONC source "
+          << chromeos::onc::GetSourceAsString(onc_source) << " changed.";
   ApplyNetworkConfigurations();
 }
 
@@ -78,7 +79,8 @@ void NetworkConfigurationUpdater::ApplyNetworkConfigurations() {
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     const std::string& policy_key,
     chromeos::onc::ONCSource onc_source) {
-  VLOG(1) << "Apply policy for ONC source " << onc_source;
+  VLOG(1) << "Apply policy for ONC source "
+          << chromeos::onc::GetSourceAsString(onc_source);
   const PolicyMap& policies = policy_service_->GetPolicies(POLICY_DOMAIN_CHROME,
                                                            std::string());
   const base::Value* policy_value = policies.GetValue(policy_key);
@@ -87,8 +89,11 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
   if (policy_value != NULL) {
     // If the policy is not a string, we issue a warning, but still clear the
     // network configuration.
-    if (!policy_value->GetAsString(&new_network_config))
-      LOG(WARNING) << "ONC policy is not a string value.";
+    if (!policy_value->GetAsString(&new_network_config)) {
+      LOG(WARNING) << "ONC policy for source "
+                   << chromeos::onc::GetSourceAsString(onc_source)
+                   << " is not a string value.";
+    }
   }
 
   // An empty string is not a valid ONC and generates warnings and
@@ -96,8 +101,10 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
   if (new_network_config.empty())
     new_network_config = chromeos::onc::kEmptyUnencryptedConfiguration;
 
-  network_library_->LoadOncNetworks(new_network_config, "", onc_source,
-                                    allow_web_trust_);
+  if (!network_library_->LoadOncNetworks(new_network_config, "", onc_source,
+                                         allow_web_trust_)) {
+    LOG(ERROR) << "Errors occurred during the ONC policy application.";
+  }
 }
 
 }  // namespace policy

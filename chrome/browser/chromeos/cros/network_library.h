@@ -1693,8 +1693,7 @@ class NetworkLibrary {
   virtual void SwitchToPreferredNetwork() = 0;
 
   // Load networks from an Open Network Configuration blob.
-  // If there was an error, this will return false and |error| will be set to
-  // the error message.
+  // If there was an error, returns false.
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passcode,
                                onc::ONCSource source,
