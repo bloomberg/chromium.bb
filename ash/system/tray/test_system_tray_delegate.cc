@@ -287,6 +287,10 @@ bool TestSystemTrayDelegate::GetCellularCarrierInfo(std::string* carrier_id,
   return false;
 }
 
+bool TestSystemTrayDelegate::GetWifiScanning() {
+  return false;
+}
+
 void TestSystemTrayDelegate::ShowCellularURL(const std::string& url) {
 }
 

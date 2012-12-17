@@ -32,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -678,7 +679,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
 
     if (show_wifi_scanning) {
       // Add 'Scanning...'
-      label = l10n_util::GetStringUTF16(IDS_STATUSBAR_WIFI_SCANNING_MESSAGE);
+      label = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
           gfx::ImageSkia(), std::string(), FLAG_DISABLED));
     }

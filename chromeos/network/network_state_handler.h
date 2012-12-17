@@ -106,10 +106,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Sets |list| to contain the list of networks.  The returned list contains
   // a copy of NetworkState pointers which should not be stored or used beyond
   // the scope of the calling function (i.e. they may later become invalid, but
-  // only on the UI thread). This also sends a scan request to Shill which may
-  // trigger updates to the networks (which will trigger the appropriate
-  // observer calls).
+  // only on the UI thread).
   void GetNetworkList(NetworkStateList* list) const;
+
+  // Requests a scan of wifi networks. This may trigger updates to the network
+  // list, which will trigger the appropriate observer calls.
+  // Returns true if a scan was requested.
+  bool RequestWifiScan() const;
 
  protected:
   NetworkStateHandler();

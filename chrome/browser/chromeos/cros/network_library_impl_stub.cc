@@ -439,6 +439,11 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
   NetworkConnectCompleted(network, CONNECT_SUCCESS);
 }
 
+void NetworkLibraryImplStub::ScanCompleted() {
+  wifi_scanning_ = false;
+  SignalNetworkManagerObservers();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // NetworkLibraryImplBase implementation.
 
@@ -511,6 +516,7 @@ void NetworkLibraryImplStub::CallEnableNetworkDeviceType(
     if (device == TYPE_WIFI && !wifi_enabled()) {
       wifi_networks_.swap(disabled_wifi_networks_);
       disabled_wifi_networks_.clear();
+      RequestNetworkScan();
     } else if (device == TYPE_WIMAX && !wimax_enabled()) {
       wimax_networks_.swap(disabled_wimax_networks_);
       disabled_wimax_networks_.clear();
@@ -621,9 +627,15 @@ bool NetworkLibraryImplStub::IsCellularAlwaysInRoaming() {
 
 void NetworkLibraryImplStub::RequestNetworkScan() {
   // This is triggered by user interaction, so set a network connect delay.
+  const int kScanDelayMs = 2 * 1000;
   const int kConnectDelayMs = 4 * 1000;
+  wifi_scanning_ = true;
   connect_delay_ms_ = kConnectDelayMs;
-  SignalNetworkManagerObservers();
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NetworkLibraryImplStub::ScanCompleted,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(kScanDelayMs));
 }
 
 bool NetworkLibraryImplStub::GetWifiAccessPoints(

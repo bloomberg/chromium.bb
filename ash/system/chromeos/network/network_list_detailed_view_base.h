@@ -90,6 +90,7 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   TrayPopupHeaderButton* info_icon_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
+  views::Label* scanning_view_;
   views::BubbleDelegateView* info_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListDetailedViewBase);

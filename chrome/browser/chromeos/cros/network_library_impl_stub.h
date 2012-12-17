@@ -94,6 +94,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   void AddStubNetwork(Network* network, NetworkProfileType profile_type);
   void AddStubRememberedNetwork(Network* network);
   void ConnectToNetwork(Network* network);
+  void ScanCompleted();
 
   std::string ip_address_;
   std::string hardware_address_;

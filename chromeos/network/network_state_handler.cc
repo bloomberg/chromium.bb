@@ -179,7 +179,6 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
   DCHECK(list);
-  shill_property_handler_->RequestScan();
   NetworkStateList result;
   list->clear();
   for (ManagedStateList::const_iterator iter = network_list_.begin();
@@ -188,6 +187,13 @@ void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
     DCHECK(network);
     list->push_back(network);
   }
+}
+
+bool NetworkStateHandler::RequestWifiScan() const {
+  if (!TechnologyEnabled(flimflam::kTypeWifi))
+    return false;
+  shill_property_handler_->RequestScan();
+  return true;
 }
 
 //------------------------------------------------------------------------------
@@ -254,6 +260,7 @@ void NetworkStateHandler::UpdateAvailableTechnologies(
 
 void NetworkStateHandler::UpdateEnabledTechnologies(
     const base::ListValue& technologies) {
+  bool wifi_was_enabled = TechnologyEnabled(flimflam::kTypeWifi);
   enabled_technologies_.clear();
   network_event_log::AddEntry(
       kLogModule, "EnabledTechnologiesChanged",
@@ -265,6 +272,8 @@ void NetworkStateHandler::UpdateEnabledTechnologies(
     DCHECK(!technology.empty());
     enabled_technologies_.insert(technology);
   }
+  if (!wifi_was_enabled && TechnologyEnabled(flimflam::kTypeWifi))
+    RequestWifiScan();
 }
 
 void NetworkStateHandler::UpdateManagedStateProperties(

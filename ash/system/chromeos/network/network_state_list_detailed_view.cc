@@ -106,6 +106,8 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     SystemTrayItem* owner, user::LoginStatus login)
     : NetworkDetailedView(owner),
       login_(login),
+      wifi_enabled_(false),
+      wifi_scanning_(false),
       info_icon_(NULL),
       button_wifi_(NULL),
       button_mobile_(NULL),
@@ -116,6 +118,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       other_mobile_(NULL),
       settings_(NULL),
       proxy_settings_(NULL),
+      scanning_view_(NULL),
       info_bubble_(NULL) {
 }
 
@@ -125,6 +128,18 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 }
 
 void NetworkStateListDetailedView::ManagerChanged() {
+  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  bool wifi_was_enabled = wifi_enabled_;
+  wifi_enabled_ = handler->TechnologyEnabled(flimflam::kTypeWifi);
+  if (wifi_enabled_ != wifi_was_enabled) {
+    bool wifi_was_scanning = wifi_scanning_;
+    if (wifi_enabled_ && !wifi_scanning_)
+      wifi_scanning_ = handler->RequestWifiScan();
+    else if (!wifi_enabled_ && wifi_scanning_)
+      wifi_scanning_ = false;
+    if (wifi_scanning_ != wifi_was_scanning)
+      RefreshNetworkList();
+  }
   UpdateHeaderButtons();
   UpdateNetworkEntries();
   UpdateNetworkExtra();
@@ -132,13 +147,9 @@ void NetworkStateListDetailedView::ManagerChanged() {
 }
 
 void NetworkStateListDetailedView::NetworkListChanged(
-    const NetworkStateList& networks) {
-  UpdateNetworks(networks);
-  RefreshNetworkList();
-
-  UpdateHeaderButtons();
-  UpdateNetworkEntries();
-  UpdateNetworkExtra();
+    const NetworkStateList& network_list) {
+  wifi_scanning_ = false;
+  UpdateNetworks(network_list);
   Layout();
 }
 
@@ -163,8 +174,11 @@ void NetworkStateListDetailedView::Init() {
   CreateHeaderButtons();
   chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
   NetworkStateList network_list;
+  wifi_enabled_ = handler->TechnologyEnabled(flimflam::kTypeWifi);
+  if (wifi_enabled_)
+    wifi_scanning_ = handler->RequestWifiScan();
   handler->GetNetworkList(&network_list);
-  NetworkListChanged(network_list);
+  UpdateNetworks(network_list);
 }
 
 NetworkDetailedView::DetailedViewType
@@ -387,6 +401,11 @@ void NetworkStateListDetailedView::UpdateNetworks(
                                                    this);
     network_list_.push_back(info);
   }
+  RefreshNetworkList();
+
+  UpdateHeaderButtons();
+  UpdateNetworkEntries();
+  UpdateNetworkExtra();
 }
 
 void NetworkStateListDetailedView::RefreshNetworkList() {
@@ -396,11 +415,41 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
   bool needs_relayout = false;
   views::View* highlighted_view = NULL;
 
-  if (service_path_map_.empty())
+  if (service_path_map_.empty()) {
     scroll_content()->RemoveAllChildViews(true);
+    scanning_view_ = NULL;
+  }
 
+  // Insert child views. Order is:
+  // * Highlit networks (connected and connecting)
+  // * "Scanning..."
+  // * Un-highlit networks (not connected). Usually empty while scanning.
+
+  if (wifi_scanning_ && scanning_view_ == NULL) {
+    scanning_view_ = new views::Label(
+        ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
+    scanning_view_->set_border(views::Border::CreateEmptyBorder(20, 0, 10, 0));
+    scanning_view_->SetFont(
+        scanning_view_->font().DeriveFont(0, gfx::Font::ITALIC));
+    // Initially insert "scanning" first.
+    scroll_content()->AddChildViewAt(scanning_view_, 0);
+    needs_relayout = true;
+  } else if (!wifi_scanning_ && scanning_view_ != NULL) {
+    scroll_content()->RemoveChildView(scanning_view_);
+    scanning_view_ = NULL;
+    needs_relayout = true;
+  }
+
+  int child_index_offset = 0;
   for (size_t i = 0; i < network_list_.size(); ++i) {
     NetworkInfo* info = network_list_[i];
+    if (scanning_view_ && child_index_offset == 0 && !info->highlight)
+      child_index_offset = 1;
+    // |child_index| determines the position of the view, which is the same
+    // as the list index for highlit views, and offset by one for any
+    // non-highlit views when scanning.
+    int child_index = child_index_offset + i;
     std::map<std::string, HoverHighlightView*>::const_iterator it =
         service_path_map_.find(info->service_path);
     HoverHighlightView* container = NULL;
@@ -413,7 +462,7 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
           info->image,
           info->description,
           info->highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      scroll_content()->AddChildViewAt(container, i);
+      scroll_content()->AddChildViewAt(container, child_index);
       container->set_border(views::Border::CreateEmptyBorder(
           0, kTrayPopupPaddingHorizontal, 0, 0));
       needs_relayout = true;
@@ -428,9 +477,9 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
       container->SchedulePaint();
 
       // Reordering the view if necessary.
-      views::View* child = scroll_content()->child_at(i);
+      views::View* child = scroll_content()->child_at(child_index);
       if (child != container) {
-        scroll_content()->ReorderChildView(container, i);
+        scroll_content()->ReorderChildView(container, child_index);
         needs_relayout = true;
       }
     }

@@ -91,6 +91,7 @@ NetworkListDetailedViewBase::NetworkListDetailedViewBase(
       info_icon_(NULL),
       settings_(NULL),
       proxy_settings_(NULL),
+      scanning_view_(NULL),
       info_bubble_(NULL) {
 }
 
@@ -102,8 +103,10 @@ NetworkListDetailedViewBase::~NetworkListDetailedViewBase() {
 // Overridden from NetworkDetailedView:
 void NetworkListDetailedViewBase::Init() {
   CreateItems();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  if (delegate->GetWifiEnabled())
+    delegate->RequestNetworkScan();
   Update();
-  Shell::GetInstance()->system_tray_delegate()->RequestNetworkScan();
 }
 
 NetworkDetailedView::DetailedViewType
@@ -204,15 +207,47 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
   bool needs_relayout = false;
   views::View* highlighted_view = NULL;
 
-  if (service_path_map_.empty())
+  if (service_path_map_.empty()) {
     scroll_content()->RemoveAllChildViews(true);
+    scanning_view_ = NULL;
+  }
 
+  // Insert child views. Order is:
+  // * Highlit networks (connected and connecting)
+  // * "Scanning..."
+  // * Un-highlit networks (not connected). Usually empty while scanning.
+
+  bool wifi_scanning =
+      Shell::GetInstance()->system_tray_delegate()->GetWifiScanning();
+  if (wifi_scanning && scanning_view_ == NULL) {
+    scanning_view_ = new views::Label(
+        ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
+    scanning_view_->set_border(views::Border::CreateEmptyBorder(20, 0, 10, 0));
+    scanning_view_->SetFont(
+        scanning_view_->font().DeriveFont(0, gfx::Font::ITALIC));
+    // Initially insert "scanning" first.
+    scroll_content()->AddChildViewAt(scanning_view_, 0);
+    needs_relayout = true;
+  } else if (!wifi_scanning && scanning_view_ != NULL) {
+    scroll_content()->RemoveChildView(scanning_view_);
+    scanning_view_ = NULL;
+    needs_relayout = true;
+  }
+
+  int child_index_offset = 0;
   for (size_t i = 0; i < network_list_.size(); ++i) {
-    std::map<std::string, HoverHighlightView*>::const_iterator it =
-        service_path_map_.find(network_list_[i].service_path);
-    HoverHighlightView* container = NULL;
     const bool highlight =
         network_list_[i].connected || network_list_[i].connecting;
+    if (scanning_view_ && child_index_offset == 0 && !highlight)
+      child_index_offset = 1;
+    // |child_index| determines the position of the view, which is the same
+    // as the list index for highlit views, and offset by one for any
+    // non-highlit views when scanning.
+    const int child_index = i + child_index_offset;
+    HoverHighlightView* container = NULL;
+    std::map<std::string, HoverHighlightView*>::const_iterator it =
+        service_path_map_.find(network_list_[i].service_path);
     if (it == service_path_map_.end()) {
       // Create a new view.
       container = new HoverHighlightView(this);
@@ -221,7 +256,7 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
           network_list_[i].description.empty() ?
               network_list_[i].name : network_list_[i].description,
           highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      scroll_content()->AddChildViewAt(container, i);
+      scroll_content()->AddChildViewAt(container, child_index);
       container->set_border(views::Border::CreateEmptyBorder(0,
           kTrayPopupPaddingHorizontal, 0, 0));
       needs_relayout = true;
@@ -236,9 +271,9 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
       container->SchedulePaint();
 
       // Reordering the view if necessary.
-      views::View* child = scroll_content()->child_at(i);
+      views::View* child = scroll_content()->child_at(child_index);
       if (child != container) {
-        scroll_content()->ReorderChildView(container, i);
+        scroll_content()->ReorderChildView(container, child_index);
         needs_relayout = true;
       }
     }
@@ -301,8 +336,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
   // If the info bubble was visible, close it when some other item is clicked
   // on.
   ResetInfoBubble();
-  ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   if (sender == settings_)
     delegate->ShowNetworkSettings();
   else if (sender == proxy_settings_)
@@ -312,8 +346,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
 }
 
 void NetworkListDetailedViewBase::ClickedOn(views::View* sender) {
-  ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   // If the info bubble was visible, close it when some other item is clicked
   // on.
   ResetInfoBubble();

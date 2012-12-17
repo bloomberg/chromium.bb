@@ -287,6 +287,9 @@ class SystemTrayDelegate {
                                       std::string* topup_url,
                                       std::string* setup_url) = 0;
 
+  // Returns whether or not the network manager is scanning for wifi networks.
+  virtual bool GetWifiScanning() = 0;
+
   // Opens the cellular network specific URL.
   virtual void ShowCellularURL(const std::string& url) = 0;
 

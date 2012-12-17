@@ -2131,9 +2131,6 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
     No networks are available
   </message>
-  <message name="IDS_STATUSBAR_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
-    Searching for Wi-Fi networks...
-  </message>
   <message name="IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left when power supply is connected.">
     Charging battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
   </message>

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_IMPL_CROS_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_IMPL_CROS_H_
 
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
 
 namespace chromeos {
@@ -204,6 +205,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   // Map of monitored devices.
   NetworkWatcherMap monitored_devices_;
+
+  base::Time wifi_scan_request_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplCros);
 };

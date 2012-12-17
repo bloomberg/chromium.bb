@@ -85,6 +85,12 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   // Track login state.
   user::LoginStatus login_;
 
+  // Set to true when wifi is enabled. Used to trigger scanning state.
+  bool wifi_enabled_;
+
+  // Set to true while scanning for wifi networks.
+  bool wifi_scanning_;
+
   // A map of child views to their network service path.
   std::map<views::View*, std::string> network_map_;
 
@@ -110,6 +116,7 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   TrayPopupLabelButton* other_mobile_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
+  views::Label* scanning_view_;
 
   // A small bubble for displaying network info.
   views::BubbleDelegateView* info_bubble_;

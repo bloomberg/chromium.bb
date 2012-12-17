@@ -777,6 +777,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return result;
   }
 
+  virtual bool GetWifiScanning() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_scanning();
+  }
+
   virtual void ShowCellularURL(const std::string& url) OVERRIDE {
     chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(url));
   }

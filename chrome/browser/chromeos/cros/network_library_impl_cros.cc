@@ -444,8 +444,10 @@ bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
 }
 
 void NetworkLibraryImplCros::RequestNetworkScan() {
-  if (wifi_enabled()) {
-    wifi_scanning_ = true;  // Cleared when updates are received.
+  if (wifi_enabled() && !wifi_scanning_) {
+    VLOG(1) << "Wifi network scan requested";
+    wifi_scanning_ = true;
+    wifi_scan_request_time_ = base::Time::Now();
     CrosRequestNetworkScan(flimflam::kTypeWifi);
   }
 
@@ -500,6 +502,8 @@ void NetworkLibraryImplCros::CallEnableNetworkDeviceType(
     ConnectionType device, bool enable) {
   busy_devices_ |= 1 << device;
   CrosRequestNetworkDeviceEnable(ConnectionTypeToString(device), enable);
+  if (device == TYPE_WIFI && enable)
+    RequestNetworkScan();
 }
 
 void NetworkLibraryImplCros::CallRemoveNetwork(const Network* network) {
@@ -809,15 +813,12 @@ void NetworkLibraryImplCros::UpdateConnectedTechnologies(
 // Update all network lists, and request associated service updates.
 void NetworkLibraryImplCros::UpdateNetworkServiceList(
     const ListValue* services) {
-  // TODO(stevenjb): Wait for wifi_scanning_ to be false.
   // Copy the list of existing networks to "old" and clear the map and lists.
   NetworkMap old_network_map = network_map_;
   ClearNetworks();
   // Clear the list of update requests.
   int network_priority_order = 0;
   network_update_requests_.clear();
-  // wifi_scanning_ will remain false unless we request a network update.
-  wifi_scanning_ = false;
   // |services| represents a complete list of visible networks.
   for (ListValue::const_iterator iter = services->begin();
        iter != services->end(); ++iter) {
@@ -838,7 +839,6 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       // new networks.
       // Use update_request map to store network priority.
       network_update_requests_[service_path] = network_priority_order++;
-      wifi_scanning_ = true;
       VLOG(2) << "UpdateNetworkServiceList, Service: " << service_path;
       CrosRequestNetworkServiceProperties(
           service_path,
@@ -846,6 +846,21 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
                      weak_ptr_factory_.GetWeakPtr()));
     }
   }
+
+  if (wifi_enabled()) {
+    if (wifi_scanning_) {
+      // If we haven't requested a scan recently, set scanning to false.
+      const int kMaxScanTimeSeconds = 15;
+      base::TimeDelta dtime = base::Time::Now() - wifi_scan_request_time_;
+      if (dtime.InSeconds() > kMaxScanTimeSeconds) {
+        VLOG(1) << "Wifi scan timeout";
+        wifi_scanning_ = false;  // Timeout, assume no wifi networks found
+      }
+    }
+  } else {
+    wifi_scanning_ = false;
+  }
+
   // Iterate through list of remaining networks that are no longer in the
   // list and delete them or update their status and re-add them to the list.
   for (NetworkMap::iterator iter = old_network_map.begin();
@@ -947,16 +962,16 @@ Network* NetworkLibraryImplCros::ParseNetwork(
   if (found2 != network_update_requests_.end()) {
     network->priority_order_ = found2->second;
     network_update_requests_.erase(found2);
-    if (network_update_requests_.empty()) {
-      // Clear wifi_scanning_ when we have no pending requests.
-      wifi_scanning_ = false;
-    }
   } else {
     // TODO(stevenjb): Enable warning once UpdateNetworkServiceList is fixed.
     // LOG(WARNING) << "ParseNetwork called with no update request entry: "
     //              << service_path;
   }
 
+  if (wifi_scanning_ && network->type() == TYPE_WIFI) {
+    VLOG(1) << "Wifi scan completed";
+    wifi_scanning_ = false;
+  }
   VLOG(2) << "ParseNetwork: " << network->name()
           << " path: " << network->service_path()
           << " profile: " << network->profile_path_;

@@ -89,6 +89,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
                                       std::string* topup_url,
                                       std::string* setup_url) OVERRIDE;
+  virtual bool GetWifiScanning() OVERRIDE;
   virtual void ShowCellularURL(const std::string& url) OVERRIDE;
   virtual void ChangeProxySettings() OVERRIDE;
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
