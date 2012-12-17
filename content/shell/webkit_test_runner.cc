@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/base64.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -19,11 +20,6 @@
 #include "content/shell/shell_render_process_observer.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -31,6 +27,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -45,6 +47,7 @@ using WebKit::WebGamepads;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebVector;
 using WebKit::WebView;
 using WebTestRunner::WebPreferences;
@@ -234,6 +237,44 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
   return webkit_base::FilePathToWebString(path);
+}
+
+WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {
+  FilePath local_path;
+  if (!net::FileURLToFilePath(file_url, &local_path))
+    return WebURL();
+
+  std::string contents;
+  Send(new ShellViewHostMsg_ReadFileToString(
+        routing_id(), local_path, &contents));
+
+  std::string contents_base64;
+  if (!base::Base64Encode(contents, &contents_base64))
+    return WebURL();
+
+  const char data_url_prefix[] = "data:text/css:charset=utf-8;base64,";
+  return WebURL(GURL(data_url_prefix + contents_base64));
+}
+
+WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
+  const char kPrefix[] = "file:///tmp/LayoutTests/";
+  const int kPrefixLen = arraysize(kPrefix) - 1;
+
+  if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
+    return WebURL(GURL(utf8_url));
+
+  FilePath replace_path =
+      ShellRenderProcessObserver::GetInstance()->webkit_source_dir().Append(
+          FILE_PATH_LITERAL("LayoutTests/"));
+#if defined(OS_WIN)
+  std::string utf8_path = WideToUTF8(replace_path.value());
+#else
+  std::string utf8_path =
+      WideToUTF8(base::SysNativeMBToWide(replace_path.value()));
+#endif
+  std::string new_url =
+      std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);
+  return WebURL(GURL(new_url));
 }
 
 WebPreferences* WebKitTestRunner::preferences() {

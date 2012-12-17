@@ -6,8 +6,6 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -93,14 +91,17 @@ bool ShellContentRendererClient::WillSendRequest(
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDumpRenderTree))
     return false;
+  ShellRenderProcessObserver* render_process_observer =
+      ShellRenderProcessObserver::GetInstance();
   if (!command_line->HasSwitch(switches::kAllowExternalPages) &&
       IsExternalPage(url) && !IsExternalPage(first_party_for_cookies)) {
-    ShellRenderProcessObserver::GetInstance()->test_delegate()->printMessage(
+    render_process_observer->test_delegate()->printMessage(
         std::string("Blocked access to external URL " + url.spec() + "\n"));
     *new_url = GURL();
     return true;
   }
-  *new_url = RewriteLayoutTestsURL(url);
+  *new_url = render_process_observer->test_delegate()->rewriteLayoutTestsURL(
+      url.spec());
   return true;
 }
 
@@ -117,27 +118,6 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
       ShellRenderProcessObserver::GetInstance()->test_delegate());
   proxy->setInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
-}
-
-GURL ShellContentRendererClient::RewriteLayoutTestsURL(const GURL& url) {
-  const char kPrefix[] = "file:///tmp/LayoutTests/";
-  const int kPrefixLen = arraysize(kPrefix) - 1;
-
-  if (url.spec().compare(0, kPrefixLen, kPrefix, kPrefixLen))
-    return url;
-
-  FilePath replace_path =
-      ShellRenderProcessObserver::GetInstance()->webkit_source_dir().Append(
-          FILE_PATH_LITERAL("LayoutTests/"));
-#if defined(OS_WIN)
-  std::string utf8_path = WideToUTF8(replace_path.value());
-#else
-  std::string utf8_path =
-      WideToUTF8(base::SysNativeMBToWide(replace_path.value()));
-#endif
-  std::string new_url =
-      std::string("file://") + utf8_path + url.spec().substr(kPrefixLen);
-  return GURL(new_url);
 }
 
 }  // namespace content

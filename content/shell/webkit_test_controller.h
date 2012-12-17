@@ -113,6 +113,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
+  void OnReadFileToString(const FilePath& file_path, std::string* contents);
   void OnOverridePreferences(const ShellWebPreferences& prefs);
   void OnNotifyDone();
   void OnDumpAsText();

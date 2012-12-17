@@ -59,6 +59,11 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DidFinishLoad)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
                     std::string /* message */)
 
+// Read a file and returns its contents.
+IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
+                           FilePath /* local path */,
+                           std::string /* contents */)
+
 // The following messages correspond to methods of the testRunner.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)

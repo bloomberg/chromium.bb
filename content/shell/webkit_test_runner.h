@@ -57,6 +57,8 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual long long getCurrentTimeInMillisecond();
   virtual WebKit::WebString getAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path);
+  virtual WebKit::WebURL localFileToDataURL(const WebKit::WebURL& file_url);
+  virtual WebKit::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
   virtual WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
 

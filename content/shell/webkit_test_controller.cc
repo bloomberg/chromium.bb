@@ -219,6 +219,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ReadFileToString, OnReadFileToString)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
@@ -358,6 +359,11 @@ void WebKitTestController::OnTextDump(const std::string& dump) {
 
 void WebKitTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
+}
+
+void WebKitTestController::OnReadFileToString(const FilePath& local_file,
+                                              std::string* contents) {
+  file_util::ReadFileToString(local_file, contents);
 }
 
 void WebKitTestController::OnOverridePreferences(
