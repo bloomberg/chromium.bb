@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "cc/texture_layer.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -65,6 +66,7 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/rect_conversions.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/content_decryptor_delegate.h"
@@ -454,6 +456,8 @@ void PluginInstance::Delete() {
     fullscreen_container_->Destroy();
     fullscreen_container_ = NULL;
   }
+  bound_graphics_3d_ = NULL;
+  UpdateLayer();
   container_ = NULL;
 }
 
@@ -508,8 +512,8 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
 }
 
 unsigned PluginInstance::GetBackingTextureId() {
-  if (GetBoundGraphics3D())
-    return GetBoundGraphics3D()->GetBackingTextureId();
+  if (bound_graphics_3d_.get())
+    return bound_graphics_3d_->GetBackingTextureId();
 
   return 0;
 }
@@ -517,8 +521,8 @@ unsigned PluginInstance::GetBackingTextureId() {
 void PluginInstance::CommitBackingTexture() {
   if (fullscreen_container_)
     fullscreen_container_->Invalidate();
-  else if (container_)
-    container_->commitBackingTexture();
+  else if (texture_layer_)
+    texture_layer_->setNeedsDisplay();
 }
 
 void PluginInstance::InstanceCrashed() {
@@ -912,15 +916,15 @@ void PluginInstance::PageVisibilityChanged(bool is_visible) {
 void PluginInstance::ViewWillInitiatePaint() {
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewWillInitiatePaint();
-  else if (GetBoundGraphics3D())
-    GetBoundGraphics3D()->ViewWillInitiatePaint();
+  else if (bound_graphics_3d_.get())
+    bound_graphics_3d_->ViewWillInitiatePaint();
 }
 
 void PluginInstance::ViewInitiatedPaint() {
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewInitiatedPaint();
-  else if (GetBoundGraphics3D())
-    GetBoundGraphics3D()->ViewInitiatedPaint();
+  else if (bound_graphics_3d_.get())
+    bound_graphics_3d_->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
@@ -928,8 +932,8 @@ void PluginInstance::ViewFlushedPaint() {
   scoped_refptr<PluginInstance> ref(this);
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewFlushedPaint();
-  else if (GetBoundGraphics3D())
-    GetBoundGraphics3D()->ViewFlushedPaint();
+  else if (bound_graphics_3d_.get())
+    bound_graphics_3d_->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(
@@ -1466,8 +1470,8 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     DCHECK(!fullscreen_container_);
-    setBackingTextureId(0, false);
     fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
+    UpdateLayer();
   } else {
     DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();
@@ -1492,15 +1496,14 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
     return;
   }
 
-  PPB_Graphics3D_Impl* graphics_3d  = GetBoundGraphics3D();
+  PPB_Graphics3D_Impl* graphics_3d  = bound_graphics_3d_.get();
   if (graphics_3d) {
     if (flash_fullscreen) {
       fullscreen_container_->ReparentContext(graphics_3d->platform_context());
     } else {
       delegate_->ReparentContext(graphics_3d->platform_context());
-      setBackingTextureId(graphics_3d->GetBackingTextureId(),
-                          graphics_3d->IsOpaque());
     }
+    UpdateLayer();
   }
 
   bool old_plugin_focus = PluginHasFocus();
@@ -1710,28 +1713,30 @@ PluginDelegate::PlatformGraphics2D* PluginInstance::GetBoundGraphics2D() const {
   return bound_graphics_2d_platform_;
 }
 
-PPB_Graphics3D_Impl* PluginInstance::GetBoundGraphics3D() const {
-  if (bound_graphics_3d_.get() == NULL)
-    return NULL;
-  return static_cast<PPB_Graphics3D_Impl*>(bound_graphics_3d_.get());
-}
-
-void PluginInstance::setBackingTextureId(unsigned int id, bool is_opaque) {
-  // If we have a fullscreen_container_ (under PPB_FlashFullscreen)
-  // or desired_fullscreen_state is true (under PPB_Fullscreen),
-  // then the plugin is fullscreen or transitioning to fullscreen
-  // and the parent context is not the one for the browser page,
-  // but for the fullscreen window, and so the parent texture ID
-  // doesn't correspond to anything in the page's context.
-  //
-  // TODO(alokp): It would be better at some point to have the equivalent
-  // in the FullscreenContainer so that we don't need to poll
-  if (fullscreen_container_ || desired_fullscreen_state_)
+void PluginInstance::UpdateLayer() {
+  if (!container_)
     return;
 
-  if (container_) {
-    container_->setBackingTextureId(id);
-    container_->setOpaque(is_opaque);
+  // If we have a fullscreen_container_ (under PPB_FlashFullscreen) then the
+  // plugin is fullscreen (for Flash) or transitioning to fullscreen. In either
+  // case we do not want a layer.
+  bool want_layer = GetBackingTextureId() && !fullscreen_container_;
+
+  if (want_layer == !!texture_layer_.get())
+    return;
+
+  if (!want_layer) {
+    texture_layer_->willModifyTexture();
+    texture_layer_->clearClient();
+    container_->setWebLayer(NULL);
+    web_layer_.reset();
+    texture_layer_ = NULL;
+  } else {
+    DCHECK(bound_graphics_3d_.get());
+    texture_layer_ = cc::TextureLayer::create(this);
+    web_layer_.reset(new WebKit::WebLayerImpl(texture_layer_));
+    container_->setWebLayer(web_layer_.get());
+    texture_layer_->setContentsOpaque(bound_graphics_3d_->IsOpaque());
   }
 }
 
@@ -1873,12 +1878,10 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
                                      PP_Resource device) {
   TRACE_EVENT0("ppapi", "PluginInstance::BindGraphics");
   // The Graphics3D instance can't be destroyed until we call
-  // setBackingTextureId.
-  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_3d_;
+  // UpdateLayer().
+  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_3d_.get();
   if (bound_graphics_3d_.get()) {
-    if (GetBoundGraphics3D()) {
-      GetBoundGraphics3D()->BindToInstance(false);
-    }
+    bound_graphics_3d_->BindToInstance(false);
     bound_graphics_3d_ = NULL;
   }
   if (bound_graphics_2d_platform_) {
@@ -1888,7 +1891,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
 
   // Special-case clearing the current device.
   if (!device) {
-    setBackingTextureId(0, false);
+    UpdateLayer();
     InvalidateRect(gfx::Rect());
     return PP_TRUE;
   }
@@ -1907,9 +1910,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   if (bound_graphics_2d_platform_) {
     if (!bound_graphics_2d_platform_->BindToInstance(this))
       return PP_FALSE;  // Can't bind to more than one instance.
-
-    setBackingTextureId(0, bound_graphics_2d_platform_->IsAlwaysOpaque());
-    // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
     // Make sure graphics can only be bound to the instance it is
     // associated with.
@@ -1919,12 +1919,11 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       return PP_FALSE;
 
     bound_graphics_3d_ = graphics_3d;
-    setBackingTextureId(graphics_3d->GetBackingTextureId(),
-                        graphics_3d->IsOpaque());
   } else {
     // The device is not a valid resource type.
     return PP_FALSE;
   }
+  UpdateLayer();
 
   return PP_TRUE;
 }
@@ -2104,6 +2103,16 @@ void PluginInstance::DeliverSamples(PP_Instance instance,
                                     PP_Resource audio_frames,
                                     const PP_DecryptedBlockInfo* block_info) {
   content_decryptor_delegate_->DeliverSamples(audio_frames, block_info);
+}
+
+unsigned PluginInstance::prepareTexture(cc::ResourceUpdateQueue&) {
+  return GetBackingTextureId();
+}
+
+WebKit::WebGraphicsContext3D* PluginInstance::context() {
+  DCHECK(bound_graphics_3d_.get());
+  DCHECK(bound_graphics_3d_->platform_context());
+  return bound_graphics_3d_->platform_context()->GetParentContext();
 }
 
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,

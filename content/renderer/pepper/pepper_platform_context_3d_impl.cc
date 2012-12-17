@@ -188,6 +188,10 @@ unsigned PlatformContext3DImpl::GetBackingTextureId() {
   return parent_texture_id_;
 }
 
+WebKit::WebGraphicsContext3D* PlatformContext3DImpl::GetParentContext() {
+  return parent_context_.get();
+}
+
 bool PlatformContext3DImpl::IsOpaque() {
   DCHECK(command_buffer_);
   return !has_alpha_;

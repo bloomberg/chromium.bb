@@ -34,6 +34,7 @@ class PlatformContext3DImpl
   virtual bool Init(const int32* attrib_list,
                     PlatformContext3D* share_context) OVERRIDE;
   virtual unsigned GetBackingTextureId() OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* GetParentContext() OVERRIDE;
   virtual bool IsOpaque() OVERRIDE;
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int GetCommandBufferRouteId() OVERRIDE;

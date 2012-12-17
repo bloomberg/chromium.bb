@@ -40,6 +40,10 @@ class TransportDIB;
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
+namespace WebKit {
+class WebGraphicsContext3D;
+}
+
 namespace base {
 class MessageLoopProxy;
 class Time;
@@ -208,6 +212,9 @@ class PluginDelegate {
     // If the plugin instance is backed by an OpenGL, return its ID in the
     // compositors namespace. Otherwise return 0. Returns 0 by default.
     virtual unsigned GetBackingTextureId() = 0;
+
+    // Returns the parent context that allocated the backing texture ID.
+    virtual WebKit::WebGraphicsContext3D* GetParentContext() = 0;
 
     // Returns true if the backing texture is always opaque.
     virtual bool IsOpaque() = 0;

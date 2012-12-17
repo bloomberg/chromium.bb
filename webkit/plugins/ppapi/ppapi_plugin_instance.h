@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "cc/texture_layer_client.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -61,11 +62,16 @@ class TransportDIB;
 
 namespace WebKit {
 class WebInputEvent;
+class WebLayer;
 class WebMouseEvent;
 class WebPluginContainer;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebPrintParams;
+}
+
+namespace cc {
+class TextureLayer;
 }
 
 namespace ppapi {
@@ -99,7 +105,8 @@ class PPB_URLLoader_Impl;
 class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::RefCounted<PluginInstance>,
     public base::SupportsWeakPtr<PluginInstance>,
-    public ::ppapi::PPB_Instance_Shared {
+    public ::ppapi::PPB_Instance_Shared,
+    public NON_EXPORTED_BASE(cc::TextureLayerClient) {
  public:
   // Create and return a PluginInstance object which supports the most recent
   // version of PPP_Instance possible by querying the given get_plugin_interface
@@ -452,6 +459,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                               PP_Resource audio_frames,
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 
+  // TextureLayerClient implementation.
+  virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+
   // Reset this instance as proxied. Resets cached interfaces to point to the
   // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if
   // necessary).
@@ -523,15 +534,14 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // null if the context is not 2D.
   PluginDelegate::PlatformGraphics2D* GetBoundGraphics2D() const;
 
-  // Get the bound 3D graphics context.
-  // Returns NULL if bound graphics is not a 3D context.
-  PPB_Graphics3D_Impl* GetBoundGraphics3D() const;
-
-  // Sets the id of the texture that the plugin draws to. The id is in the
-  // compositor space so it can use it to composite with rest of the page.
-  // A value of zero indicates the plugin is not backed by a texture.
-  // is_opaque is true if the plugin contents are always opaque.
-  void setBackingTextureId(unsigned int id, bool is_opaque);
+  // Updates the layer for compositing. This creates a layer and attaches to the
+  // container if:
+  // - we have a bound Graphics3D
+  // - the Graphics3D has a texture
+  // - we are not in Flash full-screen mode (or transitioning to it)
+  // Otherwise it destroys the layer.
+  // It does either operation lazily.
+  void UpdateLayer();
 
   // Internal helper function for PrintPage().
   bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
@@ -581,6 +591,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // NULL until we have been initialized.
   WebKit::WebPluginContainer* container_;
+  scoped_refptr<cc::TextureLayer> texture_layer_;
+  scoped_ptr<WebKit::WebLayer> web_layer_;
 
   // Plugin URL.
   GURL plugin_url_;
@@ -608,7 +620,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   base::WeakPtrFactory<PluginInstance> view_change_weak_ptr_factory_;
 
   // The current device context for painting in 2D and 3D.
-  scoped_refptr< ::ppapi::Resource> bound_graphics_3d_;
+  scoped_refptr<PPB_Graphics3D_Impl> bound_graphics_3d_;
   PluginDelegate::PlatformGraphics2D* bound_graphics_2d_platform_;
 
   // We track two types of focus, one from WebKit, which is the focus among

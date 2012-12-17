@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "cc/io_surface_layer.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
@@ -41,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -787,21 +789,34 @@ void WebPluginImpl::AcceleratedPluginAllocatedIOSurface(int32 width,
 }
 
 void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
-  if (container_) {
-    // Deferring the call to setBackingIOSurfaceId is an attempt to
-    // work around garbage occasionally showing up in the plugin's
-    // area during live resizing of Core Animation plugins. The
-    // assumption was that by the time this was called, the plugin
-    // process would have populated the newly allocated IOSurface. It
-    // is not 100% clear at this point why any garbage is getting
-    // through. More investigation is needed. http://crbug.com/105346
-    if (next_io_surface_allocated_) {
-      container_->setBackingIOSurfaceId(next_io_surface_width_,
-                                        next_io_surface_height_,
-                                        next_io_surface_id_);
-      next_io_surface_allocated_ = false;
+  if (!container_)
+    return;
+  // Deferring the call to setBackingIOSurfaceId is an attempt to
+  // work around garbage occasionally showing up in the plugin's
+  // area during live resizing of Core Animation plugins. The
+  // assumption was that by the time this was called, the plugin
+  // process would have populated the newly allocated IOSurface. It
+  // is not 100% clear at this point why any garbage is getting
+  // through. More investigation is needed. http://crbug.com/105346
+  if (next_io_surface_allocated_) {
+    if (next_io_surface_id_) {
+      if (!io_surface_layer_.get()) {
+        io_surface_layer_ = cc::IOSurfaceLayer::create();
+        web_layer_.reset(new WebKit::WebLayerImpl(io_surface_layer_));
+        container_->setWebLayer(web_layer_.get());
+      }
+      io_surface_layer_->setIOSurfaceProperties(
+          next_io_surface_id_,
+          gfx::Size(next_io_surface_width_, next_io_surface_height_));
+    } else {
+      container_->setWebLayer(NULL);
+      web_layer_.reset();
+      io_surface_layer_ = NULL;
     }
-    container_->commitBackingTexture();
+    next_io_surface_allocated_ = false;
+  } else {
+    if (io_surface_layer_)
+      io_surface_layer_->setNeedsDisplay();
   }
 }
 #endif
@@ -1391,8 +1406,10 @@ void WebPluginImpl::TearDownPluginInstance(
   // The container maintains a list of JSObjects which are related to this
   // plugin.  Tell the frame we're gone so that it can invalidate all of
   // those sub JSObjects.
-  if (container_)
+  if (container_) {
     container_->clearScriptObjects();
+    container_->setWebLayer(NULL);
+  }
 
   if (delegate_) {
     // Call PluginDestroyed() first to prevent the plugin from calling us back
