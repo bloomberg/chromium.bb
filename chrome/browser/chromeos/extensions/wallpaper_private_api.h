@@ -38,11 +38,45 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   // Holds an instance of WallpaperDecoder.
   static WallpaperDecoder* wallpaper_decoder_;
 
+  // Starts to decode |data|. Must run on UI thread.
+  void StartDecode(const std::string& data);
+
   // Handles failure or cancel cases. Passes error message to Javascript side.
   void OnFailureOrCancel(const std::string& error);
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
+};
+
+class WallpaperSetWallpaperIfExistFunction : public WallpaperFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setWallpaperIfExist");
+
+  WallpaperSetWallpaperIfExistFunction();
+
+ protected:
+  virtual ~WallpaperSetWallpaperIfExistFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+
+  // Reads file specified by |file_name|. If success, post a task to start
+  // decoding the file.
+  void ReadFileAndInitiateStartDecode(const std::string& file_name);
+
+  // High resolution wallpaper URL.
+  std::string url_;
+
+  // Layout of the downloaded wallpaper.
+  ash::WallpaperLayout layout_;
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
+
 };
 
 class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
@@ -154,13 +188,12 @@ class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
   // Failed to get thumbnail for |file_name|.
   void Failure(const std::string& file_name);
 
-  // Sets success field in the results to false. Called when the requested
-  // thumbnail is not found or corrupted in thumbnail directory.
+  // Returns true to suppress javascript console error. Called when the
+  // requested thumbnail is not found or corrupted in thumbnail directory.
   void FileNotLoaded();
 
-  // Sets success field to true and data field to the loaded thumbnail binary
-  // data in the results. Called when requested wallpaper thumbnail loaded
-  // successfully.
+  // Sets data field to the loaded thumbnail binary data in the results. Called
+  // when requested wallpaper thumbnail loaded successfully.
   void FileLoaded(const std::string& data);
 
   // Gets thumbnail with |file_name| from thumbnail directory. If |file_name|

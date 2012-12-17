@@ -396,6 +396,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // WallpaperManagerPrivate functions.
   RegisterFunction<WallpaperStringsFunction>();
+  RegisterFunction<WallpaperSetWallpaperIfExistFunction>();
   RegisterFunction<WallpaperSetWallpaperFunction>();
   RegisterFunction<WallpaperSetCustomWallpaperFunction>();
   RegisterFunction<WallpaperMinimizeInactiveWindowsFunction>();

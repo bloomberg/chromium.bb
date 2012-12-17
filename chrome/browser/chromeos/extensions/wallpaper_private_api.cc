@@ -275,11 +275,96 @@ WallpaperFunctionBase::WallpaperFunctionBase() {
 WallpaperFunctionBase::~WallpaperFunctionBase() {
 }
 
+void WallpaperFunctionBase::StartDecode(const std::string& data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (wallpaper_decoder_)
+    wallpaper_decoder_->Cancel();
+  wallpaper_decoder_ = new WallpaperDecoder(this);
+  wallpaper_decoder_->Start(data);
+}
+
 void WallpaperFunctionBase::OnFailureOrCancel(const std::string& error) {
   wallpaper_decoder_ = NULL;
   if (!error.empty())
     SetError(error);
   SendResponse(false);
+}
+
+WallpaperSetWallpaperIfExistFunction::WallpaperSetWallpaperIfExistFunction() {
+}
+
+WallpaperSetWallpaperIfExistFunction::~WallpaperSetWallpaperIfExistFunction() {
+}
+
+bool WallpaperSetWallpaperIfExistFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_));
+  EXTENSION_FUNCTION_VALIDATE(!url_.empty());
+  std::string file_name = GURL(url_).ExtractFileName();
+
+  std::string layout_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &layout_string));
+  EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
+  layout_ = GetLayoutEnum(layout_string);
+
+  sequence_token_ = BrowserThread::GetBlockingPool()->
+      GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
+  task_runner->PostTask(FROM_HERE,
+      base::Bind(
+          &WallpaperSetWallpaperIfExistFunction::ReadFileAndInitiateStartDecode,
+          this,
+          file_name));
+  return true;
+}
+
+void WallpaperSetWallpaperIfExistFunction::ReadFileAndInitiateStartDecode(
+    const std::string& file_name) {
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
+  std::string data;
+  FilePath data_dir;
+
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &data_dir));
+  FilePath file_path = data_dir.Append(file_name);
+
+  if (file_util::PathExists(file_path) &&
+      file_util::ReadFileToString(file_path, &data)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&WallpaperSetWallpaperIfExistFunction::StartDecode, this,
+                   data));
+    return;
+  }
+  std::string error = base::StringPrintf(
+        "Failed to set wallpaper %s from file system.", file_name.c_str());
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WallpaperSetWallpaperIfExistFunction::OnFailureOrCancel,
+                 this, error));
+}
+
+void WallpaperSetWallpaperIfExistFunction::OnWallpaperDecoded(
+    const gfx::ImageSkia& wallpaper) {
+  // Set wallpaper_decoder_ to null since the decoding already finished.
+  wallpaper_decoder_ = NULL;
+
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  wallpaper_manager->SetWallpaperFromImageSkia(wallpaper, layout_);
+  bool is_persistent =
+      !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
+  chromeos::WallpaperInfo info = {
+      url_,
+      layout_,
+      chromeos::User::ONLINE,
+      base::Time::Now().LocalMidnight()
+  };
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  SendResponse(true);
 }
 
 WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
@@ -304,10 +389,7 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
 
   image_data_.assign(input->GetBuffer(), input->GetSize());
-  if (wallpaper_decoder_)
-    wallpaper_decoder_->Cancel();
-  wallpaper_decoder_ = new WallpaperDecoder(this);
-  wallpaper_decoder_->Start(image_data_);
+  StartDecode(image_data_);
 
   return true;
 }
@@ -404,10 +486,7 @@ bool WallpaperSetCustomWallpaperFunction::RunImpl() {
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
 
   image_data_.assign(input->GetBuffer(), input->GetSize());
-  if (wallpaper_decoder_)
-    wallpaper_decoder_->Cancel();
-  wallpaper_decoder_ = new WallpaperDecoder(this);
-  wallpaper_decoder_->Start(image_data_);
+  StartDecode(image_data_);
 
   return true;
 }

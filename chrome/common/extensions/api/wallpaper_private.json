@@ -27,6 +27,28 @@
         ]
       },
       {
+        "name": "setWallpaperIfExist",
+        "type": "function",
+        "description": "Sets wallpaper if it exists in the local file system with specified layout",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "url"
+          },
+          {
+            "type": "string",
+            "name": "layout",
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "setWallpaper",
         "type": "function",
         "description": "Sets wallpaper to the image from url with specified layout",

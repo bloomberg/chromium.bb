@@ -282,29 +282,39 @@ function WallpaperManager(dialogDom) {
     if (selectedItem && selectedItem.dynamicURL &&
         !this.wallpaperGrid_.inProgramSelection) {
       var wallpaperURL = selectedItem.baseURL + HighResolutionSuffix;
-
-      if (this.wallpaperRequest_)
-        this.wallpaperRequest_.abort();
-
-      this.wallpaperRequest_ = new XMLHttpRequest();
-      this.wallpaperRequest_.open('GET', wallpaperURL, true);
-      this.wallpaperRequest_.responseType = 'arraybuffer';
-      this.wallpaperRequest_.send(null);
-      this.butterBar_.setRequest(this.wallpaperRequest_);
       var self = this;
-      this.wallpaperRequest_.addEventListener('load', function(e) {
-        if (self.wallpaperRequest_.status === 200) {
-          var image = self.wallpaperRequest_.response;
-          chrome.wallpaperPrivate.setWallpaper(image,
-                                               selectedItem.layout,
-                                               wallpaperURL,
-                                               self.onFinished_.bind(self));
+
+      chrome.wallpaperPrivate.setWallpaperIfExist(wallpaperURL,
+                                                  selectedItem.layout,
+                                                  function() {
+        if (chrome.runtime.lastError == undefined) {
           self.currentWallpaper_ = wallpaperURL;
-        } else {
-          self.butterBar_.showError_(str('downloadFailed'),
-                                     {help_url: LEARN_MORE_URL});
+          return;
         }
-        self.wallpaperRequest_ = null;
+
+        // Falls back to request wallpaper from server.
+        if (self.wallpaperRequest_)
+          self.wallpaperRequest_.abort();
+
+        self.wallpaperRequest_ = new XMLHttpRequest();
+        self.wallpaperRequest_.open('GET', wallpaperURL, true);
+        self.wallpaperRequest_.responseType = 'arraybuffer';
+        self.wallpaperRequest_.send(null);
+        self.butterBar_.setRequest(self.wallpaperRequest_);
+        self.wallpaperRequest_.addEventListener('load', function(e) {
+          if (self.wallpaperRequest_.status === 200) {
+            var image = self.wallpaperRequest_.response;
+            chrome.wallpaperPrivate.setWallpaper(image,
+                                                 selectedItem.layout,
+                                                 wallpaperURL,
+                                                 self.onFinished_.bind(self));
+            self.currentWallpaper_ = wallpaperURL;
+          } else {
+            self.butterBar_.showError_(str('downloadFailed'),
+                                       {help_url: LEARN_MORE_URL});
+          }
+          self.wallpaperRequest_ = null;
+        });
       });
     }
     this.setWallpaperAttribution_(selectedItem);

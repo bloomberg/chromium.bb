@@ -66,6 +66,18 @@ chrome.test.getConfig(function(config) {
         }
       });
     },
+    function setWallpaperFromFileSystem() {
+      var url = "http://a.com:PORT/files/extensions/api_test" +
+          "/wallpaper_manager/test.jpg";
+      url = url.replace(/PORT/, config.testServer.port);
+      chrome.wallpaperPrivate.setWallpaperIfExist(url, 'CENTER_CROPPED',
+                                                  pass(function() {
+        chrome.test.assertNoLastError();
+        chrome.wallpaperPrivate.setWallpaperIfExist(
+            'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
+            fail('Failed to set wallpaper test1.jpg from file system.'));
+      }));
+    },
     function getAndSetThumbnail() {
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
