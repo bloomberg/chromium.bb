@@ -33,6 +33,7 @@
   'sources': [
     'port/browser/render_view_host_delegate_view.h',
     'port/browser/render_widget_host_view_port.h',
+    'port/browser/smooth_scroll_gesture.cc',
     'port/browser/smooth_scroll_gesture.h',
     'public/browser/access_token_store.h',
     'public/browser/android/compositor.h',
@@ -741,6 +742,8 @@
     'browser/renderer_host/render_widget_host_view_mac.mm',
     'browser/renderer_host/render_widget_host_view_win.cc',
     'browser/renderer_host/render_widget_host_view_win.h',
+    'browser/renderer_host/smooth_scroll_gesture_android.cc',
+    'browser/renderer_host/smooth_scroll_gesture_android.h',
     'browser/renderer_host/socket_stream_dispatcher_host.cc',
     'browser/renderer_host/socket_stream_dispatcher_host.h',
     'browser/renderer_host/socket_stream_host.cc',

@@ -1938,6 +1938,13 @@ public class ContentViewCore implements MotionEventDelegate {
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private SmoothScroller createSmoothScroller(boolean scrollDown, int mouseEventX,
+            int mouseEventY) {
+        return new SmoothScroller(this, scrollDown, mouseEventX, mouseEventY);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
     }
