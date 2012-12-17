@@ -77,6 +77,7 @@
                     '<@(grit_defines)',
                   ],
                   'message': 'Packing generated templates into <(_outputs)',
+                  'msvs_cygwin_shell': 1,
                 }
               ]
             }],
