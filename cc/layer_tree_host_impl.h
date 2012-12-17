@@ -52,7 +52,7 @@ public:
 // PinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.
 // It tracks the layout-space dimensions of the viewport before any applied scale, and then tracks the layout-space
 // coordinates of the viewport respecting the pinch settings.
-class CC_EXPORT PinchZoomViewport {
+class PinchZoomViewport {
 public:
     PinchZoomViewport();
 
@@ -257,6 +257,8 @@ public:
 
     void renderingStats(RenderingStats*) const;
 
+    void updateRootScrollLayerImplTransform();
+
     void sendManagedMemoryStats(
        size_t memoryVisibleBytes,
        size_t memoryVisibleAndNearbyBytes,
@@ -301,10 +303,17 @@ public:
     template<typename RenderPassCuller>
     static void removeRenderPasses(RenderPassCuller, FrameData&);
 
-    float totalPageScaleFactorForTesting() const { return m_pinchZoomViewport.totalPageScaleFactor(); }
-
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
+
+    void animatePageScale(base::TimeTicks monotonicTime);
+    void animateScrollbars(base::TimeTicks monotonicTime);
+
+    void updateDrawProperties();
+
+    // Exposed for testing.
+    void calculateRenderSurfaceLayerList(LayerList&);
+    void resetNeedsUpdateDrawPropertiesForTesting() { m_needsUpdateDrawProperties = false; }
 
     // Virtual for testing.
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime);
@@ -316,11 +325,6 @@ protected:
     Proxy* m_proxy;
 
 private:
-    void animatePageScale(base::TimeTicks monotonicTime);
-    void animateScrollbars(base::TimeTicks monotonicTime);
-
-    void updateDrawProperties();
-
     void computeDoubleTapZoomDeltas(ScrollAndScaleSet* scrollInfo);
     void computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo);
     void makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, gfx::Vector2d scrollOffset, float pageScale);
