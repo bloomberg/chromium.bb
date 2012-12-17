@@ -208,6 +208,8 @@ void RemainingSessionTimeTrayView::UpdateText() {
   int seconds = floor(
       (limit_ - (base::Time::Now() - session_start_time_)).InSecondsF() + .5);
   seconds = std::min(std::max(seconds, 0), 99 * 60 * 60);
+  const SkColor color = seconds < kRemainingTimeWarningThresholdInSeconds ?
+      kRemainingTimeWarningColor : kRemainingTimeColor;
   int minutes = seconds / 60;
   seconds %= 60;
   const int hours = minutes / 60;
@@ -216,8 +218,6 @@ void RemainingSessionTimeTrayView::UpdateText() {
   const string16 hours_str = IntToTwoDigitString(hours);
   const string16 minutes_str = IntToTwoDigitString(minutes);
   const string16 seconds_str = IntToTwoDigitString(seconds);
-  const SkColor color = seconds < kRemainingTimeWarningThresholdInSeconds ?
-      kRemainingTimeWarningColor : kRemainingTimeColor;
 
   if (horizontal_layout_label_) {
     horizontal_layout_label_->SetText(l10n_util::GetStringFUTF16(
