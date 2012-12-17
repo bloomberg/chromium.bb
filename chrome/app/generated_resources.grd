@@ -7564,7 +7564,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%
       </message>
       <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">
-        Set to default
+        Reset to default
       </message>
 
       <!--Action Box menu-->
