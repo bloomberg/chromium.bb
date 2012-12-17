@@ -74,7 +74,11 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 
     aura::RootWindow* root = Shell::GetPrimaryRootWindow();
     gfx::Rect root_bounds(root->bounds());
+#if defined(OS_WIN)
+    // RootWindow and Display can't resize on Windows Ash.
+    // http://crbug.com/165962
     EXPECT_EQ(kRootHeight, root_bounds.height());
+#endif
     EXPECT_EQ(800, root_bounds.width());
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
@@ -366,9 +370,16 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
   EXPECT_EQ("0,250 200x100", window2_->bounds().ToString());
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_AttachedResize_BOTTOM_3 DISABLED_AttachedResize_BOTTOM_3
+#else
+#define MAYBE_AttachedResize_BOTTOM_3 AttachedResize_BOTTOM_3
+#endif
+
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
+TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 800));
 
@@ -386,7 +397,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTBOTTOM, windows));
   ASSERT_TRUE(resizer.get());
-  // Move it 100 to the right, which should expand w1 and push w2 and w3.
+  // Move it 100 down, which should expand w1 and push w2 and w3.
   resizer->Drag(CalculateDragPoint(*resizer, -10, 100), 0);
   EXPECT_EQ("300,100 300x300", window_->bounds().ToString());
   EXPECT_EQ("300,400 200x150", window2_->bounds().ToString());
@@ -1307,7 +1318,14 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   EXPECT_EQ("100,350 100x150", window4_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, DontExceedMinHeight) {
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_DontExceedMinHeight DISABLED_DontExceedMinHeight
+#else
+#define MAYBE_DontExceedMinHeight DontExceedMinHeight
+#endif
+
+TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 500));
 
@@ -1389,7 +1407,14 @@ TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   EXPECT_EQ("249,100 101x100", window3_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_MainWindowHonoursMaxWidth DISABLED_MainWindowHonoursMaxWidth
+#else
+#define MAYBE_MainWindowHonoursMaxWidth MainWindowHonoursMaxWidth
+#endif
+
+TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(400, 800));
 

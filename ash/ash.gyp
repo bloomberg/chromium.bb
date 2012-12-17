@@ -623,6 +623,8 @@
             ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
           # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
             ['exclude', 'focus_cycler_unittest.cc'],
+            # All tests for multiple displays: not supported on Windows Ash.
+            ['exclude', 'wm/drag_window_resizer_unittest.cc'],
           ],
         }],
         ['OS=="mac"', {

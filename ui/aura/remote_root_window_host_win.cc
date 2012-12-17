@@ -114,6 +114,7 @@ gfx::Rect RemoteRootWindowHostWin::GetBounds() const {
 }
 
 void RemoteRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
+  delegate_->OnHostResized(bounds.size());
 }
 
 gfx::Point RemoteRootWindowHostWin::GetLocationOnNativeScreen() const {
