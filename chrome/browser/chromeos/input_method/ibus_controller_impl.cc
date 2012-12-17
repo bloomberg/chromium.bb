@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
@@ -31,7 +32,6 @@
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method_ibus.h"
@@ -193,10 +193,10 @@ class IBusAddressWatcher {
    public:
     IBusAddressFileWatcherDelegate(
         const std::string& ibus_address,
-        IBusControllerImpl* controller,
+        const base::Callback<void(const std::string&)>& callback,
         IBusAddressWatcher* watcher)
         : ibus_address_(ibus_address),
-          controller_(controller),
+          callback_(callback),
           watcher_(watcher) {
       DCHECK(watcher);
       DCHECK(!ibus_address.empty());
@@ -205,14 +205,7 @@ class IBusAddressWatcher {
     virtual void OnFilePathChanged(const FilePath& file_path) OVERRIDE {
       if (!watcher_->IsWatching())
         return;
-      bool success = content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(
-              &IBusControllerImpl::IBusDaemonInitializationDone,
-              controller_,
-              ibus_address_));
-      DCHECK(success);
+      callback_.Run(ibus_address_);
       watcher_->StopSoon();
     }
 
@@ -222,14 +215,14 @@ class IBusAddressWatcher {
    private:
     // The ibus-daemon address.
     const std::string ibus_address_;
-    IBusControllerImpl* controller_;
+    base::Callback<void(const std::string&)> callback_;
     IBusAddressWatcher* watcher_;
 
     DISALLOW_COPY_AND_ASSIGN(IBusAddressFileWatcherDelegate);
   };
 
   static void Start(const std::string& ibus_address,
-                    IBusControllerImpl* controller) {
+                    const base::Callback<void(const std::string&)>& callback) {
     IBusAddressWatcher* instance = IBusAddressWatcher::Get();
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string address_file_path;
@@ -243,7 +236,7 @@ class IBusAddressWatcher {
 
     // The |delegate| is owned by watcher.
     IBusAddressFileWatcherDelegate* delegate =
-        new IBusAddressFileWatcherDelegate(ibus_address, controller, instance);
+        new IBusAddressFileWatcherDelegate(ibus_address, callback, instance);
     bool result = instance->watcher_->Watch(FilePath(address_file_path),
                                             delegate);
     DCHECK(result);
@@ -268,7 +261,6 @@ class IBusAddressWatcher {
  private:
   static IBusAddressWatcher* Get() {
     static IBusAddressWatcher* instance = new IBusAddressWatcher;
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
     return instance;
   }
 
@@ -282,10 +274,14 @@ class IBusAddressWatcher {
 
 }  // namespace
 
-IBusControllerImpl::IBusControllerImpl()
+IBusControllerImpl::IBusControllerImpl(
+    const scoped_refptr<base::SequencedTaskRunner>& default_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner)
     : process_handle_(base::kNullProcessHandle),
       ibus_daemon_status_(IBUS_DAEMON_STOP),
       input_method_(NULL),
+      default_task_runner_(default_task_runner),
+      worker_task_runner_(worker_task_runner),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -501,12 +497,15 @@ bool IBusControllerImpl::StartIBusDaemon() {
   // Set up ibus-daemon address file watcher before launching ibus-daemon,
   // because if watcher starts after ibus-daemon, we may miss the ibus
   // connection initialization.
-  bool success = content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
+
+  // Create a callback to bounce from the worker thread to the default thread.
+  base::Callback<void(const std::string&)> callback(base::Bind(
+      &IBusControllerImpl::IBusDaemonInitializationDoneWorkerCallback,
+      weak_ptr_factory_.GetWeakPtr()));
+
+  bool success = worker_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&IBusAddressWatcher::Start,
-                 ibus_daemon_address_,
-                 base::Unretained(this)),
+      base::Bind(&IBusAddressWatcher::Start, ibus_daemon_address_, callback),
       base::Bind(&IBusControllerImpl::LaunchIBusDaemon,
                  weak_ptr_factory_.GetWeakPtr(),
                  ibus_daemon_address_));
@@ -574,38 +573,42 @@ void IBusControllerImpl::OnIBusConfigClientInitialized() {
   }
 }
 
-// static
-void IBusControllerImpl::IBusDaemonInitializationDone(
-    IBusControllerImpl* controller,
+void IBusControllerImpl::IBusDaemonInitializationDoneWorkerCallback(
     const std::string& ibus_address) {
-  if (controller->ibus_daemon_address_ != ibus_address)
+  bool result = default_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &IBusControllerImpl::IBusDaemonInitializationDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      ibus_address));
+  DCHECK(result);
+}
+
+void IBusControllerImpl::IBusDaemonInitializationDone(
+    const std::string& ibus_address) {
+  if (ibus_daemon_address_ != ibus_address)
     return;
 
-  if (controller->ibus_daemon_status_ != IBUS_DAEMON_INITIALIZING) {
+  if (ibus_daemon_status_ != IBUS_DAEMON_INITIALIZING) {
     // Stop() or OnIBusDaemonExit() has already been called.
     return;
   }
   chromeos::DBusThreadManager::Get()->InitIBusBus(ibus_address);
-  controller->ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
+  ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
 
-  ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
+  ui::InputMethodIBus* input_method_ibus = GetInputMethod();
   DCHECK(input_method_ibus);
   input_method_ibus->OnConnected();
 
-  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(
-      controller);
+  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(this);
 
   // Restore previous input method at the beggining of connection.
-  if (!controller->current_input_method_id_.empty()) {
-    controller->SendChangeInputMethodRequest(
-        controller->current_input_method_id_);
-  }
+  if (!current_input_method_id_.empty())
+    SendChangeInputMethodRequest(current_input_method_id_);
 
   DBusThreadManager::Get()->GetIBusConfigClient()->InitializeAsync(
       base::Bind(&IBusControllerImpl::OnIBusConfigClientInitialized,
-                 controller->weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
 
-  FOR_EACH_OBSERVER(Observer, controller->observers_, OnConnected());
+  FOR_EACH_OBSERVER(Observer, observers_, OnConnected());
 
   VLOG(1) << "The ibus-daemon initialization is done.";
 }

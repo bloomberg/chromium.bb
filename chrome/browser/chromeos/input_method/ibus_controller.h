@@ -9,6 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace chromeos {
 namespace input_method {
 
@@ -30,7 +36,9 @@ class IBusController {
   };
 
   // Creates an instance of the class.
-  static IBusController* Create();
+  static IBusController* Create(
+      const scoped_refptr<base::SequencedTaskRunner>& default_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner);
 
   virtual ~IBusController();
 
