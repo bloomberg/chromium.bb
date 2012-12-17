@@ -8,15 +8,11 @@
 #include <vector>
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/font.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
-
-namespace ui {
-struct TableColumn;
-class TableModel;
-}
 
 // A TableView is a view that displays multiple rows with any number of columns.
 // TableView is driven by a TableModel. The model returns the contents
@@ -42,6 +38,7 @@ class TableModel;
 // TableView is a wrapper around the window type ListView in report mode.
 namespace views {
 
+class TableHeader;
 class TableViewObserver;
 
 // The cells in the first column of a table can contain:
@@ -51,12 +48,27 @@ class TableViewObserver;
 enum TableTypes {
   TEXT_ONLY = 0,
   ICON_AND_TEXT,
-  CHECK_BOX_AND_TEXT
 };
 
-class VIEWS_EXPORT TableView : public views::View,
-                               public ui::TableModelObserver {
+class VIEWS_EXPORT TableView
+    : public views::View,
+      public ui::TableModelObserver {
  public:
+  // Used to track a visible column. Useful only for the header.
+  struct VisibleColumn {
+    VisibleColumn();
+    ~VisibleColumn();
+
+    // The column.
+    ui::TableColumn column;
+
+    // Starting x-coordinate of the column.
+    int x;
+
+    // Width of the column.
+    int width;
+  };
+
   // Creates a new table using the model and columns specified.
   // The table type applies to the content of the first column (text, icon and
   // text, checkbox and text).
@@ -106,11 +118,16 @@ class VIEWS_EXPORT TableView : public views::View,
   }
   TableViewObserver* observer() const { return table_view_observer_; }
 
+  const std::vector<VisibleColumn>& visible_columns() const {
+    return visible_columns_;
+  }
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
 
   // ui::TableModelObserver overrides:
   virtual void OnModelChanged() OVERRIDE;
@@ -126,13 +143,52 @@ class VIEWS_EXPORT TableView : public views::View,
   virtual void OnBlur() OVERRIDE;
 
  private:
+  // Used during painting to determine the range of cells that need to be
+  // painted.
+  struct PaintRegion {
+    PaintRegion();
+    ~PaintRegion();
+
+    int min_row;
+    int max_row;
+    int min_column;
+    int max_column;
+  };
+
   // Invoked when the number of rows changes in some way.
   void NumRowsChanged();
 
   // Returns the bounds of the specified row.
   gfx::Rect GetRowBounds(int row);
 
+  // Returns the bounds of the specified cell. |visible_column_index| indexes
+  // into |visible_columns_|.
+  gfx::Rect GetCellBounds(int row, int visible_column_index);
+
+  // Creates |header_| if necessary.
+  void CreateHeaderIfNecessary();
+
+  // Updates the |x| and |width| of each of the columns in |visible_columns_|.
+  void UpdateVisibleColumnSizes();
+
+  // Returns the cells that need to be painted.
+  PaintRegion GetPaintRegion(gfx::Canvas* canvas);
+
+  // Returns the index into |visible_columns_| to draw the icon at, or -1 if no
+  // icon is to be drawn.
+  int GetIconIndex();
+
   ui::TableModel* model_;
+
+  std::vector<ui::TableColumn> columns_;
+
+  // The set of visible columns. The values of these point to |columns_|. This
+  // may contain a subset of |columns_|.
+  std::vector<VisibleColumn> visible_columns_;
+
+  // The header. This is only created if more than one column is specified or
+  // the first column has a non-empty title.
+  TableHeader* header_;
 
   const TableTypes table_type_;
 
@@ -143,6 +199,10 @@ class VIEWS_EXPORT TableView : public views::View,
   gfx::Font font_;
 
   int row_height_;
+
+  // Width of the |parent()| last time Layout() was invoked. Used to determine
+  // when we should invoke UpdateVisibleColumnSizes().
+  int last_parent_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };

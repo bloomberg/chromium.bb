@@ -63,11 +63,10 @@ void TableExample::CreateExampleView(View* container) {
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(TestTableColumn(0, "Fruit"));
-#if defined(OS_WIN) && !defined(USE_AURA)
   columns.push_back(TestTableColumn(1, "Color"));
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
-#endif
+  columns.back().alignment = ui::TableColumn::RIGHT;
   table_ = new TableView(this, columns, ICON_AND_TEXT, true, true, true);
   table_->SetObserver(this);
   icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
