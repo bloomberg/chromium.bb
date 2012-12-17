@@ -292,7 +292,7 @@ Press any key to continue exploring.
     Spoken feedback
   </message>
   <message name="IDS_OOBE_HIGH_CONTRAST_MODE_OPTION" desc="High contrast mode option shown on OOBE screens accessibility menu.">
-    High contrast mode 
+    High contrast
   </message>
   <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
     Screen magnifier 
@@ -677,7 +677,7 @@ Press any key to continue exploring.
     Enable spoken feedback
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for high contrast mode.">
-    Enable high contrast mode
+    Enable high contrast
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION" desc="In the settings tab, the text next to the dropdown for screen magnifier.">
     Enable screen magnifier
