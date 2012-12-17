@@ -244,6 +244,10 @@ ExtensionContextMenuBrowserLazyTest.*
 SystemInfoDisplayApiTest.*
 # DrM-i#1052-c#39
 ExtensionIdltestApiTest.*
+# DrM-i#1052-c#40
+SearchProviderTest.*
+PushMessagingApiTest.*
+BookmarkBrowsertest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -305,3 +309,5 @@ ExtensionDevToolsBrowserTest.*
 IFrameTest.*
 # DrM-i#1052-c#39
 CloudPrintPolicyTest.*
+# DrM-i#1052-c#40
+TranslateManagerTest.*
