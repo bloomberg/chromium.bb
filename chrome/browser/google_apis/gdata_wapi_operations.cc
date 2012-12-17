@@ -17,6 +17,7 @@
 #include "net/http/http_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
+using content::BrowserThread;
 using net::URLFetcher;
 
 namespace {
@@ -575,7 +576,7 @@ InitiateUploadOperation::InitiateUploadOperation(
 InitiateUploadOperation::~InitiateUploadOperation() {}
 
 GURL InitiateUploadOperation::GetURL() const {
-  return initiate_upload_url_;
+  return GDataWapiUrlGenerator::AddStandardUrlParams(initiate_upload_url_);
 }
 
 void InitiateUploadOperation::ProcessURLFetchResults(
@@ -671,25 +672,27 @@ ResumeUploadOperation::ResumeUploadOperation(
                           params.drive_file_path),
       callback_(callback),
       params_(params),
-      last_chunk_completed_(false) {
+      last_chunk_completed_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(!callback_.is_null());
 }
 
 ResumeUploadOperation::~ResumeUploadOperation() {}
 
 GURL ResumeUploadOperation::GetURL() const {
+  // This is very tricky to get json from this operation. To do that, &alt=json
+  // has to be appended not here but in InitiateUploadOperation::GetURL().
   return params_.upload_location;
 }
 
 void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
-  int64 start_position_received = -1;
-  int64 end_position_received = -1;
-  scoped_ptr<ResourceEntry> entry;
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
+    int64 start_position_received = -1;
+    int64 end_position_received = -1;
     std::string range_received;
     hdrs->EnumerateHeader(NULL, kUploadResponseRange, &range_received);
     if (!range_received.empty()) {  // Parse the range header.
@@ -710,6 +713,13 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
              << ", range_hdr=[" << range_received
              << "], range_parsed=" << start_position_received
              << "," << end_position_received;
+
+    callback_.Run(ResumeUploadResponse(code,
+                                       start_position_received,
+                                       end_position_received),
+                  scoped_ptr<ResourceEntry>());
+
+    OnProcessURLFetchResultsComplete(true);
   } else {
     // There might be explanation of unexpected error code in response.
     std::string response_content;
@@ -718,24 +728,16 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
              << "]: code=" << code
              << ", content=[\n" << response_content << "\n]";
 
-    // Parse entry XML.
-    XmlReader xml_reader;
-    if (xml_reader.Load(response_content)) {
-      while (xml_reader.Read()) {
-        if (xml_reader.NodeName() == ResourceEntry::GetEntryNodeName()) {
-          entry = ResourceEntry::CreateFromXml(&xml_reader);
-          break;
-        }
-      }
-    }
-    if (!entry.get())
-      LOG(WARNING) << "Invalid entry received on upload:\n" << response_content;
+    ParseJson(response_content,
+              base::Bind(&ResumeUploadOperation::OnDataParsed,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         code));
   }
+}
 
-  callback_.Run(ResumeUploadResponse(code,
-                                     start_position_received,
-                                     end_position_received),
-                entry.Pass());
+void ResumeUploadOperation::OnDataParsed(GDataErrorCode code,
+                                         scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // For a new file, HTTP_CREATED is returned.
   // For an existing file, HTTP_SUCCESS is returned.
@@ -744,8 +746,15 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     last_chunk_completed_ = true;
   }
 
-  OnProcessURLFetchResultsComplete(
-      last_chunk_completed_ || code == HTTP_RESUME_INCOMPLETE);
+  scoped_ptr<ResourceEntry> entry;
+  if (value.get())
+    entry = ResourceEntry::ExtractAndParse(*(value.get()));
+
+  if (!entry.get())
+    LOG(WARNING) << "Invalid entry received on upload.";
+
+  callback_.Run(ResumeUploadResponse(code, -1, -1), entry.Pass());
+  OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
 void ResumeUploadOperation::NotifyStartToOperationRegistry() {

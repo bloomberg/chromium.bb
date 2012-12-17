@@ -329,11 +329,11 @@ class GDataWapiOperationsTest : public testing::Test {
       return scoped_ptr<test_server::HttpResponse>();
     }
 
-    // TODO(satorux): We should create a correct entry for the uploaded file,
-    // but for now, just return entry.xml.
+    // TODO(satorux): We should create a correct JSON data for the uploaded
+    // file, but for now, just return file_entry.json.
     scoped_ptr<test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/entry.xml"));
+            test_util::GetTestFilePath("gdata/file_entry.json"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
     if (absolute_url.path() == "/upload_new_file")
@@ -893,7 +893,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false",
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full"
+            "?convert=false&v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
@@ -991,7 +992,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false",
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false"
+            "&v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
@@ -1114,7 +1116,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false",
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false"
+            "&v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
@@ -1209,7 +1212,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
   EXPECT_EQ("/feeds/upload/create-session/default/private/full/file:foo"
-            "?convert=false",
+            "?convert=false&v=3&alt=json",
             http_request_.relative_url);
   // Even though the body is empty, the content type should be set to
   // "text/plain".

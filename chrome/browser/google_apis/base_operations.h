@@ -31,6 +31,15 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
+// Callback used to pass parsed JSON from ParseJson(). If parsing error occures,
+// then the passed argument is null.
+typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
+
+// Parses JSON passed in |json| on blocking pool. Runs |callback| on the calling
+// thread when finished with either success or failure.
+// The callback must not be null.
+void ParseJson(const std::string& json, const ParseJsonCallback& callback);
+
 //======================= AuthenticatedOperationInterface ======================
 
 // An interface class for implementing an operation which requires OAuth2

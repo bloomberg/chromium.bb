@@ -565,10 +565,16 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
                                         int64 current, int64 total) OVERRIDE;
 
  private:
+  // Called when ParseJson() is completed.
+  void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
+
   const ResumeUploadCallback callback_;
   const ResumeUploadParams params_;
   bool last_chunk_completed_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<ResumeUploadOperation> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
 

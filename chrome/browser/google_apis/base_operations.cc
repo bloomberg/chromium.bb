@@ -30,17 +30,17 @@ const char kGDataVersionHeader[] = "GData-Version: 3.0";
 const int kMaxReAuthenticateAttemptsPerOperation = 1;
 
 // Parse JSON string to base::Value object.
-scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& data) {
+scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int error_code = -1;
   std::string error_message;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      data, base::JSON_PARSE_RFC, &error_code, &error_message));
+      json, base::JSON_PARSE_RFC, &error_code, &error_message));
 
   if (!value.get()) {
     LOG(ERROR) << "Error while parsing entry response: " << error_message
-               << ", code: " << error_code << ", data:\n" << data;
+               << ", code: " << error_code << ", json:\n" << json;
   }
   return value.Pass();
 }
@@ -68,6 +68,14 @@ std::string GetResponseHeadersAsString(
 }  // namespace
 
 namespace google_apis {
+
+void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ParseJsonOnBlockingPool, json),
+      callback);
+}
 
 //============================ UrlFetchOperationBase ===========================
 
@@ -289,13 +297,10 @@ void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
                                      const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool, data),
-      base::Bind(&GetDataOperation::OnDataParsed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 fetch_error_code));
+  ParseJson(data,
+            base::Bind(&GetDataOperation::OnDataParsed,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       fetch_error_code));
 }
 
 void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
