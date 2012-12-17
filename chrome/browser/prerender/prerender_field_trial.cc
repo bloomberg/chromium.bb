@@ -27,7 +27,7 @@ const char kOmniboxTrialName[] = "PrerenderFromOmnibox";
 int g_omnibox_trial_default_group_number = kint32min;
 
 const char kLocalPredictorTrialName[] = "PrerenderLocalPredictor";
-int g_local_predictor_default_group_number = kint32min;
+const char kLocalPredictorEnabledGroup[] = "Enabled";
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -141,7 +141,6 @@ void SetupPrerenderFieldTrial() {
 }  // end namespace
 
 void ConfigureOmniboxPrerender();
-void ConfigureLocalPredictor();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -198,7 +197,6 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   }
 
   ConfigureOmniboxPrerender();
-  ConfigureLocalPredictor();
 }
 
 void ConfigureOmniboxPrerender() {
@@ -247,26 +245,9 @@ bool IsOmniboxEnabled(Profile* profile) {
          group == g_omnibox_trial_default_group_number;
 }
 
-void ConfigureLocalPredictor() {
-  const FieldTrial::Probability kDivisor = 100;
-
-  FieldTrial::Probability kEnableProbability = 90;
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    kEnableProbability = 1;
-  }
-  scoped_refptr<FieldTrial> local_predictor_trial(
-      FieldTrialList::FactoryGetFieldTrial(
-          kLocalPredictorTrialName, kDivisor, "Disabled",
-          2013, 12, 31, &g_local_predictor_default_group_number));
-  local_predictor_trial->AppendGroup("Enabled", kEnableProbability);
-}
-
 bool IsLocalPredictorEnabled() {
-  const int group = FieldTrialList::FindValue(kLocalPredictorTrialName);
-  return (group != FieldTrial::kNotFinalized &&
-          group != g_omnibox_trial_default_group_number);
+  return base::FieldTrialList::FindFullName(kLocalPredictorTrialName) ==
+      kLocalPredictorEnabledGroup;
 }
 
 }  // namespace prerender
