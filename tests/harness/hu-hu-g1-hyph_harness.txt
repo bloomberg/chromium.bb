@@ -948,6 +948,10 @@
           "output": "hi-va-tás-sze-rű-en"
         }, 
         {
+          "input": "hivatkozásszerű", 
+          "output": "hi-vat-ko-zás-sze-rű"
+        }, 
+        {
           "input": "hízelkedésszámba", 
           "output": "hí-zel-ke-dés-szám-ba"
         }, 

@@ -927,6 +927,10 @@
           "output": "hivatásszerűen"
         }, 
         {
+          "input": "⠓⠊⠧⠁⠞⠅⠕⠣⠈⠎⠱⠑⠗⠾", 
+          "output": "hivatkozásszerű"
+        }, 
+        {
           "input": "⠓⠌⠣⠑⠇⠅⠑⠙⠡⠎⠱⠈⠍⠃⠁", 
           "output": "hízelkedésszámba"
         }, 
@@ -4153,6 +4157,10 @@
         {
           "input": "hivatásszerűen", 
           "output": "⠓⠊⠧⠁⠞⠈⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
+          "input": "hivatkozásszerű", 
+          "output": "⠓⠊⠧⠁⠞⠅⠕⠣⠈⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "hízelkedésszámba", 

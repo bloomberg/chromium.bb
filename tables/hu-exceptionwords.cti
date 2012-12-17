@@ -741,6 +741,7 @@ begword hamissz 125-1-134-24-234-156	For example hamisszínes word
 begword rákossz 1235-4-13-135-234-156	For example Rákosszentmihály town part name
 partword kezdéssz 13-15-126-145-16-234-156	For example bekezdésszintű word need this exception
 partword mászás 134-4-156-4-234	For example hangyamászásszerű word need this exception
+partword hivatkozássz 125-24-1236-1-2345-13-135-126-4-234-156	For example hivatkozásszerű, hivatkozásszűrés word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

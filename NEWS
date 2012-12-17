@@ -21,6 +21,8 @@ tables for Inuktitut, Korean and UEB.
    - da-gk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö,
      corrected/improved harness tests.
    - Corrections for en-GB-g2.ctb thanks to Paul Wood
+   - Corrections to the Hungarian grade 1 table thanks to Hammer
+     Attila
 
  
 * Noteworthy changes in release 2.5.1 (2012-9-24)

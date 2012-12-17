@@ -706,6 +706,9 @@ testmode: hyphenate
 hivatásszerűen
 
 testmode: hyphenate
+hivatkozásszerű
+
+testmode: hyphenate
 hízelkedésszámba
 
 testmode: hyphenate

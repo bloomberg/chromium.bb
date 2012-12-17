@@ -1150,6 +1150,11 @@ hivatásszerűen
 testmode: backtranslate
 hivatásszerűen
 
+hivatkozásszerű
+
+testmode: backtranslate
+hivatkozásszerű
+
 hízelkedésszámba
 
 testmode: backtranslate
