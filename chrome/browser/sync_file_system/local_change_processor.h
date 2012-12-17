@@ -12,7 +12,6 @@ namespace fileapi {
 class FileChange;
 class FileChangeList;
 class FileSystemURL;
-class SyncFileMetadata;
 }
 
 namespace sync_file_system {
@@ -27,15 +26,13 @@ class LocalChangeProcessor {
 
   // This is called to apply the local |change|. If the change type is
   // ADD_OR_UPDATE for a file, |local_file_path| points to a local file
-  // path that contains the latest file image whose file metadata is
-  // |local_file_metadata|.
+  // path that contains the latest file image.
   // When SYNC_STATUS_HAS_CONFLICT is returned the implementation should
   // notify the backing RemoteFileSyncService of the existence of conflict
   // (as the remote service is supposed to maintain a list of conflict files).
   virtual void ApplyLocalChange(
       const fileapi::FileChange& change,
       const FilePath& local_file_path,
-      const fileapi::SyncFileMetadata& local_file_metadata,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;
 

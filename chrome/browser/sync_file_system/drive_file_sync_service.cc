@@ -436,7 +436,6 @@ const char* DriveFileSyncService::GetServiceName() const {
 void DriveFileSyncService::ApplyLocalChange(
     const fileapi::FileChange& local_file_change,
     const FilePath& local_file_path,
-    const fileapi::SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
@@ -447,8 +446,7 @@ void DriveFileSyncService::ApplyLocalChange(
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::ApplyLocalChange,
-        AsWeakPtr(), local_file_change, local_file_path,
-        local_file_metadata, url, callback));
+        AsWeakPtr(), local_file_change, local_file_path, url, callback));
     return;
   }
 

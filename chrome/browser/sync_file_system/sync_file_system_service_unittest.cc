@@ -105,7 +105,7 @@ ACTION_P(RecordState, states) {
 
 ACTION_P(MockStatusCallback, status) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg4, status));
+      FROM_HERE, base::Bind(arg3, status));
 }
 
 ACTION_P3(MockSyncOperationCallback, status, url, operation_type) {
@@ -463,7 +463,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
   // with ADD_OR_UPDATE change for TYPE_FILE.
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           fileapi::SYNC_FILE_TYPE_FILE);
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, _, kFile, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_STATUS_OK));
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
@@ -528,7 +528,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
 
   // We might also see an activity for local sync as we're going to make
   // a local write operation on kFile.
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kFile, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kFile, _))
       .Times(AnyNumber());
 
   // This should trigger a remote sync.
