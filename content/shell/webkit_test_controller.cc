@@ -276,6 +276,11 @@ void WebKitTestController::CaptureDump() {
     return;
   captured_dump_ = true;
 
+  if (main_window_->web_contents()->GetContentsMimeType() == "text/plain") {
+    dump_as_text_ = true;
+    enable_pixel_dumping_ = false;
+  }
+
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
 
