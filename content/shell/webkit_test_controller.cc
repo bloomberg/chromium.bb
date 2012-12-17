@@ -187,6 +187,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   is_printing_ = false;
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
+  did_finish_load_ = false;
   prefs_.reset(new ShellWebPreferences);
   {
     base::AutoLock lock(lock_);
@@ -297,6 +298,7 @@ void WebKitTestController::TimeoutHandler() {
 }
 
 void WebKitTestController::OnDidFinishLoad() {
+  did_finish_load_ = true;
   if (wait_until_done_)
     return;
   CaptureDump();
@@ -375,6 +377,10 @@ void WebKitTestController::OnNotifyDone() {
   if (!wait_until_done_)
     return;
   watchdog_.Cancel();
+  if (!did_finish_load_) {
+    wait_until_done_ = false;
+    return;
+  }
   CaptureDump();
 }
 

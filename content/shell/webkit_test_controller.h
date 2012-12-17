@@ -147,6 +147,8 @@ class WebKitTestController : public base::NonThreadSafe,
   bool is_printing_;
   bool should_stay_on_page_after_handling_before_unload_;
   bool wait_until_done_;
+  bool did_finish_load_;
+
   // TODO(jochen): Once we remove layout tests from content_browsertests, make
   // this a member instead of a scoped_ptr.
   scoped_ptr<ShellWebPreferences> prefs_;
