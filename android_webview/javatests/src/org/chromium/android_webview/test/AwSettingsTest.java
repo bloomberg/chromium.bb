@@ -439,7 +439,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         protected void doEnsureSettingHasValue(String value) throws Throwable {
             loadDataSync(getData());
             assertEquals(
-                value == DEFAULT_UA ? mDefaultUa : value,
+                DEFAULT_UA.equals(value) ? mDefaultUa : value,
                 getTitleOnUiThread());
         }
 
@@ -799,7 +799,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     class AwSettingsTextZoomTestHelper extends AwSettingsTestHelper<Integer> {
-        private final int mInitialTextZoom = 100;
+        private static final int INITIAL_TEXT_ZOOM = 100;
         private final float mInitialActualFontSize;
 
         AwSettingsTextZoomTestHelper(
@@ -813,12 +813,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         @Override
         protected Integer getAlteredValue() {
-            return mInitialTextZoom * 2;
+            return INITIAL_TEXT_ZOOM * 2;
         }
 
         @Override
         protected Integer getInitialValue() {
-            return mInitialTextZoom;
+            return INITIAL_TEXT_ZOOM;
         }
 
         @Override
@@ -838,10 +838,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             // text zoom values ratio.
             final float ratiosDelta = Math.abs(
                 (actualFontSize / mInitialActualFontSize) -
-                (value / (float)mInitialTextZoom));
+                (value / (float)INITIAL_TEXT_ZOOM));
             assertTrue(
                 "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
-                value + " / " + mInitialTextZoom + ")| = " + ratiosDelta,
+                value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
                 ratiosDelta <= 0.2f);
         }
 
@@ -880,8 +880,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         AwSettingsJavaScriptPopupsTestHelper(
                 AwContents awContents,
-                TestAwContentsClient contentViewClient,
-                int index) throws Throwable {
+                TestAwContentsClient contentViewClient) throws Throwable {
             super(awContents, contentViewClient, true);
         }
 
@@ -1237,7 +1236,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
         ContentSettings settings = getContentSettingsOnUiThread(awContents);
         settings.setJavaScriptEnabled(true);
         ImagePageGenerator generator = new ImagePageGenerator(0, false);
@@ -1346,8 +1344,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 "Version/\\d+\\.\\d+( Mobile)? Safari/(\\d+)\\.(\\d+)";
         final Pattern userAgentExpr = Pattern.compile(patternString);
         Matcher patternMatcher = userAgentExpr.matcher(actualUserAgentString);
-        assertTrue(String.format("User agent string did not match expected pattern. \nExpected " +
-                        "pattern:\n%s\nActual:\n%s", patternString, actualUserAgentString),
+        assertTrue(String.format("User agent string did not match expected pattern. %nExpected " +
+                        "pattern:%n%s%nActual:%n%s", patternString, actualUserAgentString),
                         patternMatcher.find());
         // No country-language code token.
         assertEquals(null, patternMatcher.group(3));
@@ -1415,10 +1413,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final String page2 = String.format(pageTemplate, page2Title);
         settings.setUserAgentString(customUserAgentString);
         loadDataSync(
-            awContents, contentClient.getOnPageFinishedHelper(), page1, "text/html", false);
+            awContents, onPageFinishedHelper, page1, "text/html", false);
         assertEquals(page1Title + customUserAgentString, getTitleOnUiThread(awContents));
         loadDataSync(
-            awContents, contentClient.getOnPageFinishedHelper(), page2, "text/html", false);
+            awContents, onPageFinishedHelper, page2, "text/html", false);
         assertEquals(page2Title + customUserAgentString, getTitleOnUiThread(awContents));
         settings.setUserAgentString(null);
         // Must not cause any changes until the next page loading.
@@ -1990,8 +1988,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     public void testJavaScriptPopupsNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1999,8 +1997,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     public void testJavaScriptPopupsIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2008,8 +2006,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     public void testJavaScriptPopupsBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2306,7 +2304,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    class ViewPair {
+    static class ViewPair {
         private final AwContents contents0;
         private final TestAwContentsClient client0;
         private final AwContents contents1;
