@@ -147,9 +147,13 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile,
   return browser;
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 Browser* FindAnyBrowser(Profile* profile,
                         bool match_original_profiles,
-                        chrome::HostDesktopType type) {
+                        HostDesktopType type) {
   return FindBrowserWithTabbedOrAnyType(profile,
                                         type,
                                         false,
@@ -157,13 +161,9 @@ Browser* FindAnyBrowser(Profile* profile,
 }
 
 Browser* FindBrowserWithProfile(Profile* profile,
-                                chrome::HostDesktopType desktop_type) {
+                                HostDesktopType desktop_type) {
   return FindBrowserWithTabbedOrAnyType(profile, desktop_type, false, false);
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 Browser* FindBrowserWithID(SessionID::id_type desired_id) {
   for (BrowserList::const_iterator i = BrowserList::begin();

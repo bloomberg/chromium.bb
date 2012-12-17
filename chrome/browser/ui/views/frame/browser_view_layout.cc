@@ -345,7 +345,7 @@ int BrowserViewLayout::LayoutTabStripRegion() {
   views::Button* switcher_button = browser_view_->window_switcher_button_;
   if (switcher_button) {
     if (browser()->profile()->HasOffTheRecordProfile() &&
-        browser::FindBrowserWithProfile(
+        chrome::FindBrowserWithProfile(
             browser()->profile()->GetOriginalProfile(),
             browser()->host_desktop_type()) != NULL) {
       switcher_button->SetVisible(true);

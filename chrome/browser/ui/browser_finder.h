@@ -39,22 +39,21 @@ Browser* FindOrCreateTabbedBrowserDeprecated(Profile* profile);
 Browser* FindOrCreateTabbedBrowser(Profile* profile,
                                    chrome::HostDesktopType type);
 
+}  // namespace browser
+
+namespace chrome {
+
 // Finds an existing browser window of any kind.
 // |type| refers to the host desktop the returned browser should belong to.
 Browser* FindAnyBrowser(Profile* profile,
                         bool match_original_profiles,
-                        chrome::HostDesktopType type);
+                        HostDesktopType type);
 
 // Find an existing browser window with the provided profile and hosted in the
 // given desktop. Searches in the order of last activation. Only browsers that
 // have been active can be returned. Returns NULL if no such browser currently
 // exists.
-Browser* FindBrowserWithProfile(Profile* profile,
-                                chrome::HostDesktopType type);
-
-}  // namespace browser
-
-namespace chrome {
+Browser* FindBrowserWithProfile(Profile* profile, HostDesktopType type);
 
 // Find an existing browser with the provided ID. Returns NULL if no such
 // browser currently exists.

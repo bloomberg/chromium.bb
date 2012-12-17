@@ -57,7 +57,7 @@ bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
   if (startup_urls[0] != GURL(chrome::kChromeUINewTabURL))
     return false;
 
-  Browser* browser = browser::FindBrowserWithProfile(
+  Browser* browser = chrome::FindBrowserWithProfile(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   if (!browser)

@@ -54,9 +54,9 @@ bool TabCaptureCaptureFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Figure out the active WebContents and retrieve the needed ids.
-  Browser* target_browser = browser::FindAnyBrowser(profile(),
-                                                    include_incognito(),
-                                                    chrome::GetActiveDesktop());
+  Browser* target_browser = chrome::FindAnyBrowser(profile(),
+                                                   include_incognito(),
+                                                   chrome::GetActiveDesktop());
   if (!target_browser) {
     error_ = kFindingTabError;
     return false;

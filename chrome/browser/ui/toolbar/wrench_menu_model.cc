@@ -474,7 +474,7 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
     // if there isn't already a window of the requested type (incognito or not)
     // that is available.
     if (browser_->profile()->IsOffTheRecord()) {
-      if (browser::FindBrowserWithProfile(
+      if (chrome::FindBrowserWithProfile(
               browser_->profile()->GetOriginalProfile(),
               browser_->host_desktop_type()) == NULL) {
         AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);

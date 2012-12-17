@@ -652,7 +652,7 @@ void RecordLastRunAppBundlePath() {
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = browser::FindBrowserWithProfile(
+        Browser* browser = chrome::FindBrowserWithProfile(
             profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE);
         if (!browser) {
           browser = new Browser(Browser::CreateParams(profiles[i]));

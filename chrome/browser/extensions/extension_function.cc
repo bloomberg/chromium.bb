@@ -214,8 +214,8 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   if (render_view_host_) {
     Profile* profile = Profile::FromBrowserContext(
         render_view_host_->GetProcess()->GetBrowserContext());
-    Browser* browser = browser::FindAnyBrowser(profile, include_incognito_,
-                                               chrome::GetActiveDesktop());
+    Browser* browser = chrome::FindAnyBrowser(profile, include_incognito_,
+                                              chrome::GetActiveDesktop());
     if (browser)
       return browser;
   }

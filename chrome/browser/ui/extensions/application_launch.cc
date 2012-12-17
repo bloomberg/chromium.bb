@@ -115,7 +115,7 @@ WebContents* OpenApplicationWindow(
   // windows to be created. We instead attempt to reuse an existing Browser
   // window.
   if (win8::IsSingleWindowMetroMode()) {
-    browser = browser::FindBrowserWithProfile(
+    browser = chrome::FindBrowserWithProfile(
         profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
   }
 #endif
