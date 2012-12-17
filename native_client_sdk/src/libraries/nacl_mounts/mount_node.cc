@@ -69,31 +69,31 @@ int MountNode::Write(size_t offs, const void* buf, size_t count) {
   return -1;
 }
 
-int MountNode::GetLinks() const {
+int MountNode::GetLinks() {
   return stat_.st_nlink;
 }
 
-int MountNode::GetMode() const {
+int MountNode::GetMode() {
   return stat_.st_mode & ~S_IFMT;
 }
 
-size_t MountNode::GetSize() const {
+size_t MountNode::GetSize() {
   return stat_.st_size;
 }
 
-int MountNode::GetType() const {
+int MountNode::GetType() {
   return stat_.st_mode & S_IFMT;
 }
 
-bool MountNode::IsaDir() const {
+bool MountNode::IsaDir() {
   return (stat_.st_mode & S_IFDIR) != 0;
 }
 
-bool MountNode::IsaFile() const {
+bool MountNode::IsaFile() {
   return (stat_.st_mode & S_IFREG) != 0;
 }
 
-bool MountNode::IsaTTY() const {
+bool MountNode::IsaTTY() {
   return (stat_.st_mode & S_IFCHR) != 0;
 }
 

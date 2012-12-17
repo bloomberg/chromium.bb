@@ -7,6 +7,7 @@
 
 #include <ppapi/c/dev/ppb_directory_reader_dev.h>
 #include <ppapi/c/pp_completion_callback.h>
+#include <ppapi/c/pp_file_info.h>
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/pp_var.h>
@@ -22,6 +23,8 @@ class FileRefInterface;
 class FileSystemInterface;
 class MessagingInterface;
 class VarInterface;
+
+int PPErrorToErrno(int32_t err);
 
 class PepperInterface {
  public:

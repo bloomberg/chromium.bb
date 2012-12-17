@@ -48,35 +48,6 @@
     }
 
 
-#define DEFINE_VMETHOD1(Class, MethodName, Type0) \
-    void Class::MethodName(Type0 arg0) { \
-      interface_->MethodName(arg0); \
-    }
-
-#define DEFINE_VMETHOD2(Class, MethodName, Type0, Type1) \
-    void Class::MethodName(Type0 arg0, Type1 arg1) { \
-      interface_->MethodName(arg0, arg1); \
-    }
-
-#define DEFINE_VMETHOD3(Class, MethodName, Type0, Type1, Type2) \
-    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2) { \
-      interface_->MethodName(arg0, arg1, arg2); \
-    }
-
-#define DEFINE_VMETHOD4(Class, MethodName, Type0, Type1, Type2, Type3) \
-    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2, \
-                                 Type3 arg3) { \
-      interface_->MethodName(arg0, arg1, arg2, arg3); \
-    }
-
-#define DEFINE_VMETHOD5(Class, MethodName, Type0, Type1, Type2, Type3, Type4) \
-    void Class::MethodName(Type0 arg0, Type1 arg1, Type2 arg2, \
-                                 Type3 arg3, Type4 arg4) { \
-      interface_->MethodName(arg0, arg1, arg2, arg3, arg4); \
-    }
-
-
-
 class RealFileSystemInterface : public FileSystemInterface {
  public:
   explicit RealFileSystemInterface(const PPB_FileSystem* filesystem_interface);
@@ -101,7 +72,7 @@ class RealConsoleInterface : public ConsoleInterface {
   const PPB_Console* interface_;
 };
 DEFINE_CONSTRUCTOR(RealConsoleInterface, PPB_Console)
-DEFINE_VMETHOD3(RealConsoleInterface, Log, PP_Instance, PP_LogLevel,
+DEFINE_METHOD3(RealConsoleInterface, void, Log, PP_Instance, PP_LogLevel,
     struct PP_Var);
 
 
@@ -206,8 +177,8 @@ private:
   const PPB_Messaging* interface_;
 };
 DEFINE_CONSTRUCTOR(RealMessagingInterface, PPB_Messaging);
-DEFINE_VMETHOD2(RealMessagingInterface, PostMessage, PP_Instance, struct
-    PP_Var);
+DEFINE_METHOD2(RealMessagingInterface, void, PostMessage, PP_Instance,
+    struct PP_Var);
 
 
 RealPepperInterface::RealPepperInterface(PP_Instance instance,

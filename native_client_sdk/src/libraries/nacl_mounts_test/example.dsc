@@ -10,11 +10,13 @@
       'TYPE' : 'main',
       'SOURCES' : [
         'kernel_object_test.cc',
+        'kernel_proxy_mock.cc',
         'kernel_proxy_mock.h',
         'kernel_proxy_test.cc',
         'kernel_wrap_test.cc',
         'module.cc',
         'mount_node_test.cc',
+        'mount_html5fs_test.cc',
         'mount_test.cc',
         'path_test.cc',
         'pepper_interface_mock.cc',

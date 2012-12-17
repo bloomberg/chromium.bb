@@ -46,13 +46,11 @@ void GTestEventListener::OnTestPartResult(
   if (test_part_result.failed()) {
     std::stringstream msg;
     msg << "::test_failed::";
-    msg << test_part_result.file_name();
+    if (test_part_result.file_name())
+      msg << test_part_result.file_name();
+    else
+      msg << "<unknown filename>";
     msg << "::" << test_part_result.line_number() << "::";
-    msg << test_part_result.summary();
-    MyPostMessage(msg.str());
-
-    msg.str("");
-    msg << "::failure_log::";
     msg << test_part_result.summary();
     MyPostMessage(msg.str());
   }

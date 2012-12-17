@@ -3,12 +3,20 @@
  * found in the LICENSE file.
  */
 
+#ifndef LIBRARIES_NACL_MOUNTS_TEST_KERNEL_PROXY_MOCK_H_
+#define LIBRARIES_NACL_MOUNTS_TEST_KERNEL_PROXY_MOCK_H_
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "gmock/gmock.h"
 
+#include "nacl_mounts/kernel_proxy.h"
+
 class KernelProxyMock : public KernelProxy {
  public:
+  KernelProxyMock();
+  virtual ~KernelProxyMock();
+
   MOCK_METHOD2(access, int(const char*, int));
   MOCK_METHOD1(chdir, int(const char*));
   MOCK_METHOD2(chmod, int(const char*, mode_t));
@@ -33,3 +41,5 @@ class KernelProxyMock : public KernelProxy {
   MOCK_METHOD1(unlink, int(const char*));
   MOCK_METHOD3(write, ssize_t(int, const void*, size_t));
 };
+
+#endif  // LIBRARIES_NACL_MOUNTS_TEST_KERNEL_PROXY_MOCK_H_

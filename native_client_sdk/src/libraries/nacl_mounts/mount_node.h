@@ -35,13 +35,13 @@ public:
   virtual int Truncate(size_t size);
   virtual int Write(size_t offs, const void* buf, size_t count);
 
-  virtual int GetLinks() const;
-  virtual int GetMode() const;
-  virtual int GetType() const;
-  virtual size_t GetSize() const;
-  virtual bool IsaDir() const;
-  virtual bool IsaFile() const;
-  virtual bool IsaTTY() const;
+  virtual int GetLinks();
+  virtual int GetMode();
+  virtual int GetType();
+  virtual size_t GetSize();
+  virtual bool IsaDir();
+  virtual bool IsaFile();
+  virtual bool IsaTTY();
 
 protected:
   // Directory operations on the node are done by the Mount. The mount's lock
@@ -63,8 +63,9 @@ protected:
   struct stat stat_;
   Mount* mount_;
 
-  friend class MountMem;
   friend class MountDev;
+  friend class MountHtml5Fs;
+  friend class MountMem;
   friend class MountNodeDir;
 };
 

@@ -5,6 +5,7 @@
 #include "nacl_mounts/kernel_intercept.h"
 #include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/pepper_interface.h"
+#include "nacl_mounts/pepper_interface.h"
 #include "nacl_mounts/real_pepper_interface.h"
 #include "utils/macros.h"
 
