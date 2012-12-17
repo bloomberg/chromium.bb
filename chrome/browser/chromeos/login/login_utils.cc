@@ -79,6 +79,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
@@ -829,6 +830,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableOobeAnimation,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
+      ::switches::kEnableAcceleratedOverflowScroll,
       ::switches::kEnableChromebookFunctionKey,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableEncryptedMedia,
