@@ -13,6 +13,8 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
+  , Binary2RegisterBitRangeMsbGeLsb_instance_()
+  , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
   , Binary2RegisterImmedShiftedTest_instance_()
   , Binary2RegisterImmediateOp_instance_()
   , Binary2RegisterImmediateOpAddSub_instance_()
@@ -36,12 +38,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
   , DataBarrier_instance_()
-  , Defs12To15CondsDontCareMsbGeLsb_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
-  , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
-  , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
-  , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
   , DontCareInstRdNotPc_instance_()
@@ -1044,13 +1042,13 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   if ((inst.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20)=11000 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=~1111 */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOp_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20)=11000 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* Rd(15:12)=1111 */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltA_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20)=11111 */ &&
@@ -1061,7 +1059,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0)=~1111 */) {
-    return Defs12To15CondsDontCareMsbGeLsb_instance_;
+    return Binary2RegisterBitRangeMsbGeLsb_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */ &&
@@ -1072,7 +1070,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
 
   if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20)=11x1x */ &&
       (inst.Bits() & 0x00000060) == 0x00000040 /* op2(7:5)=x10 */) {
-    return Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
+    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_;
   }
 
   if ((inst.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20)=000xx */) {

@@ -1329,52 +1329,80 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 # TODO(jfb) Should we mark them as unreachable?
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- media_instructions (See Section A5.4)
+*RdRnRm
+  { cond(31:28), Rd(19:16), Rm(11:8), Rn(3:0) }
+  baseline := Binary3RegisterOpAltA;
+  defs := {Rd};
+  uses := {Rn, Rm};
+  safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+*RdRnRmRa
+  { cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0) }
+  baseline := Binary4RegisterDualOp;
+  defs := {Rd};
+  uses := {Rn, Rm, Ra};
+  safety := Ra == Pc => DECODER_ERROR &
+            Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+*RdRnLsbMsb
+  { cond(31:28), msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0) }
+  baseline := Binary2RegisterBitRangeMsbGeLsb;
+  defs := {Rd};
+  uses := {Rn, Rd};
+  safety := Rn == Pc => DECODER_ERROR &
+            Rd == Pc => UNPREDICTABLE &
+            msb < lsb => UNPREDICTABLE;
+*RdRnLsbWidth
+  { cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0) }
+  baseline := Binary2RegisterBitRangeNotRnIsPcBitfieldExtract;
+  defs := {Rd};
+  uses := {Rn};
+  safety := Pc in {Rd, Rn} => UNPREDICTABLE &
+            lsb + widthm1 > 31 => UNPREDICTABLE;
+*RdLsbWidth
+  { cond(31:28), msb(20:16), Rd(15:12), lsb(11:7) }
+  baseline := Unary1RegisterBitRangeMsbGeLsb;
+  defs := {Rd};
+  uses := {Rd};
+  safety := Rd == Pc => UNPREDICTABLE &
+            msb < lsb => UNPREDICTABLE;
++--
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
 | 000xx      -        -         -     ->parallel_addition_and_subtraction_signed
 | 001xx      -        -         -     ->parallel_addition_and_subtraction_unsigned
 | 01xxx      -        -         -     ->packing_unpacking_saturation_and_reversal
 | 10xxx      -        -         -     ->signed_multiply_signed_and_unsigned_divide
-| 11000      000      1111      -     = Binary3RegisterOpAltA
-                                        => Defs16To19CondsDontCareRdRmRnNotPc
-                                        Usad8_Rule_253_A1_P500
-                                        cccc01111000dddd1111mmmm0001nnnn
-                                        RegsNotPc (v6)
-| "          "        ~1111     -     = Binary4RegisterDualOp
-                                        => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                        Usada8_Rule_254_A1_P502
-                                        cccc01111000ddddaaaammmm0001nnnn
-                                        # Note: In baseline class, bits(15:12)
-                                        # is Ra (not Rd as column name
-                                        # suggests).
-                                        RegsNotPc (v6)
-| 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
-                                        => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract
-                                        Sbfx_Rule_154_A1_P308
-                                        cccc0111101wwwwwddddlllll101nnnn
-                                        RegsNotPc (v6T2)
-| 1110x      x00      -         1111  = Unary1RegisterBitRangeMsbGeLsb
-                                        Bfc_17_A1_P46
-                                        cccc0111110mmmmmddddlllll0011111
-                                        RegsNotPc (v6T2)
-| "          "        -         ~1111 = Binary2RegisterBitRangeMsbGeLsb
-                                        => Defs12To15CondsDontCareMsbGeLsb
-                                        Bfi_Rule_18_A1_P48
-                                        cccc0111110mmmmmddddlllll001nnnn
-                                        RegsNotPc (v6T2)
-| 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
-                                        => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract
-                                        Ubfx_Rule_236_A1_P466
-                                        cccc0111111mmmmmddddlllll101nnnn
-                                        RegsNotPc (v6T2)
-| 11111      111      -         -     = PermanentlyUndefined
-                                        # Note: the UDF mnemonic only applies
-                                        #   when cond == 0b1110, but all
-                                        #   encodings are permanently undefined.
-                                        Udf_Rule_A1
-                                        cccc01111111iiiiiiiiiiii1111iiii
-| else:                               = Undefined  # Note on page A5-21
+| 11000      000      1111      -
+                      = *RdRnRm
+                        pattern := cccc01111000dddd1111mmmm0001nnnn;
+                        rule := USAD8;  arch := v6;
+| "          "        ~1111     -
+                      = *RdRnRmRa
+                        pattern := cccc01111000ddddaaaammmm0001nnnn;
+                        rule := USADA8;  arch := v6;
+| 1101x      x10      -         -
+                      = *RdRnLsbWidth
+                        pattern := cccc0111101wwwwwddddlllll101nnnn;
+                        rule := SBFX;  arch := v6T2;
+| 1110x      x00      -         1111
+                      = *RdLsbWidth
+                        pattern := cccc0111110mmmmmddddlllll0011111;
+                        rule := BFC;  arch := v6T2;
+| "          "        -         ~1111
+                      = *RdRnLsbMsb
+                        pattern := cccc0111110mmmmmddddlllll001nnnn;
+                        rule := BFI; arch := v6T2;
+| 1111x      x10      -         -
+                      = *RdRnLsbWidth
+                        pattern := cccc0111111mmmmmddddlllll101nnnn;
+                        rule := UBFX;  arch := v6T2;
+| 11111      111      -         -
+                      = baseline := PermanentlyUndefined;
+                        pattern := cccc01111111iiiiiiiiiiii1111iiii;
+                        # Note: the UDF mnemonic only applies
+                        #   when cond == 0b1110, but all
+                        #   encodings are permanently undefined.
+                        rule := UDF;
+| else:               = Undefined  # Note on table a5.4
 +--
 
 # TODO(karl): Add uses to corresponding classes.

@@ -1340,40 +1340,40 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
   if ((inst.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20)=11000 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=~1111 */) {
-    return Binary4RegisterDualOp_Usada8_Rule_254_A1_P502_instance_;
+    return Binary4RegisterDualOp_USADA8_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20)=11000 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* Rd(15:12)=1111 */) {
-    return Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500_instance_;
+    return Binary3RegisterOpAltA_USAD8_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20)=11111 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */) {
-    return PermanentlyUndefined_Udf_Rule_A1_instance_;
+    return PermanentlyUndefined_UDF_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000040 /* op2(7:5)=x10 */) {
-    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_Sbfx_Rule_154_A1_P308_instance_;
+    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_SBFX_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0)=~1111 */) {
-    return Binary2RegisterBitRangeMsbGeLsb_Bfi_Rule_18_A1_P48_instance_;
+    return Binary2RegisterBitRangeMsbGeLsb_BFI_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0)=1111 */) {
-    return Unary1RegisterBitRangeMsbGeLsb_Bfc_17_A1_P46_instance_;
+    return Unary1RegisterBitRangeMsbGeLsb_BFC_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
       (inst.Bits() & 0x00000060) == 0x00000040 /* op2(7:5)=x10 */) {
-    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_Ubfx_Rule_236_A1_P466_instance_;
+    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_UBFX_instance_;
   }
 
   if ((inst.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20)=000xx */) {

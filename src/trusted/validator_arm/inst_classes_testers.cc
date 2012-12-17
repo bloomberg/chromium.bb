@@ -413,13 +413,13 @@ ApplySanityChecks(Instruction inst,
   return Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
 }
 
-// Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc
-Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc::
-Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc(
+// Unary1RegisterBitRangeMsbGeLsbTester
+Unary1RegisterBitRangeMsbGeLsbTester::
+Unary1RegisterBitRangeMsbGeLsbTester(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc::
+bool Unary1RegisterBitRangeMsbGeLsbTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -439,13 +439,13 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc
-Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc::
-Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc(
+// Binary2RegisterBitRangeMsbGeLsbTester
+Binary2RegisterBitRangeMsbGeLsbTester::
+Binary2RegisterBitRangeMsbGeLsbTester(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc::
+bool Binary2RegisterBitRangeMsbGeLsbTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -468,13 +468,13 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
-Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
-Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(
+// Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester
+Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
+Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
+bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));

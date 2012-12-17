@@ -778,19 +778,4 @@ RegisterList Unary1RegisterUse::uses(const Instruction i) const {
   return RegisterList(n.reg(i));
 }
 
-// Unary1RegisterBitRangeMsbGeLsb
-SafetyLevel Unary1RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
-  if (d.reg(i).Equals(Register::Pc()) ||
-      msb.value(i) < lsb.value(i))
-    return UNPREDICTABLE;
-
-  // Note: We would restrict out PC as well for Rd in NaCl, but no need
-  // since the ARM restriction doesn't allow it anyway.
-  return MAY_BE_SAFE;
-}
-
-RegisterList Unary1RegisterBitRangeMsbGeLsb::defs(Instruction i) const {
-  return RegisterList(d.reg(i));
-}
-
 }  // namespace nacl_arm_dec

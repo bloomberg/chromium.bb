@@ -145,6 +145,8 @@ class Arm32DecoderState : DecoderState {
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
+  const Binary2RegisterBitRangeMsbGeLsb Binary2RegisterBitRangeMsbGeLsb_instance_;
+  const Binary2RegisterBitRangeNotRnIsPcBitfieldExtract Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_;
   const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
   const Binary2RegisterImmediateOpAddSub Binary2RegisterImmediateOpAddSub_instance_;
@@ -168,12 +170,8 @@ class Arm32DecoderState : DecoderState {
   const BranchToRegister BranchToRegister_instance_;
   const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
   const DataBarrier DataBarrier_instance_;
-  const Defs12To15CondsDontCareMsbGeLsb Defs12To15CondsDontCareMsbGeLsb_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
-  const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
-  const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
-  const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
   const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;

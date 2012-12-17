@@ -442,9 +442,9 @@ class Unary1RegisterImmediateOpTesterNotRdIsPcAndS
 // If Rd is R15 or msb < lsb, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
 // Note: Currently, only implements bfc. (A8-46).
-class Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc : public CondDecoderTester {
+class Unary1RegisterBitRangeMsbGeLsbTester : public CondDecoderTester {
  public:
-  explicit Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc(
+  explicit Unary1RegisterBitRangeMsbGeLsbTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
@@ -453,7 +453,7 @@ class Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc : public CondDecoderTester {
   nacl_arm_dec::Unary1RegisterBitRangeMsbGeLsb expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsbTester);
 };
 
 // Models a 2-register binary operation with two immediate values
@@ -473,10 +473,10 @@ class Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc : public CondDecoderTester {
 // If Rd=R15 or msb < lsb, the instruction is unpredictable.
 //
 // NaCl disallows writing Pc to cause a jump.
-class Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc
+class Binary2RegisterBitRangeMsbGeLsbTester
     : public CondDecoderTester {
  public:
-  explicit Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc(
+  explicit Binary2RegisterBitRangeMsbGeLsbTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
@@ -486,14 +486,14 @@ class Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc);
+      Binary2RegisterBitRangeMsbGeLsbTester);
 };
 
-// Implements a Binary2RegisterBitRangeNotRnIsPcBitfieldExtract tester.
-class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
+// Implements a Binary2RegisterBitRangeNotRnIsPcBitfieldExtracttester.
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester
     : public CondDecoderTester {
  public:
-  explicit Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(
+  explicit Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
@@ -504,7 +504,7 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc);
+      Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester);
 };
 
 // Implements a decoder tester for decoder BinaryRegisterImmediateTest

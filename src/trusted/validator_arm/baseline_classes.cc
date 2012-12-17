@@ -188,6 +188,25 @@ RegisterList Unary1RegisterImmediateOpPc::uses(Instruction i) const {
   return RegisterList(Register::Pc());
 }
 
+// Unary1RegisterBitRangeMsbGeLsb
+SafetyLevel Unary1RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
+  if (d.reg(i).Equals(Register::Pc()) ||
+      msb.value(i) < lsb.value(i))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterBitRangeMsbGeLsb::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+RegisterList Unary1RegisterBitRangeMsbGeLsb::uses(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Binary2RegisterBitRangeMsbGeLsb
 SafetyLevel Binary2RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
   return (d.reg(i).Equals(Register::Pc()) ||
@@ -198,6 +217,10 @@ SafetyLevel Binary2RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
 
 RegisterList Binary2RegisterBitRangeMsbGeLsb::defs(Instruction i) const {
   return RegisterList(d.reg(i));
+}
+
+RegisterList Binary2RegisterBitRangeMsbGeLsb::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(d.reg(i));
 }
 
 // Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
@@ -212,6 +235,11 @@ SafetyLevel Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
 RegisterList Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
 ::defs(Instruction i) const {
   return RegisterList(d.reg(i));
+}
+
+RegisterList Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 // Binary2RegisterImmediateOp
@@ -347,6 +375,8 @@ SafetyLevel Binary3RegisterOpAltA::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
+  // TODO(karl): This doesn't apply to all uses in rows in armv7.table.
+  // However, it doesn't really matter since we only accept version 7.
   if ((ArchVersion() < 6) && m.reg(i).Equals(n.reg(i))) return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need

@@ -1103,40 +1103,6 @@ class Unary1RegisterUse : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUse);
 };
 
-// Models a 1-register unary operation with two immediate 5 values
-// defining a bit range.
-// Op<c> Rd, #lsb, #width
-// +--------+--------------+----------+--------+----------+--------------+
-// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4 3 2 1 0|
-// +--------+--------------+----------+--------+----------+--------------+
-// |  cond  |              |    msb   |   Rd   |   lsb    |              |
-// +--------+--------------+----------+--------+----------+--------------+
-// Definitions
-//    Rd = The destination register.
-//    lsb = The least significant bit to be modified.
-//    msb = lsb + width - 1 - The most significant bit to be modified
-//    width = msb - lsb + 1 - The number of bits to be modified.
-//
-// If Rd is R15 or msbit < lsbit, the instruction is unpredictable.
-// NaCl disallows writing to PC to cause a jump.
-// Note: Currently, only implements bfc.
-class Unary1RegisterBitRangeMsbGeLsb : public ClassDecoder {
- public:
-  // Interface for components of the instruction.
-  static const Imm5Bits7To11Interface lsb;
-  static const RegBits12To15Interface d;
-  static const Imm5Bits16To20Interface msb;
-  static const ConditionBits28To31Interface cond;
-
-  // Methods for class.
-  Unary1RegisterBitRangeMsbGeLsb() : ClassDecoder() {}
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsb);
-};
-
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_ACTUAL_CLASSES_H_
