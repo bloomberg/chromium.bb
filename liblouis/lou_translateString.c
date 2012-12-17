@@ -1825,6 +1825,8 @@ translateString (void)
 	switch (transOpcode)
 	  {
 	  case CTO_Context:
+	    if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	      appliedRules[appliedRulesCount++] = transRule;
 	    if (!passDoAction ())
 	      goto failure;
 	    if (endReplace == src)

@@ -3,6 +3,8 @@
 	* liblouis/lou_translateString.c (checkMultCaps):
 	(noCompbrlAhead): Fix the valgrind warnings properly without
 	adding a regression.
+	(translateString): Make sure appliedRules are also updated for the
+	context opcode.
 
 2012-12-17  Hammer Attila <hammera@pickup.hu>
 
