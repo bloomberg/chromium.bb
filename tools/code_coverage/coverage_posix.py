@@ -125,112 +125,68 @@ gChildPIDs = []
      ProcessUtilTest.SpawnChild: chokes in __gcov_fork on 10.6
      IPCFuzzingTest.MsgBadPayloadArgs: ditto
      PanelBrowserNavigatorTest.NavigateFromCrashedPanel: Fails on coverage bot.
-
-     Excluding these tests for now. Tests will be enabled once it runs
-     fine on local machine:
-     EncodingAliases*.*
-     NewStackCloudPolicyTest*.*
-     DeviceManagementServiceIntegrationTestInstance*.*
-     RestoreOnStartupPolicyTestInstance*.*
-     PolicyPrefsTestInstance*.*
-
-     Test fails on buildbot running on local machine:
-     SandboxStatusUITest.testSUIDSandboxEnabled
-     NewTabUIBrowserTest.LoadNTPInExistingProcess
-     WebIntentPickerControllerBrowserTest.ExtensionInstallSuccess
-     WebIntentPickerControllerBrowserTest.ExtensionInstallSuccessInline
-     WebIntentPickerControllerBrowserTest.WebstoreInstallerLifetime
-     WebIntentPickerControllerBrowserTest.ExplicitIntentTest
-     BrowserNavigatorTest.NavigateFromNTPToOptionsPageInSameTab
-     BrowserTest.PageLanguageDetection
-     SSLUITest.TestHTTPSExpiredCertAndProceed
-     SSLUITest.TestConnectToBadPort
-     SessionRestoreTest.PersistAndRestoreUserAgentOverride
-
-     Fails with timeout (45000 ms) exceeded error. crbug.com/143248:
-     WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib
-     WebGLConformanceTests.conformance_attribs_gl_disabled_vertex_attrib
-     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib_zero_issues
-     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib
-     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer_offsets
-     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer
-
-     After disabling WebGLConformanceTests specified above, this test
-     fails when run on local machine:
-     WebGLConformanceTests.conformance_buffers_buffer_bind_test
-     WebGLConformanceTests.conformance_buffers_buffer_data_array_buffer
-     WebGLConformanceTests.conformance_buffers_index_validation_copies_indices
+     WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib: Fails
+     with timeout (45000 ms) exceeded error. crbug.com/143248
+     WebGLConformanceTests.conformance_attribs_gl_disabled_vertex_attrib:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib_zero_issues:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib: ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer_offsets:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer: ditto.
+     WebGLConformanceTests.conformance_buffers_buffer_bind_test: After
+     disabling WebGLConformanceTests specified above, this test fails when run
+     on local machine.
+     WebGLConformanceTests.conformance_buffers_buffer_data_array_buffer: ditto.
+     WebGLConformanceTests.conformance_buffers_index_validation_copies_indices:
+     ditto.
      WebGLConformanceTests.
-     conformance_buffers_index_validation_crash_with_buffer_sub_data
+     conformance_buffers_index_validation_crash_with_buffer_sub_data: ditto.
      WebGLConformanceTests.
-     conformance_buffers_index_validation_verifies_too_many_indices
+     conformance_buffers_index_validation_verifies_too_many_indices: ditto.
      WebGLConformanceTests.
-     conformance_buffers_index_validation_with_resized_buffer
-     WebGLConformanceTests.conformance_canvas_buffer_offscreen_test
-     WebGLConformanceTests.conformance_canvas_buffer_preserve_test
-     WebGLConformanceTests.conformance_canvas_canvas_test
-     WebGLConformanceTests.conformance_canvas_canvas_zero_size
+     conformance_buffers_index_validation_with_resized_buffer: ditto.
+     WebGLConformanceTests.conformance_canvas_buffer_offscreen_test: ditto.
+     WebGLConformanceTests.conformance_canvas_buffer_preserve_test: ditto.
+     WebGLConformanceTests.conformance_canvas_canvas_test: ditto.
+     WebGLConformanceTests.conformance_canvas_canvas_zero_size: ditto.
      WebGLConformanceTests.
-     conformance_canvas_drawingbuffer_static_canvas_test
-     WebGLConformanceTests.conformance_canvas_drawingbuffer_test
-
+     conformance_canvas_drawingbuffer_static_canvas_test: ditto.
+     WebGLConformanceTests.conformance_canvas_drawingbuffer_test: ditto.
      PageCycler*.*: Fails on coverage bot with "Missing test directory
      /....../slave/coverage-dbg-linux/build/src/data/page_cycler/moz" error.
-
-     Fails with "FATAL:chrome_content_browser_client.cc(893)] Check failed
-     command_line->HasSwitch(switches::kEnableStatsTable).":
-     *FrameRateCompositingTest.*
-     *FrameRateNoVsyncCanvasInternalTest.*
-     *FrameRateGpuCanvasInternalTest.*
-
+     *FrameRateCompositingTest.*: Fails with
+     "FATAL:chrome_content_browser_client.cc(893)] Check failed:
+     command_line->HasSwitch(switches::kEnableStatsTable)."
+     *FrameRateNoVsyncCanvasInternalTest.*: ditto.
+     *FrameRateGpuCanvasInternalTest.*: ditto.
      IndexedDBTest.Perf: Fails with 'Timeout reached in WaitUntilCookieValue'
      error.
      TwoClientPasswordsSyncTest.DeleteAll: Fails on coverage bot.
-
-     Fails with timeout (45000 ms) exceeded error:
-     MigrationTwoClientTest.MigrationHellWithoutNigori
-     TwoClientSessionsSyncTest.DeleteActiveSession
-     MultipleClientSessionsSyncTest.EncryptedAndChanged
-     MigrationSingleClientTest.AllTypesIndividuallyTriggerNotification
-
-     crbug.com/143247:
-     *OldPanelResizeBrowserTest.*
-     *OldPanelDragBrowserTest.*
-     *OldPanelBrowserTest.*
-     *OldPanelAndDesktopNotificationTest.*
-     *OldDockedPanelBrowserTest.*
-     *OldDetachedPanelBrowserTest.*
-     PanelDragBrowserTest.AttachWithSqueeze
-     *PanelBrowserTest.*
-     *DockedPanelBrowserTest.*
-     *DetachedPanelBrowserTest.*
-
-     crbug.com/143419:
-     AutomatedUITest.TheOneAndOnlyTest
-     AutomatedUITestBase.DragOut
+     MigrationTwoClientTest.MigrationHellWithoutNigori: Fails with timeout
+     (45000 ms) exceeded error.
+     TwoClientSessionsSyncTest.DeleteActiveSession: ditto.
+     MultipleClientSessionsSyncTest.EncryptedAndChanged: ditto.
+     MigrationSingleClientTest.AllTypesIndividuallyTriggerNotification: ditto.
+     *OldPanelResizeBrowserTest.*: crbug.com/143247
+     *OldPanelDragBrowserTest.*: ditto.
+     *OldPanelBrowserTest.*: ditto.
+     *OldPanelAndDesktopNotificationTest.*: ditto.
+     *OldDockedPanelBrowserTest.*: ditto.
+     *OldDetachedPanelBrowserTest.*: ditto.
+     PanelDragBrowserTest.AttachWithSqueeze: ditto.
+     *PanelBrowserTest.*: ditto.
+     *DockedPanelBrowserTest.*: ditto.
+     *DetachedPanelBrowserTest.*: ditto.
+     AutomatedUITest.TheOneAndOnlyTest: crbug.com/143419
+     AutomatedUITestBase.DragOut: ditto
 
 """
 gTestExclusions = {
   'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
                'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), },
   'linux2': {
-    'browser_tests':
-        ('EncodingAliases*.*',
-         'NewStackCloudPolicyTest*.*',
-         'DeviceManagementServiceIntegrationTestInstance*.*',
-         'RestoreOnStartupPolicyTestInstance*.*',
-         'PolicyPrefsTestInstance*.*',
-         'SandboxStatusUITest.testSUIDSandboxEnabled',
-         'NewTabUIBrowserTest.LoadNTPInExistingProcess',
-         'WebIntentPickerControllerBrowserTest.ExtensionInstallSuccess',
-         'WebIntentPickerControllerBrowserTest.ExtensionInstallSuccessInline',
-         'WebIntentPickerControllerBrowserTest.WebstoreInstallerLifetime',
-         'WebIntentPickerControllerBrowserTest.ExplicitIntentTest',
-         'BrowserNavigatorTest.NavigateFromNTPToOptionsPageInSameTab',
-         'BrowserTest.PageLanguageDetection',
-         'SSLUITest.TestHTTPSExpiredCertAndProceed',
-         'SSLUITest.TestConnectToBadPort',
-         'SessionRestoreTest.PersistAndRestoreUserAgentOverride',),
     'gpu_tests':
         ('WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib',
          'WebGLConformanceTests.'
@@ -288,8 +244,119 @@ gTestExclusions = {
          'AutomatedUITestBase.DragOut',), },
 }
 
-""" Inclusion list """
-gTestInclusions = {}
+"""Since random tests are failing/hanging on coverage bot, we are enabling
+   tests feature by feature. crbug.com/159748
+"""
+gTestInclusions = {
+  'linux2': {
+    'browser_tests':
+        (# 'src/chrome/browser/downloads'
+         'SavePageBrowserTest.*',
+         'SavePageAsMHTMLBrowserTest.*',
+         'DownloadQueryTest.*',
+         'DownloadDangerPromptTest.*',
+         'DownloadTest.*',
+         # 'src/chrome/browser/net'
+         'CookiePolicyBrowserTest.*',
+         'FtpBrowserTest.*',
+         'LoadTimingObserverTest.*',
+         'PredictorBrowserTest.*',
+         'ProxyBrowserTest.*',
+         # 'src/chrome/browser/extensions'
+         'Extension*.*',
+         'WindowOpenPanelDisabledTest.*',
+         'WindowOpenPanelTest.*',
+         'WebstoreStandalone*.*',
+         'CommandLineWebstoreInstall.*',
+         'WebViewTest.*',
+         'RequirementsCheckerBrowserTest.*',
+         'ProcessManagementTest.*',
+         'PlatformAppBrowserTest.*',
+         'PlatformAppDevToolsBrowserTest.*',
+         'LazyBackgroundPageApiTest.*',
+         'IsolatedAppTest.*',
+         'PanelMessagingTest.*',
+         'GeolocationApiTest.*',
+         'ClipboardApiTest.*',
+         'ExecuteScriptApiTest.*',
+         'CalculatorBrowserTest.*',
+         'ChromeAppAPITest.*',
+         'AppApiTest.*',
+         'BlockedAppApiTest.*',
+         'AppNotificationTest.*',
+         'AppBackgroundPageApiTest.*',
+         'WebNavigationApiTest.*',
+         'UsbApiTest.*',
+         'TabCaptureApiTest.*',
+         'SystemInfo*.*',
+         'SyncFileSystemApiTest.*',
+         'SocketApiTest.*',
+         'SerialApiTest.*',
+         'RecordApiTest.*',
+         'PushMessagingApiTest.*',
+         'ProxySettingsApiTest.*',
+         'ExperimentalApiTest.*',
+         'OmniboxApiTest.*',
+         'OffscreenTabsApiTest.*',
+         'NotificationApiTest.*',
+         'MediaGalleriesPrivateApiTest.*',
+         'PlatformAppMediaGalleriesBrowserTest.*',
+         'ExperimentalMediaGalleriesApiTest.*',
+         'GetAuthTokenFunctionTest.*',
+         'LaunchWebAuthFlowFunctionTest.*',
+         'FileSystemApiTest.*',
+         'ScriptBadgeApiTest.*',
+         'PageAsBrowserActionApiTest.*',
+         'PageActionApiTest.*',
+         'BrowserActionApiTest.*',
+         'DownloadExtensionTest.*',
+         'DnsApiTest.*',
+         'DeclarativeApiTest.*',
+         'BluetoothApiTest.*',
+         'AllUrlsApiTest.*',
+         # 'src/chrome/browser/nacl_host'
+         'nacl_host.*',
+         # 'src/chrome/browser/automation'
+         'AutomationMiscBrowserTest.*',
+         'AutomationTabHelperBrowserTest.*',
+         # 'src/chrome/browser/autofill'
+         'FormStructureBrowserTest.*',
+         'AutofillPopupViewBrowserTest.*',
+         'AutofillTest.*',
+         # 'src/chrome/browser/autocomplete'
+         'AutocompleteBrowserTest.*',
+         # 'src/chrome/browser/captive_portal'
+         'CaptivePortalBrowserTest.*',
+         # 'src/chrome/browser/geolocation'
+         'GeolocationAccessTokenStoreTest.*',
+         'GeolocationBrowserTest.*',
+         # 'src/chrome/browser/nacl_host'
+         'NaClGdbTest.*',
+         # 'src/chrome/browser/debugger'
+         'DevToolsSanityTest.*',
+         'DevToolsExtensionTest.*',
+         'DevToolsExperimentalExtensionTest.*',
+         'WorkerDevToolsSanityTest.*',
+         # 'src/chrome/browser/first_run'
+         'FirstRunBrowserTest.*',
+         # 'src/chrome/browser/importer'
+         'ToolbarImporterUtilsTest.*',
+         # 'src/chrome/browser/page_cycler'
+         'PageCyclerBrowserTest.*',
+         'PageCyclerCachedBrowserTest.*',
+         # 'src/chrome/browser/performance_monitor'
+         'PerformanceMonitorBrowserTest.*',
+         'PerformanceMonitorUncleanExitBrowserTest.*',
+         'PerformanceMonitorSessionRestoreBrowserTest.*',
+         # 'src/chrome/browser/prerender'
+         'PrerenderBrowserTest.*',
+         'PrerenderBrowserTestWithNaCl.*',
+         'PrerenderBrowserTestWithExtensions.*',
+         'PrefetchBrowserTest.*',
+         'PrefetchBrowserTestNoPrefetching.*', ),
+  },
+}
+
 
 def TerminateSignalHandler(sig, stack):
   """When killed, try and kill our child processes."""
