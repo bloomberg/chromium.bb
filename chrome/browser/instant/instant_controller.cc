@@ -503,9 +503,15 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     if (!google_util::IsInstantExtendedAPIGoogleSearchUrl(url) &&
         google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                        google_util::ALLOW_NON_STANDARD_PORTS)) {
+      // Hitting ENTER searches for what the user typed, so use
+      // last_omnibox_text_. Clicking on the overlay commits what is currently
+      // showing, so add in the gray text in that case.
+      std::string query(UTF16ToUTF8(last_omnibox_text_));
+      if (type != INSTANT_COMMIT_PRESSED_ENTER)
+        query += UTF16ToUTF8(last_suggestion_.text);
       entry->SetVirtualURL(GURL(
           url + "#q=" +
-          net::EscapeQueryParamValue(UTF16ToUTF8(last_omnibox_text_), true)));
+          net::EscapeQueryParamValue(query, true)));
       chrome::search::SearchTabHelper::FromWebContents(preview)->
           NavigationEntryUpdated();
     }
@@ -684,10 +690,6 @@ void InstantController::SetSuggestions(
     const std::vector<InstantSuggestion>& suggestions) {
   DVLOG(1) << "SetSuggestions";
 
-  // Ignore if we are not currently accepting search suggestions.
-  if (!search_mode_.is_search_suggestions() || last_omnibox_text_.empty())
-    return;
-
   // Ignore if the message is from an unexpected source.
   if (instant_tab_) {
     if (instant_tab_->contents() != contents)
@@ -700,6 +702,20 @@ void InstantController::SetSuggestions(
   InstantSuggestion suggestion;
   if (!suggestions.empty())
     suggestion = suggestions[0];
+
+  if (instant_tab_ && search_mode_.is_search_results() &&
+      suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
+    // This means a committed page in state search called setValue(). We should
+    // update the omnibox to reflect what the search page says.
+    browser_->SetInstantSuggestion(suggestion);
+    // Don't update last_omnibox_text_ or last_suggestion_ since the user is not
+    // currently editing text in the omnibox.
+    return;
+  }
+
+  // Ignore if we are not currently accepting search suggestions.
+  if (!search_mode_.is_search_suggestions() || last_omnibox_text_.empty())
+    return;
 
   if (suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
     // We don't get an Update() when changing the omnibox due to a REPLACE
