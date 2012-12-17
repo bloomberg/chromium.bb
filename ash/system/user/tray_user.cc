@@ -522,7 +522,8 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   details->AddChildView(username);
 
   views::Label* email = new views::Label(UTF8ToUTF16(delegate->GetUserEmail()));
-  email->SetFont(username->font().DeriveFont(-1));
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  email->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
   email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   email->SetEnabled(false);
   details->AddChildView(email);

@@ -28,7 +28,8 @@ namespace {
 views::Label* CreateInfoBubbleLabel(const string16& text) {
   const SkColor text_color = SkColorSetARGB(127, 0, 0, 0);
   views::Label* label = new views::Label(text);
-  label->SetFont(label->font().DeriveFont(-1));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  label->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
   label->SetEnabledColor(text_color);
   return label;
 }

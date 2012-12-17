@@ -690,8 +690,8 @@ void SpecialPopupRow::Layout() {
 }
 
 void SetupLabelForTray(views::Label* label) {
-  label->SetFont(
-      label->font().DeriveFont(2, gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  label->SetFont(rb.GetFont(ui::ResourceBundle::BoldFont));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));

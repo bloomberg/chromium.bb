@@ -47,13 +47,6 @@ const int kDialogBottomPaddingNudge = 10;
 // sizing decisions. This value could cause problems with smaller dialogs.
 const int kCloseButtonSize = 44;
 
-const gfx::Font& GetTitleFont() {
-  static gfx::Font* title_font = NULL;
-  if (!title_font)
-    title_font = new gfx::Font(gfx::Font().DeriveFont(4, gfx::Font::NORMAL));
-  return *title_font;
-}
-
 }  // namespace
 
 namespace ash {
@@ -70,6 +63,7 @@ DialogFrameView::DialogFrameView() {
       kDialogBackgroundColor));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_font_.reset(new gfx::Font(rb.GetFont(ui::ResourceBundle::MediumFont)));
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
       rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
@@ -134,7 +128,7 @@ std::string DialogFrameView::GetClassName() const {
 void DialogFrameView::Layout() {
   title_display_rect_ = GetLocalBounds();
   title_display_rect_.Inset(GetPaddingInsets());
-  title_display_rect_.set_height(GetTitleFont().GetHeight());
+  title_display_rect_.set_height(title_font_->GetHeight());
 
   // The hot rectangle for the close button is flush with the upper right of the
   // dialog. The close button image is smaller, and is centered in the hot rect.
@@ -148,7 +142,7 @@ void DialogFrameView::OnPaint(gfx::Canvas* canvas) {
   views::WidgetDelegate* delegate = GetWidget()->widget_delegate();
   if (!delegate)
     return;
-  canvas->DrawStringInt(delegate->GetWindowTitle(), GetTitleFont(),
+  canvas->DrawStringInt(delegate->GetWindowTitle(), *title_font_.get(),
                         kDialogTitleColor, title_display_rect_);
 }
 
@@ -187,7 +181,7 @@ gfx::Insets DialogFrameView::GetClientInsets() const {
   // The title should be separated from the client area by 1 em (dialog spec),
   // and one em is equal to the font size (CSS spec).
   insets += gfx::Insets(
-      GetTitleFont().GetHeight() + GetTitleFont().GetFontSize() -
+      title_font_->GetHeight() + title_font_->GetFontSize() -
           kDialogTopPaddingNudge,
       -kDialogHPaddingNudge,
       -kDialogBottomPaddingNudge,
