@@ -283,6 +283,7 @@ class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
 public:
     LayerTreeHostTestCanDrawBlocksDrawing()
         : m_numCommits(0)
+        , m_done(false)
     {
     }
 
@@ -293,6 +294,8 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        if (m_done)
+            return;
         // Only the initial draw should bring us here.
         EXPECT_TRUE(impl->canDraw());
         EXPECT_EQ(0, impl->activeTree()->source_frame_number());
@@ -300,6 +303,8 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        if (m_done)
+            return;
         if (m_numCommits >= 1) {
             // After the first commit, we should not be able to draw.
             EXPECT_FALSE(impl->canDraw());
@@ -312,14 +317,18 @@ public:
         if (m_numCommits == 1) {
             // Make the viewport empty so the host says it can't draw.
             m_layerTreeHost->setViewportSize(gfx::Size(0, 0), gfx::Size(0, 0));
-
+        } else if (m_numCommits == 2) {
             char pixels[4];
             m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
-        } else if (m_numCommits == 2) {
-            m_layerTreeHost->setNeedsRedraw();
-            m_layerTreeHost->setNeedsCommit();
-        } else
+        } else if (m_numCommits == 3) {
+            postSetNeedsRedrawToMainThread();
+            postSetNeedsCommitToMainThread();
+        } else if (m_numCommits == 4) {
+            // Let it draw so we go idle and end the test.
+            m_layerTreeHost->setViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
+            m_done = true;
             endTest();
+        }
     }
 
     virtual void afterTest() OVERRIDE
@@ -328,6 +337,7 @@ public:
 
 private:
     int m_numCommits;
+    bool m_done;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCanDrawBlocksDrawing)
@@ -397,7 +407,7 @@ public:
         m_numCommits++;
         if (m_numCommits == 2)
             endTest();
-        else {
+        else if (m_numCommits < 2) {
             postSetVisibleToMainThread(false);
             postSetVisibleToMainThread(true);
             postAcquireLayerTextures();
@@ -508,8 +518,8 @@ public:
     virtual void animate(base::TimeTicks monotonicTime) OVERRIDE
     {
         // We skip the first commit becasue its the commit that populates the
-        // impl thread with a tree.
-        if (!m_numCommits)
+        // impl thread with a tree. After the second commit, the test is done.
+        if (m_numCommits != 1)
             return;
 
         m_layerTreeHost->setNeedsAnimate();
@@ -518,19 +528,20 @@ public:
         // hitting the impl thread. But, when the next didCommit happens, we should
         // verify that commitRequested has gone back to false.
     }
+
     virtual void didCommit() OVERRIDE
     {
         if (!m_numCommits) {
             EXPECT_FALSE(m_layerTreeHost->commitRequested());
             m_layerTreeHost->setNeedsAnimate();
             EXPECT_FALSE(m_layerTreeHost->commitRequested());
-            m_numCommits++;
         }
 
         // Verifies that the setNeedsAnimate we made in ::animate did not
         // trigger commitRequested.
         EXPECT_FALSE(m_layerTreeHost->commitRequested());
         endTest();
+        m_numCommits++;
     }
 
     virtual void afterTest() OVERRIDE
@@ -750,6 +761,11 @@ public:
         // then the linearly interpolated opacity would be different because of the
         // default ease timing function.
         EXPECT_FLOAT_EQ(linearlyInterpolatedOpacity, curve->getValue(time));
+
+        const ActiveAnimation* animationImpl = layerTreeHostImpl->rootLayer()->layerAnimationController()->getActiveAnimation(0, ActiveAnimation::Opacity);
+
+        m_layerTreeHost->rootLayer()->layerAnimationController()->removeAnimation(animation->id());
+        layerTreeHostImpl->rootLayer()->layerAnimationController()->removeAnimation(animationImpl->id());
         endTest();
     }
 
@@ -766,7 +782,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAddAnimationWithTimingFunction)
 class LayerTreeHostTestSynchronizeAnimationStartTimes : public LayerTreeHostTest {
 public:
     LayerTreeHostTestSynchronizeAnimationStartTimes()
-        : m_layerTreeHostImpl(0)
+        : m_mainStartTime(-1)
+        , m_implStartTime(-1)
     {
     }
 
@@ -775,32 +792,39 @@ public:
         postAddAnimationToMainThread(m_layerTreeHost->rootLayer());
     }
 
-    // This is guaranteed to be called before CCLayerTreeHostImpl::animateLayers.
-    virtual void willAnimateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
-    {
-        m_layerTreeHostImpl = layerTreeHostImpl;
-    }
-
     virtual void notifyAnimationStarted(double time) OVERRIDE
     {
-        EXPECT_TRUE(m_layerTreeHostImpl);
-
-        LayerAnimationController* controllerImpl = m_layerTreeHostImpl->rootLayer()->layerAnimationController();
         LayerAnimationController* controller = m_layerTreeHost->rootLayer()->layerAnimationController();
-        ActiveAnimation* animationImpl = controllerImpl->getActiveAnimation(0, ActiveAnimation::Opacity);
         ActiveAnimation* animation = controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+        m_mainStartTime = animation->startTime();
+        controller->removeAnimation(animation->id());
 
-        EXPECT_EQ(animationImpl->startTime(), animation->startTime());
+        if (m_implStartTime > 0)
+            endTest();
+    }
 
-        endTest();
+    virtual void animateLayers(LayerTreeHostImpl* impl, base::TimeTicks monotonicTime)
+    {
+        LayerAnimationController* controller = impl->rootLayer()->layerAnimationController();
+        ActiveAnimation* animation = controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+        if (!animation)
+            return;
+
+        m_implStartTime = animation->startTime();
+        controller->removeAnimation(animation->id());
+
+        if (m_mainStartTime > 0)
+            endTest();
     }
 
     virtual void afterTest() OVERRIDE
     {
+        EXPECT_FLOAT_EQ(m_implStartTime, m_mainStartTime);
     }
 
 private:
-    LayerTreeHostImpl* m_layerTreeHostImpl;
+    double m_mainStartTime;
+    double m_implStartTime;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSynchronizeAnimationStartTimes)
@@ -819,6 +843,8 @@ public:
 
     virtual void notifyAnimationFinished(double time) OVERRIDE
     {
+        const ActiveAnimation* animation = m_layerTreeHost->rootLayer()->layerAnimationController()->getActiveAnimation(0, ActiveAnimation::Opacity);
+        m_layerTreeHost->rootLayer()->layerAnimationController()->removeAnimation(animation->id());
         endTest();
     }
 
@@ -1387,8 +1413,7 @@ private:
     scoped_refptr<ContentLayer> m_childLayer;
 };
 
-// http://crbug.com/164851.
-TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, FLAKY_runMultiThread)
+TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread)
 {
     runTest(true);
 }
@@ -1412,7 +1437,6 @@ public:
         ResourceUpdateQueue queue;
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
-        postSetNeedsRedrawToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -1429,6 +1453,7 @@ public:
             EXPECT_TRUE(context->usedTexture(context->texture(0)));
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Number of textures should be two as the first texture
@@ -1442,6 +1467,10 @@ public:
             EXPECT_TRUE(context->usedTexture(context->texture(1)));
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
+            break;
+        case 2:
+            endTest();
             break;
         default:
             NOTREACHED();
@@ -1455,13 +1484,7 @@ public:
 
         // Number of textures used for draw should always be one.
         EXPECT_EQ(1, context->numUsedTextures());
-
-        if (impl->activeTree()->source_frame_number() < 1) {
-            context->resetUsedTextures();
-            postSetNeedsCommitToMainThread();
-            postSetNeedsRedrawToMainThread();
-        } else
-            endTest();
+        context->resetUsedTextures();
     }
 
     virtual void layout() OVERRIDE
@@ -1519,7 +1542,6 @@ public:
         ResourceUpdateQueue queue;
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
-        postSetNeedsRedrawToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -1537,6 +1559,7 @@ public:
             EXPECT_TRUE(context->usedTexture(context->texture(1)));
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Number of textures used for commit should still be two.
@@ -1549,24 +1572,31 @@ public:
             EXPECT_TRUE(context->usedTexture(context->texture(3)));
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
             break;
         case 2:
             // Number of textures used for commit should still be two.
             EXPECT_EQ(2, context->numUsedTextures());
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
             break;
         case 3:
             // No textures should be used for commit.
             EXPECT_EQ(0, context->numUsedTextures());
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
             break;
         case 4:
             // Number of textures used for commit should be one.
             EXPECT_EQ(1, context->numUsedTextures());
 
             context->resetUsedTextures();
+            postSetNeedsCommitToMainThread();
+            break;
+        case 5:
+            endTest();
             break;
         default:
             NOTREACHED();
@@ -1585,12 +1615,7 @@ public:
         else
             EXPECT_EQ(2, context->numUsedTextures());
 
-        if (impl->activeTree()->source_frame_number() < 4) {
-            context->resetUsedTextures();
-            postSetNeedsCommitToMainThread();
-            postSetNeedsRedrawToMainThread();
-        } else
-            endTest();
+        context->resetUsedTextures();
     }
 
     virtual void layout() OVERRIDE
@@ -1612,6 +1637,8 @@ public:
             break;
         case 4:
             m_layerTreeHost->setViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
+            break;
+        case 5:
             break;
         default:
             NOTREACHED();
@@ -3021,6 +3048,8 @@ public:
 
     virtual void didCommit() OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         postSetNeedsCommitToMainThread();
     }
 
@@ -3078,6 +3107,8 @@ public:
 
     virtual void didCommit() OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         m_contentLayer->setNeedsDisplay();
     }
 
@@ -3173,6 +3204,8 @@ public:
 
     virtual void animate(base::TimeTicks) OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         m_layerTreeHost->setNeedsAnimate();
     }
 

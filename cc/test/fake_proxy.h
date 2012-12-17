@@ -39,6 +39,7 @@ public:
     virtual size_t maxPartialTextureUpdates() const OVERRIDE;
     virtual void acquireLayerTextures() OVERRIDE { }
     virtual void loseOutputSurface() OVERRIDE { }
+    virtual bool commitPendingForTesting() OVERRIDE;
 
     virtual RendererCapabilities& rendererCapabilities();
     void setMaxPartialTextureUpdates(size_t);

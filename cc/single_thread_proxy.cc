@@ -398,4 +398,9 @@ void SingleThreadProxy::didSwapFrame()
     }
 }
 
+bool SingleThreadProxy::commitPendingForTesting()
+{
+    return false;
+}
+
 }  // namespace cc

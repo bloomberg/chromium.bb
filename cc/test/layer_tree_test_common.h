@@ -124,7 +124,6 @@ private:
     bool m_beginning;
     bool m_endWhenBeginReturns;
     bool m_timedOut;
-    bool m_finished;
     bool m_scheduled;
     bool m_started;
 
