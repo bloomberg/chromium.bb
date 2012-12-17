@@ -201,6 +201,22 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
   }
 }
 
+bool AuthService::HasAccessToken() const {
+  return !access_token_.empty();
+}
+
+bool AuthService::HasRefreshToken() const {
+  return !refresh_token_.empty();
+}
+
+const std::string& AuthService::access_token() const {
+  return access_token_;
+}
+
+void AuthService::ClearAccessToken() {
+  access_token_.clear();
+}
+
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
                                   GDataErrorCode error,
                                   const std::string& access_token) {

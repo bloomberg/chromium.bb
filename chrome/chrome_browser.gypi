@@ -659,6 +659,7 @@
         'browser/google/google_util_chromeos.h',
         'browser/google_apis/auth_service.cc',
         'browser/google_apis/auth_service.h',
+        'browser/google_apis/auth_service_interface.h',
         'browser/google_apis/auth_service_observer.h',
         'browser/google_apis/base_operations.cc',
         'browser/google_apis/base_operations.h',
