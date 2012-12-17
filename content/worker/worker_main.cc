@@ -43,6 +43,10 @@ int WorkerMain(const MainFunctionParams& parameters) {
   ::GetUserDefaultLCID();
 
   target_services->LowerToken();
+#elif defined(OS_MAC)
+  // On OS X, if the sandbox fails to initialize, something has gone terribly
+  // wrong and we should die.
+  CHECK(InitializeSandbox());
 #elif defined(OS_LINUX)
   // On Linux, the sandbox must be initialized early, before any thread is
   // created.

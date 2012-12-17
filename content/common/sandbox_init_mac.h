@@ -8,11 +8,10 @@
 namespace content {
 
 // Initialize the sandbox for renderer, gpu, utility, worker, and plug-in
-// processes, depending on the command line flags. Although The browser process
-// is not sandboxed, this also needs to be called because it will initialize
-// the broker code.
+// processes, depending on the command line flags. For the browser process which
+// is not sandboxed, this call is a no-op.
 // Returns true if the sandbox was initialized succesfully, false if an error
-// occurred.  If process_type isn't one that needs sandboxing true is always
+// occurred.  If process_type isn't one that needs sandboxing, true is always
 // returned.
 bool InitializeSandbox();
 
