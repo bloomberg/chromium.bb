@@ -222,6 +222,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
         assertEquals(MotionEvent.ACTION_MOVE,
                 mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
+        assertFalse("Pending LONG_PRESS should have been canceled",
+                mLongPressDetector.hasPendingMessage());
 
         mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
         assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
@@ -237,13 +239,76 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify that when a touch event handler is registered the touch events are queued
-     * and sent in order.
+     * Verify that after a touch event handlers starts handling a gesture, even though some event
+     * in the middle of the gesture returns with NOT_CONSUMED, we don't send that to the gesture
+     * detector to avoid falling to a faulty state.
      * @throws Exception
      */
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testFlingAndClickOutOfTouchHandler() throws Exception {
+    public void testFlingOnTouchHandlerWithOneEventNotConsumed() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertTrue("Should not have a pending gesture", mMockGestureDetector.mLastEvent == null);
+        assertFalse("Should not have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("We should have coalesced move events into one"
+                , 2, mGestureHandler.getNumberOfPendingMotionEvents());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 15, MotionEvent.ACTION_UP,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEvents());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(MotionEvent.ACTION_MOVE,
+                mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(MotionEvent.ACTION_UP,
+                mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
+        assertTrue("Even though the last event was not consumed by JavaScript," +
+                "it shouldn't have been sent to the Gesture Detector",
+                        mMockGestureDetector.mLastEvent == null);
+
+        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEvents());
+
+        // Synchronous, no need to wait.
+        assertTrue("Should not have a fling", mMockListener.mLastFling1 == null);
+        assertTrue("Should not have a long press", mMockListener.mLastLongPress == null);
+    }
+
+    /**
+     * Verify that when a registered touch event handler return NO_CONSUMER_EXISTS for down event
+     * all queue is drained until next down.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDrainWithFlingAndClickOutofTouchHandler() throws Exception {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
 
@@ -267,41 +332,31 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
 
-        mGestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
-        assertEquals(MotionEvent.ACTION_MOVE,
-                mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
-
-        mGestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEvents());
-
         event = MotionEvent.obtain(
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 15, MotionEvent.ACTION_UP,
                 FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEvents());
 
         event = motionEvent(MotionEvent.ACTION_DOWN, eventTime + 20, eventTime + 20);
         assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(4, mGestureHandler.getNumberOfPendingMotionEvents());
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 20, MotionEvent.ACTION_UP,
                 FAKE_COORD_X, FAKE_COORD_Y, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(4, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals(5, mGestureHandler.getNumberOfPendingMotionEvents());
 
         mGestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-        assertEquals("The queue should have been drained until first down since we are scrolling",
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        assertEquals("The queue should have been drained until first down since no consumer exists",
                 2, mGestureHandler.getNumberOfPendingMotionEvents());
         assertEquals(MotionEvent.ACTION_DOWN,
                 mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
