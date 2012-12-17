@@ -8,12 +8,12 @@
 
 import copy
 import json
-import optparse
 import os
 import sys
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
@@ -184,6 +184,7 @@ def GetPackageMap(target):
 
 def GetHostTuple():
   """Returns compiler tuple for the host system."""
+  # pylint: disable=E1101
   return portage.settings['CHOST']
 
 
@@ -218,7 +219,7 @@ def IsPackageDisabled(target, package):
 
 def GetTuplesForOverlays(overlays):
   """Returns a set of tuples for a given set of overlays."""
-  tuples = {}
+  targets = {}
   default_settings = {
       'sdk'      : True,
       'crossdev' : '',
@@ -228,7 +229,7 @@ def GetTuplesForOverlays(overlays):
   for overlay in overlays:
     config = os.path.join(overlay, 'toolchain.conf')
     if os.path.exists(config):
-      first_tuple = None
+      first_target = None
       seen_default = False
 
       for line in osutils.ReadFile(config).splitlines():
@@ -237,22 +238,22 @@ def GetTuplesForOverlays(overlays):
         line = line.split('#', 1)[0].split()
 
         if len(line) > 0:
-          tuple = line[0]
-          if not first_tuple:
-            first_tuple = tuple
-          if tuple not in tuples:
-            tuples[tuple] = copy.copy(default_settings)
+          target = line[0]
+          if not first_target:
+            first_target = target
+          if target not in targets:
+            targets[target] = copy.copy(default_settings)
           if len(line) > 1:
-            tuples[tuple].update(json.loads(' '.join(line[1:])))
-            if tuples[tuple]['default']:
+            targets[target].update(json.loads(' '.join(line[1:])))
+            if targets[target]['default']:
               seen_default = True
 
       # If the user has not explicitly marked a toolchain as default,
       # automatically select the first tuple that we saw in the conf.
-      if not seen_default and first_tuple:
-        tuples[first_tuple]['default'] = True
+      if not seen_default and first_target:
+        targets[first_target]['default'] = True
 
-  return tuples
+  return targets
 
 
 # Tree interface functions. They help with retrieving data about the current
@@ -293,10 +294,7 @@ def FilterToolchains(targets, key, value):
   returns a dict where all targets whose metadata key does not match value
   have been deleted.
   """
-  for target, metadata in targets.items():
-    if metadata[key] != value:
-      del targets[target]
-  return targets
+  return dict((k, v) for k, v in targets.iteritems() if v[key] == value)
 
 
 def GetInstalledPackageVersions(atom):
@@ -308,6 +306,7 @@ def GetInstalledPackageVersions(atom):
   returns the list of versions of the package currently installed.
   """
   versions = []
+  # pylint: disable=E1101
   for pkg in portage.db['/']['vartree'].dbapi.match(atom, use_cache=0):
     version = portage.versions.cpv_getversion(pkg)
     versions.append(version)
@@ -324,6 +323,7 @@ def GetStablePackageVersion(atom, installed):
   returns a string containing the latest version.
   """
   pkgtype = 'vartree' if installed else 'porttree'
+  # pylint: disable=E1101
   cpv = portage.best(portage.db['/'][pkgtype].dbapi.match(atom, use_cache=0))
   return portage.versions.cpv_getversion(cpv) if cpv else None
 
@@ -595,45 +595,44 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
 def main(argv):
   usage = """usage: %prog [options]
 
-  The script installs and updates the toolchains in your chroot.
-  """
-  parser = optparse.OptionParser(usage)
+  The script installs and updates the toolchains in your chroot."""
+  parser = commandline.OptionParser(usage)
   parser.add_option('-u', '--nousepkg',
                     action='store_false', dest='usepkg', default=True,
-                    help=('Use prebuilt packages if possible.'))
+                    help='Use prebuilt packages if possible')
   parser.add_option('-d', '--deleteold',
                     action='store_true', dest='deleteold', default=False,
-                    help=('Unmerge deprecated packages.'))
+                    help='Unmerge deprecated packages')
   parser.add_option('-t', '--targets',
                     dest='targets', default='sdk',
-                    help=('Comma separated list of tuples. '
-                          'Special keyword \'host\' is allowed. Default: sdk.'))
+                    help='Comma separated list of tuples. '
+                         'Special keyword \'host\' is allowed. Default: sdk')
   parser.add_option('--include-boards',
                     dest='include_boards', default='',
-                    help=('Comma separated list of boards whose toolchains we'
-                          ' will always include. Default: none.'))
+                    help='Comma separated list of boards whose toolchains we'
+                         ' will always include. Default: none')
   parser.add_option('--hostonly',
                     dest='hostonly', default=False, action='store_true',
-                    help=('Only setup the host toolchain. '
-                          'Useful for bootstrapping chroot.'))
+                    help='Only setup the host toolchain. '
+                         'Useful for bootstrapping chroot')
   parser.add_option('--show-board-cfg',
                     dest='board_cfg', default=None,
-                    help=('Board to list toolchain tuples for'))
+                    help='Board to list toolchain tuples for')
   parser.add_option('--reconfig', default=False, action='store_true',
-                    help=('Reload crossdev config and reselect toolchains.'))
+                    help='Reload crossdev config and reselect toolchains')
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
   if options.board_cfg:
     toolchains = GetToolchainsForBoard(options.board_cfg)
     # Make sure we display the default toolchain first.
-    tuples = toolchains.keys()
-    for tuple in tuples:
-      if toolchains[tuple]['default']:
-        tuples.remove(tuple)
-        tuples.insert(0, tuple)
+    targets = toolchains.keys()
+    for target in targets:
+      if toolchains[target]['default']:
+        targets.remove(target)
+        targets.insert(0, target)
         break
-    print ','.join(tuples)
+    print ','.join(targets)
     return 0
 
   cros_build_lib.AssertInsideChroot()
