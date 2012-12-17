@@ -514,22 +514,22 @@ void TileManager::DispatchMoreTasks() {
   }
 }
 
-void TileManager::GatherPixelRefsForFile(Tile* tile) {
-  TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForFile");
+void TileManager::GatherPixelRefsForTile(Tile* tile) {
+  TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForTile");
   ManagedTileState& managed_state = tile->managed_state();
   if (managed_state.need_to_gather_pixel_refs) {
-    base::TimeTicks gatherBeginTime = base::TimeTicks::Now();
+    base::TimeTicks gather_begin_time = base::TimeTicks::Now();
     const_cast<PicturePileImpl *>(tile->picture_pile())->GatherPixelRefs(
         tile->content_rect_, managed_state.pending_pixel_refs);
     rendering_stats_.totalImageGatheringCount++;
     rendering_stats_.totalImageGatheringTimeInSeconds +=
-        (base::TimeTicks::Now() - gatherBeginTime).InSecondsF();
+        (base::TimeTicks::Now() - gather_begin_time).InSecondsF();
     managed_state.need_to_gather_pixel_refs = false;
   }
 }
 
 void TileManager::DispatchImageDecodingTasksForTile(Tile* tile) {
-  GatherPixelRefsForFile(tile);
+  GatherPixelRefsForTile(tile);
   std::list<skia::LazyPixelRef*>& pending_pixel_refs =
       tile->managed_state().pending_pixel_refs;
   std::list<skia::LazyPixelRef*>::iterator it = pending_pixel_refs.begin();

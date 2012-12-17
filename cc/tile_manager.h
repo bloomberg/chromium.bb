@@ -116,7 +116,7 @@ class CC_EXPORT TileManager {
                                     RenderingStats*);
   void DispatchOneImageDecodingTask(
       RasterThread*, scoped_refptr<Tile>, skia::LazyPixelRef*);
-  void GatherPixelRefsForFile(Tile*);
+  void GatherPixelRefsForTile(Tile*);
   RasterThread* GetFreeRasterThread();
 
   TileManagerClient* client_;
