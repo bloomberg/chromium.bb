@@ -61,19 +61,6 @@ namespace IPC {
 
 struct ChannelHandle;
 
-//-----------------------------------------------------------------------------
-// An iterator class for reading the fields contained within a Message.
-class IPC_EXPORT MessageIterator {
- public:
-  explicit MessageIterator(const Message& m);
-
-  int NextInt() const;
-  const std::string NextString() const;
-
- private:
-  mutable PickleIterator iter_;
-};
-
 // -----------------------------------------------------------------------------
 // How we send IPC message logs across channels.
 struct IPC_EXPORT LogData {
@@ -93,8 +80,8 @@ struct IPC_EXPORT LogData {
   std::string params;
 };
 
-
 //-----------------------------------------------------------------------------
+
 // A dummy struct to place first just to allow leading commas for all
 // members in the macro-generated constructor initializer lists.
 struct NoParams {

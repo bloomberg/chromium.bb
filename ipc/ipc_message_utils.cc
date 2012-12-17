@@ -256,23 +256,6 @@ LogData::LogData()
 LogData::~LogData() {
 }
 
-MessageIterator::MessageIterator(const Message& m) : iter_(m) {
-}
-
-int MessageIterator::NextInt() const {
-  int val = -1;
-  if (!iter_.ReadInt(&val))
-    NOTREACHED();
-  return val;
-}
-
-const std::string MessageIterator::NextString() const {
-  std::string val;
-  if (!iter_.ReadString(&val))
-    NOTREACHED();
-  return val;
-}
-
 void ParamTraits<bool>::Log(const param_type& p, std::string* l) {
   l->append(p ? "true" : "false");
 }

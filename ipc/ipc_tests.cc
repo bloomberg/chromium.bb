@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/debug/debug_on_start_win.h"
 #include "base/perftimer.h"
+#include "base/pickle.h"
 #include "base/test/perf_test_suite.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
@@ -185,11 +186,14 @@ static void Send(IPC::Sender* sender, const char* text) {
 class MyChannelListener : public IPC::Listener {
  public:
   virtual bool OnMessageReceived(const IPC::Message& message) {
-    IPC::MessageIterator iter(message);
+    PickleIterator iter(message);
 
-    iter.NextInt();
-    const std::string data = iter.NextString();
-    const std::string big_string = iter.NextString();
+    int ignored;
+    EXPECT_TRUE(iter.ReadInt(&ignored));
+    std::string data;
+    EXPECT_TRUE(iter.ReadString(&data));
+    std::string big_string;
+    EXPECT_TRUE(iter.ReadString(&big_string));
     EXPECT_EQ(kLongMessageStringNumBytes - 1, big_string.length());
 
 
@@ -339,11 +343,14 @@ class ChannelListenerWithOnConnectedSend : public IPC::Listener {
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    IPC::MessageIterator iter(message);
+    PickleIterator iter(message);
 
-    iter.NextInt();
-    const std::string data = iter.NextString();
-    const std::string big_string = iter.NextString();
+    int ignored;
+    EXPECT_TRUE(iter.ReadInt(&ignored));
+    std::string data;
+    EXPECT_TRUE(iter.ReadString(&data));
+    std::string big_string;
+    EXPECT_TRUE(iter.ReadString(&big_string));
     EXPECT_EQ(kLongMessageStringNumBytes - 1, big_string.length());
     SendNextMessage();
     return true;
@@ -459,9 +466,11 @@ class ChannelReflectorListener : public IPC::Listener {
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
-    IPC::MessageIterator iter(message);
-    int time = iter.NextInt();
-    int msgid = iter.NextInt();
+    PickleIterator iter(message);
+    int time;
+    EXPECT_TRUE(iter.ReadInt(&time));
+    int msgid;
+    EXPECT_TRUE(iter.ReadInt(&msgid));
     std::string payload = iter.NextString();
     latency_messages_ += GetTickCount() - time;
 
@@ -505,14 +514,14 @@ class ChannelPerfListener : public IPC::Listener {
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
-    // decode the string so this gets counted in the total time
-    IPC::MessageIterator iter(message);
-    int time = iter.NextInt();
-    int msgid = iter.NextInt();
+    // Decode the string so this gets counted in the total time.
+    PickleIterator iter(message);
+    int time;
+    EXPECT_TRUE(iter.ReadInt(&time));
+    int msgid;
+    EXPECT_TRUE(iter.ReadInt(&msgid));
     std::string cur = iter.NextString();
     latency_messages_ += GetTickCount() - time;
-
-    // cout << "perflistener got message" << endl;
 
     count_down_--;
     if (count_down_ == 0) {

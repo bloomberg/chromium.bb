@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
@@ -153,17 +154,24 @@ bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
 
 void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
   // The hello message contains one parameter containing the PID.
-  MessageIterator it = MessageIterator(msg);
-  int32 claimed_pid =  it.NextInt();
-  if (validate_client_ && (it.NextInt() != client_secret_)) {
+  PickleIterator it(msg);
+  int32 claimed_pid;
+  bool failed = !it.ReadInt(&claimed_pid);
+
+  if (!failed && validate_client_) {
+    int32 secret;
+    failed = it.ReadInt(&secret) ? (secret != client_secret_) : true;
+  }
+
+  if (failed) {
     NOTREACHED();
-    // Something went wrong. Abort connection.
     Close();
     listener()->OnChannelError();
     return;
   }
+
   peer_pid_ = claimed_pid;
-  // validation completed.
+  // Validation completed.
   validate_client_ = false;
   listener()->OnChannelConnected(claimed_pid);
 }

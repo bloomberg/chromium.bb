@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
+#include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -76,9 +77,11 @@ static int RequestIDForMessage(const IPC::Message& msg) {
     case ResourceMsg_ReceivedRedirect::ID:
     case ResourceMsg_SetDataBuffer::ID:
     case ResourceMsg_DataReceived::ID:
-    case ResourceMsg_RequestComplete::ID:
-      request_id = IPC::MessageIterator(msg).NextInt();
+    case ResourceMsg_RequestComplete::ID: {
+      bool result = PickleIterator(msg).ReadInt(&request_id);
+      DCHECK(result);
       break;
+    }
   }
   return request_id;
 }
@@ -689,7 +692,9 @@ class ResourceDispatcherHostTest : public testing::Test,
   void GenerateDataReceivedACK(const IPC::Message& msg) {
     EXPECT_EQ(ResourceMsg_DataReceived::ID, msg.type());
 
-    int request_id = IPC::MessageIterator(msg).NextInt();
+    int request_id = -1;
+    bool result = PickleIterator(msg).ReadInt(&request_id);
+    DCHECK(result);
     scoped_ptr<IPC::Message> ack(
         new ResourceHostMsg_DataReceived_ACK(msg.routing_id(), request_id));
 

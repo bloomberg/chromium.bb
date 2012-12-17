@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "base/pickle.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/glue/worker_task_runner.h"
@@ -22,7 +23,9 @@ IndexedDBMessageFilter::IndexedDBMessageFilter() :
 bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   if (IPC_MESSAGE_CLASS(msg) != IndexedDBMsgStart)
     return false;
-  int ipc_thread_id = IPC::MessageIterator(msg).NextInt();
+  int ipc_thread_id = -1;
+  bool result = PickleIterator(msg).ReadInt(&ipc_thread_id);
+  DCHECK(result);
   base::Closure closure = base::Bind(
       &IndexedDBMessageFilter::DispatchMessage, this, msg);
   if (ipc_thread_id)
