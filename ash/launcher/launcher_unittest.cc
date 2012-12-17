@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
+#include "ash/wm/window_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -75,6 +76,20 @@ TEST_F(LauncherTest, OpenBrowser) {
   // Remove it.
   model->RemoveItemAt(index);
   ASSERT_EQ(--button_count, test.GetButtonCount());
+}
+
+// Launcher can't be activated on mouse click, but it is activable from
+// the focus cycler or as fallback.
+TEST_F(LauncherTest, ActivateAsFallback) {
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  views::Widget* launcher_widget = launcher->widget();
+  EXPECT_FALSE(launcher_widget->CanActivate());
+
+  launcher->WillActivateAsFallback();
+  EXPECT_TRUE(launcher_widget->CanActivate());
+
+  wm::ActivateWindow(launcher_widget->GetNativeWindow());
+  EXPECT_FALSE(launcher_widget->CanActivate());
 }
 
 }  // namespace ash

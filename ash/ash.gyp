@@ -580,6 +580,7 @@
         'test/ash_unittests.cc',
         'tooltips/tooltip_controller_unittest.cc',
         'wm/activation_controller_unittest.cc',
+        'wm/ash_activation_controller_unittest.cc',
         'wm/base_layout_manager_unittest.cc',
         'wm/cursor_manager_unittest.cc',
         'wm/custom_frame_view_ash_unittest.cc',
