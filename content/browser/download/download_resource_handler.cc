@@ -158,6 +158,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->mime_type = response->head.mime_type;
   info->remote_address = request_->GetSocketAddress().host();
   RecordDownloadMimeType(info->mime_type);
+  RecordDownloadContentDisposition(info->content_disposition);
 
   info->request_handle =
       DownloadRequestHandle(AsWeakPtr(), global_id_.child_id,

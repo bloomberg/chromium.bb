@@ -110,6 +110,9 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);
 
+// Records usage of Content-Disposition header.
+void RecordDownloadContentDisposition(const std::string& content_disposition);
+
 // Record WRITE_SIZE_COUNT and data_len.
 void RecordDownloadWriteSize(size_t data_len);
 
