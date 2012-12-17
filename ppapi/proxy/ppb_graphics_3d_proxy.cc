@@ -379,7 +379,9 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
                                        HostResource share_context,
                                        const std::vector<int32_t>& attribs,
                                        HostResource* result) {
-  if (attribs.empty() || attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
+  if (attribs.empty() ||
+      attribs.back() != PP_GRAPHICS3DATTRIB_NONE ||
+      !(attribs.size() & 1))
     return;  // Bad message.
 
   thunk::EnterResourceCreation enter(instance);
