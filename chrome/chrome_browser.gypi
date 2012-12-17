@@ -2279,8 +2279,6 @@
             # Only extension API implementations should go here.
             'browser/accessibility/accessibility_extension_api.cc',
             'browser/accessibility/accessibility_extension_api.h',
-            'browser/history/top_sites_extension_api.cc',
-            'browser/history/top_sites_extension_api.h',
             'browser/infobars/infobar_extension_api.cc',
             'browser/infobars/infobar_extension_api.h',
             'browser/rlz/rlz_extension_api.cc',

@@ -4,14 +4,16 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/history/top_sites_extension_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace utils = extension_function_test_utils;
+
+namespace extensions {
 
 namespace {
 
@@ -64,3 +66,5 @@ IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, GetTopSites) {
   ASSERT_TRUE(result->GetAsList(&list));
   EXPECT_GE(list->GetSize(), arraysize(history::kPrepopulatedPages));
 }
+
+}  // namespace extensions

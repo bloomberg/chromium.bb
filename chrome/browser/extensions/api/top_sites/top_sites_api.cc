@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/top_sites_extension_api.h"
+#include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+
+namespace extensions {
 
 GetTopSitesFunction::GetTopSitesFunction()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
@@ -45,3 +47,5 @@ void GetTopSitesFunction::OnMostVisitedURLsAvailable(
   SetResult(pages_value.release());
   SendResponse(true);
 }
+
+}  // namespace extensions

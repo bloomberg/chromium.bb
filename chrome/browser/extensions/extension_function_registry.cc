@@ -39,13 +39,13 @@
 #include "chrome/browser/extensions/api/tabs/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
+#include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
-#include "chrome/browser/history/top_sites_extension_api.h"
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -475,7 +475,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::PageCaptureSaveAsMHTMLFunction>();
 
   // TopSites
-  RegisterFunction<GetTopSitesFunction>();
+  RegisterFunction<extensions::GetTopSitesFunction>();
 
   // Serial
   RegisterFunction<extensions::SerialOpenFunction>();

@@ -386,6 +386,8 @@
         'browser/extensions/api/terminal/terminal_private_api.h',
         'browser/extensions/api/test/test_api.cc',
         'browser/extensions/api/test/test_api.h',
+        'browser/extensions/api/top_sites/top_sites_api.cc',
+        'browser/extensions/api/top_sites/top_sites_api.h',
         'browser/extensions/api/usb/usb_api.cc',
         'browser/extensions/api/usb/usb_api.h',
         'browser/extensions/api/usb/usb_device_resource.cc',
