@@ -50,6 +50,7 @@ if "PORTAGE_USERNAME" not in os.environ:
 # /usr/lib/portage/pym/.
 #
 # TODO(davidjames): Update Portage to expose public APIs for these features.
+# pylint: disable=W0212
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
@@ -515,7 +516,6 @@ class DepGraphGenerator(object):
       specifying a "needs" list and "provides" list.
     """
     emerge = self.emerge
-    root = emerge.settings["ROOT"]
 
     # deps_map is the actual dependency graph.
     #
@@ -614,7 +614,7 @@ class DepGraphGenerator(object):
           if dep in unresolved:
             idx = unresolved.index(dep)
             mycycle = unresolved[idx:] + [dep]
-            for i in range(len(mycycle) - 1):
+            for i in xrange(len(mycycle) - 1):
               pkg1, pkg2 = mycycle[i], mycycle[i+1]
               cycles.setdefault(pkg1, {}).setdefault(pkg2, mycycle)
           elif not pkg_cycles or dep not in pkg_cycles:
@@ -671,7 +671,7 @@ class DepGraphGenerator(object):
       print "Breaking %s -> %s (%s)" % (dep, basedep, depinfo)
 
       # Show cycle.
-      for i in range(len(mycycle) - 1):
+      for i in xrange(len(mycycle) - 1):
         pkg1, pkg2 = mycycle[i], mycycle[i+1]
         needs = deps_map[pkg1]["needs"]
         depinfo = needs.get(pkg2, "deleted")
@@ -829,12 +829,12 @@ class EmergeJobState(object):
     self.start_timestamp = start_timestamp
 
 
-def KillHandler(signum, frame):
+def KillHandler(_signum, _frame):
   # Kill self and all subprocesses.
   os.killpg(0, signal.SIGKILL)
 
 def SetupWorkerSignals():
-  def ExitHandler(signum, frame):
+  def ExitHandler(_signum, _frame):
     # Set KILLED flag.
     KILLED.set()
 
@@ -896,6 +896,7 @@ def EmergeProcess(output, *args, **kwargs):
     # We catch all exceptions here (including SystemExit, KeyboardInterrupt,
     # etc) so as to ensure that we don't confuse the multiprocessing module,
     # which expects that all forked children exit with os._exit().
+    # pylint: disable=W0702
     except:
       traceback.print_exc(file=output)
       retval = 1
@@ -1002,7 +1003,7 @@ class LinePrinter(object):
   def __init__(self, line):
     self.line = line
 
-  def Print(self, seek_locations):
+  def Print(self, _seek_locations):
     print self.line
 
 
@@ -1067,7 +1068,7 @@ class JobPrinter(object):
 def PrintWorker(queue):
   """A worker that prints stuff to the screen as requested."""
 
-  def ExitHandler(signum, frame):
+  def ExitHandler(_signum, _frame):
     # Set KILLED flag.
     KILLED.set()
 
@@ -1103,10 +1104,11 @@ class TargetState(object):
 
   __slots__ = ("target", "info", "score", "prefetched", "fetched_successfully")
 
-  def __init__(self, target, info, fetched=False):
+  def __init__(self, target, info):
     self.target, self.info = target, info
     self.fetched_successfully = False
     self.prefetched = False
+    self.score = None
     self.update_score()
 
   def __cmp__(self, other):
@@ -1232,7 +1234,7 @@ class EmergeQueue(object):
 
   def _SetupExitHandler(self):
 
-    def ExitHandler(signum, frame):
+    def ExitHandler(signum, _frame):
       # Set KILLED flag.
       KILLED.set()
 
@@ -1307,7 +1309,7 @@ class EmergeQueue(object):
     else:
       interval = 60 * 60
       notify_interval = 60 * 2
-    for target, job in self._build_jobs.iteritems():
+    for job in self._build_jobs.itervalues():
       if job:
         last_timestamp = max(job.start_timestamp, job.last_output_timestamp)
         if last_timestamp + interval < current_time:
@@ -1350,7 +1352,6 @@ class EmergeQueue(object):
       # packages should only be installed when our needs have been fully met.
       this_pkg["action"] = "nomerge"
     else:
-      finish = []
       for dep in this_pkg["provides"]:
         dep_pkg = self._deps_map[dep]
         state = self._state_map[dep]
@@ -1448,14 +1449,15 @@ class EmergeQueue(object):
             print 'Packages failed:\n\t%s' % '\n\t'.join(self._failed)
             status_file = os.environ.get("PARALLEL_EMERGE_STATUS_FILE")
             if status_file:
-              failed_pkgs = set(portage.cpv_getkey(x) for x in self._failed)
+              failed_pkgs = set(portage.versions.cpv_getkey(x)
+                                for x in self._failed)
               with open(status_file, "a") as f:
                 f.write("%s\n" % " ".join(failed_pkgs))
           else:
             print "Deadlock! Circular dependencies!"
           sys.exit(1)
 
-      for i in range(12):
+      for _ in xrange(12):
         try:
           job = self._job_queue.get(timeout=5)
           break
@@ -1599,7 +1601,7 @@ def real_main(argv):
   # NOTE: Even if you're running --pretend, it's a good idea to run
   #       parallel_emerge with root access so that portage can write to the
   #       dependency cache. This is important for performance.
-  if "--pretend" not in emerge.opts and portage.secpass < 2:
+  if "--pretend" not in emerge.opts and portage.data.secpass < 2:
     print "parallel_emerge: superuser access is required."
     return 1
 
