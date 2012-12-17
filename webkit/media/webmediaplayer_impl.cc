@@ -178,16 +178,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Also we want to be notified of |main_loop_| destruction.
   main_loop_->AddDestructionObserver(this);
 
-  // Create default video renderer.
-  scoped_refptr<media::VideoRendererBase> video_renderer =
-      new media::VideoRendererBase(
-          pipeline_message_loop,
-          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
-          true);
-  filter_collection_->AddVideoRenderer(video_renderer);
-  proxy_->set_frame_provider(video_renderer);
-
   media::SetDecryptorReadyCB set_decryptor_ready_cb;
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(message_loop_factory_->GetMessageLoop(
@@ -195,6 +185,17 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
                                         base::Unretained(decryptor_.get()));
   }
+
+  // Create default video renderer.
+  scoped_refptr<media::VideoRendererBase> video_renderer =
+      new media::VideoRendererBase(
+          pipeline_message_loop,
+          set_decryptor_ready_cb,
+          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
+          true);
+  filter_collection_->AddVideoRenderer(video_renderer);
+  proxy_->set_frame_provider(video_renderer);
 
   // Create default audio renderer using the null sink if no sink was provided.
   if (!audio_renderer_sink)
