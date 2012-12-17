@@ -739,7 +739,7 @@
    Memcheck:Leak
    fun:malloc
    ...
-   fun:_ZN3gfx9RealGLApi17glCompileShaderFnEj
+   fun:_ZN3gfx9GLApiBase17glCompileShaderFnEj
    fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl13compileShaderEj
    fun:_ZN2cc18ProgramBindingBase10loadShaderEPN6WebKit20WebGraphicsContext3DEjRKSs
    fun:_ZN2cc18ProgramBindingBase4initEPN6WebKit20WebGraphicsContext3DERKSsS5_
