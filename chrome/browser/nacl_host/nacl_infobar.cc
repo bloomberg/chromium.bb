@@ -5,19 +5,33 @@
 #include "chrome/browser/nacl_host/nacl_infobar.h"
 
 #include "base/bind.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+#include "ui/base/l10n/l10n_util.h"
+
 
 using content::BrowserThread;
+using content::RenderViewHost;
+using content::WebContents;
 
 namespace {
 
 void ShowInfobar(int render_process_id, int render_view_id,
                  int error_id) {
-  // TODO(dschuff): hook this up to a real infobar in a future CL
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(static_cast<PP_NaClError>(error_id) ==
         PP_NACL_MANIFEST_MISSING_ARCH);
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                               render_view_id);
+  WebContents* wc = WebContents::FromRenderViewHost(rvh);
+  InfoBarService* ibs = InfoBarService::FromWebContents(wc);
+  ibs->AddInfoBar(new SimpleAlertInfoBarDelegate(ibs, NULL,
+        l10n_util::GetStringUTF16(IDS_NACL_APP_MISSING_ARCH_MESSAGE), true));
 }
 
 }  // namespace
