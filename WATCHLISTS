@@ -177,7 +177,7 @@
     'downloads_ext': {
       'filepath': 'chrome/browser/extensions/api/downloads/|'\
                   'chrome/common/extensions/api/downloads.idl',
-    }
+    },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/downloads/|' \
                   'chrome/browser/ui/webui/.*downloads|' \
