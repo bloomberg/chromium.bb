@@ -43,14 +43,14 @@ ActionChoice.PREVIEW_COUNT = 3;
 ActionChoice.load = function(opt_filesystem, opt_params) {
   ImageUtil.metrics = metrics;
 
-  var hash = location.hash ? location.hash.substr(1) : '';
+  var hash = location.hash ? decodeURI(location.hash.substr(1)) : '';
   var params = opt_params || {};
   if (!params.source) params.source = hash;
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
   function onFilesystem(filesystem) {
     var dom = document.querySelector('.action-choice');
-    new ActionChoice(dom, filesystem, params);
+    ActionChoice.instance = new ActionChoice(dom, filesystem, params);
   }
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
