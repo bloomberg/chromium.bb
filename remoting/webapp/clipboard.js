@@ -31,13 +31,7 @@ remoting.Clipboard.prototype.ItemTypes = {
  * @private
  * @type {string}
  */
-remoting.Clipboard.prototype.itemToHostText = "";
-
-/**
- * @private
- * @type {string}
- */
-remoting.Clipboard.prototype.itemFromHostText = "";
+remoting.Clipboard.prototype.previousContent = "";
 
 /**
  * @private
@@ -59,8 +53,7 @@ remoting.Clipboard.prototype.blockOneClipboardSend_ = false;
 remoting.Clipboard.prototype.startSession = function() {
   // Clear the store of items sent and received. Those items now relate to a
   // previous session.
-  this.itemToHostText = "";
-  this.itemFromHostText = "";
+  this.previousContent = "";
   this.itemFromHostTextPending = false;
 
   // Do a paste operation, but make sure the resulting clipboard data isn't sent
@@ -96,15 +89,14 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
       if (!item) {
         item = "";
       }
-      // Don't send an item that's already been sent to the host.
-      // And don't send an item that we received from the host: if we do, we
-      // may send the same item to and fro indefinitely.
-      if ((item != this.itemToHostText) && (item != this.itemFromHostText)) {
+      // Don't send the same item more than once. Otherwise the item may be
+      // sent to and fro indefinitely.
+      if (item != this.previousContent) {
         if (!this.blockOneClipboardSend_) {
           // The plugin's JSON reader emits UTF-8.
           plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
         }
-        this.itemToHostText = item;
+        this.previousContent = item;
       }
     }
   }
@@ -125,10 +117,10 @@ remoting.Clipboard.prototype.fromHost = function(mimeType, item) {
   if (mimeType != this.ItemTypes.TEXT_UTF8_TYPE) {
     return;
   }
-  if (item == this.itemToHostText) {
+  if (item == this.previousContent) {
     return;
   }
-  this.itemFromHostText = item;
+  this.previousContent = item;
   this.itemFromHostTextPending = true;
   this.initiateToOs();
 };
@@ -148,7 +140,7 @@ remoting.Clipboard.prototype.toOs = function(clipboardData) {
   // JS string encoding. The browser will convert JS strings to the correct
   // encoding, per OS and locale conventions, provided the data type is
   // 'text/plain'.
-  clipboardData.setData(this.ItemTypes.TEXT_TYPE, this.itemFromHostText);
+  clipboardData.setData(this.ItemTypes.TEXT_TYPE, this.previousContent);
   this.itemFromHostTextPending = false;
   return true;
 };
