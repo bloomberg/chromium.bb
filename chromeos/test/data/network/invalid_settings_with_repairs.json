@@ -135,11 +135,28 @@
             "Authentication": "None"
         }
     },
+    "toplevel-empty": {
+        "Type": "UnencryptedConfiguration",
+        "NetworkConfigurations": [ ]
+    },
     "toplevel-repaired": {
         "Type": "UnencryptedConfiguration",
         "NetworkConfigurations":
         [ { "GUID": "guid",
             "Type": "Ethernet",
+            "Name": "eth0",
+            "Ethernet": {
+                "Authentication": "None"
+            }
+          }
+        ]
+    },
+    "toplevel-with-nested-warning": {
+        "Type": "UnencryptedConfiguration",
+        "NetworkConfigurations":
+        [ { "GUID": "guid",
+            "Type": "Ethernet",
+            "unknown-field": "abc",
             "Name": "eth0",
             "Ethernet": {
                 "Authentication": "None"

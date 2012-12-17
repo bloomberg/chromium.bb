@@ -1,10 +1,10 @@
 {
     "GUID": "{a3860e83-f03d-4cb1-bafa-b22c9e746950}",
     "Type": "vpn",
-    "Name": "google-dogfood",
+    "Name": "my vpn",
     "SaveCredentials": false,
     "Provider.Type": "openvpn",
-    "Provider.Host": "v.ext.google.com",
+    "Provider.Host": "vpn.my.domain.com",
     "OpenVPN.AuthRetry": "interact",
     "OpenVPN.User": "some username",
     "OpenVPN.Password": "some password",
@@ -12,14 +12,14 @@
     "OpenVPN.CompLZO": "true",
     "OpenVPN.ServerPollTimeout": "10",
     "OpenVPN.RemoteCertKU": "e0",
-    "OpenVPN.CACertNSS": "{14ff4d51-64c1-4c86-a622-054d8e55e750}",
+    "OpenVPN.CACertNSS": "{14ff4d51-64c1-4c86-a622-054xyz}",
     "OpenVPN.RemoteCertTLS": "server",
     "OpenVPN.Port": "443",
-    "OpenVPN.TLSRemote": "v.ext.google.com",
+    "OpenVPN.TLSRemote": "my.domain.com",
     "OpenVPN.KeyDirection": "1",
     "OpenVPN.RenegSec": "0",
     "OpenVPN.RemoteCertEKU": "TLS Web Server Authentication",
     "OpenVPN.Proto": "udp",
     "OpenVPN.PushPeerInfo": "true",
-    "OpenVPN.TLSAuthContents": "-----BEGIN OpenVPN Static key V1-----\nf8a19b8fddda3a38e06b883c48c83474\n0d1dfe7e5cadb2891387ac2d85198cdf\ne14274d03d12c4128c6c8967f84b1b39\n22452fb869280cde868bcf3932615927\nab1948d951c19183276fa249fd6e1e5f\nfc1c41400b59493a39cad872f5c7e777\n310d685d9c30abff7f206afc09cc99d9\ne40b2091e29af5b37d191628fba6d86e\n3a239b45b1b5a6be3229663ee7a7dc67\n2fa5be59fe7ceb41d2c78f94237c2185\n0aea1b06d739bca83240671167ddd2c2\n9cfd931df468536bfd1be99cd05160d8\n09ebfe4b8da88fb1923b19ad1abfc45e\n0402321e41af54e7d19ac95b1a7cec9a\nbf60a8eabcd5eecc84773af211477ee9\n9c988269638f9f1bb668028bb688dea2\nEND OpenVPN Static key V1-----\n"
+    "OpenVPN.TLSAuthContents": "-----BEGIN OpenVPN Static key V1-----\n83f8e7ccd99be189b4663e18615f9166\nd885cdea6c8accb0ebf5be304f0b8081\n5404f2a6574e029815d7a2fb65b83d0c\n676850714c6a56b23415a78e06aad6b1\n34900dd512049598382039e4816cb5ff\n1848532b71af47578c9b4a14b5bca49f\n99e0ae4dae2f4e5eadfea374aeb8fb1e\na6fdf02adc73ea778dfd43d64bf7bc75\n7779d629498f8c2fbfd32812bfdf6df7\n8cebafafef3e5496cb13202274f2768a\n1959bc53d67a70945c4c8c6f34b63327\nfb60dc84990ffec1243461e0b6310f61\ne90aee1f11fb6292d6f5fcd7cd508aab\n50d80f9963589c148cb4b933ec86128d\ned77d3fad6005b62f36369e2319f52bd\n09c6d2e52cce2362a05009dc29b6b39a\n-----END OpenVPN Static key V1-----\n"
 }
