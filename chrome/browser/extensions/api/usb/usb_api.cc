@@ -26,31 +26,22 @@ namespace IsochronousTransfer = extensions::api::usb::IsochronousTransfer;
 namespace ReleaseInterface = extensions::api::usb::ReleaseInterface;
 namespace SetInterfaceAlternateSetting =
     extensions::api::usb::SetInterfaceAlternateSetting;
+namespace usb = extensions::api::usb;
 
-using extensions::api::usb::ControlTransferInfo;
-using extensions::api::usb::Device;
-using extensions::api::usb::GenericTransferInfo;
-using extensions::api::usb::IsochronousTransferInfo;
 using std::string;
 using std::vector;
+using usb::ControlTransferInfo;
+using usb::Device;
+using usb::Direction;
+using usb::GenericTransferInfo;
+using usb::IsochronousTransferInfo;
+using usb::Recipient;
+using usb::RequestType;
 
 namespace {
 
 static const char* kDataKey = "data";
 static const char* kResultCodeKey = "resultCode";
-
-static const char* kDirectionIn = "in";
-static const char* kDirectionOut = "out";
-
-static const char* kRequestTypeClass = "class";
-static const char* kRequestTypeReserved = "reserved";
-static const char* kRequestTypeStandard = "standard";
-static const char* kRequestTypeVendor = "vendor";
-
-static const char* kRecipientDevice = "device";
-static const char* kRecipientEndpoint = "endpoint";
-static const char* kRecipientInterface = "interface";
-static const char* kRecipientOther = "other";
 
 static const char* kErrorCancelled = "Transfer was cancelled.";
 static const char* kErrorDisconnect = "Device disconnected.";
@@ -74,63 +65,75 @@ static const char* kErrorPermissionDenied =
 
 static UsbDevice* device_for_test_ = NULL;
 
-static bool ConvertDirection(const string& input,
+static bool ConvertDirection(const Direction& input,
                              UsbDevice::TransferDirection* output) {
-  if (input == kDirectionIn) {
-    *output = UsbDevice::INBOUND;
-    return true;
-  } else if (input == kDirectionOut) {
-    *output = UsbDevice::OUTBOUND;
-    return true;
+  switch (input) {
+    case usb::USB_DIRECTION_IN:
+      *output = UsbDevice::INBOUND;
+      return true;
+    case usb::USB_DIRECTION_OUT:
+      *output = UsbDevice::OUTBOUND;
+      return true;
+    default:
+      return false;
   }
+  NOTREACHED();
   return false;
 }
 
-static bool ConvertRequestType(const string& input,
+static bool ConvertRequestType(const RequestType& input,
                                UsbDevice::TransferRequestType* output) {
-  if (input == kRequestTypeStandard) {
-    *output = UsbDevice::STANDARD;
-    return true;
-  } else if (input == kRequestTypeClass) {
-    *output = UsbDevice::CLASS;
-    return true;
-  } else if (input == kRequestTypeVendor) {
-    *output = UsbDevice::VENDOR;
-    return true;
-  } else if (input == kRequestTypeReserved) {
-    *output = UsbDevice::RESERVED;
-    return true;
+  switch (input) {
+    case usb::USB_REQUEST_TYPE_STANDARD:
+      *output = UsbDevice::STANDARD;
+      return true;
+    case usb::USB_REQUEST_TYPE_CLASS:
+      *output = UsbDevice::CLASS;
+      return true;
+    case usb::USB_REQUEST_TYPE_VENDOR:
+      *output = UsbDevice::VENDOR;
+      return true;
+    case usb::USB_REQUEST_TYPE_RESERVED:
+      *output = UsbDevice::RESERVED;
+      return true;
+    default:
+      return false;
   }
+  NOTREACHED();
   return false;
 }
 
-static bool ConvertRecipient(const string& input,
+static bool ConvertRecipient(const Recipient& input,
                              UsbDevice::TransferRecipient* output) {
-  if (input == kRecipientDevice) {
-    *output = UsbDevice::DEVICE;
-    return true;
-  } else if (input == kRecipientInterface) {
-    *output = UsbDevice::INTERFACE;
-    return true;
-  } else if (input == kRecipientEndpoint) {
-    *output = UsbDevice::ENDPOINT;
-    return true;
-  } else if (input == kRecipientOther) {
-    *output = UsbDevice::OTHER;
-    return true;
+  switch (input) {
+    case usb::USB_RECIPIENT_DEVICE:
+      *output = UsbDevice::DEVICE;
+      return true;
+    case usb::USB_RECIPIENT_INTERFACE:
+      *output = UsbDevice::INTERFACE;
+      return true;
+    case usb::USB_RECIPIENT_ENDPOINT:
+      *output = UsbDevice::ENDPOINT;
+      return true;
+    case usb::USB_RECIPIENT_OTHER:
+      *output = UsbDevice::OTHER;
+      return true;
+    default:
+      return false;
   }
+  NOTREACHED();
   return false;
 }
 
 template<class T>
 static bool GetTransferSize(const T& input, size_t* output) {
-  if (input.direction == kDirectionIn) {
+  if (input.direction == usb::USB_DIRECTION_IN) {
     const int* length = input.length.get();
     if (length) {
       *output = *length;
       return true;
     }
-  } else if (input.direction == kDirectionOut) {
+  } else if (input.direction == usb::USB_DIRECTION_OUT) {
     if (input.data.get()) {
       *output = input.data->size();
       return true;
@@ -250,7 +253,7 @@ void UsbAsyncApiTransferFunction::OnCompleted(UsbTransferStatus status,
 }
 
 bool UsbAsyncApiTransferFunction::ConvertDirectionSafely(
-    const string& input, UsbDevice::TransferDirection* output) {
+    const Direction& input, UsbDevice::TransferDirection* output) {
   const bool converted = ConvertDirection(input, output);
   if (!converted)
     SetError(kErrorConvertDirection);
@@ -258,7 +261,7 @@ bool UsbAsyncApiTransferFunction::ConvertDirectionSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
-    const string& input, UsbDevice::TransferRequestType* output) {
+    const RequestType& input, UsbDevice::TransferRequestType* output) {
   const bool converted = ConvertRequestType(input, output);
   if (!converted)
     SetError(kErrorConvertRequestType);
@@ -266,7 +269,7 @@ bool UsbAsyncApiTransferFunction::ConvertRequestTypeSafely(
 }
 
 bool UsbAsyncApiTransferFunction::ConvertRecipientSafely(
-    const string& input, UsbDevice::TransferRecipient* output) {
+    const Recipient& input, UsbDevice::TransferRecipient* output) {
   const bool converted = ConvertRecipient(input, output);
   if (!converted)
     SetError(kErrorConvertRecipient);
@@ -301,8 +304,9 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbDevicePermission::CheckParam param(
-      parameters_->vendor_id, parameters_->product_id);
+  const uint16_t vendor_id = parameters_->options.vendor_id;
+  const uint16_t product_id = parameters_->options.product_id;
+  UsbDevicePermission::CheckParam param(vendor_id, product_id);
   if (!GetExtension()->CheckAPIPermissionWithParam(
         APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
@@ -319,8 +323,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   }
 
   vector<scoped_refptr<UsbDevice> > devices;
-  service->FindDevices(parameters_->vendor_id, parameters_->product_id,
-                       &devices);
+  service->FindDevices(vendor_id, product_id, &devices);
   for (size_t i = 0; i < devices.size(); ++i) {
     UsbDevice* const device = devices[i];
     UsbDeviceResource* const resource = new UsbDeviceResource(
@@ -328,8 +331,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
     Device js_device;
     result->Append(PopulateDevice(manager_->Add(resource),
-                                  parameters_->vendor_id,
-                                  parameters_->product_id));
+                                  vendor_id,
+                                  product_id));
   }
 
   SetResult(result.release());

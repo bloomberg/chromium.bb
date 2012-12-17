@@ -6,7 +6,7 @@ var usb = chrome.usb;
 
 var tests = [
   function explicitCloseDevice() {
-    usb.findDevices(0, 0, {}, function(devices) {
+    usb.findDevices({vendorId: 0, productId: 0}, function(devices) {
       usb.closeDevice(devices[0]);
       chrome.test.succeed();
     });

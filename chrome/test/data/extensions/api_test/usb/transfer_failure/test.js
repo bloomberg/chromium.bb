@@ -6,7 +6,7 @@ var usb = chrome.usb;
 
 function createErrorTest(resultCode, errorMessage) {
   return function() {
-    usb.findDevices(0, 0, {}, function(devices) {
+    usb.findDevices({vendorId: 0, productId: 0}, function(devices) {
       var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";

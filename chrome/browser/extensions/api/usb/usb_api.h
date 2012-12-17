@@ -44,11 +44,11 @@ class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
   UsbAsyncApiTransferFunction();
   virtual ~UsbAsyncApiTransferFunction();
 
-  bool ConvertDirectionSafely(const std::string& input,
+  bool ConvertDirectionSafely(const extensions::api::usb::Direction& input,
                               UsbDevice::TransferDirection* output);
-  bool ConvertRequestTypeSafely(const std::string& input,
+  bool ConvertRequestTypeSafely(const extensions::api::usb::RequestType& input,
                                 UsbDevice::TransferRequestType* output);
-  bool ConvertRecipientSafely(const std::string& input,
+  bool ConvertRecipientSafely(const extensions::api::usb::Recipient& input,
                               UsbDevice::TransferRecipient* output);
 
   void OnCompleted(UsbTransferStatus status,

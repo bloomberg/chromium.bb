@@ -4,6 +4,12 @@
 
 namespace usb {
 
+  // Direction, Recipient and RequestType all map to their namesakes within the
+  // USB specification.
+  enum Direction {in, out};
+  enum Recipient {device, _interface, endpoint, other};
+  enum RequestType {standard, class, vendor, reserved};
+
   // A Device encapsulates everything that is needed to communicate with a USB
   // device. They are returned by findDevice calls and have all of their
   // fields populated before being returned.
@@ -16,16 +22,14 @@ namespace usb {
   // ControlTransferInfo represents that parameters to a single USB control
   // transfer.
   dictionary ControlTransferInfo {
-    // The direction of this transfer. Must be one of either in or out.
-    DOMString direction;
+    // The direction of this transfer.
+    Direction direction;
 
-    // The intended recipient for this transfer. Must be one of device,
-    // interface, endpoint, or other.
-    DOMString recipient;
+    // The intended recipient for this transfer.
+    Recipient recipient;
 
-    // The type of this request. Must be one of standard, class, vendor,
-    // or reserved.
-    DOMString requestType;
+    // The type of this request.
+    RequestType requestType;
 
     long request;
     long value;
@@ -44,8 +48,8 @@ namespace usb {
   // GenericTransferInfo is used by both bulk and interrupt transfers to
   // specify the parameters of the transfer.
   dictionary GenericTransferInfo {
-    // The direction of this transfer. Must be one of in or out.
-    DOMString direction;
+    // The direction of this transfer.
+    Direction direction;
 
     long endpoint;
 
@@ -84,10 +88,14 @@ namespace usb {
     ArrayBuffer? data;
   };
 
-  dictionary FindDevicesOptions {};
+  // FindDevicesOptions describes the properties of devices which are found and
+  // opened via findDevices.
+  dictionary FindDevicesOptions {
+    long vendorId;
+    long productId;
+  };
 
   callback VoidCallback = void ();
-
   callback FindDevicesCallback = void (Device[] device);
   callback CloseDeviceCallback = void ();
   callback TransferCallback = void (TransferResultInfo info);
@@ -97,11 +105,10 @@ namespace usb {
     // productId pair and, if permissions allow, opens it for use.
     // Upon successfully opening a device the callback is invoked with a
     // populated Device object. On failure, the callback is invoked with null.
-    // |vendorId|: The vendor ID of the USB device to find.
-    // |productId|: The product ID of the USB device to find.
+    // |options|: The properties to search for on target devices.
     // |callback|: Invoked with the opened Device on success.
-    static void findDevices(long vendorId, long productId,
-        FindDevicesOptions options, FindDevicesCallback callback);
+    static void findDevices(FindDevicesOptions options,
+        FindDevicesCallback callback);
 
     // Closes an open device instance. Invoking operations on a device after it
     // has been closed is a safe operation, but causes no action to be taken.
@@ -114,14 +121,14 @@ namespace usb {
     // |device|: The device on which the interface is to be claimed.
     // |interface|: The interface number to be claimed.
     // |callback|: The callback to invoke once the interface is claimed.
-    static long claimInterface(Device device, long interfaceNumber,
+    static void claimInterface(Device device, long interfaceNumber,
         VoidCallback callback);
 
     // Releases a claim to an interface on the provided device.
     // |device|: The device on which the interface is to be released.
     // |interface|: The interface number to be released.
     // |callback|: The callback to invoke once the interface is released.
-    static long releaseInterface(Device device, long interfaceNumber,
+    static void releaseInterface(Device device, long interfaceNumber,
         VoidCallback callback);
 
     // Selects an alternate setting on a previously claimed interface on a
@@ -130,7 +137,7 @@ namespace usb {
     // |interface|: The interface number to be set.
     // |alternateSetting|: The alternate setting to set.
     // |callback|: The callback to invoke once the interface setting is set.
-    static long setInterfaceAlternateSetting(Device device,
+    static void setInterfaceAlternateSetting(Device device,
         long interfaceNumber, long alternateSetting, VoidCallback callback);
 
     // Performs a control transfer on the specified device. See the
