@@ -17,6 +17,14 @@ class ProfileDownloader;
 // |ProfileImageDownloader| instance in any of these handlers.
 class ProfileDownloaderDelegate {
  public:
+  // Error codes passed to OnProfileDownloadFailure.
+  enum FailureReason {
+    TOKEN_ERROR,         // Cannot fetch OAuth2 token.
+    NETWORK_ERROR,       // Network failure while downloading profile.
+    SERVICE_ERROR,       // Service returned an error or malformed reply.
+    IMAGE_DECODE_FAILED  // Cannot decode fetched image.
+  };
+
   virtual ~ProfileDownloaderDelegate() {}
 
   // Whether the delegate need profile picture to be downloaded.
@@ -39,7 +47,9 @@ class ProfileDownloaderDelegate {
   virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) = 0;
 
   // Called when the profile download has failed.
-  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) = 0;
+  virtual void OnProfileDownloadFailure(
+      ProfileDownloader* downloader,
+      ProfileDownloaderDelegate::FailureReason reason) = 0;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_DOWNLOADER_DELEGATE_H_

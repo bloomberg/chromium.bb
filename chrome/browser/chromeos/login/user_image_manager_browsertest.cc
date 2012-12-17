@@ -46,7 +46,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
     user_image_manager_ = UserManager::Get()->GetUserImageManager();
     local_state_ = g_browser_process->local_state();
     // No migration delay for testing.
-    UserImageManagerImpl::user_image_migration_delay_ms = 0;
+    UserImageManagerImpl::user_image_migration_delay_sec = 0;
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

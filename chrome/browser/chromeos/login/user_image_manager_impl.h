@@ -49,7 +49,7 @@ class UserImageManagerImpl : public UserImageManager,
   friend class UserImageManagerTest;
 
   // Non-const for testing purposes.
-  static long user_image_migration_delay_ms;
+  static int user_image_migration_delay_sec;
 
   // ProfileDownloaderDelegate implementation:
   virtual bool NeedsProfilePicture() const OVERRIDE;
@@ -57,7 +57,9 @@ class UserImageManagerImpl : public UserImageManager,
   virtual Profile* GetBrowserProfile() OVERRIDE;
   virtual std::string GetCachedPictureURL() const OVERRIDE;
   virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
-  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
+  virtual void OnProfileDownloadFailure(
+      ProfileDownloader* downloader,
+      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
   // Returns image filepath for the given user.
   FilePath GetImagePathForUser(const std::string& username);
@@ -116,6 +118,9 @@ class UserImageManagerImpl : public UserImageManager,
 
   // Scheduled call for downloading profile data.
   void DownloadProfileDataScheduled();
+
+  // Delayed call to retry downloading profile data.
+  void DownloadProfileDataRetry(bool download_image);
 
   // Migrates image info for the current user and deletes the old image, if any.
   void MigrateUserImage();

@@ -108,7 +108,8 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_EQ(std::string(), service.GetCachedPictureURL());
   NiceMock<ProfileDownloaderMock> downloader(&service);
 
-  service.OnProfileDownloadFailure(&downloader);
+  service.OnProfileDownloadFailure(&downloader,
+                                   ProfileDownloaderDelegate::SERVICE_ERROR);
 
   // On failure nothing should be updated.
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(index));

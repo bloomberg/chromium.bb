@@ -38,7 +38,9 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate {
   virtual Profile* GetBrowserProfile() OVERRIDE;
   virtual std::string GetCachedPictureURL() const OVERRIDE;
   virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
-  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
+  virtual void OnProfileDownloadFailure(
+      ProfileDownloader* downloader,
+      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);

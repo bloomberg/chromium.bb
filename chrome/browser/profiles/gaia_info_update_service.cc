@@ -156,7 +156,8 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
 }
 
 void GAIAInfoUpdateService::OnProfileDownloadFailure(
-    ProfileDownloader* downloader) {
+    ProfileDownloader* downloader,
+    ProfileDownloaderDelegate::FailureReason reason) {
   profile_image_downloader_.reset();
 
   // Save the last updated time.
