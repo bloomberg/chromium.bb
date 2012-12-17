@@ -150,9 +150,11 @@ if __name__ == '__main__':
   hlsl_file = os.path.abspath(options.hlsl_file)
   shader_targets, namespace = ExtractShaderTargetNamesFromSource(hlsl_file)
 
+  header_file = os.path.normpath(options.header_file)
+  cc_file = os.path.normpath(options.cc_file)
   CompileMultipleHLSLShadersToOneHeaderFile(options.compiler,
                                             hlsl_file,
                                             namespace,
                                             shader_targets,
-                                            options.header_file,
-                                            options.cc_file)
+                                            header_file,
+                                            cc_file)
