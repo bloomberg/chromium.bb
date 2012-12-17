@@ -244,6 +244,11 @@ const int kImmersiveBarHeight = 2;
 // Distance between the favicon bar and the tab bar in immersive mode.
 const int kImmersiveBarSpacing = 2;
 
+// Color for active and inactive tabs in the immersive mode light strip. These
+// should be similar to the color of the normal art assets for tabs.
+const SkColor kImmersiveActiveTabColor = SkColorSetRGB(230, 230, 230);
+const SkColor kImmersiveInactiveTabColor = SkColorSetRGB(184, 184, 184);
+
 // Scale to resize the current favicon by when projecting.
 const double kProjectingFaviconResizeScale = 0.75;
 
@@ -1035,8 +1040,11 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 
 void Tab::PaintTabImmersive(gfx::Canvas* canvas) {
   // The main bar is as wide as the normal tab's horizontal top line.
-  int main_bar_left = tab_active_.l_width;
-  int main_bar_right = width() - tab_active_.r_width;
+  // This top line of the tab extends a few pixels left and right of the
+  // center image due to pixels in the rounded corner images.
+  const int kBarPadding = 2;
+  int main_bar_left = tab_active_.l_width - kBarPadding;
+  int main_bar_right = width() - tab_active_.r_width + kBarPadding;
 
   bool is_active = IsActive();
   if (ShouldShowIcon()) {
@@ -1051,16 +1059,11 @@ void Tab::PaintTabImmersive(gfx::Canvas* canvas) {
   // Mini-tabs don't have a main bar.
   if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth) {
     // Active tab has a brighter bar.
-    const TabImage& tab_image =
-        is_active ? tab_immersive_active_ : tab_immersive_inactive_;
-    canvas->DrawImageInt(*tab_image.image_l, main_bar_left, 0);
-    canvas->TileImageInt(*tab_image.image_c,
-        main_bar_left + tab_image.l_width,
-        0,
-        main_bar_right - main_bar_left - tab_image.l_width - tab_image.r_width,
-        tab_image.image_c->height());
-    canvas->DrawImageInt(
-        *tab_image.image_r, main_bar_right - tab_image.r_width, 0);
+    SkColor color =
+        is_active ? kImmersiveActiveTabColor : kImmersiveInactiveTabColor;
+    gfx::Rect main_bar_rect(
+        main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
+    canvas->FillRect(main_bar_rect, color);
   }
 }
 
