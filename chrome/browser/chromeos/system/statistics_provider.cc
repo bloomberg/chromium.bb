@@ -70,6 +70,7 @@ const int kTimeoutSecs = 3;
 class StatisticsProviderImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
+  virtual void Init() OVERRIDE;
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE;
 
@@ -80,20 +81,40 @@ class StatisticsProviderImpl : public StatisticsProvider {
 
   StatisticsProviderImpl();
 
+  // Loads the machine info file, which is necessary to get the Chrome channel.
+  // Treat MachineOSInfoFile specially, as distribution channel information
+  // (stable, beta, dev, canary) is required at earlier stage than everything
+  // else. Rather than posting a delayed task, read and parse the machine OS
+  // info file immediately.
+  void LoadMachineOSInfoFile();
+
   // Starts loading the machine statistcs.
   void StartLoadingMachineStatistics();
 
   // Loads the machine statistcs by examining the system.
   void LoadMachineStatistics();
 
+  bool initialized_;
   NameValuePairsParser::NameValueMap machine_info_;
   base::WaitableEvent on_statistics_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(StatisticsProviderImpl);
 };
 
+void StatisticsProviderImpl::Init() {
+  DCHECK(!initialized_);
+  initialized_ = true;
+
+  // Load the machine info file immediately to get the channel info and delay
+  // loading the remaining statistics.
+  LoadMachineOSInfoFile();
+  StartLoadingMachineStatistics();
+}
+
 bool StatisticsProviderImpl::GetMachineStatistic(
     const std::string& name, std::string* result) {
+  DCHECK(initialized_);
+
   VLOG(1) << "Statistic is requested for " << name;
   // Block if the statistics are not loaded yet. Per LOG(WARNING) below,
   // the statistics are loaded before requested as of now. For regular
@@ -129,9 +150,24 @@ bool StatisticsProviderImpl::GetMachineStatistic(
 
 // manual_reset needs to be true, as we want to keep the signaled state.
 StatisticsProviderImpl::StatisticsProviderImpl()
-    : on_statistics_loaded_(true  /* manual_reset */,
+    : initialized_(false),
+      on_statistics_loaded_(true  /* manual_reset */,
                             false /* initially_signaled */) {
-  StartLoadingMachineStatistics();
+}
+
+void StatisticsProviderImpl::LoadMachineOSInfoFile() {
+  NameValuePairsParser parser(&machine_info_);
+  if (parser.GetNameValuePairsFromFile(FilePath(kMachineOSInfoFile),
+                                       kMachineOSInfoEq,
+                                       kMachineOSInfoDelim)) {
+#if defined(GOOGLE_CHROME_BUILD)
+    const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+    NameValuePairsParser::NameValueMap::iterator iter =
+        machine_info_.find(kChromeOSReleaseTrack);
+    if (iter != machine_info_.end())
+      chrome::VersionInfo::SetChannel(iter->second);
+#endif
+  }
 }
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics() {
@@ -167,37 +203,11 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
   parser.GetNameValuePairsFromFile(FilePath(kEchoCouponFile),
                                    kEchoCouponEq,
                                    kEchoCouponDelim);
-  parser.GetNameValuePairsFromFile(FilePath(kMachineOSInfoFile),
-                                   kMachineOSInfoEq,
-                                   kMachineOSInfoDelim);
   parser.GetNameValuePairsFromFile(FilePath(kVpdFile), kVpdEq, kVpdDelim);
 
   // Finished loading the statistics.
   on_statistics_loaded_.Signal();
   VLOG(1) << "Finished loading statistics";
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // TODO(kochi): This is for providing a channel information to
-  // chrome::VersionInfo::GetChannel()/GetVersionStringModifier(),
-  // but this is still late for some early customers such as
-  // prerender::ConfigurePrefetchAndPrerender() and
-  // ThreadWatcherList::ParseCommandLine().
-  // See http://crbug.com/107333 .
-  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-  std::string channel;
-  if (GetMachineStatistic(kChromeOSReleaseTrack, &channel)) {
-      chrome::VersionInfo::SetChannel(channel);
-      // Set the product channel for crash reports.  We can't just do this in
-      // ChromeBrowserMainParts::PreCreateThreads like we do for Linux because
-      // the FILE thread hasn't been created yet there so we can't possibly
-      // have read this yet.  Note that this string isn't exactly the same as
-      // 'channel', it's been parsed to be consistent with other platforms
-      // (eg. "canary-channel" becomes "canary", "testimage-channel" becomes
-      // "unknown").
-      child_process_logging::SetChannel(
-          chrome::VersionInfo::GetVersionStringModifier());
-  }
-#endif
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
@@ -209,6 +219,9 @@ StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
 class StatisticsProviderStubImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
+  virtual void Init() OVERRIDE {
+  }
+
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE {
     if (name == "CHROMEOS_RELEASE_BOARD") {

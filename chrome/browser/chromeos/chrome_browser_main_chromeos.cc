@@ -371,6 +371,10 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                   ::switches::kLoginProfile).value();
   }
 
+  // Initialize the statistics provider, which will ensure that the Chrome
+  // channel info is read and made available early.
+  system::StatisticsProvider::GetInstance()->Init();
+
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
 
@@ -605,12 +609,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  // FILE thread is created in ChromeBrowserMainParts::PreMainMessageLoopRun().
-
-  // Get the statistics provider instance here to start loading statistcs
-  // on the background FILE thread.
-  system::StatisticsProvider::GetInstance();
-
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);

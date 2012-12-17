@@ -13,6 +13,9 @@ namespace system {
 // This interface provides access to Chrome OS statistics.
 class StatisticsProvider {
  public:
+  // Initializes the statistics provider.
+  virtual void Init() = 0;
+
   // Retrieve the named machine statistic (e.g. "hardware_class").
   // This does not update the statistcs. If the |name| is not set, |result|
   // preserves old value.
