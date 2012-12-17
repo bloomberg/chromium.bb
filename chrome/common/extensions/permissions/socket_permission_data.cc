@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -152,8 +153,8 @@ bool SocketPermissionData::Check(
   return true;
 }
 
-void SocketPermissionData::ToValue(base::Value** value) const {
-  *value = base::Value::CreateStringValue(GetAsString());
+scoped_ptr<base::Value> SocketPermissionData::ToValue() const {
+  return scoped_ptr<base::Value>(base::Value::CreateStringValue(GetAsString()));
 }
 
 bool SocketPermissionData::FromValue(const base::Value* value) {

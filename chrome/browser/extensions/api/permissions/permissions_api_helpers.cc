@@ -46,16 +46,14 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   permissions->permissions.reset(new std::vector<std::string>());
   for (APIPermissionSet::const_iterator i = set->apis().begin();
        i != set->apis().end(); ++i) {
-    base::Value* value = NULL;
-    i->ToValue(&value);
+    scoped_ptr<base::Value> value(i->ToValue());
     if (!value) {
       permissions->permissions->push_back(i->name());
     } else {
       std::string name(i->name());
       std::string json;
-      base::JSONWriter::Write(value, &json);
+      base::JSONWriter::Write(value.get(), &json);
       permissions->permissions->push_back(name + kDelimiter + json);
-      delete value;
     }
   }
 

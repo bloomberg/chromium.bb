@@ -277,13 +277,10 @@ TEST(SocketPermissionTest, Value) {
 
   EXPECT_FALSE(permission1->Equal(permission2.get()));
 
-  base::Value* vtmp = NULL;
-  permission1->ToValue(&vtmp);
+  scoped_ptr<base::Value> vtmp(permission1->ToValue());
   CHECK(vtmp);
-  CHECK(permission2->FromValue(vtmp));
+  CHECK(permission2->FromValue(vtmp.get()));
   EXPECT_TRUE(permission1->Equal(permission2.get()));
-
-  delete vtmp;
 }
 
 }  // namespace extensions

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 
 namespace base {
@@ -30,7 +31,7 @@ class UsbDevicePermissionData {
   bool Check(const APIPermission::CheckParam* param) const;
 
   // Convert |this| into a base::Value.
-  void ToValue(base::Value** value) const;
+  scoped_ptr<base::Value> ToValue() const;
 
   // Populate |this| from a base::Value.
   bool FromValue(const base::Value* value);

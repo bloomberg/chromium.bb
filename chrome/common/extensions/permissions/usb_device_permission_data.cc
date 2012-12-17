@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/values.h"
@@ -42,11 +43,11 @@ bool UsbDevicePermissionData::Check(
       product_id_ == specific_param.product_id;
 }
 
-void UsbDevicePermissionData::ToValue(base::Value** value) const {
+scoped_ptr<base::Value> UsbDevicePermissionData::ToValue() const {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kVendorIdKey, vendor_id_);
   result->SetInteger(kProductIdKey, product_id_);
-  *value = result;
+  return scoped_ptr<base::Value>(result);
 }
 
 bool UsbDevicePermissionData::FromValue(const base::Value* value) {

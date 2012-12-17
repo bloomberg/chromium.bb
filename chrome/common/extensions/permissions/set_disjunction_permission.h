@@ -134,15 +134,14 @@ class SetDisjunctionPermission : public APIPermission {
     return true;
   }
 
-  virtual void ToValue(base::Value** value) const OVERRIDE {
+  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
     base::ListValue* list = new ListValue();
     typename std::set<PermissionDataType>::const_iterator i;
     for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-      base::Value* item_value;
-      i->ToValue(&item_value);
-      list->Append(item_value);
+      scoped_ptr<base::Value> item_value(i->ToValue());
+      list->Append(item_value.release());
     }
-    *value = list;
+    return scoped_ptr<base::Value>(list);
   }
 
   virtual void Write(IPC::Message* m) const OVERRIDE {

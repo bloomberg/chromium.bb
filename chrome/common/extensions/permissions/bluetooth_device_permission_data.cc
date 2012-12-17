@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 
@@ -34,10 +35,10 @@ bool BluetoothDevicePermissionData::Check(
   return device_address_ == specific_param.device_address;
 }
 
-void BluetoothDevicePermissionData::ToValue(base::Value** value) const {
+scoped_ptr<base::Value> BluetoothDevicePermissionData::ToValue() const {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetString(kDeviceAddressKey, device_address_);
-  *value = result;
+  return scoped_ptr<base::Value>(result);
 }
 
 bool BluetoothDevicePermissionData::FromValue(const base::Value* value) {

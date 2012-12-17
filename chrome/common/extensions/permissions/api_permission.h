@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 
@@ -160,7 +161,7 @@ class APIPermission {
   virtual bool FromValue(const base::Value* value) = 0;
 
   // Stores this into a new created |value|.
-  virtual void ToValue(base::Value** value) const = 0;
+  virtual scoped_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
   virtual APIPermission* Clone() const = 0;

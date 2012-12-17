@@ -575,11 +575,10 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    Value* detail = NULL;
-    i->ToValue(&detail);
+    scoped_ptr<Value> detail(i->ToValue());
     if (detail) {
       DictionaryValue* tmp = new DictionaryValue();
-      tmp->Set(i->name(), detail);
+      tmp->Set(i->name(), detail.release());
       api_values->Append(tmp);
     } else {
       api_values->Append(Value::CreateStringValue(i->name()));
