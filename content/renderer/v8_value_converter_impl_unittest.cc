@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -164,40 +165,37 @@ class V8ValueConverterImplTest : public testing::Test {
 };
 
 TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
-  DictionaryValue original_root;
-  original_root.Set("null", Value::CreateNullValue());
-  original_root.Set("true", Value::CreateBooleanValue(true));
-  original_root.Set("false", Value::CreateBooleanValue(false));
-  original_root.Set("positive-int", Value::CreateIntegerValue(42));
-  original_root.Set("negative-int", Value::CreateIntegerValue(-42));
-  original_root.Set("zero", Value::CreateIntegerValue(0));
-  original_root.Set("double", Value::CreateDoubleValue(88.8));
-  original_root.Set("big-integral-double",
-                    Value::CreateDoubleValue(pow(2.0, 53)));
-  original_root.Set("string", Value::CreateStringValue("foobar"));
-  original_root.Set("empty-string", Value::CreateStringValue(""));
-
-  DictionaryValue* original_sub1 = new DictionaryValue();
-  original_sub1->Set("foo", Value::CreateStringValue("bar"));
-  original_sub1->Set("hot", Value::CreateStringValue("dog"));
-  original_root.Set("dictionary", original_sub1);
-  original_root.Set("empty-dictionary", new DictionaryValue());
-
-  ListValue* original_sub2 = new ListValue();
-  original_sub2->Append(Value::CreateStringValue("monkey"));
-  original_sub2->Append(Value::CreateStringValue("balls"));
-  original_root.Set("list", original_sub2);
-  original_root.Set("empty-list", new ListValue());
+  scoped_ptr<Value> original_root = base::test::ParseJson(
+      "{ \n"
+      "  \"null\": null, \n"
+      "  \"true\": true, \n"
+      "  \"false\": false, \n"
+      "  \"positive-int\": 42, \n"
+      "  \"negative-int\": -42, \n"
+      "  \"zero\": 0, \n"
+      "  \"double\": 88.8, \n"
+      "  \"big-integral-double\": 9007199254740992.0, \n" // 2.0^53
+      "  \"string\": \"foobar\", \n"
+      "  \"empty-string\": \"\", \n"
+      "  \"dictionary\": { \n"
+      "    \"foo\": \"bar\",\n"
+      "    \"hot\": \"dog\",\n"
+      "  }, \n"
+      "  \"empty-dictionary\": {}, \n"
+      "  \"list\": [ \"monkey\", \"balls\" ], \n"
+      "  \"empty-list\": [], \n"
+      "}");
 
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
   V8ValueConverterImpl converter;
   v8::Handle<v8::Object> v8_object =
-      converter.ToV8Value(&original_root, context_).As<v8::Object>();
+      converter.ToV8Value(original_root.get(), context_).As<v8::Object>();
   ASSERT_FALSE(v8_object.IsEmpty());
 
-  EXPECT_EQ(original_root.size(), v8_object->GetPropertyNames()->Length());
+  EXPECT_EQ(static_cast<const DictionaryValue&>(*original_root).size(),
+            v8_object->GetPropertyNames()->Length());
   EXPECT_TRUE(v8_object->Get(v8::String::New("null"))->IsNull());
   EXPECT_TRUE(v8_object->Get(v8::String::New("true"))->IsTrue());
   EXPECT_TRUE(v8_object->Get(v8::String::New("false"))->IsFalse());
@@ -215,13 +213,13 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   EXPECT_TRUE(v8_object->Get(v8::String::New("empty-list"))->IsArray());
 
   scoped_ptr<Value> new_root(converter.FromV8Value(v8_object, context_));
-  EXPECT_NE(&original_root, new_root.get());
-  EXPECT_TRUE(original_root.Equals(new_root.get()));
+  EXPECT_NE(original_root.get(), new_root.get());
+  EXPECT_TRUE(original_root->Equals(new_root.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, KeysWithDots) {
-  DictionaryValue original;
-  original.SetWithoutPathExpansion("foo.bar", Value::CreateStringValue("baz"));
+  scoped_ptr<Value> original =
+      base::test::ParseJson("{ \"foo.bar\": \"baz\" }");
 
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
@@ -229,9 +227,9 @@ TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   V8ValueConverterImpl converter;
   scoped_ptr<Value> copy(
       converter.FromV8Value(
-          converter.ToV8Value(&original, context_), context_));
+          converter.ToV8Value(original.get(), context_), context_));
 
-  EXPECT_TRUE(original.Equals(copy.get()));
+  EXPECT_TRUE(original->Equals(copy.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
@@ -299,9 +297,8 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   EXPECT_TRUE(IsNull(converted.get(), 0));
 
   // Converting to v8 value should drop the first item and leave a hole.
-  converted.reset(new ListValue());
-  converted->Append(Value::CreateStringValue("foo"));
-  converted->Append(Value::CreateStringValue("bar"));
+  converted.reset(static_cast<ListValue*>(
+      base::test::ParseJson("[ \"foo\", \"bar\" ]").release()));
   v8::Handle<v8::Array> copy =
       converter.ToV8Value(converted.get(), context_).As<v8::Array>();
   ASSERT_FALSE(copy.IsEmpty());
@@ -476,15 +473,17 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   V8ValueConverterImpl converter;
   scoped_ptr<Value> actual(converter.FromV8Value(object, context_));
 
-  DictionaryValue expected;
-  expected.SetString("1", "foo");
-  expected.SetString("2", "bar");
-  expected.SetString("true", "baz");
-  expected.SetString("false", "qux");
-  expected.SetString("null", "quux");
-  expected.SetString("undefined", "oops");
+  scoped_ptr<Value> expected = base::test::ParseJson(
+      "{ \n"
+      "  \"1\": \"foo\", \n"
+      "  \"2\": \"bar\", \n"
+      "  \"true\": \"baz\", \n"
+      "  \"false\": \"qux\", \n"
+      "  \"null\": \"quux\", \n"
+      "  \"undefined\": \"oops\", \n"
+      "}");
 
-  EXPECT_TRUE(expected.Equals(actual.get()));
+  EXPECT_TRUE(expected->Equals(actual.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, ArrayGetters) {
@@ -534,18 +533,14 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
   V8ValueConverterImpl converter;
 
-  DictionaryValue expected_object;
-  expected_object.Set("bar", Value::CreateNullValue());
   scoped_ptr<Value> actual_object(converter.FromV8Value(object, context_));
-  EXPECT_TRUE(Value::Equals(&expected_object, actual_object.get()));
+  EXPECT_TRUE(Value::Equals(base::test::ParseJson("{ \"bar\": null }").get(),
+                            actual_object.get()));
 
-  ListValue expected_array;
   // Everything is null because JSON stringification preserves array length.
-  expected_array.Append(Value::CreateNullValue());
-  expected_array.Append(Value::CreateNullValue());
-  expected_array.Append(Value::CreateNullValue());
   scoped_ptr<Value> actual_array(converter.FromV8Value(array, context_));
-  EXPECT_TRUE(Value::Equals(&expected_array, actual_array.get()));
+  EXPECT_TRUE(Value::Equals(base::test::ParseJson("[ null, null, null ]").get(),
+                            actual_array.get()));
 }
 
 }  // namespace content
