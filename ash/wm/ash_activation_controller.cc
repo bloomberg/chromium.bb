@@ -4,16 +4,13 @@
 
 #include "ash/wm/ash_activation_controller.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/views/corewm/window_modality_controller.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -36,10 +33,6 @@ aura::Window* AshActivationController::WillActivateWindow(
       views::corewm::GetModalTransient(window);
   if (window_modal_transient)
     return window_modal_transient;
-
-  // Fallback to launcher
-  if (!window)
-    window = PrepareToActivateLauncher();
 
   // Make sure the workspace manager switches to the workspace for window.
   // Without this CanReceiveEvents() below returns false and activation never
@@ -82,36 +75,6 @@ aura::Window* AshActivationController::WillFocusWindow(
   if (window_modal_transient)
     return window_modal_transient;
   return window;
-}
-
-aura::Window* AshActivationController::PrepareToActivateLauncher() {
-  // If workspace controller is not available, then it means that the root
-  // window is being destroyed. We can't activate any window then.
-  if (!GetRootWindowController(
-      Shell::GetActiveRootWindow())->workspace_controller()) {
-    return NULL;
-  }
-  // Fallback to a launcher only when Spoken feedback is enabled.
-  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
-    return NULL;
-  Launcher* launcher;
-  if (Shell::IsLauncherPerDisplayEnabled()) {
-    launcher = GetRootWindowController(
-        Shell::GetActiveRootWindow())->launcher();
-  } else {
-    launcher = Launcher::ForPrimaryDisplay();
-  }
-  // Launcher is not always available, eg. not in the login screen.
-  if (!launcher)
-    return NULL;
-  views::Widget* launcher_widget = launcher->widget();
-  // Launcher's window may be already destroyed in shutting down process.
-  if (!launcher_widget)
-    return NULL;
-  aura::Window* launcher_window = launcher_widget->GetNativeWindow();
-  // Notify launcher to allow activation via CanActivate().
-  launcher->WillActivateAsFallback();
-  return launcher_window;
 }
 
 }  // namespace internal

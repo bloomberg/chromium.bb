@@ -19,7 +19,6 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -69,14 +68,9 @@ class Launcher::DelegateView : public views::WidgetDelegate,
     return View::GetWidget();
   }
   virtual bool CanActivate() const OVERRIDE {
-    // Allow to activate as fallback.
-    if (launcher_->activating_as_fallback_)
-      return true;
-    // Allow to activate from the focus cycler.
-    if (focus_cycler_ && focus_cycler_->widget_activating() == GetWidget())
-      return true;
-    // Disallow activating in other cases, especially when using mouse.
-    return false;
+    // We don't want mouse clicks to activate us, but we need to allow
+    // activation when the user is using the keyboard (FocusCycler).
+    return focus_cycler_ && focus_cycler_->widget_activating() == GetWidget();
   }
 
   // BackgroundAnimatorDelegate overrides:
@@ -215,8 +209,7 @@ Launcher::Launcher(LauncherModel* launcher_model,
       launcher_view_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       delegate_(launcher_delegate),
-      background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha),
-      activating_as_fallback_(false) {
+      background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -243,12 +236,9 @@ Launcher::Launcher(LauncherModel* launcher_model,
   gfx::Size pref =
       static_cast<views::View*>(launcher_view_)->GetPreferredSize();
   widget_->SetBounds(gfx::Rect(pref));
-
-  widget_->AddObserver(this);
 }
 
 Launcher::~Launcher() {
-  widget_->RemoveObserver(this);
 }
 
 // static
@@ -413,15 +403,6 @@ void Launcher::SwitchToWindow(int window_index) {
        items[found_index].status == ash::STATUS_CLOSED)) {
     // Then set this one as active.
     ActivateLauncherItem(found_index);
-  }
-}
-
-void Launcher::OnWidgetActivationChanged(views::Widget* widget, bool active) {
-  activating_as_fallback_ = false;
-  if (active) {
-    delegate_view_->SetPaneFocusAndFocusDefault();
-  } else {
-    delegate_view_->GetFocusManager()->ClearFocus();
   }
 }
 
