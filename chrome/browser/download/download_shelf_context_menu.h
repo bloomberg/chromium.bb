@@ -23,15 +23,15 @@ class PageNavigator;
 class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
  public:
   enum ContextMenuCommands {
-    SHOW_IN_FOLDER = 1,  // Open a file explorer window with the item selected.
-    OPEN_WHEN_COMPLETE,  // Open the download when it's finished.
-    ALWAYS_OPEN_TYPE,    // Default this file extension to always open.
-    CANCEL,              // Cancel the download.
-    TOGGLE_PAUSE,        // Temporarily pause a download.
-    DISCARD,             // Discard the malicious download.
-    KEEP,                // Keep the malicious download.
-    LEARN_MORE,          // Show information about download scanning.
-    MENU_LAST
+    SHOW_IN_FOLDER = 1,    // Open a folder view window with the item selected.
+    OPEN_WHEN_COMPLETE,    // Open the download when it's finished.
+    ALWAYS_OPEN_TYPE,      // Default this file extension to always open.
+    CANCEL,                // Cancel the download.
+    TOGGLE_PAUSE,          // Temporarily pause a download.
+    DISCARD,               // Discard the malicious download.
+    KEEP,                  // Keep the malicious download.
+    LEARN_MORE_SCANNING,   // Show information about download scanning.
+    LEARN_MORE_INTERRUPTED,// Show information about interrupted downloads.
   };
 
   virtual ~DownloadShelfContextMenu();
@@ -60,12 +60,14 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
  private:
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetFinishedMenuModel();
+  ui::SimpleMenuModel* GetInterruptedMenuModel();
   ui::SimpleMenuModel* GetMaliciousMenuModel();
 
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
   scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> interrupted_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
 
   // A model to control the cancel behavior.

@@ -370,6 +370,9 @@ extern const char kSyncLearnMoreURL[];
 // The URL for the "Learn more" page for download scanning.
 extern const char kDownloadScanningLearnMoreURL[];
 
+// The URL for the "Learn more" page for interrupted downloads.
+extern const char kDownloadInterruptedLearnMoreURL[];
+
 // The URL for the "Learn more" page on the sync setup dialog, when syncing
 // everything.
 extern const char kSyncEverythingLearnMoreURL[];

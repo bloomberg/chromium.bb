@@ -2965,9 +2965,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                  desc="Download context menu keep malicious download">
           &amp;Keep
         </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE"
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
                  desc="Download context menu show information about download scanning">
           &amp;Learn more
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
+                 desc="Download context menu show information about interrupted downloads">
+          &amp;More information
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -3003,9 +3007,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                  desc="In Title Case: Download context menu keep malicious download">
           &amp;Keep
         </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE"
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
                  desc="In Title Case: Download context menu show information about download scanning">
           &amp;Learn More
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
+                 desc="Download context menu show information about interrupted downloads">
+          &amp;More Information
         </message>
       </if>
       <!-- GRIT doesn't support nesting <if>...</if> blocks, so these can't -->
