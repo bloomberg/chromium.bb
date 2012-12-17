@@ -150,7 +150,7 @@
 <translation id="5341849548509163798">ከ<ph name="NUMBER_MANY"/> ሰዓታት በፊት</translation>
 <translation id="4422428420715047158">ጎራ፦</translation>
 <translation id="7788444488075094252">ቋንቋዎች እና ግብአት</translation>
-<translation id="6723354935081862304">ወድ Google Docs እና ሌሎች የዳመና መድረሻዎች ያትሙ። ወደ Google የዳመና ህትመት ለማተም <ph name="BEGIN_LINK"/>ይግቡ<ph name="END_LINK"/>።</translation>
+<translation id="6723354935081862304">ወድ Google ሰነዶች እና ሌሎች የዳመና መድረሻዎች ያትሙ። ወደ Google የዳመና ህትመት ለማተም <ph name="BEGIN_LINK"/>ይግቡ<ph name="END_LINK"/>።</translation>
 <translation id="3602290021589620013">ቅድመ-ዕይታ</translation>
 <translation id="6257035105556579916">ቅጥያዎች በቅንብር ሁነታ ውስጥ ሊቀየሩ አይችሉም።</translation>
 <translation id="800602641363855389"><ph name="TITLE"/> ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
@@ -1572,7 +1572,7 @@ nil</translation>
 <translation id="8221729492052686226">ይህን ጥያቄ ካላስነሱ፣ በስርዓትዎ ላይ የጥቃት ሙከራን ሊወክል ይችላል። ይህን ጥያቄ ለማስነሳት ግልጽ ርምጃ ካልወሰዱ፣ ‹ምንም አትስራ› የሚለውን መጫን ይኖርብዎታል።</translation>
 <translation id="4956752588882954117">ገጽዎ ለመታየት ይገኛል።</translation>
 <translation id="894360074127026135">የNetscape አለምአቀፍ አወቃቀር</translation>
-<translation id="8420060421540670057">የGoogle Docs ፋይሎችን አሳይ</translation>
+<translation id="8420060421540670057">የGoogle ሰነዶች ፋይሎችን አሳይ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1335588927966684346">መገልገያ፦</translation>
 <translation id="2710582058364740604">የከፍተኛ ዲ ፒ አይ ሁነታ እና ንብረቶችን መጠቀም ለማስገደድ የመሣሪያ ማሳያ እፍጋቱን ይሽራል።</translation>
@@ -1909,7 +1909,7 @@ nil</translation>
 <translation id="7584802760054545466">ከ<ph name="NETWORK_ID"/> ጋር በመገናኘት ላይ</translation>
 <translation id="5612734644261457353">ይቅርታ፣ የይለፍ ቃልዎ አሁንም ሊረጋገጥ አልቻለም። ማሳሰቢያ፦ የይለፍ ቃልዎን በቅርብ ጊዜ ቀይረው ከሆነ አዲስ የይለፍ ቃልዎ የሚተገበረው ሲወጡ ነው፣ እባክዎ የድሮውን ይለፍ ቃል እዚህ ይጠቀሙ።</translation>
 <translation id="2908162660801918428">የሚዲያ ማዕከለ ስዕላት በአቃፊ ያክሉ</translation>
-<translation id="2562685439590298522">Docs</translation>
+<translation id="2562685439590298522">ሰነዶች</translation>
 <translation id="4060383410180771901">ድር ጣቢያው ለ<ph name="URL"/> የተጠየቀውን ጥያቄ ማስተናገድ አልቻለም።</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
 <translation id="1108600514891325577">&amp;አቁም</translation>

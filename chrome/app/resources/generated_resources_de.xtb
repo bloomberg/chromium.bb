@@ -325,7 +325,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus <ph name="SHORTCUT_K
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3150927491400159470">Vollständiges Aktualisieren (Hard Reload)</translation>
 <translation id="3549644494707163724">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
-<translation id="7531238562312180404">Da <ph name="PRODUCT_NAME"/> die Verarbeitung Ihrer persönlichen Daten nicht steuern kann, wurden alle Erweiterungen für Inkognito-Fenster deaktiviert. Sie können die Erweiterungen einzeln im <ph name="BEGIN_LINK"/>Erweiterungs-Manager<ph name="END_LINK"/> aktivieren.</translation>
+<translation id="7531238562312180404">Da <ph name="PRODUCT_NAME"/> die Verarbeitung Ihrer personenbezogenen Daten nicht steuern kann, wurden alle Erweiterungen für Inkognito-Fenster deaktiviert. Sie können die Erweiterungen einzeln im <ph name="BEGIN_LINK"/>Erweiterungs-Manager<ph name="END_LINK"/> aktivieren.</translation>
 <translation id="5667293444945855280">Malware</translation>
 <translation id="3272022690430094623">Weiter ›</translation>
 <translation id="8707481173455612936">Offizielle Webseite für Audioquelle</translation>
@@ -4166,7 +4166,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="899403249577094719">Basis-URL für Netscape-Zertifikate</translation>
 <translation id="2737363922397526254">Minimieren...</translation>
 <translation id="8605428685123651449">SQLite-Speicher</translation>
-<translation id="5469175127151858022">Ihre Chrome- und Betriebssystemversion wird zusammen mit den von Ihnen oben angegebenen Informationen an Google gesendet. Dieses Feedback wird zur Fehlerdiagnose und Verbesserung von Chrome verwendet. Alle persönlichen Daten, die Sie uns mitteilen, ob ausdrücklich oder zufällig, sind gemäß unseren Datenschutzbestimmungen geschützt.<ph name="BEGIN_BOLD"/> Durch das Senden Ihres Feedbacks stimmen Sie zu, dass Google dieses zur Verbesserung von Google-Produkten und -Diensten nutzen darf. <ph name="END_BOLD"/></translation>
+<translation id="5469175127151858022">Ihre Chrome- und Betriebssystemversion wird zusammen mit den von Ihnen oben angegebenen Informationen an Google gesendet. Dieses Feedback wird zur Fehlerdiagnose und Verbesserung von Chrome verwendet. Alle personenbezogenen Daten, die Sie uns mitteilen, ob ausdrücklich oder zufällig, sind gemäß unseren Datenschutzbestimmungen geschützt.<ph name="BEGIN_BOLD"/> Durch das Senden Ihres Feedbacks stimmen Sie zu, dass Google dieses zur Verbesserung von Google-Produkten und -Diensten nutzen darf. <ph name="END_BOLD"/></translation>
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="8680165343738477927">An Google Drive senden</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>

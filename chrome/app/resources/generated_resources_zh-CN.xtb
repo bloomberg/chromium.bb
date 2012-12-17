@@ -17,10 +17,10 @@
 <translation id="4480627574828695486">断开与此帐户的连接...</translation>
 <translation id="6065289329191373810">启用处于开发阶段的实验性 WebKit 功能。</translation>
 <translation id="2516632596252643567">&lt;p&gt;
-          直接在此处访问您已在计算机上打开的标签页。
+          在这直接进入您已在电脑上打开的标签页。
           &lt;/p&gt;
           &lt;p&gt;
-          您只需在计算机上打开 Chrome 浏览器，点击相应菜单，然后选择“登录 Chrome 浏览器...”即可。
+          您只需在电脑上打开 Chrome 浏览器，点击相应菜单，然后选择“登录 Chrome 浏览器...”即可。
           &lt;/p&gt;</translation>
 <translation id="7040807039050164757">检查该字段的拼写(&amp;C)</translation>
 <translation id="778579833039460630">未收到数据</translation>
@@ -413,7 +413,7 @@
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="5453029940327926427">关闭标签页</translation>
 <translation id="406070391919917862">后台应用</translation>
-<translation id="8820817407110198400">书签</translation>
+<translation id="8820817407110198400">已保存的书签</translation>
 <translation id="2580170710466019930"><ph name="PRODUCT_NAME"/>正在安装最新的系统更新，请稍候。</translation>
 <translation id="7428061718435085649">分别使用左侧和右侧的 Shift 键选择第二和第三候选词</translation>
 <translation id="697102984574083719">没有任何针对此操作注册的应用。</translation>
@@ -513,7 +513,7 @@
         服务器需要进行修复。
         为了保护您的隐私，
          “<ph name="PRODUCT_NAME"/>”不会使用不安全的连接。</translation>
-<translation id="7851858861565204677">其他设备</translation>
+<translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="5640179856859982418">瑞士键盘</translation>
 <translation id="1662837784918284394">（无）</translation>
 <translation id="2573269395582837871">选择照片和名称</translation>
@@ -709,7 +709,7 @@
 <translation id="7979036127916589816">同步错误</translation>
 <translation id="4426082685552308673">平均值</translation>
 <translation id="1029317248976101138">缩放</translation>
-<translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> 个，共 <ph name="TOTAL_MATCHCOUNT"/> 个</translation>
+<translation id="5455790498993699893">第 <ph name="ACTIVE_MATCH"/> 条，共 <ph name="TOTAL_MATCHCOUNT"/> 条</translation>
 <translation id="6999531337630656517">开始过度扫描校准</translation>
 <translation id="1617097702943948177">临时存储：</translation>
 <translation id="1202290638211552064">在等待上游服务器响应时，网关或代理服务器超时。</translation>
@@ -1471,7 +1471,7 @@
 <translation id="542318722822983047">自动将光标移动到下一个字符</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="9027459031423301635">在新标签页中打开链接(&amp;T)</translation>
-<translation id="2251809247798634662">新建隐身窗口</translation>
+<translation id="2251809247798634662">打开新的隐身窗口</translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE"/>)。</translation>
 <translation id="4540154706690252107">从启动器取消固定</translation>
 <translation id="6968649314782363508">访问您在 <ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 和 <ph name="WEBSITE_3"/> 上的数据</translation>
@@ -2200,7 +2200,7 @@
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="428771275901304970">可用数据少于 1MB</translation>
-<translation id="1682548588986054654">新建隐身窗口</translation>
+<translation id="1682548588986054654">打开新的隐身窗口</translation>
 <translation id="6833901631330113163">南欧语言</translation>
 <translation id="6065289257230303064">证书主题背景目录属性</translation>
 <translation id="2423017480076849397">通过<ph name="CLOUD_PRINT_NAME"/>在线使用和共享您的打印机</translation>
@@ -2857,7 +2857,7 @@
           您已在其他设备上的 Chrome 浏览器中打开的标签页会显示在此处。
           &lt;/p&gt;
           &lt;a href=&quot;#enablesync&quot;&gt;
-          启用同步。
+          启用同步
           &lt;/p&gt;</translation>
 <translation id="889901481107108152">抱歉，此实验无法在您的平台上进行。</translation>
 <translation id="2042900667172886929">清除本地缓存</translation>
@@ -3018,7 +3018,7 @@
 <translation id="8307664665247532435">下一次重新载入时会清除设置</translation>
 <translation id="790025292736025802">未找到 <ph name="URL"/></translation>
 <translation id="895347679606913382">即将开始下载...</translation>
-<translation id="3319048459796106952">新建隐身窗口(&amp;I)</translation>
+<translation id="3319048459796106952">打开新的隐身窗口(&amp;I)</translation>
 <translation id="5832669303303483065">添加新地址...</translation>
 <translation id="7269282439325036675">需要重新启动您的 <ph name="IDS_SHORT_PRODUCT_NAME"/> 设备，才能将其恢复到最初的出厂设置。</translation>
 <translation id="3127919023693423797">正在进行身份验证...</translation>
@@ -3108,7 +3108,7 @@
 <translation id="3290704484208221223">百分比</translation>
 <translation id="5265562206369321422">离线超过 1 周</translation>
 <translation id="6805647936811177813">请登录“<ph name="TOKEN_NAME"/>”，从 <ph name="HOST_NAME"/> 导入客户端证书。</translation>
-<translation id="6412931879992742813">新建隐身窗口</translation>
+<translation id="6412931879992742813">打开新的隐身窗口</translation>
 <translation id="654594702871184195">音频 (<ph name="ADDRESS"/>)</translation>
 <translation id="1673103856845176271">出于安全原因，无法访问该文件。</translation>
 <translation id="1199232041627643649">按住 <ph name="KEY_EQUIVALENT"/> 键退出。</translation>
@@ -3998,7 +3998,7 @@
 <translation id="5813394174971374198"><ph name="BEGIN_BOLD"/>推荐<ph name="END_BOLD"/>：启用 <ph name="ADAPTER_NAME"/> 适配器。</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>：<ph name="STATUS"/></translation>
 <translation id="9049981332609050619">您试图访问 <ph name="DOMAIN"/>，但服务器提供的证书无效。</translation>
-<translation id="4414232939543644979">新建隐身窗口(&amp;I)</translation>
+<translation id="4414232939543644979">打开新的隐身窗口(&amp;I)</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> 上的网页显示：</translation>
 <translation id="7148804936871729015">网址为 <ph name="URL"/> 的服务器的响应等待时间过长。该服务器可能已超载。</translation>
 <translation id="8094802570099763657">正在复制 $1 项。</translation>
@@ -4219,7 +4219,7 @@
 <translation id="5469175127151858022">除了您选择涵盖的上述信息外，还将提交您的 Chrome 浏览器和操作系统的版本。此反馈用于诊断问题并帮助改进 Chrome。您提交的所有个人信息，无论是明确提交还是意外提交，都会根据我们的隐私权政策得到保护。<ph name="BEGIN_BOLD"/>提交此反馈即表示您同意 Google 可使用您提供的反馈信息改进 Google 的任何产品或服务。      <ph name="END_BOLD"/></translation>
 <translation id="2841013758207633010">时间</translation>
 <translation id="8680165343738477927">发送到 Google 云端硬盘</translation>
-<translation id="4880827082731008257">搜索记录</translation>
+<translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="8661290697478713397">在隐身窗口中打开链接(&amp;G)</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>] (<ph name="DEVICE"/>)</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> secs</translation>
@@ -4289,7 +4289,7 @@
 <translation id="1732215134274276513">取消固定标签页</translation>
 <translation id="4785040501822872973">此计算机将在 <ph name="LOGOUT_TIME_LEFT"/> 秒后重置。
 按任意键以继续浏览。</translation>
-<translation id="4084682180776658562">书签</translation>
+<translation id="4084682180776658562">已保存的书签</translation>
 <translation id="8859057652521303089">选择语言：</translation>
 <translation id="5941864346249299673">在网络中读取的字节数</translation>
 <translation id="3030138564564344289">重试下载</translation>
@@ -4595,7 +4595,7 @@
 <translation id="4912380333728114045">为了让 Chrome 速度更快，我们已自动停用了一些可能在您不知情的情况下添加的扩展程序：</translation>
 <translation id="445923051607553918">加入 Wi-Fi 网络</translation>
 <translation id="9087725134750123268">删除 Cookie 和其他网站数据</translation>
-<translation id="2925966894897775835">电子表格</translation>
+<translation id="2925966894897775835">表格</translation>
 <translation id="756631359159530168">在启用合成渲染的情况下，对网页内容启用逐块绘图。</translation>
 <translation id="3349155901412833452">用“,”键和“.”键在候选字词列表中翻页</translation>
 <translation id="3981681824736556685">如果您使用代理服务器，请检查您的代理设置或与您的网络管理员联系，以确保代理服务器工作正常。如果您认为不应该使用代理服务器，请调整您的代理设置：<ph name="PLATFORM_TEXT"/></translation>

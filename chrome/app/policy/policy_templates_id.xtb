@@ -21,7 +21,7 @@
 <translation id="5469825884154817306">Cekal gambar pada situs ini</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
 <translation id="2908277604670530363">Jumlah maksimal sambungan serentak ke server proxy</translation>
-<translation id="4838572175671839397">Berisi persamaan reguler yang digunakan untuk menentukan pengguna yang dapat masuk ke <ph name="PRODUCT_NAME"/>.
+<translation id="4838572175671839397">Berisi ekspresi reguler yang digunakan untuk menentukan pengguna yang dapat masuk ke <ph name="PRODUCT_NAME"/>.
 
       Kesalahan yang sesuai akan ditampilkan jika pengguna mencoba untuk masuk dengan nama pengguna yang tidak cocok dengan pola ini.
 
