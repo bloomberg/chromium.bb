@@ -142,6 +142,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(GPU_FEATURE_TYPE_WEBGL, manager->GetBlacklistedFeatures());
 
+  gpu_info.gl_vendor = "NVIDIA";
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
   manager->UpdateGpuInfo(gpu_info);
   EXPECT_FALSE(manager->GpuAccessAllowed());
