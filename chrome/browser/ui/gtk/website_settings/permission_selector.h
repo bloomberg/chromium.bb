@@ -30,6 +30,7 @@ class PermissionSelector : public PermissionMenuModel::Delegate {
   // effective default setting for the given permission |type|. It is not
   // allowed to pass |CONTENT_SETTING_DEFAULT| as value for |default_setting|.
   PermissionSelector(GtkThemeService* theme_service,
+                     const GURL& url,
                      ContentSettingsType type,
                      ContentSetting setting,
                      ContentSetting default_setting,

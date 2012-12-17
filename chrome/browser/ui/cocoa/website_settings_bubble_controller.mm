@@ -872,9 +872,9 @@ NSColor* IdentityVerifiedTextColor() {
   // Create the popup menu.
   // TODO(dubroy): Refactor this code to use PermissionMenuModel.
 
-  // Media stream permission does not support "Always allow".
-  // TODO(xians): Media supports "allow" for https but not for http.
-  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+  // Media stream permission only support "Always allow" for https.
+  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+      (webContents_ && webContents_->GetURL().SchemeIsSecure())) {
     [button addItemWithTitle:
         l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
     [[button lastItem] setTag:CONTENT_SETTING_ALLOW];

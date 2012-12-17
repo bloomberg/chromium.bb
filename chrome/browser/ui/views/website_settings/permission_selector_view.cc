@@ -150,6 +150,7 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
 ///////////////////////////////////////////////////////////////////////////////
 
 PermissionSelectorView::PermissionSelectorView(
+    const GURL& url,
     ContentSettingsType type,
     ContentSetting default_setting,
     ContentSetting current_setting,
@@ -208,7 +209,7 @@ PermissionSelectorView::PermissionSelectorView(
                   views::GridLayout::CENTER);
   // Create the permission menu button.
   menu_button_model_.reset(new PermissionMenuModel(
-      this, type, default_setting, current_setting));
+      this, url, type, default_setting, current_setting));
   bool button_enabled = source == content_settings::SETTING_SOURCE_USER;
   menu_button_ = new internal::PermissionMenuButton(
       WebsiteSettingsUI::PermissionActionToUIString(current_setting,

@@ -31,7 +31,8 @@ class MenuRunner;
 class PermissionSelectorView : public views::View,
                                public PermissionMenuModel::Delegate {
  public:
-  PermissionSelectorView(ContentSettingsType type,
+  PermissionSelectorView(const GURL& url,
+                         ContentSettingsType type,
                          ContentSetting default_setting,
                          ContentSetting current_setting,
                          content_settings::SettingSource source);

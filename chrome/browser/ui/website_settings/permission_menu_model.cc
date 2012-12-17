@@ -9,11 +9,13 @@
 
 PermissionMenuModel::PermissionMenuModel(
     Delegate* delegate,
+    const GURL& url,
     ContentSettingsType type,
     ContentSetting default_setting,
     ContentSetting current_setting)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      delegate_(delegate) {
+      delegate_(delegate),
+      site_url_(url) {
   string16 label;
   switch (default_setting) {
     case CONTENT_SETTING_ALLOW:
@@ -33,8 +35,9 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
 
-  // TODO(xians): Media should support COMMAND_SET_TO_ALLOW for https.
-  if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+  // Media only support COMMAND_SET_TO_ALLOW for https.
+  if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+      url.SchemeIsSecure()) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
     AddCheckItem(COMMAND_SET_TO_ALLOW, label);

@@ -491,6 +491,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
        ++permission) {
     layout->StartRow(1, content_column);
     PermissionSelectorView* selector = new PermissionSelectorView(
+        web_contents_ ? web_contents_->GetURL() : GURL::EmptyGURL(),
         permission->type,
         permission->default_setting,
         permission->setting,

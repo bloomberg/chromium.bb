@@ -600,6 +600,7 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
     PermissionSelector* selector =
         new PermissionSelector(
            theme_service_,
+           web_contents_ ? web_contents_->GetURL() : GURL::EmptyGURL(),
            permission->type,
            permission->setting,
            permission->default_setting,

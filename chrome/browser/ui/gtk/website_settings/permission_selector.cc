@@ -38,6 +38,7 @@ ContentSetting CommandIdToContentSetting(int command_id) {
 }  // namespace
 
 PermissionSelector::PermissionSelector(GtkThemeService* theme_service,
+                                       const GURL& url,
                                        ContentSettingsType type,
                                        ContentSetting setting,
                                        ContentSetting default_setting,
@@ -102,7 +103,7 @@ PermissionSelector::PermissionSelector(GtkThemeService* theme_service,
   gtk_button_set_relief(GTK_BUTTON(menu_button_), GTK_RELIEF_NONE);
   gtk_box_pack_start(GTK_BOX(widget_), menu_button_, FALSE, FALSE, 0);
 
-  menu_model_.reset(new PermissionMenuModel(this, type, default_setting,
+  menu_model_.reset(new PermissionMenuModel(this, url, type, default_setting,
                                             setting));
   MenuGtk::Delegate* delegate = new MenuGtk::Delegate();
   menu_.reset(new MenuGtk(delegate, menu_model_.get()));
