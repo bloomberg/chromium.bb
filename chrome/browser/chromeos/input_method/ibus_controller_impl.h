@@ -10,15 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace ui {
 class InputMethodIBus;
@@ -35,12 +30,7 @@ typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 class IBusControllerImpl : public IBusControllerBase,
                            public ibus::IBusPanelPropertyHandlerInterface {
  public:
-  // Creates an IBusController. All public methods must be invoked in the
-  // context of |default_task_runner|. |worker_task_runner| will be used to
-  // execute potentially blocking file tasks.
-  IBusControllerImpl(
-      const scoped_refptr<base::SequencedTaskRunner>& default_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner);
+  IBusControllerImpl();
   virtual ~IBusControllerImpl();
 
   // IBusController overrides:
@@ -55,6 +45,9 @@ class IBusControllerImpl : public IBusControllerBase,
   static bool FindAndUpdatePropertyForTesting(
       const InputMethodProperty& new_prop,
       InputMethodPropertyList* prop_list);
+
+  static void IBusDaemonInitializationDone(IBusControllerImpl* controller,
+                                           const std::string& ibus_address);
 
  private:
   enum IBusDaemonStatus{
@@ -102,13 +95,6 @@ class IBusControllerImpl : public IBusControllerBase,
   // The injected object must be released by caller.
   void set_input_method_for_testing(ui::InputMethodIBus* input_method);
 
-  // Receives a notification on a worker thread and posts a call to
-  // IBusDaemonInitializationDone on the default task runner.
-  void IBusDaemonInitializationDoneWorkerCallback(
-      const std::string& ibus_address);
-
-  void IBusDaemonInitializationDone(const std::string& ibus_address);
-
   // Called when the IBusConfigClient is initialized.
   void OnIBusConfigClientInitialized();
 
@@ -140,9 +126,6 @@ class IBusControllerImpl : public IBusControllerBase,
 
   // The pointer to global input method. We can inject this value for testing.
   ui::InputMethodIBus* input_method_;
-
-  scoped_refptr<base::SequencedTaskRunner> default_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   // Used for making callbacks for PostTask.
   base::WeakPtrFactory<IBusControllerImpl> weak_ptr_factory_;

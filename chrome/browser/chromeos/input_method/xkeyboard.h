@@ -9,11 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace chromeos {
 namespace input_method {
@@ -104,31 +99,29 @@ class XKeyboard {
 
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
-  virtual bool SetAutoRepeatEnabled(bool enabled) = 0;
+  // TODO(yusukes): Make this function non-static so we can mock it.
+  static bool SetAutoRepeatEnabled(bool enabled);
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success. Do not call the function from
   // non-UI threads.
-  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) = 0;
+  // TODO(yusukes): Make this function non-static so we can mock it.
+  static bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
-  // Returns true if auto repeat is enabled.
+  // Returns true if auto repeat is enabled. This function is protected: for
+  // testability.
   static bool GetAutoRepeatEnabledForTesting();
 
   // On success, set current auto repeat rate on |out_rate| and returns true.
-  // Returns false otherwise.
+  // Returns false otherwise. This function is protected: for testability.
   static bool GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate);
 
   // Returns false if |layout_name| contains a bad character.
   static bool CheckLayoutNameForTesting(const std::string& layout_name);
 
-  // Creates an instance of XKeyboard. |default_task_runner| is used to verify
-  // thread-safe usage (all methods must be invoked in the context of
-  // default_task_runner).
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the XKeyboard class.
-  static XKeyboard* Create(
-      const InputMethodUtil& util,
-      const scoped_refptr<base::SequencedTaskRunner>& default_task_runner);
+  static XKeyboard* Create(const InputMethodUtil& util);
 };
 
 }  // namespace input_method

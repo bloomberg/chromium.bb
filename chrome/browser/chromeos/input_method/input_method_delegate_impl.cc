@@ -5,11 +5,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 
 #include "base/logging.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 namespace input_method {
@@ -33,20 +31,6 @@ std::string InputMethodDelegateImpl::GetActiveLocale() const {
 
   NOTREACHED();
   return std::string();
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-InputMethodDelegateImpl::GetDefaultTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::UI);
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-InputMethodDelegateImpl::GetWorkerTaskRunner() const {
-  scoped_refptr<base::SequencedWorkerPool> worker_pool(
-      content::BrowserThread::GetBlockingPool());
-
-  return worker_pool->GetSequencedTaskRunner(worker_pool->GetSequenceToken());
 }
 
 }  // namespace input_method

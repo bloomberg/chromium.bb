@@ -8,11 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace chromeos {
 namespace input_method {
@@ -28,14 +23,6 @@ class InputMethodDelegate {
   virtual std::string GetHardwareKeyboardLayout() const = 0;
   // Retrieves the currently active UI locale.
   virtual std::string GetActiveLocale() const = 0;
-  // Retrieves the default task runner. The public input_method API should only
-  // be accessed in the context of this task runner.
-  virtual scoped_refptr<base::SequencedTaskRunner>
-      GetDefaultTaskRunner() const = 0;
-  // Retrieves a task runner that may be used for possibly blocking tasks such
-  // as file IO.
-  virtual scoped_refptr<base::SequencedTaskRunner>
-      GetWorkerTaskRunner() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodDelegate);
