@@ -266,9 +266,12 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
 
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorViewTest, NewURL) {
-  CreateEditor(profile_.get(), NULL,
+  const BookmarkNode* bb_node =
+      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
+
+  CreateEditor(profile_.get(), bb_node,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   NULL, -1, GURL(), string16()),
+                   bb_node, 1, GURL(), string16()),
                BookmarkEditorView::SHOW_TREE);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
@@ -276,11 +279,9 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
-  const BookmarkNode* bb_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
   ASSERT_EQ(4, bb_node->child_count());
 
-  const BookmarkNode* new_node = bb_node->GetChild(3);
+  const BookmarkNode* new_node = bb_node->GetChild(1);
 
   EXPECT_EQ(ASCIIToUTF16("new_a"), new_node->GetTitle());
   EXPECT_TRUE(GURL(base_path() + "a") == new_node->url());
@@ -332,7 +333,7 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
 TEST_F(BookmarkEditorViewTest, NewFolder) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(bb_node, -1);
+      BookmarkEditor::EditDetails::AddFolder(bb_node, 1);
   details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
                                         ASCIIToUTF16("z")));
   CreateEditor(profile_.get(), bb_node, details, BookmarkEditorView::SHOW_TREE);
@@ -345,7 +346,7 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
 
   // Make sure the folder was created.
   ASSERT_EQ(4, bb_node->child_count());
-  const BookmarkNode* new_node = bb_node->GetChild(3);
+  const BookmarkNode* new_node = bb_node->GetChild(1);
   EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
   EXPECT_EQ(ASCIIToUTF16("new_F"), new_node->GetTitle());
   // The node should have one child.

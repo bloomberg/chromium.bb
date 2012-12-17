@@ -85,10 +85,14 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
                                   const string16& new_title,
                                   const GURL& new_url) {
   const BookmarkNode* node;
+  // When create the new one to right-clicked folder, add it to the next to the
+  // folder's position.
+  int insert_index =
+      parent == details.parent_node ? details.index : parent->child_count();
   if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
-    node = model->AddURL(parent, parent->child_count(), new_title, new_url);
+    node = model->AddURL(parent, insert_index, new_title, new_url);
   } else if (details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
-    node = model->AddFolder(parent, parent->child_count(), new_title);
+    node = model->AddFolder(parent, insert_index, new_title);
     for (size_t i = 0; i < details.urls.size(); ++i) {
       model->AddURL(node, node->child_count(), details.urls[i].second,
                     details.urls[i].first);
