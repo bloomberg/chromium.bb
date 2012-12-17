@@ -132,7 +132,7 @@ void GpuDataManagerImpl::Initialize() {
     return;
 
   GPUInfo gpu_info;
-  gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+  gpu_info_collector::CollectBasicGraphicsInfo(&gpu_info);
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id)
     gpu_info.finalized = true;
@@ -173,6 +173,10 @@ void GpuDataManagerImpl::InitializeImpl(
     CHECK(succeed);
   }
 
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info_ = gpu_info;
+  }
   UpdateGpuInfo(gpu_info);
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
@@ -190,7 +194,11 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
   complete_gpu_info_already_requested_ = true;
 
   GpuProcessHost::SendOnIO(
+#if defined(OS_WIN)
       GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED,
+#else
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+#endif
       CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED,
       new GpuMsg_CollectGraphicsInfo());
 }
@@ -204,12 +212,21 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   if (software_rendering_)
     return;
 
-  GetContentClient()->SetGpuInfo(gpu_info);
+  GPUInfo my_gpu_info;
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info_collector::MergeGPUInfo(&gpu_info_, gpu_info);
+    complete_gpu_info_already_requested_ =
+        complete_gpu_info_already_requested_ || gpu_info_.finalized;
+    my_gpu_info = gpu_info_;
+  }
+
+  GetContentClient()->SetGpuInfo(my_gpu_info);
 
   if (gpu_blacklist_.get()) {
     GpuBlacklist::Decision decision =
         gpu_blacklist_->MakeBlacklistDecision(
-            GpuBlacklist::kOsAny, "", gpu_info);
+            GpuBlacklist::kOsAny, "", my_gpu_info);
     if (update_histograms_)
       UpdateStats(gpu_blacklist_.get(), decision.blacklisted_features);
 
@@ -220,13 +237,6 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
       if (!command_line->HasSwitch(switches::kGpuSwitching))
         gpu_switching_ = decision.gpu_switching;
     }
-  }
-
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_info_ = gpu_info;
-    complete_gpu_info_already_requested_ =
-        complete_gpu_info_already_requested_ || gpu_info_.finalized;
   }
 
   // We have to update GpuFeatureType before notify all the observers.
@@ -469,9 +479,6 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   } else {
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
   }
-
-  if (!gpu_blacklist_.get() || !gpu_blacklist_->needs_more_info())
-    command_line->AppendSwitch(switches::kSkipGpuFullInfoCollection);
 
   if (!swiftshader_path.empty())
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,

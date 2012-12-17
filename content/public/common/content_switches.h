@@ -187,7 +187,6 @@ CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
-extern const char kSkipGpuFullInfoCollection[];
 extern const char kTapDownDeferralTimeMs[];
 CONTENT_EXPORT extern const char kTestSandbox[];
 CONTENT_EXPORT extern const char kTestingFixedHttpPort[];
