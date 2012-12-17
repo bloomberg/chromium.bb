@@ -81,13 +81,14 @@ std::string BuildRequest() {
   chrome::VersionInfo version;
   std::string request(base::StringPrintf(
       "M-SEARCH * HTTP/1.1\r\n"
-      "HOST:%s\r\n"
+      "HOST:%s:%i\r\n"
       "MAN:\"ssdp:discover\"\r\n"
       "MX:%d\r\n"
       "ST:%s\r\n"
       "USER-AGENT:%s/%s %s\r\n"
       "\r\n",
       kDialRequestAddress,
+      kDialRequestPort,
       kDialResponseTimeoutSecs,
       kDialSearchType,
       version.Name().c_str(),
