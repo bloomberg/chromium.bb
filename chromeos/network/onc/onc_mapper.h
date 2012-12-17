@@ -42,15 +42,15 @@ class Mapper {
  protected:
   // Calls |MapObject|, |MapArray| and |MapPrimitive| according to |onc_value|'s
   // type, which always return an object of the according type. Result of the
-  // mapping is returned. On error sets |error| to true.
+  // mapping is returned. Only on error sets |error| to true.
   virtual scoped_ptr<base::Value> MapValue(const OncValueSignature& signature,
                                            const base::Value& onc_value,
                                            bool* error);
 
   // Maps objects/dictionaries. By default calls |MapFields|, which recurses
   // into each field of |onc_object|, and drops unknown fields. Result of the
-  // mapping is returned. On error sets |error| to true. In this implementation
-  // only unknown fields are errors.
+  // mapping is returned. Only on error sets |error| to true. In this
+  // implementation only unknown fields are errors.
   virtual scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
@@ -58,7 +58,7 @@ class Mapper {
 
   // Maps primitive values like BinaryValue, StringValue, IntegerValue... (all
   // but dictionaries and lists). By default copies |onc_primitive|. Result of
-  // the mapping is returned. On error sets |error| to true.
+  // the mapping is returned. Only on error sets |error| to true.
   virtual scoped_ptr<base::Value> MapPrimitive(
       const OncValueSignature& signature,
       const base::Value& onc_primitive,
@@ -67,7 +67,7 @@ class Mapper {
   // Maps each field of the given |onc_object| according to |object_signature|.
   // Adds the mapping of each field to |result| using |MapField| and drops
   // unknown fields by default. Sets |found_unknown_field| to true if this
-  // dictionary contains any unknown fields. Set |nested_error| to true if
+  // dictionary contains any unknown fields. Set |nested_error| to true only if
   // nested errors occured.
   virtual void MapFields(const OncValueSignature& object_signature,
                          const base::DictionaryValue& onc_object,
@@ -89,7 +89,8 @@ class Mapper {
   // Maps the array |onc_array| according to |array_signature|, which defines
   // the type of the entries. Maps each entry by calling |MapValue|. If any of
   // the nested mappings failed, the flag |nested_error| is set to true and the
-  // entry is dropped from the result. The resulting array is returned.
+  // entry is dropped from the result. Otherwise |nested_error| isn't
+  // modified. The resulting array is returned.
   virtual scoped_ptr<base::ListValue> MapArray(
       const OncValueSignature& array_signature,
       const base::ListValue& onc_array,

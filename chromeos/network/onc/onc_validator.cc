@@ -178,6 +178,24 @@ scoped_ptr<base::Value> Validator::MapField(
   return result.Pass();
 }
 
+scoped_ptr<base::ListValue> Validator::MapArray(
+    const OncValueSignature& array_signature,
+    const base::ListValue& onc_array,
+    bool* nested_error) {
+  bool nested_error_in_current_array = false;
+  scoped_ptr<base::ListValue> result = Mapper::MapArray(
+      array_signature, onc_array, &nested_error_in_current_array);
+
+  // Drop individual networks and certificates instead of rejecting all of
+  // the configuration.
+  if (nested_error_in_current_array &&
+      &array_signature != &kNetworkConfigurationListSignature &&
+      &array_signature != &kCertificateListSignature) {
+    *nested_error = nested_error_in_current_array;
+  }
+  return result.Pass();
+}
+
 scoped_ptr<base::Value> Validator::MapEntry(int index,
                                             const OncValueSignature& signature,
                                             const base::Value& onc_value,
@@ -230,6 +248,7 @@ bool Validator::ValidateRecommendedField(
   recommended.reset(recommended_list);
 
   if (!managed_onc_) {
+    error_or_warning_found_ = true;
     LOG(WARNING) << WarningHeader() << "Found the field '" << onc::kRecommended
                  << "' in an unmanaged ONC. Removing it.";
     return true;

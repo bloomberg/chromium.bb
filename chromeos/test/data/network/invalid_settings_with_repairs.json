@@ -18,12 +18,33 @@
             "Authentication": "None"
         }
     },
-    "managed-network-unknown-type": {
+    "managed-network-unknown-value": {
         "GUID": "guid",
         "Type": "LTE",
         "Name": "name",
         "Ethernet": {
             "Authentication": "None"
+        }
+    },
+    "managed-network-value-out-of-range": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "IPConfigs": [
+            { "Type": "IPv4",
+              "IPAddress": "127.0.0.1",
+              "RoutingPrefix": 123 }
+        ],
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-wrong-type": {
+        "GUID": "guid",
+        "Type": "LTE",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": 123
         }
     },
     "managed-network-unknown-recommended": {
@@ -53,6 +74,7 @@
         }
     },
     "network-repaired": {
+        "GUID": "guid",
         "Type": "Ethernet",
         "Name": "name",
         "Ethernet": {
@@ -60,6 +82,7 @@
         }
     },
     "network-unknown-fieldname": {
+        "GUID": "guid",
         "abc": "def",
         "Type": "Ethernet",
         "Name": "name",
@@ -67,11 +90,33 @@
             "Authentication": "None"
         }
     },
-    "network-unknown-type": {
+    "network-unknown-value": {
+        "GUID": "guid",
         "Type": "LTE",
         "Name": "name",
         "Ethernet": {
             "Authentication": "None"
+        }
+    },
+    "network-value-out-of-range": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "IPConfigs": [
+            { "Type": "IPv4",
+              "IPAddress": "127.0.0.1",
+              "RoutingPrefix": 123 }
+        ],
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-wrong-type": {
+        "GUID": "guid",
+        "Type": "LTE",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": 123
         }
     },
     "network-missing-required": {
@@ -81,12 +126,44 @@
             "Authentication": "None"
         }
     },
-    "network-illegal-recommended": {
-        "Recommended": [],
+    "network-with-illegal-recommended": {
+        "GUID": "guid",
+        "Recommended": ["Name"],
         "Type": "Ethernet",
         "Name": "name",
         "Ethernet": {
             "Authentication": "None"
         }
+    },
+    "toplevel-repaired": {
+        "Type": "UnencryptedConfiguration",
+        "NetworkConfigurations":
+        [ { "GUID": "guid",
+            "Type": "Ethernet",
+            "Name": "eth0",
+            "Ethernet": {
+                "Authentication": "None"
+            }
+          }
+        ]
+    },
+    "toplevel-invalid-network": {
+        "Type": "UnencryptedConfiguration",
+        "NetworkConfigurations":
+        [ { "GUID": "guid",
+            "Type": "unknown",
+            "Name": "unknown name",
+            "Ethernet": {
+                "Authentication": "None"
+            }
+          },
+          { "GUID": "guid",
+            "Type": "Ethernet",
+            "Name": "eth0",
+            "Ethernet": {
+                "Authentication": "None"
+            }
+          }
+        ]
     },
 }

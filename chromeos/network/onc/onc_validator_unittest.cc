@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -17,167 +18,287 @@
 
 namespace chromeos {
 namespace onc {
-namespace {
 
-// Create a strict validator that complains about every error.
-scoped_ptr<Validator> CreateStrictValidator(bool managed_onc) {
-  return make_scoped_ptr(new Validator(true, true, true, managed_onc));
-}
-
-// Create a liberal validator that ignores or repairs non-critical errors.
-scoped_ptr<Validator> CreateLiberalValidator(bool managed_onc) {
-  return make_scoped_ptr(new Validator(false, false, false, managed_onc));
-}
-}  // namespace
-
-TEST(ONCValidatorValidTest, EmptyUnencryptedConfiguration) {
-  scoped_ptr<Validator> validator(CreateStrictValidator(true));
-  scoped_ptr<const base::DictionaryValue> original(
-      ReadDictionaryFromJson(kEmptyUnencryptedConfiguration));
-
-  Validator::Result result;
-  scoped_ptr<const base::DictionaryValue> repaired(
-      validator->ValidateAndRepairObject(&kToplevelConfigurationSignature,
-                                         *original, &result));
-  EXPECT_EQ(Validator::VALID, result);
-  EXPECT_TRUE(test_utils::Equals(original.get(), repaired.get()));
-}
-
-// This test case is about validating valid ONC objects.
-class ONCValidatorValidTest
-    : public ::testing::TestWithParam<
-        std::pair<std::string, const OncValueSignature*> > {
- protected:
-  std::string GetFilename() const {
-    return GetParam().first;
+class ONCValidatorTest : public ::testing::Test {
+ public:
+  // Validate |onc_object| with the given |signature|. The object is considered
+  // to be managed if |managed_onc| is true. A strict validator is used if
+  // |strict| is true. |onc_object| and the resulting repaired object of the
+  // validation is stored, so that expectations can be checked afterwards using
+  // one of the Expect* functions below.
+  void Validate(bool strict,
+                scoped_ptr<base::DictionaryValue> onc_object,
+                const OncValueSignature* signature,
+                bool managed_onc) {
+    scoped_ptr<Validator> validator;
+    if (strict) {
+      // Create a strict validator that complains about every error.
+      validator.reset(new Validator(true, true, true, managed_onc));
+    } else {
+      // Create a liberal validator that ignores or repairs non-critical errors.
+      validator.reset(new Validator(false, false, false, managed_onc));
+    }
+    original_object_ = onc_object.Pass();
+    repaired_object_ = validator->ValidateAndRepairObject(signature,
+                                                          *original_object_,
+                                                          &validation_result_);
   }
 
-  const OncValueSignature* GetSignature() const {
-    return GetParam().second;
+  void ExpectValid() {
+    EXPECT_EQ(Validator::VALID, validation_result_);
+    EXPECT_TRUE(test_utils::Equals(original_object_.get(),
+                                   repaired_object_.get()));
   }
+
+  void ExpectRepairWithWarnings(
+      const base::DictionaryValue& expected_repaired) {
+    EXPECT_EQ(Validator::VALID_WITH_WARNINGS, validation_result_);
+    EXPECT_TRUE(test_utils::Equals(&expected_repaired, repaired_object_.get()));
+  }
+
+  void ExpectInvalid() {
+    EXPECT_EQ(Validator::INVALID, validation_result_);
+    EXPECT_EQ(NULL, repaired_object_.get());
+  }
+
+ private:
+  Validator::Result validation_result_;
+  scoped_ptr<const base::DictionaryValue> original_object_;
+  scoped_ptr<const base::DictionaryValue> repaired_object_;
 };
 
-TEST_P(ONCValidatorValidTest, ValidPolicyOnc) {
-  scoped_ptr<Validator> validator(CreateStrictValidator(true));
-  scoped_ptr<const base::DictionaryValue> original(
-      test_utils::ReadTestDictionary(GetFilename()));
+namespace {
 
-  Validator::Result result;
-  scoped_ptr<const base::DictionaryValue> repaired(
-      validator->ValidateAndRepairObject(GetSignature(), *original, &result));
-  EXPECT_EQ(Validator::VALID, result);
-  EXPECT_TRUE(test_utils::Equals(original.get(), repaired.get()));
+struct OncParams {
+  // |location_of_object| is a string to identify the object to be tested. It
+  // may be used as a filename or as a dictionary key.
+  OncParams(std::string location_of_object,
+            const OncValueSignature* onc_signature,
+            bool is_managed_onc)
+      : location(location_of_object),
+        signature(onc_signature),
+        is_managed(is_managed_onc) {
+  }
+
+  std::string location;
+  const OncValueSignature* signature;
+  bool is_managed;
+};
+
+::std::ostream& operator<<(::std::ostream& os, const OncParams& onc) {
+  return os << "(" << onc.location << ", " << onc.signature << ", "
+            << (onc.is_managed ? "managed" : "unmanaged") << ")";
 }
 
+}  // namespace
+
+// Ensure that the constant |kEmptyUnencryptedConfiguration| describes a valid
+// ONC toplevel object.
+TEST_F(ONCValidatorTest, EmptyUnencryptedConfiguration) {
+  Validate(true, ReadDictionaryFromJson(kEmptyUnencryptedConfiguration),
+           &kToplevelConfigurationSignature, false);
+  ExpectValid();
+}
+
+// This test case is about validating valid ONC objects without any errors. Both
+// the strict and the liberal validator accept the object.
+class ONCValidatorValidTest : public ONCValidatorTest,
+                              public ::testing::WithParamInterface<OncParams> {
+};
+
+TEST_P(ONCValidatorValidTest, StrictValidationValid) {
+  OncParams onc = GetParam();
+  Validate(true, test_utils::ReadTestDictionary(onc.location), onc.signature,
+           onc.is_managed);
+  ExpectValid();
+}
+
+TEST_P(ONCValidatorValidTest, LiberalValidationValid) {
+  OncParams onc = GetParam();
+  Validate(false, test_utils::ReadTestDictionary(onc.location), onc.signature,
+           onc.is_managed);
+  ExpectValid();
+}
+
+// The parameters are:
+// OncParams(string: Filename of a ONC file that is to be validated,
+//           OncValueSignature: signature of that ONC,
+//           bool: true if the ONC is managed).
 INSTANTIATE_TEST_CASE_P(
     ONCValidatorValidTest,
     ONCValidatorValidTest,
-    ::testing::Values(std::make_pair("managed_toplevel.onc",
-                                     &kToplevelConfigurationSignature),
-                      std::make_pair("encrypted.onc",
-                                     &kToplevelConfigurationSignature),
-                      std::make_pair("managed_vpn.onc",
-                                     &kNetworkConfigurationSignature),
-                      std::make_pair("managed_ethernet.onc",
-                                     &kNetworkConfigurationSignature),
-                      // Ignore recommended arrays in unmanaged ONC:
-                      std::make_pair("recommended_in_unmanaged.onc",
-                                     &kNetworkConfigurationSignature)));
+    ::testing::Values(OncParams("managed_toplevel.onc",
+                                &kToplevelConfigurationSignature,
+                                true),
+                      OncParams("encrypted.onc",
+                                &kToplevelConfigurationSignature,
+                                true),
+                      OncParams("managed_vpn.onc",
+                                &kNetworkConfigurationSignature,
+                                true),
+                      OncParams("managed_ethernet.onc",
+                                &kNetworkConfigurationSignature,
+                                true)));
 
-// Validate invalid ONC objects and check the resulting repaired object. This
-// test fixture loads a test json file into |invalid_| containing several test
-// objects which can be accessed by their path. The test boolean parameter
-// determines wether to use the strict or the liberal validator.
-class ONCValidatorInvalidTest : public ::testing::TestWithParam<bool> {
- public:
-  // Validate the entry at |path_to_object| with the given
-  // |signature|. Depending on |managed_onc| the object is interpreted as a
-  // managed onc (with recommended fields) or not. The resulting repaired object
-  // must match the entry at |path_to_repaired| if the liberal validator is
-  // used.
-  void ValidateInvalid(const std::string& path_to_object,
-                       const std::string& path_to_repaired,
-                       const OncValueSignature* signature,
-                       bool managed_onc) {
-    scoped_ptr<Validator> validator;
-    if (GetParam())
-      validator = CreateStrictValidator(managed_onc);
-    else
-      validator = CreateLiberalValidator(managed_onc);
+namespace {
 
-    const base::DictionaryValue* object = NULL;
-    ASSERT_TRUE(invalid_->GetDictionary(path_to_object, &object));
-
-    Validator::Result result;
-    scoped_ptr<base::DictionaryValue> actual_repaired =
-        validator->ValidateAndRepairObject(signature, *object, &result);
-    if (GetParam() || path_to_repaired == "") {
-      EXPECT_EQ(Validator::INVALID, result);
-      EXPECT_EQ(NULL, actual_repaired.get());
-    } else {
-      EXPECT_EQ(Validator::VALID_WITH_WARNINGS, result);
-      const base::DictionaryValue* expected_repaired = NULL;
-      invalid_->GetDictionary(path_to_repaired, &expected_repaired);
-      EXPECT_TRUE(test_utils::Equals(expected_repaired, actual_repaired.get()));
-    }
+struct RepairParams {
+  // Both arguments are strings to identify the object that is expected as the
+  // validation result. They may either be used as filenames or as dictionary
+  // keys.
+  RepairParams(std::string strict_repaired,
+               std::string liberal_repaired)
+      : location_of_strict_repaired(strict_repaired),
+        location_of_liberal_repaired(liberal_repaired) {
   }
 
-  virtual void SetUp() {
-    invalid_ =
-        test_utils::ReadTestDictionary("invalid_settings_with_repairs.json");
-  }
-
-  scoped_ptr<const base::DictionaryValue> invalid_;
+  std::string location_of_strict_repaired;
+  std::string location_of_liberal_repaired;
 };
 
-TEST_P(ONCValidatorInvalidTest, UnknownFieldName) {
-  ValidateInvalid("network-unknown-fieldname",
-                  "network-repaired",
-                  &kNetworkConfigurationSignature, false);
-  ValidateInvalid("managed-network-unknown-fieldname",
-                  "managed-network-repaired",
-                  &kNetworkConfigurationSignature, true);
+::std::ostream& operator<<(::std::ostream& os, const RepairParams& rp) {
+  return os << "(" << rp.location_of_strict_repaired << ", "
+            << rp.location_of_liberal_repaired << ")";
 }
 
-TEST_P(ONCValidatorInvalidTest, UnknownType) {
-  ValidateInvalid("network-unknown-type",
-                  "",
-                  &kNetworkConfigurationSignature, false);
-  ValidateInvalid("managed-network-unknown-type",
-                  "",
-                  &kNetworkConfigurationSignature, true);
+}  // namespace
+
+// This test case is about validating ONC objects that contain errors which can
+// be repaired (then the errors count as warnings). If a location of the
+// expected repaired object is given, then it is checked that the validator
+// (either strict or liberal) returns this repaired object and the result is
+// VALID_WITH_WARNINGS. If the location is the empty string, then it is expected
+// that the validator returns NULL and the result INVALID.
+class ONCValidatorTestRepairable
+    : public ONCValidatorTest,
+      public ::testing::WithParamInterface<std::pair<OncParams,
+                                                     RepairParams> > {
+ public:
+  // Load the common test data and return the dictionary at the field with
+  // name |name|.
+  scoped_ptr<base::DictionaryValue> GetDictionaryFromTestFile(
+      const std::string &name) {
+    scoped_ptr<const base::DictionaryValue> dict(
+        test_utils::ReadTestDictionary("invalid_settings_with_repairs.json"));
+    const base::DictionaryValue* onc_object = NULL;
+    CHECK(dict->GetDictionary(name, &onc_object));
+    return make_scoped_ptr(onc_object->DeepCopy());
+  }
+};
+
+TEST_P(ONCValidatorTestRepairable, StrictValidation) {
+  OncParams onc = GetParam().first;
+  Validate(true, GetDictionaryFromTestFile(onc.location), onc.signature,
+           onc.is_managed);
+  std::string location_of_repaired =
+      GetParam().second.location_of_strict_repaired;
+  if (location_of_repaired.empty())
+    ExpectInvalid();
+  else
+    ExpectRepairWithWarnings(*GetDictionaryFromTestFile(location_of_repaired));
 }
 
-TEST_P(ONCValidatorInvalidTest, UnknownRecommendedFieldName) {
-  ValidateInvalid("managed-network-unknown-recommended",
-                  "managed-network-repaired",
-                  &kNetworkConfigurationSignature, true);
+TEST_P(ONCValidatorTestRepairable, LiberalValidation) {
+  OncParams onc = GetParam().first;
+  Validate(false, GetDictionaryFromTestFile(onc.location), onc.signature,
+           onc.is_managed);
+  std::string location_of_repaired =
+      GetParam().second.location_of_liberal_repaired;
+  if (location_of_repaired.empty())
+    ExpectInvalid();
+  else
+    ExpectRepairWithWarnings(*GetDictionaryFromTestFile(location_of_repaired));
 }
 
-TEST_P(ONCValidatorInvalidTest, DictionaryRecommended) {
-  ValidateInvalid("managed-network-dict-recommended",
-                  "managed-network-repaired",
-                  &kNetworkConfigurationSignature, true);
-}
+// The parameters for all test case instantations below are:
+// OncParams(string: A fieldname in the dictionary from the file
+//                   "invalid_settings_with_repairs.json". That nested
+//                   dictionary will be tested.
+//           OncValueSignature: signature of that ONC,
+//           bool: true if the ONC is managed).
+// RepairParams(string: A fieldname in the dictionary from the file
+//                      "invalid_settings_with_repairs.json". That nested
+//                      dictionary is the expected result from strict
+//                      validation,
+//              string: A fieldname in the dictionary from the file
+//                      "invalid_settings_with_repairs.json". That nested
+//                      dictionary is the expected result from liberal
+//                      validation).
 
-TEST_P(ONCValidatorInvalidTest, MissingRequiredField) {
-  ValidateInvalid("network-missing-required",
-                  "network-missing-required",
-                  &kNetworkConfigurationSignature, false);
-  ValidateInvalid("managed-network-missing-required",
-                  "managed-network-missing-required",
-                  &kNetworkConfigurationSignature, true);
-}
+// Strict validator returns INVALID. Liberal validator repairs.
+INSTANTIATE_TEST_CASE_P(
+    StrictInvalidLiberalRepair,
+    ONCValidatorTestRepairable,
+    ::testing::Values(
+         std::make_pair(OncParams("network-unknown-fieldname",
+                                  &kNetworkConfigurationSignature,
+                                  false),
+                        RepairParams("", "network-repaired")),
+         std::make_pair(OncParams("managed-network-unknown-fieldname",
+                                  &kNetworkConfigurationSignature,
+                                  true),
+                        RepairParams("", "managed-network-repaired")),
+         std::make_pair(OncParams("managed-network-unknown-recommended",
+                                  &kNetworkConfigurationSignature,
+                                  true),
+                        RepairParams("", "managed-network-repaired")),
+         std::make_pair(OncParams("managed-network-dict-recommended",
+                                  &kNetworkConfigurationSignature,
+                                  true),
+                        RepairParams("", "managed-network-repaired")),
+         std::make_pair(OncParams("network-missing-required",
+                                  &kNetworkConfigurationSignature,
+                                  false),
+                        RepairParams("", "network-missing-required")),
+         std::make_pair(OncParams("managed-network-missing-required",
+                                  &kNetworkConfigurationSignature,
+                                  true),
+                        RepairParams("", "managed-network-missing-required"))));
 
-TEST_P(ONCValidatorInvalidTest, RecommendedInUnmanaged) {
-  ValidateInvalid("network-illegal-recommended",
-                  "network-repaired",
-                  &kNetworkConfigurationSignature, false);
-}
+// Strict and liberal validator repair identically.
+INSTANTIATE_TEST_CASE_P(
+    StrictAndLiberalRepairIdentically,
+    ONCValidatorTestRepairable,
+    ::testing::Values(
+         std::make_pair(OncParams("toplevel-invalid-network",
+                                  &kToplevelConfigurationSignature,
+                                  false),
+                        RepairParams("toplevel-repaired",
+                                     "toplevel-repaired")),
+         std::make_pair(OncParams("toplevel-invalid-network",
+                                  &kToplevelConfigurationSignature,
+                                  true),
+                        RepairParams("toplevel-repaired",
+                                     "toplevel-repaired")),
+         // Ignore recommended arrays in unmanaged ONC.
+         std::make_pair(OncParams("network-with-illegal-recommended",
+                                  &kNetworkConfigurationSignature,
+                                  false),
+                        RepairParams("network-repaired", "network-repaired"))));
 
-INSTANTIATE_TEST_CASE_P(ONCValidatorInvalidTest,
-                        ONCValidatorInvalidTest,
-                        ::testing::Bool());
+// Strict and liberal validator return both INVALID.
+INSTANTIATE_TEST_CASE_P(
+    StrictAndLiberalInvalid,
+    ONCValidatorTestRepairable,
+    ::testing::Values(
+         std::make_pair(OncParams("network-unknown-value",
+                                  &kNetworkConfigurationSignature, false),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("managed-network-unknown-value",
+                                  &kNetworkConfigurationSignature, true),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("network-value-out-of-range",
+                                  &kNetworkConfigurationSignature, false),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("managed-network-value-out-of-range",
+                                  &kNetworkConfigurationSignature, true),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("network-wrong-type",
+                                  &kNetworkConfigurationSignature, false),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("managed-network-wrong-type",
+                                  &kNetworkConfigurationSignature, true),
+                        RepairParams("", ""))));
 
 }  // namespace onc
 }  // namespace chromeos

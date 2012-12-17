@@ -97,7 +97,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // Dispatch to the right validation function according to
   // |signature|. Iterates over all fields and recursively validates/repairs
   // these. All valid fields are added to the result dictionary. Returns the
-  // repaired dictionary. On error returns NULL.
+  // repaired dictionary. Only on error returns NULL.
   virtual scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
@@ -110,6 +110,13 @@ class CHROMEOS_EXPORT Validator : public Mapper {
       const base::Value& onc_value,
       bool* found_unknown_field,
       bool* error) OVERRIDE;
+
+  // Ignores nested errors in NetworkConfigurations and Certificates, otherwise
+  // like |Mapper::MapArray|.
+  virtual scoped_ptr<base::ListValue> MapArray(
+      const OncValueSignature& array_signature,
+      const base::ListValue& onc_array,
+      bool* nested_error) OVERRIDE;
 
   // Pushes/pops the index to |path_|, otherwise like |Mapper::MapEntry|.
   virtual scoped_ptr<base::Value> MapEntry(
