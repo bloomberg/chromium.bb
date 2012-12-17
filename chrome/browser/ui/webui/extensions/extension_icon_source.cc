@@ -271,7 +271,7 @@ bool ExtensionIconSource::ParseData(const std::string& path,
   int size;
   if (!base::StringToInt(size_param, &size))
     return false;
-  if (size <= 0)
+  if (size <= 0 || size > extension_misc::EXTENSION_ICON_GIGANTOR)
     return false;
 
   ExtensionIconSet::MatchType match_type;

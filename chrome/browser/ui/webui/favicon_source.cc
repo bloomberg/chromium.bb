@@ -82,8 +82,10 @@ void FaviconSource::StartDataRequest(const std::string& path,
       size_t scale_delimiter = path.find("@", 5);
       std::string size = path.substr(5, slash - 5);
       size_in_dip = atoi(size.c_str());
-      DCHECK(size_in_dip == 64 || size_in_dip == 32 || size_in_dip == 16) <<
-          "only 64x64, 32x32 and 16x16 icons are supported";
+      if (size_in_dip != 64 && size_in_dip != 32 && size_in_dip != 16) {
+        // Only 64x64, 32x32 and 16x16 icons are supported.
+        size_in_dip = 16;
+      }
       // Optional scale factor.
       if (scale_delimiter != std::string::npos && scale_delimiter < slash) {
         DCHECK(size_in_dip == 16);
