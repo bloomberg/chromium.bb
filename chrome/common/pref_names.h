@@ -766,6 +766,7 @@ extern const char kShelfAutoHideBehavior[];
 extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
+extern const char kShelfPreferences[];
 
 extern const char kFlingVelocityCap[];
 extern const char kLongPressTimeInSeconds[];

@@ -285,7 +285,7 @@ void AppListController::OnWidgetClosing(views::Widget* widget) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, ShellObserver implementation:
-void AppListController::OnShelfAlignmentChanged() {
+void AppListController::OnShelfAlignmentChanged(aura::RootWindow* root_window) {
   if (view_) {
     view_->SetBubbleArrowLocation(GetBubbleArrowLocation(
         view_->GetWidget()->GetNativeView()));

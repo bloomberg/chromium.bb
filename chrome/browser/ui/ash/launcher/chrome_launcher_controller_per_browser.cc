@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -44,6 +45,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/theme_resources.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 using content::WebContents;
@@ -119,13 +121,67 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   DISALLOW_COPY_AND_ASSIGN(AppShortcutLauncherItemController);
 };
 
-// If the value of the pref at |local_path is not empty, it is returned
-// otherwise the value of the pref at |synced_path| is returned.
-std::string GetLocalOrRemotePref(PrefService* pref_service,
+std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
+  gfx::Display display = gfx::Screen::GetScreenFor(
+      root_window)->GetDisplayNearestWindow(root_window);
+  DCHECK(display.is_valid());
+
+  return base::Int64ToString(display.id());
+}
+
+void UpdatePerDisplayPref(PrefService* pref_service,
+                          aura::RootWindow* root_window,
+                          const char* pref_key,
+                          const std::string& value) {
+  std::string key = GetPrefKeyForRootWindow(root_window);
+  if (key.empty())
+    return;
+
+  DictionaryPrefUpdate update(pref_service, prefs::kShelfPreferences);
+  base::DictionaryValue* shelf_prefs = update.Get();
+  base::DictionaryValue* prefs = NULL;
+  if (!shelf_prefs->GetDictionary(key, &prefs)) {
+    prefs = new base::DictionaryValue();
+    shelf_prefs->Set(key, prefs);
+  }
+  prefs->SetStringWithoutPathExpansion(pref_key, value);
+}
+
+// Returns a pref value in |pref_service| for the display of |root_window|. The
+// pref value is stored in |local_path| and |path|, but |pref_service| may have
+// per-display preferences and the value can be specified by policy. Here is
+// the priority:
+//  * A value managed by policy. This is a single value that applies to all
+//    displays.
+//  * A user-set value for the specified display.
+//  * A user-set value in |local_path| or |path|. |local_path| is preferred. See
+//    comment in |kShelfAlignment| as to why we consider two prefs and why
+//    |local_path| is preferred.
+//  * A value recommended by policy. This is a single value that applies to all
+//    root windows.
+std::string GetPrefForRootWindow(PrefService* pref_service,
+                                 aura::RootWindow* root_window,
                                  const char* local_path,
-                                 const char* synced_path) {
+                                 const char* path) {
+  const PrefService::Preference* local_pref =
+      pref_service->FindPreference(local_path);
   const std::string value(pref_service->GetString(local_path));
-  return value.empty() ? pref_service->GetString(synced_path) : value;
+  if (local_pref->IsManaged())
+    return value;
+
+  std::string pref_key = GetPrefKeyForRootWindow(root_window);
+  if (!pref_key.empty()) {
+    const base::DictionaryValue* shelf_prefs = pref_service->GetDictionary(
+        prefs::kShelfPreferences);
+    const base::DictionaryValue* display_pref = NULL;
+    std::string per_display_value;
+    if (shelf_prefs->GetDictionary(pref_key, &display_pref) &&
+        display_pref->GetString(path, &per_display_value)) {
+      return per_display_value;
+    }
+  }
+
+  return value;
 }
 
 // If prefs have synced and no user-set value exists at |local_path|, the value
@@ -570,11 +626,10 @@ bool ChromeLauncherControllerPerBrowser::CanPin() const {
 ash::ShelfAutoHideBehavior
     ChromeLauncherControllerPerBrowser::GetShelfAutoHideBehavior(
         aura::RootWindow* root_window) const {
-  // TODO(oshima): Support multiple launchers.
-
   // See comment in |kShelfAlignment| as to why we consider two prefs.
   const std::string behavior_value(
-      GetLocalOrRemotePref(profile_->GetPrefs(),
+      GetPrefForRootWindow(profile_->GetPrefs(),
+                           root_window,
                            prefs::kShelfAutoHideBehaviorLocal,
                            prefs::kShelfAutoHideBehavior));
 
@@ -589,7 +644,6 @@ ash::ShelfAutoHideBehavior
 
 bool ChromeLauncherControllerPerBrowser::CanUserModifyShelfAutoHideBehavior(
     aura::RootWindow* root_window) const {
-  // TODO(oshima): Support multiple launchers.
   return profile_->GetPrefs()->
       FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
 }
@@ -805,11 +859,10 @@ void ChromeLauncherControllerPerBrowser::Observe(
   }
 }
 
-void ChromeLauncherControllerPerBrowser::OnShelfAlignmentChanged() {
+void ChromeLauncherControllerPerBrowser::OnShelfAlignmentChanged(
+    aura::RootWindow* root_window) {
   const char* pref_value = NULL;
-  // TODO(oshima): Support multiple displays.
-  switch (ash::Shell::GetInstance()->GetShelfAlignment(
-      ash::Shell::GetPrimaryRootWindow())) {
+  switch (ash::Shell::GetInstance()->GetShelfAlignment(root_window)) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
       pref_value = ash::kShelfAlignmentBottom;
       break;
@@ -820,9 +873,15 @@ void ChromeLauncherControllerPerBrowser::OnShelfAlignmentChanged() {
       pref_value = ash::kShelfAlignmentRight;
       break;
   }
-  // See comment in |kShelfAlignment| about why we have two prefs here.
-  profile_->GetPrefs()->SetString(prefs::kShelfAlignmentLocal, pref_value);
-  profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
+
+  UpdatePerDisplayPref(
+      profile_->GetPrefs(), root_window, prefs::kShelfAlignment, pref_value);
+
+  if (root_window == ash::Shell::GetPrimaryRootWindow()) {
+    // See comment in |kShelfAlignment| about why we have two prefs here.
+    profile_->GetPrefs()->SetString(prefs::kShelfAlignmentLocal, pref_value);
+    profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
+  }
 }
 
 void ChromeLauncherControllerPerBrowser::OnIsSyncingChanged() {
@@ -999,10 +1058,6 @@ void ChromeLauncherControllerPerBrowser::UpdateAppLaunchersFromPref() {
 void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
     ash::ShelfAutoHideBehavior behavior,
     aura::RootWindow* root_window) {
-  // TODO(oshima): Support multiple launchers.
-  if (root_window != ash::Shell::GetPrimaryRootWindow())
-    return;
-
   const char* value = NULL;
   switch (behavior) {
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
@@ -1012,16 +1067,24 @@ void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
       value = ash::kShelfAutoHideBehaviorNever;
       break;
   }
-  // See comment in |kShelfAlignment| about why we have two prefs here.
-  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
-  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
+
+  UpdatePerDisplayPref(
+      profile_->GetPrefs(), root_window, prefs::kShelfAutoHideBehavior, value);
+
+  if (root_window != ash::Shell::GetPrimaryRootWindow()) {
+    // See comment in |kShelfAlignment| about why we have two prefs here.
+    profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
+    profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
+  }
 }
 
 void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorFromPrefs() {
-  // TODO(oshima): Support multiple displays.
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-      GetShelfAutoHideBehavior(root_window), root_window);
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+        GetShelfAutoHideBehavior(*iter), *iter);
+  }
 }
 
 void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {
@@ -1029,19 +1092,22 @@ void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {
           switches::kShowLauncherAlignmentMenu))
     return;
 
-  // See comment in |kShelfAlignment| as to why we consider two prefs.
-  const std::string alignment_value(
-      GetLocalOrRemotePref(profile_->GetPrefs(),
-                           prefs::kShelfAlignmentLocal,
-                           prefs::kShelfAlignment));
-  ash::ShelfAlignment alignment = ash::SHELF_ALIGNMENT_BOTTOM;
-  if (alignment_value == ash::kShelfAlignmentLeft)
-    alignment = ash::SHELF_ALIGNMENT_LEFT;
-  else if (alignment_value == ash::kShelfAlignmentRight)
-    alignment = ash::SHELF_ALIGNMENT_RIGHT;
-  // TODO(oshima): Support multiple displays.
-  ash::Shell::GetInstance()->SetShelfAlignment(
-      alignment, ash::Shell::GetPrimaryRootWindow());
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    // See comment in |kShelfAlignment| as to why we consider two prefs.
+    const std::string alignment_value(
+        GetPrefForRootWindow(profile_->GetPrefs(),
+                             *iter,
+                             prefs::kShelfAlignmentLocal,
+                             prefs::kShelfAlignment));
+    ash::ShelfAlignment alignment = ash::SHELF_ALIGNMENT_BOTTOM;
+    if (alignment_value == ash::kShelfAlignmentLeft)
+      alignment = ash::SHELF_ALIGNMENT_LEFT;
+    else if (alignment_value == ash::kShelfAlignmentRight)
+      alignment = ash::SHELF_ALIGNMENT_RIGHT;
+    ash::Shell::GetInstance()->SetShelfAlignment(alignment, *iter);
+  }
 }
 
 WebContents* ChromeLauncherControllerPerBrowser::GetLastActiveWebContents(

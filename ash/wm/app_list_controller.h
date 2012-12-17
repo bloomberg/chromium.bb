@@ -95,7 +95,7 @@ class AppListController : public ui::EventHandler,
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // ShellObserver overrides:
-  virtual void OnShelfAlignmentChanged() OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
 
   // LauncherIconObserver overrides:
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;

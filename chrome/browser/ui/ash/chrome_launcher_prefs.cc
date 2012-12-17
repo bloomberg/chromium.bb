@@ -62,6 +62,8 @@ void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kShowLogoutButtonInTray,
                                   false,
                                   PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterDictionaryPref(prefs::kShelfPreferences,
+                                     PrefService::UNSYNCABLE_PREF);
 }
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id) {

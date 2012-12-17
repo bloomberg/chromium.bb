@@ -248,7 +248,7 @@ class ChromeLauncherControllerPerApp
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ash::ShellObserver:
-  virtual void OnShelfAlignmentChanged() OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
 
   // Overridden from PrefServiceObserver:
   virtual void OnIsSyncingChanged() OVERRIDE;

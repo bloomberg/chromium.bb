@@ -2103,6 +2103,8 @@ const char kMediaGalleriesRememberedGalleries[] =
 // set its value is set from the synced value (once prefs have been
 // synced). This gives a per-machine setting that is initialized from the last
 // set value.
+// These values are default on the machine but can be overridden by per-display
+// values in kShelfPreferences (unless overridden by managed policy).
 // String value corresponding to ash::Shell::ShelfAlignment.
 const char kShelfAlignment[] = "shelf_alignment";
 const char kShelfAlignmentLocal[] = "shelf_alignment_local";
@@ -2112,6 +2114,11 @@ const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 // Boolean value indicating whether to show a logout button in the ash tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
+// Dictionary value that holds per-display preference of shelf alignment and
+// auto-hide behavior. Key of the dictionary is the id of the display, and
+// its value is a dictionary whose keys are kShelfAlignment and
+// kShelfAutoHideBehavior.
+const char kShelfPreferences[] = "shelf_preferences";
 
 const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
 const char kLongPressTimeInSeconds[] =

@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ash {
 
 class ASH_EXPORT ShellObserver {
@@ -25,8 +29,8 @@ class ASH_EXPORT ShellObserver {
   // unlocked.
   virtual void OnLockStateChanged(bool locked) {}
 
-  // Invoked when the shelf alignment is changed.
-  virtual void OnShelfAlignmentChanged() {}
+  // Invoked when the shelf alignment in |root_window| is changed.
+  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) {}
 
  protected:
   virtual ~ShellObserver() {}

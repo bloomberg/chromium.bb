@@ -727,8 +727,10 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::RootWindow* root_window) {
-  if (GetRootWindowController(root_window)->SetShelfAlignment(alignment))
-    FOR_EACH_OBSERVER(ShellObserver, observers_, OnShelfAlignmentChanged());
+  if (GetRootWindowController(root_window)->SetShelfAlignment(alignment)) {
+    FOR_EACH_OBSERVER(
+        ShellObserver, observers_, OnShelfAlignmentChanged(root_window));
+  }
 }
 
 ShelfAlignment Shell::GetShelfAlignment(aura::RootWindow* root_window) {
