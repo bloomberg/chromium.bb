@@ -91,71 +91,72 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 @end ifnottex
 
 @menu
-* Introduction::                
-* Test Programs::               
-* How to Write Translation Tables::  
-* How to test Translation Tables::  
-* Notes on Back-Translation::   
-* Programming with liblouis::   
-* Opcode Index::                
-* Function Index::              
-* Program Index::               
+* Introduction::
+* Test Programs::
+* How to Write Translation Tables::
+* How to test Translation Tables::
+* Notes on Back-Translation::
+* Programming with liblouis::
+* Opcode Index::
+* Function Index::
+* Program Index::
 
 @detailmenu
  --- The Detailed Node Listing ---
 
 Test Programs
 
-* lou_debug::                   
-* lou_checktable::              
-* lou_allround::                
-* lou_translate (program)::     
-* lou_checkhyphens::            
+* lou_debug::
+* lou_trace::
+* lou_checktable::
+* lou_allround::
+* lou_translate (program)::
+* lou_checkhyphens::
 
 How to Write Translation Tables
 
-* Hyphenation Tables::          
-* Character-Definition Opcodes::  
-* Braille Indicator Opcodes::   
-* Emphasis Opcodes::            
-* Special Symbol Opcodes::      
-* Special Processing Opcodes::  
-* Translation Opcodes::         
-* Character-Class Opcodes::     
-* Swap Opcodes::                
-* The Context and Multipass Opcodes::  
-* The correct Opcode::          
-* Miscellaneous Opcodes::       
-* Deprecated Opcodes::          
+* Hyphenation Tables::
+* Character-Definition Opcodes::
+* Braille Indicator Opcodes::
+* Emphasis Opcodes::
+* Special Symbol Opcodes::
+* Special Processing Opcodes::
+* Translation Opcodes::
+* Character-Class Opcodes::
+* Swap Opcodes::
+* The Context and Multipass Opcodes::
+* The correct Opcode::
+* Miscellaneous Opcodes::
+* Deprecated Opcodes::
 
 How to test Translation Tables
 
-* Translation Table Test Harness::  
-* Translation Table Doctests::  
+* Translation Table Test Harness::
+* Translation Table Doctests::
 
 Programming with liblouis
 
-* License::                     
-* Overview::                    
-* Data structure of liblouis tables::  
-* lou_version::                 
-* lou_translateString::         
-* lou_translate::               
-* lou_backTranslateString::     
-* lou_backTranslate::           
-* lou_hyphenate::               
-* lou_compileString::           
-* lou_dotsToChar::              
-* lou_charToDots::              
-* lou_logFile::                 
-* lou_logPrint::                
-* lou_logEnd::                  
-* lou_setDataPath::             
-* lou_getDataPath::             
-* lou_getTable::                
-* lou_readCharFromFile::        
-* lou_free::                    
-* Python bindings::             
+* License::
+* Overview::
+* Data structure of liblouis tables::
+* lou_version::
+* lou_translateString::
+* lou_translate::
+* lou_backTranslateString::
+* lou_backTranslate::
+* lou_hyphenate::
+* lou_compileString::
+* lou_dotsToChar::
+* lou_charToDots::
+* lou_logFile::
+* lou_logPrint::
+* lou_logEnd::
+* lou_setDataPath::
+* lou_getDataPath::
+* lou_getTable::
+* lou_readCharFromFile::
+* lou_free::
+* Python bindings::
 
 @end detailmenu
 @end menu
@@ -189,14 +190,15 @@ liblouis}.
 @node Test Programs, How to Write Translation Tables, Introduction, Top
 @chapter Test Programs
 
-Five test programs are provided as part of the liblouis package. They
-are intended for testing liblouis and for debugging tables. None of
-them is suitable for braille transcription. An application that can be
-used for transcription is @command{xml2brl}, which is part of the
-liblouisxml package (@pxref{Top, , Introduction, liblouisxml,
-Liblouisxml User's and Programmer's Manual}). The source code of the
-test programs can be studied to learn how to use the liblouis library
-and they can be used to perform the following functions.
+A number of test programs are provided as part of the liblouis
+package. They are intended for testing liblouis and for debugging
+tables. None of them is suitable for braille transcription. An
+application that can be used for transcription is @command{xml2brl},
+which is part of the liblouisxml package (@pxref{Top, , Introduction,
+liblouisxml, Liblouisxml User's and Programmer's Manual}). The source
+code of the test programs can be studied to learn how to use the
+liblouis library and they can be used to perform the following
+functions.
 
 @anchor{common options}
 All of these programs recognize the @option{--help} and
@@ -216,26 +218,27 @@ Print the version number, then exit successfully.
 @end table
 
 @menu
-* lou_debug::                   
-* lou_checktable::              
-* lou_allround::                
-* lou_translate (program)::     
-* lou_checkhyphens::            
+* lou_debug::
+* lou_trace::
+* lou_checktable::
+* lou_allround::
+* lou_translate (program)::
+* lou_checkhyphens::
 @end menu
 
-@node lou_debug, lou_checktable, Test Programs, Test Programs
+@node lou_debug, lou_trace, Test Programs, Test Programs
 @section lou_debug
 @pindex lou_debug
 
-The lou_debug tool is intended for debugging liblouis translation
-tables. The command line for lou_debug is:
+The @command{lou_debug} tool is intended for debugging liblouis
+translation tables. The command line for @command{lou_debug} is:
 
 @example
 lou_debug [OPTIONS] TABLE[,TABLE,...]
 @end example
 
-The command line options that are accepted by lou_debug are described
-in @ref{common options}.
+The command line options that are accepted by @command{lou_debug} are
+described in @ref{common options}.
 
 The table (or comma-separated list of tables) is compiled. If no
 errors are found a brief command summary is printed, then the prompt
@@ -326,7 +329,53 @@ there is a hyphenation table.
 Exit the program.
 @end table
 
-@node lou_checktable, lou_allround, lou_debug, Test Programs
+@node lou_trace, lou_checktable, lou_debug, Test Programs
+@section lou_trace
+@pindex lou_trace
+
+When working on translation tables it is sometimes useful to determine
+what rules were applied when translating a string. @command{lou_trace}
+helps with exactly that. It list all the the applied rules for a given
+translation table and an input string.
+
+@example
+lou_trace [OPTIONS] TABLE[,TABLE,...]
+@end example
+
+@command{lou_trace} accepts all the standard options (@pxref{common
+options}). Once started you can type an input string followed by
+@kbd{@key{RET}}. @command{lou_trace} will print the braille
+translation followed by list of rules that were applied to produce the
+translation. A possible invocation is listed in the following example:
+
+@example
+$ lou_trace tables/en-us-g2.ctb 
+the u.s. postal service
+! u4s4 po/al s@}vice
+1.      largesign       the     2346
+2.      repeated                0
+3.      lowercase       u       136
+4.      punctuation     .       46
+5.      context _$l["."]$l      @@256
+6.      lowercase       s       234
+7.      postpunc        .       256
+8.      repeated                0
+9.      begword post    1234-135-34
+10.     largesign       a       1
+11.     lowercase       l       123
+12.     repeated                0
+13.     lowercase       s       234
+14.     always  er      12456
+15.     lowercase       v       1236
+16.     lowercase       i       24
+17.     lowercase       c       14
+18.     lowercase       e       15
+19.     pass2   $s1-10  @@0
+20.     pass2   $s1-10  @@0
+21.     pass2   $s1-10  @@0
+@end example
+
+@node lou_checktable, lou_allround, lou_trace, Test Programs
 @section lou_checktable
 @pindex lou_checktable
 
@@ -336,8 +385,8 @@ To use this program type the following:
 lou_checktable [OPTIONS] TABLE
 @end example
 
-Aside from the standard options (@pxref{common options}) lou_checktable
-also accepts the following options:
+Aside from the standard options (@pxref{common options})
+@command{lou_checktable} also accepts the following options:
 
 @table @option
 
@@ -362,8 +411,8 @@ completely interactive. Invoke it as follows:
 lou_allround [OPTIONS]
 @end example 
 
-The command line options that are accepted by lou_debug are described
-in @ref{common options}.
+The command line options that are accepted by @command{lou_allround}
+are described in @ref{common options}.
 
 You will see a few lines telling you how to use the program. Pressing
 one of the letters in parentheses and then enter will take you to a
@@ -379,10 +428,10 @@ and then view the results.
 This program translates whatever is on the standard input unit and
 prints it on the standard output unit. It is intended for large-scale
 testing of the accuracy of translation and back-translation. The
-command line for lou_translate is:
+command line for @command{lou_translate} is:
 
 @example
-lou_translate [OPTION] TABLE
+lou_translate [OPTION] TABLE[,TABLE,...]
 @end example
 
 Aside from the standard options (@pxref{common options}) this program
@@ -418,8 +467,8 @@ interactive. Invoke it as follows:
 lou_checkhyphens [OPTIONS]
 @end example 
 
-The command line options that are accepted by lou_checkhyphens are
-described in @ref{common options}.
+The command line options that are accepted by
+@command{lou_checkhyphens} are described in @ref{common options}.
 
 You will see a few lines telling you how to use the program.
 
@@ -577,19 +626,19 @@ everything else. Character-definition opcodes are necessary for
 hyphenation tables to work.
 
 @menu
-* Hyphenation Tables::          
-* Character-Definition Opcodes::  
-* Braille Indicator Opcodes::   
-* Emphasis Opcodes::            
-* Special Symbol Opcodes::      
-* Special Processing Opcodes::  
-* Translation Opcodes::         
-* Character-Class Opcodes::     
-* Swap Opcodes::                
-* The Context and Multipass Opcodes::  
-* The correct Opcode::          
-* Miscellaneous Opcodes::       
-* Deprecated Opcodes::          
+* Hyphenation Tables::
+* Character-Definition Opcodes::
+* Braille Indicator Opcodes::
+* Emphasis Opcodes::
+* Special Symbol Opcodes::
+* Special Processing Opcodes::
+* Translation Opcodes::
+* Character-Class Opcodes::
+* Swap Opcodes::
+* The Context and Multipass Opcodes::
+* The correct Opcode::
+* Miscellaneous Opcodes::
+* Deprecated Opcodes::
 @end menu
 
 @node Hyphenation Tables, Character-Definition Opcodes, How to Write Translation Tables, How to Write Translation Tables
@@ -1798,8 +1847,8 @@ liblouis, if you want to test some more intricate scenarios (involving
 inpos, modes, etc) then the doctests are for you.
 
 @menu
-* Translation Table Test Harness::  
-* Translation Table Doctests::  
+* Translation Table Test Harness::
+* Translation Table Doctests::
 @end menu
 
 @node Translation Table Test Harness, Translation Table Doctests, How to test Translation Tables, How to test Translation Tables
@@ -1885,27 +1934,27 @@ inverse of forward translation.
 @chapter Programming with liblouis
 
 @menu
-* License::                     
-* Overview::                    
-* Data structure of liblouis tables::  
-* lou_version::                 
-* lou_translateString::         
-* lou_translate::               
-* lou_backTranslateString::     
-* lou_backTranslate::           
-* lou_hyphenate::               
-* lou_compileString::           
-* lou_dotsToChar::              
-* lou_charToDots::              
-* lou_logFile::                 
-* lou_logPrint::                
-* lou_logEnd::                  
-* lou_setDataPath::             
-* lou_getDataPath::             
-* lou_getTable::                
-* lou_readCharFromFile::        
-* lou_free::                    
-* Python bindings::             
+* License::
+* Overview::
+* Data structure of liblouis tables::
+* lou_version::
+* lou_translateString::
+* lou_translate::
+* lou_backTranslateString::
+* lou_backTranslate::
+* lou_hyphenate::
+* lou_compileString::
+* lou_dotsToChar::
+* lou_charToDots::
+* lou_logFile::
+* lou_logPrint::
+* lou_logEnd::
+* lou_setDataPath::
+* lou_getDataPath::
+* lou_getTable::
+* lou_readCharFromFile::
+* lou_free::
+* Python bindings::
 @end menu
 
 @node  License, Overview, Programming with liblouis, Programming with liblouis

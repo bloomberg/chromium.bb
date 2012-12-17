@@ -1,5 +1,7 @@
 2012-12-17  Christian Egli  <christian.egli@sbs.ch>
 
+	* doc/liblouis.texi: Add documentation for the lou_trace program.
+
 	* tools/lou_trace.c: Add copyright information.
 	(print_script): Fixes to the printing of context rules.
 
