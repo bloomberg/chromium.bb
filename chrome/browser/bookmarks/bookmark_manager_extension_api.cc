@@ -163,18 +163,19 @@ BookmarkManagerExtensionEventRouter::BookmarkManagerExtensionEventRouter(
       web_contents_(web_contents) {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents_);
-  bookmark_tab_helper->SetBookmarkDragDelegate(this);
+  bookmark_tab_helper->set_bookmark_drag_delegate(this);
 }
 
 BookmarkManagerExtensionEventRouter::~BookmarkManagerExtensionEventRouter() {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents_);
-  if (bookmark_tab_helper->GetBookmarkDragDelegate() == this)
-    bookmark_tab_helper->SetBookmarkDragDelegate(NULL);
+  if (bookmark_tab_helper->bookmark_drag_delegate() == this)
+    bookmark_tab_helper->set_bookmark_drag_delegate(NULL);
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchEvent(
-    const char* event_name, scoped_ptr<ListValue> args) {
+    const char* event_name,
+    scoped_ptr<ListValue> args) {
   if (!extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
@@ -185,7 +186,8 @@ void BookmarkManagerExtensionEventRouter::DispatchEvent(
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
-    const BookmarkNodeData& data, const char* event_name) {
+    const BookmarkNodeData& data,
+    const char* event_name) {
   if (data.size() == 0)
     return;
 

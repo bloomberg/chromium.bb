@@ -37,12 +37,12 @@ void WebDragBookmarkHandlerWin::DragInitialize(WebContents* contents) {
 }
 
 void WebDragBookmarkHandlerWin::OnDragOver(IDataObject* data_object) {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragOver(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragOver(
           bookmark_drag_data);
   }
 }
@@ -50,12 +50,12 @@ void WebDragBookmarkHandlerWin::OnDragOver(IDataObject* data_object) {
 void WebDragBookmarkHandlerWin::OnDragEnter(IDataObject* data_object) {
   // This is non-null if the web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragEnter(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragEnter(
           bookmark_drag_data);
   }
 }
@@ -64,12 +64,12 @@ void WebDragBookmarkHandlerWin::OnDrop(IDataObject* data_object) {
   // This is non-null if the web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (bookmark_tab_helper_) {
-    if (bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+    if (bookmark_tab_helper_->bookmark_drag_delegate()) {
       ui::OSExchangeData os_exchange_data(
           new ui::OSExchangeDataProviderWin(data_object));
       BookmarkNodeData bookmark_drag_data;
       if (bookmark_drag_data.Read(os_exchange_data)) {
-        bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDrop(
+        bookmark_tab_helper_->bookmark_drag_delegate()->OnDrop(
             bookmark_drag_data);
       }
     }
@@ -82,12 +82,12 @@ void WebDragBookmarkHandlerWin::OnDrop(IDataObject* data_object) {
 }
 
 void WebDragBookmarkHandlerWin::OnDragLeave(IDataObject* data_object) {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragLeave(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragLeave(
           bookmark_drag_data);
   }
 }

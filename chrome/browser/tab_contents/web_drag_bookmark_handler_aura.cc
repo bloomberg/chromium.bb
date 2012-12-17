@@ -35,16 +35,16 @@ void WebDragBookmarkHandlerAura::DragInitialize(WebContents* contents) {
 }
 
 void WebDragBookmarkHandlerAura::OnDragOver() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     if (bookmark_drag_data_.is_valid())
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragOver(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragOver(
           bookmark_drag_data_);
   }
 }
 
 void WebDragBookmarkHandlerAura::OnReceiveDragData(
     const ui::OSExchangeData& data) {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     // Read the bookmark drag data and save it for use in later events in this
     // drag.
     bookmark_drag_data_.Read(data);
@@ -52,18 +52,18 @@ void WebDragBookmarkHandlerAura::OnReceiveDragData(
 }
 
 void WebDragBookmarkHandlerAura::OnDragEnter() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     if (bookmark_drag_data_.is_valid())
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragEnter(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragEnter(
           bookmark_drag_data_);
   }
 }
 
 void WebDragBookmarkHandlerAura::OnDrop() {
   if (bookmark_tab_helper_) {
-    if (bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+    if (bookmark_tab_helper_->bookmark_drag_delegate()) {
       if (bookmark_drag_data_.is_valid()) {
-        bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDrop(
+        bookmark_tab_helper_->bookmark_drag_delegate()->OnDrop(
             bookmark_drag_data_);
       }
     }
@@ -78,9 +78,9 @@ void WebDragBookmarkHandlerAura::OnDrop() {
 }
 
 void WebDragBookmarkHandlerAura::OnDragLeave() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
     if (bookmark_drag_data_.is_valid())
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragLeave(
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDragLeave(
           bookmark_drag_data_);
   }
 

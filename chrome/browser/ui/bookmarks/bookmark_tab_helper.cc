@@ -24,25 +24,12 @@ bool CanShowBookmarkBar(content::WebUI* ui) {
 
 }  // namespace
 
-BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      is_starred_(false),
-      bookmark_model_(NULL),
-      delegate_(NULL),
-      bookmark_drag_(NULL) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  bookmark_model_= BookmarkModelFactory::GetForProfile(profile);
-  if (bookmark_model_)
-    bookmark_model_->AddObserver(this);
-}
-
 BookmarkTabHelper::~BookmarkTabHelper() {
   if (bookmark_model_)
     bookmark_model_->RemoveObserver(this);
 }
 
-bool BookmarkTabHelper::ShouldShowBookmarkBar() {
+bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
   if (web_contents()->ShowingInterstitialPage())
     return false;
 
@@ -61,20 +48,17 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
   return CanShowBookmarkBar(web_contents()->GetWebUI());
 }
 
-void BookmarkTabHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& /*details*/,
-    const content::FrameNavigateParams& /*params*/) {
-  UpdateStarredStateForCurrentURL();
-}
-
-void BookmarkTabHelper::SetBookmarkDragDelegate(
-    BookmarkTabHelper::BookmarkDrag* bookmark_drag) {
-  bookmark_drag_ = bookmark_drag;
-}
-
-BookmarkTabHelper::BookmarkDrag*
-    BookmarkTabHelper::GetBookmarkDragDelegate() {
-  return bookmark_drag_;
+BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      is_starred_(false),
+      bookmark_model_(NULL),
+      delegate_(NULL),
+      bookmark_drag_(NULL) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  bookmark_model_= BookmarkModelFactory::GetForProfile(profile);
+  if (bookmark_model_)
+    bookmark_model_->AddObserver(this);
 }
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
@@ -82,8 +66,8 @@ void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   is_starred_ = (bookmark_model_ &&
                  bookmark_model_->IsBookmarked(web_contents()->GetURL()));
 
-  if (is_starred_ != old_state && delegate())
-    delegate()->URLStarredChanged(web_contents(), is_starred_);
+  if (is_starred_ != old_state && delegate_)
+    delegate_->URLStarredChanged(web_contents(), is_starred_);
 }
 
 void BookmarkTabHelper::BookmarkModelChanged() {
@@ -108,5 +92,11 @@ void BookmarkTabHelper::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarkTabHelper::BookmarkNodeChanged(BookmarkModel* model,
                                             const BookmarkNode* node) {
+  UpdateStarredStateForCurrentURL();
+}
+
+void BookmarkTabHelper::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& /*details*/,
+    const content::FrameNavigateParams& /*params*/) {
   UpdateStarredStateForCurrentURL();
 }

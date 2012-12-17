@@ -22,7 +22,6 @@ class BookmarkTabHelper
       public content::WebContentsObserver,
       public content::WebContentsUserData<BookmarkTabHelper> {
  public:
-  // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
   class BookmarkDrag {
    public:
@@ -37,35 +36,30 @@ class BookmarkTabHelper
 
   virtual ~BookmarkTabHelper();
 
-  bool is_starred() const { return is_starred_; }
+  void set_delegate(BookmarkTabHelperDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
-  BookmarkTabHelperDelegate* delegate() const { return delegate_; }
-  void set_delegate(BookmarkTabHelperDelegate* d) { delegate_ = d; }
-
-  // Returns true if the bookmark bar should be shown detached.
-  bool ShouldShowBookmarkBar();
-
-  // content::WebContentsObserver overrides:
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-
-  // It is up to callers to call SetBookmarkDragDelegate(NULL) when
+  // It is up to callers to call set_bookmark_drag_delegate(NULL) when
   // |bookmark_drag| is deleted since this class does not take ownership of
   // |bookmark_drag|.
-  void SetBookmarkDragDelegate(
-      BookmarkTabHelper::BookmarkDrag* bookmark_drag);
-  // The BookmarkDragDelegate is used to forward bookmark drag and drop events
-  // to extensions.
-  BookmarkTabHelper::BookmarkDrag* GetBookmarkDragDelegate();
+  void set_bookmark_drag_delegate(BookmarkDrag* bookmark_drag) {
+    bookmark_drag_ = bookmark_drag;
+  }
+  BookmarkDrag* bookmark_drag_delegate() { return bookmark_drag_; }
+
+  bool is_starred() const { return is_starred_; }
+
+  // Returns true if the bookmark bar should be shown detached.
+  bool ShouldShowBookmarkBar() const;
 
  private:
   friend class content::WebContentsUserData<BookmarkTabHelper>;
 
   explicit BookmarkTabHelper(content::WebContents* web_contents);
 
-  // Updates the starred state from the bookmark bar model. If the state has
-  // changed, the delegate is notified.
+  // Updates the starred state from the BookmarkModel. If the state has changed,
+  // the delegate is notified.
   void UpdateStarredStateForCurrentURL();
 
   // Overridden from BaseBookmarkModelObserver:
@@ -81,16 +75,21 @@ class BookmarkTabHelper
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
 
+  // Overridden from content::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+
   // Whether the current URL is starred.
   bool is_starred_;
 
   BookmarkModel* bookmark_model_;
 
-  // Delegate for notifying our owner (usually Browser) about stuff. Not owned
-  // by us.
+  // Our delegate, to notify when the url starred changed.
   BookmarkTabHelperDelegate* delegate_;
 
-  // Handles drag and drop event forwarding to extensions.
+  // The BookmarkDrag is used to forward bookmark drag and drop events to
+  // extensions.
   BookmarkDrag* bookmark_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTabHelper);

@@ -28,15 +28,15 @@ void WebDragBookmarkHandlerMac::DragInitialize(WebContents* contents) {
 }
 
 void WebDragBookmarkHandlerMac::OnDragOver() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
-    bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragOver(
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
+    bookmark_tab_helper_->bookmark_drag_delegate()->OnDragOver(
         bookmark_drag_data_);
   }
 }
 
 void WebDragBookmarkHandlerMac::OnDragEnter() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
-    bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragEnter(
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
+    bookmark_tab_helper_->bookmark_drag_delegate()->OnDragEnter(
         bookmark_drag_data_);
   }
 }
@@ -45,8 +45,8 @@ void WebDragBookmarkHandlerMac::OnDrop() {
   // This is non-null if the web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (bookmark_tab_helper_) {
-    if (bookmark_tab_helper_->GetBookmarkDragDelegate()) {
-      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDrop(
+    if (bookmark_tab_helper_->bookmark_drag_delegate()) {
+      bookmark_tab_helper_->bookmark_drag_delegate()->OnDrop(
           bookmark_drag_data_);
     }
 
@@ -58,8 +58,8 @@ void WebDragBookmarkHandlerMac::OnDrop() {
 }
 
 void WebDragBookmarkHandlerMac::OnDragLeave() {
-  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
-    bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragLeave(
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->bookmark_drag_delegate()) {
+    bookmark_tab_helper_->bookmark_drag_delegate()->OnDragLeave(
         bookmark_drag_data_);
   }
 }
