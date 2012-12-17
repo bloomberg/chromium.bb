@@ -229,16 +229,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // and sets them appropriately.
   void ParseAttributes(const WebKit::WebPluginParams& params);
 
-  // Initializes the valid events.
-  void InitializeEvents();
-
-  // Cleanup event listener state to free v8 resources when a BrowserPlugin
-  // is destroyed.
-  void RemoveEventListeners();
-
-  // Returns whether |event_name| is a valid event.
-  bool IsValidEvent(const std::string& event_name);
-
   // Triggers the event-listeners for |event_name|. Note that the function
   // frees all the values in |props|.
   void TriggerEvent(const std::string& event_name,
