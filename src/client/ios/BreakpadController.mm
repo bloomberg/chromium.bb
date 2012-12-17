@@ -129,7 +129,7 @@ NSString* GetPlatform() {
 #pragma mark -
 
 - (void)start:(BOOL)onCurrentThread {
-  if (started)
+  if (started_)
     return;
   started_ = YES;
   void(^startBlock)() = ^{
@@ -146,7 +146,7 @@ NSString* GetPlatform() {
 }
 
 - (void)stop {
-  if (!started)
+  if (!started_)
     return;
   started_ = NO;
   dispatch_sync(queue_, ^{
