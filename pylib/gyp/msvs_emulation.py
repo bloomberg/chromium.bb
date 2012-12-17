@@ -168,8 +168,6 @@ class MsvsSettings(object):
     equivalents."""
     target_platform = 'Win32' if self.GetArch(config) == 'x86' else 'x64'
     replacements = {
-        '$(VSInstallDir)': self.vs_version.Path(),
-        '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC') + '\\',
         '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
         '$(IntDir)': '$!INTERMEDIATE_DIR',
         '$(InputPath)': '${source}',
@@ -178,6 +176,12 @@ class MsvsSettings(object):
         '$(PlatformName)': target_platform,
         '$(ProjectDir)\\': '',
     }
+    # '$(VSInstallDir)' and '$(VCInstallDir)' are available when and only when
+    # Visual Studio is actually installed.
+    if self.vs_version.Path():
+      replacements['$(VSInstallDir)'] = self.vs_version.Path()
+      replacements['$(VCInstallDir)'] = os.path.join(self.vs_version.Path(),
+                                                     'VC') + '\\'
     # Chromium uses DXSDK_DIR in include/lib paths, but it may or may not be
     # set. This happens when the SDK is sync'd via src-internal, rather than
     # by typical end-user installation of the SDK. If it's not set, we don't
