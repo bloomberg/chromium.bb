@@ -959,11 +959,11 @@ class MaskedBinaryRegisterImmediateTest_TST_immediate
     : public MaskedBinaryRegisterImmediateTest {
 };
 
-class MoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1
+class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register
     : public MoveDoubleVfpRegisterOp {
 };
 
-class MoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1
+class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers
     : public MoveDoubleVfpRegisterOp {
 };
 
@@ -5238,28 +5238,28 @@ class NamedMaskedBinaryRegisterImmediateTest_TST_immediate
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaskedBinaryRegisterImmediateTest_TST_immediate);
 };
 
-class NamedMoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1
+class NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register
     : public NamedClassDecoder {
  public:
-  NamedMoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1()
-    : NamedClassDecoder(decoder_, "MoveDoubleVfpRegisterOp Vmov_one_D_Rule_A1")
+  NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register()
+    : NamedClassDecoder(decoder_, "MoveDoubleVfpRegisterOp VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register")
   {}
 
  private:
-  nacl_arm_dec::MoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1);
+  nacl_arm_dec::MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register);
 };
 
-class NamedMoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1
+class NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers
     : public NamedClassDecoder {
  public:
-  NamedMoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1()
-    : NamedClassDecoder(decoder_, "MoveDoubleVfpRegisterOp Vmov_two_S_Rule_A1")
+  NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers()
+    : NamedClassDecoder(decoder_, "MoveDoubleVfpRegisterOp VMOV_between_two_ARM_core_registers_and_two_single_precision_registers")
   {}
 
  private:
-  nacl_arm_dec::MoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1);
+  nacl_arm_dec::MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers);
 };
 
 class NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208

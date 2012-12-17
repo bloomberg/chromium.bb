@@ -3200,6 +3200,7 @@ class MoveDoubleVfpRegisterOp : public MoveVfpRegisterOp {
   MoveDoubleVfpRegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   static bool IsSinglePrecision(Instruction i) { return !i.Bit(8); }
 
  private:

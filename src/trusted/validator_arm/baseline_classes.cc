@@ -1831,7 +1831,7 @@ SafetyLevel MoveVfpRegisterOpWithTypeSel::safety(Instruction i) const {
 SafetyLevel MoveDoubleVfpRegisterOp::safety(Instruction i) const {
   SafetyLevel level = MoveVfpRegisterOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
-  if ((t2.reg(i).Equals(Register::Pc())) ||
+  if (t2.reg(i).Equals(Register::Pc()) ||
       (IsSinglePrecision(i) &&
        (((vm.reg(i).number() << 1) | m.value(i)) == 31)) ||
       (to_arm_reg.IsDefined(i) && t.reg(i).Equals(t2.reg(i))))
@@ -1843,6 +1843,12 @@ RegisterList MoveDoubleVfpRegisterOp::defs(Instruction i) const {
   RegisterList defs;
   if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i)).Add(t2.reg(i));
   return defs;
+}
+
+RegisterList MoveDoubleVfpRegisterOp::uses(Instruction i) const {
+  RegisterList uses;
+  if (!to_arm_reg.IsDefined(i)) uses.Add(t.reg(i)).Add(t2.reg(i));
+  return uses;
 }
 
 // DuplicateToAdvSIMDRegisters

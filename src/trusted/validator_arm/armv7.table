@@ -2085,15 +2085,33 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else: = Undefined  # Note on table description.
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- transfer_between_arm_core_and_extension_registers_64_bit (A7.9)
+*VmovXRtRt2
+  { cond(31:28), op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0) }
+  baseline := MoveDoubleVfpRegisterOp;
+  to_arm_registers := op=1; t := Rt; t2 := Rt2;
+  defs := {Rt, Rt2} if to_arm_registers else {};
+  uses := {} if to_arm_registers else {Rt, Rt2};
+*VmovSnRtRt2 *VmovXRtRt2
+  m := Vm:M;
+  safety := Pc in {t, t2} | m == 31 => UNPREDICTABLE &
+            to_arm_registers & t == t2 => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
+*VmovDmRtRt2 *VmovXRtRt2
+  m := M:Vm;
+  safety := Pc in {t, t2} => UNPREDICTABLE &
+            to_arm_registers & t == t2 => UNPREDICTABLE;
+  # TODO(karl): Add vector defs/uses etc.
++--
 | C(8) op(7:4)
-| 0    00x1    = MoveDoubleVfpRegisterOp
-                 Vmov_two_S_Rule_A1
-                 cccc1100010otttttttt101000m1mmmm (VFPv2)
-| 1    00x1    = MoveDoubleVfpRegisterOp
-                 Vmov_one_D_Rule_A1
-                 cccc1100010otttttttt101100m1mmmm (VFPv2, AdvSIMD)
+| 0    00x1    = *VmovSnRtRt2
+                  pattern := cccc1100010otttttttt101000m1mmmm;
+                  rule := VMOV_between_two_ARM_core_registers_and_two_single_precision_registers;
+                  arch := (VFPv2);
+| 1    00x1    = *VmovDmRtRt2
+                  pattern := cccc1100010otttttttt101100m1mmmm;
+                  rule := VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register;
+                  arch := (VFPv2, AdvSIMD);
 | else:        = Undefined
 +--
 

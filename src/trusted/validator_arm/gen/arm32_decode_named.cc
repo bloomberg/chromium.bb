@@ -3435,12 +3435,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00000100) == 0x00000000 /* C(8)=0 */ &&
       (inst.Bits() & 0x000000D0) == 0x00000010 /* op(7:4)=00x1 */) {
-    return MoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1_instance_;
+    return MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_instance_;
   }
 
   if ((inst.Bits() & 0x00000100) == 0x00000100 /* C(8)=1 */ &&
       (inst.Bits() & 0x000000D0) == 0x00000010 /* op(7:4)=00x1 */) {
-    return MoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1_instance_;
+    return MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_instance_;
   }
 
   if (true &&
