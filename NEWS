@@ -10,6 +10,7 @@ tables for Inuktitut, Korean and UEB.
    - Fix a bug in the correct opcode which causes sometimes random
      results when translating. Thanks to Bert Frees.
    - Fixes for compiler warnings.
+   - Fix some Valgrind warnings about invalid reads
 
 ** New features
 *** New Braille tables
