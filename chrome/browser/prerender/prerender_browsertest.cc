@@ -2364,13 +2364,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
-#if defined(OS_WIN)
-// http://crbug.com/161988 - DCHECK failed on Win7 Tests dbg (2)
-#define MAYBE_PrerenderSessionStorage DISABLED_PrerenderSessionStorage
-#else
-#define MAYBE_PrerenderSessionStorage PrerenderSessionStorage
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderSessionStorage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
   set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
   PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,

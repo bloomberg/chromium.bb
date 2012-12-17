@@ -1947,8 +1947,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
 }
 
 // Checks that navigating back to a timeout triggers captive portal detection.
-// Disabling since very flakey: http://crbug.com/157467 .
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_GoBackToTimeout) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   // Disable captive portal detection so the first navigation doesn't open a
   // login tab.
   EnableCaptivePortalDetection(browser()->profile(), false);
