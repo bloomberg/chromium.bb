@@ -283,6 +283,7 @@ class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
 public:
     LayerTreeHostTestCanDrawBlocksDrawing()
         : m_numCommits(0)
+        , m_done(false)
     {
     }
 
@@ -293,6 +294,8 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        if (m_done)
+            return;
         // Only the initial draw should bring us here.
         EXPECT_TRUE(impl->canDraw());
         EXPECT_EQ(0, impl->activeTree()->source_frame_number());
@@ -300,6 +303,8 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        if (m_done)
+            return;
         if (m_numCommits >= 1) {
             // After the first commit, we should not be able to draw.
             EXPECT_FALSE(impl->canDraw());
@@ -312,14 +317,18 @@ public:
         if (m_numCommits == 1) {
             // Make the viewport empty so the host says it can't draw.
             m_layerTreeHost->setViewportSize(gfx::Size(0, 0), gfx::Size(0, 0));
-
+        } else if (m_numCommits == 2) {
             char pixels[4];
             m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
-        } else if (m_numCommits == 2) {
-            m_layerTreeHost->setNeedsRedraw();
-            m_layerTreeHost->setNeedsCommit();
-        } else
+        } else if (m_numCommits == 3) {
+            postSetNeedsRedrawToMainThread();
+            postSetNeedsCommitToMainThread();
+        } else if (m_numCommits == 4) {
+            // Let it draw so we go idle and end the test.
+            m_layerTreeHost->setViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
+            m_done = true;
             endTest();
+        }
     }
 
     virtual void afterTest() OVERRIDE
@@ -328,6 +337,7 @@ public:
 
 private:
     int m_numCommits;
+    bool m_done;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCanDrawBlocksDrawing)
@@ -397,7 +407,7 @@ public:
         m_numCommits++;
         if (m_numCommits == 2)
             endTest();
-        else {
+        else if (m_numCommits < 2) {
             postSetVisibleToMainThread(false);
             postSetVisibleToMainThread(true);
             postAcquireLayerTextures();
@@ -508,8 +518,8 @@ public:
     virtual void animate(base::TimeTicks monotonicTime) OVERRIDE
     {
         // We skip the first commit becasue its the commit that populates the
-        // impl thread with a tree.
-        if (!m_numCommits)
+        // impl thread with a tree. After the second commit, the test is done.
+        if (m_numCommits != 1)
             return;
 
         m_layerTreeHost->setNeedsAnimate();
@@ -518,19 +528,20 @@ public:
         // hitting the impl thread. But, when the next didCommit happens, we should
         // verify that commitRequested has gone back to false.
     }
+
     virtual void didCommit() OVERRIDE
     {
         if (!m_numCommits) {
             EXPECT_FALSE(m_layerTreeHost->commitRequested());
             m_layerTreeHost->setNeedsAnimate();
             EXPECT_FALSE(m_layerTreeHost->commitRequested());
-            m_numCommits++;
         }
 
         // Verifies that the setNeedsAnimate we made in ::animate did not
         // trigger commitRequested.
         EXPECT_FALSE(m_layerTreeHost->commitRequested());
         endTest();
+        m_numCommits++;
     }
 
     virtual void afterTest() OVERRIDE
@@ -750,6 +761,8 @@ public:
         // then the linearly interpolated opacity would be different because of the
         // default ease timing function.
         EXPECT_FLOAT_EQ(linearlyInterpolatedOpacity, curve->getValue(time));
+
+        m_layerTreeHost->rootLayer()->layerAnimationController()->removeAnimation(animation->id());
         endTest();
     }
 
@@ -792,6 +805,9 @@ public:
 
         EXPECT_EQ(animationImpl->startTime(), animation->startTime());
 
+
+        controller->removeAnimation(animation->id());
+        controllerImpl->removeAnimation(animationImpl->id());
         endTest();
     }
 
@@ -819,6 +835,8 @@ public:
 
     virtual void notifyAnimationFinished(double time) OVERRIDE
     {
+        const ActiveAnimation* animation = m_layerTreeHost->rootLayer()->layerAnimationController()->getActiveAnimation(0, ActiveAnimation::Opacity);
+        m_layerTreeHost->rootLayer()->layerAnimationController()->removeAnimation(animation->id());
         endTest();
     }
 
@@ -1387,8 +1405,7 @@ private:
     scoped_refptr<ContentLayer> m_childLayer;
 };
 
-// http://crbug.com/164851.
-TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, FLAKY_runMultiThread)
+TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread)
 {
     runTest(true);
 }
@@ -3021,6 +3038,8 @@ public:
 
     virtual void didCommit() OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         postSetNeedsCommitToMainThread();
     }
 
@@ -3078,6 +3097,8 @@ public:
 
     virtual void didCommit() OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         m_contentLayer->setNeedsDisplay();
     }
 
@@ -3173,6 +3194,8 @@ public:
 
     virtual void animate(base::TimeTicks) OVERRIDE
     {
+        if (m_numDrawLayers == 2)
+            return;
         m_layerTreeHost->setNeedsAnimate();
     }
 

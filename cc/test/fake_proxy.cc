@@ -56,5 +56,9 @@ void FakeProxy::setMaxPartialTextureUpdates(size_t max)
     m_maxPartialTextureUpdates = max;
 }
 
+bool FakeProxy::commitPendingForTesting()
+{
+    return false;
+}
 
 }  // namespace cc
