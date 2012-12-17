@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate_mock.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
@@ -38,6 +39,7 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -7973,6 +7975,141 @@ TEST_F(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
            GL_NONE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
+  InitDecoder(
+      "GL_CHROMIUM_async_pixel_transfers",  // extensions
+      false, false, false,  // has alpha/depth/stencil
+      false, false, false,  // request alpha/depth/stencil
+      true);   // bind generates resource
+
+  // Set up the texture.
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+
+  // Set a mock Async delegate
+  // Async state is returned as a scoped_ptr, but we keep a raw copy.
+  StrictMock<gfx::MockAsyncPixelTransferDelegate>* delegate =
+      new StrictMock<gfx::MockAsyncPixelTransferDelegate>;
+  decoder_->SetAsyncPixelTransferDelegate(delegate);
+  StrictMock<gfx::MockAsyncPixelTransferState>* state = NULL;
+
+  // Tex(Sub)Image2D upload commands.
+  AsyncTexImage2DCHROMIUM teximage_cmd;
+  teximage_cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA,
+                    GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
+  AsyncTexSubImage2DCHROMIUM texsubimage_cmd;
+  texsubimage_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_RGBA,
+                      GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
+  gfx::AsyncTexImage2DParams teximage_params =
+      {GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE};
+
+  // No transfer state exists initially.
+  EXPECT_FALSE(info->GetAsyncTransferState());
+
+  // AsyncTexImage2D
+  {
+    // Create transfer state since it doesn't exist.
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+        .WillOnce(Return(
+            state = new StrictMock<gfx::MockAsyncPixelTransferState>))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _))
+        .RetiresOnSaturation();
+    // Command succeeds.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    // The texture is safe but the level has not been defined yet.
+    EXPECT_TRUE(info->SafeToRenderFrom());
+    GLsizei width, height;
+    EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  }
+  {
+    // Async redefinitions are not allowed!
+    // Command fails.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    EXPECT_TRUE(info->SafeToRenderFrom());
+  }
+
+  // Lazy binding/defining of the async transfer
+  {
+    // We the code should check that the transfer is done,
+    // call bind transfer on it, and update the texture info.
+    InSequence scoped_in_sequence;
+    EXPECT_CALL(*state, TransferIsInProgress())
+        .WillOnce(Return(false))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*state, BindTransfer(_))
+        .WillOnce(SetArgPointee<0>(teximage_params))
+        .RetiresOnSaturation();
+    TextureManager* manager = decoder_->GetContextGroup()->texture_manager();
+    bool texture_dirty, framebuffer_dirty;
+    manager->BindFinishedAsyncPixelTransfers(&texture_dirty,
+                                             &framebuffer_dirty);
+    EXPECT_TRUE(texture_dirty);
+    EXPECT_FALSE(framebuffer_dirty);
+    // Texture is safe, and has the right size etc.
+    EXPECT_TRUE(info->SafeToRenderFrom());
+    GLsizei width, height;
+    EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+    EXPECT_EQ(width, 8);
+    EXPECT_EQ(height, 8);
+  }
+
+  // AsyncTexSubImage2D
+  info->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
+  info->SetImmutable(false);
+  {
+    // Create transfer state since it doesn't exist.
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+        .WillOnce(Return(
+            state = new StrictMock<gfx::MockAsyncPixelTransferState>))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*delegate, AsyncTexSubImage2D(state, _, _))
+        .RetiresOnSaturation();
+    // Command succeeds.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(texsubimage_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    EXPECT_TRUE(info->SafeToRenderFrom());
+  }
+  {
+    // No transfer is in progress.
+    EXPECT_CALL(*state, TransferIsInProgress())
+        .WillOnce(Return(false))  // texSubImage validation
+        .WillOnce(Return(false))  // async validation
+        .RetiresOnSaturation();
+    EXPECT_CALL(*delegate, AsyncTexSubImage2D(state, _, _))
+        .RetiresOnSaturation();
+    // Command succeeds.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(texsubimage_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    EXPECT_TRUE(info->SafeToRenderFrom());
+  }
+  {
+    // A transfer is still in progress!
+    EXPECT_CALL(*state, TransferIsInProgress())
+        .WillOnce(Return(true))
+        .RetiresOnSaturation();
+    // No async call, command fails.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(texsubimage_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    EXPECT_TRUE(info->SafeToRenderFrom());
+  }
+
+  decoder_->SetAsyncPixelTransferDelegate(NULL);
+  info->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
 }
 
 // TODO(gman): Complete this test.

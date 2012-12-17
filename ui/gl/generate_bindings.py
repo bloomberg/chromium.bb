@@ -902,6 +902,19 @@ EGL_FUNCTIONS = [
   'names': ['eglQuerySurfacePointerANGLE'],
   'arguments':
       'EGLDisplay dpy, EGLSurface surface, EGLint attribute, void** value', },
+{ 'return_type': 'EGLSyncKHR',
+  'names': ['eglCreateSyncKHR'],
+  'arguments': 'EGLDisplay dpy, EGLenum type, const EGLint* attrib_list',
+  'other_extensions': ['EGL_KHR_fence_sync'] },
+{ 'return_type': 'EGLint',
+  'names': ['eglClientWaitSyncKHR'],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, '
+      'EGLTimeKHR timeout',
+  'other_extensions': ['EGL_KHR_fence_sync'] },
+{ 'return_type': 'EGLBoolean',
+  'names': ['eglDestroySyncKHR'],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync',
+  'other_extensions': ['EGL_KHR_fence_sync'] },
 ]
 
 WGL_FUNCTIONS = [

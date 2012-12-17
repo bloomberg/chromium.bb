@@ -155,6 +155,8 @@
         'command_buffer/common/id_allocator_test.cc',
         'command_buffer/common/trace_event.h',
         'command_buffer/common/unittest_main.cc',
+        'command_buffer/service/async_pixel_transfer_delegate_mock.h',
+        'command_buffer/service/async_pixel_transfer_delegate_mock.cc',
         'command_buffer/service/buffer_manager_unittest.cc',
         'command_buffer/service/cmd_parser_test.cc',
         'command_buffer/service/command_buffer_service_unittest.cc',

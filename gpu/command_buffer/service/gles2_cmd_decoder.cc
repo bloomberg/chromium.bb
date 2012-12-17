@@ -56,6 +56,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
+#include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -193,6 +194,61 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format) {
   return internal_format;
 }
 
+// TODO(epenner): Could the above function be merged into this and removed?
+static inline GLenum GetTexInternalFormat(GLenum internal_format,
+                                          GLenum format,
+                                          GLenum type) {
+  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
+
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+    return gl_internal_format;
+
+  if (type == GL_FLOAT) {
+    switch (format) {
+      case GL_RGBA:
+        gl_internal_format = GL_RGBA32F_ARB;
+        break;
+      case GL_RGB:
+        gl_internal_format = GL_RGB32F_ARB;
+        break;
+      case GL_LUMINANCE_ALPHA:
+        gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
+        break;
+      case GL_LUMINANCE:
+        gl_internal_format = GL_LUMINANCE32F_ARB;
+        break;
+      case GL_ALPHA:
+        gl_internal_format = GL_ALPHA32F_ARB;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else if (type == GL_HALF_FLOAT_OES) {
+    switch (format) {
+      case GL_RGBA:
+        gl_internal_format = GL_RGBA16F_ARB;
+        break;
+      case GL_RGB:
+        gl_internal_format = GL_RGB16F_ARB;
+        break;
+      case GL_LUMINANCE_ALPHA:
+        gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
+        break;
+      case GL_LUMINANCE:
+        gl_internal_format = GL_LUMINANCE16F_ARB;
+        break;
+      case GL_ALPHA:
+        gl_internal_format = GL_ALPHA16F_ARB;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return gl_internal_format;
+}
+
 static void WrappedTexImage2D(
     GLenum target,
     GLint level,
@@ -203,55 +259,9 @@ static void WrappedTexImage2D(
     GLenum format,
     GLenum type,
     const void* pixels) {
-  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    if (type == GL_FLOAT) {
-      switch (format) {
-        case GL_RGBA:
-          gl_internal_format = GL_RGBA32F_ARB;
-          break;
-        case GL_RGB:
-          gl_internal_format = GL_RGB32F_ARB;
-          break;
-        case GL_LUMINANCE_ALPHA:
-          gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
-          break;
-        case GL_LUMINANCE:
-          gl_internal_format = GL_LUMINANCE32F_ARB;
-          break;
-        case GL_ALPHA:
-          gl_internal_format = GL_ALPHA32F_ARB;
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-    } else if (type == GL_HALF_FLOAT_OES) {
-      switch (format) {
-        case GL_RGBA:
-          gl_internal_format = GL_RGBA16F_ARB;
-          break;
-        case GL_RGB:
-          gl_internal_format = GL_RGB16F_ARB;
-          break;
-        case GL_LUMINANCE_ALPHA:
-          gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
-          break;
-        case GL_LUMINANCE:
-          gl_internal_format = GL_LUMINANCE16F_ARB;
-          break;
-        case GL_ALPHA:
-          gl_internal_format = GL_ALPHA16F_ARB;
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-    }
-  }
   glTexImage2D(
-      target, level, gl_internal_format, width, height, border, format, type,
-      pixels);
+      target, level, GetTexInternalFormat(internal_format, format, type),
+      width, height, border, format, type, pixels);
 }
 
 // Wrapper for glEnable/glDisable that doesn't suck.
@@ -552,6 +562,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void SetMsgCallback(const MsgCallback& callback) OVERRIDE;
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) OVERRIDE;
+
+  virtual gfx::AsyncPixelTransferDelegate*
+      GetAsyncPixelTransferDelegate() OVERRIDE;
+  virtual void SetAsyncPixelTransferDelegate(
+      gfx::AsyncPixelTransferDelegate* delegate) OVERRIDE;
+
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id) OVERRIDE;
 
@@ -772,6 +788,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLsizei height,
       GLenum format,
       GLenum type,
+      const void * data);
+
+  // Extra validation for async tex(Sub)Image2D.
+  bool ValidateAsyncTransfer(
+      const char* function_name,
+      TextureManager::TextureInfo* info,
+      GLenum target,
+      GLint level,
       const void * data);
 
   // Wrapper for TexImageIOSurface2DCHROMIUM.
@@ -1598,6 +1622,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   MsgCallback msg_callback_;
 
   StreamTextureManager* stream_texture_manager_;
+  scoped_ptr<gfx::AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -2389,6 +2414,10 @@ bool GLES2DecoderImpl::Initialize(
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
 
+  // Create a delegate to perform async pixel transfers.
+  async_pixel_transfer_delegate_ =
+      gfx::AsyncPixelTransferDelegate::Create(context.get());
+
   return true;
 }
 
@@ -2656,6 +2685,24 @@ bool GLES2DecoderImpl::MakeCurrent() {
     return false;
   }
 
+  // TODO(epenner): Is there a better place to do this? Transfers
+  // can complete any time we yield the main thread. So we *must*
+  // process transfers after any such yield, before resuming.
+  bool frame_buffer_dirty = false;
+  bool texture_dirty = false;
+  texture_manager()->BindFinishedAsyncPixelTransfers(
+      &texture_dirty, &frame_buffer_dirty);
+  // Texture unit zero might be stomped.
+  if (texture_dirty)
+    RestoreCurrentTexture2DBindings();
+  // A texture attached to frame-buffer might have changed size.
+  if (frame_buffer_dirty) {
+    clear_state_dirty_ = true;
+    // TODO(gman): If textures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
+  }
+
   return true;
 }
 
@@ -2884,6 +2931,16 @@ void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
 
 void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
   stream_texture_manager_ = manager;
+}
+
+gfx::AsyncPixelTransferDelegate*
+    GLES2DecoderImpl::GetAsyncPixelTransferDelegate() {
+  return async_pixel_transfer_delegate_.get();
+}
+
+void GLES2DecoderImpl::SetAsyncPixelTransferDelegate(
+    gfx::AsyncPixelTransferDelegate* delegate) {
+  async_pixel_transfer_delegate_ = make_scoped_ptr(delegate);
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
@@ -3628,6 +3685,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
     texture_manager()->SetInfoTarget(info, target);
   }
   glBindTexture(target, info->service_id());
+
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
   unit.bind_target = target;
   switch (target) {
@@ -7915,6 +7973,11 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
                "glCopyTexSubImage2D", "bad dimensions.");
     return;
   }
+  if (info->AsyncTransferIsInProgress()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCopyTexSubImage2D", "async upload pending for texture");
+    return;
+  }
 
   // Check we have compatible formats.
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
@@ -8038,6 +8101,11 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
   if (type != current_type) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "type does not match type of texture.");
+    return false;
+  }
+  if (info->AsyncTransferIsInProgress()) {
+    SetGLError(GL_INVALID_OPERATION,
+               function_name, "async upload pending for texture");
     return false;
   }
   if (!info->ValidForTexture(
@@ -9681,13 +9749,39 @@ void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
   gpu_trace_stack_.pop();
 }
 
+bool GLES2DecoderImpl::ValidateAsyncTransfer(
+    const char* function_name,
+    TextureManager::TextureInfo* info,
+    GLenum target,
+    GLint level,
+    const void * data) {
+  // We only support async uploads to 2D textures for now.
+  if (GL_TEXTURE_2D != target) {
+    SetGLErrorInvalidEnum(function_name, target, "target");
+    return false;
+  }
+  // We only support uploads to level zero for now.
+  if (level != 0) {
+    SetGLError(GL_INVALID_VALUE, function_name, "level != 0");
+    return false;
+  }
+  // A transfer buffer must be bound, even for asyncTexImage2D.
+  if (data == NULL) {
+    SetGLError(GL_INVALID_OPERATION, function_name, "buffer == 0");
+    return false;
+  }
+  // We only support one async transfer in progress.
+  if (!info || info->AsyncTransferIsInProgress()) {
+    SetGLError(GL_INVALID_OPERATION,
+        function_name, "transfer already in progress");
+    return false;
+  }
+  return true;
+}
+
 error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
     uint32 immediate_data_size, const gles2::AsyncTexImage2DCHROMIUM& c) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM");
-
-  // TODO: This is a copy of HandleTexImage2D validation. Merge
-  // as much of it as possible.
-  tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint internal_format = static_cast<GLint>(c.internalformat);
@@ -9699,6 +9793,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
   uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
   uint32 pixels_size;
+
+  // TODO(epenner): Move this and copies of this memory validation
+  // into ValidateTexImage2D step.
   if (!GLES2Util::ComputeImageDataSizes(
       width, height, format, type, state_.unpack_alignment, &pixels_size, NULL,
       NULL)) {
@@ -9713,19 +9810,65 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
     }
   }
 
-  // TODO(epenner): Do this via an async task.
-  DoTexImage2D(
-      target, level, internal_format, width, height, border, format, type,
-      pixels, pixels_size);
+  // All the normal glTexSubImage2D validation.
+  if (!ValidateTexImage2D(
+      "glAsyncTexImage2DCHROMIUM", target, level, internal_format,
+      width, height, border, format, type, pixels, pixels_size)) {
+    return error::kNoError;
+  }
+
+  // Extra async validation.
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!ValidateAsyncTransfer(
+      "glAsyncTexImage2DCHROMIUM", info, target, level, pixels))
+    return error::kNoError;
+
+  // Don't allow async redefinition of a textures.
+  if (info->IsDefined()) {
+    SetGLError(GL_INVALID_OPERATION,
+        "glAsyncTexImage2DCHROMIUM", "already defined");
+    return error::kNoError;
+  }
+
+  // We know the memory/size is safe, so get the real shared memory since
+  // it might need to be duped to prevent use-after-free of the memory.
+  Buffer buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
+  base::SharedMemory* shared_memory = buffer.shared_memory;
+  uint32 shm_size = buffer.size;
+  uint32 shm_data_offset = c.pixels_shm_offset;
+  uint32 shm_data_size = pixels_size;
+
+  // Set up the async state if needed, and make the texture
+  // immutable so the async state stays valid. The level info
+  // is set up lazily when the transfer completes.
+  DCHECK(!info->GetAsyncTransferState());
+  info->SetAsyncTransferState(
+      async_pixel_transfer_delegate_->
+          CreatePixelTransferState(info->service_id()));
+  info->SetImmutable(true);
+
+  // Issue the async call and set up the texture.
+  GLenum gl_internal_format =
+      GetTexInternalFormat(internal_format, format, type);
+  gfx::AsyncTexImage2DParams tex_params = {target, level, gl_internal_format,
+                                           width, height, border, format, type};
+  gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
+                                       shm_data_offset, shm_data_size};
+
+  // Add a pending transfer to the texture manager, which will bind the
+  // transfer data to the texture and set the level info at the same time,
+  // after the the transfer is complete.
+  texture_manager()->AddPendingAsyncPixelTransfer(
+      info->GetAsyncTransferState()->AsWeakPtr(), info);
+
+  async_pixel_transfer_delegate_->AsyncTexImage2D(
+      info->GetAsyncTransferState(), tex_params, mem_params);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
     uint32 immediate_data_size, const gles2::AsyncTexSubImage2DCHROMIUM& c) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM");
-
-  // TODO: This is a copy of HandleTexSubImage2D validation. Merge
-  // as much of it as possible.
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -9734,6 +9877,9 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
+
+  // TODO(epenner): Move this and copies of this memory validation
+  // into ValidateTexSubImage2D step.
   uint32 data_size;
   if (!GLES2Util::ComputeImageDataSizes(
       width, height, format, type, state_.unpack_alignment, &data_size,
@@ -9742,13 +9888,58 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   }
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.data_shm_id, c.data_shm_offset, data_size);
-  if (pixels == NULL) {
-    return error::kOutOfBounds;
+
+  // All the normal glTexSubImage2D validation.
+  error::Error error = error::kNoError;
+  if (!ValidateTexSubImage2D(&error, "glAsyncTexSubImage2DCHROMIUM",
+      target, level, xoffset, yoffset, width, height, format, type, pixels)) {
+    return error;
   }
 
-  // TODO(epenner): Do this via an async task.
-  return DoTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  // Extra async validation.
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!ValidateAsyncTransfer(
+         "glAsyncTexSubImage2DCHROMIUM", info, target, level, pixels))
+    return error::kNoError;
+
+  // Guarantee async textures are always 'cleared' as follows:
+  // - AsyncTexImage2D can not redefine an existing texture
+  // - AsyncTexImage2D must initialize the entire image via non-null buffer.
+  // - AsyncTexSubImage2D clears synchronously if not already cleared.
+  // - Textures become immutable after an async call.
+  // This way we know in all cases that an async texture is always clear.
+  if (!info->SafeToRenderFrom()) {
+    if (!texture_manager()->ClearTextureLevel(this, info, target, level)) {
+      SetGLError(GL_OUT_OF_MEMORY,
+          "glAsyncTexSubImage2DCHROMIUM","dimensions too big");
+      return error::kNoError;
+    }
+  }
+
+  // We know the memory/size is safe, so get the real shared memory since
+  // it might need to be duped to prevent use-after-free of the memory.
+  Buffer buffer = GetSharedMemoryBuffer(c.data_shm_id);
+  base::SharedMemory* shared_memory = buffer.shared_memory;
+  uint32 shm_size = buffer.size;
+  uint32 shm_data_offset = c.data_shm_offset;
+  uint32 shm_data_size = data_size;
+
+  if (!info->GetAsyncTransferState()) {
+    // Set up the async state if needed, and make the texture
+    // immutable so the async state stays valid.
+    info->SetAsyncTransferState(
+        async_pixel_transfer_delegate_->
+            CreatePixelTransferState(info->service_id()));
+    info->SetImmutable(true);
+  }
+
+  gfx::AsyncTexSubImage2DParams tex_params = {target, level, xoffset, yoffset,
+                                              width, height, format, type};
+  gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
+                                       shm_data_offset, shm_data_size};
+  async_pixel_transfer_delegate_->AsyncTexSubImage2D(
+      info->GetAsyncTransferState(), tex_params, mem_params);
+  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means

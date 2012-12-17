@@ -57,6 +57,10 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetVertexArrayManager, gpu::gles2::VertexArrayManager*());
   MOCK_METHOD1(SetResizeCallback, void(const base::Callback<void(gfx::Size)>&));
   MOCK_METHOD1(SetStreamTextureManager, void(StreamTextureManager*));
+  MOCK_METHOD0(GetAsyncPixelTransferDelegate,
+      gfx::AsyncPixelTransferDelegate*());
+  MOCK_METHOD1(SetAsyncPixelTransferDelegate,
+      void(gfx::AsyncPixelTransferDelegate*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
                                        const void* cmd_data));

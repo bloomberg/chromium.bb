@@ -73,6 +73,10 @@ void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
   return static_cast<int8*>(buffer.ptr) + offset;
 }
 
+Buffer CommonDecoder::GetSharedMemoryBuffer(unsigned int shm_id) {
+  return engine_->GetSharedMemoryBuffer(shm_id);
+}
+
 bool CommonDecoder::PushAddress(uint32 offset) {
   if (call_stack_.size() < kMaxStackDepth) {
     CommandAddress return_address(engine_->GetGetOffset());

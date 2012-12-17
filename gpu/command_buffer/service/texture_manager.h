@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 
+#include <list>
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
@@ -15,6 +16,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
+#include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
@@ -178,6 +180,17 @@ class GPU_EXPORT TextureManager {
       return stream_texture_;
     }
 
+    gfx::AsyncPixelTransferState* GetAsyncTransferState() const {
+      return async_transfer_state_.get();
+    }
+    void SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState> state) {
+      async_transfer_state_ = state.Pass();
+    }
+    bool AsyncTransferIsInProgress() {
+      return async_transfer_state_ &&
+          async_transfer_state_->TransferIsInProgress();
+    }
+
     void SetImmutable(bool immutable) {
       immutable_ = immutable;
     }
@@ -188,6 +201,11 @@ class GPU_EXPORT TextureManager {
 
     // Whether a particular level/face is cleared.
     bool IsLevelCleared(GLenum target, GLint level);
+
+    // Whether the texture has been defined
+    bool IsDefined() {
+      return estimated_size() > 0;
+    }
 
    private:
     friend class TextureManager;
@@ -340,6 +358,9 @@ class GPU_EXPORT TextureManager {
 
     // Whether this is a special streaming texture.
     bool stream_texture_;
+
+    // State to facilitate async transfers on this texture.
+    scoped_ptr<gfx::AsyncPixelTransferState> async_transfer_state_;
 
     // Whether the texture is immutable and no further changes to the format
     // or dimensions of the texture object can be made.
@@ -530,6 +551,13 @@ class GPU_EXPORT TextureManager {
       GLint level,
       std::string* signature) const;
 
+  // Transfers added will get their TextureInfo updated at the same time
+  // the async transfer is bound to the real texture.
+  void AddPendingAsyncPixelTransfer(
+      base::WeakPtr<gfx::AsyncPixelTransferState> state, TextureInfo* info);
+  void BindFinishedAsyncPixelTransfers(bool* texture_dirty,
+                                       bool* framebuffer_dirty);
+
  private:
   // Helper for Initialize().
   TextureInfo::Ref CreateDefaultAndBlackTextures(
@@ -571,6 +599,14 @@ class GPU_EXPORT TextureManager {
 
   // The default textures for each target (texture name = 0)
   TextureInfo::Ref default_textures_[kNumDefaultTextures];
+
+  // Async texture allocations which haven't been bound to their textures
+  // yet. This facilitates updating the TextureInfo at the same time the
+  // real texture data is bound.
+  typedef std::pair<base::WeakPtr<gfx::AsyncPixelTransferState>,
+                    TextureInfo*> PendingAsyncTransfer;
+  typedef std::list<PendingAsyncTransfer> PendingAsyncTransferList;
+  PendingAsyncTransferList pending_async_transfers_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

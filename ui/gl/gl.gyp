@@ -40,6 +40,9 @@
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
       ],
      'sources': [
+        'async_pixel_transfer_delegate.h',
+        'async_pixel_transfer_delegate_stub.cc',
+        'async_pixel_transfer_delegate_stub.h',
         'gl_bindings.h',
         'gl_bindings_skia_in_process.cc',
         'gl_bindings_skia_in_process.h',

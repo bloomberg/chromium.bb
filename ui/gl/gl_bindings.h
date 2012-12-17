@@ -53,6 +53,7 @@ typedef void (*OSMESAproc)();
 #if !defined(OS_MACOSX)
 
 // Forward declare EGL types.
+typedef uint64 EGLTimeKHR;
 typedef unsigned int EGLBoolean;
 typedef unsigned int EGLenum;
 typedef int EGLint;
@@ -62,6 +63,7 @@ typedef void *EGLDisplay;
 typedef void *EGLImageKHR;
 typedef void *EGLSurface;
 typedef void *EGLClientBuffer;
+typedef void *EGLSyncKHR;
 typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 typedef void* GLeglImageOES;
 

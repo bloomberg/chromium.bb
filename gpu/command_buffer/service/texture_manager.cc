@@ -1210,5 +1210,53 @@ void TextureManager::AddToSignature(
   info->AddToSignature(feature_info_.get(), target, level, signature);
 }
 
+void TextureManager::AddPendingAsyncPixelTransfer(
+    base::WeakPtr<gfx::AsyncPixelTransferState> state, TextureInfo* info) {
+  pending_async_transfers_.push_back(PendingAsyncTransfer(state,info));
+}
+
+void TextureManager::BindFinishedAsyncPixelTransfers(
+    bool* texture_dirty, bool* framebuffer_dirty) {
+  DCHECK(texture_dirty);
+  DCHECK(framebuffer_dirty);
+  *texture_dirty = false;
+  *framebuffer_dirty = false;
+
+  // Remove finished transfers from the list, while
+  // marking whether texture unit 0 or frame_buffer status is dirty.
+  while(!pending_async_transfers_.empty()) {
+    PendingAsyncTransfer state_info = pending_async_transfers_.front();
+    if (!state_info.first.get()) {
+      // The AsyncState is owned by the TextureInfo. So if the
+      // async state is deleted, so is the TextureInfo.
+      pending_async_transfers_.pop_front();
+      continue;
+    }
+    // Terminate early, as all transfers finish in order.
+    if (state_info.first->TransferIsInProgress())
+      break;
+    // If the transfer is finished, bind it to the texture,
+    // update the TextureInfo, and remove it from pending list.
+    *texture_dirty = true;
+    *framebuffer_dirty |= state_info.second->IsAttachedToFramebuffer();
+    gfx::AsyncTexImage2DParams tex_define_params;
+    state_info.second->
+        GetAsyncTransferState()->BindTransfer(&tex_define_params);
+    SetLevelInfo(
+        state_info.second,
+        tex_define_params.target,
+        tex_define_params.level,
+        tex_define_params.internal_format,
+        tex_define_params.width,
+        tex_define_params.height,
+        1, // depth
+        tex_define_params.border,
+        tex_define_params.format,
+        tex_define_params.type,
+        true); // cleared
+    pending_async_transfers_.pop_front();
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu
