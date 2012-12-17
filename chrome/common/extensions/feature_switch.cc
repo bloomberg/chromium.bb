@@ -31,11 +31,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         script_bubble(
             switches::kScriptBubble,
-#if !defined(OS_MACOSX)
             FeatureSwitch::DEFAULT_ENABLED),
-#else
-            FeatureSwitch::DEFAULT_DISABLED),
-#endif
         sideload_wipeout(
             switches::kSideloadWipeout,
             base::FieldTrialList::FindFullName("SideloadWipeout") == "Enabled" ?
