@@ -5,6 +5,10 @@ per-file pref_names.h=*
 per-file url_constants.cc=*
 per-file url_constants.h=*
 
+# Mac Sandbox profiles.
+per-file nacl_loader.sb=set noparent
+per-file nacl_loader.sb=jeremy@chromium.org
+
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file *_messages.h=set noparent

@@ -7,6 +7,10 @@ per-file sandbox_policy.cc=set noparent
 per-file sandbox_policy.cc=jschuh@chromium.org
 per-file sandbox_policy.cc=cpu@chromium.org
 
+# Mac Sandbox.
+per-file sandbox_init_mac.*=jeremy@chromium.org
+per-file sandbox_mac*=jeremy@chromium.org
+
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file *_messages.h=set noparent

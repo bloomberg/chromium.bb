@@ -4,6 +4,11 @@ creis@chromium.org
 darin@chromium.org
 jam@chromium.org
 piman@chromium.org
+
+# Mac Sandbox profiles.
+per-file *.sb=set noparent
+per-file *.sb=jeremy@chromium.org
+
 per-file content_components_navigation_interception.gypi=jknotten@chromium.org
 per-file content_components_navigation_interception.gypi=joth@chromium.org
 per-file content_components_navigation_interception.gypi=mkosiba@chromium.org
