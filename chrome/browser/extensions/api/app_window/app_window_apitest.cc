@@ -14,6 +14,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "ui/gfx/rect.h"
 
+#ifdef TOOLKIT_GTK
+#include "content/public/test/test_utils.h"
+#endif
+
 namespace {
 
 class TestShellWindowRegistryObserver
@@ -73,6 +77,23 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
 #endif  // !TOOLKIT_GTK
 
   ready_listener.Reply(base::IntToString(slop));
+
+#ifdef TOOLKIT_GTK
+  // TODO(asargent)- this is here to help track down the root cause of
+  // crbug.com/164735.
+  {
+    gfx::Rect last_bounds;
+    while (!success_listener.was_satisfied()) {
+      gfx::Rect current_bounds = window->GetBaseWindow()->GetBounds();
+      if (current_bounds != last_bounds) {
+        LOG(INFO) << "new bounds: " << current_bounds.ToString();
+      }
+      last_bounds = current_bounds;
+      content::RunAllPendingInMessageLoop();
+    }
+  }
+#endif
+
   ASSERT_TRUE(success_listener.WaitUntilSatisfied());
 }
 
