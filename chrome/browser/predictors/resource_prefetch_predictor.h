@@ -202,12 +202,15 @@ class ResourcePrefetchPredictor
   void OnNavigationComplete(const NavigationID& navigation_id);
 
   // Returns true if there is PrefetchData that can be used for the
-  // navigation and sets the iterator to point to the data. The iterator can be
-  // invalidated if either |url_table_cache_| or |host_table_cache_| is
-  // modified.
+  // navigation and fills in the |prefetch_data| to resources that need to be
+  // prefetched.
   bool GetPrefetchData(const NavigationID& navigation_id,
-                       PrefetchDataMap::const_iterator* iterator,
+                       ResourcePrefetcher::RequestVector* prefetch_requests,
                        PrefetchKeyType* key_type);
+
+  // Converts a PrefetchData into a ResourcePrefetcher::RequestVector.
+  void PopulatePrefetcherRequest(const PrefetchData& data,
+                                 ResourcePrefetcher::RequestVector* requests);
 
   // Starts prefetching if it is enabled and prefetching data exists for the
   // NavigationID either at the URL or at the host level.
@@ -270,10 +273,10 @@ class ResourcePrefetchPredictor
   void ReportPredictedAccuracyStats(
       PrefetchKeyType key_type,
       const std::vector<URLRequestSummary>& actual,
-      const ResourceRows& predicted) const;
+      const ResourcePrefetcher::RequestVector& predicted) const;
   void ReportPredictedAccuracyStatsHelper(
       PrefetchKeyType key_type,
-      const ResourceRows& predicted,
+      const ResourcePrefetcher::RequestVector& predicted,
       const std::map<GURL, bool>& actual,
       int total_resources_fetched_from_network,
       int max_assumed_prefetched) const;

@@ -8,11 +8,21 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
+class Profile;
+
 namespace content {
 class WebContents;
 }
 
 namespace predictors {
+
+struct ResourcePrefetchPredictorConfig;
+
+// Returns true if prefetching is enabled. And will initilize the |config|
+// fields to the appropritate values.
+bool IsSpeculativeResourcePrefetchingEnabled(
+    Profile* profile,
+    ResourcePrefetchPredictorConfig* config);
 
 // Represents the type of key based on which prefetch data is stored.
 enum PrefetchKeyType {
@@ -51,6 +61,24 @@ struct NavigationID {
 struct ResourcePrefetchPredictorConfig {
   // Initializes the config with default values.
   ResourcePrefetchPredictorConfig();
+  ~ResourcePrefetchPredictorConfig();
+
+  // The mode the prefetcher is running in. Forms a bit map.
+  enum Mode {
+    URL_LEARNING    = 1 << 0,
+    HOST_LEARNING   = 1 << 1,
+    URL_PREFETCHING = 1 << 2,  // Should also turn on URL_LEARNING.
+    HOST_PRFETCHING = 1 << 3   // Should also turn on HOST_LEARNING.
+  };
+  int mode;
+
+  // Helpers to deal with mode.
+  bool IsLearningEnabled() const;
+  bool IsPrefetchingEnabled() const;
+  bool IsURLLearningEnabled() const;
+  bool IsHostLearningEnabled() const;
+  bool IsURLPrefetchingEnabled() const;
+  bool IsHostPrefetchingEnabled() const;
 
   // If a navigation hasn't seen a load complete event in this much time, it
   // is considered abandoned.

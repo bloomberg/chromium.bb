@@ -66,9 +66,9 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
       autocomplete_table_(new AutocompleteActionPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
+  ResourcePrefetchPredictorConfig config;
   is_resource_prefetch_predictor_enabled_ =
-      prerender::IsSpeculativeResourcePrefetchingLearningEnabled(profile) ||
-      prerender::IsSpeculativeResourcePrefetchingEnabled(profile);
+      IsSpeculativeResourcePrefetchingEnabled(profile, &config);
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {

@@ -21,7 +21,6 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -297,6 +296,13 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       results_map_deleter_(&results_map_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Some form of learning has to be enabled.
+  DCHECK(config_.IsLearningEnabled());
+  if (config_.IsURLPrefetchingEnabled())
+    DCHECK(config_.IsURLLearningEnabled());
+  if (config_.IsHostPrefetchingEnabled())
+    DCHECK(config_.IsHostLearningEnabled());
+
   notification_registrar_.Add(this,
                               content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                               content::NotificationService::AllSources());
@@ -554,13 +560,14 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
                           results_it->second->requests.get());
     }
   } else {
-    PrefetchDataMap::const_iterator predicted;
+    scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+        new ResourcePrefetcher::RequestVector);
     PrefetchKeyType key_type;
-    if (GetPrefetchData(navigation_id, &predicted, &key_type)){
+    if (GetPrefetchData(navigation_id, requests.get(), &key_type)){
       RecordNavigationEvent(NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL);
       ReportPredictedAccuracyStats(key_type,
                                    *(nav_it->second),
-                                   predicted->second.resources);
+                                   *requests);
     } else {
       RecordNavigationEvent(NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL);
     }
@@ -586,43 +593,42 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
 bool ResourcePrefetchPredictor::GetPrefetchData(
     const NavigationID& navigation_id,
-    PrefetchDataMap::const_iterator* iterator,
+    ResourcePrefetcher::RequestVector* prefetch_requests,
     PrefetchKeyType* key_type) {
-  DCHECK(iterator);
+  DCHECK(prefetch_requests);
   DCHECK(key_type);
 
   *key_type = PREFETCH_KEY_TYPE_URL;
   const GURL& main_frame_url = navigation_id.main_frame_url;
-  *iterator = url_table_cache_->find(main_frame_url.spec());
-  if (*iterator != url_table_cache_->end()) {
+
+  bool use_url_data = config_.IsPrefetchingEnabled() ?
+      config_.IsURLPrefetchingEnabled() : config_.IsURLLearningEnabled();
+  if (use_url_data) {
+    PrefetchDataMap::const_iterator iterator =
+        url_table_cache_->find(main_frame_url.spec());
+    if (iterator != url_table_cache_->end())
+      PopulatePrefetcherRequest(iterator->second, prefetch_requests);
+  }
+  if (!prefetch_requests->empty())
     return true;
-  } else {
-    *iterator = host_table_cache_->find(main_frame_url.host());
-    if (*iterator != host_table_cache_->end()) {
+
+  bool use_host_data = config_.IsPrefetchingEnabled() ?
+      config_.IsHostPrefetchingEnabled() : config_.IsHostLearningEnabled();
+  if (use_host_data) {
+    PrefetchDataMap::const_iterator iterator =
+        host_table_cache_->find(main_frame_url.host());
+    if (iterator != host_table_cache_->end()) {
       *key_type = PREFETCH_KEY_TYPE_HOST;
-      return true;
+      PopulatePrefetcherRequest(iterator->second, prefetch_requests);
     }
   }
 
-  return false;
+  return !prefetch_requests->empty();
 }
 
-void ResourcePrefetchPredictor::StartPrefetching(
-    const NavigationID& navigation_id) {
-  if (!prefetch_manager_.get())  // Prefetching not enabled.
-    return;
-
-  // Prefer URL based data first.
-  PrefetchDataMap::const_iterator data_iterator;
-  PrefetchKeyType key_type;
-  if (!GetPrefetchData(navigation_id, &data_iterator, &key_type)) {
-    // No prefetching data at host or URL level.
-    return;
-  }
-  const PrefetchData& data = data_iterator->second;
-
-  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
-      new ResourcePrefetcher::RequestVector);
+void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
+    const PrefetchData& data,
+    ResourcePrefetcher::RequestVector* requests) {
   for (ResourceRows::const_iterator it = data.resources.begin();
        it != data.resources.end(); ++it) {
     float confidence = static_cast<float>(it->number_of_hits) /
@@ -636,9 +642,21 @@ void ResourcePrefetchPredictor::StartPrefetching(
         it->resource_url);
     requests->push_back(req);
   }
+}
 
-  if (requests->empty())  // No resources pass threshold.
+void ResourcePrefetchPredictor::StartPrefetching(
+    const NavigationID& navigation_id) {
+  if (!prefetch_manager_.get())  // Prefetching not enabled.
     return;
+
+  // Prefer URL based data first.
+  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+      new ResourcePrefetcher::RequestVector);
+  PrefetchKeyType key_type;
+  if (!GetPrefetchData(navigation_id, requests.get(), &key_type)) {
+    // No prefetching data at host or URL level.
+    return;
+  }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
@@ -721,7 +739,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
                               content::Source<Profile>(profile_));
 
   // Initialize the prefetch manager only if prefetching is enabled.
-  if (prerender::IsSpeculativeResourcePrefetchingEnabled(profile_)) {
+  if (config_.IsPrefetchingEnabled()) {
     prefetch_manager_ = new ResourcePrefetcherManager(
         this, config_, profile_->GetRequestContext());
   }
@@ -838,18 +856,23 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
 
   if (should_track_url) {
     RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_TRACK_URL);
-    LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL, requests,
-                    config_.max_urls_to_track, url_table_cache_.get());
+
+    if (config_.IsURLLearningEnabled()) {
+      LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL, requests,
+                      config_.max_urls_to_track, url_table_cache_.get());
+    }
   } else {
     RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL);
   }
 
-  // Host level data - no cutoff, always learn the navigation.
-  LearnNavigation(navigation_id.main_frame_url.host(),
-                  PREFETCH_KEY_TYPE_HOST,
-                  requests,
-                  config_.max_hosts_to_track,
-                  host_table_cache_.get());
+  // Host level data - no cutoff, always learn the navigation if enabled.
+  if (config_.IsHostLearningEnabled()) {
+    LearnNavigation(navigation_id.main_frame_url.host(),
+                    PREFETCH_KEY_TYPE_HOST,
+                    requests,
+                    config_.max_hosts_to_track,
+                    host_table_cache_.get());
+  }
 
   // Remove the navigation from the results map.
   delete results_map_[navigation_id];
@@ -1128,7 +1151,7 @@ void ResourcePrefetchPredictor::ReportAccuracyStats(
 void ResourcePrefetchPredictor::ReportPredictedAccuracyStats(
     PrefetchKeyType key_type,
     const std::vector<URLRequestSummary>& actual,
-    const ResourcePrefetchPredictorTables::ResourceRows& predicted) const {
+    const ResourcePrefetcher::RequestVector& predicted) const {
   std::map<GURL, bool> actual_resources;
   int from_network = 0;
   for (std::vector<URLRequestSummary>::const_iterator it = actual.begin();
@@ -1147,7 +1170,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStats(
 
 void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
     PrefetchKeyType key_type,
-    const ResourceRows& predicted,
+    const ResourcePrefetcher::RequestVector& predicted,
     const std::map<GURL, bool>& actual,
     int total_resources_fetched_from_network,
     int max_assumed_prefetched) const {
@@ -1158,7 +1181,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
     return;
 
   for (int i = 0; i < num_assumed_prefetched; ++i) {
-    const ResourceRow& row = predicted[i];
+    const ResourcePrefetcher::Request& row = *(predicted[i]);
     std::map<GURL, bool>::const_iterator it = actual.find(row.resource_url);
     if (it == actual.end()) {
       ++prefetch_missed;
