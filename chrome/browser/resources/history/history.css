@@ -2,10 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+body:not(.uber-frame) {
+  color: rgb(48, 57, 66);
+  margin: 0 8px 0 8px;
+}
+
 #editing-controls,
 #loading-spinner {
   margin-top: 16px;
+<if expr="not pp_ifdef('android')">
   white-space: nowrap;
+</if>
 }
 
 #loading-spinner[hidden] {
@@ -151,6 +158,7 @@ html[dir='rtl'] .entry .title {
   line-height: 1em;
 }
 
+<if expr="not pp_ifdef('android')">
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
  * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
 .entry input[type=checkbox]:not(:checked) {
@@ -165,6 +173,7 @@ html[dir='rtl'] .entry .title {
 .entry-box input[type=checkbox]:focus {
   -webkit-transition: opacity 150ms;
 }
+</if>
 
 .entry-box {
   background-color: none;

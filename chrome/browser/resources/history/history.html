@@ -11,7 +11,9 @@
 <link rel="stylesheet" href="chrome://resources/css/menu.css">
 <link rel="stylesheet" href="chrome://resources/css/menu_button.css">
 <link rel="stylesheet" href="chrome://resources/css/spinner.css">
+<if expr="not pp_ifdef('android')">
 <link rel="stylesheet" href="../uber/uber_shared.css">
+</if>
 <link rel="stylesheet" href="history.css">
 
 <script src="chrome://resources/js/event_tracker.js"></script>
@@ -28,8 +30,13 @@
 <script src="chrome://history-frame/history.js"></script>
 
 </head>
-<body class="uber-frame"
+
+<body
+<if expr="not pp_ifdef('android')">
+    class="uber-frame"
+</if>
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+
 <div class="page">
   <header>
     <h1 i18n-content="history"></h1>
