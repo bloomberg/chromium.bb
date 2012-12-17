@@ -187,7 +187,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
 
-  // Now assue gpu process launches and full GPU info is collected.
+  // Now assume gpu process launches and full GPU info is collected.
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
   manager->UpdateGpuInfo(gpu_info);
   EXPECT_TRUE(manager->GpuAccessAllowed());
@@ -450,5 +450,116 @@ TEST_F(GpuDataManagerImplTest, UnblockThisDomainFrom3DAPIs) {
             manager->Are3DAPIsBlockedAtTime(GetDomain2ForTesting(),
                                             JustBeforeExpiration(manager)));
 }
+
+#if defined(OS_LINUX)
+TEST_F(GpuDataManagerImplTest, SetGLStrings) {
+  const char* kGLVendorMesa = "Tungsten Graphics, Inc";
+  const char* kGLRendererMesa = "Mesa DRI Intel(R) G41";
+  const char* kGLVersionMesa801 = "2.1 Mesa 8.0.1-DEVEL";
+
+  ScopedGpuDataManagerImpl manager;
+  ASSERT_TRUE(manager.get());
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+
+  const std::string blacklist_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"device_id\": [\"0x0042\"],\n"
+      "          \"driver_version\": {\n"
+      "            \"op\": \">=\",\n"
+      "            \"number\": \"8.0.2\"\n"
+      "          }\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x0042;
+  manager->InitializeForTesting(blacklist_json, gpu_info);
+
+  // Not enough GPUInfo.
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+
+  // Now assume browser gets GL strings from local state.
+  // The entry applies, blacklist more features than from the preliminary step.
+  // However, GPU process is not blocked because this is all browser side and
+  // happens before renderer launching.
+  manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa801);
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(GPU_FEATURE_TYPE_WEBGL, manager->GetBlacklistedFeatures());
+}
+
+TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
+  const char* kGLVendorMesa = "Tungsten Graphics, Inc";
+  const char* kGLRendererMesa = "Mesa DRI Intel(R) G41";
+  const char* kGLVersionMesa801 = "2.1 Mesa 8.0.1-DEVEL";
+  const char* kGLVersionMesa802 = "2.1 Mesa 8.0.2-DEVEL";
+
+  ScopedGpuDataManagerImpl manager;
+  ASSERT_TRUE(manager.get());
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+
+  const std::string blacklist_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"device_id\": [\"0x0042\"],\n"
+      "          \"driver_version\": {\n"
+      "            \"op\": \">=\",\n"
+      "            \"number\": \"8.0.2\"\n"
+      "          }\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x0042;
+  gpu_info.gl_vendor = kGLVendorMesa;
+  gpu_info.gl_renderer = kGLRendererMesa;
+  gpu_info.gl_version = kGLVersionMesa801;
+  gpu_info.driver_vendor = "Mesa";
+  gpu_info.driver_version = "8.0.1";
+  manager->InitializeForTesting(blacklist_json, gpu_info);
+
+  // Full GPUInfo, the entry applies.
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(GPU_FEATURE_TYPE_WEBGL, manager->GetBlacklistedFeatures());
+
+  // Now assume browser gets GL strings from local state.
+  // SetGLStrings() has no effects because GPUInfo already got these strings.
+  // (Otherwise the entry should not apply.)
+  manager->SetGLStrings(kGLVendorMesa, kGLRendererMesa, kGLVersionMesa802);
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(GPU_FEATURE_TYPE_WEBGL, manager->GetBlacklistedFeatures());
+}
+#endif  // OS_LINUX
 
 }  // namespace content

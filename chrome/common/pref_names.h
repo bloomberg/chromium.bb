@@ -405,6 +405,10 @@ extern const char kEnableOriginBoundCerts[];
 extern const char kDisableSSLRecordSplitting[];
 extern const char kEnableMemoryInfo[];
 
+extern const char kGLVendorString[];
+extern const char kGLRendererString[];
+extern const char kGLVersionString[];
+
 extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
 extern const char kMetricsLowEntropySource[];

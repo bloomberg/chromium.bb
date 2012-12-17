@@ -48,6 +48,7 @@
 #include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu/chrome_gpu_util.h"
+#include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -1175,6 +1176,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
   PostProfileInit();
+
+  // Retrieve cached GL strings from local state and use them for GPU
+  // blacklist decisions.
+  if (g_browser_process->gl_string_manager())
+    g_browser_process->gl_string_manager()->Initialize();
 
 #if !defined(OS_ANDROID)
   // Show the First Run UI if this is the first time Chrome has been run on
