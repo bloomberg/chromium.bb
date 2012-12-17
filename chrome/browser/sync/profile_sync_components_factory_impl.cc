@@ -213,9 +213,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
         new AppNotificationDataTypeController(this, profile_, pss));
   }
 
-  // History delete directives sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncHistoryDeleteDirectives)) {
+  // Unless it is explicitly disabled, history delete directive sync is
+  // enabled whenever full history sync is enabled.
+  if (command_line_->HasSwitch(switches::kHistoryEnableFullHistorySync) &&
+      !command_line_->HasSwitch(
+          switches::kDisableSyncHistoryDeleteDirectives)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));

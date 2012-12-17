@@ -392,6 +392,10 @@ const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
 // Disables syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
 
+// Disables syncing of history delete directives.
+const char kDisableSyncHistoryDeleteDirectives[] =
+    "disable-sync-history-delete-directives";
+
 // Disables syncing browser passwords.
 const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 
@@ -400,6 +404,9 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
 // Disable syncing custom search engines.
 const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
+
+// Disables syncing browser sessions. Will override kEnableSyncTabs.
+const char kDisableSyncTabs[]               = "disable-sync-tabs";
 
 // Disables syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
@@ -645,13 +652,6 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
-
-// Enables syncing of history delete directives.
-const char kEnableSyncHistoryDeleteDirectives[] =
-    "enable-sync-history-delete-directives";
-
-// Disables syncing browser sessions. Will override kEnableSyncTabs.
-const char kDisableSyncTabs[]               = "disable-sync-tabs";
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
