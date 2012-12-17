@@ -85,9 +85,6 @@ void ErrorScreenHandler::UpdateState(NetworkStateInformer::State state,
                                      const std::string& network_name,
                                      const std::string& reason,
                                      ConnectionType last_network_type) {
-  LOG(INFO) << "ErrorScreenHandler::UpdateState(): state=" << state << ", "
-            << "network_name=" << network_name << ", reason=" << reason << ", "
-            << "last_network_type=" << last_network_type;
   UpdateStateInternal(state, network_name, reason, last_network_type, false);
 }
 
@@ -96,6 +93,12 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
                                              std::string reason,
                                              ConnectionType last_network_type,
                                              bool force_update) {
+  // TODO (ygorshenin@): crbug.com/166433
+  LOG(WARNING) << "ErrorScreenHandler::UpdateStateInternal(): "
+               << "state=" << state << ", "
+               << "network_name=" << network_name << ", "
+               << "reason=" << reason << ", "
+               << "last_network_type=" << last_network_type;
   update_state_closure_.Cancel();
   if (state == NetworkStateInformer::OFFLINE && is_first_update_state_call()) {
     set_is_first_update_state_call(false);
@@ -143,6 +146,7 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
     if (is_online &&
         last_network_state() != NetworkStateInformer::ONLINE &&
         is_gaia_signin && !is_gaia_reloaded) {
+      LOG(WARNING) << "Retry page load since network has been changed.";
       ReloadGaiaScreen();
       is_gaia_reloaded = true;
     }
@@ -152,9 +156,9 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
   if (reason == kErrorReasonProxyConfigChanged && should_overlay &&
       is_gaia_signin && !is_gaia_reloaded) {
     // Schedules a immediate retry.
+    LOG(WARNING) << "Retry page load since proxy settings has been changed.";
     ReloadGaiaScreen();
     is_gaia_reloaded = true;
-    LOG(WARNING) << "Retry page load since proxy settings has been changed";
   }
 
   // Fake portal state for loading timeout.
@@ -226,6 +230,7 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
 }
 
 void ErrorScreenHandler::ReloadGaiaScreen() {
+  LOG(WARNING) << "Reload auth extension frame.";
   web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.doReload");
 }
 
