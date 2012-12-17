@@ -206,6 +206,12 @@ public:
 protected:
     virtual scoped_ptr<OutputSurface> createOutputSurface() { return createFakeOutputSurface(); }
 
+    void drawOneFrame() {
+      LayerTreeHostImpl::FrameData frameData;
+      m_hostImpl->prepareToDraw(frameData);
+      m_hostImpl->didDrawAllLayers(frameData);
+    }
+
     FakeProxy m_proxy;
     DebugScopedSetImplThread m_alwaysImplThread;
     DebugScopedSetMainThreadBlocked m_alwaysMainThreadBlocked;
@@ -1290,7 +1296,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The scroll delta is not scaled because the main thread did not scale.
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -1328,7 +1334,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(newPageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The page scale delta should only be applied to the scrollable root layer.
     EXPECT_EQ(root->implTransform(), newPageScaleMatrix);
@@ -1376,7 +1382,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     float pageScale = 2;
     m_hostImpl->setPageScaleFactorAndLimits(pageScale, 1, pageScale);
 
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
         // The scale should apply to the scroll delta.
@@ -4549,7 +4555,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportForcesCommitRedraw(const float d
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Transform expectedImplTransform;
     expectedImplTransform.Scale(pageScale, pageScale);
@@ -4621,7 +4627,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Transform expectedImplTransform;
     expectedImplTransform.Scale(pageScale, pageScale);
@@ -4634,11 +4640,14 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
         return;
 
     gfx::Vector2d scrollDelta(5, 0);
+    // TODO(wjmaclean): Fix the math here so that the expectedTranslation is
+    // scaled instead of the scroll input.
+    gfx::Vector2d scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     gfx::Vector2d expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollOffset());
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Vector2dF expectedTranslation = gfx::ScaleVector2d(scrollDelta, m_hostImpl->deviceScaleFactor());
     expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
@@ -4652,10 +4661,11 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
 
     // Test scroll in y-direction also.
     scrollDelta = gfx::Vector2d(0, 5);
+    scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     expectedTranslation = gfx::ScaleVector2d(scrollDelta, m_hostImpl->deviceScaleFactor());
     expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
@@ -4701,7 +4711,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Transform expectedImplTransform;
     expectedImplTransform.Scale(pageScale, pageScale);
@@ -4716,12 +4726,13 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
     // Scroll document only: scrollDelta chosen to move document horizontally
     // to its max scroll offset.
     gfx::Vector2d scrollDelta(3, 0);
+    gfx::Vector2d scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     gfx::Vector2d expectedScrollDelta(scrollDelta);
     gfx::Vector2d expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollOffset());
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The scroll delta is not scaled because the main thread did not scale.
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -4733,10 +4744,11 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
 
     // Further scrolling should move the pinchZoomViewport only.
     scrollDelta = gfx::Vector2d(2, 0);
+    scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Vector2d expectedPanDelta(scrollDelta);
     gfx::Vector2dF expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
@@ -4752,11 +4764,12 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
     // Perform same test sequence in y-direction also.
     // Document only scroll.
     scrollDelta = gfx::Vector2d(0, 4);
+    scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     expectedScrollDelta += scrollDelta;
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The scroll delta is not scaled because the main thread did not scale.
     scrollInfo = m_hostImpl->processScrollDeltas();
@@ -4768,10 +4781,11 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
 
     // pinchZoomViewport scroll only.
     scrollDelta = gfx::Vector2d(0, 1);
+    scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     expectedPanDelta = scrollDelta;
     expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
@@ -4820,7 +4834,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     gfx::Transform expectedImplTransform;
     expectedImplTransform.Scale(pageScale, pageScale);
@@ -4834,13 +4848,14 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
 
     // Scroll document and pann zoomViewport in one scroll-delta.
     gfx::Vector2d scrollDelta(5, 0);
+    gfx::Vector2d scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     gfx::Vector2d expectedScrollDelta(gfx::Vector2d(3, 0)); // This component gets handled by document scroll.
     gfx::Vector2d expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollOffset());
 
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The scroll delta is not scaled because the main thread did not scale.
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -4855,11 +4870,12 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
 
     // Perform same test sequence in y-direction also.
     scrollDelta = gfx::Vector2d(0, 5);
+    scrollDeltaInZoomedViewport = ToFlooredVector2d(gfx::ScaleVector2d(scrollDelta, m_hostImpl->totalPageScaleFactorForTesting()));
     expectedScrollDelta += gfx::Vector2d(0, 4); // This component gets handled by document scroll.
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
-    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDeltaInZoomedViewport);
     m_hostImpl->scrollEnd();
-    m_hostImpl->updateRootScrollLayerImplTransform();
+    drawOneFrame();
 
     // The scroll delta is not scaled because the main thread did not scale.
     scrollInfo = m_hostImpl->processScrollDeltas(); // This component gets handled by zoomViewport pan.
