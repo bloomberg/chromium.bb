@@ -63,9 +63,25 @@ public class LoadUrlParams {
      * @param isBase64Encoded True if the data is encoded in Base 64 format.
      */
     public static LoadUrlParams createLoadDataParams(
-            String data, String mimeType, boolean isBase64Encoded) {
+        String data, String mimeType, boolean isBase64Encoded) {
+        return createLoadDataParams(data, mimeType, isBase64Encoded, null);
+    }
+
+    /**
+     * Helper method to create a LoadUrlParams object for data url.
+     * @param data Data to be loaded.
+     * @param mimeType Mime type of the data.
+     * @param isBase64Encoded True if the data is encoded in Base 64 format.
+     * @param charset The character set for the data. Pass null if the mime type
+     *                does not require a special charset.
+     */
+    public static LoadUrlParams createLoadDataParams(
+            String data, String mimeType, boolean isBase64Encoded, String charset) {
         StringBuilder dataUrl = new StringBuilder("data:");
         dataUrl.append(mimeType);
+        if (charset != null && !charset.isEmpty()) {
+            dataUrl.append(";charset=" + charset);
+        }
         if (isBase64Encoded) {
             dataUrl.append(";base64");
         }
@@ -94,10 +110,34 @@ public class LoadUrlParams {
     public static LoadUrlParams createLoadDataParamsWithBaseUrl(
             String data, String mimeType, boolean isBase64Encoded,
             String baseUrl, String historyUrl) {
-        LoadUrlParams params = createLoadDataParams(data, mimeType, isBase64Encoded);
+        return createLoadDataParamsWithBaseUrl(data, mimeType, isBase64Encoded,
+                baseUrl, historyUrl, null);
+    }
+
+    /**
+     * Helper method to create a LoadUrlParams object for data url with base
+     * and virtual url.
+     * @param data Data to be loaded.
+     * @param mimeType Mime type of the data.
+     * @param isBase64Encoded True if the data is encoded in Base 64 format.
+     * @param baseUrl Base url of this data load. Note that for WebView compatibility,
+     *                baseUrl and historyUrl are ignored if this is a data: url.
+     *                Defaults to about:blank if null.
+     * @param historyUrl History url for this data load. Note that for WebView compatibility,
+     *                   this is ignored if baseUrl is a data: url. Defaults to about:blank
+     *                   if null.
+     * @param charset The character set for the data. Pass null if the mime type
+     *                does not require a special charset.
+     */
+    public static LoadUrlParams createLoadDataParamsWithBaseUrl(
+            String data, String mimeType, boolean isBase64Encoded,
+            String baseUrl, String historyUrl, String charset) {
+        LoadUrlParams params = createLoadDataParams(data, mimeType, isBase64Encoded, charset);
         // For WebView compatibility, when the base URL has the 'data:'
         // scheme, we treat it as a regular data URL load and skip setting
         // baseUrl and historyUrl.
+        // TODO(joth): we should just append baseURL and historyURL here, and move the
+        // WebView specific transform up to a wrapper factory function in android_webview/.
         if (baseUrl == null || !baseUrl.toLowerCase().startsWith("data:")) {
             params.setBaseUrlForDataUrl(baseUrl != null ? baseUrl : "about:blank");
             params.setVirtualUrlForDataUrl(historyUrl != null ? historyUrl : "about:blank");

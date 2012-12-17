@@ -55,6 +55,23 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
         assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDataUrlCharset() throws Throwable {
+        // Note that the '£' is the important character in the following
+        // string as it's not in the US_ASCII character set.
+        final String expectedTitle = "You win £100!";
+        final String data =
+            "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        loadDataSyncWithCharset(awContents, contentsClient.getOnPageFinishedHelper(), data,
+                     "text/html", false, "UTF-8");
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
+    }
+
     /**
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */

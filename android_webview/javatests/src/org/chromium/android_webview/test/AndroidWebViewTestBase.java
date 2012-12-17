@@ -170,6 +170,23 @@ public class AndroidWebViewTestBase
                 TimeUnit.SECONDS);
     }
 
+    protected void loadDataSyncWithCharset(final AwContents awContents,
+                                           CallbackHelper onPageFinishedHelper,
+                                           final String data, final String mimeType,
+                                           final boolean isBase64Encoded, final String charset)
+            throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.loadUrl(LoadUrlParams.createLoadDataParams(
+                        data, mimeType, isBase64Encoded, charset));
+            }
+        });
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS);
+    }
+
     /**
      * Loads data on the UI thread but does not block.
      */
