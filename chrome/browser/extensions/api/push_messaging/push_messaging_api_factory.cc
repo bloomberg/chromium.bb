@@ -38,10 +38,6 @@ ProfileKeyedService* PushMessagingAPIFactory::BuildServiceInstanceFor(
   return new PushMessagingAPI(profile);
 }
 
-bool PushMessagingAPIFactory::ServiceIsCreatedWithProfile() const {
-  return true;
-}
-
 bool PushMessagingAPIFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

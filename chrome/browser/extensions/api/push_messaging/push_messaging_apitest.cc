@@ -42,8 +42,7 @@ class PushMessagingApiTest : public ExtensionApiTest {
   }
 
   PushMessagingEventRouter* GetEventRouter() {
-    return PushMessagingAPI::Get(browser()->profile())->
-        GetEventRouterForTest();
+    return PushMessagingAPI::Get(browser()->profile())->GetEventRouterForTest();
   }
 };
 
@@ -100,7 +99,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
   scoped_ptr<StrictMock<MockInvalidationMapper> > mapper(
       new StrictMock<MockInvalidationMapper>);
   StrictMock<MockInvalidationMapper>* unsafe_mapper = mapper.get();
-  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   // PushMessagingEventRouter owns the mapper now.
   GetEventRouter()->SetMapperForTest(
       mapper.PassAs<PushMessagingInvalidationMapper>());
@@ -119,7 +117,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
 // Tests that we re-register for invalidations on restart for extensions that
 // are already installed.
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
-  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
           GetEventRouter()->GetMapperForTest());
@@ -129,7 +126,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, Restart) {
-  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
           GetEventRouter()->GetMapperForTest());
