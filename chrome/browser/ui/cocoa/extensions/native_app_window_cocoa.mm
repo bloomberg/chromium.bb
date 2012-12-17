@@ -652,7 +652,12 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
 }
 
 gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
-  return gfx::Insets();
+  if (!has_frame_)
+    return gfx::Insets();
+  gfx::Rect frameRect(NSRectToCGRect([window() frame]));
+  gfx::Rect contentRect(
+      NSRectToCGRect([window() contentRectForFrameRect:[window() frame]]));
+  return frameRect.InsetsFrom(contentRect);
 }
 
 void NativeAppWindowCocoa::WindowWillClose() {

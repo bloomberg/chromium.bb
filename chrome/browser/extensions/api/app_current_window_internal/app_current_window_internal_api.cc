@@ -109,6 +109,7 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
   if (params->bounds.height)
     bounds.set_height(*(params->bounds.height));
 
+  bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
   window->GetBaseWindow()->SetBounds(bounds);
   return true;
 }

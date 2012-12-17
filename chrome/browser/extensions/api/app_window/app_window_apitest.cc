@@ -60,6 +60,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
   ShellWindow* window = GetFirstShellWindow();
 
   gfx::Rect new_bounds(100, 200, 300, 400);
+  new_bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
   window->GetBaseWindow()->SetBounds(new_bounds);
 
   // TODO(jeremya/asargent) figure out why in GTK the window doesn't end up

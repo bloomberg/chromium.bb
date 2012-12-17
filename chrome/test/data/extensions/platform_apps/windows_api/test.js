@@ -58,12 +58,27 @@ chrome.app.runtime.onLaunched.addListener(function() {
      }));
    },
 
-   function testContentSize() {
+   function testCreateWindowContentSize() {
      chrome.app.window.create('test.html',
-         {bounds: { width: 250, height: 200 }}, callbackPass(function(win) {
+         { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
        chrome.test.assertEq(250, win.contentWindow.innerWidth);
        chrome.test.assertEq(200, win.contentWindow.innerHeight);
        win.close();
+     }));
+   },
+
+   function testSetBoundsContentSize() {
+     chrome.app.window.create('test.html',
+         { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
+       var b = win.getBounds();
+       win.setBounds({width: 400, height: 450})
+       // Listen to onresize here rather than win.onBoundsChanged, because
+       // onBoundsChanged is fired before the web contents are resized.
+       win.contentWindow.onresize = callbackPass(function() {
+         chrome.test.assertEq(400, win.contentWindow.innerWidth);
+         chrome.test.assertEq(450, win.contentWindow.innerHeight);
+         win.close();
+       });
      }));
    },
 

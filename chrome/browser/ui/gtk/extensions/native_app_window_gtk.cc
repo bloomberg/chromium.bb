@@ -228,7 +228,29 @@ bool NativeAppWindowGtk::IsAlwaysOnTop() const {
 }
 
 gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
-  return gfx::Insets();
+  if (frameless_)
+    return gfx::Insets();
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  if (!gdk_window)
+    return gfx::Insets();
+
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window_, &current_width, &current_height);
+  gint current_x = 0;
+  gint current_y = 0;
+  gdk_window_get_position(gdk_window, &current_x, &current_y);
+  GdkRectangle rect_with_decorations = {0};
+  gdk_window_get_frame_extents(gdk_window,
+                               &rect_with_decorations);
+
+  int left_inset = current_x - rect_with_decorations.x;
+  int top_inset = current_y - rect_with_decorations.y;
+  return gfx::Insets(
+      top_inset,
+      left_inset,
+      rect_with_decorations.height - current_height - top_inset,
+      rect_with_decorations.width - current_width - left_inset);
 }
 
 void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {

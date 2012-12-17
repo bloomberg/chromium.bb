@@ -357,6 +357,7 @@ void ShellWindow::OnNativeWindowChanged() {
   args.Append(dictionary);
 
   gfx::Rect bounds = native_app_window_->GetBounds();
+  bounds.Inset(native_app_window_->GetFrameInsets());
   app_window::Bounds update;
   update.left.reset(new int(bounds.x()));
   update.top.reset(new int(bounds.y()));
