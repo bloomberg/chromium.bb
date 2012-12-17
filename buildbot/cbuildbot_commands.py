@@ -275,7 +275,8 @@ def RefreshPackageStatus(buildroot, boards, debug):
 def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
                profile=None, chroot_upgrade=True):
   """Wrapper around setup_board."""
-  cmd = ['./setup_board', '--board=%s' % board]
+  cmd = ['./setup_board', '--board=%s' % board,
+         '--accept_licenses=@CHROMEOS']
 
   # This isn't the greatest thing, but emerge's dependency calculation
   # isn't the speediest thing, so let callers skip this step when they
@@ -298,7 +299,8 @@ def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
 def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
           nowithdebug, packages=(), extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
-  cmd = ['./build_packages', '--board=%s' % board]
+  cmd = ['./build_packages', '--board=%s' % board,
+         '--accept_licenses=@CHROMEOS']
 
   if not build_autotest:
     cmd.append('--nowithautotest')
