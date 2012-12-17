@@ -479,6 +479,15 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     path = path.substr(0, jsonp_pos);
   }
 
+  // Trim fragment and query
+  size_t query_pos = path.find("?");
+  if (query_pos != std::string::npos)
+    path = path.substr(0, query_pos);
+
+  size_t fragment_pos = path.find("#");
+  if (fragment_pos != std::string::npos)
+    path = path.substr(0, fragment_pos);
+
   std::string command;
   std::string target_id;
   if (!ParseJsonPath(path, &command, &target_id)) {
