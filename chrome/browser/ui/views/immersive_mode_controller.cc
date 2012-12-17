@@ -26,11 +26,10 @@ using views::View;
 namespace {
 
 // Time after which the edge trigger fires and top-chrome is revealed.
-const int kRevealDelayMs = 200;
+const int kTopEdgeRevealDelayMs = 200;
 
-// During an immersive-mode top-of-window reveal, how long to wait after the
-// mouse exits the views before hiding them again.
-const int kHideDelayMs = 200;
+// Duration for the reveal show/hide slide animation.
+const int kRevealAnimationDurationMs = 200;
 
 }  // namespace
 
@@ -147,6 +146,9 @@ void ImmersiveModeController::RevealView::AcquireTopViews() {
 void ImmersiveModeController::RevealView::ReleaseTopViews() {
   // Reparenting causes hit tests that require a parent for |this|.
   DCHECK(parent());
+  // Check that the top views have not already been released.
+  DCHECK(tabstrip_);
+  DCHECK(toolbar_view_);
 
   browser_view_->AddChildViewAt(tabstrip_, BrowserView::kTabstripIndex);
   browser_view_->AddChildViewAt(toolbar_view_, BrowserView::kToolbarIndex);
@@ -253,10 +255,8 @@ class ImmersiveModeController::WindowObserver : public aura::WindowObserver {
 ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
     : browser_view_(browser_view),
       enabled_(false),
-      revealed_(false) {
-  // Browser view is detached from its widget during destruction. Cache the
-  // window pointer so |this| can stop observing during destruction.
-  native_window_ = browser_view_->GetNativeWindow();
+      revealed_(false),
+      native_window_(NULL) {
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
@@ -266,18 +266,29 @@ ImmersiveModeController::~ImmersiveModeController() {
   EnableWindowObservers(false);
 }
 
+void ImmersiveModeController::Init() {
+  // Browser view is detached from its widget during destruction. Cache the
+  // window pointer so |this| can stop observing during destruction.
+  native_window_ = browser_view_->GetNativeWindow();
+  DCHECK(native_window_);
+}
+
 void ImmersiveModeController::SetEnabled(bool enabled) {
   if (enabled_ == enabled)
     return;
   enabled_ = enabled;
 
-  if (enabled_) {
-    browser_view_->tabstrip()->SetImmersiveStyle(true);
-    browser_view_->Layout();
-  } else {
-    EndReveal(ANIMATE_NO, LAYOUT_YES);
+  if (!enabled_) {
+    // Layout occurs below because EndReveal() only performs layout if the view
+    // is already revealed.
+    EndReveal(ANIMATE_NO, LAYOUT_NO);
+    // Stop cursor-at-top tracking.
     top_timer_.Stop();
   }
+
+  // Always ensure tab strip is in correct state.
+  browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
+  browser_view_->Layout();
 
   EnableWindowObservers(enabled_);
 }
@@ -303,7 +314,7 @@ ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     // Use a timer to detect if the cursor stays at the top past a delay.
     if (!top_timer_.IsRunning()) {
       top_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(kRevealDelayMs),
+                       base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
                        this, &ImmersiveModeController::StartReveal);
     }
   } else {
@@ -316,8 +327,7 @@ ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
 
 // ui::ImplicitAnimationObserver overrides:
 void ImmersiveModeController::OnImplicitAnimationsCompleted() {
-  // Fired when the slide-out animation completes.
-  reveal_view_.reset();  // Also removes from parent.
+  OnHideAnimationCompleted();
 }
 
 // Testing interface:
@@ -337,6 +347,10 @@ void ImmersiveModeController::EndRevealForTest() {
 // private:
 
 void ImmersiveModeController::EnableWindowObservers(bool enable) {
+  if (!native_window_) {
+    NOTREACHED() << "ImmersiveModeController not initialized";
+    return;
+  }
 #if defined(USE_AURA)
   // TODO(jamescook): Porting immersive mode to non-Aura views will require
   // a method to monitor incoming mouse move events without handling them.
@@ -383,6 +397,8 @@ void ImmersiveModeController::AnimateShowRevealView() {
   ui::ScopedLayerAnimationSettings settings(
       reveal_view_->layer()->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kRevealAnimationDurationMs));
   reveal_view_->SetTransform(gfx::Transform());
 }
 
@@ -402,6 +418,8 @@ void ImmersiveModeController::OnRevealViewLostFocus() {
 }
 
 void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
+  if (!revealed_)
+    return;
   revealed_ = false;
 
   if (reveal_view_.get()) {
@@ -423,10 +441,24 @@ void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
 
 void ImmersiveModeController::AnimateHideRevealView() {
   ui::Layer* layer = reveal_view_->layer();
+  // Stop any show animation in progress.
+  // TODO(jamescook): Switch to AbortAllAnimations() when crrev.com/11571027
+  // lands, which will avoid a "pop" if a hide is triggered mid-show.
+  layer->GetAnimator()->StopAnimating();
+  // Detach the layer from its delegate to stop updating it. This prevents
+  // graphical glitches due to hover events causing repaints during the hide.
+  layer->set_delegate(NULL);
+
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kRevealAnimationDurationMs));
   settings.AddObserver(this);  // Resets |reveal_view_| on completion.
   gfx::Transform transform;
   transform.Translate(0, -layer->bounds().height());
   layer->SetTransform(transform);
+}
+
+void ImmersiveModeController::OnHideAnimationCompleted() {
+  reveal_view_.reset();  // Also removes from parent.
 }

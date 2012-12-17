@@ -530,6 +530,8 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          immersive_mode_controller_(new ImmersiveModeController(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
@@ -1204,8 +1206,7 @@ void BrowserView::DestroyBrowser() {
 }
 
 bool BrowserView::IsBookmarkBarVisible() const {
-  if (immersive_mode_controller_.get() &&
-      immersive_mode_controller_->ShouldHideTopViews())
+  if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       active_bookmark_bar_ &&
@@ -1221,8 +1222,7 @@ bool BrowserView::IsTabStripEditable() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
-  if (immersive_mode_controller_.get() &&
-      immersive_mode_controller_->ShouldHideTopViews())
+  if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
@@ -2160,8 +2160,8 @@ void BrowserView::Init() {
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
 
-  // Must initialize after browser view has a Widget.
-  immersive_mode_controller_.reset(new ImmersiveModeController(this));
+  // Initialize after |this| has a Widget and native window.
+  immersive_mode_controller_->Init();
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).

@@ -135,7 +135,9 @@ void BrowserRootView::SchedulePaintInRect(const gfx::Rect& rect) {
   if (scheduling_immersive_reveal_painting_)
     return;
 
-  if (browser_view_ && browser_view_->immersive_mode_controller()) {
+  if (browser_view_ &&
+      browser_view_->immersive_mode_controller() &&
+      browser_view_->immersive_mode_controller()->IsRevealed()) {
     views::View* reveal =
         browser_view_->immersive_mode_controller()->reveal_view();
     if (reveal) {

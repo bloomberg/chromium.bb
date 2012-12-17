@@ -29,6 +29,9 @@ class ImmersiveModeController : public ui::EventHandler,
   explicit ImmersiveModeController(BrowserView* browser_view);
   virtual ~ImmersiveModeController();
 
+  // Must initialize after browser view has a Widget and native window.
+  void Init();
+
   // Enables or disables immersive mode.
   void SetEnabled(bool enabled);
   bool enabled() const { return enabled_; }
@@ -94,6 +97,9 @@ class ImmersiveModeController : public ui::EventHandler,
   // Slide out the reveal view. Deletes the view when complete.
   void AnimateHideRevealView();
 
+  // Cleans up the reveal view when the hide animation completes.
+  void OnHideAnimationCompleted();
+
   // Browser view holding the views to be shown and hidden. Not owned.
   BrowserView* browser_view_;
 
@@ -101,9 +107,12 @@ class ImmersiveModeController : public ui::EventHandler,
   bool enabled_;
 
   // True when the top-of-window views are being shown in a temporary reveal.
+  // Represents the target state, not the current animation state, so may be
+  // false while the view is still animating out.
   bool revealed_;
 
-  // View holding the tabstrip and toolbar during a reveal.
+  // View holding the tabstrip and toolbar during a reveal. Exists for a short
+  // time after |revealed_| is set false to allow layer animation to finish.
   scoped_ptr<RevealView> reveal_view_;
 
   // Timer to track cursor being held at the top.
