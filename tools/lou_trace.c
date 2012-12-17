@@ -1,7 +1,23 @@
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+/* liblouis Braille Translation and Back-Translation Library
 
+   Copyright (C) 2012 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   */
+
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -16,9 +32,9 @@ static const struct option longopts[] = {
   {NULL, 0, NULL, 0}};
 
 const char version_etc_copyright[] =
-  "Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
+  "Copyright %s %d Swiss Library for the Blind, Visually Impaired and Print Disabled.";
 
-#define AUTHORS "John J. Boyer"
+#define AUTHORS "Bert Frees"
 
 static void print_help (void) {
   printf("\
@@ -111,12 +127,14 @@ static char *print_script(widechar *buffer, int length) {
         break;
       case pass_lookback:
         append_char(script, &j, buffer[i++]);
-        append_string(script, &j, print_number(buffer[i++]));
+	if (buffer[i] > 1)
+	  append_string(script, &j, print_number(buffer[i++]));
         break;
       case pass_string:
-        append_char(script, &j, buffer[i++]);
-        append_string(script, &j, print_chars(&buffer[i+1], buffer[i]));
-        i += (1 + buffer[i]);
+        append_char(script, &j, buffer[i]);
+        append_string(script, &j, print_chars(&buffer[i+2], buffer[i+1]));
+        append_char(script, &j, buffer[i]);
+        i += (2 + buffer[i+1]);
         break;
       case pass_dots:
         append_char(script, &j, buffer[i++]);
