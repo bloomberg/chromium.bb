@@ -1340,7 +1340,7 @@ FileWatcher.prototype.stop = function() {
  * @private
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
-  if (encodeURI(event.directoryUrl) == this.watchedDirectoryEntry_.toURL())
+  if (event.directoryUrl == this.watchedDirectoryEntry_.toURL())
     this.onFileInWatchedDirectoryChanged();
 };
 
