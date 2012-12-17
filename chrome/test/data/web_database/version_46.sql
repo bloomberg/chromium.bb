@@ -5,7 +5,7 @@ INSERT INTO "meta" VALUES('Default Search Provider ID','0');
 INSERT INTO "meta" VALUES('version','46');
 INSERT INTO "meta" VALUES('last_compatible_version','46');
 INSERT INTO "meta" VALUES('Default Search Provider ID Backup','0');
-INSERT INTO "meta" VALUES('Default Search Provider ID Backup Signature','ÚG"2qÐÀgõðß!ƒë¸×Ÿ‹gXÑiõg¢ÑsJw');
+INSERT INTO "meta" VALUES('Default Search Provider ID Backup Signature','');
 INSERT INTO "meta" VALUES('Builtin Keyword Version','39');
 CREATE TABLE autofill (name VARCHAR, value VARCHAR, value_lower VARCHAR, pair_id INTEGER PRIMARY KEY, count INTEGER DEFAULT 1);
 CREATE TABLE credit_cards ( guid VARCHAR PRIMARY KEY, name_on_card VARCHAR, expiration_month INTEGER, expiration_year INTEGER, card_number_encrypted BLOB, date_modified INTEGER NOT NULL DEFAULT 0);
