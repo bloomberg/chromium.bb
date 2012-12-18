@@ -168,7 +168,8 @@ class SCM(object):
   def AutomagicalSettings(self):
     """Determines settings based on supported code review and checkout tools.
     """
-    # Try to find gclient or repo root first.
+    self._GclStyleSettings()
+    # Try to find gclient or repo root.
     if not self.options.no_search:
       self.toplevel_root = gclient_utils.FindGclientRoot(self.checkout_root)
       if self.toplevel_root:
@@ -184,8 +185,6 @@ class SCM(object):
         assert os.path.abspath(self.toplevel_root) == self.toplevel_root
         self.options.root = gclient_utils.PathDifference(self.toplevel_root,
                                                          self.checkout_root)
-
-    self._GclStyleSettings()
 
   def ReadRootFile(self, filename):
     cur = self.checkout_root
