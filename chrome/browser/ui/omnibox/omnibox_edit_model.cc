@@ -1255,7 +1255,7 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
 
   return instant->Update(match, user_text, full_text, start, end,
       UseVerbatimInstant(), user_input_in_progress_, popup_->IsOpen(),
-      in_escape_handler_);
+      in_escape_handler_, KeywordIsSelected());
 }
 
 void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {

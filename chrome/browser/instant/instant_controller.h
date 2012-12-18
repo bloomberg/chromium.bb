@@ -60,6 +60,7 @@ class InstantController {
   // |verbatim| is true, search results are shown for the exact omnibox text,
   // rather than the best guess as to what the user means. Returns true if the
   // update is accepted (i.e., if |match| is a search rather than a URL).
+  // |is_keyword_search| is true if keyword searching is in effect.
   bool Update(const AutocompleteMatch& match,
               const string16& user_text,
               const string16& full_text,
@@ -68,7 +69,8 @@ class InstantController {
               bool verbatim,
               bool user_input_in_progress,
               bool omnibox_popup_is_open,
-              bool escape_pressed);
+              bool escape_pressed,
+              bool is_keyword_search);
 
   // Sets the bounds of the omnibox popup, in screen coordinates.
   void SetPopupBounds(const gfx::Rect& bounds);

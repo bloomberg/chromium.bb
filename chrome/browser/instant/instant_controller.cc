@@ -180,7 +180,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
                                bool verbatim,
                                bool user_input_in_progress,
                                bool omnibox_popup_is_open,
-                               bool escape_pressed) {
+                               bool escape_pressed,
+                               bool is_keyword_search) {
   if (!extended_enabled_ && !instant_enabled_)
     return false;
 
@@ -189,7 +190,21 @@ bool InstantController::Update(const AutocompleteMatch& match,
            << " selection_start=" << selection_start << " selection_end="
            << selection_end << " verbatim=" << verbatim << " typing="
            << user_input_in_progress << " popup=" << omnibox_popup_is_open
-           << " escape_pressed=" << escape_pressed;
+           << " escape_pressed=" << escape_pressed << " is_keyword_search="
+           << is_keyword_search;
+
+  // TODO(dhollowa): Complete keyword match UI.  For now just hide suggestions.
+  // http://crbug.com/153932.  Note, this early escape is happens prior to the
+  // DCHECKs below because |user_text| and |full_text| have different semantics
+  // when keyword search is in effect.
+  if (is_keyword_search) {
+    if (instant_tab_)
+      instant_tab_->Update(string16(), 0, 0, true);
+    else
+      HideLoader();
+    last_match_was_search_ = false;
+    return false;
+  }
 
   // If the popup is open, the user has to be typing.
   DCHECK(!omnibox_popup_is_open || user_input_in_progress);
