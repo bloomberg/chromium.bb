@@ -741,6 +741,7 @@
     'gcc_compile_flags': [],
     'pnacl_compile_flags': [],
     'variables': {
+      'disable_pnacl%': 0,
       'build_pnacl_newlib': 0,
       'nlib_target': '',
       'extra_deps_pnacl_newlib': [],
@@ -771,7 +772,7 @@
       ],
     },
     'target_conditions': [
-      ['nexe_target!="" and build_pnacl_newlib!=0', {
+      ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
         'variables': {
             'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
             'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
@@ -889,7 +890,7 @@
             }],
           ],
       }],
-      ['nlib_target!="" and build_pnacl_newlib!=0', {
+      ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
         'variables': {
           'tool_name': 'pnacl_newlib',
           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
