@@ -125,10 +125,11 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
   if (SUCCEEDED(hr)) {
     ULONG size = 0;
     DEVMODE* dm = NULL;
+    // Use kPTJobScope, because kPTDocumentScope breaks duplex.
     hr = printing::XPSModule::ConvertPrintTicketToDevMode(provider,
                                                           pt_stream,
                                                           kUserDefaultDevmode,
-                                                          kPTDocumentScope,
+                                                          kPTJobScope,
                                                           &size,
                                                           &dm,
                                                           NULL);
