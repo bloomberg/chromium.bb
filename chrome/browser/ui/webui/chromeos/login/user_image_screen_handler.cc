@@ -66,8 +66,12 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("authorCredit",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
-  localized_strings->SetString("capturedPhoto",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_CAPTURED_PHOTO));
+  localized_strings->SetString("photoFromCamera",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA));
+  localized_strings->SetString("photoCaptureAccessibleText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT));
+  localized_strings->SetString("photoDiscardAccessibleText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT));
 }
 
 void UserImageScreenHandler::Initialize() {

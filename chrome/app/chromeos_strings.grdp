@@ -865,11 +865,17 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
     Take photo
   </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_CAPTURED_PHOTO" desc="The accessible text on the icon in the user image grid for a camera photo, when a photo has been captured.">
-    Photo captured from camera
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA" desc="The accessible text on the icon in the user image grid for a camera photo, when a photo has been captured.">
+    Photo from internal camera
   </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo of the current user.">
     Discard photo
+  </message>
+  <message name="IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was captured.">
+    Captured photo
+  </message>
+  <message name="IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was discarded.">
+    Discarded photo
   </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO" desc="The text on the button to flip the camera image horizontally.">
     Flip camera image horizontally

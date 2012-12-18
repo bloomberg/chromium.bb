@@ -78,7 +78,7 @@ cr.define('oobe', function() {
       // Set the title for camera item in the grid.
       imageGrid.setCameraTitles(
           localStrings.getString('takePhoto'),
-          localStrings.getString('capturedPhoto'));
+          localStrings.getString('photoFromCamera'));
 
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
@@ -101,7 +101,7 @@ cr.define('oobe', function() {
       $('take-photo').addEventListener(
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
-          'click', imageGrid.discardPhoto.bind(imageGrid));
+          'click', this.handleDiscardPhoto_.bind(this));
 
       // Toggle 'animation' class for the duration of WebKit transition.
       $('flip-photo').addEventListener(
@@ -223,9 +223,39 @@ cr.define('oobe', function() {
      * Handle photo capture from the live camera stream.
      */
     handleTakePhoto_: function(e) {
-      $('user-image-grid').takePhoto(function(photoURL) {
+      $('user-image-grid').takePhoto((function(photoURL) {
         chrome.send('photoTaken', [photoURL]);
-      });
+        this.announceAccessibleMessage_(
+            localStrings.getString('photoCaptureAccessibleText'));
+      }).bind(this));
+    },
+
+    /**
+     * Handle discarding the captured photo.
+     */
+    handleDiscardPhoto_: function(e) {
+      var imageGrid = $('user-image-grid');
+      imageGrid.discardPhoto();
+      this.announceAccessibleMessage_(
+          localStrings.getString('photoDiscardAccessibleText'));
+    },
+
+    /**
+     * Add an accessible message to the page that will be announced to
+     * users who have spoken feedback on, but will be invisible to all
+     * other users. It's removed right away so it doesn't clutter the DOM.
+     */
+    announceAccessibleMessage_: function(msg) {
+      var element = document.createElement('div');
+      element.setAttribute('aria-live', 'polite');
+      element.style.position = 'relative';
+      element.style.left = '-9999px';
+      element.style.height = '0px';
+      element.innerText = msg;
+      document.body.appendChild(element);
+      window.setTimeout(function() {
+        document.body.removeChild(element);
+      }, 0);
     },
 
     /**
