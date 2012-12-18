@@ -252,10 +252,6 @@
       # Notifications are compiled in by default. Set to 0 to disable.
       'notifications%' : 1,
 
-      # Use dsymutil to generate real .dSYM files on Mac. The default is 0 for
-      # regular builds and 1 for ASan builds.
-      'mac_want_real_dsym%': 'default',
-
       # If this is set, the clang plugins used on the buildbot will be used.
       # Run tools/clang/scripts/update.sh to make sure they are compiled.
       # This causes 'clang_chrome_plugins_flags' to be set.
@@ -681,7 +677,6 @@
     'input_speech%': '<(input_speech)',
     'notifications%': '<(notifications)',
     'clang_use_chrome_plugins%': '<(clang_use_chrome_plugins)',
-    'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
@@ -3367,27 +3362,9 @@
           # variables that are intended to be set to different values in
           # different targets, like these.
           'mac_pie': 1,        # Most executables can be position-independent.
+          'mac_real_dsym': 0,  # Fake .dSYMs are fine in most cases.
           # Strip debugging symbols from the target.
           'mac_strip': '<(mac_strip_release)',
-          'conditions': [
-            ['asan==1', {
-              'conditions': [
-                ['mac_want_real_dsym=="default"', {
-                  'mac_real_dsym': 1,
-                }, {
-                  'mac_real_dsym': '<(mac_want_real_dsym)'
-                }],
-              ],
-            }, {
-              'conditions': [
-                ['mac_want_real_dsym=="default"', {
-                  'mac_real_dsym': 0, # Fake .dSYMs are fine in most cases.
-                }, {
-                  'mac_real_dsym': '<(mac_want_real_dsym)'
-                }],
-              ],
-            }],
-          ],
         },
         'xcode_settings': {
           'GCC_DYNAMIC_NO_PIC': 'NO',               # No -mdynamic-no-pic
