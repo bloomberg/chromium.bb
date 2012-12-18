@@ -63,6 +63,8 @@ Layer::Layer()
         s_nextLayerId = 1;
         m_layerId = s_nextLayerId++;
     }
+
+    addLayerAnimationObserver(m_layerAnimationController.get());
 }
 
 Layer::~Layer()
@@ -779,10 +781,14 @@ void Layer::resumeAnimations(double monotonicTime)
 
 void Layer::setLayerAnimationController(scoped_ptr<LayerAnimationController> layerAnimationController)
 {
+    if (m_layerAnimationController)
+        removeLayerAnimationObserver(m_layerAnimationController.get());
+
     m_layerAnimationController = layerAnimationController.Pass();
     if (m_layerAnimationController) {
         m_layerAnimationController->setClient(this);
         m_layerAnimationController->setForceSync();
+        addLayerAnimationObserver(m_layerAnimationController.get());
     }
     setNeedsCommit();
 }
@@ -801,7 +807,8 @@ bool Layer::hasActiveAnimation() const
 
 void Layer::notifyAnimationStarted(const AnimationEvent& event, double wallClockTime)
 {
-    m_layerAnimationController->notifyAnimationStarted(event);
+    FOR_EACH_OBSERVER(LayerAnimationObserver, m_layerAnimationObservers,
+                      OnAnimationStarted(event));
     if (m_layerAnimationDelegate)
         m_layerAnimationDelegate->notifyAnimationStarted(wallClockTime);
 }
@@ -810,6 +817,17 @@ void Layer::notifyAnimationFinished(double wallClockTime)
 {
     if (m_layerAnimationDelegate)
         m_layerAnimationDelegate->notifyAnimationFinished(wallClockTime);
+}
+
+void Layer::addLayerAnimationObserver(LayerAnimationObserver* animationObserver)
+{
+    if (!m_layerAnimationObservers.HasObserver(animationObserver))
+        m_layerAnimationObservers.AddObserver(animationObserver);
+}
+
+void Layer::removeLayerAnimationObserver(LayerAnimationObserver* animationObserver)
+{
+    m_layerAnimationObservers.RemoveObserver(animationObserver);
 }
 
 Region Layer::visibleContentOpaqueRegion() const

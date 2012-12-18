@@ -86,6 +86,7 @@
       'layer.h',
       'layer_animation_controller.cc',
       'layer_animation_controller.h',
+      'layer_animation_observer.h',
       'layer_impl.cc',
       'layer_impl.h',
       'layer_iterator.cc',

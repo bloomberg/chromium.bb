@@ -143,7 +143,7 @@ bool LayerAnimationController::isAnimatingProperty(ActiveAnimation::TargetProper
     return false;
 }
 
-void LayerAnimationController::notifyAnimationStarted(const AnimationEvent& event)
+void LayerAnimationController::OnAnimationStarted(const AnimationEvent& event)
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
         if (m_activeAnimations[i]->group() == event.groupId && m_activeAnimations[i]->targetProperty() == event.targetProperty && m_activeAnimations[i]->needsSynchronizedStartTime()) {

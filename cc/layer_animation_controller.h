@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
+#include "cc/layer_animation_observer.h"
 #include "cc/scoped_ptr_vector.h"
 
 namespace gfx {
@@ -32,7 +33,7 @@ public:
     virtual const gfx::Transform& transform() const = 0;
 };
 
-class CC_EXPORT LayerAnimationController {
+class CC_EXPORT LayerAnimationController : public LayerAnimationObserver {
 public:
     static scoped_ptr<LayerAnimationController> create(LayerAnimationControllerClient*);
 
@@ -69,7 +70,7 @@ public:
 
     // This is called in response to an animation being started on the impl thread. This
     // function updates the corresponding main thread animation's start time.
-    void notifyAnimationStarted(const AnimationEvent&);
+    virtual void OnAnimationStarted(const AnimationEvent&) OVERRIDE;
 
     // If a sync is forced, then the next time animation updates are pushed to the impl
     // thread, all animations will be transferred.

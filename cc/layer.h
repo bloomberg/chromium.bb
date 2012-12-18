@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "cc/cc_export.h"
 #include "cc/draw_properties.h"
 #include "cc/layer_animation_controller.h"
+#include "cc/layer_animation_observer.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/region.h"
 #include "cc/render_surface.h"
@@ -277,6 +279,9 @@ public:
     virtual void notifyAnimationStarted(const AnimationEvent&, double wallClockTime);
     virtual void notifyAnimationFinished(double wallClockTime);
 
+    void addLayerAnimationObserver(LayerAnimationObserver* animationObserver);
+    void removeLayerAnimationObserver(LayerAnimationObserver* animationObserver);
+
     virtual Region visibleContentOpaqueRegion() const;
 
     virtual ScrollbarLayer* toScrollbarLayer();
@@ -340,6 +345,7 @@ private:
     LayerTreeHost* m_layerTreeHost;
 
     scoped_ptr<LayerAnimationController> m_layerAnimationController;
+    ObserverList<LayerAnimationObserver> m_layerAnimationObservers;
 
     // Layer properties.
     gfx::Size m_bounds;
