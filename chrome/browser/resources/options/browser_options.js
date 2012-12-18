@@ -246,7 +246,7 @@ cr.define('options', function() {
       if ($('metricsReportingEnabled')) {
         $('metricsReportingEnabled').onclick = function(event) {
           chrome.send('metricsReportingCheckboxAction',
-              [String(event.target.checked)]);
+              [String(event.currentTarget.checked)]);
         };
       }
 

@@ -39,7 +39,7 @@ cr.define('options', function() {
 
           // Add on the proper hash for the content type, and store that in the
           // history so back/forward and tab restore works.
-          var hash = event.target.getAttribute('contentType');
+          var hash = event.currentTarget.getAttribute('contentType');
           var url = page.name + '#' + hash;
           window.history.replaceState({pageName: page.name},
                                       page.title,
