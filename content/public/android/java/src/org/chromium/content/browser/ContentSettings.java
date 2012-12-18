@@ -407,7 +407,7 @@ public class ContentSettings {
     public void setStandardFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mStandardFontFamily.equals(font)) {
+            if (font != null && !mStandardFontFamily.equals(font)) {
                 mStandardFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -431,7 +431,7 @@ public class ContentSettings {
     public void setFixedFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mFixedFontFamily.equals(font)) {
+            if (font != null && !mFixedFontFamily.equals(font)) {
                 mFixedFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -455,7 +455,7 @@ public class ContentSettings {
     public void setSansSerifFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mSansSerifFontFamily.equals(font)) {
+            if (font != null && !mSansSerifFontFamily.equals(font)) {
                 mSansSerifFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -479,7 +479,7 @@ public class ContentSettings {
     public void setSerifFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mSerifFontFamily.equals(font)) {
+            if (font != null && !mSerifFontFamily.equals(font)) {
                 mSerifFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -503,7 +503,7 @@ public class ContentSettings {
     public void setCursiveFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mCursiveFontFamily.equals(font)) {
+            if (font != null && !mCursiveFontFamily.equals(font)) {
                 mCursiveFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -527,7 +527,7 @@ public class ContentSettings {
     public void setFantasyFontFamily(String font) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mFantasyFontFamily.equals(font)) {
+            if (font != null && !mFantasyFontFamily.equals(font)) {
                 mFantasyFontFamily = font;
                 mEventHandler.syncSettingsLocked();
             }
@@ -1092,7 +1092,7 @@ public class ContentSettings {
     public void setDefaultTextEncodingName(String encoding) {
         assert mCanModifySettings;
         synchronized (mContentSettingsLock) {
-            if (!mDefaultTextEncoding.equals(encoding)) {
+            if (encoding != null && !mDefaultTextEncoding.equals(encoding)) {
                 mDefaultTextEncoding = encoding;
                 mEventHandler.syncSettingsLocked();
             }
