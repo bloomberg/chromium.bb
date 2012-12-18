@@ -26,7 +26,6 @@ class WebURL;
 namespace webkit_media {
 
 class MediaStreamClient;
-class ProxyDecryptor;
 
 // Builds the required filters for handling media stream URLs and adds them to
 // |filter_collection| returning true if successful.
@@ -43,16 +42,14 @@ bool BuildMediaStreamCollection(
 void BuildMediaSourceCollection(
     const scoped_refptr<media::ChunkDemuxer>& demuxer,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection,
-    ProxyDecryptor* proxy_decryptor);
+    media::FilterCollection* filter_collection);
 
 // Builds the required filters for handling regular URLs and adds them to
 // |filter_collection| and fills |video_decoder| returning true if successful.
 void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection,
-    ProxyDecryptor* proxy_decryptor);
+    media::FilterCollection* filter_collection);
 
 }  // webkit_media
 

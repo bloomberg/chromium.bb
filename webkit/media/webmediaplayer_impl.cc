@@ -180,8 +180,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media::SetDecryptorReadyCB set_decryptor_ready_cb;
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    decryptor_.reset(new ProxyDecryptor(message_loop_factory_->GetMessageLoop(
-        media::MessageLoopFactory::kPipeline), proxy_.get(), client, frame));
+    decryptor_.reset(new ProxyDecryptor(proxy_.get(), client, frame));
     set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
                                         base::Unretained(decryptor_.get()));
   }
@@ -291,8 +290,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
     BuildMediaSourceCollection(chunk_demuxer_,
                                message_loop,
-                               filter_collection_.get(),
-                               decryptor_.get());
+                               filter_collection_.get());
     supports_save_ = false;
     StartPipeline();
     return;
@@ -313,8 +311,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
   BuildDefaultCollection(proxy_->data_source(),
                          message_loop,
-                         filter_collection_.get(),
-                         decryptor_.get());
+                         filter_collection_.get());
 }
 
 void WebMediaPlayerImpl::cancelLoad() {

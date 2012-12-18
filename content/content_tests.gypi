@@ -456,7 +456,6 @@
         '../webkit/media/buffered_resource_loader_unittest.cc',
         '../webkit/media/cache_util_unittest.cc',
         '../webkit/media/crypto/key_systems_unittest.cc',
-        '../webkit/media/crypto/proxy_decryptor_unittest.cc',
         '../webkit/media/test_response_generator.cc',
         '../webkit/media/test_response_generator.h',
         '../webkit/mocks/mock_weburlloader.cc',
