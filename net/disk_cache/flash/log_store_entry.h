@@ -34,6 +34,7 @@ class NET_EXPORT_PRIVATE LogStoreEntry {
 
   int ReadData(int index, int offset, net::IOBuffer* buf, int buf_len);
   int WriteData(int index, int offset, net::IOBuffer* buf, int buf_len);
+  void Delete();
 
  private:
   struct Stream {
@@ -44,7 +45,7 @@ class NET_EXPORT_PRIVATE LogStoreEntry {
     std::vector<char> write_buffer;
   };
 
-  bool OnDisk() const;
+  bool ReadOnly() const;
   bool InvalidStream(int stream_index) const;
   int32 Size() const;
   bool Save();
@@ -54,6 +55,7 @@ class NET_EXPORT_PRIVATE LogStoreEntry {
   Stream streams_[kFlashLogStoreEntryNumStreams];
   bool init_;
   bool closed_;
+  bool deleted_;
 
   DISALLOW_COPY_AND_ASSIGN(LogStoreEntry);
 };

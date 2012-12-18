@@ -85,6 +85,13 @@ bool LogStore::CreateEntry(int32 size, int32* id) {
   return true;
 }
 
+void LogStore::DeleteEntry(int32 id, int32 size) {
+  DCHECK(init_ && !closed_);
+  DCHECK(open_entries_.find(id) == open_entries_.end());
+  // TODO(agayev): Increment the number of dead bytes in the segment metadata
+  // for the segment identified by |index|.
+}
+
 bool LogStore::WriteData(const void* buffer, int32 size) {
   DCHECK(init_ && !closed_);
   DCHECK(current_entry_id_ != -1 &&

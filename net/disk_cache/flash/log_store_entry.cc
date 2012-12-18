@@ -12,12 +12,12 @@
 namespace disk_cache {
 
 LogStoreEntry::LogStoreEntry(LogStore* store)
-    : store_(store), id_(-1), init_(false), closed_(false) {
+    : store_(store), id_(-1), init_(false), closed_(false), deleted_(false) {
   DCHECK(store);
 }
 
 LogStoreEntry::LogStoreEntry(LogStore* store, int32 id)
-    : store_(store), id_(id), init_(false), closed_(false) {
+    : store_(store), id_(id), init_(false), closed_(false), deleted_(false) {
   DCHECK(store);
 }
 
@@ -27,7 +27,7 @@ LogStoreEntry::~LogStoreEntry() {
 
 bool LogStoreEntry::Init() {
   DCHECK(!init_);
-  if (!OnDisk()) {
+  if (!ReadOnly()) {
     init_ = true;
     return true;
   }
@@ -52,12 +52,16 @@ bool LogStoreEntry::Init() {
 
 bool LogStoreEntry::Close() {
   DCHECK(init_ && !closed_);
-  if (OnDisk())
+
+  if (ReadOnly()) {
     store_->CloseEntry(id_);
-  else if (!Save())
-    return false;
-  closed_ = true;
-  return true;
+    if (deleted_)
+      store_->DeleteEntry(id_, Size());
+    closed_ = true;
+  } else {
+    closed_ = deleted_ ? true : Save();
+  }
+  return closed_;
 }
 
 int32 LogStoreEntry::id() const {
@@ -82,7 +86,7 @@ int LogStoreEntry::ReadData(int index, int offset, net::IOBuffer* buf,
   if (offset + buf_len > stream_size)
     buf_len = stream_size - offset;
 
-  if (OnDisk()) {
+  if (ReadOnly()) {
     offset += streams_[index].offset;
     if (store_->ReadData(id_, buf->data(), buf_len, offset))
       return buf_len;
@@ -113,7 +117,12 @@ int LogStoreEntry::WriteData(int index, int offset, net::IOBuffer* buf,
   return buf_len;
 }
 
-bool LogStoreEntry::OnDisk() const {
+void LogStoreEntry::Delete() {
+  DCHECK(init_ && !closed_);
+  deleted_ = true;
+}
+
+bool LogStoreEntry::ReadOnly() const {
   return id_ != -1;
 }
 
@@ -131,7 +140,7 @@ int32 LogStoreEntry::Size() const {
 }
 
 bool LogStoreEntry::Save() {
-  DCHECK(init_ && !closed_ && !OnDisk());
+  DCHECK(init_ && !closed_ && !deleted_ && !ReadOnly());
   int32 stream_sizes[kFlashLogStoreEntryNumStreams];
   COMPILE_ASSERT(sizeof(stream_sizes) == kFlashLogStoreEntryHeaderSize,
                  invalid_log_store_entry_header_size);

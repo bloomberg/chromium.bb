@@ -38,7 +38,10 @@ class NET_EXPORT_PRIVATE LogStore {
   // |entry_id|.
   bool CreateEntry(int32 size, int32* entry_id);
 
-  // TODO(agayev): Add DeleteEntry.
+  // Deletes |entry_id|; the client should keep track of |size| and provide it
+  // here.  Only inactive (i.e. not currently open or being created) entries can
+  // be deleted.
+  void DeleteEntry(int32 entry_id, int32 size);
 
   // Appends data to the end of the last created entry.
   bool WriteData(const void* buffer, int32 size);
