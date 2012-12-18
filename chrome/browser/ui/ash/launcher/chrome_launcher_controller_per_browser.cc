@@ -1079,7 +1079,12 @@ void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
 }
 
 void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorFromPrefs() {
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  ash::Shell::RootWindowList root_windows;
+  if (ash::Shell::IsLauncherPerDisplayEnabled())
+    root_windows = ash::Shell::GetAllRootWindows();
+  else
+    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
+
   for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
@@ -1092,7 +1097,12 @@ void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {
           switches::kShowLauncherAlignmentMenu))
     return;
 
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  ash::Shell::RootWindowList root_windows;
+  if (ash::Shell::IsLauncherPerDisplayEnabled())
+    root_windows = ash::Shell::GetAllRootWindows();
+  else
+    root_windows.push_back(ash::Shell::GetPrimaryRootWindow());
+
   for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     // See comment in |kShelfAlignment| as to why we consider two prefs.
