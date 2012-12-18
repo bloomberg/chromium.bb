@@ -11,6 +11,7 @@
 #include "cc/direct_renderer.h"
 #include "cc/gl_renderer_draw_cache.h"
 #include "cc/io_surface_draw_quad.h"
+#include "cc/output_surface.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/renderer.h"
 #include "cc/solid_color_draw_quad.h"
@@ -19,10 +20,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h"
 #include "ui/gfx/quad_f.h"
-
-namespace WebKit {
-class WebGraphicsContext3D;
-}
 
 namespace cc {
 
@@ -38,7 +35,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer,
                              public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM),
                              public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
 public:
-    static scoped_ptr<GLRenderer> create(RendererClient*, ResourceProvider*);
+    static scoped_ptr<GLRenderer> create(RendererClient*, OutputSurface*, ResourceProvider*);
 
     virtual ~GLRenderer();
 
@@ -64,7 +61,7 @@ public:
     virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE;
 
 protected:
-    GLRenderer(RendererClient*, ResourceProvider*);
+    GLRenderer(RendererClient*, OutputSurface*, ResourceProvider*);
 
     static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
 
@@ -218,6 +215,7 @@ private:
 
     scoped_ptr<SolidColorProgram> m_solidColorProgram;
 
+    OutputSurface* m_outputSurface;
     WebKit::WebGraphicsContext3D* m_context;
 
     gfx::Rect m_swapBufferRect;

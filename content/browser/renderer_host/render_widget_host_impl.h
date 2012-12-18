@@ -39,6 +39,10 @@ namespace base {
 class TimeTicks;
 }
 
+namespace cc {
+class CompositorFrame;
+}
+
 namespace ui {
 class KeyEvent;
 class Range;
@@ -559,6 +563,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                          int32 route_id,
                                          const gfx::Size& size,
                                          int32 gpu_process_host_id);
+  void OnMsgSwapCompositorFrame(const cc::CompositorFrame& frame);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,

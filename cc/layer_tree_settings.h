@@ -18,6 +18,7 @@ class CC_EXPORT LayerTreeSettings {
   ~LayerTreeSettings();
 
   bool acceleratePainting;
+  bool compositorFrameMessage;
   bool implSidePainting;
   bool renderVSyncEnabled;
   bool perTilePaintingEnabled;

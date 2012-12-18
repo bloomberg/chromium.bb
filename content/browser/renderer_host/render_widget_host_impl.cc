@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "cc/compositor_frame.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -54,6 +55,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/vector2d_conversions.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -331,6 +333,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                         OnCompositorSurfaceBuffersSwapped)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapCompositorFrame,
+                        OnMsgSwapCompositorFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnMsgUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
@@ -1509,6 +1513,25 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
 #endif
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
                                           gpu_process_host_id);
+}
+
+void RenderWidgetHostImpl::OnMsgSwapCompositorFrame(
+    const cc::CompositorFrame& frame) {
+#if defined(OS_ANDROID)
+  gfx::Vector2dF scroll_offset = ScaleVector2d(
+      frame.metadata.root_scroll_offset, frame.metadata.page_scale_factor);
+  gfx::SizeF content_size = ScaleSize(
+      frame.metadata.root_layer_size, frame.metadata.page_scale_factor);
+
+  if (view_) {
+    view_->UpdateFrameInfo(
+        gfx::ToRoundedVector2d(scroll_offset),
+        frame.metadata.page_scale_factor,
+        frame.metadata.min_page_scale_factor,
+        frame.metadata.max_page_scale_factor,
+        gfx::ToCeiledSize(content_size));
+  }
+#endif
 }
 
 void RenderWidgetHostImpl::OnMsgUpdateRect(

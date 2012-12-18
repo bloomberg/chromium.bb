@@ -8,6 +8,8 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
+#include "cc/compositor_frame.h"
+#include "cc/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
@@ -2252,6 +2254,11 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                     int32 /* route_id */,
                     gfx::Size /* size */,
                     int32 /* gpu_process_host_id */)
+
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrame,
+                    cc::CompositorFrame /* frame */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrameAck,
+                    cc::CompositorFrameAck /* ack */)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.

@@ -14,6 +14,7 @@
 namespace cc {
 
 class CompositorFrameAck;
+class CompositorFrameMetadata;
 class ScopedResource;
 
 class CC_EXPORT RendererClient {
@@ -27,6 +28,7 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
     virtual bool hasImplThread() const = 0;
     virtual bool shouldClearRootRenderPass() const = 0;
+    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const = 0;
 protected:
     virtual ~RendererClient() { }
 };

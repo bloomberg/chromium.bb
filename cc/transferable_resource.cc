@@ -19,7 +19,7 @@ bool Mailbox::isZero() const {
   return true;
 }
 
-void Mailbox::setName(const GLbyte* n) {
+void Mailbox::setName(const int8* n) {
   DCHECK(isZero() || !memcmp(name, n, sizeof(name)));
   memcpy(name, n, sizeof(name));
 }

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
+#include "cc/compositor_frame_metadata.h"
 #include "cc/delegated_renderer_layer_impl.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
@@ -4100,9 +4101,9 @@ struct RenderPassRemovalTestData : public LayerTreeHostImpl::FrameData {
 
 class TestRenderer : public GLRenderer, public RendererClient {
 public:
-    static scoped_ptr<TestRenderer> create(ResourceProvider* resourceProvider, Proxy* proxy)
+    static scoped_ptr<TestRenderer> create(ResourceProvider* resourceProvider, OutputSurface* outputSurface, Proxy* proxy)
     {
-        scoped_ptr<TestRenderer> renderer(new TestRenderer(resourceProvider, proxy));
+        scoped_ptr<TestRenderer> renderer(new TestRenderer(resourceProvider, outputSurface, proxy));
         if (!renderer->initialize())
             return scoped_ptr<TestRenderer>();
 
@@ -4124,9 +4125,11 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
     virtual bool hasImplThread() const OVERRIDE { return false; }
     virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
+    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+        OVERRIDE { return CompositorFrameMetadata(); }
 
 protected:
-    TestRenderer(ResourceProvider* resourceProvider, Proxy* proxy) : GLRenderer(this, resourceProvider) { }
+    TestRenderer(ResourceProvider* resourceProvider, OutputSurface* outputSurface, Proxy* proxy) : GLRenderer(this, outputSurface, resourceProvider) { }
 
 private:
     LayerTreeSettings m_settings;
@@ -4417,7 +4420,7 @@ TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
     ASSERT_TRUE(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
-    scoped_ptr<TestRenderer> renderer(TestRenderer::create(resourceProvider.get(), &m_proxy));
+    scoped_ptr<TestRenderer> renderer(TestRenderer::create(resourceProvider.get(), outputSurface.get(), &m_proxy));
 
     int testCaseIndex = 0;
     while (removeRenderPassesCases[testCaseIndex].name) {

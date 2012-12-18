@@ -569,7 +569,68 @@ void ParamTraits<cc::Mailbox>::Log(const param_type& p, std::string* l) {
     *l += base::StringPrintf("%02x", p.name[i]);
 }
 
-void ParamTraits<cc::CompositorFrame>::Write(Message* m, const param_type& p) {
+namespace {
+  enum CompositorFrameType {
+    DELEGATED_FRAME,
+    GL_FRAME,
+  };
+}
+
+void ParamTraits<cc::CompositorFrame>::Write(Message* m,
+                                             const param_type& p) {
+  WriteParam(m, p.metadata);
+  if (p.delegated_frame_data) {
+    DCHECK(!p.gl_frame_data);
+    WriteParam(m, static_cast<int>(DELEGATED_FRAME));
+    WriteParam(m, *p.delegated_frame_data);
+  } else {
+    DCHECK(p.gl_frame_data);
+    WriteParam(m, static_cast<int>(GL_FRAME));
+    WriteParam(m, *p.gl_frame_data);
+  }
+}
+
+bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
+                                            PickleIterator* iter,
+                                            param_type* p) {
+  if (!ReadParam(m, iter, &p->metadata))
+    return false;
+
+  int compositor_frame_type;
+  if (!ReadParam(m, iter, &compositor_frame_type))
+    return false;
+
+  switch (compositor_frame_type) {
+    case DELEGATED_FRAME:
+      p->delegated_frame_data.reset(new cc::DelegatedFrameData());
+      if (!ReadParam(m, iter, p->delegated_frame_data.get()))
+        return false;
+      break;
+    case GL_FRAME:
+      p->gl_frame_data.reset(new cc::GLFrameData());
+      if (!ReadParam(m, iter, p->gl_frame_data.get()))
+        return false;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("CompositorFrame(");
+  LogParam(p.metadata, l);
+  l->append(", ");
+  if (p.delegated_frame_data)
+    LogParam(*p.delegated_frame_data, l);
+  else if (p.gl_frame_data)
+    LogParam(*p.gl_frame_data, l);
+  l->append(")");
+}
+
+void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
+                                                const param_type& p) {
   WriteParam(m, p.size);
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
@@ -577,9 +638,9 @@ void ParamTraits<cc::CompositorFrame>::Write(Message* m, const param_type& p) {
     WriteParam(m, *p.render_pass_list[i]);
 }
 
-bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
-                                            PickleIterator* iter,
-                                            param_type* p) {
+bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
+                                               PickleIterator* iter,
+                                               param_type* p) {
   const static size_t kMaxRenderPasses = 10000;
 
   size_t num_render_passes;
@@ -597,9 +658,9 @@ bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
   return true;
 }
 
-void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
-                                           std::string* l) {
-  l->append("CompositorFrame(");
+void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
+                                              std::string* l) {
+  l->append("DelegatedFrameData(");
   LogParam(p.size, l);
   l->append(", ");
   LogParam(p.resource_list, l);

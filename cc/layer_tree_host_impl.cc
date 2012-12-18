@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "cc/append_quads_data.h"
+#include "cc/compositor_frame_metadata.h"
 #include "cc/damage_tracker.h"
 #include "cc/debug_rect_history.h"
 #include "cc/delay_based_time_source.h"
@@ -881,6 +882,26 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
     m_client->onCanDrawStateChanged(canDraw());
 }
 
+CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
+{
+    if (!rootScrollLayer())
+        return CompositorFrameMetadata();
+
+    CompositorFrameMetadata metadata;
+    metadata.root_scroll_offset = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
+    metadata.page_scale_factor = m_pinchZoomViewport.totalPageScaleFactor();
+    metadata.viewport_size = m_pinchZoomViewport.bounds().size();
+    metadata.root_layer_size = rootScrollLayer()->bounds();
+    metadata.min_page_scale_factor = m_pinchZoomViewport.minPageScaleFactor();
+    metadata.max_page_scale_factor = m_pinchZoomViewport.maxPageScaleFactor();
+    if (!m_settings.pageScalePinchZoomEnabled) {
+        metadata.root_scroll_offset.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
+        metadata.root_layer_size.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
+    }
+
+    return metadata;
+}
+
 void LayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::drawLayers");
@@ -1064,7 +1085,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (outputSurface->Capabilities().has_parent_compositor)
         m_renderer = DelegatingRenderer::Create(this, resourceProvider.get());
     else if (outputSurface->Context3D())
-        m_renderer = GLRenderer::create(this, resourceProvider.get());
+        m_renderer = GLRenderer::create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->SoftwareDevice())
         m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->SoftwareDevice());
     if (!m_renderer)

@@ -7,17 +7,17 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "cc/cc_export.h"
 #include "ui/gfx/size.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
 struct CC_EXPORT Mailbox {
   Mailbox();
   bool isZero() const;
-  void setName(const GLbyte* name);
-  GLbyte name[64];
+  void setName(const int8* name);
+  int8 name[64];
 };
 
 struct CC_EXPORT TransferableResource {
@@ -25,8 +25,8 @@ struct CC_EXPORT TransferableResource {
   ~TransferableResource();
 
   unsigned id;
-  GLenum format;
-  GLenum filter;
+  uint32 format;
+  uint32 filter;
   gfx::Size size;
   Mailbox mailbox;
 };

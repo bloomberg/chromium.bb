@@ -4,6 +4,7 @@
 
 #include "cc/gl_renderer.h"
 
+#include "cc/compositor_frame_metadata.h"
 #include "cc/draw_quad.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
@@ -85,6 +86,8 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
     virtual bool hasImplThread() const OVERRIDE { return false; }
     virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
+    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+        OVERRIDE { return CompositorFrameMetadata(); }
 
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
@@ -109,7 +112,7 @@ private:
 
 class FakeRendererGL : public GLRenderer {
 public:
-    FakeRendererGL(RendererClient* client, ResourceProvider* resourceProvider) : GLRenderer(client, resourceProvider) { }
+    FakeRendererGL(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider) : GLRenderer(client, outputSurface, resourceProvider) { }
 
     // GLRenderer methods.
 
@@ -126,9 +129,9 @@ protected:
     GLRendererTest()
         : m_suggestHaveBackbufferYes(1, true)
         , m_suggestHaveBackbufferNo(1, false)
-        , m_context(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
-        , m_resourceProvider(ResourceProvider::create(m_context.get()))
-        , m_renderer(&m_mockClient, m_resourceProvider.get())
+        , m_outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
+        , m_resourceProvider(ResourceProvider::create(m_outputSurface.get()))
+        , m_renderer(&m_mockClient, m_outputSurface.get(), m_resourceProvider.get())
     {
     }
 
@@ -142,12 +145,12 @@ protected:
         m_renderer.swapBuffers();
     }
 
-    FrameCountingMemoryAllocationSettingContext* context() { return static_cast<FrameCountingMemoryAllocationSettingContext*>(m_context->Context3D()); }
+    FrameCountingMemoryAllocationSettingContext* context() { return static_cast<FrameCountingMemoryAllocationSettingContext*>(m_outputSurface->Context3D()); }
 
     WebGraphicsMemoryAllocation m_suggestHaveBackbufferYes;
     WebGraphicsMemoryAllocation m_suggestHaveBackbufferNo;
 
-    scoped_ptr<OutputSurface> m_context;
+    scoped_ptr<OutputSurface> m_outputSurface;
     FakeRendererClient m_mockClient;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     FakeRendererGL m_renderer;
@@ -308,9 +311,9 @@ public:
 TEST(GLRendererTest2, initializationDoesNotMakeSynchronousCalls)
 {
     FakeRendererClient mockClient;
-    scoped_ptr<OutputSurface> context(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     EXPECT_TRUE(renderer.initialize());
 }
@@ -351,9 +354,9 @@ private:
 TEST(GLRendererTest2, initializationWithQuicklyLostContextDoesNotAssert)
 {
     FakeRendererClient mockClient;
-    scoped_ptr<OutputSurface> context(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     renderer.initialize();
 }
@@ -375,7 +378,7 @@ TEST(GLRendererTest2, initializationWithoutGpuMemoryManagerExtensionSupportShoul
     FakeRendererClient mockClient;
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     renderer.initialize();
 
@@ -403,7 +406,7 @@ TEST(GLRendererTest2, opaqueBackground)
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     mockClient.rootRenderPass()->has_transparent_background = false;
 
@@ -426,7 +429,7 @@ TEST(GLRendererTest2, transparentBackground)
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     mockClient.rootRenderPass()->has_transparent_background = true;
 
@@ -477,7 +480,7 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new VisibilityChangeIsLastCallTrackingContext)));
     VisibilityChangeIsLastCallTrackingContext* context = static_cast<VisibilityChangeIsLastCallTrackingContext*>(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
     EXPECT_TRUE(renderer.initialize());
 
@@ -529,7 +532,7 @@ TEST(GLRendererTest2, activeTextureState)
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
     TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&fakeClient, resourceProvider.get());
+    FakeRendererGL renderer(&fakeClient, outputSurface.get(), resourceProvider.get());
 
     // During initialization we are allowed to set any texture parameters.
     EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
@@ -597,9 +600,8 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     NoClearRootRenderPassFakeClient mockClient;
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new NoClearRootRenderPassMockContext)));
     NoClearRootRenderPassMockContext* mockContext = static_cast<NoClearRootRenderPassMockContext*>(outputSurface->Context3D());
-
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
     EXPECT_TRUE(renderer.initialize());
 
     gfx::Rect viewportRect(mockClient.deviceViewportSize());

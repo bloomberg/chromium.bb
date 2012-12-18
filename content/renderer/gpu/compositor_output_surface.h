@@ -71,6 +71,7 @@ class CompositorOutputSurface
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
+  bool Send(IPC::Message* message);
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
   cc::OutputSurfaceClient* client_;

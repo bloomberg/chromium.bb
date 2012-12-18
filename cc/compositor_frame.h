@@ -5,11 +5,11 @@
 #ifndef CC_COMPOSITOR_FRAME_H_
 #define CC_COMPOSITOR_FRAME_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "cc/render_pass.h"
-#include "cc/scoped_ptr_vector.h"
-#include "cc/transferable_resource.h"
-#include "ui/gfx/size.h"
+#include "cc/compositor_frame_metadata.h"
+#include "cc/delegated_frame_data.h"
+#include "cc/gl_frame_data.h"
 
 namespace cc {
 
@@ -18,9 +18,9 @@ class CC_EXPORT CompositorFrame {
   CompositorFrame();
   ~CompositorFrame();
 
-  gfx::Size size;
-  TransferableResourceList resource_list;
-  ScopedPtrVector<RenderPass> render_pass_list;
+  CompositorFrameMetadata metadata;
+  scoped_ptr<DelegatedFrameData> delegated_frame_data;
+  scoped_ptr<GLFrameData> gl_frame_data;
 };
 
 }  // namespace cc

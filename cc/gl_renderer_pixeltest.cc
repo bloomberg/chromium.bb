@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "cc/compositor_frame_metadata.h"
 #include "cc/draw_quad.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
@@ -42,6 +43,8 @@ class FakeRendererClient : public RendererClient {
       const ManagedMemoryPolicy&) OVERRIDE {}
   virtual bool hasImplThread() const OVERRIDE { return false; }
   virtual bool shouldClearRootRenderPass() const { return true; }
+  virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+      OVERRIDE { return CompositorFrameMetadata(); }
 };
 
 class GLRendererPixelTest : public testing::Test {
@@ -52,7 +55,9 @@ class GLRendererPixelTest : public testing::Test {
     gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
     output_surface_ = PixelTestOutputSurface::create();
     resource_provider_ = ResourceProvider::create(output_surface_.get());
-    renderer_ = GLRenderer::create(&fake_client_, resource_provider_.get());
+    renderer_ = GLRenderer::create(&fake_client_,
+                                   output_surface_.get(),
+                                   resource_provider_.get());
   }
 
   bool PixelsMatchReference(FilePath ref_file, gfx::Rect viewport_rect) {

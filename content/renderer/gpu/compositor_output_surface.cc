@@ -5,13 +5,16 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 
 #include "base/message_loop_proxy.h"
+#include "cc/compositor_frame.h"
 #include "cc/output_surface_client.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
+using cc::CompositorFrame;
 using cc::SoftwareOutputDevice;
 using WebKit::WebGraphicsContext3D;
 
@@ -88,9 +91,9 @@ cc::SoftwareOutputDevice* CompositorOutputSurface::SoftwareDevice() const {
 }
 
 void CompositorOutputSurface::SendFrameToParentCompositor(
-    const cc::CompositorFrame&) {
+    const cc::CompositorFrame& frame) {
   DCHECK(CalledOnValidThread());
-  NOTREACHED();
+  Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, frame));
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
@@ -107,6 +110,10 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
   DCHECK(CalledOnValidThread());
   DCHECK(client_);
   client_->OnVSyncParametersChanged(timebase, interval);
+}
+
+bool CompositorOutputSurface::Send(IPC::Message* message) {
+  return ChildThread::current()->sync_message_filter()->Send(message);
 }
 
 }  // namespace content

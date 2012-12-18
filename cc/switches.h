@@ -17,6 +17,7 @@ namespace switches {
 
 CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
 CC_EXPORT extern const char kDisableThreadedAnimation[];
+CC_EXPORT extern const char kEnableCompositorFrameMessage[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kEnablePerTilePainting[];

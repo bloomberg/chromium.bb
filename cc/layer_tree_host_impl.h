@@ -22,6 +22,7 @@
 namespace cc {
 
 class CompletionEvent;
+class CompositorFrameMetadata;
 class DebugRectHistory;
 class FrameRateCounter;
 class LayerImpl;
@@ -171,6 +172,7 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
     virtual bool hasImplThread() const OVERRIDE;
     virtual bool shouldClearRootRenderPass() const OVERRIDE;
+    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const OVERRIDE;
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;

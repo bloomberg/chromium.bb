@@ -14,6 +14,9 @@ const char kBackgroundColorInsteadOfCheckerboard[] =
 
 const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
+// Send a message for every frame from the impl thread to the parent compositor.
+const char kEnableCompositorFrameMessage[] = "enable-compositor-frame-message";
+
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[] = "enable-impl-side-painting";
 

@@ -834,6 +834,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebCoreLogChannels,
     switches::kWebIntentsInvocationEnabled,
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
+    cc::switches::kEnableCompositorFrameMessage,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
     cc::switches::kNumRasterThreads,

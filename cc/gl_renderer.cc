@@ -9,8 +9,11 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "cc/compositor_frame.h"
+#include "cc/compositor_frame_metadata.h"
 #include "cc/damage_tracker.h"
 #include "cc/geometry_binding.h"
+#include "cc/gl_frame_data.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
 #include "cc/priority_calculator.h"
@@ -58,20 +61,21 @@ bool needsIOSurfaceReadbackWorkaround()
 
 } // anonymous namespace
 
-scoped_ptr<GLRenderer> GLRenderer::create(RendererClient* client, ResourceProvider* resourceProvider)
+scoped_ptr<GLRenderer> GLRenderer::create(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider)
 {
-    scoped_ptr<GLRenderer> renderer(make_scoped_ptr(new GLRenderer(client, resourceProvider)));
+    scoped_ptr<GLRenderer> renderer(make_scoped_ptr(new GLRenderer(client, outputSurface, resourceProvider)));
     if (!renderer->initialize())
         return scoped_ptr<GLRenderer>();
 
     return renderer.Pass();
 }
 
-GLRenderer::GLRenderer(RendererClient* client, ResourceProvider* resourceProvider)
+GLRenderer::GLRenderer(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider)
     : DirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))
-    , m_context(resourceProvider->graphicsContext3D())
+    , m_outputSurface(outputSurface)
+    , m_context(outputSurface->Context3D())
     , m_isViewportChanged(false)
     , m_isBackbufferDiscarded(false)
     , m_discardBackbufferWhenNotVisible(false)
@@ -1167,6 +1171,14 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
 
     GLC(m_context, m_context->disable(GL_BLEND));
     m_blendShadow = false;
+
+    if (settings().compositorFrameMessage) {
+        CompositorFrame compositor_frame;
+        compositor_frame.metadata = m_client->makeCompositorFrameMetadata();
+        compositor_frame.gl_frame_data.reset(new GLFrameData());
+        // FIXME: Fill in GLFrameData when we implement swapping with it.
+        m_outputSurface->SendFrameToParentCompositor(compositor_frame);
+    }
 }
 
 void GLRenderer::finishDrawingQuadList()

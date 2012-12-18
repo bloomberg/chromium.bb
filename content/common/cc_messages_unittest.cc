@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using cc::CheckerboardDrawQuad;
-using cc::CompositorFrame;
+using cc::DelegatedFrameData;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
 using cc::IOSurfaceDrawQuad;
@@ -413,15 +413,16 @@ TEST_F(CCMessagesTest, AllQuads) {
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_in);
   }
 
-  CompositorFrame frame_in;
+  DelegatedFrameData frame_in;
   frame_in.size = arbitrary_size1;
   frame_in.render_pass_list.append(pass_in.Pass());
 
-  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
+  IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
-  CompositorFrame frame_out;
+  DelegatedFrameData frame_out;
   PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
+  EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
+      &iter, &frame_out));
 
   EXPECT_EQ(arbitrary_size1, frame_out.size);
 
@@ -478,18 +479,19 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
 
-  CompositorFrame frame_in;
+  DelegatedFrameData frame_in;
   frame_in.size = arbitrary_size;
 
   frame_in.resource_list.sync_point = arbitrary_uint;
   frame_in.resource_list.resources.push_back(arbitrary_resource1);
   frame_in.resource_list.resources.push_back(arbitrary_resource2);
 
-  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
+  IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
-  CompositorFrame frame_out;
+  DelegatedFrameData frame_out;
   PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
+  EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
+      &iter, &frame_out));
 
   EXPECT_EQ(arbitrary_size.ToString(), frame_out.size.ToString());
   EXPECT_EQ(arbitrary_uint, frame_out.resource_list.sync_point);

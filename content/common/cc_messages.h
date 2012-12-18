@@ -5,6 +5,7 @@
 // IPC Messages sent between compositor instances.
 
 #include "cc/checkerboard_draw_quad.h"
+#include "cc/compositor_frame.h"
 #include "cc/compositor_frame_ack.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/draw_quad.h"
@@ -84,6 +85,14 @@ struct CONTENT_EXPORT ParamTraits<cc::Mailbox> {
 template<>
 struct CONTENT_EXPORT ParamTraits<cc::CompositorFrame> {
   typedef cc::CompositorFrame param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
+  typedef cc::DelegatedFrameData param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -210,4 +219,19 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameAck)
   IPC_STRUCT_TRAITS_MEMBER(resources)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
+  IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_size)
+  IPC_STRUCT_TRAITS_MEMBER(root_layer_size)
+  IPC_STRUCT_TRAITS_MEMBER(min_page_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(max_page_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(location_bar_offset)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)
+  IPC_STRUCT_TRAITS_MEMBER(mailbox)
+  IPC_STRUCT_TRAITS_MEMBER(sync_point)
 IPC_STRUCT_TRAITS_END()

@@ -4,6 +4,7 @@
 
 #include "cc/software_renderer.h"
 
+#include "cc/compositor_frame_metadata.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_draw_quad.h"
@@ -53,6 +54,8 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
     virtual bool hasImplThread() const OVERRIDE { return false; }
     virtual bool shouldClearRootRenderPass() const OVERRIDE { return m_shouldClearRootRenderPass; }
+    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+        OVERRIDE { return CompositorFrameMetadata(); }
 
 protected:
     scoped_ptr<FakeOutputSurface> m_outputSurface;
