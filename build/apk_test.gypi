@@ -21,6 +21,7 @@
 {
   'dependencies': [
     '<(DEPTH)/base/base.gyp:base_java',
+    '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
   ],
   'target_conditions': [
     ['_toolset == "target"', {
