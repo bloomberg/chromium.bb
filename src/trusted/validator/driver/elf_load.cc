@@ -11,7 +11,7 @@
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/validator_ragel/elf_load.h"
+#include "native_client/src/trusted/validator/driver/elf_load.h"
 
 
 void ReadImage(const char *filename, Image *image) {

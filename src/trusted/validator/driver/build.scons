@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(shcherbina): merge with ARM validator driver and make it host-independent
+if not env.Bit('target_x86'):
+  Return()
+
+env.ComponentLibrary(
+    'elf_load',
+    ['elf_load.cc'],
+    EXTRA_LIBS=['platform'])
+
+ncval_new = env.ComponentProgram(
+    'ncval_new',
+    ['ncval.cc'],
+    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
+                'elf_load'])

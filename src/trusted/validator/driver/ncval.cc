@@ -18,8 +18,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/driver/elf_load.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
-#include "native_client/src/trusted/validator_ragel/elf_load.h"
 
 using std::set;
 using std::string;

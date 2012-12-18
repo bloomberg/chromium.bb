@@ -60,11 +60,6 @@ decoder_test = env.ComponentProgram(
     ['unreviewed/decoder_test.c'],
     EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
-env.ComponentLibrary(
-    'elf_load',
-    ['elf_load.cc'],
-    EXTRA_LIBS=['platform'])
-
 validator_benchmark = env.ComponentProgram(
     'rdfa_validator_benchmark',
     ['validator_benchmark.cc'],
@@ -78,13 +73,6 @@ run_benchmark = env.AutoDepsCommand(
 )
 
 env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', run_benchmark))
-
-ncval_new = env.ComponentProgram(
-    'ncval_new',
-    ['ncval.cc'],
-    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
-                'elf_load']
-)
 
 # Source generation:
 #
