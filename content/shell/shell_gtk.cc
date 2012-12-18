@@ -62,6 +62,9 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  if (headless_)
+    return;
+
   GtkToolItem* item = NULL;
   switch (control) {
     case BACK_BUTTON:
@@ -81,10 +84,16 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  if (headless_)
+    return;
+
   gtk_entry_set_text(GTK_ENTRY(url_edit_view_), url.spec().c_str());
 }
 
 void Shell::PlatformSetIsLoading(bool loading) {
+  if (headless_)
+    return;
+
   if (loading)
     gtk_spinner_start(GTK_SPINNER(spinner_));
   else
@@ -92,6 +101,9 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  if (headless_)
+    return;
+
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_title(window_, "Content Shell");
   g_signal_connect(G_OBJECT(window_), "destroy",
@@ -187,6 +199,9 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
+  if (headless_)
+    return;
+
   WebContentsView* content_view = web_contents_->GetView();
   gtk_container_add(GTK_CONTAINER(vbox_), content_view->GetNativeView());
 }
@@ -194,9 +209,8 @@ void Shell::PlatformSetContents() {
 void Shell::SizeTo(int width, int height) {
   content_width_ = width;
   content_height_ = height;
-  if (web_contents_.get()) {
+  if (web_contents_.get())
     gtk_widget_set_size_request(web_contents_->GetNativeView(), width, height);
-  }
 }
 
 void Shell::PlatformResizeSubViews() {
@@ -204,6 +218,9 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
+  if (headless_)
+    return;
+
   gtk_widget_destroy(GTK_WIDGET(window_));
 }
 
@@ -269,6 +286,9 @@ gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group,
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
+  if (headless_)
+    return;
+
   std::string title_utf8 = UTF16ToUTF8(title);
   gtk_window_set_title(GTK_WINDOW(window_), title_utf8.c_str());
 }

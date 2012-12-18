@@ -16,6 +16,7 @@ extern const char kContentShellDataPath[];
 extern const char kDumpRenderTree[];
 extern const char kNoTimeout[];
 extern const char kOutputLayoutTestDifferences[];
+extern const char kShowContentShell[];
 
 }  // namespace switches
 

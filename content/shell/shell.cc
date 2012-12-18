@@ -45,11 +45,16 @@ Shell::Shell(WebContents* web_contents)
     : dev_tools_(NULL),
       is_fullscreen_(false),
       window_(NULL),
-      url_edit_view_(NULL)
+      url_edit_view_(NULL),
 #if defined(OS_WIN) && !defined(USE_AURA)
-      , default_edit_wnd_proc_(0)
+      default_edit_wnd_proc_(0),
 #endif
-  {
+      headless_(false) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDumpRenderTree) &&
+      !command_line.HasSwitch(switches::kShowContentShell)) {
+    headless_ = true;
+  }
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       Source<WebContents>(web_contents));
   windows_.push_back(this);
