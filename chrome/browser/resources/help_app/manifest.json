@@ -7,7 +7,6 @@
   "incognito": "split",
   "permissions": [
     "tabs",
-    "management",
     "https://support.google.com/chromeos/*/*",
     "https://gweb-gettingstartedguide.appspot.com/*",
     "chromeosInfoPrivate"
