@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
  * Methods in this class are thread safe.
  */
 @JNINamespace("android_webview")
-public final class CookieManager {
+public class CookieManager {
     private static final String LOGTAG = "CookieManager";
 
     /**

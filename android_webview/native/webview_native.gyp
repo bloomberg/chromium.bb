@@ -72,6 +72,7 @@
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsIoThreadClient.java',
+          '../java/src/org/chromium/android_webview/AwCookieManager.java',
           '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',
           '../java/src/org/chromium/android_webview/AwResource.java',
           '../java/src/org/chromium/android_webview/AwWebContentsDelegate.java',
