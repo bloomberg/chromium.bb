@@ -99,6 +99,12 @@ class Link {
   // Link MIME type.
   const std::string& mime_type() const { return mime_type_; }
 
+  void set_type(LinkType type) { type_ = type; }
+  void set_href(const GURL& href) { href_ = href; }
+  void set_title(const string16& title) { title_ = title; }
+  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
+
  private:
   friend class ResourceEntry;
   // Converts value of link.rel into LinkType. Outputs to |type| and returns
@@ -144,6 +150,9 @@ class FeedLink {
   // URL of the feed.
   const GURL& href() const { return href_; }
 
+  void set_type(FeedLinkType type) { type_ = type; }
+  void set_href(const GURL& href) { href_ = href; }
+
  private:
   friend class ResourceEntry;
   // Converts value of gd$feedLink.rel into FeedLinkType enum.
@@ -173,6 +182,9 @@ class Author {
   // Getters.
   const string16& name() const { return name_; }
   const std::string& email() const { return email_; }
+
+  void set_name(const string16& name) { name_ = name; }
+  void set_email(const std::string& email) { email_ = email; }
 
  private:
   friend class ResourceEntry;
@@ -211,6 +223,10 @@ class Category {
   // Category term.
   const std::string& term() const { return term_; }
 
+  void set_label(const string16& label) { label_ = label; }
+  void set_type(CategoryType type) { type_ = type; }
+  void set_term(const std::string& term) { term_ = term; }
+
  private:
   friend class ResourceEntry;
   // Converts category scheme into CategoryType enum. For example,
@@ -241,6 +257,9 @@ class Content {
 
   const GURL& url() const { return url_; }
   const std::string& mime_type() const { return mime_type_; }
+
+  void set_url(const GURL& url) { url_ = url; }
+  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
  private:
   friend class ResourceEntry;
@@ -283,6 +302,12 @@ class AppIcon {
   // Get the icon URL from the internal list of links.  Returns the first
   // icon URL found in the list.
   GURL GetIconURL() const;
+
+  void set_category(IconCategory category) { category_ = category; }
+  void set_icon_side_length(int icon_side_length) {
+    icon_side_length_ = icon_side_length;
+  }
+  void set_links(ScopedVector<Link>* links) { links_.swap(*links); }
 
  private:
   // Extracts the icon category from the given string. Returns false and does
@@ -327,6 +352,20 @@ class FeedEntry {
   // this class.
   static void RegisterJSONConverter(
       base::JSONValueConverter<FeedEntry>* converter);
+
+  void set_etag(const std::string& etag) { etag_ = etag; }
+  void set_authors(ScopedVector<Author>* authors) {
+    authors_.swap(*authors);
+  }
+  void set_links(ScopedVector<Link>* links) {
+    links_.swap(*links);
+  }
+  void set_categories(ScopedVector<Category>* categories) {
+    categories_.swap(*categories);
+  }
+  void set_updated_time(const base::Time& updated_time) {
+    updated_time_ = updated_time;
+  }
 
  protected:
   std::string etag_;
@@ -493,6 +532,37 @@ class ResourceEntry : public FeedEntry {
   // value is KIND_OF_HOSTED_DOCUMENT | KIND_OF_GOOGLE_DOCUMENT.
   static int ClassifyEntryKind(DriveEntryKind kind);
 
+  void set_resource_id(const std::string& resource_id) {
+    resource_id_ = resource_id;
+  }
+  void set_id(const std::string& id) { id_ = id; }
+  void set_kind(DriveEntryKind kind) { kind_ = kind; }
+  void set_title(const string16& title) { title_ = title; }
+  void set_published_time(const base::Time& published_time) {
+    published_time_ = published_time;
+  }
+  void set_last_viewed_time(const base::Time& last_viewed_time) {
+    last_viewed_time_ = last_viewed_time;
+  }
+  void set_labels(const std::vector<string16>& labels) {
+    labels_ = labels;
+  }
+  void set_content(const Content& content) {
+    content_ = content;
+  }
+  void set_feed_links(ScopedVector<FeedLink>* feed_links) {
+    feed_links_.swap(*feed_links);
+  }
+  void set_filename(const string16& filename) { filename_ = filename; }
+  void set_suggested_filename(const string16& suggested_filename) {
+    suggested_filename_ = suggested_filename;
+  }
+  void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
+  void set_file_size(int64 file_size) { file_size_ = file_size; }
+  void set_deleted(bool deleted) { deleted_ = deleted; }
+  void set_removed(bool removed) { removed_ = removed; }
+  void set_changestamp(int64 changestamp) { changestamp_ = changestamp; }
+
  private:
   friend class base::internal::RepeatedMessageConverter<ResourceEntry>;
   friend class ResourceList;
@@ -589,6 +659,22 @@ class ResourceList : public FeedEntry {
   // Resource entry list title.
   const std::string& title() { return title_; }
 
+  void set_entries(ScopedVector<ResourceEntry>* entries) {
+    entries_.swap(*entries);
+  }
+  void set_start_index(int start_index) {
+    start_index_ = start_index;
+  }
+  void set_items_per_page(int items_per_page) {
+    items_per_page_ = items_per_page;
+  }
+  void set_title(const std::string& title) {
+    title_ = title;
+  }
+  void set_largest_changestamp(int64 largest_changestamp) {
+    largest_changestamp_ = largest_changestamp;
+  }
+
  private:
   ResourceList();
 
@@ -673,6 +759,34 @@ class InstalledApp {
   static void RegisterJSONConverter(
       base::JSONValueConverter<InstalledApp>* converter);
 
+  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+  void set_app_name(const string16& app_name) { app_name_ = app_name; }
+  void set_object_type(const string16& object_type) {
+    object_type_ = object_type;
+  }
+  void set_supports_create(bool supports_create) {
+    supports_create_ = supports_create;
+  }
+  void set_primary_mimetypes(
+      ScopedVector<std::string>* primary_mimetypes) {
+    primary_mimetypes_.swap(*primary_mimetypes);
+  }
+  void set_secondary_mimetypes(
+      ScopedVector<std::string>* secondary_mimetypes) {
+    secondary_mimetypes_.swap(*secondary_mimetypes);
+  }
+  void set_primary_extensions(
+      ScopedVector<std::string>* primary_extensions) {
+    primary_extensions_.swap(*primary_extensions);
+  }
+  void set_secondary_extensions(
+      ScopedVector<std::string>* secondary_extensions) {
+    secondary_extensions_.swap(*secondary_extensions);
+  }
+  void set_links(ScopedVector<Link>* links) {
+    links_.swap(*links);
+  }
+
  private:
   // Extracts "$t" value from the dictionary |value| and returns it in |result|.
   // If the string value can't be found, it returns false.
@@ -718,6 +832,19 @@ class AccountMetadataFeed {
 
   const ScopedVector<InstalledApp>& installed_apps() const {
     return installed_apps_;
+  }
+
+  void set_quota_bytes_total(int64 quota_bytes_total) {
+    quota_bytes_total_ = quota_bytes_total;
+  }
+  void set_quota_bytes_used(int64 quota_bytes_used) {
+    quota_bytes_used_ = quota_bytes_used;
+  }
+  void set_largest_changestamp(int64 largest_changestamp) {
+    largest_changestamp_ = largest_changestamp;
+  }
+  void set_installed_apps(ScopedVector<InstalledApp>* installed_apps) {
+    installed_apps_.swap(*installed_apps);
   }
 
   // Registers the mapping between JSON field names and the members in
