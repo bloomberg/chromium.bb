@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
@@ -22,13 +23,16 @@
 #include "nacl_mounts/kernel_intercept.h"
 
 #include "handlers.h"
-
+#include "queue.h"
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 #if defined(WIN32)
 #define va_copy(d, s) ((d) = (s))
 #endif
+
+int mount(const char *source, const char *target, const char *filesystemtype,
+    unsigned long mountflags, const void *data);
 
 
 typedef struct {
@@ -37,10 +41,12 @@ typedef struct {
 } FuncNameMapping;
 
 
+static PP_Instance g_instance = 0;
+static PPB_GetInterface get_browser_interface = NULL;
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
 
-static FuncNameMapping g_FunctionMap[] = {
+static FuncNameMapping g_function_map[] = {
   { "fopen", HandleFopen },
   { "fwrite", HandleFwrite },
   { "fread", HandleFread },
@@ -49,6 +55,8 @@ static FuncNameMapping g_FunctionMap[] = {
   { NULL, NULL },
 };
 
+/** A handle to the thread the handles messages. */
+static pthread_t g_handle_message_thread;
 
 /**
  * Create a new PP_Var from a C string.
@@ -197,7 +205,7 @@ static size_t ParseMessage(char* message,
  * @param[in] function_name The function name to look up.
  * @return The handler function mapped to |function_name|. */
 static HandleFunc GetFunctionByName(const char* function_name) {
-  FuncNameMapping* map_iter = g_FunctionMap;
+  FuncNameMapping* map_iter = g_function_map;
   for (; map_iter->name; ++map_iter) {
     if (strcmp(map_iter->name, function_name) == 0) {
       return map_iter->function;
@@ -207,13 +215,81 @@ static HandleFunc GetFunctionByName(const char* function_name) {
   return NULL;
 }
 
+/** Handle as message from JavaScript on the worker thread.
+ *
+ * @param[in] message The message to parse and handle. */
+static void HandleMessage(char* message) {
+  char* function_name;
+  char* params[MAX_PARAMS];
+  size_t num_params;
+  char* output = NULL;
+  int result;
+  HandleFunc function;
+
+  num_params = ParseMessage(message, &function_name, &params[0], MAX_PARAMS);
+
+  function = GetFunctionByName(function_name);
+  if (!function) {
+    /* Function name wasn't found. Error. */
+    ppb_messaging_interface->PostMessage(
+        g_instance, PrintfToVar("Error: Unknown function \"%s\"", function));
+  }
+
+  /* Function name was found, call it. */
+  result = (*function)(num_params, &params[0], &output);
+  if (result != 0) {
+    /* Error. */
+    struct PP_Var var;
+    if (output != NULL) {
+      var = PrintfToVar(
+          "Error: Function \"%s\" returned error %d. "
+          "Additional output: %s", function_name, result, output);
+      free(output);
+    } else {
+      var = PrintfToVar("Error: Function \"%s\" returned error %d.",
+                        function_name, result);
+    }
+
+    /* Post the error to JavaScript, so the user can see it. */
+    ppb_messaging_interface->PostMessage(g_instance, var);
+    return;
+  }
+
+  if (output != NULL) {
+    /* Function returned an output string. Send it to JavaScript. */
+    ppb_messaging_interface->PostMessage(g_instance, CStrToVar(output));
+    free(output);
+  }
+}
+
+/** A worker thread that handles messages from JavaScript.
+ * @param[in] user_data Unused.
+ * @return unused. */
+void* HandleMessageThread(void* user_data) {
+  while (1) {
+    char* message = DequeueMessage();
+    HandleMessage(message);
+    free(message);
+  }
+}
+
 
 static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
                                   const char* argn[],
                                   const char* argv[]) {
-  /* Initialize nacl mounts. */
-  ki_init(NULL);
+  g_instance = instance;
+  ki_init_ppapi(NULL, instance, get_browser_interface);
+  mount(
+      "",  /* source */
+      "/persistent",  /* target */
+      "html5fs",  /* filesystemtype */
+      0,  /* mountflags */
+      "type=PERSISTENT,expected_size=1048576");  /* data */
+
+  pthread_create(&g_handle_message_thread, NULL, &HandleMessageThread, NULL);
+  InitializeMessageQueue();
+
   return PP_TRUE;
 }
 
@@ -238,55 +314,19 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
 static void Messaging_HandleMessage(PP_Instance instance,
                                     struct PP_Var message) {
   char buffer[1024];
-  char* function_name;
-  char* params[MAX_PARAMS];
-  size_t num_params;
-  char* output = NULL;
-  int result;
-  HandleFunc function;
-
-  /* Read the message from JavaScript. */
   VarToCStr(message, &buffer[0], 1024);
-
-  /* Parse it */
-  num_params = ParseMessage(buffer, &function_name, &params[0], MAX_PARAMS);
-
-  function = GetFunctionByName(function_name);
-  if (!function) {
-    /* Function name wasn't found. Error. */
-    ppb_messaging_interface->PostMessage(
-        instance, PrintfToVar("Error: Unknown function \"%s\"", function));
-  }
-
-  /* Function name was found, call it. */
-  result = (*function)(num_params, &params[0], &output);
-  if (result != 0) {
-    /* Error. */
+  if (!EnqueueMessage(strdup(buffer))) {
     struct PP_Var var;
-    if (output != NULL) {
-      var = PrintfToVar(
-          "Error: Function \"%s\" returned error %d. "
-          "Additional output: %s", function_name, result, output);
-      free(output);
-    } else {
-      var = PrintfToVar("Error: Function \"%s\" returned error %d.",
-                        function_name, result);
-    }
-
-    /* Post the error to JavaScript, so the user can see it. */
-    ppb_messaging_interface->PostMessage(instance, var);
-    return;
-  }
-
-  if (output != NULL) {
-    /* Function returned an output string. Send it to JavaScript. */
-    ppb_messaging_interface->PostMessage(instance, CStrToVar(output));
-    free(output);
+    var = PrintfToVar(
+        "Warning: dropped message \"%s\" because the queue was full.",
+        message);
+    ppb_messaging_interface->PostMessage(g_instance, var);
   }
 }
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
                                        PPB_GetInterface get_browser) {
+  get_browser_interface = get_browser;
   ppb_messaging_interface =
       (PPB_Messaging*)(get_browser(PPB_MESSAGING_INTERFACE));
   ppb_var_interface = (PPB_Var*)(get_browser(PPB_VAR_INTERFACE));

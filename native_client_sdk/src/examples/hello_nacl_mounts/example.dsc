@@ -9,6 +9,8 @@
         'handlers.h',
         'hello_nacl_mounts.c',
         'hello_nacl_mounts.h',
+        'queue.c',
+        'queue.h',
       ],
       'LIBS': ['ppapi', 'pthread', 'nacl_mounts']
     }

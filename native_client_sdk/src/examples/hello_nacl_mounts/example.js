@@ -2,9 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Start up the paint timer when the NaCl module has loaded.
 function moduleDidLoad() {
   common.hideModule();
+}
+
+// Called by the common.js module.
+function domContentLoaded(name, tc, config, width, height) {
+  window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024*1024,
+      function(bytes) {
+        common.updateStatus(
+            'Allocated '+bytes+' bytes of persistant storage.');
+        common.createNaClModule(name, tc, config, width, height);
+        common.attachDefaultListeners();
+      },
+      function(e) { alert('Failed to allocate space') });
 }
 
 // Called by the common.js module.

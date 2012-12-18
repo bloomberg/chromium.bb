@@ -12,9 +12,30 @@ found in the LICENSE file.
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="example.js"></script>
 </head>
-<body data-name="<NAME>" data-tc="<tc>" data-path="<path>">
+<body data-name="<NAME>" data-tc="<tc>" data-path="<path>"
+    data-custom-load="true">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <p>
+    This example shows how you can use standard C library file operation
+    functions in Native Client using a library called nacl_mounts.
+  </p>
+  <p>
+    nacl_mounts provides a virtual filesystem. The filesystem can be "mounted"
+    in a given directory tree. When you perform operations on files in those
+    directories, the mount determines how those operations should be performed.
+  </p>
+  <p>
+    This example has three mounts by default.
+    <ol>
+      <li><i>/</i> the root of the filesystem. This is a memory mount, and
+          is non-persistent.</li>
+      <li><i>/persistent</i> a persistent storage area. Any data written
+          here can be read back after Chrome is restarted.</li>
+      <li><i>/dev</i> a mount containing some utility files. /dev/null,
+          /dev/zero, etc.</li>
+    </ol>
+  </p>
   <div>
     <span>
       <input type="radio" id="radiofopen" name="group" checked="checked">fopen
