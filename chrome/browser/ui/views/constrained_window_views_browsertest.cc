@@ -9,6 +9,9 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ipc/ipc_message.h"
@@ -17,6 +20,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
 namespace {
 
@@ -245,3 +249,37 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog->done());
 }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+// Tests that backspace is not processed before it's sent to the web contents.
+// We do not run this test on Aura because key events are sent to the web
+// contents through a different code path that does not call
+// views::FocusManager::OnKeyEvent when ConstrainedWindow is focused.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
+                       BackspaceSentToWebContent) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+
+  GURL url(chrome::kChromeUINewTabURL);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ConstrainedWebDialogDelegate* cwdd = CreateConstrainedWebDialog(
+      browser()->profile(),
+      new ui::test::TestWebDialogDelegate(url),
+      NULL,
+      web_contents);
+
+  ConstrainedWindowViews* cwv =
+      static_cast<ConstrainedWindowViews*>(cwdd->GetWindow());
+  cwv->FocusConstrainedWindow();
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                         ui::VKEY_BACK,
+                         ui::EF_NONE,
+                         false);
+  bool not_consumed = browser_view->GetFocusManager()->OnKeyEvent(key_event);
+  EXPECT_TRUE(not_consumed);
+}
+#endif  // defined(OS_WIN) && !defined(USE_AURA)

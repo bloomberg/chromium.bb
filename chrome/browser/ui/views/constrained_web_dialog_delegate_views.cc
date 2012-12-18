@@ -183,7 +183,6 @@ ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
   SetWebContents(GetWebContents());
 
   // Pressing ESC closes the dialog.
-  set_allow_accelerators(true);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
