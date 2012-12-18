@@ -10,8 +10,10 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/core.h"
+#include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/graphics_3d_client.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
@@ -54,6 +56,14 @@ class GLES2DemoInstance : public pp::Instance,
     module_->core()->CallOnMainThread(0, cb, 0);
   }
 
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+    if (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEUP) {
+      fullscreen_ = !fullscreen_;
+      pp::Fullscreen(this).SetFullscreen(fullscreen_);
+    }
+    return true;
+  }
+
  private:
 
   // GL-related functions.
@@ -69,15 +79,18 @@ class GLES2DemoInstance : public pp::Instance,
 
   // Owned data.
   pp::Graphics3D* context_;
+  bool fullscreen_;
 };
 
 GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
     : pp::Instance(instance), pp::Graphics3DClient(this),
       callback_factory_(this),
       module_(module),
-      context_(NULL) {
+      context_(NULL),
+      fullscreen_(false) {
   assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
       module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
 }
 
 GLES2DemoInstance::~GLES2DemoInstance() {
@@ -88,10 +101,6 @@ void GLES2DemoInstance::DidChangeView(
     const pp::Rect& position, const pp::Rect& clip_ignored) {
   if (position.width() == 0 || position.height() == 0)
     return;
-  if (plugin_size_.width()) {
-    assert(position.size() == plugin_size_);
-    return;
-  }
   plugin_size_ = position.size();
 
   // Initialize graphics.
@@ -113,7 +122,10 @@ class GLES2DemoModule : public pp::Module {
 void GLES2DemoInstance::InitGL(int32_t result) {
   assert(plugin_size_.width() && plugin_size_.height());
 
-  assert(!context_);
+  if (context_) {
+    context_->ResizeBuffers(plugin_size_.width(), plugin_size_.height());
+    return;
+  }
   int32_t context_attributes[] = {
     PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
     PP_GRAPHICS3DATTRIB_BLUE_SIZE, 8,
