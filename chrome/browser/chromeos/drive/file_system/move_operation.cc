@@ -7,8 +7,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -17,16 +17,18 @@ namespace drive {
 namespace file_system {
 
 MoveOperation::MoveOperation(
-    google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* drive_scheduler,
     DriveResourceMetadata* metadata,
     OperationObserver* observer)
-  : drive_service_(drive_service),
+  : drive_scheduler_(drive_scheduler),
     metadata_(metadata),
     observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 MoveOperation::~MoveOperation() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void MoveOperation::Move(const FilePath& src_file_path,
@@ -172,7 +174,7 @@ void MoveOperation::RenameAfterGetEntryInfo(
     return;
   }
 
-  drive_service_->RenameResource(
+  drive_scheduler_->RenameResource(
       GURL(entry_proto->edit_url()),
       file_name,
       base::Bind(&MoveOperation::RenameEntryLocally,
@@ -252,7 +254,7 @@ void MoveOperation::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
   }
 
   // The entry is moved to the root directory.
-  drive_service_->RemoveResourceFromDirectory(
+  drive_scheduler_->RemoveResourceFromDirectory(
       GURL(dir_proto->content_url()),
       entry_proto->resource_id(),
       base::Bind(&MoveOperation::MoveEntryToDirectory,
@@ -318,7 +320,7 @@ void MoveOperation::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
 
   const FilePath& file_path = result->first.path;
   const FilePath& dir_path = result->second.path;
-  drive_service_->AddResourceToDirectory(
+  drive_scheduler_->AddResourceToDirectory(
       GURL(dir_proto->content_url()),
       GURL(src_proto->edit_url()),
       base::Bind(&MoveOperation::MoveEntryToDirectory,

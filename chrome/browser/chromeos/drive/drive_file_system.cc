@@ -299,9 +299,7 @@ DriveFileSystem::DriveFileSystem(
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      scheduler_(new DriveScheduler(profile,
-                                    drive_service,
-                                    &drive_operations_)),
+      scheduler_(new DriveScheduler(profile, drive_service)),
       polling_interval_sec_(kFastPollingIntervalInSec),
       push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
@@ -343,7 +341,7 @@ void DriveFileSystem::ResetResourceMetadata() {
   feed_loader_->AddObserver(this);
 
   // Allocate the drive operation handlers.
-  drive_operations_.Init(drive_service_,
+  drive_operations_.Init(scheduler_.get(),
                          this,  // DriveFileSystemInterface
                          cache_,
                          resource_metadata_.get(),
@@ -515,9 +513,9 @@ void DriveFileSystem::TransferFileFromRemoteToLocal(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
 
-  scheduler_->TransferFileFromRemoteToLocal(remote_src_file_path,
-                                            local_dest_file_path,
-                                            callback);
+  drive_operations_.TransferFileFromRemoteToLocal(remote_src_file_path,
+                                                  local_dest_file_path,
+                                                  callback);
 }
 
 void DriveFileSystem::TransferFileFromLocalToRemote(
@@ -525,9 +523,9 @@ void DriveFileSystem::TransferFileFromLocalToRemote(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
 
-  scheduler_->TransferFileFromLocalToRemote(local_src_file_path,
-                                            remote_dest_file_path,
-                                            callback);
+  drive_operations_.TransferFileFromLocalToRemote(local_src_file_path,
+                                                  remote_dest_file_path,
+                                                  callback);
 }
 
 void DriveFileSystem::Copy(const FilePath& src_file_path,
@@ -548,7 +546,7 @@ void DriveFileSystem::Copy(const FilePath& src_file_path,
 void DriveFileSystem::CopyOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  scheduler_->Copy(src_file_path, dest_file_path, callback);
+  drive_operations_.Copy(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Move(const FilePath& src_file_path,
@@ -569,7 +567,7 @@ void DriveFileSystem::Move(const FilePath& src_file_path,
 void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  scheduler_->Move(src_file_path, dest_file_path, callback);
+  drive_operations_.Move(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Remove(const FilePath& file_path,
@@ -594,7 +592,7 @@ void DriveFileSystem::RemoveOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scheduler_->Remove(file_path, is_recursive, callback);
+  drive_operations_.Remove(file_path, is_recursive, callback);
 }
 
 void DriveFileSystem::CreateDirectory(
@@ -669,7 +667,7 @@ void DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath(
     return;
   }
 
-  drive_service_->AddNewDirectory(
+  scheduler_->AddNewDirectory(
       result.last_dir_content_url,
       result.first_missing_parent_path.BaseName().value(),
       base::Bind(&DriveFileSystem::AddNewDirectory,
@@ -750,9 +748,9 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
   // No entry found at |file_path|. Let's create a brand new file.
   // For now, it is implemented by uploading an empty file (/dev/null).
   // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
-  scheduler_->TransferRegularFile(FilePath(kEmptyFilePath),
-                                  file_path,
-                                  callback);
+  drive_operations_.TransferRegularFile(FilePath(kEmptyFilePath),
+                                        file_path,
+                                        callback);
 }
 
 void DriveFileSystem::GetFileByPath(
@@ -953,7 +951,7 @@ void DriveFileSystem::OnGetFileFromCache(
   // - if we have enough space, start downloading the file from the server
   GetFileFromCacheParams params(in_params);
   params.cache_file_path = cache_file_path;
-  drive_service_->GetResourceEntry(
+  scheduler_->GetResourceEntry(
       params.resource_id,
       base::Bind(&DriveFileSystem::OnGetResourceEntry,
                  ui_weak_ptr_,

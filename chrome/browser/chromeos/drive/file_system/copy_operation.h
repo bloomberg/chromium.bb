@@ -19,7 +19,6 @@ class Value;
 }
 
 namespace google_apis {
-class DriveServiceInterface;
 class DriveUploaderInterface;
 }
 
@@ -27,6 +26,7 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;
+class DriveScheduler;
 
 namespace file_system {
 
@@ -37,7 +37,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class CopyOperation {
  public:
-  CopyOperation(google_apis::DriveServiceInterface* drive_service,
+  CopyOperation(DriveScheduler* drive_scheduler,
                 DriveFileSystemInterface* drive_file_system,
                 DriveResourceMetadata* metadata,
                 google_apis::DriveUploaderInterface* uploader,
@@ -218,7 +218,7 @@ class CopyOperation {
                                  const FileOperationCallback& callback,
                                  const std::string& resource_id);
 
-  google_apis::DriveServiceInterface* drive_service_;
+  DriveScheduler* drive_scheduler_;
   DriveFileSystemInterface* drive_file_system_;
   DriveResourceMetadata* metadata_;
   google_apis::DriveUploaderInterface* uploader_;

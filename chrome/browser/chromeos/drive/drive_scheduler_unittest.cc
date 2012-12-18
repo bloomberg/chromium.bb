@@ -9,10 +9,6 @@
 #include "base/json/json_reader.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
-#include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -85,6 +81,116 @@ class FakeDriveService : public google_apis::DummyDriveService {
                    google_apis::HTTP_SUCCESS,
                    base::Passed(&data)));
   }
+
+  virtual void DeleteResource(
+      const GURL& edit_url,
+      const google_apis::EntryActionCallback& callback) {
+    if (edit_url == GURL("/feeds/default/private/full/some_file"))
+      callback.Run(google_apis::HTTP_SUCCESS);
+    else
+      callback.Run(google_apis::HTTP_NOT_FOUND);
+  }
+
+  virtual void GetResourceEntry(
+      const std::string& resource_id,
+      const google_apis::GetResourceEntryCallback& callback) {
+    if (resource_id == "file:2_file_resource_id") {
+      scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
+          "gdata/file_entry.json");
+
+      // Parsing ResourceEntry is cheap enough to do on UI thread.
+      scoped_ptr<google_apis::ResourceEntry> entry =
+          google_apis::ResourceEntry::ExtractAndParse(*data);
+      if (!entry) {
+        callback.Run(google_apis::GDATA_PARSE_ERROR,
+                     scoped_ptr<google_apis::ResourceEntry>());
+        return;
+      }
+
+      callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
+    } else {
+      callback.Run(google_apis::HTTP_NOT_FOUND,
+                   scoped_ptr<google_apis::ResourceEntry>());
+    }
+  }
+
+  virtual void CopyHostedDocument(
+      const std::string& resource_id,
+      const FilePath::StringType& new_name,
+      const google_apis::GetResourceEntryCallback& callback) {
+    if (resource_id == "file:2_file_resource_id") {
+      scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
+          "gdata/file_entry.json");
+
+      // Parsing ResourceEntry is cheap enough to do on UI thread.
+      scoped_ptr<google_apis::ResourceEntry> entry =
+          google_apis::ResourceEntry::ExtractAndParse(*data);
+      if (!entry) {
+        callback.Run(google_apis::GDATA_PARSE_ERROR,
+                     scoped_ptr<google_apis::ResourceEntry>());
+        return;
+      }
+
+      callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
+    } else {
+      callback.Run(google_apis::HTTP_NOT_FOUND,
+                   scoped_ptr<google_apis::ResourceEntry>());
+    }
+  }
+
+  virtual void AddNewDirectory(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const google_apis::GetResourceEntryCallback& callback) {
+    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
+        "gdata/directory_entry.json");
+
+    // Parsing ResourceEntry is cheap enough to do on UI thread.
+    scoped_ptr<google_apis::ResourceEntry> entry =
+        google_apis::ResourceEntry::ExtractAndParse(*data);
+    if (!entry) {
+      callback.Run(google_apis::GDATA_PARSE_ERROR,
+                   scoped_ptr<google_apis::ResourceEntry>());
+      return;
+    }
+
+    callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
+  }
+
+  virtual void RenameResource(
+      const GURL& edit_url,
+      const FilePath::StringType& new_name,
+      const google_apis::EntryActionCallback& callback) {
+    if (edit_url == GURL("/feeds/default/private/full/some_file"))
+      callback.Run(google_apis::HTTP_SUCCESS);
+    else
+      callback.Run(google_apis::HTTP_NOT_FOUND);
+  }
+
+  virtual void AddResourceToDirectory(
+      const GURL& parent_content_url,
+      const GURL& edit_url,
+      const google_apis::EntryActionCallback& callback) {
+    if (parent_content_url ==
+        GURL("/feeds/default/private/full/some_directory") &&
+        edit_url == GURL("/feeds/default/private/full/some_file"))
+      callback.Run(google_apis::HTTP_SUCCESS);
+    else
+      callback.Run(google_apis::HTTP_NOT_FOUND);
+  }
+
+  virtual void RemoveResourceFromDirectory(
+      const GURL& parent_content_url,
+      const std::string& resource_id,
+      const google_apis::EntryActionCallback& callback) {
+    if (parent_content_url ==
+        GURL("/feeds/default/private/full/some_directory") &&
+        resource_id == "file:2_file_resource_id")
+      callback.Run(google_apis::HTTP_SUCCESS);
+    else
+      callback.Run(google_apis::HTTP_NOT_FOUND);
+  }
+
 };
 
 class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
@@ -92,60 +198,6 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
   MOCK_CONST_METHOD0(GetCurrentConnectionType,
                      net::NetworkChangeNotifier::ConnectionType());
 };
-
-class MockCopyOperation : public file_system::CopyOperation {
- public:
-  MockCopyOperation()
-      : file_system::CopyOperation(NULL, NULL, NULL, NULL, NULL, NULL) {
-  }
-
-  MOCK_METHOD3(Copy, void(const FilePath& src_file_path,
-                          const FilePath& dest_file_path,
-                          const FileOperationCallback& callback));
-
-  MOCK_METHOD3(TransferFileFromRemoteToLocal,
-               void(const FilePath& remote_src_file_path,
-                    const FilePath& local_dest_file_path,
-                    const FileOperationCallback& callback));
-
-  MOCK_METHOD3(TransferFileFromLocalToRemote,
-               void(const FilePath& local_src_file_path,
-                    const FilePath& remote_dest_file_path,
-                    const FileOperationCallback& callback));
-
-  MOCK_METHOD3(TransferRegularFile,
-               void(const FilePath& local_src_file_path,
-                    const FilePath& remote_dest_file_path,
-                    const FileOperationCallback& callback));
-};
-
-class MockMoveOperation : public file_system::MoveOperation {
- public:
-  MockMoveOperation()
-      : file_system::MoveOperation(NULL, NULL, NULL) {
-  }
-
-  MOCK_METHOD3(Move, void(const FilePath& src_file_path,
-                          const FilePath& dest_file_path,
-                          const FileOperationCallback& callback));
-};
-
-class MockRemoveOperation : public file_system::RemoveOperation {
- public:
-  MockRemoveOperation()
-      : file_system::RemoveOperation(NULL, NULL, NULL, NULL) {
-  }
-
-  MOCK_METHOD3(Remove, void(const FilePath& file_path,
-                            bool is_recursive,
-                            const FileOperationCallback& callback));
-};
-
-// Action used to set mock expectations,
-ACTION_P(MockOperation, status) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                              base::Bind(arg2, status));
-}
 
 }  // namespace
 
@@ -160,16 +212,8 @@ class DriveSchedulerTest : public testing::Test {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
     fake_drive_service_.reset(new FakeDriveService());
-    mock_copy_operation_ = new StrictMock<MockCopyOperation>();
-    mock_move_operation_ = new StrictMock<MockMoveOperation>();
-    mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
-    drive_operations_.InitForTesting(mock_copy_operation_,
-                                     mock_move_operation_,
-                                     mock_remove_operation_,
-                                     NULL);
     scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        fake_drive_service_.get(),
-                                        &drive_operations_));
+                                        fake_drive_service_.get()));
 
     scheduler_->Initialize();
     scheduler_->SetDisableThrottling(true);
@@ -222,83 +266,7 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
-
-  file_system::DriveOperations drive_operations_;
-  StrictMock<MockCopyOperation>* mock_copy_operation_;
-  StrictMock<MockMoveOperation>* mock_move_operation_;
-  StrictMock<MockRemoveOperation>* mock_remove_operation_;
 };
-
-TEST_F(DriveSchedulerTest, CopyFile) {
-  ConnectToWifi();
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_copy_operation_, Copy(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
-
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->Copy(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-}
-
-TEST_F(DriveSchedulerTest, TransferFileFromRemoteToLocalFile) {
-  ConnectToWifi();
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_copy_operation_,
-              TransferFileFromRemoteToLocal(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
-
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->TransferFileFromRemoteToLocal(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-}
-
-TEST_F(DriveSchedulerTest, TransferFileFromLocalToRemoteFile) {
-  ConnectToWifi();
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_copy_operation_,
-              TransferFileFromLocalToRemote(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
-
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->TransferFileFromLocalToRemote(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-}
-
-TEST_F(DriveSchedulerTest, TransferRegularFileFile) {
-  ConnectToWifi();
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_copy_operation_,
-              TransferRegularFile(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
-
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->TransferRegularFile(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-}
 
 TEST_F(DriveSchedulerTest, GetApplicationInfo) {
   ConnectToWifi();
@@ -356,172 +324,123 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, MoveFile) {
+TEST_F(DriveSchedulerTest, GetResourceEntry) {
   ConnectToWifi();
 
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
 
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->Move(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->GetResourceEntry(
+      "file:2_file_resource_id",  // resource ID
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
+          &error,
+          &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
 }
 
-TEST_F(DriveSchedulerTest, MoveFileRetry) {
+TEST_F(DriveSchedulerTest, DeleteResource) {
   ConnectToWifi();
 
-  // This will fail once with a throttled message.  It tests that the scheduler
-  // will retry in this case.
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
-      .WillOnce(MockOperation(DRIVE_FILE_ERROR_THROTTLED))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
-  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
-  scheduler_->Move(
-      file_in_root, dest_file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->DeleteResource(
+      GURL("/feeds/default/private/full/some_file"),
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromEntryActionCallback,
+          &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, RemoveFile) {
+TEST_F(DriveSchedulerTest, CopyHostedDocument) {
   ConnectToWifi();
 
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_remove_operation_, Remove(file_in_root, _, _))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
 
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->CopyHostedDocument(
+      "file:2_file_resource_id",  // resource ID
+      FILE_PATH_LITERAL("New Document"),  // new name
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
+          &error,
+          &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
 }
 
-TEST_F(DriveSchedulerTest, RemoveFileRetry) {
+TEST_F(DriveSchedulerTest, RenameResource) {
   ConnectToWifi();
 
-  // This will fail once with a throttled message.  It tests that the scheduler
-  // will retry in this case.
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(*mock_remove_operation_, Remove(file_in_root, _, _))
-      .WillOnce(MockOperation(DRIVE_FILE_ERROR_THROTTLED))
-      .WillOnce(MockOperation(DRIVE_FILE_OK));
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->RenameResource(
+      GURL("/feeds/default/private/full/some_file"),
+      FILE_PATH_LITERAL("New Name"),
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromEntryActionCallback,
+          &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, QueueOperation_Offline) {
-  ConnectToNone();
+TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
+  ConnectToWifi();
 
-  // This file will not be removed, as network is not connected.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(0);
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->AddResourceToDirectory(
+      GURL("/feeds/default/private/full/some_directory"),
+      GURL("/feeds/default/private/full/some_file"),
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromEntryActionCallback,
+          &error));
   google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, QueueOperation_CelluarDisabled) {
-  ConnectToCellular();
+TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
+  ConnectToWifi();
 
-  // This file will not be removed, as fetching over cellular network is
-  // disabled by default.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(0);
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->RemoveResourceFromDirectory(
+      GURL("/feeds/default/private/full/some_directory"),
+      "file:2_file_resource_id",  // resource ID
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromEntryActionCallback,
+          &error));
   google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabled) {
-  // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
+TEST_F(DriveSchedulerTest, AddNewDirectory) {
+  ConnectToWifi();
 
-  ConnectToCellular();
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
 
-  // This file will be removed, as syncing over cellular network is explicitly
-  // enabled.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(1);
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  scheduler_->AddNewDirectory(
+      GURL("/feeds/default/private/full/folder%3Aroot"),
+      FILE_PATH_LITERAL("New Directory"),
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
+          &error,
+          &entry));
   google_apis::test_util::RunBlockingPoolTask();
-}
 
-TEST_F(DriveSchedulerTest, QueueOperation_WimaxDisabled) {
-  // Then connect to wimax. This will kick off StartSyncLoop().
-  ConnectToWimax();
-
-  // This file will not be removed, as syncing over wimax network is disabled
-  // by default.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(0);
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-}
-
-TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
-  // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
-
-  ConnectToWimax();
-
-  // This file will be removed, as syncing over cellular network is explicitly
-  // enabled.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(1);
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
-}
-
-TEST_F(DriveSchedulerTest, QueueOperation_DriveDisabled) {
-  // Disable the Drive feature.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
-
-  // This file will not be removed, as the Drive feature is disabled.
-  EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(0);
-
-  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  DriveFileError error;
-  scheduler_->Remove(
-      file_in_root, false,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
 }
 
 }  // namespace drive

@@ -15,7 +15,6 @@ class FilePath;
 class GURL;
 
 namespace google_apis {
-class DriveServiceInterface;
 }
 
 namespace drive {
@@ -23,6 +22,7 @@ namespace drive {
 class DriveCache;
 class DriveEntryProto;
 class DriveFileSystem;
+class DriveScheduler;
 
 namespace file_system {
 
@@ -33,7 +33,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class RemoveOperation {
  public:
-  RemoveOperation(google_apis::DriveServiceInterface* drive_service,
+  RemoveOperation(DriveScheduler* drive_scheduler,
                   DriveCache* cache,
                   DriveResourceMetadata* metadata,
                   OperationObserver* observer);
@@ -69,7 +69,7 @@ class RemoveOperation {
       DriveFileError error,
       const FilePath& directory_path);
 
-  google_apis::DriveServiceInterface* drive_service_;
+  DriveScheduler* drive_scheduler_;
   DriveCache* cache_;
   DriveResourceMetadata* metadata_;
   OperationObserver* observer_;

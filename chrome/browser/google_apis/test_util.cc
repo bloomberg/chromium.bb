@@ -71,11 +71,25 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
+void CopyResultsFromEntryActionCallback(GDataErrorCode* error_out,
+                                        GDataErrorCode error_in) {
+  *error_out = error_in;
+}
+
 void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     scoped_ptr<base::Value>* value_out,
                                     GDataErrorCode error_in,
                                     scoped_ptr<base::Value> value_in) {
   value_out->swap(value_in);
+  *error_out = error_in;
+}
+
+void CopyResultsFromGetResourceEntryCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<ResourceEntry>* resource_entry_out,
+    GDataErrorCode error_in,
+    scoped_ptr<ResourceEntry> resource_entry_in) {
+  resource_entry_out->swap(resource_entry_in);
   *error_out = error_in;
 }
 

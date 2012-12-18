@@ -7,8 +7,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -23,18 +23,20 @@ void EmptyFileOperationCallback(DriveFileError error) {}
 }  // namespace
 
 RemoveOperation::RemoveOperation(
-    google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* drive_scheduler,
     DriveCache* cache,
     DriveResourceMetadata* metadata,
     OperationObserver* observer)
-  : drive_service_(drive_service),
+  : drive_scheduler_(drive_scheduler),
     cache_(cache),
     metadata_(metadata),
     observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 RemoveOperation::~RemoveOperation() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void RemoveOperation::Remove(
@@ -73,7 +75,7 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
     return;
   }
 
-  drive_service_->DeleteResource(
+  drive_scheduler_->DeleteResource(
       GURL(entry_proto->edit_url()),
       base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),

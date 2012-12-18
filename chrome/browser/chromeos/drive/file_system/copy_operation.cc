@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,22 +73,24 @@ struct CopyOperation::StartFileUploadParams {
 };
 
 CopyOperation::CopyOperation(
-    google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* drive_scheduler,
     DriveFileSystemInterface* drive_file_system,
     DriveResourceMetadata* metadata,
     google_apis::DriveUploaderInterface* uploader,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
-  : drive_service_(drive_service),
+  : drive_scheduler_(drive_scheduler),
     drive_file_system_(drive_file_system),
     metadata_(metadata),
     uploader_(uploader),
     blocking_task_runner_(blocking_task_runner),
     observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 CopyOperation::~CopyOperation() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void CopyOperation::Copy(const FilePath& src_file_path,
@@ -197,7 +199,7 @@ void CopyOperation::CopyHostedDocumentToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_service_->CopyHostedDocument(
+  drive_scheduler_->CopyHostedDocument(
       resource_id,
       new_name,
       base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
@@ -285,7 +287,7 @@ void CopyOperation::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
 
   const FilePath& file_path = result->first.path;
   const FilePath& dir_path = result->second.path;
-  drive_service_->AddResourceToDirectory(
+  drive_scheduler_->AddResourceToDirectory(
       GURL(dir_proto->content_url()),
       GURL(src_proto->edit_url()),
       base::Bind(&CopyOperation::MoveEntryToDirectory,

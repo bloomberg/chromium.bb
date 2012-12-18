@@ -19,6 +19,7 @@ class Value;
 namespace google_apis {
 
 class AccountMetadataFeed;
+class ResourceEntry;
 class ResourceList;
 
 namespace test_server {
@@ -44,11 +45,22 @@ FilePath GetTestFilePath(const std::string& relative_path);
 // chrome/test/data/chromeos.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
+// Copies the results from EntryActionCallback.
+void CopyResultsFromEntryActionCallback(GDataErrorCode* error_out,
+                                        GDataErrorCode error_in);
+
 // Copies the results from GetDataCallback.
 void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     scoped_ptr<base::Value>* value_out,
                                     GDataErrorCode error_in,
                                     scoped_ptr<base::Value> value_in);
+
+// Copies the results from GetResourceEntryCallback.
+void CopyResultsFromGetResourceEntryCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<ResourceEntry>* resource_entry_out,
+    GDataErrorCode error_in,
+    scoped_ptr<ResourceEntry> resource_entry_in);
 
 // Copies the results from GetResourceListCallback.
 void CopyResultsFromGetResourceListCallback(

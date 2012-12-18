@@ -25,7 +25,7 @@ DriveOperations::~DriveOperations() {
 }
 
 void DriveOperations::Init(
-    google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* drive_scheduler,
     DriveFileSystemInterface* drive_file_system,
     DriveCache* cache,
     DriveResourceMetadata* metadata,
@@ -34,16 +34,16 @@ void DriveOperations::Init(
     OperationObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  copy_operation_.reset(new file_system::CopyOperation(drive_service,
+  copy_operation_.reset(new file_system::CopyOperation(drive_scheduler,
                                                        drive_file_system,
                                                        metadata,
                                                        uploader,
                                                        blocking_task_runner,
                                                        observer));
-  move_operation_.reset(new file_system::MoveOperation(drive_service,
+  move_operation_.reset(new file_system::MoveOperation(drive_scheduler,
                                                        metadata,
                                                        observer));
-  remove_operation_.reset(new file_system::RemoveOperation(drive_service,
+  remove_operation_.reset(new file_system::RemoveOperation(drive_scheduler,
                                                            cache,
                                                            metadata,
                                                            observer));
