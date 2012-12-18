@@ -162,12 +162,20 @@ class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
   // object.
   static DriveSystemService* GetForProfile(Profile* profile);
 
+  // Similar to GetForProfile(), but returns the instance regardless of if Drive
+  // is enabled/disabled.
+  static DriveSystemService* GetForProfileRegardlessOfStates(Profile* profile);
+
   // Returns the DriveSystemService that is already associated with |profile|,
   // if it is not yet created it will return NULL.
   //
   // This function starts returning NULL if Drive is disabled. See also the
   // comment at GetForProfile().
   static DriveSystemService* FindForProfile(Profile* profile);
+
+  // Similar to FindForProfile(), but returns the instance regardless of if
+  // Drive is enabled/disabled.
+  static DriveSystemService* FindForProfileRegardlessOfStates(Profile* profile);
 
   // Returns the DriveSystemServiceFactory instance.
   static DriveSystemServiceFactory* GetInstance();

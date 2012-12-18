@@ -44,8 +44,7 @@ class FileBrowserEventRouter
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // Starts observing file system change events. Currently only
-  // CrosDisksClient events are being observed.
+  // Starts observing file system change events.
   void ObserveFileSystemEvents();
 
   // File watch setup routines.

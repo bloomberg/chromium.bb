@@ -346,8 +346,7 @@ void DriveSystemService::DisableDrive() {
 // static
 DriveSystemService* DriveSystemServiceFactory::GetForProfile(
     Profile* profile) {
-  DriveSystemService* service = static_cast<DriveSystemService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+  DriveSystemService* service = GetForProfileRegardlessOfStates(profile);
   if (service && !service->IsDriveEnabled())
     return NULL;
 
@@ -355,14 +354,27 @@ DriveSystemService* DriveSystemServiceFactory::GetForProfile(
 }
 
 // static
+DriveSystemService* DriveSystemServiceFactory::GetForProfileRegardlessOfStates(
+    Profile* profile) {
+  return static_cast<DriveSystemService*>(
+      GetInstance()->GetServiceForProfile(profile, true));
+}
+
+// static
 DriveSystemService* DriveSystemServiceFactory::FindForProfile(
     Profile* profile) {
-  DriveSystemService* service = static_cast<DriveSystemService*>(
-      GetInstance()->GetServiceForProfile(profile, false));
+  DriveSystemService* service = FindForProfileRegardlessOfStates(profile);
   if (service && !service->IsDriveEnabled())
     return NULL;
 
   return service;
+}
+
+// static
+DriveSystemService* DriveSystemServiceFactory::FindForProfileRegardlessOfStates(
+    Profile* profile) {
+  return static_cast<DriveSystemService*>(
+      GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static

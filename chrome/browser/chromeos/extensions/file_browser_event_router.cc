@@ -120,7 +120,7 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
   DiskMountManager::GetInstance()->RemoveObserver(this);
 
   DriveSystemService* system_service =
-      DriveSystemServiceFactory::FindForProfile(profile_);
+      DriveSystemServiceFactory::FindForProfileRegardlessOfStates(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
     system_service->drive_service()->RemoveObserver(this);
@@ -148,13 +148,11 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   disk_mount_manager->RequestMountInfoRefresh();
 
   DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile_);
-  if (!system_service) {
-    // |system_service| is NULL if incognito window / guest login.
-    return;
+      DriveSystemServiceFactory::GetForProfileRegardlessOfStates(profile_);
+  if (system_service) {
+    system_service->drive_service()->AddObserver(this);
+    system_service->file_system()->AddObserver(this);
   }
-  system_service->drive_service()->AddObserver(this);
-  system_service->file_system()->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
