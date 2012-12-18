@@ -217,9 +217,6 @@ void MediaGalleriesDialogController::OnRemovableStorageDetached(
 
 void MediaGalleriesDialogController::InitializePermissions() {
   const MediaGalleriesPrefInfoMap& galleries = preferences_->known_galleries();
-  const MediaGalleryPrefIdSet permitted_galleries =
-      preferences_->GalleriesForExtension(*extension_);
-
   for (MediaGalleriesPrefInfoMap::const_iterator iter = galleries.begin();
        iter != galleries.end();
        ++iter) {
