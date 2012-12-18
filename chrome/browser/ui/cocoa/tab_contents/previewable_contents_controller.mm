@@ -7,6 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 @interface PreviewableContentsController()
 - (void)viewDidResize:(NSNotification*)note;
@@ -62,6 +63,7 @@
   previewHeightUnits_ = heightUnits;
 
   // Add the preview contents.
+  previewContents_->GetView()->SetAllowOverlappingViews(true);
   [[self view] addSubview:previewContents_->GetNativeView()];
   [self layoutViews];
 
