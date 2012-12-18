@@ -60,6 +60,8 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(
     scoped_refptr<TrackedCallback> callback) {
   ScopedNoLocking already_locked(this);
   if (HasPendingSwap()) {
+    Log(PP_LOGLEVEL_ERROR, "PPB_Graphics3D.SwapBuffers: Plugin attempted swap "
+                           "with previous swap still pending.");
     // Already a pending SwapBuffers that hasn't returned yet.
     return PP_ERROR_INPROGRESS;
   }
