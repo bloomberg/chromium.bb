@@ -161,7 +161,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
-  // This should fail as the version is emtpy.
+  // This should fail as the version is empty.
   ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
 
   // Set an older version, and serialize.

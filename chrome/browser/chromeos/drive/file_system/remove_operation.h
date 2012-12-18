@@ -28,7 +28,7 @@ namespace file_system {
 
 class OperationObserver;
 
-// This class encapsulates the drive Remove function.  It is resposible for
+// This class encapsulates the drive Remove function.  It is responsible for
 // sending the request to the drive API, then updating the local state and
 // metadata to reflect the new state.
 class RemoveOperation {

@@ -132,7 +132,7 @@ class DriveCache {
   void RemoveObserver(DriveCacheObserver* observer);
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
-  // and runs |callabck| with true and the entry found if entry exists in cache
+  // and runs |callback| with true and the entry found if entry exists in cache
   // map.  Otherwise, runs |callback| with false.
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no

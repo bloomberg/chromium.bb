@@ -388,7 +388,7 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
   //    drainable buffer, then copy the download chunk.
   // 2) If a response buffer from ReadRawData exists, copy from download buffer
   //    to response buffer.
-  //    2.1) If response bufer is filled up:
+  //    2.1) If response buffer is filled up:
   //         - if we have to return from ReadRawData to caller, return true to
   //           indicate data's ready.
   //         - otherwise, clear io pending status, and notify read complete.

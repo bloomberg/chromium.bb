@@ -569,7 +569,7 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Set the expectation so that the MockDriveFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
   // the server side, and the new MD5 is obtained from the server (i.e. the
-  // local cach file is stale).
+  // local cache file is stale).
   SetExpectationForGetFileInfoByResourceId("resource_id_fetched",
                                            "new_md5");
   // Set the expectation so that the MockDriveFileSystem returns "some_md5"

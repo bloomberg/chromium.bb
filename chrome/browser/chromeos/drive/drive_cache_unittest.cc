@@ -564,7 +564,7 @@ class DriveCacheTest : public testing::Test {
         std::string(),
         DriveCache::CACHE_TYPE_PINNED,
         DriveCache::CACHED_FILE_FROM_SERVER);
-    // Check that pin symlink exists, without deferencing to target path.
+    // Check that pin symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (test_util::ToCacheEntry(expected_cache_state_).is_pinned()) {
       EXPECT_TRUE(exists);
@@ -584,7 +584,7 @@ class DriveCacheTest : public testing::Test {
         std::string(),
         DriveCache::CACHE_TYPE_OUTGOING,
         DriveCache::CACHED_FILE_FROM_SERVER);
-    // Check that outgoing symlink exists, without deferencing to target path.
+    // Check that outgoing symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
         test_util::ToCacheEntry(expected_cache_state_).is_dirty()) {

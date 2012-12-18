@@ -195,7 +195,6 @@ void DriveUploader::UploadExistingFile(
 void DriveUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(UPLOAD_INVALID, upload_file_info->upload_mode);
   DVLOG(1) << "Uploading file: " << upload_file_info->DebugString();
 
   // Passing a raw net::FileStream* to the blocking pool is safe, because it is

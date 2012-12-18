@@ -554,7 +554,7 @@ void DriveFeedLoader::LoadFromCache(const FileOperationCallback& callback) {
   // in parallel (see DriveFileSystem::LoadFeedIfNeeded).
   //
   // Corresponding unset is in ContinueWithInitializedResourceMetadata, where
-  // all the control pathes reach.
+  // all the control paths reach.
   refreshing_ = true;
 
   LoadRootFeedParams* params = new LoadRootFeedParams(callback);

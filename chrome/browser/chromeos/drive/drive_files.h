@@ -85,7 +85,7 @@ class DriveEntry {
   const GURL& edit_url() const { return edit_url_; }
 
   // The resource id of the parent folder. This piece of information is needed
-  // to pair files from change feeds with their directory parents withing the
+  // to pair files from change feeds with their directory parents within the
   // existing file system snapshot (DriveResourceMetadata::resource_map_).
   const std::string& parent_resource_id() const { return parent_resource_id_; }
 

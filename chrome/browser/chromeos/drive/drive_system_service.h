@@ -90,7 +90,7 @@ class DriveSystemService : public ProfileKeyedService,
       syncer::IncomingInvalidationSource source) OVERRIDE;
 
  private:
-  // Used to destory DriveCache with scoped_ptr_malloc_free.
+  // Used to destroy DriveCache with scoped_ptr_malloc_free.
   struct ScopedPtrMallocDestroyCache {
    public:
     void operator()(DriveCache* cache) const;

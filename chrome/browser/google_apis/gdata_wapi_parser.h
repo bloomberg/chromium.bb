@@ -459,7 +459,7 @@ class ResourceEntry : public FeedEntry {
 
   // The feed links contain extra links for revisions and access control,
   // etc.  Note that links() contain more basic links like edit URL,
-  // alternatie URL, etc.
+  // alternative URL, etc.
   const ScopedVector<FeedLink>& feed_links() const { return feed_links_; }
 
   // File name (exists only for kinds FILE and PDF).

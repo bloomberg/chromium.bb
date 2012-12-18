@@ -11,7 +11,6 @@ namespace google_apis {
 enum UploadMode {
   UPLOAD_NEW_FILE,
   UPLOAD_EXISTING_FILE,
-  UPLOAD_INVALID,  // Used as an invalid value.
 };
 
 }  // namespace google_apis

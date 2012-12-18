@@ -8,7 +8,7 @@ namespace google_apis {
 namespace switches {
 
 // Enables Drive v2 API instead of Google Documents List API.
-const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
+const char kEnableDriveV2Api[] = "enable-drive-v2-api";
 
 }  // namespace switches
 }  // namespace google_apis

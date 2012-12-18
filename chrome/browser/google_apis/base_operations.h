@@ -154,7 +154,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   }
 
   // By default, no file will be saved. Derived classes can set an output
-  // file path in their constructors, if they want to save the donwloaded
+  // file path in their constructors, if they want to save the downloaded
   // content to a file at a specific path.
   void set_output_file_path(const FilePath& output_file_path) {
     output_file_path_ = output_file_path;
