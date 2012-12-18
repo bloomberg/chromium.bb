@@ -82,16 +82,29 @@ void PepperView::SetView(const pp::View& view) {
     view_changed = true;
     view_scale_ = new_scale;
     view_size_dips_ = new_size_dips;
-    view_size_ = SkISize::Make(ceilf(view_size_dips_.width() * view_scale_),
-                               ceilf(view_size_dips_.height() * view_scale_));
 
+    // If |view_scale_| is > 1.0 then the device is high-DPI, and there are
+    // actually |view_scale_| physical pixels for every one Density Independent
+    // Pixel (DIP).  If we specify a scale of 1.0 to Graphics2D then we can
+    // render at DIP resolution and let PPAPI up-scale for high-DPI devices.
+    // Note that |view_scale_| is DIPS->pixels, |scale| is pixels->DIPS.
+    float scale = 1.0f;
+    view_size_ = view_size_dips_;
+
+    // If the view's DIP dimensions don't match the source then let the frame
+    // producer do the scaling, and render at device resolution.
+    if (view_size_dips_ != source_size_) {
+      scale = 1.0f / view_scale_;
+      view_size_ = SkISize::Make(ceilf(view_size_dips_.width() * view_scale_),
+                                 ceilf(view_size_dips_.height() * view_scale_));
+    }
+
+    // Create a 2D rendering context at the chosen frame dimensions.
     pp::Size pp_size = pp::Size(view_size_.width(), view_size_.height());
     graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
 
-    // Ideally we would always let Graphics2D scale us, but the output quality
-    // is lousy, so we don't.
     pp::Graphics2D_Dev graphics2d_dev(graphics2d_);
-    graphics2d_dev.SetScale(1.0f / view_scale_);
+    graphics2d_dev.SetScale(scale);
 
     bool result = instance_->BindGraphics(graphics2d_);
 
