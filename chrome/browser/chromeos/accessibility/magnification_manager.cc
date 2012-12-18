@@ -72,25 +72,18 @@ class MagnificationManagerImpl : public MagnificationManager,
       }
     }
 
+    accessibility::AccessibilityStatusEventDetails details(
+        type != ash::MAGNIFIER_OFF, ash::A11Y_NOTIFICATION_NONE);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
         content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+        content::Details<accessibility::AccessibilityStatusEventDetails>(
+            &details));
 
     ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
         type == ash::MAGNIFIER_FULL);
     ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
         type == ash::MAGNIFIER_PARTIAL);
-
-    NotifyMagnifierTypeChanged(type);
-  }
-
-  void AddObserver(MagnificationObserver* observer) OVERRIDE {
-    observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(MagnificationObserver* observer) OVERRIDE {
-    observers_.RemoveObserver(observer);
   }
 
   void SaveScreenMagnifierScale(double scale) OVERRIDE {
@@ -106,11 +99,6 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
  private:
-  void NotifyMagnifierTypeChanged(ash::MagnifierType new_type) {
-    FOR_EACH_OBSERVER(MagnificationObserver, observers_,
-                      OnMagnifierTypeChanged(new_type));
-  }
-
   ash::MagnifierType GetMagnifierTypeFromPref() {
     if (!profile_)
       return ash::MAGNIFIER_OFF;
@@ -170,7 +158,6 @@ class MagnificationManagerImpl : public MagnificationManager,
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  ObserverList<MagnificationObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerImpl);
 };
 

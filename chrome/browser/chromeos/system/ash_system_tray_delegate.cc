@@ -180,8 +180,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public system::TimezoneSettings::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
-                           public ash::NetworkTrayDelegate,
-                           public MagnificationObserver {
+                           public ash::NetworkTrayDelegate {
  public:
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -217,6 +216,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                    content::NotificationService::AllSources());
     registrar_.Add(
         this,
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+        content::NotificationService::AllSources());
+    registrar_.Add(
+        this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
         content::NotificationService::AllSources());
     registrar_.Add(
@@ -243,9 +246,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
-
-    if (chromeos::MagnificationManager::Get())
-      chromeos::MagnificationManager::Get()->AddObserver(this);
 
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
@@ -283,9 +283,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
     bluetooth_adapter_->RemoveObserver(this);
-
-    if (chromeos::MagnificationManager::Get())
-      chromeos::MagnificationManager::Get()->RemoveObserver(this);
 
     // Stop observing gdata operations.
     DriveSystemService* system_service = FindDriveSystemService();
@@ -1134,7 +1131,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE: {
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
         accessibility::AccessibilityStatusEventDetails* accessibility_status =
             content::Details<accessibility::AccessibilityStatusEventDetails>(
                 details).ptr();
@@ -1297,11 +1295,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         return;
       chrome::ShowSingletonTab(browser, GURL(deal_url_to_open));
     }
-  }
-
-  // Overridden from MagnificationObserver
-  void OnMagnifierTypeChanged(ash::MagnifierType new_type) {
-    OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;

@@ -25,7 +25,7 @@
 namespace chromeos {
 
 class MagnificationManagerTest : public CrosInProcessBrowserTest,
-                                 public MagnificationObserver {
+                                 public content::NotificationObserver {
  protected:
   MagnificationManagerTest() : observed_(false),
                                observed_type_(ash::MAGNIFIER_OFF) {}
@@ -37,20 +37,6 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
                                     TestingProfile::kTestUserProfileDir);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    MagnificationManager::Get()->AddObserver(this);
-  }
-
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    MagnificationManager::Get()->RemoveObserver(this);
-  }
-
-  // Overridden from MagnificationObserever:
-  virtual void OnMagnifierTypeChanged(ash::MagnifierType new_type) OVERRIDE {
-    observed_ = true;
-    observed_type_ = new_type;
-  }
-
   Profile* profile() {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     DCHECK(profile);
@@ -59,6 +45,13 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
 
   PrefServiceBase* prefs() {
     return PrefServiceBase::FromBrowserContext(profile());
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+        content::NotificationService::AllSources());
   }
 
   void SetScreenManagnifierType(ash::MagnifierType type) {
@@ -92,8 +85,27 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
     EXPECT_EQ(MagnificationManager::Get()->GetMagnifierType(), type);
   }
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
+        accessibility::AccessibilityStatusEventDetails* accessibility_status =
+            content::Details<accessibility::AccessibilityStatusEventDetails>(
+                details).ptr();
+
+        observed_ = true;
+        observed_type_ = accessibility_status->enabled ? ash::MAGNIFIER_FULL :
+                                                         ash::MAGNIFIER_OFF;
+        break;
+      }
+    }
+  }
+
   bool observed_;
   ash::MagnifierType observed_type_;
+  content::NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerTest);
 };
 
@@ -303,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, InvalidScalePref) {
   EXPECT_EQ(4.0, GetFullScreenMagnifierScale());
 }
 
-IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ChangingTypeInvokesObserver) {
+IN_PROC_BROWSER_TEST_F(MagnificationManagerTest,
+                       ChangingTypeInvokesNotification) {
   // Logs in
   UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
