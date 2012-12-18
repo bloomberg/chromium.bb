@@ -1144,7 +1144,8 @@
                 '<@(_outputs)',
               ],
               'process_outputs_as_sources': 1,
-              'message': 'Generating <@(_outputs)'
+              'message': 'Generating <@(_outputs)',
+              'msvs_cygwin_shell': 1,
             },
           ],
         },  # end of target 'remoting_elevated_controller'
@@ -1714,6 +1715,7 @@
             '--locales',
             '<@(remoting_webapp_locale_files)',
           ],
+          'msvs_cygwin_shell': 1,
         },
       ],
     }, # end of target 'remoting_webapp'
