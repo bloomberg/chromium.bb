@@ -610,30 +610,27 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows: crbug.com/134918
-#define MAYBE_NavigationCancelsShouldClassifyUrl DISABLED_NavigationCancelsShouldClassifyUrl
-#elif defined(ADDRESS_SANITIZER)
-// Use after free in ASAN: http://crbug.com/165887
-#define MAYBE_NavigationCancelsShouldClassifyUrl DISABLED_NavigationCancelsShouldClassifyUrl
-#else
-#define MAYBE_NavigationCancelsShouldClassifyUrl NavigationCancelsShouldClassifyUrl
-#endif
-TEST_F(ClientSideDetectionHostTest, MAYBE_NavigationCancelsShouldClassifyUrl) {
+TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
   // Test that canceling pending should classify requests works as expected.
 
   GURL first_url("http://first.phishy.url.com");
+  GURL second_url("http://second.url.com/");
   // The first few checks are done synchronously so check that they have been
-  // done for the first URL.
-  ExpectPreClassificationChecks(first_url, &kFalse, &kFalse, &kFalse, NULL,
+  // done for the first URL, while the second URL has all the checks done.  We
+  // need to manually set up the IsPrivateIPAddress mock since if the same mock
+  // expectation is specified twice, gmock will only use the last instance of
+  // it, meaning the first will never be matched.
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_))
+      .WillOnce(Return(false))
+      .WillOnce(Return(false));
+  ExpectPreClassificationChecks(first_url, NULL, &kFalse, &kFalse, NULL,
                                 NULL, NULL);
-  NavigateAndCommit(first_url);
+  ExpectPreClassificationChecks(second_url, NULL, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
 
+  NavigateAndCommit(first_url);
   // Don't flush the message loop, as we want to navigate to a different
   // url before the final pre-classification checks are run.
-  GURL second_url("http://second.url.com/");
-  ExpectPreClassificationChecks(second_url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kFalse, &kFalse);
   NavigateAndCommit(second_url);
   WaitAndCheckPreClassificationChecks();
 }

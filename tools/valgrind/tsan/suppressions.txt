@@ -1000,14 +1000,3 @@
   fun:media::MockMediaSource::AppendAtTime
   fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
 }
-{
-   bug_151499
-   ThreadSanitizer:Race
-   fun:std::vector::size
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:safe_browsing::::MockSafeBrowsingService::MatchCsdWhitelistUrl
-   fun:safe_browsing::ClientSideDetectionHost::ShouldClassifyUrlRequest::CheckCsdWhitelist
-   fun:base::internal::RunnableAdapter::Run
-}
