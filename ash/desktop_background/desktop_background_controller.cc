@@ -180,7 +180,7 @@ int DesktopBackgroundController::GetWallpaperIDR() const {
 
 void DesktopBackgroundController::OnRootWindowAdded(
     aura::RootWindow* root_window) {
-  // Handle resolution change for "built-in" images."
+  // Handle resolution change for "built-in" images.
   if (BACKGROUND_IMAGE == desktop_background_mode_ &&
       current_wallpaper_.get()) {
     gfx::Size root_window_size = root_window->GetHostSize();

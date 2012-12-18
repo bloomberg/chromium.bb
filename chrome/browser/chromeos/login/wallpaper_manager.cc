@@ -437,7 +437,7 @@ void WallpaperManager::SetDefaultWallpaper() {
   if (controller->GetWallpaperIDR() == info.idr)
     return;
 
-  current_wallpaper_path_ = FilePath("");
+  current_wallpaper_path_.clear();
   loaded_wallpapers_++;
   controller->SetDefaultWallpaper(info);
 }
@@ -546,6 +546,7 @@ void WallpaperManager::SetWallpaperFromImageSkia(
 
 void WallpaperManager::UpdateWallpaper() {
   ClearWallpaperCache();
+  current_wallpaper_path_.clear();
   SetUserWallpaper(last_selected_user_);
 }
 

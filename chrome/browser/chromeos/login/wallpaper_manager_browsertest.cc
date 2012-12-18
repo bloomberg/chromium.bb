@@ -149,6 +149,18 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // The large resolution default wallpaper is expected.
   EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
+
+  // Detach the secondary display.
+  UpdateDisplay("800x600");
+  // Hook up the 2000x2000 display again. The large resolution default wallpaper
+  // should persist. Test for crbug/165788.
+  UpdateDisplay("800x600,2000x2000");
+  WaitAsyncWallpaperLoad();
+  wallpaper = controller_->GetWallpaper();
+
+  // The large resolution default wallpaper is expected.
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
 }
 
 // This test is similar to LoadLargeWallpaperForExternalScreen test. Instead of
@@ -199,6 +211,18 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   UpdateDisplay("800x600");
   // Hook up a 2000x2000 display. The large resolution custom wallpaper should
   // be loaded.
+  UpdateDisplay("800x600,2000x2000");
+  WaitAsyncWallpaperLoad();
+  wallpaper = controller_->GetWallpaper();
+
+  // The large resolution custom wallpaper is expected.
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
+
+  // Detach the secondary display.
+  UpdateDisplay("800x600");
+  // Hook up the 2000x2000 display again. The large resolution default wallpaper
+  // should persist. Test for crbug/165788.
   UpdateDisplay("800x600,2000x2000");
   WaitAsyncWallpaperLoad();
   wallpaper = controller_->GetWallpaper();
