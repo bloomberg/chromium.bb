@@ -25,8 +25,8 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -135,7 +135,7 @@ void TestShellRequestContext::Init(
 
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
   file_system_context_ = static_cast<SimpleFileSystem*>(
-      WebKit::webKitPlatformSupport()->fileSystem())->file_system_context();
+      WebKit::Platform::current()->fileSystem())->file_system_context();
 
   net::URLRequestJobFactoryImpl* job_factory =
       new net::URLRequestJobFactoryImpl();

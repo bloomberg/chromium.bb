@@ -20,6 +20,7 @@
 #include "content/shell/shell_render_process_observer.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -28,7 +29,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -39,6 +39,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
+using WebKit::Platform;
 using WebKit::WebContextMenuData;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebElement;
@@ -197,7 +198,7 @@ void WebKitTestRunner::printMessage(const std::string& message) {
 }
 
 void WebKitTestRunner::postTask(WebTask* task) {
-  WebKit::webKitPlatformSupport()->callOnMainThread(InvokeTaskHelper, task);
+  Platform::current()->callOnMainThread(InvokeTaskHelper, task);
 }
 
 void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {

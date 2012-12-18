@@ -5,10 +5,10 @@
 #include "webkit/glue/resource_fetcher.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
@@ -54,7 +54,7 @@ void ResourceFetcher::Start(WebFrame* frame) {
   request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request);
 
-  loader_.reset(WebKit::webKitPlatformSupport()->createURLLoader());
+  loader_.reset(WebKit::Platform::current()->createURLLoader());
   loader_->loadAsynchronously(request, this);
 }
 

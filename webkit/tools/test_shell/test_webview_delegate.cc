@@ -20,6 +20,7 @@
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -36,7 +37,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClientMock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
@@ -825,7 +825,7 @@ void TestWebViewDelegate::openFileSystem(
     WebFrame* frame, WebFileSystem::Type type, long long size, bool create,
     WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
-      WebKit::webKitPlatformSupport()->fileSystem());
+      WebKit::Platform::current()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
@@ -837,7 +837,7 @@ WebKit::WebPlugin* TestWebViewDelegate::CreatePluginReplacement(
 }
 
 WebCookieJar* TestWebViewDelegate::GetCookieJar() {
-  return WebKit::webKitPlatformSupport()->cookieJar();
+  return WebKit::Platform::current()->cookieJar();
 }
 
 // Public methods ------------------------------------------------------------
