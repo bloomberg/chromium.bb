@@ -13,32 +13,23 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/timer.h"
-#include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/notification_prefs_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Notification;
-class PrefService;
 class Profile;
 class QueuedNotification;
 
 // The notification manager manages use of the desktop for notifications.
 // It maintains a queue of pending notifications when space becomes constrained.
+// Subclasses manage actual display and UI.
 class NotificationUIManagerImpl
     : public NotificationUIManager,
-      public NotificationPrefsManager,
-      public BalloonCollection::BalloonSpaceChangeListener,
       public content::NotificationObserver {
  public:
-  explicit NotificationUIManagerImpl(PrefService* local_state);
+  NotificationUIManagerImpl();
   virtual ~NotificationUIManagerImpl();
-
-  // Initializes the UI manager with a balloon collection; this object
-  // takes ownership of the balloon collection.
-  void Initialize(BalloonCollection* balloon_collection);
 
   // NotificationUIManager:
   virtual void Add(const Notification& notification,
@@ -47,16 +38,28 @@ class NotificationUIManagerImpl
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
-  virtual BalloonCollection* balloon_collection() OVERRIDE;
-  virtual NotificationPrefsManager* prefs_manager() OVERRIDE;
-  virtual void GetQueuedNotificationsForTesting(
-      std::vector<const Notification*>* notifications) OVERRIDE;
 
-  // NotificationPrefsManager:
-  virtual BalloonCollection::PositionPreference
-      GetPositionPreference() const OVERRIDE;
-  virtual void SetPositionPreference(
-      BalloonCollection::PositionPreference preference) OVERRIDE;
+  void GetQueuedNotificationsForTesting(
+    std::vector<const Notification*>* notifications);
+
+ protected:
+  // Attempts to pass a notification from a waiting queue to the sublass
+  // for presentation. Subclass can return 'false' if it can not show
+  // notificaiton right away. In this case it should invoke
+  // CheckAndShowNotificaitons() later.
+  virtual bool ShowNotification(const Notification& notification,
+                                Profile* profile) = 0;
+
+ // Replace an existing notification of the same id with this one if applicable;
+ // subclass returns 'true' if the replacement happened.
+ virtual bool UpdateNotification(const Notification& notification) = 0;
+
+ // Attempts to display notifications from the show_queue. Invoked by subclasses
+ // if they previously returned 'false' from ShowNotifications, which may happen
+ // when there is no room to show another notification. When room appears, the
+ // subclass should call this method to cause an attempt to show more
+ // notifications from the waiting queue.
+ void CheckAndShowNotifications();
 
  private:
   // content::NotificationObserver override.
@@ -64,17 +67,8 @@ class NotificationUIManagerImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void OnDesktopNotificationPositionChanged();
-
-  // Attempts to display notifications from the show_queue if the user
-  // is active.
-  void CheckAndShowNotifications();
-
   // Attempts to display notifications from the show_queue.
   void ShowNotifications();
-
-  // BalloonCollectionObserver implementation.
-  virtual void OnBalloonSpaceChanged() OVERRIDE;
 
   // Replace an existing notification with this one if applicable;
   // returns true if the replacement happened.
@@ -83,18 +77,12 @@ class NotificationUIManagerImpl
   // Checks the user state to decide if we want to show the notification.
   void CheckUserState();
 
-  // An owned pointer to the collection of active balloons.
-  scoped_ptr<BalloonCollection> balloon_collection_;
-
   // A queue of notifications which are waiting to be shown.
   typedef std::deque<QueuedNotification*> NotificationDeque;
   NotificationDeque show_queue_;
 
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;
-
-  // Prefs listener for the position preference.
-  IntegerPrefMember position_pref_;
 
   // Used by screen-saver and full-screen handling support.
   bool is_user_active_;

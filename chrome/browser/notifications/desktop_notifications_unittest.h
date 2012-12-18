@@ -10,10 +10,10 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection_impl.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
@@ -109,7 +109,7 @@ class DesktopNotificationsTest : public testing::Test {
   MockBalloonCollection* balloon_collection_;
 
   // Real UI manager.
-  scoped_ptr<NotificationUIManager> ui_manager_;
+  scoped_ptr<BalloonNotificationUIManager> ui_manager_;
 
   // Real DesktopNotificationService
   scoped_ptr<DesktopNotificationService> service_;

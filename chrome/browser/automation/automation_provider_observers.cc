@@ -43,8 +43,8 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -2088,7 +2088,8 @@ namespace {
 
 // Returns whether all active notifications have an associated process ID.
 bool AreActiveNotificationProcessesReady() {
-  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  BalloonNotificationUIManager* manager =
+      BalloonNotificationUIManager::GetInstanceForTesting();
   const BalloonCollection::Balloons& balloons =
       manager->balloon_collection()->GetActiveBalloons();
   BalloonCollection::Balloons::const_iterator iter;
@@ -2140,8 +2141,8 @@ base::DictionaryValue* GetAllNotificationsObserver::NotificationToJson(
 }
 
 void GetAllNotificationsObserver::SendMessage() {
-  NotificationUIManager* manager =
-      g_browser_process->notification_ui_manager();
+  BalloonNotificationUIManager* manager =
+      BalloonNotificationUIManager::GetInstanceForTesting();
   const BalloonCollection::Balloons& balloons =
       manager->balloon_collection()->GetActiveBalloons();
   DictionaryValue return_value;
@@ -2200,8 +2201,8 @@ OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
     int count)
     : automation_(provider->AsWeakPtr()),
       reply_message_(reply_message),
-      collection_(
-          g_browser_process->notification_ui_manager()->balloon_collection()),
+      collection_(BalloonNotificationUIManager::GetInstanceForTesting()->
+          balloon_collection()),
       count_(count) {
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
                  content::NotificationService::AllSources());

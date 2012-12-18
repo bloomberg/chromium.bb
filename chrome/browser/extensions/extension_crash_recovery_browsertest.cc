@@ -12,9 +12,9 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -52,14 +52,14 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
   void CancelNotification(size_t index) {
     Balloon* balloon = GetNotificationDelegate(index);
     ASSERT_TRUE(balloon);
-    NotificationUIManager* manager =
-        g_browser_process->notification_ui_manager();
+    BalloonNotificationUIManager* manager =
+        BalloonNotificationUIManager::GetInstanceForTesting();
     ASSERT_TRUE(manager->CancelById(balloon->notification().notification_id()));
   }
 
   size_t CountBalloons() {
-    NotificationUIManager* manager =
-        g_browser_process->notification_ui_manager();
+    BalloonNotificationUIManager* manager =
+        BalloonNotificationUIManager::GetInstanceForTesting();
     BalloonCollection::Balloons balloons =
         manager->balloon_collection()->GetActiveBalloons();
     return balloons.size();
@@ -122,8 +122,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
 
  private:
   Balloon* GetNotificationDelegate(size_t index) {
-    NotificationUIManager* manager =
-        g_browser_process->notification_ui_manager();
+    BalloonNotificationUIManager* manager =
+        BalloonNotificationUIManager::GetInstanceForTesting();
     BalloonCollection::Balloons balloons =
         manager->balloon_collection()->GetActiveBalloons();
     return index < balloons.size() ? balloons.at(index) : NULL;

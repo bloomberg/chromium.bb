@@ -46,17 +46,10 @@ class QueuedNotification {
   DISALLOW_COPY_AND_ASSIGN(QueuedNotification);
 };
 
-NotificationUIManagerImpl::NotificationUIManagerImpl(PrefService* local_state)
-    : balloon_collection_(NULL),
-      is_user_active_(true) {
+NotificationUIManagerImpl::NotificationUIManagerImpl()
+    : is_user_active_(true) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-  position_pref_.Init(
-      prefs::kDesktopNotificationPosition,
-      local_state,
-      base::Bind(
-          &NotificationUIManagerImpl::OnDesktopNotificationPositionChanged,
-          base::Unretained(this)));
 #if defined(OS_MACOSX)
   InitFullScreenMonitor();
   InitIdleMonitor();
@@ -69,16 +62,6 @@ NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   StopIdleMonitor();
   StopFullScreenMonitor();
 #endif
-}
-
-void NotificationUIManagerImpl::Initialize(
-    BalloonCollection* balloon_collection) {
-  DCHECK(!balloon_collection_.get());
-  DCHECK(balloon_collection);
-  balloon_collection_.reset(balloon_collection);
-  balloon_collection_->SetPositionPreference(
-      static_cast<BalloonCollection::PositionPreference>(
-          position_pref_.GetValue()));
 }
 
 void NotificationUIManagerImpl::Add(const Notification& notification,
@@ -103,8 +86,7 @@ bool NotificationUIManagerImpl::CancelById(const std::string& id) {
       return true;
     }
   }
-  // If it has been shown, remove it from the balloon collections.
-  return balloon_collection_->RemoveById(id);
+  return false;
 }
 
 bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
@@ -119,7 +101,7 @@ bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
       removed = true;
     }
   }
-  return balloon_collection_->RemoveBySourceOrigin(source) || removed;
+  return removed;
 }
 
 bool NotificationUIManagerImpl::CancelAllByProfile(Profile* profile) {
@@ -133,20 +115,11 @@ bool NotificationUIManagerImpl::CancelAllByProfile(Profile* profile) {
       removed = true;
     }
   }
-  return balloon_collection_->RemoveByProfile(profile) || removed;
+  return removed;
 }
 
 void NotificationUIManagerImpl::CancelAll() {
   STLDeleteElements(&show_queue_);
-  balloon_collection_->RemoveAll();
-}
-
-BalloonCollection* NotificationUIManagerImpl::balloon_collection() {
-  return balloon_collection_.get();
-}
-
-NotificationPrefsManager* NotificationUIManagerImpl::prefs_manager() {
-  return this;
 }
 
 void NotificationUIManagerImpl::CheckAndShowNotifications() {
@@ -175,16 +148,16 @@ void NotificationUIManagerImpl::CheckUserState() {
 }
 
 void NotificationUIManagerImpl::ShowNotifications() {
-  while (!show_queue_.empty() && balloon_collection_->HasSpace()) {
+  while (!show_queue_.empty()) {
     scoped_ptr<QueuedNotification> queued_notification(show_queue_.front());
     show_queue_.pop_front();
-    balloon_collection_->Add(queued_notification->notification(),
-                             queued_notification->profile());
+    if (!ShowNotification(queued_notification->notification(),
+                          queued_notification->profile())) {
+      // Subclass could not show notification, put it back in the queue.
+      show_queue_.push_front(queued_notification.release());
+      return;
+    }
   }
-}
-
-void NotificationUIManagerImpl::OnBalloonSpaceChanged() {
-  CheckAndShowNotifications();
 }
 
 bool NotificationUIManagerImpl::TryReplacement(
@@ -206,33 +179,8 @@ bool NotificationUIManagerImpl::TryReplacement(
     }
   }
 
-  const BalloonCollection::Balloons& balloons =
-      balloon_collection_->GetActiveBalloons();
-  for (BalloonCollection::Balloons::const_iterator iter = balloons.begin();
-       iter != balloons.end(); ++iter) {
-    if (origin == (*iter)->notification().origin_url() &&
-        replace_id == (*iter)->notification().replace_id()) {
-      (*iter)->Update(notification);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-BalloonCollection::PositionPreference
-NotificationUIManagerImpl::GetPositionPreference() const {
-  LOG(INFO) << "Current position preference: " << position_pref_.GetValue();
-
-  return static_cast<BalloonCollection::PositionPreference>(
-      position_pref_.GetValue());
-}
-
-void NotificationUIManagerImpl::SetPositionPreference(
-    BalloonCollection::PositionPreference preference) {
-  LOG(INFO) << "Setting position preference: " << preference;
-  position_pref_.SetValue(static_cast<int>(preference));
-  balloon_collection_->SetPositionPreference(preference);
+  // Give the subclass the opportunity to update existing notification.
+  return UpdateNotification(notification);
 }
 
 void NotificationUIManagerImpl::GetQueuedNotificationsForTesting(
@@ -252,10 +200,4 @@ void NotificationUIManagerImpl::Observe(
   } else {
     NOTREACHED();
   }
-}
-
-void NotificationUIManagerImpl::OnDesktopNotificationPositionChanged() {
-  balloon_collection_->SetPositionPreference(
-      static_cast<BalloonCollection::PositionPreference>(
-          position_pref_.GetValue()));
 }

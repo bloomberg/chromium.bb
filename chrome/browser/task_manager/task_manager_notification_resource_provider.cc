@@ -11,6 +11,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -114,20 +115,26 @@ TaskManager::Resource* TaskManagerNotificationResourceProvider::GetResource(
 }
 
 void TaskManagerNotificationResourceProvider::StartUpdating() {
+  // MessageCenter does not use Balloons.
+  if (NotificationUIManager::DelegatesToMessageCenter())
+    return;
+
   DCHECK(!updating_);
   updating_ = true;
 
   // Add all the existing BalloonHosts.
-  BalloonCollection* collection =
-      g_browser_process->notification_ui_manager()->balloon_collection();
-  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
+  BalloonNotificationUIManager* balloon_manager =
+      static_cast<BalloonNotificationUIManager*>(
+          g_browser_process->notification_ui_manager());
+  BalloonCollection* collection = balloon_manager->balloon_collection();
+  const BalloonCollection::Balloons& balloons =
+      collection->GetActiveBalloons();
   for (BalloonCollection::Balloons::const_iterator it = balloons.begin();
        it != balloons.end(); ++it) {
     BalloonHost* balloon_host = (*it)->balloon_view()->GetHost();
     if (balloon_host)
       AddToTaskManager(balloon_host);
   }
-
   // Register for notifications about extension process changes.
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
                  content::NotificationService::AllSources());
@@ -136,6 +143,10 @@ void TaskManagerNotificationResourceProvider::StartUpdating() {
 }
 
 void TaskManagerNotificationResourceProvider::StopUpdating() {
+  // MessageCenter does not use Balloons.
+  if (NotificationUIManager::DelegatesToMessageCenter())
+    return;
+
   DCHECK(updating_);
   updating_ = false;
 

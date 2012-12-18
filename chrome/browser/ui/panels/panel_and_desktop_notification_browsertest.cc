@@ -6,9 +6,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection_impl.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
@@ -40,15 +40,15 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
 
     g_browser_process->local_state()->SetInteger(
         prefs::kDesktopNotificationPosition, BalloonCollection::LOWER_RIGHT);
-    balloons_ = new BalloonCollectionImpl();
-    ui_manager_.reset(NotificationUIManager::Create(
-        g_browser_process->local_state(), balloons_));
+    ui_manager_.reset(new BalloonNotificationUIManager(
+        g_browser_process->local_state()));
+    ui_manager_->SetBalloonCollection(BalloonCollection::Create());
     service_.reset(new DesktopNotificationService(browser()->profile(),
                    ui_manager_.get()));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    balloons_->RemoveAll();
+    ui_manager_->balloon_collection()->RemoveAll();
     MessageLoopForUI::current()->RunUntilIdle();
 
     service_.reset();
@@ -111,12 +111,11 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
 
   DesktopNotificationService* service() const { return service_.get(); }
   const BalloonCollection::Balloons& balloons() const {
-    return balloons_->GetActiveBalloons();
+    return ui_manager_->balloon_collection()->GetActiveBalloons();
   }
 
  private:
-  BalloonCollectionImpl* balloons_;  // Owned by NotificationUIManager.
-  scoped_ptr<NotificationUIManager> ui_manager_;
+  scoped_ptr<BalloonNotificationUIManager> ui_manager_;
   scoped_ptr<DesktopNotificationService> service_;
 };
 

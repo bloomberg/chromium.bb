@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -69,8 +70,14 @@ CornerSelectionMenuModel::~CornerSelectionMenuModel() {
 }
 
 bool CornerSelectionMenuModel::IsCommandIdChecked(int command_id) const {
+  // TODO(dimich): MessageCenter does not use this preference (yet?)
+  if (NotificationUIManager::DelegatesToMessageCenter())
+    return false;
+
   NotificationPrefsManager* prefs =
-      g_browser_process->notification_ui_manager()->prefs_manager();
+      static_cast<BalloonNotificationUIManager*>(
+          g_browser_process->notification_ui_manager())->prefs_manager();
+
   BalloonCollection::PositionPreference current =
       prefs->GetPositionPreference();
 
@@ -101,8 +108,13 @@ bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
 }
 
 void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
+  // TODO(dimich): MessageCenter does not use this preference (yet?)
+  if (NotificationUIManager::DelegatesToMessageCenter())
+    return;
+
   NotificationPrefsManager* prefs =
-      g_browser_process->notification_ui_manager()->prefs_manager();
+      static_cast<BalloonNotificationUIManager*>(
+          g_browser_process->notification_ui_manager())->prefs_manager();
 
   if (command_id == kCornerUpperLeft)
     prefs->SetPositionPreference(BalloonCollection::UPPER_LEFT);

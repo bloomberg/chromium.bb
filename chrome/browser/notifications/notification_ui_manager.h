@@ -10,10 +10,8 @@
 
 #include "base/basictypes.h"
 
-class BalloonCollection;
 class GURL;
 class Notification;
-class NotificationPrefsManager;
 class PrefService;
 class Profile;
 
@@ -23,16 +21,8 @@ class NotificationUIManager {
  public:
   virtual ~NotificationUIManager() {}
 
-  // Creates an initialized UI manager with a new balloon collection
-  // and the listener relationship setup.
-  // Except for unit tests, this is the way to construct the object.
+  // Creates an initialized UI manager.
   static NotificationUIManager* Create(PrefService* local_state);
-
-  // Creates an initialized UI manager with the given balloon collection
-  // and the listener relationship setup.
-  // Used primarily by unit tests.
-  static NotificationUIManager* Create(PrefService* local_state,
-                                       BalloonCollection* balloons);
 
   // Adds a notification to be displayed. Virtual for unit test override.
   virtual void Add(const Notification& notification,
@@ -53,16 +43,12 @@ class NotificationUIManager {
   // Used when the app is terminating.
   virtual void CancelAll() = 0;
 
-  // Returns balloon collection.
-  virtual BalloonCollection* balloon_collection() = 0;
-
-  // Returns the impl, for use primarily by testing.
-  virtual NotificationPrefsManager* prefs_manager() = 0;
-
-  // Retrieves an ordered list of all queued notifications.
-  // Used only for automation/testing.
-  virtual void GetQueuedNotificationsForTesting(
-      std::vector<const Notification*>* notifications) {}
+  // Temporary, while we have two implementations of Notifications UI Managers.
+  // One is older BalloonCollection-based and uses renderers to show
+  // notifications, another delegates to the new MessageCenter and uses native
+  // UI widgets.
+  // TODO(dimich): remove these eventually.
+  static bool DelegatesToMessageCenter();
 
  protected:
   NotificationUIManager() {}

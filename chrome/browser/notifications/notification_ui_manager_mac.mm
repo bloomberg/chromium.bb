@@ -8,7 +8,7 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager_impl.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 
 @class NSUserNotificationCenter;
 
@@ -76,28 +76,6 @@ NSString* const kNotificationIDKey = @"notification_id";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// static
-NotificationUIManager* NotificationUIManager::Create(
-    PrefService* local_state,
-    BalloonCollection* balloons) {
-  NotificationUIManager* instance = NULL;
-  NotificationUIManagerImpl* impl = NULL;
-
-  if (base::mac::IsOSMountainLionOrLater()) {
-    NotificationUIManagerMac* mac_instance =
-        new NotificationUIManagerMac(local_state);
-    instance = mac_instance;
-    impl = mac_instance->builtin_manager();
-  } else {
-    instance = impl = new NotificationUIManagerImpl(local_state);
-  }
-
-  impl->Initialize(balloons);
-  balloons->set_space_change_listener(impl);
-
-  return instance;
-}
-
 NotificationUIManagerMac::ControllerNotification::ControllerNotification(
     Profile* a_profile,
     id<CrUserNotification> a_view,
@@ -114,8 +92,19 @@ NotificationUIManagerMac::ControllerNotification::~ControllerNotification() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// static
+NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
+  BalloonNotificationUIManager* balloon_manager = NULL;
+  if (base::mac::IsOSMountainLionOrLater())
+    balloon_manager = new NotificationUIManagerMac(local_state);
+  else
+    balloon_manager = new BalloonNotificationUIManager(local_state);
+  balloon_manager->SetBalloonCollection(BalloonCollection::Create());
+  return balloon_manager;
+}
+
 NotificationUIManagerMac::NotificationUIManagerMac(PrefService* local_state)
-    : builtin_manager_(new NotificationUIManagerImpl(local_state)),
+    : BalloonNotificationUIManager(local_state),
       delegate_(ALLOW_THIS_IN_INITIALIZER_LIST(
           [[NotificationCenterDelegate alloc] initWithManager:this])) {
   DCHECK(!GetNotificationCenter().delegate);
@@ -129,7 +118,7 @@ NotificationUIManagerMac::~NotificationUIManagerMac() {
 void NotificationUIManagerMac::Add(const Notification& notification,
                                    Profile* profile) {
   if (notification.is_html()) {
-    builtin_manager_->Add(notification, profile);
+    BalloonNotificationUIManager::Add(notification, profile);
   } else {
     if (!notification.replace_id().empty()) {
       id<CrUserNotification> replacee = FindNotificationWithReplacementId(
@@ -166,14 +155,15 @@ void NotificationUIManagerMac::Add(const Notification& notification,
 bool NotificationUIManagerMac::CancelById(const std::string& notification_id) {
   NotificationMap::iterator it = notification_map_.find(notification_id);
   if (it == notification_map_.end())
-    return builtin_manager_->CancelById(notification_id);
+    return BalloonNotificationUIManager::CancelById(notification_id);
 
   return RemoveNotification(it->second->view);
 }
 
 bool NotificationUIManagerMac::CancelAllBySourceOrigin(
     const GURL& source_origin) {
-  bool success = builtin_manager_->CancelAllBySourceOrigin(source_origin);
+  bool success =
+      BalloonNotificationUIManager::CancelAllBySourceOrigin(source_origin);
 
   for (NotificationMap::iterator it = notification_map_.begin();
        it != notification_map_.end();) {
@@ -190,7 +180,7 @@ bool NotificationUIManagerMac::CancelAllBySourceOrigin(
 }
 
 bool NotificationUIManagerMac::CancelAllByProfile(Profile* profile) {
-  bool success = builtin_manager_->CancelAllByProfile(profile);
+  bool success = BalloonNotificationUIManager::CancelAllByProfile(profile);
 
   for (NotificationMap::iterator it = notification_map_.begin();
        it != notification_map_.end();) {
@@ -222,20 +212,7 @@ void NotificationUIManagerMac::CancelAll() {
   // Clean up any lingering ones in the system tray.
   [center removeAllDeliveredNotifications];
 
-  builtin_manager_->CancelAll();
-}
-
-BalloonCollection* NotificationUIManagerMac::balloon_collection() {
-  return builtin_manager_->balloon_collection();
-}
-
-NotificationPrefsManager* NotificationUIManagerMac::prefs_manager() {
-  return builtin_manager_.get();
-}
-
-void NotificationUIManagerMac::GetQueuedNotificationsForTesting(
-    std::vector<const Notification*>* notifications) {
-  return builtin_manager_->GetQueuedNotificationsForTesting(notifications);
+  BalloonNotificationUIManager::CancelAll();
 }
 
 const Notification*

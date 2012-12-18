@@ -13,21 +13,19 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 
 @protocol CrUserNotification;
 class Notification;
 @class NotificationCenterDelegate;
-class NotificationUIManagerImpl;
 class PrefService;
 class Profile;
 
-// This class is an implementation of NotificationUIManager that will send
-// text-only (non-HTML) notifications to Notification Center on 10.8. This
+// This class is an implementation of BalloonNotificationUIManager that will
+// send text-only (non-HTML) notifications to Notification Center on 10.8. This
 // class is only instantiated on 10.8 and above. For HTML notifications,
-// this class uses an instance of NotificationUIManagerImpl to present
-// notifications in the typical way.
-class NotificationUIManagerMac : public NotificationUIManager {
+// this class delegates to the base class.
+class NotificationUIManagerMac : public BalloonNotificationUIManager {
  public:
   explicit NotificationUIManagerMac(PrefService* local_state);
   virtual ~NotificationUIManagerMac();
@@ -39,19 +37,11 @@ class NotificationUIManagerMac : public NotificationUIManager {
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
-  virtual BalloonCollection* balloon_collection() OVERRIDE;
-  virtual NotificationPrefsManager* prefs_manager() OVERRIDE;
-  virtual void GetQueuedNotificationsForTesting(
-      std::vector<const Notification*>* notifications) OVERRIDE;
 
   // Returns the corresponding C++ object for the Cocoa notification object,
   // or NULL if it could not be found.
   const Notification* FindNotificationWithCocoaNotification(
       id<CrUserNotification> notification) const;
-
-  NotificationUIManagerImpl* builtin_manager() const {
-    return builtin_manager_.get();
-  }
 
  private:
   // A ControllerNotification links the Cocoa (view) notification to the C++
@@ -79,10 +69,6 @@ class NotificationUIManagerMac : public NotificationUIManager {
   // Finds a notification with a given replacement id.
   id<CrUserNotification> FindNotificationWithReplacementId(
       const string16& replacement_id) const;
-
-  // The class used to present HTML notifications that can't be sent to
-  // Notification Center.
-  scoped_ptr<NotificationUIManagerImpl> builtin_manager_;
 
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.
   scoped_nsobject<NotificationCenterDelegate> delegate_;

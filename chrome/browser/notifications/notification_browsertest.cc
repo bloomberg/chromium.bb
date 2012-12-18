@@ -19,10 +19,10 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -59,8 +59,8 @@ enum InfobarAction {
 class NotificationBalloonChangeObserver : public content::NotificationObserver {
  public:
   NotificationBalloonChangeObserver()
-      : collection_(
-            g_browser_process->notification_ui_manager()->balloon_collection()),
+      : collection_(BalloonNotificationUIManager::GetInstanceForTesting()->
+            balloon_collection()),
         collection_changed_(false),
         notification_received_(false),
         running_(false),
@@ -191,19 +191,19 @@ void NotificationsTest::SetUpInProcessBrowserTestFixture() {
 }
 
 const std::deque<Balloon*>& NotificationsTest::GetActiveBalloons() {
-  return g_browser_process->notification_ui_manager()->
+  return BalloonNotificationUIManager::GetInstanceForTesting()->
       balloon_collection()->GetActiveBalloons();
 }
 
 int NotificationsTest::GetNotificationCount() {
-  return g_browser_process->notification_ui_manager()->
+  return BalloonNotificationUIManager::GetInstanceForTesting()->
       balloon_collection()->GetActiveBalloons().size();
 }
 
 bool NotificationsTest::CloseNotificationAndWait(
     const Notification& notification) {
   NotificationBalloonChangeObserver observer;
-  bool success = g_browser_process->notification_ui_manager()->
+  bool success = BalloonNotificationUIManager::GetInstanceForTesting()->
       CancelById(notification.notification_id());
   if (success)
     return observer.Wait();

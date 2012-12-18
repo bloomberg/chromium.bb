@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/fake_balloon_view.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -104,9 +105,9 @@ void DesktopNotificationsTest::SetUp() {
 
   chrome::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
+  ui_manager_.reset(new BalloonNotificationUIManager(&local_state_));
   balloon_collection_ = new MockBalloonCollection();
-  ui_manager_.reset(NotificationUIManager::Create(&local_state_,
-                                                  balloon_collection_));
+  ui_manager_->SetBalloonCollection(balloon_collection_);
   service_.reset(new DesktopNotificationService(profile(), ui_manager_.get()));
   log_output_.clear();
 }
