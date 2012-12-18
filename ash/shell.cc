@@ -582,7 +582,15 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
 
   aura::RootWindow* root =
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size()));
-  GetRootWindowController(root)->ShowContextMenu(location_in_screen);
+  // TODO(oshima): The root and root window controller shouldn't be
+  // NULL even for the out-of-bounds |location_in_screen| (It should
+  // return the primary root). Investigate why/how this is
+  // happening. crbug.com/165214.
+  internal::RootWindowController* rwc = GetRootWindowController(root);
+  DCHECK(rwc) << "root=" << root
+              << ", location:" << location_in_screen.ToString();
+  if (rwc)
+    rwc->ShowContextMenu(location_in_screen);
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
