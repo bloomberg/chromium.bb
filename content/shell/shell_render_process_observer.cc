@@ -64,6 +64,7 @@ void ShellRenderProcessObserver::SetMainWindow(
     WebTestDelegate* delegate) {
   test_interfaces_->setDelegate(delegate);
   test_interfaces_->setWebView(view->GetWebView());
+  test_interfaces_->setTestRunner(test_runner);
   main_render_view_ = view;
   main_test_runner_ = test_runner;
   test_delegate_ = delegate;

@@ -7,6 +7,7 @@ var testRunner = testRunner || {};
 (function() {
   native function CloseWebInspector();
   native function Display();
+  native function DumpEditingCallbacks();
   native function EvaluateInWebInspector();
   native function ExecCommand();
   native function GetWorkerThreadCount();
@@ -81,6 +82,9 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "overridePreference",
                           {value: OverridePreference});
+    Object.defineProperty(this,
+                          "dumpEditingCallbacks",
+                          {value: DumpEditingCallbacks});
 
 
     Object.defineProperty(this,

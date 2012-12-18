@@ -154,7 +154,8 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view),
+      dump_editing_callbacks_(false) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -288,6 +289,12 @@ void WebKitTestRunner::applyPreferences() {
   ExportPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
+}
+
+// WebTestRunner  -------------------------------------------------------------
+
+bool WebKitTestRunner::shouldDumpEditingCallbacks() const {
+  return dump_editing_callbacks_;
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -440,6 +447,10 @@ void WebKitTestRunner::OverridePreference(const std::string& key,
   applyPreferences();
 }
 
+void WebKitTestRunner::DumpEditingCallbacks() {
+  dump_editing_callbacks_ = true;
+}
+
 void WebKitTestRunner::NotImplemented(const std::string& object,
                                       const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
@@ -450,6 +461,7 @@ void WebKitTestRunner::Reset() {
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
+  dump_editing_callbacks_ = false;
 }
 
 // Private methods  -----------------------------------------------------------

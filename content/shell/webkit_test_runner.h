@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "v8/include/v8.h"
 
 class SkCanvas;
@@ -26,7 +27,8 @@ namespace content {
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
-                         public WebTestRunner::WebTestDelegate {
+                         public WebTestRunner::WebTestDelegate,
+                         public WebTestRunner::WebTestRunner {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
   virtual ~WebKitTestRunner();
@@ -50,8 +52,8 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual WebKit::WebContextMenuData* lastContextMenuData() const;
   virtual void setGamepadData(const WebKit::WebGamepads& gamepads);
   virtual void printMessage(const std::string& message);
-  virtual void postTask(WebTestRunner::WebTask* task);
-  virtual void postDelayedTask(WebTestRunner::WebTask* task,
+  virtual void postTask(::WebTestRunner::WebTask* task);
+  virtual void postDelayedTask(::WebTestRunner::WebTask* task,
                                long long ms);
   virtual WebKit::WebString registerIsolatedFileSystem(
       const WebKit::WebVector<WebKit::WebString>& absolute_filenames);
@@ -60,8 +62,11 @@ class WebKitTestRunner : public RenderViewObserver,
       const std::string& utf8_path);
   virtual WebKit::WebURL localFileToDataURL(const WebKit::WebURL& file_url);
   virtual WebKit::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
-  virtual WebTestRunner::WebPreferences* preferences();
+  virtual ::WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
+
+  // WebTestRunner implementation.
+  virtual bool shouldDumpEditingCallbacks() const;
 
   void Reset();
   void Display();
@@ -78,10 +83,11 @@ class WebKitTestRunner : public RenderViewObserver,
   void EvaluateInWebInspector(int32_t call_id, const std::string& script);
   void ExecCommand(const std::string& command, const std::string& value);
   void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
+  void DumpEditingCallbacks();
 
   void NotImplemented(const std::string& object, const std::string& method);
 
-  void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
+  void set_proxy(::WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
 
  private:
   // Message handlers.
@@ -98,9 +104,11 @@ class WebKitTestRunner : public RenderViewObserver,
   scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
   FilePath current_working_directory_;
 
-  WebTestRunner::WebTestProxyBase* proxy_;
+  ::WebTestRunner::WebTestProxyBase* proxy_;
 
-  WebTestRunner::WebPreferences prefs_;
+  ::WebTestRunner::WebPreferences prefs_;
+
+  bool dump_editing_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

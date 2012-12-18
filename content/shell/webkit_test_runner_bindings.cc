@@ -196,6 +196,16 @@ v8::Handle<v8::Value> OverridePreference(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> DumpEditingCallbacks(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpEditingCallbacks();
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> GetGlobalFlag(const v8::Arguments& args) {
   return v8::Boolean::New(g_global_flag);
 }
@@ -279,6 +289,8 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(ExecCommand);
   if (name->Equals(v8::String::New("OverridePreference")))
     return v8::FunctionTemplate::New(OverridePreference);
+  if (name->Equals(v8::String::New("DumpEditingCallbacks")))
+    return v8::FunctionTemplate::New(DumpEditingCallbacks);
   if (name->Equals(v8::String::New("GetGlobalFlag")))
     return v8::FunctionTemplate::New(GetGlobalFlag);
   if (name->Equals(v8::String::New("SetGlobalFlag")))
