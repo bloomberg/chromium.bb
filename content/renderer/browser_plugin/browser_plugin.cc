@@ -108,6 +108,7 @@ BrowserPlugin::BrowserPlugin(
       container_(NULL),
       current_damage_buffer_(NULL),
       pending_damage_buffer_(NULL),
+      resize_ack_received_(true),
       sad_guest_(NULL),
       guest_crashed_(false),
       navigate_src_sent_(false),
@@ -126,7 +127,8 @@ BrowserPlugin::BrowserPlugin(
       size_changed_in_flight_(false),
       browser_plugin_manager_(render_view->browser_plugin_manager()),
       current_nav_entry_index_(0),
-      nav_entry_count_(0) {
+      nav_entry_count_(0),
+      compositing_enabled_(false) {
   browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
@@ -265,12 +267,13 @@ void BrowserPlugin::UpdateGuestAutoSizeState() {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
-  if (!navigate_src_sent_ || pending_damage_buffer_)
+  if (!navigate_src_sent_ || !resize_ack_received_)
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
   pending_damage_buffer_ =
       GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
+  resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetAutoSize(
       render_view_routing_id_,
       instance_id_,
@@ -290,6 +293,11 @@ void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
 }
 
 #if defined(OS_MACOSX)
+bool BrowserPlugin::DamageBufferValid(
+    const TransportDIB::Id& damage_buffer_id) {
+  return TransportDIB::is_valid_id(damage_buffer_id);
+}
+
 bool BrowserPlugin::DamageBufferMatches(
     const TransportDIB* damage_buffer,
     const TransportDIB::Id& other_damage_buffer_id) {
@@ -298,6 +306,11 @@ bool BrowserPlugin::DamageBufferMatches(
   return damage_buffer->id() == other_damage_buffer_id;
 }
 #else
+bool BrowserPlugin::DamageBufferValid(
+    const TransportDIB::Handle& damage_buffer_handle) {
+  return TransportDIB::is_valid_handle(damage_buffer_handle);
+}
+
 bool BrowserPlugin::DamageBufferMatches(
     const TransportDIB* damage_buffer,
     const TransportDIB::Handle& other_damage_buffer_handle) {
@@ -439,11 +452,16 @@ void BrowserPlugin::OnUpdateRect(
     SwapDamageBuffers();
     use_new_damage_buffer = true;
   }
+
+  if (params.is_resize_ack ||
+      !DamageBufferValid(params.damage_buffer_identifier))
+    resize_ack_received_ = true;
+
   if ((!auto_size_ &&
        (width() != params.view_size.width() ||
         height() != params.view_size.height())) ||
       (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
-    if (pending_damage_buffer_) {
+    if (!resize_ack_received_) {
       // The guest has not yet responded to the last resize request, and
       // so we don't want to do anything at this point other than ACK the guest.
       PopulateAutoSizeParameters(&auto_size_params);
@@ -486,6 +504,13 @@ void BrowserPlugin::OnUpdateRect(
                      old_view_size));
     }
   }
+
+  // No more work to do since there is no damage buffer.
+  if (!DamageBufferValid(params.damage_buffer_identifier))
+    return;
+
+  // If we are seeing damage buffers, HW compositing should be turned off.
+  EnableCompositing(false);
 
   // If we are now using a new damage buffer, then that means that the guest
   // has updated its size state in response to a resize request. We change
@@ -772,6 +797,15 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   return true;
 }
 
+void BrowserPlugin::EnableCompositing(bool enable) {
+  if (enable) {
+    LOG(ERROR) << "BrowserPlugin compositing not yet implemented.";
+    return;
+  }
+
+  compositing_enabled_ = enable;
+}
+
 void BrowserPlugin::destroy() {
   // The BrowserPlugin's WebPluginContainer is deleted immediately after this
   // call returns, so let's not keep a reference to it around.
@@ -859,10 +893,10 @@ void BrowserPlugin::updateGeometry(
   int old_height = height();
   plugin_rect_ = window_rect;
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
-  // resized. If |pending_damage_buffer_|, then we are still waiting on a
+  // resized. If |!resize_ack_received_|, then we are still waiting on a
   // previous resize to be ACK'ed and so we don't issue additional resizes
   // until the previous one is ACK'ed.
-  if (!navigate_src_sent_ || auto_size_ || pending_damage_buffer_ ||
+  if (!navigate_src_sent_ || auto_size_ || !resize_ack_received_ ||
       (old_width == window_rect.width &&
        old_height == window_rect.height)) {
     return;
@@ -871,6 +905,7 @@ void BrowserPlugin::updateGeometry(
   BrowserPluginHostMsg_ResizeGuest_Params params;
   pending_damage_buffer_ =
       PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+  resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       instance_id_,
@@ -896,11 +931,19 @@ void BrowserPlugin::SwapDamageBuffers() {
     FreeDamageBuffer(&current_damage_buffer_);
   current_damage_buffer_ = pending_damage_buffer_;
   pending_damage_buffer_ = NULL;
+  resize_ack_received_ = true;
 }
 
 TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
     const gfx::Size& view_size) {
+  params->view_size = view_size;
+  params->scale_factor = GetDeviceScaleFactor();
+
+  // In HW compositing mode, we do not need a damage buffer.
+  if (compositing_enabled_)
+    return NULL;
+
   const size_t stride = skia::PlatformCanvasStrideForWidth(view_size.width());
   // Make sure the size of the damage buffer is at least four bytes so that we
   // can fit in a magic word to verify that the memory is shared correctly.
@@ -922,8 +965,6 @@ TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
 #if defined(OS_WIN)
   params->damage_buffer_size = size;
 #endif
-  params->view_size = view_size;
-  params->scale_factor = GetDeviceScaleFactor();
   return new_damage_buffer;
 }
 
@@ -935,6 +976,7 @@ TransportDIB* BrowserPlugin::GetDamageBufferWithSizeParams(
       gfx::Size(width(), height());
   if (view_size.IsEmpty())
     return NULL;
+  resize_ack_received_ = false;
   return PopulateResizeGuestParameters(resize_guest_params, view_size);
 }
 

@@ -109,6 +109,8 @@ class CONTENT_EXPORT BrowserPlugin :
   void Stop();
   // A request from Javascript has been made to reload the page.
   void Reload();
+  // A request to enable hardware compositing.
+  void EnableCompositing(bool enable);
 
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
@@ -229,9 +231,11 @@ class CONTENT_EXPORT BrowserPlugin :
   void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
 
 #if defined(OS_MACOSX)
+  bool DamageBufferValid(const TransportDIB::Id& damage_buffer_id);
   bool DamageBufferMatches(const TransportDIB* damage_buffer,
                            const TransportDIB::Id& other_damage_buffer_id);
 #else
+  bool DamageBufferValid(const TransportDIB::Handle& damage_buffer_handle);
   bool DamageBufferMatches(
       const TransportDIB* damage_buffer,
       const TransportDIB::Handle& other_damage_buffer_handle);
@@ -274,6 +278,7 @@ class CONTENT_EXPORT BrowserPlugin :
   scoped_ptr<BrowserPluginBackingStore> backing_store_;
   TransportDIB* current_damage_buffer_;
   TransportDIB* pending_damage_buffer_;
+  bool resize_ack_received_;
   gfx::Rect plugin_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
@@ -320,6 +325,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // number of entries and earlier ones will automatically be pruned.
   int current_nav_entry_index_;
   int nav_entry_count_;
+
+  // Used for HW compositing.
+  bool compositing_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };
 
