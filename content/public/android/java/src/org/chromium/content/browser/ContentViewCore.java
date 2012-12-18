@@ -1662,11 +1662,11 @@ public class ContentViewCore implements MotionEventDelegate {
                 public void showHandlesAt(int x1, int y1, int dir1, int x2, int y2, int dir2) {
                     super.showHandlesAt(x1, y1, dir1, x2, y2, dir2);
                     mStartHandleNormalizedPoint.set(
-                        (x1 + mNativeScrollX) / mNativePageScaleFactor,
-                        (y1 + mNativeScrollY) / mNativePageScaleFactor);
+                            (x1 + mNativeScrollX) / mNativePageScaleFactor,
+                            (y1 + mNativeScrollY) / mNativePageScaleFactor);
                     mEndHandleNormalizedPoint.set(
-                        (x2 + mNativeScrollX) / mNativePageScaleFactor,
-                        (y2 + mNativeScrollY) / mNativePageScaleFactor);
+                            (x2 + mNativeScrollX) / mNativePageScaleFactor,
+                            (y2 + mNativeScrollY) / mNativePageScaleFactor);
 
                     showSelectActionBar();
                 }
@@ -1706,8 +1706,8 @@ public class ContentViewCore implements MotionEventDelegate {
                 public void showHandleAt(int x, int y) {
                     super.showHandleAt(x, y);
                     mInsertionHandleNormalizedPoint.set(
-                        (x + mNativeScrollX) / mNativePageScaleFactor,
-                        (y + mNativeScrollY) / mNativePageScaleFactor);
+                            (x + mNativeScrollX) / mNativePageScaleFactor,
+                            (y + mNativeScrollY) / mNativePageScaleFactor);
                 }
             };
 
@@ -1869,6 +1869,13 @@ public class ContentViewCore implements MotionEventDelegate {
         updateHandleScreenPositions();
 
         mZoomManager.updateZoomControls();
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void updateOffsetsForFullscreen(float controlsOffsetY, float contentOffsetY) {
+        if (mContentViewClient == null) return;
+        mContentViewClient.onOffsetsForFullscreenChanged(controlsOffsetY, contentOffsetY);
     }
 
     @SuppressWarnings("unused")

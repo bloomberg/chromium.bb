@@ -41,6 +41,14 @@ public class ContentViewClient {
     public void onScaleChanged(float oldScale, float newScale) {
     }
 
+    /**
+     * Notifies the client that the position of the top controls has changed.
+     * @param topControlsOffsetY The Y offset of the top controls.
+     * @param contentOffsetY The Y offset of the content.
+     */
+    public void onOffsetsForFullscreenChanged(float topControlsOffsetY, float contentOffsetY) {
+    }
+
     public void onTabCrash() {
     }
 
