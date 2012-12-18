@@ -130,12 +130,16 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     }
   }
 
-  bool HasBeenLaunched(const Profile* profile) {
+  bool HasBeenLaunched(const Profile* profile) const {
     return launched_profiles.find(profile) != launched_profiles.end();
   }
 
   void AddLaunched(const Profile* profile) {
     launched_profiles.insert(profile);
+  }
+
+  void Clear() {
+    launched_profiles.clear();
   }
 
  private:
@@ -265,6 +269,11 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
 #endif  // OS_CHROMEOS
 
   return pref;
+}
+
+// static
+void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
+  profile_launch_observer.Get().Clear();
 }
 
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(

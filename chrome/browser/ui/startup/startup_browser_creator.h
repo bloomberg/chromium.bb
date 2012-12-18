@@ -98,6 +98,9 @@ class StartupBrowserCreator {
     return show_main_browser_window_;
   }
 
+  // For faking that no profiles have been launched yet.
+  static void ClearLaunchedProfilesForTesting();
+
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;

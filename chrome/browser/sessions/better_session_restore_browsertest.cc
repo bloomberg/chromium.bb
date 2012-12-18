@@ -8,17 +8,28 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_backend.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +43,16 @@
 #include "net/url_request/url_request_test_job.h"
 
 namespace {
+
+Browser* FindOneOtherBrowserForProfile(Profile* profile,
+                                       Browser* not_this_browser) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if (*i != not_this_browser && (*i)->profile() == profile)
+      return *i;
+  }
+  return NULL;
+}
 
 // We need to serve the test files so that PRE_Test and Test can access the same
 // page using the same URL. In addition, perceived security origin of the page
@@ -120,43 +141,56 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 
  protected:
   void StoreDataWithPage(const std::string& filename) {
+    StoreDataWithPage(browser(), filename);
+  }
+
+  void StoreDataWithPage(Browser* browser, const std::string& filename) {
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        chrome::GetActiveWebContents(browser);
     content::TitleWatcher title_watcher(web_contents, title_storing_);
     title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
     title_watcher.AlsoWaitForTitle(title_error_empty_);
     ui_test_utils::NavigateToURL(
-        browser(), GURL(fake_server_address_ + test_path_ + filename));
+        browser, GURL(fake_server_address_ + test_path_ + filename));
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(title_storing_, final_title);
   }
 
   void NavigateAndCheckStoredData(const std::string& filename) {
+    NavigateAndCheckStoredData(browser(), filename);
+  }
+
+  void NavigateAndCheckStoredData(Browser* browser,
+                                  const std::string& filename) {
     // Navigate to a page which has previously stored data; check that the
     // stored data can be accessed.
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        chrome::GetActiveWebContents(browser);
     content::TitleWatcher title_watcher(web_contents, title_pass_);
     title_watcher.AlsoWaitForTitle(title_storing_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
     title_watcher.AlsoWaitForTitle(title_error_empty_);
     ui_test_utils::NavigateToURL(
-        browser(), GURL(fake_server_address_ + test_path_ + filename));
+        browser, GURL(fake_server_address_ + test_path_ + filename));
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(title_pass_, final_title);
   }
 
   void CheckReloadedPageRestored() {
-    CheckTitle(title_pass_);
+    CheckTitle(browser(), title_pass_);
+  }
+
+  void CheckReloadedPageRestored(Browser* browser) {
+    CheckTitle(browser, title_pass_);
   }
 
   void CheckReloadedPageNotRestored() {
-    CheckTitle(title_storing_);
+    CheckTitle(browser(), title_storing_);
   }
 
-  void CheckTitle(const string16& expected_title) {
-    content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
+  void CheckTitle(Browser* browser, const string16& expected_title) {
+    content::WebContents* web_contents = chrome::GetWebContentsAt(browser, 0);
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_storing_);
@@ -222,23 +256,36 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     }
   }
 
+  std::string fake_server_address() {
+    return fake_server_address_;
+  }
+
+  std::string test_path() {
+    return test_path_;
+  }
+
  private:
-  std::string fake_server_address_;
-  std::string test_path_;
-  string16 title_pass_;
-  string16 title_storing_;
-  string16 title_error_write_failed_;
-  string16 title_error_empty_;
+  const std::string fake_server_address_;
+  const std::string test_path_;
+  const string16 title_pass_;
+  const string16 title_storing_;
+  const string16 title_error_write_failed_;
+  const string16 title_error_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };
 
 class ContinueWhereILeftOffTest : public BetterSessionRestoreTest {
  public:
+  ContinueWhereILeftOffTest() { }
+
   virtual void SetUpOnMainThread() OVERRIDE {
+    BetterSessionRestoreTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   }
+
+  DISALLOW_COPY_AND_ASSIGN(ContinueWhereILeftOffTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionCookies) {
@@ -406,10 +453,16 @@ IN_PROC_BROWSER_TEST_F(RestartTest, PostWithPassword) {
 // when they shouldn't be.
 class NoSessionRestoreTest : public BetterSessionRestoreTest {
  public:
+  NoSessionRestoreTest() { }
+
   virtual void SetUpOnMainThread() OVERRIDE {
+    BetterSessionRestoreTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::DEFAULT));
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoSessionRestoreTest);
 };
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_SessionCookies) {
@@ -474,4 +527,80 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnExit) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   StoreDataWithPage("local_storage.html");
+}
+
+class BetterSessionRestoreCrashTest : public BetterSessionRestoreTest {
+ public:
+  BetterSessionRestoreCrashTest() { }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BetterSessionRestoreTest::SetUpOnMainThread();
+    SessionStartupPref::SetStartupPref(
+        browser()->profile(), SessionStartupPref(SessionStartupPref::DEFAULT));
+  }
+
+ protected:
+  void CrashTestWithPage(const std::string& filename) {
+    Profile* profile = browser()->profile();
+    Browser* browser_before_restore = browser();
+    ASSERT_TRUE(browser_before_restore);
+    StoreDataWithPage(browser_before_restore, filename);
+
+    // Session restore data is written lazily but we cannot restore data that
+    // was not saved. Be less lazy for the test.
+    SessionServiceFactory::GetForProfile(profile)->Save();
+
+    // Simulate a crash and a restart.
+    browser_before_restore->window()->Close();
+    SessionServiceFactory::GetForProfile(profile)->backend()->
+        MoveCurrentSessionToLastSession();
+    ProfileImpl* profile_impl = static_cast<ProfileImpl*>(profile);
+    profile_impl->last_session_exit_type_ = Profile::EXIT_CRASHED;
+#if defined(OS_CHROMEOS)
+    profile_impl->chromeos_enterprise_extension_observer_.reset(NULL);
+#endif
+    StartupBrowserCreator::ClearLaunchedProfilesForTesting();
+
+    CommandLine dummy(CommandLine::NO_PROGRAM);
+    int return_code;
+    StartupBrowserCreator browser_creator;
+    std::vector<Profile*> last_opened_profiles(1, profile);
+    browser_creator.Start(dummy,
+                          g_browser_process->profile_manager()->user_data_dir(),
+                          profile, last_opened_profiles, &return_code);
+
+    // The browser displays an info bar, use it to restore the session.
+    Browser* browser_after_restore =
+        FindOneOtherBrowserForProfile(profile, browser_before_restore);
+    ASSERT_TRUE(browser_after_restore);
+    content::WebContents* web_contents =
+        chrome::GetActiveWebContents(browser_after_restore);
+    ASSERT_TRUE(web_contents);
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
+    InfoBarTabHelper* info_bar_tab_helper =
+        InfoBarTabHelper::FromWebContents(web_contents);
+    EXPECT_EQ(1U, info_bar_tab_helper->GetInfoBarCount());
+    ConfirmInfoBarDelegate* info_bar_delegate =
+        static_cast<ConfirmInfoBarDelegate*>(
+            info_bar_tab_helper->GetInfoBarDelegateAt(0));
+    info_bar_delegate->Accept();
+
+    // Session restore is done ascynhronously.
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+
+    // Check the restored page.
+    web_contents = chrome::GetWebContentsAt(browser_after_restore, 0);
+    ASSERT_TRUE(web_contents);
+    EXPECT_EQ(GURL(fake_server_address() + test_path() + filename),
+              web_contents->GetURL());
+    CheckReloadedPageRestored(browser_after_restore);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreCrashTest);
+};
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreCrashTest, SessionCookies) {
+  CrashTestWithPage("session_cookies.html");
 }

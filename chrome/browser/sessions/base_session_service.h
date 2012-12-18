@@ -163,6 +163,8 @@ class BaseSessionService : public CancelableRequestProvider {
   static const int max_persist_navigation_count;
 
  private:
+  friend class BetterSessionRestoreCrashTest;
+
   // The profile. This may be null during testing.
   Profile* profile_;
 
