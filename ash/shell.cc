@@ -476,10 +476,10 @@ void Shell::Init() {
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations))
-    session_state_controller_.reset(new SessionStateControllerImpl);
-  else
+  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
     session_state_controller_.reset(new SessionStateControllerImpl2);
+  else
+    session_state_controller_.reset(new SessionStateControllerImpl);
   power_button_controller_.reset(new PowerButtonController(
       session_state_controller_.get()));
   AddShellObserver(session_state_controller_.get());

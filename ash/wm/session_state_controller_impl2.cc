@@ -68,9 +68,7 @@ class AnimationFinishedObserver : public ui::LayerAnimationObserver {
   }
 
   // Pauses observer: no checks will be made while paused. It can be used when
-  // a sequence has some immediate animations in the beginning, and for
-  // animations that can be tested with flag that makes all animations
-  // immediate.
+  // a sequence has some immediate animations in the beginning.
   void Pause() {
     paused_ = true;
   }
@@ -539,10 +537,8 @@ void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
           &SessionStateControllerImpl2::UnlockAnimationAfterUIDestroyedFinished,
       base::Unretained(this));
 
-  AnimationFinishedObserver* observer =
+  ui::LayerAnimationObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
-
-  observer->Pause();
 
   animator_->StartAnimationWithObserver(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -557,7 +553,6 @@ void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
   AnimateBackgroundHidingIfNecessary(
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
       observer);
-  observer->Unpause();
 }
 
 void SessionStateControllerImpl2::StoreUnlockedProperties() {

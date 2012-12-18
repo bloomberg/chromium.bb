@@ -279,10 +279,10 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("oobeType", "old");
 
   if (CommandLine::ForCurrentProcess()->
-          HasSwitch(ash::switches::kAshDisableNewLockAnimations))
-    localized_strings->SetString("lockAnimationsType", "old");
-  else
+          HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
     localized_strings->SetString("lockAnimationsType", "new");
+  else
+    localized_strings->SetString("lockAnimationsType", "old");
 
   // If we're not doing boot animation then WebUI should trigger
   // wallpaper load on boot.
