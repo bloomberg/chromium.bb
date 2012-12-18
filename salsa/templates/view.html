@@ -61,6 +61,34 @@
           {% endfor %}
         </tr>
       </table>
+
+      <h2> Sign-test P Values</h2>
+      <p>
+        The Rows indicate the treatment in question and the columns
+        are the treatments they are being compared to.  A low p value
+        indicates that the row treatment is likely <b>better</b> than
+        the column treatment.
+      </p>
+      <table>
+        <tr> <th> -- </th>
+          {% for treatment in treatments %}
+            <th> {{ treatment.name }} </th>
+          {% endfor %}
+        </tr>
+
+        {% for t1 in treatments %}
+          <tr class="{{ loop.index|row_class }}">
+            <th> {{ t1.name }} </th>
+            {% for t2 in treatments %}
+              <td class="score">
+                {% if t1.name != t2.name %}
+                  {{ t1.scores|sign_test(t2.scores) }}
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
     {% else %}
       <p>
         No one has completed this experiment yet, there are no results to
