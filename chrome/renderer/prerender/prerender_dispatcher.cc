@@ -34,10 +34,16 @@ bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
 
 void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
   DCHECK_NE(0u, prerenders_.count(prerender_id));
-  std::map<int, GURL>::iterator it = prerenders_.find(prerender_id);
-  const GURL& url = it->second;
-  running_prerender_urls_.insert(
-      std::multimap<GURL, int>::value_type(url, prerender_id));
+  std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+
+  WebPrerender& prerender = it->second;
+
+  // The prerender should only be null in unit tests.
+  if (prerender.isNull())
+    return;
+
+  prerender.didStartPrerender();
+  OnPrerenderAddAlias(prerender_id, prerender.url());
 }
 
 void PrerenderDispatcher::OnPrerenderAddAlias(int prerender_id,
@@ -49,6 +55,11 @@ void PrerenderDispatcher::OnPrerenderAddAlias(int prerender_id,
 
 void PrerenderDispatcher::OnPrerenderStop(int prerender_id) {
   DCHECK_NE(0u, prerenders_.count(prerender_id));
+  WebPrerender& prerender = prerenders_[prerender_id];
+
+  // The prerender should only be null in unit tests.
+  if (!prerender.isNull())
+    prerender.didStopPrerender();
 
   // TODO(cbentzel): We'd also want to send the map of active prerenders when
   // creating a new render process, so the Add/Remove go relative to that.
@@ -81,25 +92,26 @@ bool PrerenderDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-void PrerenderDispatcher::add(const WebKit::WebPrerender& prerender) {
+void PrerenderDispatcher::add(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
-  prerenders_[extra_data.prerender_id()] = prerender.url();
+  prerenders_[extra_data.prerender_id()] = prerender;
 
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
       extra_data.prerender_id(), GURL(prerender.url()),
-      content::Referrer(GURL(prerender.referrer()), prerender.referrerPolicy()),
+      content::Referrer(GURL(prerender.referrer()),
+                        prerender.referrerPolicy()),
       extra_data.size(), extra_data.render_view_route_id()));
 }
 
-void PrerenderDispatcher::cancel(const WebKit::WebPrerender& prerender) {
+void PrerenderDispatcher::cancel(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(
       new PrerenderHostMsg_CancelLinkRelPrerender(extra_data.prerender_id()));
 }
 
-void PrerenderDispatcher::abandon(const WebKit::WebPrerender& prerender) {
+void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(

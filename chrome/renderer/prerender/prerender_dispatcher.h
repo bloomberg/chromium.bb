@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPrerender.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"
 
 class GURL;
@@ -45,9 +46,7 @@ class PrerenderDispatcher : public content::RenderProcessObserver,
   virtual void abandon(const WebKit::WebPrerender& prerender) OVERRIDE;
 
   // From WebKit, prerender elements launched by renderers in our process.
-  // TODO(gavinp): Store a WebKit::WebPrerender* here once the WebKit API
-  // updates to allow this.
-  std::map<int, GURL> prerenders_;
+  std::map<int, WebKit::WebPrerender> prerenders_;
 
   // From the browser process, which prerenders are running, indexed by URL.
   // Updated by the browser processes as aliases are discovered.

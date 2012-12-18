@@ -1,0 +1,44 @@
+<html>
+<!-- 
+This test checks to make sure that pending prerenders start at page launch,
+but not earlier.
+-->
+<link id=thePrerender rel=prerender href="prerender_page.html" />
+<head>
+<title>Prerender Page</title>
+
+<script>
+var pageWasPrerendered = false;
+
+var receivedPrerenderStartEvents = [];
+var receivedPrerenderStopEvents = [];
+
+function PrerenderStartHandlerForLink(index) {
+  receivedPrerenderStartEvents[index] = true;
+}
+
+function PrerenderStopHandlerForLink(index) {
+  receivedPrerenderStopEvents[index] = true;
+}
+
+function DidPrerenderPass() {
+  pageWasPrerendered = true;
+  return !receivedPrerenderStartEvents[0] && !receivedPrerenderStopEvents[0];
+}
+
+// Make sure DidPrerenderPass() was called first.  Otherwise, the page was
+// most likely reloaded instead of using the prerendered page.
+function DidDisplayPass() {
+  return pageWasPrerendered;
+}
+
+var link = document.getElementById('thePrerender');
+link.addEventListener('webkitprerenderstart',
+                      PrerenderStartHandlerForLink.bind(null, 0), false);
+link.addEventListener('webkitprerenderstop',
+                      PrerenderStopHandlerForLink.bind(null, 0), false);
+</script>
+
+</head>
+<body></body>
+</html>

@@ -744,8 +744,11 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     OpenDestURLWithJSImpl("WindowOpen()");
   }
 
-  void RemoveLinkElementsAndNavigate() const {
-    OpenDestURLWithJSImpl("RemoveLinkElementsAndNavigate()");
+  void RemoveLinkElement(int i) const {
+    chrome::GetActiveWebContents(current_browser())->GetRenderViewHost()->
+        ExecuteJavascriptInWebFrame(
+            string16(),
+            ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
 
   void ClickToNextPageAfterPrerender() {
@@ -850,12 +853,39 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return prerender_link_manager;
   }
 
-  // Asserting on this can result in flaky tests.  PrerenderHandles are only
-  // removed from the PrerenderLinkManager when the prerenders are cancelled
-  // from the renderer process, or the channel for the renderer process is
-  // closed on the IO thread.  In the latter case, the code must be careful to
-  // wait for the channel to close, as it is done asynchronously after swapping
-  // out the old process.  See ChannelDestructionWatcher.
+  bool DidReceivePrerenderStartEventForLinkNumber(int index) const {
+    bool received_prerender_started;
+    std::wstring expression = base::StringPrintf(
+        L"window.domAutomationController.send(Boolean("
+            L"receivedPrerenderStartEvents[%d]))", index);
+
+    CHECK(content::ExecuteJavaScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
+        L"", expression,
+        &received_prerender_started));
+    return received_prerender_started;
+  }
+
+  bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
+    bool received_prerender_stopped;
+    std::wstring expression = base::StringPrintf(
+        L"window.domAutomationController.send(Boolean("
+            L"receivedPrerenderStopEvents[%d]))", index);
+
+    CHECK(content::ExecuteJavaScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
+        L"", expression,
+        &received_prerender_stopped));
+    return received_prerender_stopped;
+  }
+
+  // Asserting on this can result in flaky tests.  PrerenderHandles are
+  // removed from the PrerenderLinkManager when the prerender is canceled from
+  // the browser, when the prerenders are cancelled from the renderer process,
+  // or the channel for the renderer process is closed on the IO thread.  In the
+  // last case, the code must be careful to wait for the channel to close, as it
+  // is done asynchronously after swapping out the old process.  See
+  // ChannelDestructionWatcher.
   bool IsEmptyPrerenderLinkManager() const {
     return GetPrerenderLinkManager()->IsEmpty();
   }
@@ -879,12 +909,16 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 #endif
 
-  TestPrerenderContents* GetPrerenderContents() const {
+  TestPrerenderContents* GetPrerenderContentsFor(const GURL& url) const {
     PrerenderManager::PrerenderData* prerender_data =
         GetPrerenderManager()->FindPrerenderData(
-            dest_url_, GetSessionStorageNamespace());
+            url, GetSessionStorageNamespace());
     return static_cast<TestPrerenderContents*>(
         prerender_data ? prerender_data->contents() : NULL);
+  }
+
+  TestPrerenderContents* GetPrerenderContents() const {
+    return GetPrerenderContentsFor(dest_url_);
   }
 
   void set_loader_path(const std::string& path) {
@@ -994,7 +1028,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     TestPrerenderContents* prerender_contents = GetPrerenderContents();
 
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status)) {
-      ASSERT_TRUE(prerender_contents != NULL);
+      ASSERT_NE(static_cast<PrerenderContents*>(NULL), prerender_contents);
       EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
 
       if (call_javascript_ && expected_number_of_loads > 0) {
@@ -1022,9 +1056,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void NavigateToURLImpl(const GURL& dest_url,
                          WindowOpenDisposition disposition) const {
-    ASSERT_TRUE(GetPrerenderManager() != NULL);
+    ASSERT_NE(static_cast<PrerenderManager*>(NULL), GetPrerenderManager());
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    ASSERT_TRUE(GetPrerenderContents() != NULL);
+    ASSERT_NE(static_cast<PrerenderContents*>(NULL), GetPrerenderContents());
 
     // If opening the page in a background tab, it won't be shown when swapped
     // in.
@@ -1055,7 +1089,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_NONE);
 
     // Make sure the PrerenderContents found earlier was used or removed.
-    EXPECT_TRUE(GetPrerenderContents() == NULL);
+    EXPECT_EQ(static_cast<PrerenderContents*>(NULL), GetPrerenderContents());
 
     if (call_javascript_ && web_contents) {
       if (page_load_observer.get())
@@ -1076,7 +1110,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void OpenDestURLWithJSImpl(const std::string& javascript_function_name)
       const {
     TestPrerenderContents* prerender_contents = GetPrerenderContents();
-    ASSERT_TRUE(prerender_contents != NULL);
+    ASSERT_NE(static_cast<PrerenderContents*>(NULL), prerender_contents);
 
     RenderViewHost* render_view_host =
         chrome::GetActiveWebContents(current_browser())->GetRenderViewHost();
@@ -1085,8 +1119,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         string16(), ASCIIToUTF16(javascript_function_name));
 
     if (prerender_contents->quit_message_loop_on_destruction()) {
-    // Run message loop until the prerender contents is destroyed.
-    content::RunMessageLoop();
+      // Run message loop until the prerender contents is destroyed.
+      content::RunMessageLoop();
     } else {
       // We don't expect to pick up a running prerender, so instead
       // observe one navigation.
@@ -1127,26 +1161,106 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+// Checks that pending prerenders launch and receive proper event treatment.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPagePending) {
+  std::deque<FinalStatus> expected_final_status_queue;
+  expected_final_status_queue.push_back(FINAL_STATUS_USED);
+  expected_final_status_queue.push_back(FINAL_STATUS_USED);
+  PrerenderTestURL("files/prerender/prerender_page_pending.html",
+                   expected_final_status_queue, 1);
+
+  ChannelDestructionWatcher first_channel_close_watcher;
+
+  first_channel_close_watcher.WatchChannel(
+    chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  NavigateToDestURL();
+  // NavigateToDestURL doesn't run a message loop. Normally that's fine, but in
+  // this case, we need the pending prerenders to start.
+  content::RunMessageLoop();
+  first_channel_close_watcher.WaitForChannelClose();
+
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+
+  const GURL prerender_page_url =
+      test_server()->GetURL("files/prerender/prerender_page.html");
+  EXPECT_FALSE(IsEmptyPrerenderLinkManager());
+  EXPECT_NE(static_cast<TestPrerenderContents*>(NULL),
+            GetPrerenderContentsFor(prerender_page_url));
+
+  // Now navigate to our target page.
+  ChannelDestructionWatcher second_channel_close_watcher;
+  second_channel_close_watcher.WatchChannel(
+    chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), prerender_page_url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  second_channel_close_watcher.WaitForChannelClose();
+
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
+}
+
+// Checks that pending prerenders which are canceled before they are launched
+// never get started.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
+  PrerenderTestURL("files/prerender/prerender_page_removes_pending.html",
+                   FINAL_STATUS_USED, 1);
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
+  EXPECT_FALSE(DidReceivePrerenderStartEventForLinkNumber(1));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
+  // calls did a thread/process hop to the renderer which insured pending
+  // renderer events have arrived.
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+}
+
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
-  set_loader_query_and_fragment("?links_to_insert=1&links_to_remove=1");
+  set_loader_query_and_fragment("?links_to_insert=1");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CANCELLED, 1);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+
   // No ChannelDestructionWatcher is needed here, since prerenders in the
   // PrerenderLinkManager should be deleted by removing the links, rather than
   // shutting down the renderer process.
-  RemoveLinkElementsAndNavigate();
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+  RemoveLinkElement(0);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
+  // calls did a thread/process hop to the renderer which insured pending
+  // renderer events have arrived.
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinks) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
-  set_loader_query_and_fragment("?links_to_insert=2&links_to_remove=2");
+  set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CANCELLED, 1);
-  RemoveLinkElementsAndNavigate();
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+
+  RemoveLinkElement(0);
+  RemoveLinkElement(1);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
+  // calls did a thread/process hop to the renderer which insured pending
+  // renderer events have arrived.
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
 #if defined(OS_WIN)
@@ -1161,19 +1275,31 @@ IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest,
     MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
-  set_loader_query_and_fragment("?links_to_insert=2&links_to_remove=1");
+  set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_USED, 1);
-  RemoveLinkElementsAndNavigate();
-}
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
 
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithOneLinkRemovingTwo) {
-  set_loader_path("files/prerender/prerender_loader_removing_links.html");
-  set_loader_query_and_fragment("?links_to_insert=1&links_to_remove=2");
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_CANCELLED, 1);
-  RemoveLinkElementsAndNavigate();
+  RemoveLinkElement(0);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
+  // calls did a thread/process hop to the renderer which insured pending
+  // renderer events have arrived.
+  EXPECT_FALSE(IsEmptyPrerenderLinkManager());
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
 // Checks that prerendering works in incognito mode.
@@ -2272,10 +2398,23 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
                    1);
   // Post a task to cancel all the prerenders.
   MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
+      FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
   content::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CANCELLED, 1);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
+  content::RunMessageLoop();
+
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderStopEventForLinkNumber(0));
 }
 
 // Prerendering and history tests.

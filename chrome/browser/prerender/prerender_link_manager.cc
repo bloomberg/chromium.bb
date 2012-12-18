@@ -98,7 +98,9 @@ void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
     DVLOG(5) << "... canceling a prerender that doesn't exist.";
     return;
   }
-  PrerenderHandle* prerender_handle = id_to_handle_iter->second;
+
+  scoped_ptr<PrerenderHandle> prerender_handle(id_to_handle_iter->second);
+  ids_to_handle_map_.erase(id_to_handle_iter);
   prerender_handle->OnCancel();
 
   // Because OnCancel() can remove the prerender from the map, we need to

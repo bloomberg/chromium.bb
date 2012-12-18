@@ -8,7 +8,6 @@ This test checks to make sure that a prerendered page is loaded.
 <script>
 var pageWasPrerendered = false;
 
-// Make sure plugin was not loaded while prerendering.
 function DidPrerenderPass() {
   pageWasPrerendered = true;
   return true;

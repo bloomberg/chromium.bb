@@ -36,15 +36,16 @@ class PrerenderDispatcherTest : public testing::Test {
     return prerender_dispatcher_.IsPrerenderURL(url);
   }
 
-  const std::map<int, GURL>& prerenders() const {
+  const std::map<int, WebPrerender>& prerenders() const {
     return prerender_dispatcher_.prerenders_;
   }
 
   int StartPrerender(const GURL& url) {
     DCHECK_EQ(0u, prerender_dispatcher_.prerenders_.count(g_next_prerender_id));
-    prerender_dispatcher_.prerenders_[g_next_prerender_id] = url;
+    prerender_dispatcher_.prerenders_[g_next_prerender_id] = WebPrerender();
 
     prerender_dispatcher_.OnPrerenderStart(g_next_prerender_id);
+    prerender_dispatcher_.OnPrerenderAddAlias(g_next_prerender_id, url);
     return g_next_prerender_id++;
   }
 
