@@ -558,6 +558,7 @@
         'browser/chromeos/drive/stale_cache_files_remover_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
+        'browser/chromeos/extensions/file_browser_resource_throttle_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',

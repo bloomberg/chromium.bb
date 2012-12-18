@@ -274,6 +274,8 @@
         'browser/chromeos/extensions/file_browser_event_router.h',
         'browser/chromeos/extensions/file_browser_notifications.cc',
         'browser/chromeos/extensions/file_browser_notifications.h',
+        'browser/chromeos/extensions/file_browser_resource_throttle.cc',
+        'browser/chromeos/extensions/file_browser_resource_throttle.h',
         'browser/chromeos/extensions/file_handler_util.cc',
         'browser/chromeos/extensions/file_handler_util.h',
         'browser/chromeos/extensions/file_manager_util.cc',

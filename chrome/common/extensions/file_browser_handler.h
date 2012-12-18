@@ -23,6 +23,15 @@ class FileBrowserHandler {
   // MIME type filters.
   static bool ExtensionWhitelistedForMIMETypes(const std::string& extension_id);
 
+  // Returns list of extensions' ids that are allowed to use MIME type filters.
+  static std::vector<std::string> GetMIMETypeWhitelist();
+
+  // Whitelists the extension to use MIME type filters for a test.
+  // |extension_id| should be owned by the test code.
+  static void set_extension_whitelisted_for_test(std::string* extension_id) {
+    g_test_extension_id_ = extension_id;
+  }
+
   FileBrowserHandler();
   ~FileBrowserHandler();
 
@@ -75,6 +84,10 @@ class FileBrowserHandler {
   bool HasCreateAccessPermission() const;
 
  private:
+  // The id of the extension that will be whitelisted to use MIME type filters
+  // during tests.
+  static std::string* g_test_extension_id_;
+
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
   std::string extension_id_;

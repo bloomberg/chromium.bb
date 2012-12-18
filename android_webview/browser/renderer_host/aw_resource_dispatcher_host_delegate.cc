@@ -237,6 +237,7 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
     int route_id,
     int request_id,
     bool is_content_initiated,
+    bool must_download,
     ScopedVector<content::ResourceThrottle>* throttles) {
   GURL url(request->url());
   std::string user_agent;

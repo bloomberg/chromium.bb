@@ -41,6 +41,7 @@ class AwResourceDispatcherHostDelegate
       int route_id,
       int request_id,
       bool is_content_initiated,
+      bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
 
   virtual bool AcceptAuthRequest(net::URLRequest* request,

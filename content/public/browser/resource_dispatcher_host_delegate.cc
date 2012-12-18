@@ -35,6 +35,7 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     int route_id,
     int request_id,
     bool is_content_initiated,
+    bool must_download,
     ScopedVector<ResourceThrottle>* throttles) {
 }
 

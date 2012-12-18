@@ -204,6 +204,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
+      bool must_download,
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 

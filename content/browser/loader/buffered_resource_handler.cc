@@ -315,7 +315,8 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   if (!info->allow_download())
     return true;
 
-  if (!MustDownload()) {
+  bool must_download = MustDownload();
+  if (!must_download) {
     if (net::IsSupportedMimeType(mime_type))
       return true;
 
@@ -339,6 +340,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
       host_->CreateResourceHandlerForDownload(
           request_,
           true,  // is_content_initiated
+          must_download,
           scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
           DownloadResourceHandler::OnStartedCallback()));
   return UseAlternateNextHandler(handler.Pass());

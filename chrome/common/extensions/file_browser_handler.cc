@@ -41,11 +41,23 @@ const char* const kMIMETypeHandlersWhitelist[] = {
 // static
 bool FileBrowserHandler::ExtensionWhitelistedForMIMETypes(
     const std::string& extension_id) {
+  if (g_test_extension_id_ && extension_id == *g_test_extension_id_)
+    return true;
   for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i) {
     if (extension_id == kMIMETypeHandlersWhitelist[i])
       return true;
   }
   return false;
+}
+
+// static
+std::vector<std::string> FileBrowserHandler::GetMIMETypeWhitelist() {
+  std::vector<std::string> whitelist;
+  if (g_test_extension_id_)
+    whitelist.push_back(*g_test_extension_id_);
+  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i)
+    whitelist.push_back(kMIMETypeHandlersWhitelist[i]);
+  return whitelist;
 }
 
 FileBrowserHandler::FileBrowserHandler()
@@ -111,3 +123,5 @@ bool FileBrowserHandler::HasCreateAccessPermission() const {
   DCHECK(!(file_access_permission_flags_ & kInvalidPermission));
   return (file_access_permission_flags_ & kCreatePermission) != 0;
 }
+
+std::string* FileBrowserHandler::g_test_extension_id_ = NULL;

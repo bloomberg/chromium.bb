@@ -57,8 +57,9 @@
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 #endif
 
-// TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
+// TODO(oshima): Enable this for other platforms.
 #include "chrome/browser/renderer_host/offline_resource_throttle.h"
 #endif
 
@@ -192,6 +193,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     int route_id,
     int request_id,
     bool is_content_initiated,
+    bool must_download,
     ScopedVector<content::ResourceThrottle>* throttles) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -199,6 +201,16 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
+#if defined(OS_CHROMEOS)
+    if (!must_download) {
+      ProfileIOData* io_data =
+          ProfileIOData::FromResourceContext(resource_context);
+      throttles->push_back(FileBrowserResourceThrottle::Create(
+          child_id, route_id, request, io_data->is_incognito(),
+          io_data->GetExtensionInfoMap()));
+    }
+#endif  // defined(OS_CHROMEOS)
+
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id,
         request->method()));

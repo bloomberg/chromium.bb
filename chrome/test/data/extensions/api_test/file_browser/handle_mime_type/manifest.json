@@ -1,0 +1,20 @@
+{
+  "name": "Test Download redirect",
+  "version": "1",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"]
+  }, 
+  "file_browser_handlers": [
+    {
+      "id": "Some ID",
+      "default_title": "Some title",
+      "file_filters": [
+        "filesystem:*.doc"
+      ]
+    }
+  ],
+  "permissions": [
+    "fileBrowserHandler"
+  ]
+}

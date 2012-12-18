@@ -550,7 +550,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   // |started_callback|.
   scoped_ptr<ResourceHandler> handler(
       CreateResourceHandlerForDownload(request.get(), is_content_initiated,
-                                       save_info.Pass(), started_callback));
+                                       true, save_info.Pass(),
+                                       started_callback));
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 
@@ -579,6 +580,7 @@ scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
+    bool must_download,
     scoped_ptr<DownloadSaveInfo> save_info,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
@@ -591,7 +593,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     delegate_->DownloadStarting(
         request, request_info->GetContext(), request_info->GetChildID(),
         request_info->GetRouteID(), request_info->GetRequestID(),
-        is_content_initiated, &throttles);
+        is_content_initiated, must_download, &throttles);
     if (!throttles.empty()) {
       handler.reset(
           new ThrottlingResourceHandler(
