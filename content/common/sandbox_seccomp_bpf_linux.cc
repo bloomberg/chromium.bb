@@ -53,6 +53,14 @@ inline bool IsChromeOS() {
 #endif
 }
 
+inline bool IsArchitectureX86_64() {
+#if defined(__x86_64__)
+  return true;
+#else
+  return false;
+#endif
+}
+
 inline bool IsArchitectureI386() {
 #if defined(__i386__)
   return true;
@@ -1194,8 +1202,8 @@ ErrorCode BaselinePolicy(int sysno) {
   return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
 }
 
-// x86_64 only for now. Needs to be adapted and tested for i386/ARM.
-ErrorCode GpuProcessPolicy_x86_64(int sysno, void *broker_process) {
+// x86_64/i386 for now. Needs to be adapted and tested for ARM.
+ErrorCode GpuProcessPolicy(int sysno, void *broker_process) {
   switch(sysno) {
     case __NR_ioctl:
 #if defined(ADDRESS_SANITIZER)
@@ -1215,16 +1223,16 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno, void *broker_process) {
   }
 }
 
-// x86_64 only for now. Needs to be adapted and tested for i386/ARM.
+// x86_64/i386 for now. Needs to be adapted and tested for ARM.
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode GpuBrokerProcessPolicy_x86_64(int sysno, void*) {
+ErrorCode GpuBrokerProcessPolicy(int sysno, void*) {
   switch(sysno) {
     case __NR_open:
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
-      return GpuProcessPolicy_x86_64(sysno, NULL);
+      return GpuProcessPolicy(sysno, NULL);
   }
 }
 
@@ -1321,12 +1329,12 @@ ErrorCode AllowAllPolicy(int sysno, void *) {
 }
 
 bool EnableGpuBrokerPolicyCallBack() {
-  StartSandboxWithPolicy(GpuBrokerProcessPolicy_x86_64, NULL);
+  StartSandboxWithPolicy(GpuBrokerProcessPolicy, NULL);
   return true;
 }
 
 // Start a broker process to handle open() inside the sandbox.
-void InitGpuBrokerProcess_x86_64(BrokerProcess** broker_process) {
+void InitGpuBrokerProcess(BrokerProcess** broker_process) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCard0Path[] = "/dev/dri/card0";
 
@@ -1348,20 +1356,26 @@ void InitGpuBrokerProcess_x86_64(BrokerProcess** broker_process) {
 // Eventually start a broker process and return it in broker_process.
 void WarmupPolicy(Sandbox::EvaluateSyscall policy,
                   BrokerProcess** broker_process) {
-#if defined(__x86_64__)
-  if (policy == GpuProcessPolicy_x86_64) {
-    // Create a new broker process.
-    InitGpuBrokerProcess_x86_64(broker_process);
-    // Accelerated video decode dlopen()'s this shared object
-    // inside the sandbox, so preload it now.
-    // TODO(jorgelo): generalize this to other platforms.
-    if (IsAcceleratedVideoDecodeEnabled()) {
-      const char kI965DrvVideoPath_64[] =
-          "/usr/lib64/va/drivers/i965_drv_video.so";
-      dlopen(kI965DrvVideoPath_64, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+  if (policy == GpuProcessPolicy) {
+    if (IsArchitectureX86_64() || IsArchitectureI386()) {
+      // Create a new broker process.
+      InitGpuBrokerProcess(broker_process);
+
+      // Accelerated video decode dlopen()'s a shared object
+      // inside the sandbox, so preload it now.
+      if (IsAcceleratedVideoDecodeEnabled()) {
+        const char* I965DrvVideoPath = NULL;
+
+        if (IsArchitectureX86_64()) {
+          I965DrvVideoPath = "/usr/lib64/va/drivers/i965_drv_video.so";
+        } else if (IsArchitectureI386()) {
+          I965DrvVideoPath = "/usr/lib/va/drivers/i965_drv_video.so";
+        }
+
+        dlopen(I965DrvVideoPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+      }
     }
   }
-#endif
 }
 
 Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
@@ -1370,12 +1384,12 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   if (process_type == switches::kGpuProcess) {
     // On Chrome OS, --enable-gpu-sandbox enables the more restrictive policy.
     // However, we don't yet enable the more restrictive GPU process policy
-    // on i386 or ARM.
-    if (IsArchitectureI386() || IsArchitectureArm() ||
+    // on ARM.
+    if (IsArchitectureArm() ||
         (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox)))
       return BlacklistDebugAndNumaPolicy;
     else
-      return GpuProcessPolicy_x86_64;
+      return GpuProcessPolicy;
   }
 
   if (process_type == switches::kPpapiPluginProcess) {
