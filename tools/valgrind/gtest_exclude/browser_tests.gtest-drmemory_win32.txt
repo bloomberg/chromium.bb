@@ -248,6 +248,9 @@ ExtensionIdltestApiTest.*
 SearchProviderTest.*
 PushMessagingApiTest.*
 BookmarkBrowsertest.*
+# DrM-i#1052-c#43
+BetterSessionRestoreCrashTest.*
+NewStackCloudPolicyTest/CloudPolicyTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -311,3 +314,5 @@ IFrameTest.*
 CloudPrintPolicyTest.*
 # DrM-i#1052-c#40
 TranslateManagerTest.*
+# DrM-i#1052-c#43
+SyncFileSystemApiTest.*
