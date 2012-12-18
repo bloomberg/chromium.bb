@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   EXPECT_TRUE(browser_view->IsToolbarVisible());
 
   // Ending a reveal keeps us in immersive mode, but toolbar goes invisible.
-  controller->EndRevealForTest();
+  controller->CancelReveal();
   EXPECT_TRUE(controller->enabled());
   EXPECT_TRUE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
@@ -94,6 +94,15 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   EXPECT_TRUE(controller->IsRevealed());
 
   // Releasing focus ends the reveal.
+  browser_view->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // Placing focus in the location bar automatically causes a reveal.
+  controller->SetEnabled(true);
+  browser_view->SetFocusToLocationBar(false);
+  EXPECT_TRUE(controller->IsRevealed());
+
+  // Releasing focus ends the reveal again.
   browser_view->GetFocusManager()->ClearFocus();
   EXPECT_FALSE(controller->IsRevealed());
 #endif  // defined(OS_WIN)

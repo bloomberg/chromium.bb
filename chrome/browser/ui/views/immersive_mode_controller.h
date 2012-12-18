@@ -51,6 +51,13 @@ class ImmersiveModeController : public ui::EventHandler,
   // the reveal view's layer is on top and hence visible over web contents.
   void MaybeStackViewAtTop();
 
+  // Shows the reveal view if immersive mode is enabled. Used when focus is
+  // placed in the location bar, tools menu, etc.
+  void MaybeStartReveal();
+
+  // Immediately hides the reveal view, without animating.
+  void CancelReveal();
+
   // ui::EventHandler overrides:
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
@@ -60,7 +67,6 @@ class ImmersiveModeController : public ui::EventHandler,
   // Testing interface.
   void StartRevealForTest();
   void OnRevealViewLostMouseForTest();
-  void EndRevealForTest();
 
  private:
   class RevealView;

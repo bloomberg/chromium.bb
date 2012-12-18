@@ -1076,6 +1076,10 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
     return;
 #endif
 
+  // The location bar view must be visible for it to be considered focusable,
+  // so always reveal it before testing for focusable.
+  immersive_mode_controller_->MaybeStartReveal();
+
   LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->IsLocationEntryFocusableInRootView()) {
     // Location bar got focus.
@@ -1086,6 +1090,8 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);
     focus_manager->ClearFocus();
+    // The view doesn't need to be revealed after all.
+    immersive_mode_controller_->CancelReveal();
   }
 }
 
@@ -1100,14 +1106,17 @@ void BrowserView::UpdateToolbar(content::WebContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
+  immersive_mode_controller_->MaybeStartReveal();
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
   toolbar_->SetPaneFocus(NULL);
 }
 
 void BrowserView::FocusBookmarksToolbar() {
-  if (active_bookmark_bar_ && bookmark_bar_view_->visible())
+  if (active_bookmark_bar_ && bookmark_bar_view_->visible()) {
+    immersive_mode_controller_->MaybeStartReveal();
     bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
+  }
 }
 
 void BrowserView::FocusAppMenu() {
@@ -1121,6 +1130,7 @@ void BrowserView::FocusAppMenu() {
   if (toolbar_->IsAppMenuFocused()) {
     RestoreFocus();
   } else {
+    immersive_mode_controller_->MaybeStartReveal();
     toolbar_->SetPaneFocusAndFocusAppMenu();
   }
 }

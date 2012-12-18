@@ -306,6 +306,17 @@ void ImmersiveModeController::MaybeStackViewAtTop() {
 #endif
 }
 
+void ImmersiveModeController::MaybeStartReveal() {
+  if (enabled_ && !revealed_)
+    StartReveal();
+}
+
+void ImmersiveModeController::CancelReveal() {
+  EndReveal(ANIMATE_NO, LAYOUT_YES);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 // ui::EventHandler overrides:
 ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED)
@@ -337,10 +348,6 @@ void ImmersiveModeController::StartRevealForTest() {
 
 void ImmersiveModeController::OnRevealViewLostMouseForTest() {
   OnRevealViewLostMouse();
-}
-
-void ImmersiveModeController::EndRevealForTest() {
-  EndReveal(ANIMATE_NO, LAYOUT_YES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
