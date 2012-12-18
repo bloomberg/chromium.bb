@@ -110,6 +110,24 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
   return true;
 }
 
+PP_Resource GetOrAddProxyResource(const PPPDecryptor_Buffer& buffer) {
+  PluginResourceTracker* resource_tracker =
+      PluginGlobals::Get()->plugin_resource_tracker();
+  PP_Resource resource =
+      resource_tracker->PluginResourceForHostResource(buffer.resource);
+  if (resource) {
+    // This buffer is already in the tracker. We don't need to create a plugin-
+    // side entry for it in the tracker; instead, just add a reference and
+    // return.
+    resource_tracker->AddRefResource(resource);
+    return resource;
+  }
+  // This is the first time we've seen this HostResource, so add it to the
+  // tracker.
+  return PPB_Buffer_Proxy::AddProxyResource(buffer.resource, buffer.handle,
+                                            buffer.size);
+}
+
 void GenerateKeyRequest(PP_Instance instance,
                         PP_Var key_system,
                         PP_Var type,
@@ -434,10 +452,7 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
     const PPPDecryptor_Buffer& encrypted_buffer,
     const std::string& serialized_block_info) {
   if (ppp_decryptor_impl_) {
-    PP_Resource plugin_resource =
-        PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
-                                           encrypted_buffer.handle,
-                                           encrypted_buffer.size);
+    PP_Resource plugin_resource = GetOrAddProxyResource(encrypted_buffer);
     PP_EncryptedBlockInfo block_info;
     if (!DeserializeBlockInfo(serialized_block_info, &block_info))
       return;
@@ -459,12 +474,8 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeAudioDecoder(
 
   if (ppp_decryptor_impl_) {
     PP_Resource plugin_resource = 0;
-    if (extra_data_buffer.size > 0) {
-      plugin_resource =
-          PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
-                                             extra_data_buffer.handle,
-                                             extra_data_buffer.size);
-    }
+    if (extra_data_buffer.size > 0)
+      plugin_resource = GetOrAddProxyResource(extra_data_buffer);
 
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeAudioDecoder,
@@ -485,12 +496,8 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeVideoDecoder(
 
   if (ppp_decryptor_impl_) {
     PP_Resource plugin_resource = 0;
-    if (extra_data_buffer.resource.host_resource() != 0) {
-      plugin_resource =
-          PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
-                                             extra_data_buffer.handle,
-                                             extra_data_buffer.size);
-    }
+    if (extra_data_buffer.resource.host_resource() != 0)
+      plugin_resource = GetOrAddProxyResource(extra_data_buffer);
 
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeVideoDecoder,
@@ -537,12 +544,8 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecode(
       return;
 
     PP_Resource plugin_resource = 0;
-    if (encrypted_buffer.resource.host_resource() != 0) {
-      plugin_resource =
-          PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
-                                             encrypted_buffer.handle,
-                                             encrypted_buffer.size);
-    }
+    if (encrypted_buffer.resource.host_resource() != 0)
+      plugin_resource = GetOrAddProxyResource(encrypted_buffer);
 
     CallWhileUnlocked(
         ppp_decryptor_impl_->DecryptAndDecode,
