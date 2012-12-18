@@ -56,7 +56,7 @@
           ],
           'sources': [
             '<(DEPTH)/webkit/media/crypto/ppapi/cdm_wrapper.cc',
-            '<(DEPTH)/webkit/media/crypto/ppapi/content_decryption_module.h',
+            '<(DEPTH)/webkit/media/crypto/ppapi/cdm/content_decryption_module.h',
             '<(DEPTH)/webkit/media/crypto/ppapi/linked_ptr.h',
           ],
           'conditions': [
