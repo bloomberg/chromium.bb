@@ -34,24 +34,6 @@ import java.util.ArrayList;
  *             compatibility.
  */
 public class ContentView extends FrameLayout implements ContentViewCore.InternalAccessDelegate {
-    // Use PageTransitionLink class instead.
-    // TODO(boliu): Remove these.
-    @Deprecated
-    public static final int PAGE_TRANSITION_LINK = 0;
-    @Deprecated
-    public static final int PAGE_TRANSITION_TYPED = 1;
-    @Deprecated
-    public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
-    @Deprecated
-    public static final int PAGE_TRANSITION_GENERATED = 5;
-
-    // TODO(boliu): This diverged from native. Fix this.
-    @Deprecated
-    public static final int PAGE_TRANSITION_START_PAGE = 6;
-    // Flag that should be ORed to the page transition when a navigation is initiated from the
-    // omnibox.
-    public static final int PAGE_TRANSITION_FROM_ADDRESS_BAR = 0x02000000;
-
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = ContentViewCore.PERSONALITY_VIEW;
     // Used for Chrome.

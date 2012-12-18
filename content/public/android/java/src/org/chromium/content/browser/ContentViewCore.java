@@ -58,19 +58,6 @@ import java.lang.annotation.Annotation;
 public class ContentViewCore implements MotionEventDelegate {
     private static final String TAG = ContentViewCore.class.getName();
 
-    // Use PageTransitionLink class instead.
-    // TODO(boliu): Remove these.
-    @Deprecated
-    public static final int PAGE_TRANSITION_LINK = 0;
-    @Deprecated
-    public static final int PAGE_TRANSITION_TYPED = 1;
-    @Deprecated
-    public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
-    @Deprecated
-    public static final int PAGE_TRANSITION_START_PAGE = 6;
-    @Deprecated
-    public static final int PAGE_TRANSITION_RELOAD = 8;
-
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = 0;
     // Used for Chrome.
