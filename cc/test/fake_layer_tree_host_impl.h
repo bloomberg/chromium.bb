@@ -20,7 +20,6 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
  private:
   FakeLayerTreeHostImplClient client_;
-  LayerTreeSettings settings_;
 };
 
 }  // namespace cc
