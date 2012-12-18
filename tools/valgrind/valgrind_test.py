@@ -266,7 +266,7 @@ class ValgrindTool(BaseTool):
                                  "running valgrind directly")
     parser.add_option("", "--indirect_webkit_layout", action="store_true",
                             default=False,
-                            help="set --wrapper rather than running valgrind "
+                            help="set --wrapper rather than running Dr. Memory "
                                  "directly.")
     parser.add_option("", "--trace_children", action="store_true",
                             default=False,
@@ -804,6 +804,10 @@ class DrMemory(BaseTool):
                       default=False,
                       help="set BROWSER_WRAPPER rather than "
                            "running Dr. Memory directly on the harness")
+    parser.add_option("", "--indirect_webkit_layout", action="store_true",
+                      default=False,
+                      help="set --wrapper rather than running valgrind "
+                      "directly.")
     parser.add_option("", "--use_debug", action="store_true",
                       default=False, dest="use_debug",
                       help="Run Dr. Memory debug build")
@@ -939,13 +943,21 @@ class DrMemory(BaseTool):
     # Dr.Memory requires -- to separate tool flags from the executable name.
     proc += ["--"]
 
-    if self._options.indirect:
+    if self._options.indirect or self._options.indirect_webkit_layout:
       # TODO(timurrrr): reuse for TSan on Windows
       wrapper_path = os.path.join(self._source_dir,
                                   "tools", "valgrind", "browser_wrapper_win.py")
-      self.CreateBrowserWrapper(" ".join(["python", wrapper_path] + proc))
+      wrapper = " ".join(["python", wrapper_path] + proc)
+      self.CreateBrowserWrapper(wrapper)
       logging.info("browser wrapper = " + " ".join(proc))
-      proc = []
+      if self._options.indirect_webkit_layout:
+        proc = self._args
+        # Layout tests want forward slashes.
+        wrapper = wrapper.replace('\\', '/')
+        proc += ["--wrapper", wrapper]
+        return proc
+      else:
+        proc = []
 
     # Note that self._args begins with the name of the exe to be run.
     self._args[0] = common.NormalizeWindowsPath(self._args[0])
@@ -963,7 +975,7 @@ class DrMemory(BaseTool):
     analyzer = drmemory_analyze.DrMemoryAnalyzer()
 
     ret = 0
-    if not self._options.indirect:
+    if not self._options.indirect and not self._options.indirect_webkit_layout:
       filenames = glob.glob(self.log_dir + "/*/results.txt")
 
       ret = analyzer.Report(filenames, None, check_sanity)
