@@ -28,10 +28,12 @@ void* GetAddress(SharedMemory* shared_memory,
 
 namespace gfx {
 
+#if !defined(OS_ANDROID)
 scoped_ptr<AsyncPixelTransferDelegate>
     AsyncPixelTransferDelegate::Create(gfx::GLContext* context) {
   return AsyncPixelTransferDelegateStub::Create(context);
 }
+#endif
 
 scoped_ptr<AsyncPixelTransferDelegate>
       AsyncPixelTransferDelegateStub::Create(gfx::GLContext* context) {
