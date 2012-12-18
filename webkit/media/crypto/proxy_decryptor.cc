@@ -4,15 +4,9 @@
 
 #include "webkit/media/crypto/proxy_decryptor.h"
 
-#include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "media/base/audio_decoder_config.h"
-#include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
-#include "media/base/video_decoder_config.h"
-#include "media/base/video_frame.h"
 #include "media/crypto/aes_decryptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -133,54 +127,6 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
   decryptor_->CancelKeyRequest(key_system, session_id);
-}
-
-void ProxyDecryptor::RegisterKeyAddedCB(StreamType stream_type,
-                                        const KeyAddedCB& key_added_cb) {
-  NOTREACHED() << "KeyAddedCB should not be registered with ProxyDecryptor.";
-}
-
-void ProxyDecryptor::Decrypt(
-    StreamType stream_type,
-    const scoped_refptr<media::DecoderBuffer>& encrypted,
-    const DecryptCB& decrypt_cb) {
-  NOTREACHED() << "ProxyDecryptor does not support decryption";
-}
-
-void ProxyDecryptor::CancelDecrypt(StreamType stream_type) {
-  NOTREACHED() << "ProxyDecryptor does not support decryption";
-}
-
-void ProxyDecryptor::InitializeAudioDecoder(
-    scoped_ptr<media::AudioDecoderConfig> config,
-    const DecoderInitCB& init_cb) {
-  NOTREACHED() << "ProxyDecryptor does not support audio decoding";
-}
-
-void ProxyDecryptor::InitializeVideoDecoder(
-    scoped_ptr<media::VideoDecoderConfig> config,
-    const DecoderInitCB& init_cb) {
-  NOTREACHED() << "ProxyDecryptor does not support video decoding";
-}
-
-void ProxyDecryptor::DecryptAndDecodeAudio(
-    const scoped_refptr<media::DecoderBuffer>& encrypted,
-    const AudioDecodeCB& audio_decode_cb) {
-  NOTREACHED() << "ProxyDecryptor does not support audio decoding";
-}
-
-void ProxyDecryptor::DecryptAndDecodeVideo(
-    const scoped_refptr<media::DecoderBuffer>& encrypted,
-    const VideoDecodeCB& video_decode_cb) {
-  NOTREACHED() << "ProxyDecryptor does not support video decoding";
-}
-
-void ProxyDecryptor::ResetDecoder(StreamType stream_type) {
-  NOTREACHED() << "ProxyDecryptor does not support audio/video decoding";
-}
-
-void ProxyDecryptor::DeinitializeDecoder(StreamType stream_type) {
-  NOTREACHED() << "ProxyDecryptor does not support audio/video decoding";
 }
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(

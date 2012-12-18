@@ -11,10 +11,6 @@
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace media {
 class DecryptorClient;
 }
@@ -30,7 +26,7 @@ namespace webkit_media {
 // forwards decryptor calls to it.
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
 // objects. Fix this when needed.
-class ProxyDecryptor : public media::Decryptor {
+class ProxyDecryptor {
  public:
   ProxyDecryptor(media::DecryptorClient* decryptor_client,
                  WebKit::WebMediaPlayerClient* web_media_player_client,
@@ -43,39 +39,15 @@ class ProxyDecryptor : public media::Decryptor {
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
-  // media::Decryptor implementation.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) OVERRIDE;
-  virtual void AddKey(const std::string& key_system,
-                      const uint8* key,
-                      int key_length,
-                      const uint8* init_data,
-                      int init_data_length,
-                      const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& key_system,
-                                const std::string& session_id) OVERRIDE;
-  virtual void RegisterKeyAddedCB(StreamType stream_type,
-                                  const KeyAddedCB& key_added_cb) OVERRIDE;
-  virtual void Decrypt(StreamType stream_type,
-                       const scoped_refptr<media::DecoderBuffer>& encrypted,
-                       const DecryptCB& decrypt_cb) OVERRIDE;
-  virtual void CancelDecrypt(StreamType stream_type) OVERRIDE;
-  virtual void InitializeAudioDecoder(
-      scoped_ptr<media::AudioDecoderConfig> config,
-      const DecoderInitCB& init_cb) OVERRIDE;
-  virtual void InitializeVideoDecoder(
-      scoped_ptr<media::VideoDecoderConfig> config,
-      const DecoderInitCB& init_cb) OVERRIDE;
-  virtual void DecryptAndDecodeAudio(
-      const scoped_refptr<media::DecoderBuffer>& encrypted,
-      const AudioDecodeCB& audio_decode_cb) OVERRIDE;
-  virtual void DecryptAndDecodeVideo(
-      const scoped_refptr<media::DecoderBuffer>& encrypted,
-      const VideoDecodeCB& video_decode_cb) OVERRIDE;
-  virtual void ResetDecoder(StreamType stream_type) OVERRIDE;
-  virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
+  bool GenerateKeyRequest(const std::string& key_system,
+                          const std::string& type,
+                          const uint8* init_data, int init_data_length);
+  void AddKey(const std::string& key_system,
+              const uint8* key, int key_length,
+              const uint8* init_data, int init_data_length,
+              const std::string& session_id);
+  void CancelKeyRequest(const std::string& key_system,
+                        const std::string& session_id);
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
