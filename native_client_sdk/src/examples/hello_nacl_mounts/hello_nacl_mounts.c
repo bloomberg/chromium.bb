@@ -20,7 +20,7 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
-#include "nacl_mounts/kernel_intercept.h"
+#include "nacl_mounts/nacl_mounts.h"
 
 #include "handlers.h"
 #include "queue.h"
@@ -30,10 +30,6 @@
 #if defined(WIN32)
 #define va_copy(d, s) ((d) = (s))
 #endif
-
-int mount(const char *source, const char *target, const char *filesystemtype,
-    unsigned long mountflags, const void *data);
-
 
 typedef struct {
   const char* name;
@@ -279,7 +275,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   const char* argn[],
                                   const char* argv[]) {
   g_instance = instance;
-  ki_init_ppapi(NULL, instance, get_browser_interface);
+  nacl_mounts_init_ppapi(instance, get_browser_interface);
   mount(
       "",  /* source */
       "/persistent",  /* target */

@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "nacl_mounts/kernel_intercept.h"
+#include "nacl_mounts/nacl_mounts.h"
 
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
@@ -136,7 +136,7 @@ bool PPAPIInstance::ProcessProperties() {
   const char* stdout_path = GetProperty("PM_STDOUT", "/dev/tty");
   const char* stderr_path = GetProperty("PM_STDERR", "/dev/console3");
 
-  ki_init_ppapi(NULL, PPAPI_GetInstanceId(), PPAPI_GetInterface);
+  nacl_mounts_init_ppapi(PPAPI_GetInstanceId(), PPAPI_GetInterface);
   int f1 = open(stdin_path, O_RDONLY);
   int f2 = open(stdout_path, O_WRONLY);
   int f3 = open(stderr_path, O_WRONLY);
