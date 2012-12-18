@@ -569,6 +569,15 @@ bool AcceleratorController::PerformAction(int action,
       }
       return false;
     case TOGGLE_CAPS_LOCK:
+      if (key_code == ui::VKEY_LWIN) {
+        // If something else was pressed between the Search key (LWIN)
+        // being pressed and released, then ignore the release of the
+        // Search key.
+        // TODO(danakj): Releasing Alt first breaks this: crbug.com/166495
+        if (previous_event_type == ui::ET_KEY_RELEASED ||
+            previous_key_code != ui::VKEY_LWIN)
+          return false;
+      }
       shell->caps_lock_delegate()->ToggleCapsLock();
       return true;
     case BRIGHTNESS_DOWN:

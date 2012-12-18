@@ -710,11 +710,15 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     CapsLockDelegate* delegate = Shell::GetInstance()->caps_lock_delegate();
     delegate->SetCapsLockEnabled(true);
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
-    EXPECT_TRUE(ProcessWithContext(
+    EXPECT_FALSE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
+    EXPECT_TRUE(ProcessWithContext(
+        ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_FALSE(delegate->IsCapsLockEnabled());
-    EXPECT_TRUE(ProcessWithContext(
+    EXPECT_FALSE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
+    EXPECT_TRUE(ProcessWithContext(
+        ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
   }
   const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
