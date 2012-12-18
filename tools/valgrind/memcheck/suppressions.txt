@@ -3863,7 +3863,6 @@
    fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
    fun:_ZN7WebCore11StringCache20v8ExternalStringSlow*
    fun:_ZN7WebCore11StringCache16v8ExternalStringEPN*
-   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6String*
 }
 {
    bug_101146a
@@ -6435,4 +6434,14 @@
    fun:_ZN7testing8internal11CmpHelperEQIjjEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN7testing8internal8EqHelperILb0EE7CompareIjjEENS_15AssertionResultEPKcS6_RKT_RKT0_
    fun:_ZN39SkBitmapOperationsTest_RotateImage_Test8TestBodyEv
+}
+{
+   bug_166709
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMNS_12_GLOBAL__N_121PostTaskAndReplyRelayEFvvENS_8internal17UnretainedWrapper*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8Location*
+   ...
+   fun:_ZN16ExtensionService12AddExtensionEPKN10extensions9ExtensionE
+   fun:_ZN52BackgroundApplicationListModelTest_ExplicitTest_Test8TestBodyEv
 }
