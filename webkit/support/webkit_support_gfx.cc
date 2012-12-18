@@ -9,11 +9,7 @@
 #include <string.h>
 
 extern "C" {
-#if defined(USE_SYSTEM_LIBPNG)
-#include <png.h>
-#else
 #include "third_party/libpng/png.h"
-#endif
 
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>

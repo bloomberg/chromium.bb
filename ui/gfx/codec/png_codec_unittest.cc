@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(USE_SYSTEM_LIBPNG)
-#include <png.h>
-#else
-#include "third_party/libpng/png.h"
-#endif
-
 #include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libpng/png.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
