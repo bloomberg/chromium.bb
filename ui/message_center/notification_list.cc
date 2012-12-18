@@ -152,6 +152,7 @@ bool NotificationList::RemoveNotification(const std::string& id) {
 
 void NotificationList::RemoveAllNotifications() {
   notifications_.clear();
+  unread_count_ = 0;
 }
 
 void NotificationList::SendRemoveNotificationsBySource(
@@ -216,7 +217,7 @@ void NotificationList::GetPopupNotifications(
     NotificationList::Notifications* notifications) {
   typedef std::pair<Notifications::iterator, Notifications::iterator>
       NotificationRange;
-  // In the popup, earlier should come earlier.
+  // In the popup, latest should come earlier.
   std::list<NotificationRange> iters;
   for (int i = ui::notifications::DEFAULT_PRIORITY;
        i <= ui::notifications::MAX_PRIORITY; ++i) {
@@ -227,17 +228,17 @@ void NotificationList::GetPopupNotifications(
   }
   notifications->clear();
   while (!iters.empty()) {
-    std::list<NotificationRange>::iterator min_iter = iters.begin();
-    std::list<NotificationRange>::iterator iter = min_iter;
+    std::list<NotificationRange>::iterator max_iter = iters.begin();
+    std::list<NotificationRange>::iterator iter = max_iter;
     iter++;
     for (; iter != iters.end(); ++iter) {
-      if (min_iter->first->timestamp > iter->first->timestamp)
-        min_iter = iter;
+      if (max_iter->first->timestamp < iter->first->timestamp)
+        max_iter = iter;
     }
-    notifications->push_back(*(min_iter->first));
-    ++(min_iter->first);
-    if (min_iter->first == min_iter->second)
-      iters.erase(min_iter);
+    notifications->push_back(*(max_iter->first));
+    ++(max_iter->first);
+    if (max_iter->first == max_iter->second)
+      iters.erase(max_iter);
   }
 }
 

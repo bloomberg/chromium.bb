@@ -49,5 +49,21 @@
         'quiet_mode_bubble.h',
       ],
     },
+    {
+      'target_name': 'message_center_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../../testing/gtest.gyp:gtest_main',
+        '../ui.gyp:ui',
+        'message_center',
+      ],
+      'sources': [
+        'notification_list_unittest.cc',
+      ],
+    },
   ],
 }
