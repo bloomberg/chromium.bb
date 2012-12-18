@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace aura {
 class Window;
@@ -38,7 +39,7 @@ class LauncherIconObserver;
 class LauncherDelegate;
 class LauncherModel;
 
-class ASH_EXPORT Launcher  {
+class ASH_EXPORT Launcher: public views::WidgetObserver  {
  public:
   Launcher(LauncherModel* launcher_model,
            LauncherDelegate* launcher_delegate,
@@ -124,6 +125,14 @@ class ASH_EXPORT Launcher  {
 
   aura::Window* window_container() { return window_container_; }
 
+  // Called by the activation delegate, before the launcher is activated
+  // when no other windows are visible.
+  void WillActivateAsFallback() { activating_as_fallback_ = true; }
+
+  // Overridden from views::WidgetObserver:
+  virtual void OnWidgetActivationChanged(
+      views::Widget* widget, bool active) OVERRIDE;
+
  private:
   class DelegateView;
 
@@ -148,6 +157,9 @@ class ASH_EXPORT Launcher  {
 
   // Used to animate the background.
   internal::BackgroundAnimator background_animator_;
+
+  // Used then activation is forced from the activation delegate.
+  bool activating_as_fallback_;
 
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };

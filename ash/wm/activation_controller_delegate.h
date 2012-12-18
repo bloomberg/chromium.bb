@@ -5,6 +5,8 @@
 #ifndef ASH_WM_ACTIVATION_CONTROLLER_DELEGATE_H_
 #define ASH_WM_ACTIVATION_CONTROLLER_DELEGATE_H_
 
+#include "ash/ash_export.h"
+
 namespace aura {
 class Window;
 }
@@ -12,7 +14,7 @@ class Window;
 namespace ash {
 namespace internal {
 
-class ActivationControllerDelegate {
+class ASH_EXPORT ActivationControllerDelegate {
  public:
   virtual ~ActivationControllerDelegate() {}
 
