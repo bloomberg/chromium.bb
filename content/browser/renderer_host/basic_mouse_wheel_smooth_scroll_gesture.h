@@ -27,6 +27,7 @@ class BasicMouseWheelSmoothScrollGesture : public SmoothScrollGesture {
   int pixels_to_scroll_;
   int mouse_event_x_;
   int mouse_event_y_;
+  base::TimeTicks last_tick_time_;
 };
 
 }  // namespace content

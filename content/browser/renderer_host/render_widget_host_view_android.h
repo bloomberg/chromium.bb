@@ -139,9 +139,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
                                const gfx::Size& content_size) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
-  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
-      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
-      int mouse_event_y) OVERRIDE;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);

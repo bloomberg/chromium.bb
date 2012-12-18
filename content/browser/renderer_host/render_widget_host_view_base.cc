@@ -424,7 +424,7 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   current_device_scale_factor_ = display.device_scale_factor();
   if (impl)
     impl->NotifyScreenInfoChanged();
-}
+  }
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
     bool scroll_down, int pixels_to_scroll, int mouse_event_x,

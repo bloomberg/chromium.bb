@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -235,11 +234,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |zoomed_bitmap| --> magnified image of potential touch targets
   void ShowDisambiguationPopup(
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
-
-  // Creates a java-side smooth scroller. Used by
-  // chrome.gpuBenchmarking.smoothScrollBy.
-  base::android::ScopedJavaLocalRef<jobject> CreateSmoothScroller(
-      bool scroll_down, int mouse_event_x, int mouse_event_y);
 
   // --------------------------------------------------------------------------
   // Methods called from native code

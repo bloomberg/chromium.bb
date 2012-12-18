@@ -606,17 +606,6 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateSmoothScroller(
-    bool scroll_down, int mouse_event_x, int mouse_event_y) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_createSmoothScroller(
-      env, obj.obj(), scroll_down, mouse_event_x, mouse_event_y);
-}
-
 gfx::Rect ContentViewCoreImpl::GetBounds() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
