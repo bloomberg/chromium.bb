@@ -252,6 +252,40 @@ class IncludeOrderTest(unittest.TestCase):
     self.assertEqual(1, len(warnings[0].items))
     self.assertEqual('notify', warnings[0].type)
 
+  def testUncheckableIncludes(self):
+    mock_input_api = MockInputApi()
+    contents = ['#include <windows.h>',
+                '#include "b.h"'
+                '#include "a.h"']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
+    contents = ['#include "gpu/command_buffer/gles_autogen.h"',
+                '#include "b.h"'
+                '#include "a.h"']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
+    contents = ['#include "gl_mock_autogen.h"',
+                '#include "b.h"'
+                '#include "a.h"']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
+    contents = ['#include "ipc/some_macros.h"',
+                '#include "b.h"'
+                '#include "a.h"']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
 
 class VersionControlerConflictsTest(unittest.TestCase):
   def testTypicalConflict(self):

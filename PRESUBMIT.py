@@ -557,8 +557,13 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   # often need to appear in a specific order.
   excluded_include_pattern = input_api.re.compile(r'\s*#include \<.*/.*')
   custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
-  if_pattern = (
-      input_api.re.compile(r'\s*#\s*(if|elif|else|endif|define|undef).*'))
+  if_pattern = input_api.re.compile(
+      r'\s*#\s*(if|elif|else|endif|define|undef).*')
+  # Some files need specialized order of includes; exclude such files from this
+  # check.
+  uncheckable_includes_pattern = input_api.re.compile(
+      r'\s*#include '
+      '("ipc/.*macros\.h"|<windows\.h>|".*gl.*autogen.h")\s*')
 
   contents = f.NewContents()
   warnings = []
@@ -591,6 +596,8 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   current_scope = []
   for line in contents[line_num:]:
     line_num += 1
+    if uncheckable_includes_pattern.match(line):
+      return []
     if if_pattern.match(line):
       scopes.append(current_scope)
       current_scope = []
