@@ -4,14 +4,9 @@
 
 #include "net/base/gzip_filter.h"
 
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
-#include "third_party/zlib/zlib.h"
-#endif
-
 #include "base/logging.h"
 #include "net/base/gzip_header.h"
+#include "third_party/zlib/zlib.h"
 
 namespace net {
 

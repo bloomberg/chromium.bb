@@ -15,12 +15,7 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_bitmasks.h"
-
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
 
 using std::vector;
 

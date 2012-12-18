@@ -4,13 +4,8 @@
 
 #include "net/base/gzip_header.h"
 
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
-#include "third_party/zlib/zlib.h"  // for Z_DEFAULT_COMPRESSION
-#endif
-
 #include "base/logging.h"
+#include "third_party/zlib/zlib.h"
 
 namespace net {
 

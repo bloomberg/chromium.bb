@@ -9,19 +9,11 @@
 #include "base/string_util.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "third_party/libpng/png.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-
-extern "C" {
-#include "third_party/libpng/png.h"
-
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
-}
 
 namespace gfx {
 

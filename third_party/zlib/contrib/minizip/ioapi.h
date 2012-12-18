@@ -42,11 +42,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
 
 #if defined(USE_FILE32API)
 #define fopen64 fopen

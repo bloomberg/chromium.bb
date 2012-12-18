@@ -110,11 +110,7 @@
     include path.
  */
 //#define SK_ZLIB_INCLUDE <zlib.h>
-#if defined(USE_SYSTEM_ZLIB)
-#define SK_ZLIB_INCLUDE <zlib.h>
-#else
 #define SK_ZLIB_INCLUDE "third_party/zlib/zlib.h"
-#endif
 
 /*  Define this to allow PDF scalars above 32k.  The PDF/A spec doesn't allow
     them, but modern PDF interpreters should handle them just fine.

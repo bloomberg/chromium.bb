@@ -8,15 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" {
 #include "third_party/libpng/png.h"
-
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
-}
 
 namespace webkit_support {
 

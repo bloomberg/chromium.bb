@@ -13,12 +13,7 @@
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/crl_set.h"
-
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
 
 namespace net {
 

@@ -10,10 +10,13 @@
 
 {
   'variables': {
-    'shim_headers_path': '<(INTERMEDIATE_DIR)/shim_headers',
+    'shim_headers_path': '<(SHARED_INTERMEDIATE_DIR)/shim_headers/<(_target_name)',
   },
+  'include_dirs+++': [
+    '<(shim_headers_path)',
+  ],
   'direct_dependent_settings': {
-    'include_dirs+': [
+    'include_dirs++++': [
       '<(shim_headers_path)',
     ],
   },

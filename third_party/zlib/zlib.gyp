@@ -63,14 +63,20 @@
             }],
           ],
         }, {
+          'variables': {
+            'headers_root_path': '.',
+            'header_filenames': [
+              'zlib.h',
+            ],
+          },
+          'includes': [
+            '../../build/shim_headers.gypi',
+          ],
           'direct_dependent_settings': {
             'defines': [
               'USE_SYSTEM_ZLIB',
             ],
           },
-          'defines': [
-            'USE_SYSTEM_ZLIB',
-          ],
           'link_settings': {
             'libraries': [
               '-lz',
@@ -93,6 +99,9 @@
             'contrib/minizip/unzip.h',
             'contrib/minizip/zip.c',
             'contrib/minizip/zip.h',
+          ],
+          'dependencies': [
+            'zlib',
           ],
           'include_dirs': [
             '.',
