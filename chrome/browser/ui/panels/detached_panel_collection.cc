@@ -24,18 +24,9 @@ DetachedPanelCollection::~DetachedPanelCollection() {
   DCHECK(panels_.empty());
 }
 
-gfx::Rect DetachedPanelCollection::GetDisplayArea() const  {
-  return display_area_;
-}
-
-void DetachedPanelCollection::SetDisplayArea(const gfx::Rect& display_area) {
-  if (display_area_ == display_area)
-    return;
-  gfx::Rect old_display_area = display_area_;
-  display_area_ = display_area;
-
-  if (panels_.empty())
-    return;
+void DetachedPanelCollection::OnDisplayAreaChanged(
+    const gfx::Rect& old_display_area) {
+  const gfx::Rect display_area = panel_manager_->display_area();
 
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
@@ -46,16 +37,16 @@ void DetachedPanelCollection::SetDisplayArea(const gfx::Rect& display_area) {
       continue;
 
     // Update size if needed.
-    panel->LimitSizeToDisplayArea(display_area_);
+    panel->LimitSizeToDisplayArea(display_area);
 
     // Update bounds if needed.
     gfx::Rect bounds = panel->GetBounds();
     if (panel->full_size() != bounds.size()) {
       bounds.set_size(panel->full_size());
-      if (bounds.right() > display_area_.right())
-        bounds.set_x(display_area_.right() - bounds.width());
-      if (bounds.bottom() > display_area_.bottom())
-        bounds.set_y(display_area_.bottom() - bounds.height());
+      if (bounds.right() > display_area.right())
+        bounds.set_x(display_area.right() - bounds.width());
+      if (bounds.bottom() > display_area.bottom())
+        bounds.set_y(display_area.bottom() - bounds.height());
       panel->SetPanelBoundsInstantly(bounds);
     }
   }

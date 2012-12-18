@@ -29,11 +29,6 @@
 #endif
 
 namespace {
-// Width of spacing around panel collection and the left/right edges of the
-// screen.
-const int kPanelCollectionLeftMargin = 6;
-const int kPanelCollectionRightMargin = 24;
-
 // Maxmium width of a panel is based on a factor of the working area.
 #if defined(OS_CHROMEOS)
 // ChromeOS device screens are relatively small and limiting the width
@@ -129,15 +124,11 @@ gfx::Point PanelManager::GetDefaultDetachedPanelOrigin() {
 void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
   if (display_area == display_area_)
     return;
+  gfx::Rect old_display_area = display_area_;
   display_area_ = display_area;
 
-  gfx::Rect dock_bounds = display_area;
-  dock_bounds.set_x(display_area.x() + kPanelCollectionLeftMargin);
-  dock_bounds.set_width(display_area.width() -
-      kPanelCollectionLeftMargin - kPanelCollectionRightMargin);
-  docked_collection_->SetDisplayArea(dock_bounds);
-
-  detached_collection_->SetDisplayArea(display_area);
+  docked_collection_->OnDisplayAreaChanged(old_display_area);
+  detached_collection_->OnDisplayAreaChanged(old_display_area);
 }
 
 void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {

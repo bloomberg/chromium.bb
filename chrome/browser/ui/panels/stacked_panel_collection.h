@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
-#define CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
+#ifndef CHROME_BROWSER_UI_PANELS_STACKED_PANEL_COLLECTION_H_
+#define CHROME_BROWSER_UI_PANELS_STACKED_PANEL_COLLECTION_H_
 
-#include <set>
+#include <list>
+#include <vector>
 #include "base/basictypes.h"
-#include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
 class PanelManager;
 
-// This class manages a group of free-floating panels.
-class DetachedPanelCollection : public PanelCollection {
+class StackedPanelCollection : public PanelCollection {
  public:
-  typedef std::set<Panel*> Panels;
+  typedef std::list<Panel*> Panels;
 
-  explicit DetachedPanelCollection(PanelManager* panel_manager);
-  virtual ~DetachedPanelCollection();
+  explicit StackedPanelCollection(PanelManager* panel_manager);
+  virtual ~StackedPanelCollection();
 
   // PanelCollection OVERRIDES:
   virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) OVERRIDE;
@@ -59,40 +57,21 @@ class DetachedPanelCollection : public PanelCollection {
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
+  Panel* GetPanelAbove(Panel* panel) const;
   bool HasPanel(Panel* panel) const;
 
+  bool empty() const { return panels_.empty(); }
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
-
-  // Returns default top-left to use for a detached panel whose position is
-  // not specified during panel creation.
-  gfx::Point GetDefaultPanelOrigin();
+  Panel* top_panel() const { return panels_.front(); }
+  Panel* bottom_panel() const { return panels_.back(); }
 
  private:
-  // Offset the default panel top-left position by kPanelTilePixels. Wrap
-  // around to initial position if position goes beyond display area.
-  void ComputeNextDefaultPanelOrigin();
-
-  struct PanelPlacement {
-    Panel* panel;
-    gfx::Point position;
-
-    PanelPlacement() : panel(NULL) { }
-  };
-
   PanelManager* panel_manager_;  // Weak, owns us.
 
-  // Collection of all panels.
-  Panels panels_;
+  Panels panels_;  // The top panel is in the front of the list.
 
-  // Used to save the placement information for a panel.
-  PanelPlacement saved_panel_placement_;
-
-  // Default top-left position to use for next detached panel if position is
-  // unspecified by panel creator.
-  gfx::Point default_panel_origin_;
-
-  DISALLOW_COPY_AND_ASSIGN(DetachedPanelCollection);
+  DISALLOW_COPY_AND_ASSIGN(StackedPanelCollection);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
+#endif  // CHROME_BROWSER_UI_PANELS_STACKED_PANEL_COLLECTION_H_

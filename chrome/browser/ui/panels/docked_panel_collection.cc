@@ -20,6 +20,11 @@
 #include "content/public/browser/notification_source.h"
 
 namespace {
+// Width of spacing around panel collection and the left/right edges of the
+// screen.
+const int kPanelCollectionLeftMargin = 6;
+const int kPanelCollectionRightMargin = 24;
+
 // Occasionally some system, like Windows, might not bring up or down the bottom
 // bar when the mouse enters or leaves the bottom screen area. This is the
 // maximum time we will wait for the bottom bar visibility change notification.
@@ -62,16 +67,12 @@ DockedPanelCollection::~DockedPanelCollection() {
   panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
 
-gfx::Rect DockedPanelCollection::GetDisplayArea() const  {
-  return display_area_;
-}
-
-void DockedPanelCollection::SetDisplayArea(const gfx::Rect& display_area) {
-  if (display_area_ == display_area)
-    return;
-
-  gfx::Rect old_area = display_area_;
-  display_area_ = display_area;
+void DockedPanelCollection::OnDisplayAreaChanged(
+    const gfx::Rect& old_display_area) {
+  display_area_ = panel_manager_->display_area();
+  display_area_.set_x(display_area_.x() + kPanelCollectionLeftMargin);
+  display_area_.set_width(display_area_.width() -
+      kPanelCollectionLeftMargin - kPanelCollectionRightMargin);
 
   if (panels_.empty())
     return;

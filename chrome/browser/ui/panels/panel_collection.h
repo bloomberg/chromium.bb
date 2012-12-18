@@ -19,6 +19,7 @@ class PanelCollection {
   enum Type {
     DETACHED,  // free-floating panels
     DOCKED,    // panels are 'docked' along the window's edge
+    STACKED,   // panels are stacked together
   };
 
   // Masks that control how the panel is added and positioned.
@@ -38,10 +39,8 @@ class PanelCollection {
 
   Type type() const { return type_; }
 
-  // Gets/Sets the bounds of the panel collection.
-  // |display_area| is in screen coordinates.
-  virtual gfx::Rect GetDisplayArea() const = 0;
-  virtual void SetDisplayArea(const gfx::Rect& display_area) = 0;
+  // Called when the display area is changed.
+  virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) = 0;
 
   // Updates the positioning of all panels in the collection, usually as
   // a result of removing or resizing a panel in collection.

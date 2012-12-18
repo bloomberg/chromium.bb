@@ -1168,6 +1168,8 @@
         'browser/ui/panels/panel_mouse_watcher.h',
         'browser/ui/panels/panel_mouse_watcher_observer.h',
         'browser/ui/panels/panel_mouse_watcher_timer.cc',
+        'browser/ui/panels/stacked_panel_collection.cc',
+        'browser/ui/panels/stacked_panel_collection.h',
         'browser/ui/panels/taskbar_window_thumbnailer_win.cc',
         'browser/ui/panels/taskbar_window_thumbnailer_win.h',
         'browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h',

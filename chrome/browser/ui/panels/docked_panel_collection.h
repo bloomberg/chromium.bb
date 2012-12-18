@@ -30,8 +30,7 @@ class DockedPanelCollection :
   virtual ~DockedPanelCollection();
 
   // PanelCollection OVERRIDES:
-  virtual gfx::Rect GetDisplayArea() const OVERRIDE;
-  virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
+  virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) OVERRIDE;
 
   // Rearranges the positions of the panels in the collection
   // and reduces their width when there is not enough room.
