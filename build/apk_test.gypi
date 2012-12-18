@@ -48,6 +48,8 @@
               '--app_abi',
               '<(android_app_abi)',
               '--ant-args',
+              '-quiet',
+              '--ant-args',
               '-DPRODUCT_DIR=<(ant_build_out)',
               '--ant-args',
               '-DANDROID_SDK=<(android_sdk)',

@@ -60,7 +60,7 @@ class NativeTestApkGenerator(object):
     self._root_name = None
     if self._native_library:
       self._root_name = self._LibraryRoot()
-    logging.warn('root name: %s', self._root_name)
+    logging.info('root name: %s', self._root_name)
 
   def _LibraryRoot(self):
     """Return a root name for a shared library.
@@ -88,7 +88,7 @@ class NativeTestApkGenerator(object):
       os.makedirs(destdir)
     elif not '/out/' in destdir:
       raise Exception('Unbelievable output directory; bailing for safety')
-    logging.warning('rsync %s --> %s', self._SOURCE_FILES, destdir)
+    logging.info('rsync %s --> %s', self._SOURCE_FILES, destdir)
     logging.info(cmd_helper.GetCmdOutput(
         ['rsync', '-aRv', '--delete', '--exclude', '.svn'] +
         self._SOURCE_FILES + [destdir], cwd=srcdir))
@@ -100,7 +100,7 @@ class NativeTestApkGenerator(object):
     """
     if not self._root_name:
       return
-    logging.warn('Replacing "replaceme" with ' + self._root_name)
+    logging.info('Replacing "replaceme" with ' + self._root_name)
     for f in self._REPLACEME_FILES:
       dest = os.path.join(self._output_directory, f)
       contents = open(dest).read()
@@ -115,7 +115,7 @@ class NativeTestApkGenerator(object):
       if not os.path.exists(destdir):
         os.makedirs(destdir)
       dest = os.path.join(destdir, os.path.basename(self._native_library))
-      logging.warn('strip %s --> %s', self._native_library, dest)
+      logging.info('strip %s --> %s', self._native_library, dest)
       cmd_helper.RunCmd(
           [self._strip_binary, '--strip-unneeded', self._native_library, '-o',
            dest])
@@ -138,10 +138,10 @@ class NativeTestApkGenerator(object):
     cmd.append("-DAPP_ABI=" + self._target_abi)
     cmd.extend(['-buildfile',
                 os.path.join(self._output_directory, 'native_test_apk.xml')])
-    logging.warn(cmd)
+    logging.info(cmd)
     p = subprocess.Popen(cmd, stderr=subprocess.STDOUT)
     (stdout, _) = p.communicate()
-    logging.warn(stdout)
+    logging.info(stdout)
     if p.returncode != 0:
       logging.error('Ant return code %d', p.returncode)
       sys.exit(p.returncode)
@@ -195,7 +195,7 @@ def main(argv):
                                 target_abi=options.app_abi)
   ntag.CreateBundle()
   ntag.Compile(options.ant_args)
-  logging.warn('COMPLETE.')
+  logging.info('COMPLETE.')
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

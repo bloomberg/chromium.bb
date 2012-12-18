@@ -74,7 +74,6 @@ found in the LICENSE file.
         <equals arg1="${build.target}" arg2="debug" />
       </condition>
       <then>
-        <echo message="Copying gdbserver to the apk to enable native debugging"/>
         <copy todir="${out.dir}/libs/${target.abi}">
           <path refid="native.libs.gdbserver"/>
         </copy>

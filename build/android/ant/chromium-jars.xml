@@ -68,11 +68,6 @@
       </condition>
     </fail>
 
-    <echo>
-      Compiling ${javac.srcdir}, classpath: ${toString:javac.custom.classpath}
-      ${javac_includes_message}
-    </echo>
-
     <javac
         srcdir="${javac.srcdir}"
         destdir="${dest.dir}"

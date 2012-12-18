@@ -108,8 +108,6 @@
       -->
       <if condition="${project.is.testapp}">
         <then>
-          <echo level="info">Creating test jar file:
-              ${ant.project.name}.jar</echo>
           <property-location name="create.test.jar.file"
               location="${CHROMIUM_SRC}/build/android/ant/create-test-jar.js"/>
           <script language="javascript" src="${create.test.jar.file}"/>
@@ -185,7 +183,6 @@
         </and>
       </condition>
       <then>
-        <echo message="Copying gdbserver to the apk to enable native debugging"/>
         <copy todir="${out.dir}/libs/${target.abi}">
           <path refid="native.libs.gdbserver"/>
         </copy>

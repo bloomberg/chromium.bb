@@ -15,5 +15,5 @@ ANDROID_STRIP=$1
 LIBRARY=$2
 STRIPPED=$3
 
-set -ex
+set -e
 $ANDROID_STRIP --strip-unneeded $LIBRARY -o $STRIPPED

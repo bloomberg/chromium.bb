@@ -145,7 +145,7 @@
         '<(PRODUCT_DIR)/apks/<(apk_name).apk',
       ],
       'action': [
-        'ant',
+        'ant', '-quiet',
         '-DAPP_ABI=<(android_app_abi)',
         '-DANDROID_GDBSERVER=<(android_gdbserver)',
         '-DANDROID_SDK=<(android_sdk)',

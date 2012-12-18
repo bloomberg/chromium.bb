@@ -129,7 +129,7 @@
         '<(PRODUCT_DIR)/lib.java/chromium_<(package_name).jar',
       ],
       'action': [
-        'ant',
+        'ant', '-quiet',
         '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
         '-DANDROID_SDK=<(android_sdk)',
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
