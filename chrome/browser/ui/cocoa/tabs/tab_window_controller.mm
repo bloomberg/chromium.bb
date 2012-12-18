@@ -49,6 +49,7 @@
       [[FramedBrowserWindow alloc] initWithContentRect:contentRect
                                            hasTabStrip:hasTabStrip]);
   [window setReleasedWhenClosed:YES];
+  [window setAutorecalculatesKeyViewLoop:YES];
 
   if ((self = [super initWithWindow:window])) {
     [[self window] setDelegate:self];
