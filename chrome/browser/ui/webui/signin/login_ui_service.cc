@@ -40,20 +40,6 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLoginUIClosed(ui));
 }
 
-void LoginUIService::ShowLoginUI(Browser* browser) {
-  if (ui_) {
-    // We already have active login UI - make it visible.
-    ui_->FocusUI();
-    return;
-  }
-
-  // Need to navigate to the settings page and display the UI.
-  chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
-}
-
-// TODO(petewil) This is very similar to ShowLoginUI -
-// can we merge the two into one function?  We should wait until
-// the design of the login experience is done before we merge them.
 void LoginUIService::ShowLoginPopup() {
   if (current_login_ui()) {
     current_login_ui()->FocusUI();

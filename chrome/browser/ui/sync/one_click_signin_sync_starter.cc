@@ -11,8 +11,10 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/url_constants.h"
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     Browser* browser,
@@ -66,14 +68,21 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       profile_sync_service->SetSyncSetupCompleted();
       profile_sync_service->SetSetupInProgress(false);
       break;
-    case CONFIGURE_SYNC_FIRST:
+    case CONFIGURE_SYNC_FIRST: {
       // Give the user a chance to configure things. We don't clear the
       // ProfileSyncService::setup_in_progress flag because we don't want sync
       // to start up until after the configure UI is displayed (the configure UI
       // will clear the flag when the user is done setting up sync).
-      LoginUIServiceFactory::GetForProfile(browser_->profile())->ShowLoginUI(
-          browser_);
+      LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(
+          browser_->profile());
+      if (login_ui->current_login_ui()) {
+        login_ui->current_login_ui()->FocusUI();
+      } else {
+        // Need to navigate to the settings page and display the UI.
+        chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+      }
       break;
+    }
     default:
       NOTREACHED() << "Invalid start_mode=" << start_mode_;
   }

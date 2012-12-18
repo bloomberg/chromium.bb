@@ -209,7 +209,12 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
                                                                source,
                                                                false)));
     } else {
-      login->ShowLoginUI(browser);
+      if (login->current_login_ui()) {
+        login->current_login_ui()->FocusUI();
+      } else {
+        // Need to navigate to the settings page and display the UI.
+        chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
+      }
     }
 
     DCHECK_GT(browser->tab_count(), 0);

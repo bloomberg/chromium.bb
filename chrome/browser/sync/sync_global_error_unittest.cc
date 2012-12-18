@@ -39,14 +39,31 @@ class BrowserMock: public Browser {
 };
 #endif
 
-class LoginUIServiceMock: public LoginUIService {
+class FakeLoginUIService: public LoginUIService {
  public:
-  explicit LoginUIServiceMock() : LoginUIService(NULL) {}
-  MOCK_METHOD1(ShowLoginUI, void(Browser*));
+  FakeLoginUIService() : LoginUIService(NULL) {}
+};
+
+class FakeLoginUI : public LoginUIService::LoginUI {
+ public:
+  FakeLoginUI() : focus_ui_call_count_(0) {}
+
+  virtual ~FakeLoginUI() {}
+
+  int focus_ui_call_count() const { return focus_ui_call_count_; }
+
+ private:
+  // Overridden from LoginUIService::LoginUI:
+  virtual void FocusUI() OVERRIDE {
+    ++focus_ui_call_count_;
+  }
+  virtual void CloseUI() OVERRIDE {}
+
+  int focus_ui_call_count_;
 };
 
 ProfileKeyedService* BuildMockLoginUIService(Profile* profile) {
-  return new LoginUIServiceMock();
+  return new FakeLoginUIService();
 }
 
 // Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to
@@ -79,7 +96,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
 // Utility function to test that SyncGlobalError behaves correct for the given
 // error condition.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
-                                 LoginUIServiceMock* login_ui_service,
+                                 FakeLoginUIService* login_ui_service,
                                  Browser* browser,
                                  SyncGlobalError* error,
                                  GoogleServiceAuthError::State error_state,
@@ -127,9 +144,10 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 #else
   // Test message handler.
   if (is_error) {
-    EXPECT_CALL(*login_ui_service, ShowLoginUI(browser));
+    FakeLoginUI* login_ui = static_cast<FakeLoginUI*>(
+        login_ui_service->current_login_ui());
     error->ExecuteMenuItem(browser);
-    EXPECT_CALL(*login_ui_service, ShowLoginUI(browser));
+    ASSERT_GT(login_ui->focus_ui_call_count(), 0);
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }
@@ -145,9 +163,11 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
-  LoginUIServiceMock* login_ui_service = static_cast<LoginUIServiceMock*>(
+  FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile.get(), BuildMockLoginUIService));
+  FakeLoginUI login_ui;
+  login_ui_service->SetLoginUI(&login_ui);
   SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;
@@ -171,9 +191,11 @@ TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
-  LoginUIServiceMock* login_ui_service = static_cast<LoginUIServiceMock*>(
+  FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile.get(), BuildMockLoginUIService));
+  FakeLoginUI login_ui;
+  login_ui_service->SetLoginUI(&login_ui);
   SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;

@@ -65,11 +65,6 @@ class LoginUIService : public ProfileKeyedService {
   // sets current_login_ui() to null.
   void LoginUIClosed(LoginUI* ui);
 
-  // Brings the login UI to the foreground, or if there is no login UI,
-  // navigates to the login UI page in the given browser.
-  // Virtual for mocking purposes.
-  virtual void ShowLoginUI(Browser* browser);
-
   // Delegate to an existing login dialog if one exists.
   // If not, we make a new popup dialog window, and set it to
   // chrome://signin to ask the user to sign in to chrome.
