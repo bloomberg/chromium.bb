@@ -177,7 +177,7 @@ DownloadPnaclToolchains() {
   local label=$2
   local tarball=$3
 
-  DownloadComponent toolchain/${rev}/naclsdk_${label}.tgz ${tarball}
+  DownloadArchive toolchain/${rev}/naclsdk_${label}.tgz ${tarball}
 }
 
 ShowRecentPnaclToolchains() {
