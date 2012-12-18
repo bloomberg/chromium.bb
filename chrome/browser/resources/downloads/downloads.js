@@ -23,18 +23,6 @@ function showInlineBlock(node, isShow) {
 }
 
 /**
- * Creates an element of a specified type with a specified class name.
- * @param {string} type The node type.
- * @param {string} className The class name to use.
- * @return {Element} The created element.
- */
-function createElementWithClassName(type, className) {
-  var elm = document.createElement(type);
-  elm.className = className;
-  return elm;
-}
-
-/**
  * Creates a link with a specified onclick handler and content.
  * @param {function()} onclick The onclick handler.
  * @param {string} value The link text.

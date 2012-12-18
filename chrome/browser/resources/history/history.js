@@ -12,12 +12,6 @@
 // measured in milliseconds.
 /** @const */ var BROWSING_GAP_TIME = 15 * 60 * 1000;
 
-function createElementWithClassName(type, className) {
-  var elm = document.createElement(type);
-  elm.className = className;
-  return elm;
-}
-
 // TODO(glen): Get rid of these global references, replace with a controller
 //     or just make the classes own more of the page.
 var historyModel;

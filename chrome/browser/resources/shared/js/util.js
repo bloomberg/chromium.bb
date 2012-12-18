@@ -238,3 +238,15 @@ function getFaviconURL(url, opt_size) {
   return 'chrome://favicon/size/' + size + '@' +
       window.devicePixelRatio + 'x/' + url;
 }
+
+/**
+ * Creates an element of a specified type with a specified class name.
+ * @param {string} type The node type.
+ * @param {string} className The class name to use.
+ * @return {Element} The created element.
+ */
+function createElementWithClassName(type, className) {
+  var elm = document.createElement(type);
+  elm.className = className;
+  return elm;
+}
