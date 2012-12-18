@@ -336,32 +336,6 @@ TEST_F(SafeBrowsingProtocolManagerTest, ProblemAccessingDatabase) {
   runner->RunTasks();
 }
 
-// Tests the contents of the POST body when the local database is empty.
-TEST_F(SafeBrowsingProtocolManagerTest, EmptyDatabase) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
-  base::ThreadTaskRunnerHandle runner_handler(runner);
-  net::TestURLFetcherFactory url_fetcher_factory;
-
-  testing::StrictMock<MockProtocolDelegate> test_delegate;
-  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
-  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
-      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
-                                    std::vector<SBListChunkRanges>(),
-                                    false)));
-
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
-      CreateProtocolManager(&test_delegate));
-
-  // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
-
-  // We should have an URLFetcher at this point in time.
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
-  ValidateUpdateFetcherRequest(url_fetcher);
-}
-
 // Tests the contents of the POST body when there are contents in the
 // local database. This is not exhaustive, as the actual list formatting
 // is covered by SafeBrowsingProtocolManagerTest.TestChunkStrings.
