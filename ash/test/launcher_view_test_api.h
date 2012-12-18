@@ -42,6 +42,9 @@ class LauncherViewTestAPI {
   // Returns true if overflow button is visible.
   bool IsOverflowButtonVisible();
 
+  // Makes launcher view show its overflow bubble.
+  void ShowOverflowBubble();
+
   // Sets animation duration in milliseconds for test.
   void SetAnimationDuration(int duration_ms);
 

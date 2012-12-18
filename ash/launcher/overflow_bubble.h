@@ -22,7 +22,7 @@ namespace internal {
 
 class LauncherView;
 
-// OverflowBubble displays an overflow bubble.
+// OverflowBubble displays the overflown launcher items in a bubble.
 class OverflowBubble : public views::WidgetObserver {
  public:
   OverflowBubble();

@@ -90,7 +90,7 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
   TestLauncherIconObserver* observer() { return observer_.get(); }
 
-  LauncherViewTestAPI* launcher_vew_test() {
+  LauncherViewTestAPI* launcher_view_test() {
     return launcher_view_test_.get();
   }
 
@@ -113,13 +113,13 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   launcher_delegate->AddLauncherItem(widget->GetNativeWindow());
-  launcher_vew_test()->RunMessageLoopUntilAnimationsDone();
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 
   widget->Show();
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
-  launcher_vew_test()->RunMessageLoopUntilAnimationsDone();
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 }

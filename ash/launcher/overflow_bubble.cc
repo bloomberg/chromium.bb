@@ -101,23 +101,29 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
                                             LauncherModel* model,
                                             views::View* anchor,
                                             int overflow_start_index) {
-  // Makes bubble view has a layer and clip its children layers.
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->SetMasksToBounds(true);
-  launcher_view_ = new LauncherView(model, delegate, NULL);
-  launcher_view_->set_first_visible_index(overflow_start_index);
-  launcher_view_->set_leading_inset(kLauncherViewLeadingInset);
-  launcher_view_->Init();
-  launcher_view_->OnShelfAlignmentChanged();
-  AddChildView(launcher_view_);
-
+  // set_anchor_view needs to be called before GetShelfLayoutManagerForLauncher
+  // can be called.
   set_anchor_view(anchor);
   set_arrow_location(GetBubbleArrowLocation());
   set_background(NULL);
   set_color(SkColorSetARGB(kLauncherBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   set_move_with_anchor(true);
+
+  // Makes bubble view has a layer and clip its children layers.
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  layer()->SetMasksToBounds(true);
+
+  launcher_view_ = new LauncherView(model,
+                                    delegate,
+                                    GetShelfLayoutManagerForLauncher());
+  launcher_view_->set_first_visible_index(overflow_start_index);
+  launcher_view_->set_leading_inset(kLauncherViewLeadingInset);
+  launcher_view_->Init();
+  launcher_view_->OnShelfAlignmentChanged();
+  AddChildView(launcher_view_);
+
   views::BubbleDelegateView::CreateBubble(this);
 }
 
