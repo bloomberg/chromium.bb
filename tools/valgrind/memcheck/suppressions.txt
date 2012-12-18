@@ -6429,3 +6429,10 @@
    fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
+{
+   bug_166584
+   Memcheck:Uninitialized
+   fun:_ZN7testing8internal11CmpHelperEQIjjEENS_15AssertionResultEPKcS4_RKT_RKT0_
+   fun:_ZN7testing8internal8EqHelperILb0EE7CompareIjjEENS_15AssertionResultEPKcS6_RKT_RKT0_
+   fun:_ZN39SkBitmapOperationsTest_RotateImage_Test8TestBodyEv
+}
