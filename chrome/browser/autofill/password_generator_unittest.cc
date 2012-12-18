@@ -43,7 +43,7 @@ TEST(PasswordGeneratorTest, PasswordPattern) {
   EXPECT_GT(num_upper_case_letters, 0);
   EXPECT_GT(num_lower_case_letters, 0);
   EXPECT_GT(num_digits, 0);
-  EXPECT_GT(num_other_symbols, 0);
+  EXPECT_EQ(num_other_symbols, 1);
 }
 
 TEST(PasswordGeneratorTest, Printable) {

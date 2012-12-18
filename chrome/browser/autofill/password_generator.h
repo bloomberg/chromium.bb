@@ -26,9 +26,10 @@ class PasswordGenerator {
   // (1) Each character is guaranteed to be a non-whitespace printable ASCII
   //     character.
   // (2) The generated password will contain AT LEAST one upper case letter, one
-  //     lower case letter, one digit, and one other symbol.
+  //     lower case letter, one digit, and EXACTLY one other symbol.
   // (3) The password length will be equal to |password_length_| (see comment
   //     for the constructor).
+  // Not thread safe.
   std::string Generate() const;
 
  private:

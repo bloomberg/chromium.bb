@@ -11,8 +11,6 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 
-const int kMinChar = 33;   // First printable character '!'
-const int kMaxChar = 126;  // Last printable character '~'
 const int kMinUpper = 65;  // First upper case letter 'A'
 const int kMaxUpper = 90;  // Last upper case letter 'Z'
 const int kMinLower = 97;  // First lower case letter 'a'
@@ -38,6 +36,15 @@ size_t GetLengthFromHint(size_t max_length, size_t default_length) {
     return max_length;
   else
     return default_length;
+}
+
+void InitializeAlphaNumericCharacters(std::vector<char>* characters) {
+  for (int i = kMinDigit; i <= kMaxDigit; ++i)
+    characters->push_back(static_cast<char>(i));
+  for (int i = kMinUpper; i <= kMaxUpper; ++i)
+    characters->push_back(static_cast<char>(i));
+  for (int i = kMinLower; i <= kMaxLower; ++i)
+    characters->push_back(static_cast<char>(i));
 }
 
 // Classic algorithm to randomly select |num_select| elements out of
@@ -74,6 +81,10 @@ PasswordGenerator::~PasswordGenerator() {}
 
 std::string PasswordGenerator::Generate() const {
   std::string ret;
+  CR_DEFINE_STATIC_LOCAL(std::vector<char>, alphanumeric_characters, ());
+  if (alphanumeric_characters.empty())
+    InitializeAlphaNumericCharacters(&alphanumeric_characters);
+
   // First, randomly select 4 positions to hold one upper case letter,
   // one lower case letter, one digit, and one other symbol respectively,
   // to make sure at least one of each category of characters will be
@@ -101,8 +112,11 @@ std::string PasswordGenerator::Generate() const {
       ret.push_back(
           kOtherSymbols[base::RandInt(0, arraysize(kOtherSymbols) - 1)]);
     } else {
-      // Generate random character from all categories.
-      ret.push_back(static_cast<char>(base::RandInt(kMinChar, kMaxChar)));
+      // Generate random alphanumeric character. We don't use other symbols
+      // here as most sites don't allow a lot of non-alphanumeric characters.
+      ret.push_back(
+          alphanumeric_characters.at(
+              base::RandInt(0, alphanumeric_characters.size() - 1)));
     }
   }
   return ret;
