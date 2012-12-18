@@ -19,6 +19,14 @@ class SkBitmap;
 
 class UI_EXPORT SkBitmapOperations {
  public:
+  // Enum for use in rotating images (must be in 90 degree increments),
+  // see: Rotate.
+  enum RotationAmount {
+    ROTATION_90_CW,
+    ROTATION_180_CW,
+    ROTATION_270_CW,
+  };
+
   // Create a bitmap that is an inverted image of the passed in image.
   // Each color becomes its inverse in the color wheel. So (255, 15, 0) becomes
   // (0, 240, 255). The alpha value is not inverted.
@@ -108,6 +116,9 @@ class UI_EXPORT SkBitmapOperations {
   // kARGB_8888_Config config.
   static SkBitmap CreateDropShadow(const SkBitmap& bitmap,
                                    const gfx::ShadowValues& shadows);
+
+  // Rotates the given source bitmap clockwise by the requested amount.
+  static SkBitmap Rotate(const SkBitmap& source, RotationAmount rotation);
 
  private:
   SkBitmapOperations();  // Class for scoping only.

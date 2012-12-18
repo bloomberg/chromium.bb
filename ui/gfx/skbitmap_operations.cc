@@ -811,3 +811,40 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
   canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0));
   return image_with_shadow;
 }
+
+// static
+SkBitmap SkBitmapOperations::Rotate(const SkBitmap& source,
+                                    RotationAmount rotation) {
+  SkBitmap result;
+  SkScalar angle = SkFloatToScalar(0.0f);
+
+  switch (rotation) {
+   case ROTATION_90_CW:
+     angle = SkFloatToScalar(-90.0f);
+     result.setConfig(
+         SkBitmap::kARGB_8888_Config, source.height(), source.width());
+     break;
+   case ROTATION_180_CW:
+     angle = SkFloatToScalar(-180.0f);
+     result.setConfig(
+         SkBitmap::kARGB_8888_Config, source.width(), source.height());
+     break;
+   case ROTATION_270_CW:
+     angle = SkFloatToScalar(-270.0f);
+     result.setConfig(
+         SkBitmap::kARGB_8888_Config, source.height(), source.width());
+     break;
+  }
+  result.allocPixels();
+  SkCanvas canvas(result);
+
+  canvas.translate(SkFloatToScalar(result.width() * 0.5f),
+                   SkFloatToScalar(result.height() * 0.5f));
+  canvas.rotate(angle);
+  canvas.translate(-SkFloatToScalar(source.width() * 0.5f),
+                   -SkFloatToScalar(source.height() * 0.5f));
+  canvas.drawBitmap(source, 0, 0);
+  canvas.flush();
+
+  return result;
+}

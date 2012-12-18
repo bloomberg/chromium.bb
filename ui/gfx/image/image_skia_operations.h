@@ -10,6 +10,7 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace gfx {
 class ImageSkia;
@@ -86,6 +87,12 @@ class UI_EXPORT ImageSkiaOperations {
   // Creates an image with drop shadow defined in |shadows| for |source|.
   static ImageSkia CreateImageWithDropShadow(const ImageSkia& source,
                                              const ShadowValues& shadows);
+
+  // Creates an image which is a rotation of the |source|. |rotation| is the
+  // amount of clockwise rotation in degrees.
+  static ImageSkia CreateRotatedImage(
+      const ImageSkia& source,
+      SkBitmapOperations::RotationAmount rotation);
 
  private:
   ImageSkiaOperations();  // Class for scoping only.

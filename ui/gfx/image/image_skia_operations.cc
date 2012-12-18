@@ -364,14 +364,14 @@ class DropShadowSource : public ImageSkiaSource {
     const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
 
     const float scale = image_rep.GetScale();
-    ShadowValues shaodws_in_pixel;
+    ShadowValues shadows_in_pixel;
     for (size_t i = 0; i < shaodws_in_dip_.size(); ++i)
-      shaodws_in_pixel.push_back(shaodws_in_dip_[i].Scale(scale));
+      shadows_in_pixel.push_back(shaodws_in_dip_[i].Scale(scale));
 
-    const SkBitmap shaodw_bitmap = SkBitmapOperations::CreateDropShadow(
+    const SkBitmap shadow_bitmap = SkBitmapOperations::CreateDropShadow(
         image_rep.sk_bitmap(),
-        shaodws_in_pixel);
-    return ImageSkiaRep(shaodw_bitmap, image_rep.scale_factor());
+        shadows_in_pixel);
+    return ImageSkiaRep(shadow_bitmap, image_rep.scale_factor());
   }
 
  private:
@@ -380,6 +380,33 @@ class DropShadowSource : public ImageSkiaSource {
 
   DISALLOW_COPY_AND_ASSIGN(DropShadowSource);
 };
+
+// RotatedSource generates image reps that are rotations of those in
+// |source| that represent requested scale factors.
+class RotatedSource : public ImageSkiaSource {
+ public:
+  RotatedSource(const ImageSkia& source,
+                SkBitmapOperations::RotationAmount rotation)
+    : source_(source),
+      rotation_(rotation) {
+  }
+  virtual ~RotatedSource() {}
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
+    const SkBitmap rotated_bitmap =
+        SkBitmapOperations::Rotate(image_rep.sk_bitmap(), rotation_);
+    return ImageSkiaRep(rotated_bitmap, image_rep.scale_factor());
+  }
+
+ private:
+  const ImageSkia source_;
+  const SkBitmapOperations::RotationAmount rotation_;
+
+  DISALLOW_COPY_AND_ASSIGN(RotatedSource);
+};
+
 
 }  // namespace
 
@@ -462,6 +489,17 @@ ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
   shadow_image_size.Enlarge(shadow_padding.width(),
                             shadow_padding.height());
   return ImageSkia(new DropShadowSource(source, shadows), shadow_image_size);
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateRotatedImage(
+      const ImageSkia& source,
+      SkBitmapOperations::RotationAmount rotation) {
+  return ImageSkia(new RotatedSource(source, rotation),
+      SkBitmapOperations::ROTATION_180_CW == rotation ?
+          source.size() :
+          gfx::Size(source.height(), source.width()));
+
 }
 
 }  // namespace gfx

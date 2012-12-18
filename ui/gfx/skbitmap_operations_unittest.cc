@@ -6,7 +6,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 namespace {
@@ -514,6 +517,65 @@ TEST(SkBitmapOperationsTest, CreateTransposedBitmap) {
   for (int x = 0; x < input.width(); ++x) {
     for (int y = 0; y < input.height(); ++y) {
       EXPECT_EQ(*input.getAddr32(x, y), *result.getAddr32(y, x));
+    }
+  }
+}
+
+// Check that Rotate provides the desired results
+TEST(SkBitmapOperationsTest, RotateImage) {
+  const int src_w = 6, src_h = 4;
+  SkBitmap src;
+  // Create a simple 4 color bitmap:
+  // RRRBBB
+  // RRRBBB
+  // GGGYYY
+  // GGGYYY
+  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
+  src.allocPixels();
+
+  SkCanvas canvas(src);
+  SkRegion region;
+
+  region.setRect(0, 0, src_w / 2, src_h / 2);
+  canvas.setClipRegion(region);
+  canvas.drawColor(SK_ColorRED, SkXfermode::kSrc_Mode);
+  region.setRect(src_w / 2, 0, src_w, src_h / 2);
+  canvas.setClipRegion(region);
+  canvas.drawColor(SK_ColorBLUE, SkXfermode::kSrc_Mode);
+  region.setRect(0, src_h / 2, src_w / 2, src_h);
+  canvas.setClipRegion(region);
+  canvas.drawColor(SK_ColorGREEN, SkXfermode::kSrc_Mode);
+  region.setRect(src_w / 2, src_h / 2, src_w, src_h);
+  canvas.setClipRegion(region);
+  canvas.drawColor(SK_ColorYELLOW, SkXfermode::kSrc_Mode);
+  canvas.flush();
+
+  SkBitmap rotate90, rotate180, rotate270;
+  rotate90 = SkBitmapOperations::Rotate(src,
+                                        SkBitmapOperations::ROTATION_90_CW);
+  rotate180 = SkBitmapOperations::Rotate(src,
+                                         SkBitmapOperations::ROTATION_180_CW);
+  rotate270 = SkBitmapOperations::Rotate(src,
+                                         SkBitmapOperations::ROTATION_270_CW);
+
+  ASSERT_EQ(rotate90.width(), src.height());
+  ASSERT_EQ(rotate90.height(), src.width());
+  ASSERT_EQ(rotate180.width(), src.width());
+  ASSERT_EQ(rotate180.height(), src.height());
+  ASSERT_EQ(rotate270.width(), src.height());
+  ASSERT_EQ(rotate270.height(), src.width());
+
+  SkAutoLockPixels lock_src(src);
+  SkAutoLockPixels lock_90(rotate90);
+  SkAutoLockPixels lock_180(rotate180);
+  SkAutoLockPixels lock_270(rotate270);
+
+  for (int x=0; x < src_w; ++x) {
+    for (int y=0; y < src_h; ++y) {
+      ASSERT_EQ(*src.getAddr32(x,y), *rotate90.getAddr32(y, src_w - (x+1)));
+      ASSERT_EQ(*src.getAddr32(x,y), *rotate270.getAddr32(src_h - (y+1),x));
+      ASSERT_EQ(*src.getAddr32(x,y),
+                *rotate180.getAddr32(src_w - (x+1), src_h - (y+1)));
     }
   }
 }
