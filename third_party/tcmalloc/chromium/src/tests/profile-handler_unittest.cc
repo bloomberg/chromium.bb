@@ -58,7 +58,6 @@ class Thread {
   static void* DoRun(void* cls) {
     ProfileHandlerRegisterThread();
     reinterpret_cast<Thread*>(cls)->Run();
-    ProfileHandlerUnregisterThread();
     return NULL;
   }
   pthread_t thread_;

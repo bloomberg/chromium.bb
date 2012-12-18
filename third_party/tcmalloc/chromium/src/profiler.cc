@@ -290,10 +290,6 @@ extern "C" PERFTOOLS_DLL_DECL void ProfilerRegisterThread() {
   ProfileHandlerRegisterThread();
 }
 
-extern "C" PERFTOOLS_DLL_DECL void ProfilerUnregisterThread() {
-  ProfileHandlerUnregisterThread();
-}
-
 extern "C" PERFTOOLS_DLL_DECL void ProfilerFlush() {
   CpuProfiler::instance_.FlushTable();
 }
@@ -327,7 +323,6 @@ extern "C" PERFTOOLS_DLL_DECL void ProfilerGetCurrentState(
 // these issues, unless a specific need is identified, profiler support is
 // disabled under Cygwin.
 extern "C" void ProfilerRegisterThread() { }
-extern "C" void ProfilerUnregisterThread() { }
 extern "C" void ProfilerFlush() { }
 extern "C" int ProfilingIsEnabledForAllThreads() { return 0; }
 extern "C" int ProfilerStart(const char* fname) { return 0; }

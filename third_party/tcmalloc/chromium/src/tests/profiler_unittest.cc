@@ -63,8 +63,6 @@ static void test_other_thread() {
     }
     snprintf(b, sizeof(b), "other: %d", result);  // get some libc action
   }
-
-  ProfilerUnregisterThread();
 #endif
 }
 
