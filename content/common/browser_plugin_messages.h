@@ -176,9 +176,8 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
 // the previous frame and is ready for the next frame. If the guest sent the
 // embedder a bitmap that does not match the size of the BrowserPlugin's
 // container, the BrowserPlugin requests a new size as well.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_UpdateRect_ACK,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
     int /* instance_id */,
-    int /* message_id */,
     BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
     BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
@@ -318,9 +317,8 @@ IPC_MESSAGE_ROUTED2(BrowserPluginMsg_SetCursor,
 
 // The guest has damage it wants to convey to the embedder so that it can
 // update its backing store.
-IPC_MESSAGE_ROUTED3(BrowserPluginMsg_UpdateRect,
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_UpdateRect,
                     int /* instance_id */,
-                    int /* message_id */,
                     BrowserPluginMsg_UpdateRect_Params)
 
 // Requests the renderer to find out if a browser plugin is at position

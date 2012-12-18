@@ -158,7 +158,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
   update_rect_params.view_size = gfx::Size(640, 480);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
-  BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
   EXPECT_FALSE(browser_plugin->pending_damage_buffer_);
 }
@@ -249,7 +249,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_);
   }
@@ -292,7 +292,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // This tells us that the BrowserPlugin is still expecting another
     // UpdateRect with the most recent size.
@@ -311,7 +311,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 #else
         browser_plugin->pending_damage_buffer_->handle();
 #endif
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // The BrowserPlugin has finally received an UpdateRect that satisifes
     // its current size, and so it is happy.
@@ -834,7 +834,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   update_rect_params.view_size = gfx::Size(1337, 1338);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
-  BrowserPluginMsg_UpdateRect msg(0, instance_id, 0, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
 
   // Verify that the autosize state has been updated.
@@ -845,12 +845,10 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
     ASSERT_TRUE(auto_size_msg);
 
     int instance_id = 0;
-    int message_id = 0;
     BrowserPluginHostMsg_AutoSize_Params auto_size_params;
     BrowserPluginHostMsg_ResizeGuest_Params resize_params;
     BrowserPluginHostMsg_UpdateRect_ACK::Read(auto_size_msg,
                                               &instance_id,
-                                              &message_id,
                                               &auto_size_params,
                                               &resize_params);
     EXPECT_FALSE(auto_size_params.enable);

@@ -196,12 +196,11 @@ void BrowserPluginEmbedder::NavigateGuest(
 
 void BrowserPluginEmbedder::UpdateRectACK(
     int instance_id,
-    int message_id,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest)
-    guest->UpdateRectACK(message_id, auto_size_params, resize_guest_params);
+    guest->UpdateRectACK(auto_size_params, resize_guest_params);
 }
 
 void BrowserPluginEmbedder::ResizeGuest(

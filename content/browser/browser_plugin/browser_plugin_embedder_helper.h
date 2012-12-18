@@ -68,7 +68,6 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
                      const BrowserPluginHostMsg_ResizeGuest_Params& params);
   void OnUpdateRectACK(
       int instance_id,
-      int message_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void OnSwapBuffersACK(int route_id,

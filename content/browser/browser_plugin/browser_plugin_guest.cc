@@ -15,6 +15,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/drag_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/notification_service.h"
@@ -53,7 +54,6 @@ BrowserPluginGuest::BrowserPluginGuest(
       remote_damage_buffer_handle_(0),
 #endif
       damage_buffer_scale_factor_(1.0f),
-      pending_update_counter_(0),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(params.focused),
@@ -112,14 +112,6 @@ void BrowserPluginGuest::Observe(int type,
   }
 }
 
-bool BrowserPluginGuest::ViewTakeFocus(bool reverse) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_AdvanceFocus(embedder_routing_id(),
-                                        instance_id(),
-                                        reverse));
-  return true;
-}
-
 void BrowserPluginGuest::Go(int relative_index) {
   web_contents()->GetController().GoToOffset(relative_index);
 }
@@ -171,13 +163,6 @@ bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {
   // Rather than managing focus in WebContentsImpl::RenderViewReady, we will
   // manage the focus ourselves.
   return false;
-}
-
-void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_ShouldAcceptTouchEvents(embedder_routing_id(),
-                                                   instance_id(),
-                                                   accept));
 }
 
 void BrowserPluginGuest::SetVisibility(bool embedder_visible, bool visible) {
@@ -240,17 +225,6 @@ void BrowserPluginGuest::SetSize(
         resize_guest_params.view_size);
   }
   Resize(embedder_web_contents_->GetRenderViewHost(), resize_guest_params);
-}
-
-void BrowserPluginGuest::UpdateDragCursor(WebKit::WebDragOperation operation) {
-  RenderViewHostImpl* embedder_render_view_host =
-      static_cast<RenderViewHostImpl*>(
-          embedder_web_contents_->GetRenderViewHost());
-  CHECK(embedder_render_view_host);
-  RenderViewHostDelegateView* view =
-      embedder_render_view_host->GetDelegate()->GetDelegateView();
-  if (view)
-    view->UpdateDragCursor(operation);
 }
 
 WebContents* BrowserPluginGuest::GetWebContents() {
@@ -354,95 +328,12 @@ bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
       size.height() <= max_auto_size_.height();
 }
 
-void BrowserPluginGuest::UpdateRect(
-    RenderViewHost* render_view_host,
-    const ViewHostMsg_UpdateRect_Params& params) {
-  BrowserPluginMsg_UpdateRect_Params relay_params;
-  relay_params.view_size = params.view_size;
-  relay_params.scale_factor = params.scale_factor;
-  relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
-      params.flags);
-
-  // HW accelerated case, acknowledge resize only
-  if (!params.needs_ack) {
-#if defined(OS_MACOSX)
-    relay_params.damage_buffer_identifier = 0;
-#else
-    relay_params.damage_buffer_identifier = TransportDIB::DefaultHandleValue();
-#endif
-    SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
-        embedder_routing_id(),
-        instance_id(),
-        0,
-        relay_params));
-     return;
-  }
-
-  // Only copy damage if the guest is in autosize mode and the guest's view size
-  // is less than the maximum size or the guest's view size is equal to the
-  // damage buffer's size and the guest's scale factor is equal to the damage
-  // buffer's scale factor.
-  // The scaling change can happen due to asynchronous updates of the DPI on a
-  // resolution change.
-  if (((auto_size_enabled_ && InAutoSizeBounds(params.view_size)) ||
-      (params.view_size.width() == damage_view_size().width() &&
-       params.view_size.height() == damage_view_size().height())) &&
-       params.scale_factor == damage_buffer_scale_factor()) {
-    TransportDIB* dib = render_view_host->GetProcess()->
-        GetTransportDIB(params.bitmap);
-    if (dib) {
-#if defined(OS_WIN)
-      size_t guest_damage_buffer_size = params.bitmap_rect.width() *
-                                        params.bitmap_rect.height() * 4;
-      size_t embedder_damage_buffer_size = damage_buffer_size_;
-#else
-      size_t guest_damage_buffer_size = dib->size();
-      size_t embedder_damage_buffer_size = damage_buffer_->size();
-#endif
-      void* guest_memory = dib->memory();
-      void* embedder_memory = damage_buffer_->memory();
-      size_t size = std::min(guest_damage_buffer_size,
-                             embedder_damage_buffer_size);
-      memcpy(embedder_memory, guest_memory, size);
-    }
-  }
-#if defined(OS_MACOSX)
-  relay_params.damage_buffer_identifier = damage_buffer_->id();
-#elif defined(OS_WIN)
-  // On Windows, the handle used locally differs from the handle received from
-  // the embedder process, since we duplicate the remote handle.
-  relay_params.damage_buffer_identifier = remote_damage_buffer_handle_;
-#else
-  relay_params.damage_buffer_identifier = damage_buffer_->handle();
-#endif
-  relay_params.bitmap_rect = params.bitmap_rect;
-  relay_params.scroll_delta = params.scroll_delta;
-  relay_params.scroll_rect = params.scroll_rect;
-  relay_params.copy_rects = params.copy_rects;
-
-  // We need to send the ACK to the same render_view_host that issued
-  // the UpdateRect. We keep track of this correspondence via a message_id.
-  int message_id = pending_update_counter_++;
-  pending_updates_.AddWithID(render_view_host, message_id);
-
-  SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(embedder_routing_id(),
-                                                        instance_id(),
-                                                        message_id,
-                                                        relay_params));
-}
-
 void BrowserPluginGuest::UpdateRectACK(
-    int message_id,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
-  RenderViewHost* render_view_host = pending_updates_.Lookup(message_id);
-  // If the guest has crashed since it sent the initial ViewHostMsg_UpdateRect
-  // then the pending_updates_ map will have been cleared.
-  if (render_view_host) {
-    pending_updates_.Remove(message_id);
-    render_view_host->Send(
-        new ViewMsg_UpdateRect_ACK(render_view_host->GetRoutingID()));
-  }
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
+  render_view_host->Send(
+      new ViewMsg_UpdateRect_ACK(render_view_host->GetRoutingID()));
   SetSize(auto_size_params, resize_guest_params);
 }
 
@@ -472,13 +363,6 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
   guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
 }
 
-void BrowserPluginGuest::HandleInputEventAck(RenderViewHost* render_view_host,
-                                             bool handled) {
-  RenderViewHostImpl* guest_rvh =
-      static_cast<RenderViewHostImpl*>(render_view_host);
-  guest_rvh->StopHangMonitorTimeout();
-}
-
 void BrowserPluginGuest::Stop() {
   web_contents()->Stop();
 }
@@ -495,38 +379,6 @@ void BrowserPluginGuest::SetFocus(bool focused) {
       return;
   focused_ = focused;
   Send(new ViewMsg_SetFocus(routing_id(), focused));
-}
-
-void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
-                                    int route_id,
-                                    const gfx::Rect& initial_pos) {
-  gfx::Rect screen_pos(initial_pos);
-  screen_pos.Offset(guest_screen_rect_.OffsetFromOrigin());
-  static_cast<WebContentsImpl*>(web_contents())->ShowCreatedWidget(route_id,
-                                                                   screen_pos);
-}
-
-#if defined(OS_MACOSX)
-void BrowserPluginGuest::ShowPopup(RenderViewHost* render_view_host,
-                                   const ViewHostMsg_ShowPopup_Params& params) {
-  gfx::Rect translated_bounds(params.bounds);
-  translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
-  BrowserPluginPopupMenuHelper popup_menu_helper(
-      embedder_web_contents_->GetRenderViewHost(), render_view_host);
-  popup_menu_helper.ShowPopupMenu(translated_bounds,
-                                  params.item_height,
-                                  params.item_font_size,
-                                  params.selected_item,
-                                  params.popup_items,
-                                  params.right_aligned,
-                                  params.allow_multiple_selection);
-}
-#endif
-
-void BrowserPluginGuest::SetCursor(const WebCursor& cursor) {
-  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(embedder_routing_id(),
-                                                       instance_id(),
-                                                       cursor));
 }
 
 void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
@@ -561,6 +413,10 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
                                      validated_url,
                                      is_main_frame,
                                      error_type));
+}
+
+void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
+  embedder_web_contents_->Send(msg);
 }
 
 void BrowserPluginGuest::LoadRedirect(
@@ -623,12 +479,6 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
                                                        instance_id(),
                                                        process_id,
                                                        status));
-  IDMap<RenderViewHost>::const_iterator iter(&pending_updates_);
-  while (!iter.IsAtEnd()) {
-    pending_updates_.Remove(iter.GetCurrentKey());
-    iter.Advance();
-  }
-
   switch (status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       RecordAction(UserMetricsAction("BrowserPlugin.Guest.Killed"));
@@ -644,8 +494,163 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   }
 }
 
-void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
-  embedder_web_contents_->Send(msg);
+bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
+                        OnHasTouchEventHandlers)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
+ #if defined(OS_MACOSX)
+    // MacOSX creates and populates platform-specific select drop-down menus
+    // whereas other platforms merely create a popup window that the guest
+    // renderer process paints inside.
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
+ #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
+    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void BrowserPluginGuest::OnHandleInputEventAck(
+      WebKit::WebInputEvent::Type event_type,
+      InputEventAckState ack_result) {
+  RenderViewHostImpl* guest_rvh =
+      static_cast<RenderViewHostImpl*>(web_contents()->GetRenderViewHost());
+  guest_rvh->StopHangMonitorTimeout();
+}
+
+void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_ShouldAcceptTouchEvents(embedder_routing_id(),
+                                                   instance_id(),
+                                                   accept));
+}
+
+void BrowserPluginGuest::OnSetCursor(const WebCursor& cursor) {
+  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(embedder_routing_id(),
+                                                       instance_id(),
+                                                       cursor));
+}
+
+#if defined(OS_MACOSX)
+void BrowserPluginGuest::OnShowPopup(
+    const ViewHostMsg_ShowPopup_Params& params) {
+  gfx::Rect translated_bounds(params.bounds);
+  translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
+  BrowserPluginPopupMenuHelper popup_menu_helper(
+      embedder_web_contents_->GetRenderViewHost(),
+      web_contents()->GetRenderViewHost());
+  popup_menu_helper.ShowPopupMenu(translated_bounds,
+                                  params.item_height,
+                                  params.item_font_size,
+                                  params.selected_item,
+                                  params.popup_items,
+                                  params.right_aligned,
+                                  params.allow_multiple_selection);
+}
+#endif
+
+void BrowserPluginGuest::OnShowWidget(int route_id,
+                                      const gfx::Rect& initial_pos) {
+  gfx::Rect screen_pos(initial_pos);
+  screen_pos.Offset(guest_screen_rect_.OffsetFromOrigin());
+  static_cast<WebContentsImpl*>(web_contents())->ShowCreatedWidget(route_id,
+                                                                   screen_pos);
+}
+
+void BrowserPluginGuest::OnTakeFocus(bool reverse) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_AdvanceFocus(embedder_routing_id(),
+                                        instance_id(),
+                                        reverse));
+}
+
+void BrowserPluginGuest::OnUpdateDragCursor(
+    WebKit::WebDragOperation operation) {
+  RenderViewHostImpl* embedder_render_view_host =
+      static_cast<RenderViewHostImpl*>(
+          embedder_web_contents_->GetRenderViewHost());
+  CHECK(embedder_render_view_host);
+  RenderViewHostDelegateView* view =
+      embedder_render_view_host->GetDelegate()->GetDelegateView();
+  if (view)
+    view->UpdateDragCursor(operation);
+}
+
+void BrowserPluginGuest::OnUpdateRect(
+    const ViewHostMsg_UpdateRect_Params& params) {
+
+  BrowserPluginMsg_UpdateRect_Params relay_params;
+  relay_params.view_size = params.view_size;
+  relay_params.scale_factor = params.scale_factor;
+  relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
+      params.flags);
+
+  // HW accelerated case, acknowledge resize only
+  if (!params.needs_ack) {
+#if defined(OS_MACOSX)
+    relay_params.damage_buffer_identifier = 0;
+#else
+    relay_params.damage_buffer_identifier = TransportDIB::DefaultHandleValue();
+#endif
+    SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
+        embedder_routing_id(),
+        instance_id(),
+        relay_params));
+     return;
+  }
+
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
+  // Only copy damage if the guest is in autosize mode and the guest's view size
+  // is less than the maximum size or the guest's view size is equal to the
+  // damage buffer's size and the guest's scale factor is equal to the damage
+  // buffer's scale factor.
+  // The scaling change can happen due to asynchronous updates of the DPI on a
+  // resolution change.
+  if (((auto_size_enabled_ && InAutoSizeBounds(params.view_size)) ||
+      (params.view_size.width() == damage_view_size().width() &&
+       params.view_size.height() == damage_view_size().height())) &&
+       params.scale_factor == damage_buffer_scale_factor()) {
+    TransportDIB* dib = render_view_host->GetProcess()->
+        GetTransportDIB(params.bitmap);
+    if (dib) {
+#if defined(OS_WIN)
+      size_t guest_damage_buffer_size = params.bitmap_rect.width() *
+                                        params.bitmap_rect.height() * 4;
+      size_t embedder_damage_buffer_size = damage_buffer_size_;
+#else
+      size_t guest_damage_buffer_size = dib->size();
+      size_t embedder_damage_buffer_size = damage_buffer_->size();
+#endif
+      void* guest_memory = dib->memory();
+      void* embedder_memory = damage_buffer_->memory();
+      size_t size = std::min(guest_damage_buffer_size,
+                             embedder_damage_buffer_size);
+      memcpy(embedder_memory, guest_memory, size);
+    }
+  }
+#if defined(OS_MACOSX)
+  relay_params.damage_buffer_identifier = damage_buffer_->id();
+#elif defined(OS_WIN)
+  // On Windows, the handle used locally differs from the handle received from
+  // the embedder process, since we duplicate the remote handle.
+  relay_params.damage_buffer_identifier = remote_damage_buffer_handle_;
+#else
+  relay_params.damage_buffer_identifier = damage_buffer_->handle();
+#endif
+  relay_params.bitmap_rect = params.bitmap_rect;
+  relay_params.scroll_delta = params.scroll_delta;
+  relay_params.scroll_rect = params.scroll_rect;
+  relay_params.copy_rects = params.copy_rects;
+
+  SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(embedder_routing_id(),
+                                                        instance_id(),
+                                                        relay_params));
 }
 
 }  // namespace content

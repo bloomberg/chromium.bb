@@ -42,7 +42,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
                                 const gfx::Rect& guest_screen_rect,
                                 const WebKit::WebInputEvent& event) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
-  virtual bool ViewTakeFocus(bool reverse) OVERRIDE;
+  virtual void OnTakeFocus(bool reverse) OVERRIDE;
   virtual void Reload() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void SetDamageBuffer(TransportDIB* damage_buffer,

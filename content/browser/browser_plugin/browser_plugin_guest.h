@@ -2,29 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A BrowserPluginGuest represents the browser side of browser <--> renderer
-// communication. A BrowserPlugin (a WebPlugin) is on the renderer side of
-// browser <--> guest renderer communication. The 'guest' renderer is a
-// <browser> tag.
+// A BrowserPluginGuest is the browser side of a browser <--> embedder
+// renderer channel. A BrowserPlugin (a WebPlugin) is on the embedder
+// renderer side of browser <--> embedder renderer communication.
 //
 // BrowserPluginGuest lives on the UI thread of the browser process. It has a
 // helper, BrowserPluginGuestHelper, which is a RenderViewHostObserver. The
-// helper object receives messages (ViewHostMsg_*) directed at the browser
-// plugin and redirects them to this class. Any messages the embedder might be
-// interested in knowing or modifying about the guest should be listened for
-// here.
+// helper object intercepts messages (ViewHostMsg_*) directed at the browser
+// process and redirects them to this class. Any messages about the guest render
+// process that the embedder might be interested in receiving should be listened
+// for here.
 //
-// Since BrowserPlugin is a WebPlugin, we need to provide overridden behaviors
-// for messages like handleInputEvent, updateGeometry. Such messages get
-// routed into BrowserPluginGuest via its embedder (BrowserPluginEmbedder).
-// These are BrowserPluginHost_* messages sent from the BrowserPlugin.
-//
-// BrowserPluginGuest knows about its embedder process. Communication to
-// renderer happens through the embedder process.
-//
-// A BrowserPluginGuest is also associated directly with the WebContents related
-// to the BrowserPlugin. BrowserPluginGuest is a WebContentsDelegate and
-// WebContentsObserver for the WebContents.
+// BrowserPluginGuest is a WebContentsDelegate and WebContentsObserver for the
+// guest WebContents. BrowserPluginGuest operates under the assumption that the
+// guest will be accessible through only one RenderViewHost for the lifetime of
+// the guest WebContents. Thus, cross-process navigation is not supported.
 
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
@@ -34,12 +26,14 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/time.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 
@@ -131,6 +125,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
 
   // WebContentsDelegate implementation.
   virtual bool CanDownload(RenderViewHost* render_view_host,
@@ -143,31 +139,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                               const FileChooserParams& params) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
 
-  void UpdateRect(RenderViewHost* render_view_host,
-                  const ViewHostMsg_UpdateRect_Params& params);
   void UpdateRectACK(
-      int message_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-  // Overrides default ShowWidget message so we show them on the correct
-  // coordinates.
-  void ShowWidget(RenderViewHost* render_view_host,
-                  int route_id,
-                  const gfx::Rect& initial_pos);
-  // On MacOSX popups are painted by the browser process. We handle them here
-  // so that they are positioned correctly.
-#if defined(OS_MACOSX)
-  void ShowPopup(RenderViewHost* render_view_host,
-                 const ViewHostMsg_ShowPopup_Params& params);
-#endif
-  void SetCursor(const WebCursor& cursor);
-  // Handles input event acks so they are sent to browser plugin host (via
-  // embedder) instead of default view/widget host.
-  void HandleInputEventAck(RenderViewHost* render_view_host, bool handled);
-
-  // The guest needs to notify the plugin in the embedder to start (or stop)
-  // accepting touch events.
-  void SetIsAcceptingTouchEvents(bool accept);
 
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the
@@ -201,12 +175,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
-  // Updates the cursor during dragging.
-  // During dragging, if the guest notifies to update the cursor for a drag,
-  // then it is necessary to route the cursor update to the embedder correctly
-  // so that the cursor updates properly.
-  void UpdateDragCursor(WebKit::WebDragOperation operation);
-
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
 
@@ -225,7 +193,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                 const gfx::Rect& guest_window_rect,
                                 const gfx::Rect& guest_screen_rect,
                                 const WebKit::WebInputEvent& event);
-  virtual bool ViewTakeFocus(bool reverse);
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
   virtual void Go(int relative_index);
@@ -279,6 +246,25 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                     bool is_top_level);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
+
+  // Message handlers.
+
+  void OnHandleInputEventAck(
+      WebKit::WebInputEvent::Type event_type,
+      InputEventAckState ack_result);
+  void OnHasTouchEventHandlers(bool accept);
+  void OnSetCursor(const WebCursor& cursor);
+  // On MacOSX popups are painted by the browser process. We handle them here
+  // so that they are positioned correctly.
+#if defined(OS_MACOSX)
+  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
+#endif
+  void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
+  // Overriden in tests
+  virtual void OnTakeFocus(bool reverse);
+  void OnUpdateDragCursor(WebKit::WebDragOperation operation);
+  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;
 
@@ -296,8 +282,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   float damage_buffer_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
-  IDMap<RenderViewHost> pending_updates_;
-  int pending_update_counter_;
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool visible_;

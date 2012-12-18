@@ -70,9 +70,8 @@ void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (msg->type() == BrowserPluginMsg_UpdateRect::ID) {
     update_rect_count_++;
     int instance_id = 0;
-    int message_id = 0;
     BrowserPluginMsg_UpdateRect_Params params;
-    BrowserPluginMsg_UpdateRect::Read(msg, &instance_id, &message_id, &params);
+    BrowserPluginMsg_UpdateRect::Read(msg, &instance_id, &params);
     last_view_size_observed_ = params.view_size;
     if (!expected_auto_view_size_.IsEmpty() &&
         expected_auto_view_size_ == params.view_size) {
@@ -245,11 +244,11 @@ void TestBrowserPluginGuest::SetFocus(bool focused) {
   BrowserPluginGuest::SetFocus(focused);
 }
 
-bool TestBrowserPluginGuest::ViewTakeFocus(bool reverse) {
+void TestBrowserPluginGuest::OnTakeFocus(bool reverse) {
   advance_focus_observed_ = true;
   if (advance_focus_message_loop_runner_)
     advance_focus_message_loop_runner_->Quit();
-  return BrowserPluginGuest::ViewTakeFocus(reverse);
+  BrowserPluginGuest::OnTakeFocus(reverse);
 }
 
 void TestBrowserPluginGuest::Reload() {

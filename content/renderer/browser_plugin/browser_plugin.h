@@ -36,7 +36,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called only by tests to clean up before we blow away the MockRenderProcess.
   void Cleanup();
 
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg);
 
   // Update Browser Plugin's DOM Node attribute |attribute_name| with the value
   // |attribute_value|.
@@ -264,7 +264,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
   void OnUpdateRect(int instance_id,
-                    int message_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
 
   int instance_id_;

@@ -438,7 +438,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
 
 void BrowserPlugin::OnUpdateRect(
     int instance_id,
-    int message_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {
   bool use_new_damage_buffer = !backing_store_;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
@@ -476,7 +475,6 @@ void BrowserPlugin::OnUpdateRect(
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
         instance_id_,
-        message_id,
         auto_size_params,
         resize_guest_params));
     return;
@@ -544,7 +542,6 @@ void BrowserPlugin::OnUpdateRect(
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
       instance_id_,
-      message_id,
       auto_size_params,
       resize_guest_params));
 }

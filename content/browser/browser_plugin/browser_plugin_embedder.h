@@ -102,7 +102,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Routes update rect ack message to the appropriate guest.
   void UpdateRectACK(
       int instance_id,
-      int message_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void SetFocus(int instance_id, bool focused);

@@ -25,13 +25,12 @@ namespace content {
 class BrowserPluginGuest;
 class RenderViewHost;
 
-// Helper for browser plugin guest.
+// Helper for BrowserPluginGuest.
 //
-// It overrides different WebContents messages that require special treatment
-// for a WebContents to act as a guest. All functionality is handled by its
-// delegate. This class exists so we have separation of messages requiring
-// special handling, which can be moved to a message filter (IPC thread) for
-// future optimization.
+// The purpose of this class is to intercept messages from the guest RenderView
+// before they are handled by the standard message handlers in the browser
+// process. This permits overriding standard behavior with BrowserPlugin-
+// specific behavior.
 //
 // The lifetime of this class is managed by the associated RenderViewHost. A
 // BrowserPluginGuestHelper is created whenever a BrowserPluginGuest is created.
@@ -46,22 +45,11 @@ class BrowserPluginGuestHelper : public RenderViewHostObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  // Message handlers
-  void OnUpdateDragCursor(WebKit::WebDragOperation current_op);
-  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnHandleInputEventAck(WebKit::WebInputEvent::Type event_type,
-                             InputEventAckState ack_result);
-  void OnTakeFocus(bool reverse);
-  void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
-  void OnMsgHasTouchEventHandlers(bool has_handlers);
-  void OnSetCursor(const WebCursor& cursor);
-#if defined(OS_MACOSX)
-  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
-#endif
+  // Returns whether a message should be forward to the helper's associated
+  // BrowserPluginGuest.
+  static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
   BrowserPluginGuest* guest_;
-  // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuestHelper);
 };
