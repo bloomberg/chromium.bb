@@ -6,7 +6,6 @@
 
 """Unit tests for the cros_best_revision program."""
 
-import mox
 import os
 import sys
 
@@ -17,110 +16,87 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
-from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 
 from chromite.scripts import cros_best_revision
 
 
-# pylint: disable=W0212,E1101,E1120
-class ChromeCommitterTester(cros_test_lib.MoxTempDirTestCase):
+class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
+
   def setUp(self):
     """Common set up method for all tests."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
-    self.committer = cros_best_revision.ChromeCommitter(self.tempdir,
-                                                        False)
-    self.old_lkgm = '2098.0.0'
+    self.committer = cros_best_revision.ChromeCommitter(self.tempdir, False)
+    self.lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
+    self.pass_status = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_PASSED, None)
+    self.fail_status = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_FAILED, None)
 
-  def testCheckoutChromeLKGM(self):
-    "Tests that we can read/obtain the old LKGM from mocked out SVN."
-    cros_build_lib.RunCommand(mox.In('%s/%s' % (gclient.CHROME_COMMITTER_URL,
-                                                constants.PATH_TO_CHROME_LKGM)))
-    cros_build_lib.RunCommand(mox.In(constants.CHROME_LKGM_FILE),
-                              cwd=self.tempdir)
 
-    self.mox.ReplayAll()
-
-    # Write out an old lkgm file as if we got it from svn update.
-    lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
-    osutils.WriteFile(lkgm_file, self.old_lkgm)
-    self.committer.CheckoutChromeLKGM()
-    self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
+# pylint: disable=W0212
+class ChromeGSTest(BaseChromeCommitterTest):
 
   def testGetLatestCanaryVersions(self):
     """Test that we correctly filter out non-canary and older versions."""
-    self.mox.StubOutWithMock(gs.GSContext, 'LS')
-    return_obj = cros_build_lib.CommandResult
-    return_obj.output = '\n'.join(['2910.0.1', '2900.0.0', '2908.0.0',
-                                   '2909.0.0', '2910.0.0'])
-    old_version = '2905.0.0'
+    output = '\n'.join(['2910.0.1', '2900.0.0', '2908.0.0', '2909.0.0',
+                        '2910.0.0'])
     # Only return 2 -- the 2 newest canary results.
     cros_best_revision.ChromeCommitter._CANDIDATES_TO_CONSIDER = 2
     expected_output = ['2910.0.0', '2909.0.0']
 
-    gs.GSContext.LS(manifest_version.BUILD_STATUS_URL).AndReturn(return_obj)
-
-    self.mox.ReplayAll()
-
-    self.committer._old_lkgm = old_version
-    versions = self.committer._GetLatestCanaryVersions()
+    self.committer._old_lkgm = '2905.0.0'
+    with gs_unittest.GSContextMock() as gs_mock:
+      gs_mock.AddCmdResult(partial_mock.In('ls'), output=output)
+      versions = self.committer._GetLatestCanaryVersions()
     self.assertEqual(versions, expected_output)
 
-  def _CommonNewLKGMMocks(self):
+
+class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
+                            BaseChromeCommitterTest):
+
+  canaries = ['a-release', 'b-release', 'c-release']
+  versions = ['4.0.0', '3.0.0']
+
+  def testCheckoutChromeLKGM(self):
+    "Tests that we can read/obtain the old LKGM from mocked out SVN."
+    # Write out an old lkgm file as if we got it from svn update.
+    old_lkgm = '2098.0.0'
+    osutils.WriteFile(self.lkgm_file, old_lkgm)
+    self.committer.CheckoutChromeLKGM()
+    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+    self.assertCommandContains(['%s/%s' % (gclient.CHROME_COMMITTER_URL,
+                                           constants.PATH_TO_CHROME_LKGM)])
+    self.assertCommandContains([constants.CHROME_LKGM_FILE])
+
+  def _TestFindNewLKGM(self, all_results, lkgm):
     """Stubs out methods used by FindNewLKGM."""
-    self.mox.StubOutWithMock(cbuildbot_config, 'GetCanariesForChromeLKGM')
-    self.mox.StubOutWithMock(self.committer, '_GetLatestCanaryVersions')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetBuildStatus')
-
-  def _GetPassFailStatuses(self):
-    """Returns a tuple of pass/fail statuses."""
-    pass_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, None)
-    fail_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, None)
-    return pass_status, fail_status
-
+    expected = {}
+    for canary, results in zip(self.canaries, all_results):
+      for version, status in zip(self.versions, results):
+        expected[(canary, version)] = status
+    def _GetBuildStatus(canary, version, **_):
+      return expected[(canary, version)]
+    self.PatchObject(self.committer, '_GetLatestCanaryVersions',
+                     return_value=self.versions)
+    self.PatchObject(cbuildbot_config, 'GetCanariesForChromeLKGM',
+                     return_value=self.canaries)
+    self.PatchObject(manifest_version.BuildSpecsManager, 'GetBuildStatus',
+                     side_effect=_GetBuildStatus)
+    self.committer.FindNewLKGM()
+    self.assertTrue(self.committer._lkgm, lkgm)
 
   def testFindNewLKGMBasic(self):
     """Tests that we return the highest version if all versions are good."""
-    self._CommonNewLKGMMocks()
-
-    pass_status, _ = self._GetPassFailStatuses()
-    canaries = ['a-release', 'b-release', 'c-release']
-    versions = ['4.0.0', '3.0.0', '2.0.0', '1.0.0']
-    self.committer._GetLatestCanaryVersions().AndReturn(versions)
-    cbuildbot_config.GetCanariesForChromeLKGM().AndReturn(canaries)
-    manifest_version.BuildSpecsManager.GetBuildStatus(
-        mox.IgnoreArg(), mox.IgnoreArg(), retries=0).MultipleTimes().AndReturn(
-            pass_status)
-
-    self.mox.ReplayAll()
-    self.committer.FindNewLKGM()
-    self.assertTrue(self.committer._lkgm, '4.0.0')
+    self._TestFindNewLKGM([[self.pass_status] * 2] * 3, '4.0.0')
 
   def testFindNewLKGMAdvanced(self):
     """Tests that we return the only version with passing canaries."""
-    self._CommonNewLKGMMocks()
-
-    pass_status, fail_status = self._GetPassFailStatuses()
-    canaries = ['a-release', 'b-release', 'c-release']
-    versions = ['4.0.0', '3.0.0']
-    self.committer._GetLatestCanaryVersions().AndReturn(versions)
-    cbuildbot_config.GetCanariesForChromeLKGM().AndReturn(canaries)
-    manifest_version.BuildSpecsManager.GetBuildStatus(
-        mox.IgnoreArg(), '4.0.0', retries=0).MultipleTimes().AndReturn(
-            fail_status)
-    manifest_version.BuildSpecsManager.GetBuildStatus(
-        mox.IgnoreArg(), '3.0.0', retries=0).MultipleTimes().AndReturn(
-            pass_status)
-
-    self.mox.ReplayAll()
-    self.committer.FindNewLKGM()
-    self.assertTrue(self.committer._lkgm, '3.0.0')
+    self._TestFindNewLKGM([[self.fail_status, self.pass_status]] * 3, '3.0.0')
 
   def testFindNewLKGMWithFailures(self):
     """Ensure we reject versions with failed builds.
@@ -133,50 +109,19 @@ class ChromeCommitterTester(cros_test_lib.MoxTempDirTestCase):
     a failure. In this instance, our scoring mechanism should choose the older
     version.
     """
-    self._CommonNewLKGMMocks()
-
-    pass_status, fail_status = self._GetPassFailStatuses()
-    canaries = ['a-release', 'b-release', 'c-release']
-    versions = ['4.0.0', '3.0.0']
-    self.committer._GetLatestCanaryVersions().AndReturn(versions)
-    cbuildbot_config.GetCanariesForChromeLKGM().AndReturn(canaries)
-    for canary in canaries:
-      if canary in ['a-release', 'b-release']:
-        manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '4.0.0', retries=0).InAnyOrder().AndReturn(
-                pass_status)
-        manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '3.0.0', retries=0).InAnyOrder().AndReturn(
-                pass_status)
-      else:
-        manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '4.0.0', retries=0).InAnyOrder().AndReturn(
-                fail_status)
-        manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '3.0.0', retries=0).InAnyOrder().AndReturn(None)
-
-    self.mox.ReplayAll()
-    self.committer.FindNewLKGM()
-    self.assertTrue(self.committer._lkgm, '3.0.0')
+    all_results = [[self.pass_status] * 2] * 2 + [[self.fail_status, None]]
+    self._TestFindNewLKGM(all_results, '3.0.0')
 
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     self.committer._lkgm = '4.0.0'
-    cros_build_lib.TreeOpen(
-        gclient.STATUS_URL,
-        cros_best_revision.ChromeCommitter._SLEEP_TIMEOUT).AndReturn(True)
-
-    cros_build_lib.RunCommand(mox.In(constants.CHROME_LKGM_FILE),
-                              cwd=self.tempdir)
-    cros_build_lib.RunCommand(mox.In('commit'),
-                              cwd=self.tempdir)
-
-    self.mox.ReplayAll()
+    self.PatchObject(cros_build_lib, 'TreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
-    lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
-    self.assertEqual(osutils.ReadFile(lkgm_file), self.committer._lkgm)
+    self.assertEqual(osutils.ReadFile(self.lkgm_file), self.committer._lkgm)
+    self.assertCommandContains([constants.CHROME_LKGM_FILE])
+    self.assertCommandContains(['commit'])
 
 
 if __name__ == '__main__':
