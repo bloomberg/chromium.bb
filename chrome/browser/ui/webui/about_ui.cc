@@ -871,7 +871,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   const std::vector<ProcessData>& browser_processes = processes();
 
   // Aggregate per-process data into browser summary data.
-  std::wstring log_string;
+  string16 log_string;
   for (size_t index = 0; index < browser_processes.size(); index++) {
     if (browser_processes[index].processes.empty())
       continue;
@@ -902,20 +902,16 @@ void AboutMemoryHandler::OnDetailsAvailable() {
     BindProcessMetrics(browser_data, &aggregate);
 
     // We log memory info as we record it.
-    if (log_string.length() > 0)
-      log_string.append(L", ");
-    log_string.append(UTF16ToWide(browser_processes[index].name));
-    log_string.append(L", ");
-    log_string.append(UTF8ToWide(
-        base::Int64ToString(aggregate.working_set.priv)));
-    log_string.append(L", ");
-    log_string.append(UTF8ToWide(
-        base::Int64ToString(aggregate.working_set.shared)));
-    log_string.append(L", ");
-    log_string.append(UTF8ToWide(
-        base::Int64ToString(aggregate.working_set.shareable)));
+    if (!log_string.empty())
+      log_string += ASCIIToUTF16(", ");
+    log_string += browser_processes[index].name + ASCIIToUTF16(", ") +
+                  base::Int64ToString16(aggregate.working_set.priv) +
+                  ASCIIToUTF16(", ") +
+                  base::Int64ToString16(aggregate.working_set.shared) +
+                  ASCIIToUTF16(", ") +
+                  base::Int64ToString16(aggregate.working_set.shareable);
   }
-  if (log_string.length() > 0)
+  if (!log_string.empty())
     VLOG(1) << "memory: " << log_string;
 
   // Set the browser & renderer detailed process data.
