@@ -149,7 +149,7 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
         mediaPlayer.setOnSeekCompleteListener(listener);
         mediaPlayer.setOnVideoSizeChangedListener(listener);
         if (PackageManager.PERMISSION_GRANTED ==
-                context.checkCallingPermission(permission.WAKE_LOCK)) {
+                context.checkCallingOrSelfPermission(permission.WAKE_LOCK)) {
             mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
         }
 
