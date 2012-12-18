@@ -1,7 +1,7 @@
 SUBDIRS = moreTables
 
 EXTRA_DIST =					\
-	bad.ctb				\
+	bad.ctb					\
 	inpos_match_replace.ctb			\
 	inpos_pass0.ctb				\
 	inpos_pass1.ctb				\
@@ -14,6 +14,7 @@ EXTRA_DIST =					\
 	letterDefTest_uppercase.ctb		\
 	loop.ctb				\
 	lowercase_with_unicode.ctb		\
+	pass0_typebuf.ctb			\
 	pass2.ctb				\
 	squash_space_with_context_1.utb		\
 	squash_space_with_context_2.utb		\
