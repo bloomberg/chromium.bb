@@ -61,9 +61,12 @@ content::WebContents* TestViewsDelegate::CreateWebContents(
   return NULL;
 }
 
-void TestViewsDelegate::OnBeforeWidgetInit(
-    Widget::InitParams* params,
-    internal::NativeWidgetDelegate* delegate) {
+NativeWidget* TestViewsDelegate::CreateNativeWidget(
+    Widget::InitParams::Type type,
+    internal::NativeWidgetDelegate* delegate,
+    gfx::NativeView parent,
+    gfx::NativeView context) {
+  return NULL;
 }
 
 }  // namespace views

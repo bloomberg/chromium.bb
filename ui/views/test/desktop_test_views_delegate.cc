@@ -13,16 +13,20 @@ DesktopTestViewsDelegate::DesktopTestViewsDelegate() {}
 
 DesktopTestViewsDelegate::~DesktopTestViewsDelegate() {}
 
-void DesktopTestViewsDelegate::OnBeforeWidgetInit(
-    Widget::InitParams* params,
-    internal::NativeWidgetDelegate* delegate) {
+NativeWidget* DesktopTestViewsDelegate::CreateNativeWidget(
+    Widget::InitParams::Type type,
+    internal::NativeWidgetDelegate* delegate,
+    gfx::NativeView parent,
+    gfx::NativeView context) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  if (params->parent && params->type != views::Widget::InitParams::TYPE_MENU) {
-    params->native_widget = new views::NativeWidgetAura(delegate);
-  } else if (!params->parent && !params->context) {
-    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
-  }
+  if (parent && type != views::Widget::InitParams::TYPE_MENU)
+    return new views::NativeWidgetAura(delegate);
+
+  if (!parent && !context)
+    return new views::DesktopNativeWidgetAura(delegate);
 #endif
+
+  return NULL;
 }
 
 }  // namespace views

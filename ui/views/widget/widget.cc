@@ -50,12 +50,22 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
 
 // Create a native widget implementation.
 // First, use the supplied one if non-NULL.
+// Second, ask the delegate.
 // Finally, make a default one.
 NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
-                                 internal::NativeWidgetDelegate* delegate) {
+                                 internal::NativeWidgetDelegate* delegate,
+                                 Widget::InitParams::Type type,
+                                 gfx::NativeView parent,
+                                 gfx::NativeView context) {
   if (!native_widget) {
-    native_widget =
-        internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+    if (ViewsDelegate::views_delegate) {
+      native_widget = ViewsDelegate::views_delegate->CreateNativeWidget(
+          type, delegate, parent, context);
+    }
+    if (!native_widget) {
+      native_widget =
+          internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+    }
   }
   return native_widget;
 }
@@ -221,12 +231,7 @@ Widget::~Widget() {
 
 // static
 Widget* Widget::CreateWindow(WidgetDelegate* delegate) {
-  Widget* widget = new Widget;
-  Widget::InitParams params;
-  params.delegate = delegate;
-  params.top_level = true;
-  widget->Init(params);
-  return widget;
+  return CreateWindowWithParentAndBounds(delegate, NULL, gfx::Rect());
 }
 
 // static
@@ -334,11 +339,7 @@ bool Widget::RequiresNonClientView(InitParams::Type type) {
          type == InitParams::TYPE_BUBBLE;
 }
 
-void Widget::Init(const InitParams& in_params) {
-  InitParams params = in_params;
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);
-
+void Widget::Init(const InitParams& params) {
   is_top_level_ = params.top_level ||
       (!params.child &&
        params.type != InitParams::TYPE_CONTROL &&
@@ -346,8 +347,9 @@ void Widget::Init(const InitParams& in_params) {
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
-  native_widget_ = CreateNativeWidget(params.native_widget, this)->
-                   AsNativeWidgetPrivate();
+  native_widget_ = CreateNativeWidget(
+      params.native_widget, this, params.type, params.parent, params.context)->
+          AsNativeWidgetPrivate();
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
   if (params.type == InitParams::TYPE_MENU) {
