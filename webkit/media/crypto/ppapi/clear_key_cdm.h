@@ -14,7 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor_client.h"
 #include "media/crypto/aes_decryptor.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
 // TODO(tomfinegan): Move fake audio decoder into a separate class.

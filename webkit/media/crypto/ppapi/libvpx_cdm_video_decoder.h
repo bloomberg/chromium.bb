@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 #include "webkit/media/crypto/ppapi/cdm_video_decoder.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 struct vpx_codec_ctx;
 struct vpx_image;

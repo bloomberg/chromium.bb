@@ -25,7 +25,7 @@
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 #include "webkit/media/crypto/ppapi/linked_ptr.h"
 
 namespace {

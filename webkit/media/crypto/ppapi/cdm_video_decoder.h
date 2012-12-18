@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 namespace webkit_media {
 

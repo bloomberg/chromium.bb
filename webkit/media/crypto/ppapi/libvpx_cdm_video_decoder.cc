@@ -17,7 +17,7 @@ extern "C" {
 #include "third_party/libvpx/libvpx.h"
 }
 
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Enable USE_COPYPLANE_WITH_LIBVPX to use |CopyPlane()| instead of memcpy to
 // copy video frame data.

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Include FFmpeg header files.
 extern "C" {

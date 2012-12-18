@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 #include "webkit/media/crypto/ppapi/cdm_video_decoder.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
 #include "webkit/media/crypto/ppapi/fake_cdm_video_decoder.h"

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "base/compiler_specific.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 struct AVCodecContext;
 struct AVFrame;

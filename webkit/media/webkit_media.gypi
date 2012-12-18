@@ -181,7 +181,7 @@
       ],
       'sources': [
         'crypto/ppapi/cdm_wrapper.cc',
-        'crypto/ppapi/content_decryption_module.h',
+        'crypto/ppapi/cdm/content_decryption_module.h',
         'crypto/ppapi/linked_ptr.h',
       ],
       'conditions': [

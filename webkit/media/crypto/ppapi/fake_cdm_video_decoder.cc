@@ -5,7 +5,7 @@
 #include "webkit/media/crypto/ppapi/fake_cdm_video_decoder.h"
 
 #include "base/logging.h"
-#include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 namespace webkit_media {
 
