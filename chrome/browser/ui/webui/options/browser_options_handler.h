@@ -231,7 +231,6 @@ class BrowserOptionsHandler
   // ("true" or "false").
   void SpokenFeedbackChangeCallback(const base::ListValue* args);
   void HighContrastChangeCallback(const base::ListValue* args);
-  void ScreenMagnifierChangeCallback(const base::ListValue* args);
   void VirtualKeyboardChangeCallback(const base::ListValue* args);
 
   // Called when the user confirmed factory reset. Chrome will
