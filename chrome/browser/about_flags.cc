@@ -629,6 +629,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
   },
+  {
+    "enable-opus-playback",
+    IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME,
+    IDS_FLAGS_ENABLE_OPUS_PLAYBACK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableOpusPlayback)
+  },
 #if defined(USE_ASH)
   {
     "ash-disable-auto-window-placement",

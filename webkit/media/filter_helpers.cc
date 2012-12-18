@@ -5,12 +5,15 @@
 #include "webkit/media/filter_helpers.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "media/base/filter_collection.h"
+#include "media/base/media_switches.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/dummy_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/filters/opus_audio_decoder.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/media/media_stream_client.h"
 
@@ -25,9 +28,17 @@ namespace webkit_media {
 static void AddDefaultDecodersToCollection(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::FilterCollection* filter_collection) {
+
   scoped_refptr<media::FFmpegAudioDecoder> ffmpeg_audio_decoder =
       new media::FFmpegAudioDecoder(message_loop);
   filter_collection->GetAudioDecoders()->push_back(ffmpeg_audio_decoder);
+
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableOpusPlayback)) {
+    scoped_refptr<media::OpusAudioDecoder> opus_audio_decoder =
+        new media::OpusAudioDecoder(message_loop);
+    filter_collection->GetAudioDecoders()->push_back(opus_audio_decoder);
+  }
 
   scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
       new media::FFmpegVideoDecoder(message_loop);
