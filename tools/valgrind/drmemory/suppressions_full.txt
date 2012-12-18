@@ -465,6 +465,13 @@ UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=471 b
 *!WebCore::FormDataElement::FormDataElement
 
+# Another default copy ctor uninit.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=471 c
+*!WebCore::CachedResourceLoader::InitiatorInfo::InitiatorInfo
+...
+*!WTF::Hash*
+
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=473 a
 system call NtDeviceIoControlFile InputBuffer
