@@ -830,6 +830,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
+        '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
@@ -1239,8 +1240,6 @@
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_chrome_web_ui_controller_factory_browsertest.cc',
-        'browser/ui/webui/test_web_dialog_delegate.cc',
-        'browser/ui/webui/test_web_dialog_delegate.h',
         'browser/ui/webui/web_ui_browsertest.cc',
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',

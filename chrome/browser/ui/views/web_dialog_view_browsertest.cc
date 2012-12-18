@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
-#include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -95,8 +95,8 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
-  test::TestWebDialogDelegate* delegate =
-      new test::TestWebDialogDelegate(
+  ui::test::TestWebDialogDelegate* delegate =
+      new ui::test::TestWebDialogDelegate(
           GURL(chrome::kChromeUIChromeURLsURL));
   delegate->set_size(kInitialWidth, kInitialHeight);
 

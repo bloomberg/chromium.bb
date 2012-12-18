@@ -225,8 +225,6 @@
         'test/base/test_location_bar.h',
         'test/base/test_tab_strip_model_observer.cc',
         'test/base/test_tab_strip_model_observer.h',
-        'test/base/test_web_dialog_observer.cc',
-        'test/base/test_web_dialog_observer.h',
         'test/base/testing_browser_process.cc',
         'test/base/testing_browser_process.h',
         'test/base/testing_pref_service.cc',

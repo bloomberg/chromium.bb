@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_
+#ifndef UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_DELEGATE_H_
+#define UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_DELEGATE_H_
 
 #include <string>
 
@@ -12,9 +12,10 @@
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+namespace ui {
 namespace test {
 
-class TestWebDialogDelegate : public ui::WebDialogDelegate {
+class TestWebDialogDelegate : public WebDialogDelegate {
  public:
   explicit TestWebDialogDelegate(const GURL& url);
   virtual ~TestWebDialogDelegate();
@@ -23,8 +24,8 @@ class TestWebDialogDelegate : public ui::WebDialogDelegate {
     size_.SetSize(width, height);
   }
 
-  // ui::WebDialogDelegate implementation:
-  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
+  // WebDialogDelegate implementation:
+  virtual ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
@@ -44,5 +45,6 @@ class TestWebDialogDelegate : public ui::WebDialogDelegate {
 };
 
 }  // namespace test
+}  // namespace ui
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_
+#endif  // UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_DELEGATE_H_

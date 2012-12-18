@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
+#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
 #include "base/utf_string_conversions.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
 
+namespace ui {
 namespace test {
 
 TestWebDialogDelegate::TestWebDialogDelegate(const GURL& url)
@@ -19,8 +20,8 @@ TestWebDialogDelegate::TestWebDialogDelegate(const GURL& url)
 TestWebDialogDelegate::~TestWebDialogDelegate() {
 }
 
-ui::ModalType TestWebDialogDelegate::GetDialogModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+ModalType TestWebDialogDelegate::GetDialogModalType() const {
+  return MODAL_TYPE_WINDOW;
 }
 
 string16 TestWebDialogDelegate::GetDialogTitle() const {
@@ -57,3 +58,4 @@ bool TestWebDialogDelegate::ShouldShowDialogTitle() const {
 }
 
 }  // namespace test
+}  // namespace ui

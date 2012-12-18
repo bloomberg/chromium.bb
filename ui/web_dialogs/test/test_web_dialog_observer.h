@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_TEST_WEB_DIALOG_OBSERVER_H_
-#define CHROME_TEST_BASE_TEST_WEB_DIALOG_OBSERVER_H_
+#ifndef UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_OBSERVER_H_
+#define UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_OBSERVER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -20,11 +20,14 @@ class RenderViewHost;
 class WebUI;
 }
 
+namespace ui {
+namespace test {
+
 // For browser_tests, which run on the UI thread, run a second message
 // MessageLoop to detect WebDialog creation and quit when the constructed
 // WebUI instance is captured and ready.
 class TestWebDialogObserver : public content::NotificationObserver,
-                              public ui::WebDialogObserver {
+                              public WebDialogObserver {
  public:
   // Create and register a new TestWebDialogObserver. If
   // |js_injection_ready_observer| is non-NULL, notify it as soon as the RVH is
@@ -61,4 +64,7 @@ class TestWebDialogObserver : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(TestWebDialogObserver);
 };
 
-#endif  // CHROME_TEST_BASE_TEST_WEB_DIALOG_OBSERVER_H_
+}  // namespace test
+}  // namespace ui
+
+#endif  // UI_WEB_DIALOGS_TEST_TEST_WEB_DIALOG_OBSERVER_H_

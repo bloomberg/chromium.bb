@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/test_web_dialog_observer.h"
+#include "ui/web_dialogs/test/test_web_dialog_observer.h"
 
 #include "base/logging.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +16,9 @@
 #include "content/public/test/test_utils.h"
 
 using content::NavigationController;
+
+namespace ui {
+namespace test {
 
 TestWebDialogObserver::TestWebDialogObserver(
     content::JsInjectionReadyObserver* js_injection_ready_observer)
@@ -79,3 +82,6 @@ content::WebUI* TestWebDialogObserver::GetWebUI() {
   }
   return web_ui_;
 }
+
+}  // namespace test
+}  // namespace ui

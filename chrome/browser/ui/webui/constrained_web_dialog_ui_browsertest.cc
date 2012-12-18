@@ -10,12 +10,12 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
 using content::WebContents;
 using ui::WebDialogDelegate;
@@ -58,7 +58,7 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
 // Tests that opening/closing the constrained window won't crash it.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
   // The delegate deletes itself.
-  WebDialogDelegate* delegate = new test::TestWebDialogDelegate(
+  WebDialogDelegate* delegate = new ui::test::TestWebDialogDelegate(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents);
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
                        ReleaseWebContentsOnDialogClose) {
   // The delegate deletes itself.
-  WebDialogDelegate* delegate = new test::TestWebDialogDelegate(
+  WebDialogDelegate* delegate = new ui::test::TestWebDialogDelegate(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents);
