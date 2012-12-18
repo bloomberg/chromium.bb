@@ -298,58 +298,55 @@ const CGFloat kRapidCloseDist = 2.5;
     }
   }
 
-  {
+  // Use the same overlay for the selected state and for hover and alert
+  // glows; for the selected state, it's fully opaque.
+  CGFloat hoverAlpha = [self hoverAlpha];
+  CGFloat alertAlpha = [self alertAlpha];
+  if (selected || hoverAlpha > 0 || alertAlpha > 0) {
     gfx::ScopedNSGraphicsContextSaveGState contextSave;
     [path addClip];
 
-    // Use the same overlay for the selected state and for hover and alert
-    // glows; for the selected state, it's fully opaque.
-    CGFloat hoverAlpha = [self hoverAlpha];
-    CGFloat alertAlpha = [self alertAlpha];
-    if (selected || hoverAlpha > 0 || alertAlpha > 0) {
-      // Draw the selected background / glow overlay.
-      gfx::ScopedNSGraphicsContextSaveGState drawHoverState;
-      NSGraphicsContext* context = [NSGraphicsContext currentContext];
-      CGContextRef cgContext =
-          static_cast<CGContextRef>([context graphicsPort]);
-      CGContextBeginTransparencyLayer(cgContext, 0);
-      if (!selected) {
-        // The alert glow overlay is like the selected state but at most at most
-        // 80% opaque. The hover glow brings up the overlay's opacity at most
-        // 50%.
-        CGFloat backgroundAlpha = 0.8 * alertAlpha;
-        backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
-        CGContextSetAlpha(cgContext, backgroundAlpha);
-      }
-      [path addClip];
-      {
-        gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
-        [super drawBackgroundWithOpaque:NO];
-      }
-
-      // Draw a mouse hover gradient for the default themes.
-      if (!selected && hoverAlpha > 0) {
-        if (themeProvider && !hasBackgroundImage) {
-          scoped_nsobject<NSGradient> glow([NSGradient alloc]);
-          [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
-                                          alpha:1.0 * hoverAlpha]
-                          endingColor:[NSColor colorWithCalibratedWhite:1.0
-                                                                  alpha:0.0]];
-
-          NSPoint point = hoverPoint_;
-          point.y = NSHeight(rect);
-          [glow drawFromCenter:point
-                        radius:0.0
-                      toCenter:point
-                        radius:NSWidth(rect) / 3.0
-                       options:NSGradientDrawsBeforeStartingLocation];
-
-          [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
-        }
-      }
-
-      CGContextEndTransparencyLayer(cgContext);
+    // Draw the selected background / glow overlay.
+    NSGraphicsContext* context = [NSGraphicsContext currentContext];
+    CGContextRef cgContext =
+        static_cast<CGContextRef>([context graphicsPort]);
+    CGContextBeginTransparencyLayer(cgContext, 0);
+    if (!selected) {
+      // The alert glow overlay is like the selected state but at most at most
+      // 80% opaque. The hover glow brings up the overlay's opacity at most
+      // 50%.
+      CGFloat backgroundAlpha = 0.8 * alertAlpha;
+      backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
+      CGContextSetAlpha(cgContext, backgroundAlpha);
     }
+
+    {
+      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
+      [super drawBackgroundWithOpaque:NO];
+    }
+
+    // Draw a mouse hover gradient for the default themes.
+    if (!selected && hoverAlpha > 0) {
+      if (themeProvider && !hasBackgroundImage) {
+        scoped_nsobject<NSGradient> glow([NSGradient alloc]);
+        [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
+                                        alpha:1.0 * hoverAlpha]
+                        endingColor:[NSColor colorWithCalibratedWhite:1.0
+                                                                alpha:0.0]];
+
+        NSPoint point = hoverPoint_;
+        point.y = NSHeight(rect);
+        [glow drawFromCenter:point
+                      radius:0.0
+                    toCenter:point
+                      radius:NSWidth(rect) / 3.0
+                     options:NSGradientDrawsBeforeStartingLocation];
+
+        [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
+      }
+    }
+
+    CGContextEndTransparencyLayer(cgContext);
   }
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   float height =
