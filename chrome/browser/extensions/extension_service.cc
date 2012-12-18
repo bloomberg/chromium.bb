@@ -113,7 +113,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
-#include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
@@ -529,9 +528,6 @@ void ExtensionService::InitEventRouters() {
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(
       profile_)->ObserveFileSystemEvents();
-
-  input_method_event_router_.reset(
-      new chromeos::ExtensionInputMethodEventRouter);
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
   extensions::InputImeEventRouter::GetInstance()->Init();

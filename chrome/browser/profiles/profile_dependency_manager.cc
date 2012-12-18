@@ -82,6 +82,10 @@
 #include "chrome/browser/policy/user_policy_signin_service_factory.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
+#endif
+
 #if defined(USE_AURA)
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 #endif
@@ -241,6 +245,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::FontSettingsAPIFactory::GetInstance();
   extensions::HistoryAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
+#if defined(OS_CHROMEOS)
+  extensions::InputMethodAPIFactory::GetInstance();
+#endif
   extensions::ManagedModeAPIFactory::GetInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
   extensions::OmniboxAPIFactory::GetInstance();

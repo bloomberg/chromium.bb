@@ -27,10 +27,6 @@ class ExtensionInputMethodEventRouter
   virtual void InputMethodPropertyChanged(
       input_method::InputMethodManager* manager) OVERRIDE {}
 
-  // Returns input method name for the given XKB (X keyboard extensions in X
-  // Window System) id.
-  std::string GetInputMethodForXkb(const std::string& xkb_id);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputMethodEventRouter);
 };

@@ -52,10 +52,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
-class ExtensionInputMethodEventRouter;
-}
-
 namespace extensions {
 class AppNotificationManager;
 class AppSyncData;
@@ -556,12 +552,6 @@ class ExtensionService
     return browser_event_router_.get();
   }
 
-#if defined(OS_CHROMEOS)
-  chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
-    return input_method_event_router_.get();
-  }
-#endif
-
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
   // can post to here.
@@ -954,11 +944,6 @@ class ExtensionService
   // TODO(yoz): None of these should be owned by ExtensionService.
   // crbug.com/159265
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
-
-#if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
-      input_method_event_router_;
-#endif
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

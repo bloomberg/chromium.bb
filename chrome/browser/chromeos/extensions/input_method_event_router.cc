@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -15,13 +16,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile.h"
-
-namespace {
-
-// Prefix, which is used by XKB.
-const char kXkbPrefix[] = "xkb:";
-
-}  // namespace
 
 namespace chromeos {
 
@@ -45,7 +39,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
 
   scoped_ptr<ListValue> args(new ListValue());
   StringValue *input_method_name = new StringValue(
-      GetInputMethodForXkb(manager->GetCurrentInputMethod().id()));
+      extensions::InputMethodAPI::GetInputMethodForXkb(
+          manager->GetCurrentInputMethod().id()));
   args->Append(input_method_name);
 
   // The router will only send the event to extensions that are listening.
@@ -54,13 +49,6 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       BroadcastEvent(event.Pass());
-}
-
-std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(
-    const std::string& xkb_id) {
-  size_t prefix_length = std::string(kXkbPrefix).length();
-  DCHECK(xkb_id.substr(0, prefix_length) == kXkbPrefix);
-  return xkb_id.substr(prefix_length);
 }
 
 }  // namespace chromeos
