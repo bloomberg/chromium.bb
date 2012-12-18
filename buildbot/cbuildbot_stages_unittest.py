@@ -28,7 +28,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -761,16 +761,15 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
     gs_upload_location = 'gs://dontcare/builder/version'
-    self.mox.StubOutWithMock(gs.GSContext, 'Copy')
 
     self.archive_stage_mock.GetGSUploadLocation().AndReturn(gs_upload_location)
     results_file = 'pyauto_perf.results'
-    gs.GSContext.Copy('%s/%s' % (gs_upload_location, results_file),
-                      self.options.log_dir)
 
     stages.HWTestStage._PrintFile(os.path.join(self.options.log_dir,
                                                results_file))
-    self._RunHWTestSuite()
+    with gs_unittest.GSContextMock() as gs_mock:
+      gs_mock.SetDefaultCmdResult()
+      self._RunHWTestSuite()
 
 
 class UprevStageTest(AbstractStageTest):
