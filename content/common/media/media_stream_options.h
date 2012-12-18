@@ -19,8 +19,6 @@ CONTENT_EXPORT extern const char kMediaStreamSource[];
 CONTENT_EXPORT extern const char kMediaStreamSourceId[];
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
 
-typedef MediaStreamDeviceType MediaStreamType;
-
 // Callback to deliver the result of a media request. |label| is the string
 // to identify the request,
 typedef base::Callback< void(const std::string&, const MediaStreamDevices&) >
@@ -54,13 +52,7 @@ struct CONTENT_EXPORT StreamDeviceInfo {
   static bool IsEqual(const StreamDeviceInfo& first,
                       const StreamDeviceInfo& second);
 
-  // Describes the capture type.
-  MediaStreamType stream_type;
-  // Friendly name of the device.
-  std::string name;
-  // Unique name of a device. Even if there are multiple devices with the same
-  // friendly name connected to the computer, this will be unique.
-  std::string device_id;
+  MediaStreamDevice device;
   // Set to true if the device has been opened, false otherwise.
   bool in_use;
   // Id for this capture session. Unique for all sessions of the same type.

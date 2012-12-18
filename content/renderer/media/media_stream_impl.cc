@@ -93,7 +93,7 @@ static int GetSessionId(const WebKit::WebMediaStreamDescriptor& descriptor) {
     return -1;
   }
   DVLOG(1) << "local audio track source name: "
-           << source_data->device_info().name;
+           << source_data->device_info().device.name;
 
   return source_data->device_info().session_id;
 }
@@ -117,7 +117,7 @@ void CreateWebKitSourceVector(
     webkit_sources[i].initialize(
           UTF8ToUTF16(source_id),
           type,
-          UTF8ToUTF16(devices[i].name));
+          UTF8ToUTF16(devices[i].device.name));
     webkit_sources[i].setExtraData(
         new content::MediaStreamSourceExtraData(devices[i]));
   }

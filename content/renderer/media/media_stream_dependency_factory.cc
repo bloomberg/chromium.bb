@@ -215,7 +215,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
       NOTIMPLEMENTED();
       continue;
     }
-    const bool is_screencast = (source_data->device_info().stream_type ==
+    const bool is_screencast = (source_data->device_info().device.type ==
         content::MEDIA_TAB_VIDEO_CAPTURE);
     source_data->SetVideoSource(
         CreateVideoSource(source_data->device_info().session_id,

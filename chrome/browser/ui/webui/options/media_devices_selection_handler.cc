@@ -112,16 +112,16 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
   for (size_t i = 0; i < devices.size(); ++i) {
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("name", devices[i].name);
-    entry->SetString("id",  devices[i].device_id);
+    entry->SetString("id",  devices[i].id);
     device_list.Append(entry);
-    if (devices[i].device_id == default_device)
+    if (devices[i].id == default_device)
       default_id = default_device;
   }
 
   // Use the first device as the default device if the preferred default device
   // does not exist in the OS.
   if (!devices.empty() && default_id.empty())
-    default_id = devices[0].device_id;
+    default_id = devices[0].id;
 
   StringValue default_value(default_id);
   StringValue type_value(device_type);

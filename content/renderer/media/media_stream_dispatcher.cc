@@ -331,9 +331,9 @@ void MediaStreamDispatcher::OnDeviceOpened(
     if (request.ipc_request == request_id) {
       Stream new_stream;
       new_stream.handler = request.handler;
-      if (IsAudioMediaType(device_info.stream_type)) {
+      if (IsAudioMediaType(device_info.device.type)) {
         new_stream.audio_array.push_back(device_info);
-      } else if (IsVideoMediaType(device_info.stream_type)) {
+      } else if (IsVideoMediaType(device_info.device.type)) {
         new_stream.video_array.push_back(device_info);
       } else {
         NOTREACHED();

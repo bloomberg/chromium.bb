@@ -16,7 +16,7 @@
 namespace content {
 
 // Types of media streams.
-enum MediaStreamDeviceType {
+enum MediaStreamType {
   MEDIA_NO_SERVICE = 0,
 
   // A device provided by the operating system (e.g., webcam input).
@@ -40,24 +40,26 @@ enum MediaStreamRequestType {
 
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
-CONTENT_EXPORT bool IsAudioMediaType(MediaStreamDeviceType type);
-CONTENT_EXPORT bool IsVideoMediaType(MediaStreamDeviceType type);
+CONTENT_EXPORT bool IsAudioMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsVideoMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).
 struct CONTENT_EXPORT MediaStreamDevice {
+  MediaStreamDevice();
+
   MediaStreamDevice(
-      MediaStreamDeviceType type,
-      const std::string& device_id,
+      MediaStreamType type,
+      const std::string& id,
       const std::string& name);
 
   ~MediaStreamDevice();
 
   // The device's type.
-  MediaStreamDeviceType type;
+  MediaStreamType type;
 
   // The device's unique ID.
-  std::string device_id;
+  std::string id;
 
   // The device's "friendly" name. Not guaranteed to be unique.
   std::string name;
@@ -65,8 +67,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
 typedef std::vector<MediaStreamDevice> MediaStreamDevices;
 
-typedef std::map<MediaStreamDeviceType, MediaStreamDevices>
-    MediaStreamDeviceMap;
+typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 
 // Represents a request for media streams (audio/video).
 struct CONTENT_EXPORT MediaStreamRequest {
@@ -75,8 +76,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
       int render_view_id,
       const GURL& security_origin,
       MediaStreamRequestType request_type,
-      MediaStreamDeviceType audio_type,
-      MediaStreamDeviceType video_type);
+      MediaStreamType audio_type,
+      MediaStreamType video_type);
 
   ~MediaStreamRequest();
 
@@ -96,10 +97,10 @@ struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequestType request_type;
 
   // Flag to indicate if the request contains audio.
-  MediaStreamDeviceType audio_type;
+  MediaStreamType audio_type;
 
   // Flag to indicate if the request contains video.
-  MediaStreamDeviceType video_type;
+  MediaStreamType video_type;
 };
 
 }  // namespace content

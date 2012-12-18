@@ -13,10 +13,10 @@ namespace {
 
 ppapi::DeviceRefData FromStreamDeviceInfo(const StreamDeviceInfo& info) {
   ppapi::DeviceRefData data;
-  data.id = info.device_id;
-  data.name = info.name;
+  data.id = info.device.id;
+  data.name = info.device.name;
   data.type = PepperDeviceEnumerationEventHandler::FromMediaStreamType(
-      info.stream_type);
+      info.device.type);
   return data;
 }
 

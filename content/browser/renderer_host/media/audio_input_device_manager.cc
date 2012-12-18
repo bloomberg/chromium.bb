@@ -107,7 +107,7 @@ void AudioInputDeviceManager::Start(
   if (event_handlers_.insert(std::make_pair(session_id, handler)).second) {
     StreamDeviceMap::const_iterator it = devices_.find(session_id);
     if (it != devices_.end())
-      device_id = it->second.device_id;
+      device_id = it->second.device.id;
   }
 
   // Post a callback through the AudioInputRendererHost to notify the renderer
@@ -175,7 +175,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::OpenedOnIOThread,
                                      this,
-                                     device.stream_type, session_id));
+                                     device.device.type, session_id));
 }
 
 void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
@@ -184,7 +184,7 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
   StreamDeviceMap::iterator it = devices_.find(session_id);
   if (it == devices_.end())
     return;
-  const MediaStreamDeviceType stream_type = it->second.stream_type;
+  const MediaStreamType stream_type = it->second.device.type;
   devices_.erase(it);
 
   // Post a callback through the listener on IO thread since
@@ -207,15 +207,15 @@ void AudioInputDeviceManager::DevicesEnumeratedOnIOThread(
   }
 }
 
-void AudioInputDeviceManager::OpenedOnIOThread(
-    MediaStreamDeviceType stream_type, int session_id) {
+void AudioInputDeviceManager::OpenedOnIOThread(MediaStreamType stream_type,
+                                               int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_)
     listener_->Opened(stream_type, session_id);
 }
 
-void AudioInputDeviceManager::ClosedOnIOThread(
-    MediaStreamDeviceType stream_type, int session_id) {
+void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
+                                               int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_)
     listener_->Closed(stream_type, session_id);

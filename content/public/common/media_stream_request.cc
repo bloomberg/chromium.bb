@@ -6,22 +6,24 @@
 
 namespace content {
 
-bool IsAudioMediaType(MediaStreamDeviceType type) {
+bool IsAudioMediaType(MediaStreamType type) {
   return (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
           type == content::MEDIA_TAB_AUDIO_CAPTURE);
 }
 
-bool IsVideoMediaType(MediaStreamDeviceType type) {
+bool IsVideoMediaType(MediaStreamType type) {
   return (type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
           type == content::MEDIA_TAB_VIDEO_CAPTURE);
 }
 
+MediaStreamDevice::MediaStreamDevice() : type(MEDIA_NO_SERVICE) {}
+
 MediaStreamDevice::MediaStreamDevice(
-    MediaStreamDeviceType type,
-    const std::string& device_id,
+    MediaStreamType type,
+    const std::string& id,
     const std::string& name)
     : type(type),
-      device_id(device_id),
+      id(id),
       name(name) {
 }
 
@@ -32,8 +34,8 @@ MediaStreamRequest::MediaStreamRequest(
     int render_view_id,
     const GURL& security_origin,
     MediaStreamRequestType request_type,
-    MediaStreamDeviceType audio_type,
-    MediaStreamDeviceType video_type)
+    MediaStreamType audio_type,
+    MediaStreamType video_type)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
       security_origin(security_origin),

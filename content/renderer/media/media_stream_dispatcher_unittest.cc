@@ -26,9 +26,9 @@ const int kRequestId3 = 30;
 const int kRequestId4 = 40;
 static const char kLabel[] = "test";
 
-const MediaStreamDeviceType kAudioType = MEDIA_DEVICE_AUDIO_CAPTURE;
-const MediaStreamDeviceType kVideoType = MEDIA_DEVICE_VIDEO_CAPTURE;
-const MediaStreamDeviceType kNoAudioType = MEDIA_NO_SERVICE;
+const MediaStreamType kAudioType = MEDIA_DEVICE_AUDIO_CAPTURE;
+const MediaStreamType kVideoType = MEDIA_DEVICE_VIDEO_CAPTURE;
+const MediaStreamType kNoAudioType = MEDIA_NO_SERVICE;
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -99,15 +99,15 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
 
   StreamDeviceInfoArray audio_device_array(1);
   StreamDeviceInfo audio_device_info;
-  audio_device_info.name = "Microphone";
-  audio_device_info.stream_type = kAudioType;
+  audio_device_info.device.name = "Microphone";
+  audio_device_info.device.type = kAudioType;
   audio_device_info.session_id = kAudioSessionId;
   audio_device_array[0] = audio_device_info;
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
-  video_device_info.name = "Camera";
-  video_device_info.stream_type = kVideoType;
+  video_device_info.device.name = "Camera";
+  video_device_info.device.type = kVideoType;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -180,8 +180,8 @@ TEST(MediaStreamDispatcherTest, BasicStreamForDevice) {
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
-  video_device_info.name = "Fake Video Capture Device";
-  video_device_info.stream_type = kVideoType;
+  video_device_info.device.name = "Fake Video Capture Device";
+  video_device_info.device.type = kVideoType;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -251,9 +251,9 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
-  video_device_info.name = "Camera";
-  video_device_info.device_id = "device_path";
-  video_device_info.stream_type = kVideoType;
+  video_device_info.device.name = "Camera";
+  video_device_info.device.id = "device_path";
+  video_device_info.device.type = kVideoType;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -268,13 +268,13 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
 
   int ipc_request_id3 = dispatcher->next_ipc_id_;
   dispatcher->OpenDevice(kRequestId3, handler1.get()->AsWeakPtr(),
-                         video_device_info.device_id,
+                         video_device_info.device.id,
                          kVideoType,
                          security_origin);
   int ipc_request_id4 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id3, ipc_request_id4);
   dispatcher->OpenDevice(kRequestId4, handler1.get()->AsWeakPtr(),
-                         video_device_info.device_id,
+                         video_device_info.device.id,
                          kVideoType,
                          security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
@@ -340,15 +340,15 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
 
   StreamDeviceInfoArray audio_device_array(1);
   StreamDeviceInfo audio_device_info;
-  audio_device_info.name = "Microphone";
-  audio_device_info.stream_type = kAudioType;
+  audio_device_info.device.name = "Microphone";
+  audio_device_info.device.type = kAudioType;
   audio_device_info.session_id = kAudioSessionId;
   audio_device_array[0] = audio_device_info;
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
-  video_device_info.name = "Camera";
-  video_device_info.stream_type = kVideoType;
+  video_device_info.device.name = "Camera";
+  video_device_info.device.type = kVideoType;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -385,15 +385,15 @@ TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
 
   // Complete the creation of stream1.
   StreamDeviceInfo audio_device_info;
-  audio_device_info.name = "Microphone";
-  audio_device_info.stream_type = kAudioType;
+  audio_device_info.device.name = "Microphone";
+  audio_device_info.device.type = kAudioType;
   audio_device_info.session_id = kAudioSessionId;
   StreamDeviceInfoArray audio_device_array(1);
   audio_device_array[0] = audio_device_info;
 
   StreamDeviceInfo video_device_info;
-  video_device_info.name = "Camera";
-  video_device_info.stream_type = kVideoType;
+  video_device_info.device.name = "Camera";
+  video_device_info.device.type = kVideoType;
   video_device_info.session_id = kVideoSessionId;
   StreamDeviceInfoArray video_device_array(1);
   video_device_array[0] = video_device_info;

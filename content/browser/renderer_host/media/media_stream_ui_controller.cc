@@ -200,7 +200,7 @@ void MediaStreamUIController::PostResponse(
     for (MediaStreamDevices::const_iterator dev = devices.begin();
          dev != devices.end(); ++dev) {
       device_list.push_back(StreamDeviceInfo(
-          dev->type, dev->name, dev->device_id, false));
+          dev->type, dev->name, dev->id, false));
     }
 
     requester_->DevicesAccepted(label, device_list);

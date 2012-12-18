@@ -148,22 +148,22 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
   media::VideoCaptureDevice* video_capture_device = GetOpenedDevice(device);
   if (video_capture_device) {
     DeviceEntry& new_entry = devices_[capture_session_id];
-    new_entry.stream_type = device.stream_type;
+    new_entry.stream_type = device.device.type;
     new_entry.capture_device = video_capture_device;
-    PostOnOpened(device.stream_type, capture_session_id);
+    PostOnOpened(device.device.type, capture_session_id);
     return;
   }
 
   // Open the device.
   media::VideoCaptureDevice::Name vc_device_name;
-  vc_device_name.device_name = device.name;
-  vc_device_name.unique_id = device.device_id;
+  vc_device_name.device_name = device.device.name;
+  vc_device_name.unique_id = device.device.id;
 
   if (use_fake_device_) {
     video_capture_device =
         media::FakeVideoCaptureDevice::Create(vc_device_name);
   } else {
-    switch (device.stream_type) {
+    switch (device.device.type) {
       case MEDIA_DEVICE_VIDEO_CAPTURE:
         video_capture_device =
             media::VideoCaptureDevice::Create(vc_device_name);
@@ -183,9 +183,9 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
   }
 
   DeviceEntry& new_entry = devices_[capture_session_id];
-  new_entry.stream_type = device.stream_type;
+  new_entry.stream_type = device.device.type;
   new_entry.capture_device = video_capture_device;
-  PostOnOpened(device.stream_type, capture_session_id);
+  PostOnOpened(device.device.type, capture_session_id);
 }
 
 void VideoCaptureManager::OnClose(int capture_session_id) {
@@ -286,7 +286,7 @@ void VideoCaptureManager::OnStop(
   }
 }
 
-void VideoCaptureManager::OnOpened(MediaStreamDeviceType stream_type,
+void VideoCaptureManager::OnOpened(MediaStreamType stream_type,
                                    int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!listener_) {
@@ -296,7 +296,7 @@ void VideoCaptureManager::OnOpened(MediaStreamDeviceType stream_type,
   listener_->Opened(stream_type, capture_session_id);
 }
 
-void VideoCaptureManager::OnClosed(MediaStreamDeviceType stream_type,
+void VideoCaptureManager::OnClosed(MediaStreamType stream_type,
                                    int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!listener_) {
@@ -317,7 +317,7 @@ void VideoCaptureManager::OnDevicesEnumerated(
   listener_->DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, devices);
 }
 
-void VideoCaptureManager::OnError(MediaStreamDeviceType stream_type,
+void VideoCaptureManager::OnError(MediaStreamType stream_type,
                                   int capture_session_id,
                                   MediaStreamProviderError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -329,7 +329,7 @@ void VideoCaptureManager::OnError(MediaStreamDeviceType stream_type,
 }
 
 void VideoCaptureManager::PostOnOpened(
-    MediaStreamDeviceType stream_type, int capture_session_id) {
+    MediaStreamType stream_type, int capture_session_id) {
   DCHECK(IsOnDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -338,7 +338,7 @@ void VideoCaptureManager::PostOnOpened(
 }
 
 void VideoCaptureManager::PostOnClosed(
-    MediaStreamDeviceType stream_type, int capture_session_id) {
+    MediaStreamType stream_type, int capture_session_id) {
   DCHECK(IsOnDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -358,7 +358,7 @@ void VideoCaptureManager::PostOnDevicesEnumerated(
 void VideoCaptureManager::PostOnError(int capture_session_id,
                                       MediaStreamProviderError error) {
   DCHECK(IsOnDeviceThread());
-  MediaStreamDeviceType stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
+  MediaStreamType stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   VideoCaptureDevices::const_iterator it = devices_.find(capture_session_id);
   if (it != devices_.end())
     stream_type = it->second.stream_type;
@@ -404,7 +404,7 @@ media::VideoCaptureDevice* VideoCaptureManager::GetOpenedDevice(
 
   for (VideoCaptureDevices::iterator it = devices_.begin();
        it != devices_.end(); it++) {
-    if (device_info.device_id ==
+    if (device_info.device.id ==
             it->second.capture_device->device_name().unique_id) {
       return it->second.capture_device;
     }

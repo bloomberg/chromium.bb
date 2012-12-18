@@ -103,16 +103,16 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       VideoCaptureControllerEventHandler* handler);
 
   // Executed on Browser::IO thread to call Listener.
-  void OnOpened(MediaStreamDeviceType type, int capture_session_id);
-  void OnClosed(MediaStreamDeviceType type, int capture_session_id);
+  void OnOpened(MediaStreamType type, int capture_session_id);
+  void OnClosed(MediaStreamType type, int capture_session_id);
   void OnDevicesEnumerated(const StreamDeviceInfoArray& devices);
-  void OnError(MediaStreamDeviceType type, int capture_session_id,
+  void OnError(MediaStreamType type, int capture_session_id,
                MediaStreamProviderError error);
 
   // Executed on device thread to make sure Listener is called from
   // Browser::IO thread.
-  void PostOnOpened(MediaStreamDeviceType type, int capture_session_id);
-  void PostOnClosed(MediaStreamDeviceType type, int capture_session_id);
+  void PostOnOpened(MediaStreamType type, int capture_session_id);
+  void PostOnClosed(MediaStreamType type, int capture_session_id);
   void PostOnDevicesEnumerated(const StreamDeviceInfoArray& devices);
   void PostOnError(int capture_session_id, MediaStreamProviderError error);
 
@@ -136,7 +136,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // VideoCaptureManager owns all VideoCaptureDevices and is responsible for
   // deleting the instances when they are not used any longer.
   struct DeviceEntry {
-    MediaStreamDeviceType stream_type;
+    MediaStreamType stream_type;
     media::VideoCaptureDevice* capture_device;  // Maybe shared across sessions.
   };
   typedef std::map<int, DeviceEntry> VideoCaptureDevices;

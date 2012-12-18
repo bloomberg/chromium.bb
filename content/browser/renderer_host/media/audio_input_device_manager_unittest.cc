@@ -290,7 +290,7 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
 
     manager_->Start(session_id[index], audio_input_event_handler.get());
     EXPECT_CALL(*audio_input_event_handler,
-                DeviceStarted(session_id[index], iter->device_id))
+                DeviceStarted(session_id[index], iter->device.id))
         .Times(1);
     message_loop_->RunUntilIdle();
 
@@ -335,7 +335,7 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
 
     manager_->Start(session_id[index], audio_input_event_handler.get());
     EXPECT_CALL(*audio_input_event_handler,
-                DeviceStarted(session_id[index], iter->device_id))
+                DeviceStarted(session_id[index], iter->device.id))
         .Times(1);
     message_loop_->RunUntilIdle();
 

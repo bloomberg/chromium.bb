@@ -58,8 +58,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 
     if (audio) {
       StreamDeviceInfo info;
-      info.stream_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
-      info.name = "audio";
+      info.device.type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+      info.device.name = "audio";
       info.session_id = 99;
       audio_sources[0].initialize("audio",
                                   WebKit::WebMediaStreamSource::TypeAudio,
@@ -69,8 +69,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     }
     if (video) {
       StreamDeviceInfo info;
-      info.stream_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
-      info.name = "video";
+      info.device.type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+      info.device.name = "video";
       info.session_id = 98;
       video_sources[0].initialize("video",
                                   WebKit::WebMediaStreamSource::TypeVideo,

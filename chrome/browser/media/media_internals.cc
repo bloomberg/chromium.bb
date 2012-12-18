@@ -32,7 +32,7 @@ const content::MediaStreamDevice* FindDefaultDeviceWithId(
 
   content::MediaStreamDevices::const_iterator iter = devices.begin();
   for (; iter != devices.end(); ++iter) {
-    if (iter->device_id == device_id) {
+    if (iter->id == device_id) {
       return &(*iter);
     }
   }
