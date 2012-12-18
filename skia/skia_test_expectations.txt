@@ -48,14 +48,7 @@
 #
 # START OVERRIDES HERE
 
-# These 6 tests will be rebaselined by fmalita@
-# They are due to http://code.google.com/p/skia/source/detail?r=6773
-crbug.com/165935 fast/borders/borderRadiusDotted02.html [ ImageOnlyFailure ]
-crbug.com/165935 fast/borders/borderRadiusDotted03.html [ ImageOnlyFailure ]
-crbug.com/165935 fast/borders/borderRadiusDotted04.html [ ImageOnlyFailure ]
-# These 3 are really Windows only
 crbug.com/165935 fast/forms/button-generated-content.html [ ImageOnlyFailure ]
 crbug.com/165935 fast/forms/button-inner-block-reuse.html [ ImageOnlyFailure ]
-crbug.com/165935 ietestcenter/css3/bordersbackgrounds/border-radius-style-001.htm [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
