@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"

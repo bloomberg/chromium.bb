@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"

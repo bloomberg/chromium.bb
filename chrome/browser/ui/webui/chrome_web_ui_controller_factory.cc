@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/about_ui.h"
