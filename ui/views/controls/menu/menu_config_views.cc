@@ -10,6 +10,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/controls/menu/menu_image_util.h"
 
 namespace views {
 
@@ -30,7 +31,7 @@ void MenuConfig::InitAura() {
   arrow_to_edge_padding = 20;
   icon_to_label_padding = 4;
   arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->width();
-  const gfx::ImageSkia* check = rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
+  const gfx::ImageSkia* check = GetMenuCheckImage();
   // Add 4 to force some padding between check and label.
   check_width = check->width() + 4;
   check_height = check->height();

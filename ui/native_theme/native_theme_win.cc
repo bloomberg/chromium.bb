@@ -209,6 +209,11 @@ NativeThemeWin* NativeThemeWin::instance() {
 gfx::Size NativeThemeWin::GetPartSize(Part part,
                                       State state,
                                       const ExtraParams& extra) const {
+  if (IsNewMenuStyleEnabled()) {
+    gfx::Size size = CommonThemeGetPartSize(part, state, extra);
+    if (!size.IsEmpty())
+      return size;
+  }
   SIZE size;
   int part_id = GetWindowsPart(part, state, extra);
   int state_id = GetWindowsState(part, state, extra);

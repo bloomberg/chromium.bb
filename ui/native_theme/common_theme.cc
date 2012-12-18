@@ -5,7 +5,10 @@
 #include "ui/native_theme/common_theme.h"
 
 #include "base/logging.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -51,6 +54,25 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       return false;
   }
   return true;
+}
+
+gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
+                                 NativeTheme::State state,
+                                 const NativeTheme::ExtraParams& extra) {
+  gfx::Size size;
+  switch (part) {
+    case NativeTheme::kMenuCheck: {
+      const gfx::ImageSkia* check =
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_MENU_CHECK_CHECKED).ToImageSkia();
+      size.SetSize(check->width(), check->height());
+      break;
+    }
+    default:
+      break;
+  }
+
+  return size;
 }
 
 void CommonThemePaintMenuSeparator(

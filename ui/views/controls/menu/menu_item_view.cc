@@ -777,10 +777,9 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
 
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* check = rb.GetImageNamed(
-        IDR_MENU_CHECK).ToImageSkia();
-    // Don't use config.check_width here as it's padded to force more padding.
+    const gfx::ImageSkia* check = GetMenuCheckImage();
+    // Don't use config.check_width here as it's padded
+    // to force more padding (AURA).
     gfx::Rect check_bounds(icon_x, icon_y, check->width(), icon_height);
     AdjustBoundsForRTLUI(&check_bounds);
     canvas->DrawImageInt(*check, check_bounds.x(), check_bounds.y());

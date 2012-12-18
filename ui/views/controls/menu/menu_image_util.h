@@ -11,6 +11,10 @@ class ImageSkia;
 
 namespace views {
 
+// Returns the Menu Check box image (always checked).
+// The returned image is global object and should not be freed.
+const gfx::ImageSkia* GetMenuCheckImage();
+
 // Return the RadioButton image for given state.
 // It returns the "selected" image when |selected| is
 // true, or the "unselected" image if false.

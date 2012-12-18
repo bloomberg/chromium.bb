@@ -8,9 +8,6 @@
 #include "ui/native_theme/native_theme.h"
 
 class SkCanvas;
-namespace views {
-struct MenuConfig;
-}
 
 namespace ui {
 
@@ -18,7 +15,13 @@ namespace ui {
 
 // Returns true and |color| if |color_id| is found, or false otherwise.
 bool NATIVE_THEME_EXPORT CommonThemeGetSystemColor(
-    NativeTheme::ColorId color_id, SkColor* color);
+    NativeTheme::ColorId color_id,
+    SkColor* color);
+
+gfx::Size NATIVE_THEME_EXPORT CommonThemeGetPartSize(
+    NativeTheme::Part part,
+    NativeTheme::State state,
+    const NativeTheme::ExtraParams& extra);
 
 void NATIVE_THEME_EXPORT CommonThemePaintMenuSeparator(
     SkCanvas* canvas,
@@ -26,13 +29,15 @@ void NATIVE_THEME_EXPORT CommonThemePaintMenuSeparator(
     const NativeTheme::MenuSeparatorExtraParams& extra);
 
 void NATIVE_THEME_EXPORT CommonThemePaintMenuGutter(SkCanvas* canvas,
-    const gfx::Rect& rect);
+                                                    const gfx::Rect& rect);
 
 void NATIVE_THEME_EXPORT CommonThemePaintMenuBackground(SkCanvas* canvas,
-    const gfx::Rect& rect);
+                                                        const gfx::Rect& rect);
 
-void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(SkCanvas* canvas,
-    NativeTheme::State state, const gfx::Rect& rect);
+void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(
+    SkCanvas* canvas,
+    NativeTheme::State state,
+    const gfx::Rect& rect);
 
 }  // namespace ui
 
