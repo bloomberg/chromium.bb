@@ -54,7 +54,10 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
 
   // If we're running inside a browser test, we might need to allow the test
   // launcher to do extra work before/after running a nested message loop.
-  TestLauncherDelegate* delegate = GetCurrentTestLauncherDelegate();
+  TestLauncherDelegate* delegate = NULL;
+#if !defined(OS_IOS)
+  delegate = GetCurrentTestLauncherDelegate();
+#endif
   if (delegate)
     delegate->PreRunMessageLoop(run_loop);
   run_loop->Run();
