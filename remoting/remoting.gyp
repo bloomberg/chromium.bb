@@ -1742,7 +1742,7 @@
         {
           'action_name': 'verify_resources',
           'inputs': [
-            'resources/string_resources.grd',
+            'resources/remoting_strings.grd',
             'resources/common_resources.grd',
             'tools/verify_resources.py',
             '<@(sources)'
@@ -1754,15 +1754,15 @@
             'python',
             'tools/verify_resources.py',
             '-t', '<(PRODUCT_DIR)/remoting_resources_verified.stamp',
-            '-r', 'resources/string_resources.grd',
+            '-r', 'resources/remoting_strings.grd',
             '-r', 'resources/common_resources.grd',
             '<@(sources)',
          ],
         },
         {
-          'action_name': 'string_resources',
+          'action_name': 'remoting_strings',
           'variables': {
-            'grit_grd_file': 'resources/string_resources.grd',
+            'grit_grd_file': 'resources/remoting_strings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },

@@ -16,7 +16,7 @@
 {
   "SRCDIR": "../..",
 
-  "remoting/resources/string_resources.grd": {
+  "remoting/resources/remoting_strings.grd": {
     "messages": [1000],
   },
   "remoting/resources/common_resources.grd": {
