@@ -428,6 +428,8 @@
         'browser/chromeos/login/password_changed_view.h',
         'browser/chromeos/login/policy_oauth_fetcher.cc',
         'browser/chromeos/login/policy_oauth_fetcher.h',
+        'browser/chromeos/login/profile_auth_data.cc',
+        'browser/chromeos/login/profile_auth_data.h',
         'browser/chromeos/login/proxy_settings_dialog.cc',
         'browser/chromeos/login/proxy_settings_dialog.h',
         'browser/chromeos/login/registration_screen.cc',

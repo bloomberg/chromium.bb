@@ -61,13 +61,6 @@ class TestLoginUtils : public LoginUtils {
 
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
-  virtual void TransferDefaultCookiesAndServerBoundCerts(
-      Profile* default_profile,
-      Profile* new_profile) OVERRIDE;
-
-  virtual void TransferDefaultAuthCache(Profile* default_profile,
-                                        Profile* new_profile) OVERRIDE;
-
   virtual void StopBackgroundFetchers() OVERRIDE;
 
  private:

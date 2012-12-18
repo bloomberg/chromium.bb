@@ -49,15 +49,6 @@ std::string TestLoginUtils::GetOffTheRecordCommandLine(
 void TestLoginUtils::InitRlzDelayed(Profile* user_profile) {
 }
 
-void TestLoginUtils::TransferDefaultCookiesAndServerBoundCerts(
-    Profile* default_profile,
-    Profile* new_profile) {
-}
-
-void TestLoginUtils::TransferDefaultAuthCache(Profile* default_profile,
-                                              Profile* new_profile) {
-}
-
 void TestLoginUtils::StopBackgroundFetchers() {
 }
 

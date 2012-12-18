@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/login/oauth_login_verifier.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/policy_oauth_fetcher.h"
+#include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -85,13 +86,6 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/media_switches.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/server_bound_cert_service.h"
-#include "net/base/server_bound_cert_store.h"
-#include "net/cookies/cookie_monster.h"
-#include "net/cookies/cookie_store.h"
-#include "net/http/http_auth_cache.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
@@ -120,75 +114,6 @@ const char kSwitchFormatString[] = " --%s=\"%s\"";
 // User name which is used in the Guest session.
 const char kGuestUserName[] = "";
 
-class InitializeCookieMonsterHelper {
- public:
-  explicit InitializeCookieMonsterHelper(
-      net::URLRequestContextGetter* new_context)
-          : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(base::Bind(
-              &InitializeCookieMonsterHelper::InitializeCookieMonster,
-              base::Unretained(this)))),
-            new_context_(new_context) {
-  }
-
-  const net::CookieMonster::GetCookieListCallback& callback() const {
-    return callback_;
-  }
-
- private:
-  void InitializeCookieMonster(const net::CookieList& cookies) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::CookieStore* new_store =
-        new_context_->GetURLRequestContext()->cookie_store();
-    net::CookieMonster* new_monster = new_store->GetCookieMonster();
-
-    if (!new_monster->InitializeFrom(cookies))
-      LOG(WARNING) << "Failed initial cookie transfer.";
-  }
-
-  net::CookieMonster::GetCookieListCallback callback_;
-  scoped_refptr<net::URLRequestContextGetter> new_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitializeCookieMonsterHelper);
-};
-
-// Transfers initial set of Profile cookies from the default profile.
-void TransferDefaultCookiesOnIOThread(
-    net::URLRequestContextGetter* auth_context,
-    net::URLRequestContextGetter* new_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieStore* default_store =
-      auth_context->GetURLRequestContext()->cookie_store();
-
-  InitializeCookieMonsterHelper helper(new_context);
-  net::CookieMonster* default_monster = default_store->GetCookieMonster();
-  default_monster->SetKeepExpiredCookies();
-  default_monster->GetAllCookiesAsync(helper.callback());
-}
-
-void TransferDefaultServerBoundCertsIOThread(
-    net::URLRequestContextGetter* auth_context,
-    net::URLRequestContextGetter* new_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::ServerBoundCertService* default_service =
-      auth_context->GetURLRequestContext()->server_bound_cert_service();
-
-  net::ServerBoundCertStore::ServerBoundCertList server_bound_certs;
-  default_service->GetCertStore()->GetAllServerBoundCerts(&server_bound_certs);
-
-  net::ServerBoundCertService* new_service =
-      new_context->GetURLRequestContext()->server_bound_cert_service();
-  new_service->GetCertStore()->InitializeFrom(server_bound_certs);
-}
-
-void TransferDefaultAuthCacheOnIOThread(
-    net::URLRequestContextGetter* auth_context,
-      net::URLRequestContextGetter* new_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::HttpAuthCache* new_cache = new_context->GetURLRequestContext()->
-      http_transaction_factory()->GetSession()->http_auth_cache();
-  new_cache->UpdateAllFrom(*auth_context->GetURLRequestContext()->
-      http_transaction_factory()->GetSession()->http_auth_cache());
-}
 
 #if defined(ENABLE_RLZ)
 // Flag file that disables RLZ tracking, when present.
@@ -305,11 +230,6 @@ class LoginUtilsImpl
   virtual void StartSignedInServices(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-  virtual void TransferDefaultCookiesAndServerBoundCerts(
-      Profile* default_profile,
-      Profile* new_profile) OVERRIDE;
-  virtual void TransferDefaultAuthCache(Profile* default_profile,
-                                        Profile* new_profile) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
@@ -612,19 +532,15 @@ void LoginUtilsImpl::OnProfileCreated(
                              policy_oauth_fetcher_->oauth1_secret());
     }
 
-    // Transfer cookies when user signs in using extension.
-    if (has_cookies_) {
-      // Transfer cookies and server bound certs from the profile that was used
-      // for authentication.  This profile contains cookies that auth extension
-      // should have already put in place that will ensure that the newly
-      // created session is authenticated for the websites that work with the
-      // used authentication schema.
-      TransferDefaultCookiesAndServerBoundCerts(
-          authenticator_->authentication_profile(), user_profile);
-    }
-    // Transfer proxy authentication cache.
-    TransferDefaultAuthCache(authenticator_->authentication_profile(),
-                             user_profile);
+    // Transfer proxy authentication cache and optionally cookies and server
+    // bound certs from the profile that was used for authentication.  This
+    // profile contains cookies that auth extension should have already put in
+    // place that will ensure that the newly created session is authenticated
+    // for the websites that work with the used authentication schema.
+    ProfileAuthData::Transfer(authenticator_->authentication_profile(),
+                              user_profile,
+                              has_cookies_);   // transfer_cookies
+
     std::string oauth1_token;
     std::string oauth1_secret;
     if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
@@ -1080,30 +996,6 @@ void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
   std::string oauth1_secret;
   if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
     VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
-}
-
-void LoginUtilsImpl::TransferDefaultCookiesAndServerBoundCerts(
-    Profile* default_profile,
-    Profile* profile) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&TransferDefaultCookiesOnIOThread,
-                 make_scoped_refptr(default_profile->GetRequestContext()),
-                 make_scoped_refptr(profile->GetRequestContext())));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&TransferDefaultServerBoundCertsIOThread,
-                 make_scoped_refptr(default_profile->GetRequestContext()),
-                 make_scoped_refptr(profile->GetRequestContext())));
-}
-
-void LoginUtilsImpl::TransferDefaultAuthCache(Profile* default_profile,
-                                              Profile* profile) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&TransferDefaultAuthCacheOnIOThread,
-                 make_scoped_refptr(default_profile->GetRequestContext()),
-                 make_scoped_refptr(profile->GetRequestContext())));
 }
 
 void LoginUtilsImpl::StopBackgroundFetchers() {
