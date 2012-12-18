@@ -22,6 +22,15 @@ import org.chromium.base.ThreadUtils;
  */
 @JNINamespace("content")
 public class ContentSettings {
+    // This enum corresponds to WebSettings.LayoutAlgorithm. We use our own to be
+    // able to extend it.
+    public enum LayoutAlgorithm {
+        NORMAL,
+        SINGLE_COLUMN,
+        NARROW_COLUMNS,
+        TEXT_AUTOSIZING,
+    }
+
     private static final String TAG = "ContentSettings";
 
     // This class must be created on the UI thread. Afterwards, it can be
@@ -56,6 +65,7 @@ public class ContentSettings {
     // Note: If adding a new setting to this class, make sure to add it to the initFrom()
     // method defined below.
 
+    private LayoutAlgorithm mLayoutAlgorithm = LayoutAlgorithm.NARROW_COLUMNS;
     private int mTextSizePercent = 100;
     private String mStandardFontFamily = "sans-serif";
     private String mFixedFontFamily = "monospace";
@@ -903,6 +913,59 @@ public class ContentSettings {
     }
 
     /**
+     * Sets the underlying layout algorithm. The default is
+     * {@link LayoutAlgorithm#NARROW_COLUMNS}.
+     *
+     * @param l the layout algorithm to use, as a {@link LayoutAlgorithm} value
+     */
+    public void setLayoutAlgorithm(LayoutAlgorithm l) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mLayoutAlgorithm != l) {
+                mLayoutAlgorithm = l;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Gets the current layout algorithm.
+     *
+     * @return the layout algorithm in use, as a {@link LayoutAlgorithm} value
+     * @see #setLayoutAlgorithm
+     */
+    public LayoutAlgorithm getLayoutAlgorithm() {
+        synchronized (mContentSettingsLock) {
+            return mLayoutAlgorithm;
+        }
+    }
+
+    /**
+     * Sets whether Text Auto-sizing layout algorithm is enabled.
+     *
+     * @param enabled whether Text Auto-sizing layout algorithm is enabled
+     * @hide
+     */
+    @CalledByNative
+    private void setTextAutosizingEnabled(boolean enabled) {
+        // This should only be called from SyncFromNative, which is called
+        // either from the constructor, or with mContentSettingsLock being held.
+        mLayoutAlgorithm = enabled ?
+                LayoutAlgorithm.TEXT_AUTOSIZING : LayoutAlgorithm.NARROW_COLUMNS;
+    }
+
+    /**
+     * Gets whether Text Auto-sizing layout algorithm is enabled.
+     *
+     * @return true if Text Auto-sizing layout algorithm is enabled
+     * @hide
+     */
+    @CalledByNative
+    private boolean getTextAutosizingEnabled() {
+        return mLayoutAlgorithm == LayoutAlgorithm.TEXT_AUTOSIZING;
+    }
+
+    /**
      * Tells the WebView whether it supports multiple windows. True means
      * that {@link WebChromeClient#onCreateWindow(WebView, boolean,
      * boolean, Message)} is implemented by the host application.
@@ -1063,6 +1126,7 @@ public class ContentSettings {
      * windows in an already created WebView)
      */
     public void initFrom(ContentSettings settings) {
+        setLayoutAlgorithm(settings.getLayoutAlgorithm());
         setTextZoom(settings.getTextZoom());
         setStandardFontFamily(settings.getStandardFontFamily());
         setFixedFontFamily(settings.getFixedFontFamily());

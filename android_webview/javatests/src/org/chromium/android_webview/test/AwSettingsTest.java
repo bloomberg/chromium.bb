@@ -20,6 +20,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentSettings;
+import org.chromium.content.browser.ContentSettings.LayoutAlgorithm;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -798,14 +799,100 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         private String mTempDir;
     }
 
-    class AwSettingsTextZoomTestHelper extends AwSettingsTestHelper<Integer> {
+    // This class provides helper methods for testing of settings related to
+    // the text autosizing feature.
+    abstract class AwSettingsTextAutosizingTestHelper<T> extends AwSettingsTestHelper<T> {
+        protected static final float PARAGRAPH_FONT_SIZE = 14.0f;
+
+        AwSettingsTextAutosizingTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient, true);
+        }
+
+        protected float getActualFontSize() throws Throwable {
+            loadDataSync(getData());
+            // Retrieve font size after the native callback has fired, not in body.onload.
+            // The latter can fire prior to Font autosizer adjustments.
+            executeJavaScriptAndWaitForResult(
+                mAwContents, mContentViewClient, "setTitleToActualFontSize()");
+            return Float.parseFloat(getTitleOnUiThread());
+        }
+
+        protected String getData() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>" +
+                    "<head><script>" +
+                    "function setTitleToActualFontSize() {" +
+                    // parseFloat is used to trim out the "px" suffix.
+                    "  document.title = parseFloat(getComputedStyle(" +
+                    "    document.getElementById('par')).getPropertyValue('font-size'));" +
+                    "}</script></head>" +
+                    "<body>" +
+                    "<p id=\"par\" style=\"font-size:");
+            sb.append(PARAGRAPH_FONT_SIZE);
+            sb.append("px;\">");
+            // Make the paragraph wide enough for being processed by the font autosizer.
+            for (int i = 0; i < 100; i++) {
+                sb.append("Hello, World! ");
+            }
+            sb.append("</p></body></html>");
+            return sb.toString();
+        }
+    }
+
+    class AwSettingsLayoutAlgorithmTestHelper extends
+                                              AwSettingsTextAutosizingTestHelper<LayoutAlgorithm> {
+
+        AwSettingsLayoutAlgorithmTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient);
+        }
+
+        @Override
+        protected LayoutAlgorithm getAlteredValue() {
+            return LayoutAlgorithm.TEXT_AUTOSIZING;
+        }
+
+        @Override
+        protected LayoutAlgorithm getInitialValue() {
+            return LayoutAlgorithm.NARROW_COLUMNS;
+        }
+
+        @Override
+        protected LayoutAlgorithm getCurrentValue() {
+            return mContentSettings.getLayoutAlgorithm();
+        }
+
+        @Override
+        protected void setCurrentValue(LayoutAlgorithm value) {
+            mContentSettings.setLayoutAlgorithm(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(LayoutAlgorithm value) throws Throwable {
+            final float actualFontSize = getActualFontSize();
+            if (value == LayoutAlgorithm.TEXT_AUTOSIZING) {
+                assertFalse("Actual font size: " + actualFontSize,
+                        actualFontSize == PARAGRAPH_FONT_SIZE);
+            } else {
+                assertTrue("Actual font size: " + actualFontSize,
+                        actualFontSize == PARAGRAPH_FONT_SIZE);
+            }
+        }
+    }
+
+    class AwSettingsTextZoomTestHelper extends AwSettingsTextAutosizingTestHelper<Integer> {
         private static final int INITIAL_TEXT_ZOOM = 100;
         private final float mInitialActualFontSize;
 
         AwSettingsTextZoomTestHelper(
                 AwContents awContents,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(awContents, contentViewClient);
+            // See b/7873666.
+            mContentSettings.setLayoutAlgorithm(LayoutAlgorithm.TEXT_AUTOSIZING);
             // The initial font size can be adjusted by font autosizer depending on the page's
             // viewport width.
             mInitialActualFontSize = getActualFontSize();
@@ -843,34 +930,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
                 value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
                 ratiosDelta <= 0.2f);
-        }
-
-        private float getActualFontSize() throws Throwable {
-            loadDataSync(getData());
-            // Retrieve font size after the native callback has fired, not in body.onload.
-            // The latter can fire prior to Font autosizer adjustments.
-            executeJavaScriptAndWaitForResult(
-                mAwContents, mContentViewClient, "setTitleToActualFontSize()");
-            return Float.parseFloat(getTitleOnUiThread());
-        }
-
-        private String getData() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html>" +
-                      "<head><script>" +
-                      "function setTitleToActualFontSize() {" +
-                      // parseFloat is used to trim out the "px" suffix.
-                      "  document.title = parseFloat(getComputedStyle(" +
-                      "    document.getElementById('par')).getPropertyValue('font-size'));" +
-                      "}</script></head>" +
-                      "<body>" +
-                      "<p id=\"par\" style=\"font-size:14px;\">");
-            // Make the paragraph wide enough for being processed by the font autosizer.
-            for (int i = 0; i < 100; i++) {
-                sb.append("Hello, World! ");
-            }
-            sb.append("</p></body></html>");
-            return sb.toString();
         }
     }
 
@@ -1954,6 +2013,33 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         } finally {
             resetResourceContext();
         }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testLayoutAlgorithmNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testLayoutAlgorithmIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testLayoutAlgorithmBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
     }
 
     @SmallTest

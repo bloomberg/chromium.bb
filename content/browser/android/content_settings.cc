@@ -142,8 +142,9 @@ void ContentSettings::SyncFromNativeImpl() {
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
-  // TODO(mnaganov): Hook LayoutAlgorithm.NARROW_COLUMNS up to
-  // prefs.text_autosizing_enabled
+  Java_ContentSettings_setTextAutosizingEnabled(
+      env, obj, prefs.text_autosizing_enabled);
+  CheckException(env);
 
   env->SetIntField(
       obj,
@@ -271,8 +272,8 @@ void ContentSettings::SyncToNativeImpl() {
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
-  // TODO(mnaganov): Hook prefs.text_autosizing_enabled up to
-  // LayoutAlgorithm.NARROW_COLUMNS
+  prefs.text_autosizing_enabled =
+      Java_ContentSettings_getTextAutosizingEnabled(env, obj);
 
   int text_size_percent = env->GetIntField(obj, field_ids_->text_size_percent);
   prefs.font_scale_factor = text_size_percent / 100.0f;
