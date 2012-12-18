@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 
-#include "base/debug/alias.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -76,8 +75,6 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  bug144879_.CheckIsAlive();
-
   // TODO(dbeam): I'm not totally sure why this is happening, and there's been a
   // bit of effort to understand with no tangible results yet. It's possible
   // that WebContents is NULL as it's being destroyed or some other random
@@ -100,33 +97,6 @@ void ZoomController::UpdateState(const std::string& host) {
   bool dummy;
   zoom_percent_ = web_contents()->GetZoomPercent(&dummy, &dummy);
 
-  if (observer_) {
-    observer_->CheckIsAliveForBug144879();
+  if (observer_)
     observer_->OnZoomChanged(web_contents(), !host.empty());
-  }
-}
-
-HelperForBug144879::HelperForBug144879() : status_(ALIVE) {
-}
-
-HelperForBug144879::~HelperForBug144879() {
-  CheckIsAlive();
-  status_ = DEAD;
-  deletion_callstack_ = base::debug::StackTrace();
-}
-
-void HelperForBug144879::CheckIsAlive() {
-  if (status_ == ALIVE)
-    return;
-
-  // Copy interesting variables onto the stack so they are preserved in the
-  // minidump and we can inspect what went wrong.
-  Status status = status_;
-  base::debug::StackTrace deletion_callstack = deletion_callstack_;
-
-  base::debug::Alias(&status);
-  base::debug::Alias(&deletion_callstack);
-
-  // Crash!
-  CHECK(false);
 }
