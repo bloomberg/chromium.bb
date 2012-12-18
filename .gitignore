@@ -149,6 +149,7 @@ v8.log
 /third_party/WebKit
 /third_party/adobe/flash/binaries
 /third_party/adobe/flash/symbols
+/third_party/accessibility-developer-tools/
 /third_party/amd/
 /third_party/angle
 /third_party/android_tools/
