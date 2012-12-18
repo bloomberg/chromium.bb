@@ -1284,10 +1284,10 @@ bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
 }
 
 void Widget::SetInactiveRenderingDisabled(bool value) {
+  if (value == disable_inactive_rendering_)
+    return;
+
   disable_inactive_rendering_ = value;
-  // We need to always notify the NonClientView so that it can trigger a paint.
-  // TODO: what's really needed is a way to know when either the active state
-  // changes or |disable_inactive_rendering_| changes.
   if (non_client_view_)
     non_client_view_->SetInactiveRenderingDisabled(value);
   native_widget_->SetInactiveRenderingDisabled(value);

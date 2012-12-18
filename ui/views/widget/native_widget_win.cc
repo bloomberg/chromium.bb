@@ -634,9 +634,14 @@ gfx::NativeViewAccessible NativeWidgetWin::GetNativeViewAccessible() {
 }
 
 void NativeWidgetWin::HandleAppDeactivated() {
-  // Another application was activated, we should reset any state that
-  // disables inactive rendering now.
-  delegate_->EnableInactiveRendering();
+  if (IsInactiveRenderingDisabled()) {
+    delegate_->EnableInactiveRendering();
+  } else {
+    // TODO(pkotwicz): Remove need for SchedulePaint(). crbug.com/165841
+    View* non_client_view = GetWidget()->non_client_view();
+    if (non_client_view)
+      non_client_view->SchedulePaint();
+  }
 }
 
 void NativeWidgetWin::HandleActivationChanged(bool active) {

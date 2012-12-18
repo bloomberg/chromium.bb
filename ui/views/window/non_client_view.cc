@@ -194,8 +194,9 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
 // NonClientFrameView, public:
 
 void NonClientFrameView::SetInactiveRenderingDisabled(bool disable) {
-  // See comment in Widget::SetInactiveRenderingDisabled as to why we don't
-  // conditionally invoke ShouldPaintAsActiveChanged.
+  if (paint_as_active_ == disable)
+    return;
+
   paint_as_active_ = disable;
   ShouldPaintAsActiveChanged();
 }
@@ -266,8 +267,7 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
 }
 
 void NonClientFrameView::ShouldPaintAsActiveChanged() {
-  if (!paint_as_active_)
-    SchedulePaint();
+  SchedulePaint();
 }
 
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
