@@ -49,7 +49,6 @@ class Manifest {
   bool is_legacy_packaged_app() const {
     return type_ == Extension::TYPE_LEGACY_PACKAGED_APP;
   }
-  bool is_extension() const { return type_ == Extension::TYPE_EXTENSION; }
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.

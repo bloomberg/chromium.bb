@@ -9,7 +9,7 @@
       "scripts": ["background.js"]
     }
   },
-  "permissions": ["notifications", "developerPrivate"],
+  "permissions": ["notifications"],
   "icons": {
     "16": "images/dev-icon-16.png",
     "128": "images/dev-icon-128.png"
