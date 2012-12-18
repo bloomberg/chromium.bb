@@ -100,6 +100,16 @@ cr.define('options', function() {
 
       Preferences.getInstance().rollbackPref(this.pref);
     },
+
+    /**
+     * When a user navigates away from a confirm dialog, treat as a cancel.
+     * @protected
+     * @override
+     */
+    willHidePage: function() {
+      if (this.visible)
+        Preferences.getInstance().rollbackPref(this.pref);
+    },
   };
 
   return {
