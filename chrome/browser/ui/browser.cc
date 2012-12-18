@@ -372,7 +372,8 @@ Browser::Browser(const CreateParams& params)
               new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          command_controller_(new chrome::BrowserCommandController(this))),
+          command_controller_(new chrome::BrowserCommandController(
+              this, g_browser_process->profile_manager()))),
       window_has_shown_(false) {
   if (!app_name_.empty())
     chrome::RegisterAppPrefs(app_name_, profile_);
@@ -496,6 +497,10 @@ Browser::~Browser() {
   search_model_->RemoveObserver(this);
   tab_strip_model_->RemoveObserver(this);
 
+  // Destroy the BrowserCommandController before removing the browser, so that
+  // it doesn't act on any notifications that are sent as a result of removing
+  // the browser.
+  command_controller_.reset();
   BrowserList::RemoveBrowser(this);
 
   SessionService* session_service =
@@ -526,8 +531,6 @@ Browser::~Browser() {
   profile_pref_registrar_.RemoveAll();
 
   encoding_auto_detect_.Destroy();
-
-  command_controller_.reset();
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {

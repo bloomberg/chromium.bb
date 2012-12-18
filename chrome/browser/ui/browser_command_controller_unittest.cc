@@ -5,14 +5,20 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKey) {
+typedef BrowserWithTestWindowTest BrowserCommandControllerTest;
+
+TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 #if defined(OS_CHROMEOS)
   // F1-3 keys are reserved Chrome accelerators on Chrome OS.
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
@@ -84,7 +90,7 @@ TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKey) {
 #endif  // USE_AURA
 }
 
-TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKeyIsApp) {
+TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
   browser()->app_name_ = "app";
   ASSERT_TRUE(browser()->is_app());
 
@@ -119,7 +125,7 @@ TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKeyIsApp) {
 #endif  // USE_AURA
 }
 
-TEST_F(BrowserWithTestWindowTest, AppFullScreen) {
+TEST_F(BrowserCommandControllerTest, AppFullScreen) {
   // Enable for tabbed browser.
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 
@@ -142,4 +148,32 @@ TEST_F(BrowserWithTestWindowTest, AppFullScreen) {
   ASSERT_TRUE(panel_browser.is_app());
   panel_browser.command_controller()->FullscreenStateChanged();
   EXPECT_FALSE(chrome::IsCommandEnabled(&panel_browser, IDC_FULLSCREEN));
+}
+
+TEST_F(BrowserCommandControllerTest, AvatarMenuDisabledWhenOnlyOneProfile) {
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
+
+  TestingProfileManager testing_profile_manager(
+      static_cast<TestingBrowserProcess*>(g_browser_process));
+  ASSERT_TRUE(testing_profile_manager.SetUp());
+  ProfileManager* profile_manager = testing_profile_manager.profile_manager();
+
+  chrome::BrowserCommandController command_controller(browser(),
+                                                      profile_manager);
+  const CommandUpdater* command_updater = command_controller.command_updater();
+
+  testing_profile_manager.CreateTestingProfile("p1");
+  ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+
+  testing_profile_manager.CreateTestingProfile("p2");
+  ASSERT_EQ(2U, profile_manager->GetNumberOfProfiles());
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+
+  testing_profile_manager.DeleteTestingProfile("p1");
+  ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+
+  testing_profile_manager.DeleteTestingProfile("p2");
 }

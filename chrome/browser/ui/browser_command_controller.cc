@@ -147,12 +147,17 @@ namespace chrome {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
 
-BrowserCommandController::BrowserCommandController(Browser* browser)
+BrowserCommandController::BrowserCommandController(
+    Browser* browser,
+    ProfileManager* profile_manager)
     : browser_(browser),
+      profile_manager_(profile_manager),
       ALLOW_THIS_IN_INITIALIZER_LIST(command_updater_(this)),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB) {
+  if (profile_manager_)
+    profile_manager_->GetProfileInfoCache().AddObserver(this);
   browser_->tab_strip_model()->AddObserver(this);
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -222,6 +227,8 @@ BrowserCommandController::~BrowserCommandController() {
   profile_pref_registrar_.RemoveAll();
   local_pref_registrar_.RemoveAll();
   browser_->tab_strip_model()->RemoveObserver(this);
+  if (profile_manager_)
+    profile_manager_->GetProfileInfoCache().RemoveObserver(this);
 }
 
 bool BrowserCommandController::IsReservedCommandOrKey(
@@ -705,6 +712,47 @@ void BrowserCommandController::Observe(
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserCommandController, ProfileInfoCacheObserver implementation:
+
+void BrowserCommandController::OnProfileAdded(const FilePath& profile_path) {
+  UpdateCommandsForMultipleProfiles();
+}
+
+void BrowserCommandController::OnProfileWasRemoved(
+    const FilePath& profile_path,
+    const string16& profile_name) {
+  UpdateCommandsForMultipleProfiles();
+}
+
+void BrowserCommandController::OnProfileWillBeRemoved(
+    const FilePath& profile_path) {
+}
+
+void BrowserCommandController::OnProfileNameChanged(
+    const FilePath& profile_path,
+    const string16& old_profile_name) {
+}
+
+void BrowserCommandController::OnProfileAvatarChanged(
+    const FilePath& profile_path) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserCommandController, ProfileSyncServiceObserver implementation:
+
+void BrowserCommandController::OnStateChanged() {
+  DCHECK(ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile()));
+  // For unit tests, we don't have a window.
+  if (!window())
+    return;
+  const bool show_main_ui = IsShowingMainUI(window()->IsFullscreen());
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
+      show_main_ui && profile()->GetOriginalProfile()->IsSyncAccessible());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, TabStripModelObserver implementation:
 
@@ -746,20 +794,6 @@ void BrowserCommandController::TabRestoreServiceChanged(
 void BrowserCommandController::TabRestoreServiceDestroyed(
     TabRestoreService* service) {
   service->RemoveObserver(this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, ProfileSyncServiceObserver implementation:
-
-void BrowserCommandController::OnStateChanged() {
-  DCHECK(ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-      profile()));
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  const bool show_main_ui = IsShowingMainUI(window()->IsFullscreen());
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
-      show_main_ui && profile()->GetOriginalProfile()->IsSyncAccessible());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1126,10 +1160,13 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
 
 void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
   bool show_main_ui = IsShowingMainUI(window() && window()->IsFullscreen());
+  bool has_multiple_profiles = profile_manager_ &&
+                               profile_manager_->GetNumberOfProfiles() > 1;
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
       show_main_ui &&
       !profile()->IsOffTheRecord() &&
-      ProfileManager::IsMultipleProfilesEnabled());
+      ProfileManager::IsMultipleProfilesEnabled() &&
+      has_multiple_profiles);
 }
 
 void BrowserCommandController::UpdatePrintingState() {

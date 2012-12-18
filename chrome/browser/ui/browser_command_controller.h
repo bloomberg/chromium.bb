@@ -9,6 +9,7 @@
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -18,6 +19,7 @@
 class Browser;
 class BrowserWindow;
 class Profile;
+class ProfileManager;
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -27,11 +29,12 @@ namespace chrome {
 
 class BrowserCommandController : public CommandUpdaterDelegate,
                                  public content::NotificationObserver,
+                                 public ProfileInfoCacheObserver,
+                                 public ProfileSyncServiceObserver,
                                  public TabStripModelObserver,
-                                 public TabRestoreServiceObserver,
-                                 public ProfileSyncServiceObserver {
+                                 public TabRestoreServiceObserver {
  public:
-  explicit BrowserCommandController(Browser* browser);
+  BrowserCommandController(Browser* browser, ProfileManager* profile_manager);
   virtual ~BrowserCommandController();
 
   CommandUpdater* command_updater() { return &command_updater_; }
@@ -86,6 +89,18 @@ class BrowserCommandController : public CommandUpdaterDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from ProfileInfoCacheObserver:
+  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(const FilePath& profile_path,
+                                   const string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(const FilePath& profile_path,
+                                    const string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
+
+  // Overridden from ProfileSyncServiceObserver:
+  virtual void OnStateChanged() OVERRIDE;
+
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
@@ -102,9 +117,6 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Overridden from TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
-
-  // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
 
   // Returns true if the regular Chrome UI (not the fullscreen one and
   // not the single-tab one) is shown. Used for updating window command states
@@ -171,6 +183,8 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   inline Profile* profile();
 
   Browser* browser_;
+
+  ProfileManager* profile_manager_;
 
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;
