@@ -28,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <signal.h>
 #include "weston-test-runner.h"
 
 extern const struct weston_test __start_test_section, __stop_test_section;
@@ -71,6 +72,7 @@ int main(int argc, char *argv[])
 	pass = 0;
 	for (t = &__start_test_section; t < &__stop_test_section; t++) {
 		int success = 0;
+		int hardfail = 0;
 
 		pid = fork();
 		assert(pid >= 0);
@@ -93,13 +95,15 @@ int main(int argc, char *argv[])
 		case CLD_KILLED:
 		case CLD_DUMPED:
 			fprintf(stderr, "signal %d", info.si_status);
+			if (info.si_status != SIGABRT)
+				hardfail = 1;
 			break;
 		}
 
 		if (t->must_fail)
 			success = !success;
 
-		if (success) {
+		if (success && !hardfail) {
 			pass++;
 			fprintf(stderr, ", pass.\n");
 		} else
