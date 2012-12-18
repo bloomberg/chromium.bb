@@ -6913,15 +6913,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION3" desc="Description for the option of boot animation function.">
           EASE_OUT_3
         </message>
-	<message name="IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_NAME" desc="Name for the flag to set to enable Chrome Captive Portal detector.">
-	  Captive Portal detector.
-	</message>
-	<message name="IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_DESCRIPTION" desc="Description for the flag to set to enable Chrome's Captive Portal Detector on the sign-in screen.">
-	  Change Captive Portal detector.
-	</message>
-	<message name="IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
+        <message name="IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_NAME" desc="Name for the flag to set to enable Chrome Captive Portal detector.">
+          Captive Portal detector.
+        </message>
+        <message name="IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_DESCRIPTION" desc="Description for the flag to set to enable Chrome's Captive Portal Detector on the sign-in screen.">
+          Change Captive Portal detector.
+        </message>
+        <message name="IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
           Shill Captive Portal detector
-	</message>
+        </message>
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS" desc="Name for the flag to switch lock animations.">
           New lock animations.
         </message>

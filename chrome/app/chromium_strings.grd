@@ -569,7 +569,7 @@ Chromium is unable to recover your settings.
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
-	  Set up Sync to save your personalized browser features to the web and access them from Chromium on any computer.
+          Set up Sync to save your personalized browser features to the web and access them from Chromium on any computer.
         </message>
       </if>
       <!-- Try Chrome Toast Dialog -->
@@ -659,9 +659,9 @@ Chromium is unable to recover your settings.
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chromium OS. Shown next to a button that says 'Restart Now'.">
           Your changes will take effect the next time you restart your device.
         </message>
-	<message name="IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
+        <message name="IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
           Chromium Captive Portal detector
-	</message>
+        </message>
       </if>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME" desc="Name for the flag to show the Chromium app list shortcut in the taskbar.">
         Show Chromium Apps Launcher.
