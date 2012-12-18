@@ -3854,7 +3854,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore15toWebCoreStringEN2v86HandleINS0_5ValueEEE
+   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EE8toStringIN3WTF6StringEEET_v
 }
 {
    bug_101145c
@@ -6444,4 +6444,18 @@
    ...
    fun:_ZN16ExtensionService12AddExtensionEPKN10extensions9ExtensionE
    fun:_ZN52BackgroundApplicationListModelTest_ExplicitTest_Test8TestBodyEv
+}
+{
+   bug_166709b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_112CreateThreadEmbPNS_14PlatformThread8DelegateEPmNS_14ThreadPriorityE
+   fun:_ZN4base14PlatformThread6CreateEmPNS0_8DelegateEPm
+   fun:_ZN4base12SimpleThread5StartEv
+   fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
+   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
+   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
+   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
+   fun:_ZN4base12SimpleThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
