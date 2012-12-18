@@ -381,6 +381,7 @@ class FeedEntry {
 // refers to a file and a directory.
 class ResourceEntry : public FeedEntry {
  public:
+  ResourceEntry();
   virtual ~ResourceEntry();
 
   // Extracts "entry" dictionary from the JSON value, and parse the contents,
@@ -568,8 +569,6 @@ class ResourceEntry : public FeedEntry {
   friend class ResourceList;
   friend class ResumeUploadOperation;
 
-  ResourceEntry();
-
   // Fills the remaining fields where JSONValueConverter cannot catch.
   void FillRemainingFields();
 
@@ -606,6 +605,7 @@ class ResourceEntry : public FeedEntry {
 // URLs provided by GetNextFeedURL() method.
 class ResourceList : public FeedEntry {
  public:
+  ResourceList();
   virtual ~ResourceList();
 
   // Extracts "feed" dictionary from the JSON value, and parse the contents,
@@ -676,8 +676,6 @@ class ResourceList : public FeedEntry {
   }
 
  private:
-  ResourceList();
-
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
@@ -809,6 +807,7 @@ class InstalledApp {
 // account.
 class AccountMetadataFeed {
  public:
+  AccountMetadataFeed();
   virtual ~AccountMetadataFeed();
 
   // Creates feed from parsed JSON Value.  You should call this
@@ -853,8 +852,6 @@ class AccountMetadataFeed {
       base::JSONValueConverter<AccountMetadataFeed>* converter);
 
  private:
-  AccountMetadataFeed();
-
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
