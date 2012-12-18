@@ -2443,6 +2443,11 @@
             'browser/media_transfer_protocol/media_transfer_protocol_manager.h',
           ],
         }],
+        ['OS=="linux" and chromeos==0', {
+          'dependencies': [
+            '../build/linux/system.gyp:libspeechd',
+          ],
+        }],
         ['chromeos==0', {
           'sources!': [
             'browser/extensions/api/input_ime/input_ime_api.cc',
