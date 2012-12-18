@@ -34,6 +34,8 @@ class JavascriptAppModalDialogAndroid : public NativeAppModalDialog {
                                bool suppress_js_dialogs);
   void DidCancelAppModalDialog(JNIEnv* env, jobject, bool suppress_js_dialogs);
 
+  const base::android::ScopedJavaGlobalRef<jobject>& GetDialogObject() const;
+
   static bool RegisterJavascriptAppModalDialog(JNIEnv* env);
 
  private:

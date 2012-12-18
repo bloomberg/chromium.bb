@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -18,6 +19,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
@@ -57,8 +59,7 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
   JNIEnv* env = AttachCurrentThread();
   // Keep a strong ref to the parent window while we make the call to java to
   // display the dialog.
-  ScopedJavaLocalRef<jobject> parent_jobj = parent_jobject_weak_ref_.get(
-      env);
+  ScopedJavaLocalRef<jobject> parent_jobj = parent_jobject_weak_ref_.get(env);
   if (parent_jobj.is_null()) {
     CancelAppModalDialog();
     return;
@@ -139,6 +140,22 @@ void JavascriptAppModalDialogAndroid::DidCancelAppModalDialog(
     JNIEnv* env, jobject, bool should_suppress_js_dialogs) {
   dialog_->OnCancel(should_suppress_js_dialogs);
   delete this;
+}
+
+const ScopedJavaGlobalRef<jobject>&
+    JavascriptAppModalDialogAndroid::GetDialogObject() const {
+  return dialog_jobject_;
+}
+
+// static
+jobject GetCurrentModalDialog(JNIEnv* env, jclass clazz) {
+  AppModalDialog* dialog = AppModalDialogQueue::GetInstance()->active_dialog();
+  if (!dialog || !dialog->native_dialog())
+    return NULL;
+
+  JavascriptAppModalDialogAndroid* js_dialog =
+      static_cast<JavascriptAppModalDialogAndroid*>(dialog->native_dialog());
+  return js_dialog->GetDialogObject().obj();
 }
 
 // static

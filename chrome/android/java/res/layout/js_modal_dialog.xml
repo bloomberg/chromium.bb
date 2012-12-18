@@ -22,27 +22,6 @@
         android:orientation="vertical"
         android:padding="5dip">
 
-        <TextView android:id="@+id/js_modal_dialog_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dip"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            />
-
-        <View
-            android:layout_height="1dip"
-            android:layout_width="match_parent"
-            android:background="@color/js_modal_dialog_title_separator"
-            android:layout_marginBottom="20dip"
-            />
-
-        <TextView android:id="@+id/js_modal_dialog_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginBottom="5dip"
-            />
-
         <EditText android:id="@+id/js_modal_dialog_prompt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -59,23 +38,5 @@
             android:layout_gravity="left"
             />
 
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-            <Button android:id="@+id/js_modal_dialog_button_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/js_modal_dialog_cancel"
-                android:layout_weight="1"
-                />
-            <Button android:id="@+id/js_modal_dialog_button_confirm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/js_modal_dialog_confirm"
-                android:layout_weight="1"
-                />
-        </LinearLayout>
     </LinearLayout>
 </ScrollView>

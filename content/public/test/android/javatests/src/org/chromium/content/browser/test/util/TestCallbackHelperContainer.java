@@ -127,15 +127,18 @@ public class TestCallbackHelperContainer {
         }
 
         /**
-         * Waits till the JavaScript evaluation finishes.
+         * Waits till the JavaScript evaluation finishes and returns true if a value was returned,
+         * false if it timed-out.
          */
-        public void waitUntilHasValue(long timeout, TimeUnit timeoutUnits)
+        public boolean waitUntilHasValue(long timeout, TimeUnit timeoutUnits)
                 throws InterruptedException, TimeoutException {
             waitUntilCriteria(getHasValueCriteria(), timeout, timeoutUnits);
+            return hasValue();
         }
 
-        public void waitUntilHasValue() throws InterruptedException, TimeoutException {
+        public boolean waitUntilHasValue() throws InterruptedException, TimeoutException {
             waitUntilCriteria(getHasValueCriteria());
+            return hasValue();
         }
 
         private void setRequestId(Integer requestId) {
