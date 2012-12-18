@@ -63,6 +63,7 @@ class APIPermission {
     kDebugger,
     kDeclarative,
     kDeclarativeWebRequest,
+    kDeveloperPrivate,
     kDevtools,
     kDownloads,
     kEchoPrivate,

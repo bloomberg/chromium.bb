@@ -1339,6 +1339,10 @@ bool Extension::is_legacy_packaged_app() const {
   return manifest()->is_legacy_packaged_app();
 }
 
+bool Extension::is_extension() const {
+  return manifest()->is_extension();
+}
+
 bool Extension::can_be_incognito_enabled() const {
   return !is_platform_app();
 }
