@@ -9,10 +9,10 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import java.util.HashMap;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.util.HashMap;
 
 @JNINamespace("media")
 class MediaPlayerBridge {
@@ -20,7 +20,7 @@ class MediaPlayerBridge {
     private static boolean setDataSource(MediaPlayer player, Context context, String url,
             String cookies, boolean hideUrlLog) {
         Uri uri = Uri.parse(url);
-        HashMap headersMap = new HashMap<String, String>();
+        HashMap<String, String> headersMap = new HashMap<String, String>();
         if (hideUrlLog)
             headersMap.put("x-hide-urls-from-log", "true");
         if (!TextUtils.isEmpty(cookies))

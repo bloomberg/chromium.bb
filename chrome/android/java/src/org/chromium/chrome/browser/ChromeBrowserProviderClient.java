@@ -146,7 +146,7 @@ public class ChromeBrowserProviderClient {
     private static Bundle argsToBundle(Object ... args) {
         Bundle methodArgs = new Bundle();
         for (int i = 0; i < args.length; ++i) {
-            Class argClass = args[i].getClass();
+            Class<? extends Object> argClass = args[i].getClass();
             if (Parcelable.class.isAssignableFrom(argClass)) {
                 methodArgs.putParcelable(ChromeBrowserProvider.argKey(i), (Parcelable) args[i]);
             } else if (Serializable.class.isAssignableFrom(argClass)) {
@@ -159,6 +159,7 @@ public class ChromeBrowserProviderClient {
         return methodArgs;
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends Object> T chromeBrowserProviderCall(Class returnType, String name,
             Context context, Bundle args) {
         Bundle result = context.getContentResolver().call(getPrivateProviderUri(context),

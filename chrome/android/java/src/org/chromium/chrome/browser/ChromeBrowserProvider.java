@@ -19,11 +19,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
-import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.provider.Browser;
@@ -241,7 +238,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private Cursor getBookmarkHistorySuggestions(String selection, String[] selectionArgs,
             String sortOrder, boolean excludeHistory) {
         boolean matchTitles = false;
-        Vector<String> args = new Vector();
+        Vector<String> args = new Vector<String>();
         String like = selectionArgs[0] + "%";
         if (selectionArgs[0].startsWith("http") || selectionArgs[0].startsWith("file")) {
             args.add(like);
