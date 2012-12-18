@@ -57,7 +57,8 @@ void Picture::Record(ContentLayerClient* painter,
   // once http://code.google.com/p/skia/issues/detail?id=1014 is fixed.
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect_.width(),
-      layer_rect_.height());
+      layer_rect_.height(),
+      SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
   canvas->save();
   canvas->translate(SkFloatToScalar(-layer_rect_.x()),
