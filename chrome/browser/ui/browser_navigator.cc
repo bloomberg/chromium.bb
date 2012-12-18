@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -482,7 +483,10 @@ void Navigate(NavigateParams* params) {
       WebContents::CreateParams create_params(
           params->browser->profile(),
           tab_util::GetSiteInstanceForNewTab(params->browser->profile(), url));
-      create_params.base_web_contents = params->source_contents;
+      if (params->source_contents) {
+        create_params.initial_size =
+            params->source_contents->GetView()->GetContainerSize();
+      }
 #if defined(USE_AURA)
       if (params->browser->window() &&
           params->browser->window()->GetNativeWindow()) {

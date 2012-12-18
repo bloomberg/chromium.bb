@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message.h"
 
 namespace {
@@ -204,7 +205,8 @@ InstantLoader::~InstantLoader() {
 void InstantLoader::InitContents(const content::WebContents* active_tab) {
   content::WebContents::CreateParams create_params(
       active_tab->GetBrowserContext());
-  create_params.base_web_contents = active_tab;
+  if (active_tab)
+    create_params.initial_size = active_tab->GetView()->GetContainerSize();
   contents_.reset(content::WebContents::CreateWithSessionStorage(
       create_params,
       active_tab->GetController().GetSessionStorageNamespaceMap()));

@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
@@ -117,7 +118,12 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               WebContents* base_web_contents) {
   WebContents::CreateParams create_params(browser_context, site_instance);
   create_params.routing_id = routing_id;
-  create_params.base_web_contents = base_web_contents;
+  if (base_web_contents) {
+    create_params.initial_size =
+        base_web_contents->GetView()->GetContainerSize();
+  } else {
+    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
+  }
   WebContents* web_contents = WebContents::Create(create_params);
   Shell* shell = CreateShell(web_contents);
   if (!url.is_empty())

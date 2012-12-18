@@ -92,7 +92,12 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
 
 WebContents* BrowserNavigatorTest::CreateWebContents() {
   content::WebContents::CreateParams create_params(browser()->profile());
-  create_params.base_web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* base_web_contents =
+      chrome::GetActiveWebContents(browser());
+  if (base_web_contents) {
+    create_params.initial_size =
+        base_web_contents->GetView()->GetContainerSize();
+  }
   return WebContents::Create(create_params);
 }
 

@@ -1086,10 +1086,10 @@ void WebContentsImpl::Stop() {
 
 WebContents* WebContentsImpl::Clone() {
   // We use our current SiteInstance since the cloned entry will use it anyway.
-  // We pass |this| for the |base_web_contents| to size the view correctly, and
-  // our own opener so that the cloned page can access it if it was before.
+  // We pass our own opener so that the cloned page can access it if it was
+  // before.
   CreateParams create_params(GetBrowserContext(), GetSiteInstance());
-  create_params.base_web_contents = this;
+  create_params.initial_size = view_->GetContainerSize();
   WebContentsImpl* tc = CreateWithOpener(create_params, opener_);
   tc->GetController().CopyStateFrom(controller_);
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1164,10 +1164,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   }
   CHECK(view_.get());
 
-  // We have the initial size of the view be based on the size of the view of
-  // the passed in WebContents.
-  gfx::Size initial_size = params.base_web_contents ?
-      params.base_web_contents->GetView()->GetContainerSize() : gfx::Size();
+  gfx::Size initial_size = params.initial_size;
   view_->CreateView(initial_size, params.context);
 
   // Listen for whether our opener gets destroyed.
@@ -1336,7 +1333,7 @@ void WebContentsImpl::CreateNewWindow(
       session_storage_namespace);
   CreateParams create_params(GetBrowserContext(), site_instance);
   create_params.routing_id = route_id;
-  create_params.base_web_contents = this;
+  create_params.initial_size = view_->GetContainerSize();
   new_contents->Init(create_params);
 
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());

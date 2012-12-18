@@ -18,6 +18,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace base {
@@ -77,9 +78,8 @@ class WebContents : public PageNavigator,
     SiteInstance* site_instance;
     int routing_id;
 
-    // Used if we want to size the new WebContents's view based on the view of
-    // an existing WebContents.  This can be NULL if not needed.
-    const WebContents* base_web_contents;
+    // Initial size of the new WebContent's view. Can be (0, 0) if not needed.
+    gfx::Size initial_size;
 
     // Used to specify the location context which display the new view should
     // belong. This can be NULL if not needed.
