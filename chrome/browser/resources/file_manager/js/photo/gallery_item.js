@@ -175,7 +175,7 @@ Gallery.Item.prototype.saveToFile = function(
         getFile.bind(null, dir, true /* create new file */));
   }
 
-  function saveToDir(dir) {
+  var saveToDir = function(dir) {
     if (overwrite) {
       checkExistence(dir);
     } else {
@@ -185,7 +185,7 @@ Gallery.Item.prototype.saveToFile = function(
         checkExistence(dir);
       }.bind(this));
     }
-  }
+  }.bind(this);
 
   if (overrideDir) {
     saveToDir(overrideDir);
