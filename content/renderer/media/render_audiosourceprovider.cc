@@ -44,8 +44,9 @@ RenderAudioSourceProvider::RenderAudioSourceProvider(int source_render_view_id)
 
   if (use_mixing) {
     default_sink_ = RenderThreadImpl::current()->
-        GetAudioRendererMixerManager()->CreateInput();
-    // TODO(miu): Partition mixer instances per RenderView.
+        GetAudioRendererMixerManager()->CreateInput(source_render_view_id);
+    DVLOG(1) << "Using AudioRendererMixerManager-provided sink: "
+             << default_sink_.get();
   } else {
     scoped_refptr<RendererAudioOutputDevice> device =
         AudioDeviceFactory::NewOutputDevice();
@@ -54,6 +55,8 @@ RenderAudioSourceProvider::RenderAudioSourceProvider(int source_render_view_id)
     // at the time RenderAudioSourceProvider is instantiated).
     device->SetSourceRenderView(source_render_view_id);
     default_sink_ = device;
+    DVLOG(1) << "Using AudioDeviceFactory-provided sink: "
+             << default_sink_.get();
   }
 }
 
