@@ -972,7 +972,9 @@ void InstantController::OnStaleLoader() {
 }
 
 void InstantController::ResetInstantTab() {
-  if (search_mode_.is_origin_search()) {
+  // Do not wire up the InstantTab if instant should only use local previews, to
+  // prevent it from sending data to the page.
+  if (search_mode_.is_origin_search() && !use_local_preview_only_) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
       instant_tab_.reset(new InstantTab(this, active_tab));
