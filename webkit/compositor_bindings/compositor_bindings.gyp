@@ -33,6 +33,8 @@
       'web_nine_patch_layer_impl.h',
       'web_to_ccinput_handler_adapter.cc',
       'web_to_ccinput_handler_adapter.h',
+      'web_to_ccscrollbar_theme_painter_adapter.cc',
+      'web_to_ccscrollbar_theme_painter_adapter.h',
       'web_layer_tree_view_impl.cc',
       'web_layer_tree_view_impl.h',
       'web_scrollbar_layer_impl.cc',

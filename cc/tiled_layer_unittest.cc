@@ -1571,7 +1571,7 @@ class TrackingLayerPainter : public LayerPainter {
 public:
     static scoped_ptr<TrackingLayerPainter> create() { return make_scoped_ptr(new TrackingLayerPainter()); }
 
-    virtual void paint(SkCanvas*, const gfx::Rect& contentRect, gfx::RectF&) OVERRIDE
+    virtual void paint(SkCanvas*, gfx::Rect contentRect, gfx::RectF&) OVERRIDE
     {
         m_paintedRect = contentRect;
     }

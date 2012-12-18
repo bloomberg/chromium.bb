@@ -58,7 +58,7 @@ private:
 
 class MockLayerPainter : public LayerPainter {
 public:
-    virtual void paint(SkCanvas*, const gfx::Rect&, gfx::RectF&) OVERRIDE { }
+    virtual void paint(SkCanvas*, gfx::Rect, gfx::RectF&) OVERRIDE { }
 };
 
 

@@ -9,51 +9,27 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_scrollbar_theme_painter.h"
+#include "cc/test/fake_web_scrollbar.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/tree_synchronizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebScrollbar.h>
-#include <public/WebScrollbarThemeGeometry.h>
-#include <public/WebScrollbarThemePainter.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 namespace cc {
 namespace {
-
-class FakeWebScrollbar : public WebKit::WebScrollbar {
-public:
-    static scoped_ptr<FakeWebScrollbar> create() { return make_scoped_ptr(new FakeWebScrollbar()); }
-
-    // WebScrollbar implementation
-    virtual bool isOverlay() const OVERRIDE { return false; }
-    virtual int value() const OVERRIDE { return 0; }
-    virtual WebKit::WebPoint location() const OVERRIDE { return WebKit::WebPoint(); }
-    virtual WebKit::WebSize size() const OVERRIDE { return WebKit::WebSize(); }
-    virtual bool enabled() const OVERRIDE { return true; }
-    virtual int maximum() const OVERRIDE { return 0; }
-    virtual int totalSize() const OVERRIDE { return 0; }
-    virtual bool isScrollViewScrollbar() const OVERRIDE { return false; }
-    virtual bool isScrollableAreaActive() const OVERRIDE { return true; }
-    virtual void getTickmarks(WebKit::WebVector<WebKit::WebRect>&) const OVERRIDE { }
-    virtual ScrollbarControlSize controlSize() const OVERRIDE { return WebScrollbar::RegularScrollbar; }
-    virtual ScrollbarPart pressedPart() const OVERRIDE { return WebScrollbar::NoPart; }
-    virtual ScrollbarPart hoveredPart() const OVERRIDE { return WebScrollbar::NoPart; }
-    virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE { return WebScrollbar::ScrollbarOverlayStyleDefault; }
-    virtual bool isCustomScrollbar() const OVERRIDE { return false; }
-    virtual Orientation orientation() const OVERRIDE { return WebScrollbar::Horizontal; }
-};
 
 TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    WebKit::WebScrollbarThemePainter painter;
 
     {
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
         scoped_refptr<Layer> layerTreeRoot = Layer::create();
         scoped_refptr<Layer> child1 = Layer::create();
-        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), child1->id());
+        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), child1->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -70,7 +46,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
         scoped_refptr<Layer> layerTreeRoot = Layer::create();
         scoped_refptr<Layer> child2 = Layer::create();
-        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), child2->id());
+        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), child2->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -88,12 +64,11 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    WebKit::WebScrollbarThemePainter painter;
 
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
     scoped_refptr<Layer> contentLayer = Layer::create();
-    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), painter, FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
+    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
     layerTreeRoot->addChild(contentLayer);
     layerTreeRoot->addChild(scrollbarLayer);
 
@@ -141,7 +116,7 @@ public:
         m_layerTreeHost->initializeRendererIfNeeded();
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), m_painter, FakeWebScrollbarThemeGeometry::create(), 1);
+        m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), 1);
         m_scrollbarLayer->setLayerTreeHost(m_layerTreeHost.get());
         m_scrollbarLayer->setBounds(m_bounds);
         m_layerTreeHost->rootLayer()->addChild(m_scrollbarLayer);
@@ -173,7 +148,6 @@ public:
 private:
     scoped_refptr<ScrollbarLayer> m_scrollbarLayer;
     scoped_refptr<Layer> m_scrollLayer;
-    WebKit::WebScrollbarThemePainter m_painter;
     gfx::Size m_bounds;
 };
 

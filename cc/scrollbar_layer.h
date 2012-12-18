@@ -9,9 +9,9 @@
 #include "cc/caching_bitmap_content_layer_updater.h"
 #include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
-#include <public/WebScrollbar.h>
-#include <public/WebScrollbarThemeGeometry.h>
-#include <public/WebScrollbarThemePainter.h>
+#include "cc/scrollbar_theme_painter.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 namespace cc {
 
@@ -23,7 +23,11 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
 public:
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
-    static scoped_refptr<ScrollbarLayer> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    static scoped_refptr<ScrollbarLayer> create(
+        scoped_ptr<WebKit::WebScrollbar>,
+        scoped_ptr<ScrollbarThemePainter>,
+        scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
+        int scrollLayerId);
 
     int scrollLayerId() const { return m_scrollLayerId; }
     void setScrollLayerId(int id);
@@ -42,7 +46,11 @@ public:
     virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
 
 protected:
-    ScrollbarLayer(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    ScrollbarLayer(
+        scoped_ptr<WebKit::WebScrollbar>,
+        scoped_ptr<ScrollbarThemePainter>,
+        scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
+        int scrollLayerId);
     virtual ~ScrollbarLayer();
 
 private:
@@ -54,7 +62,7 @@ private:
     float clampScaleToMaxTextureSize(float scale);
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
-    WebKit::WebScrollbarThemePainter m_painter;
+    scoped_ptr<ScrollbarThemePainter> m_painter;
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
     int m_scrollLayerId;
 

@@ -11,4 +11,7 @@ include_rules = [
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h",
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h",
   "+third_party/WebKit/Source/Platform/chromium/public/WebImage.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebRect.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h",
+  "+third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h",
 ]

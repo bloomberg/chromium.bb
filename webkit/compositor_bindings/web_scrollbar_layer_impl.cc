@@ -6,8 +6,10 @@
 
 #include "cc/scrollbar_layer.h"
 #include "web_layer_impl.h"
+#include "web_to_ccscrollbar_theme_painter_adapter.h"
 
 using cc::ScrollbarLayer;
+using cc::ScrollbarThemePainter;
 
 namespace WebKit {
 
@@ -18,7 +20,13 @@ WebScrollbarLayer* WebScrollbarLayer::create(WebScrollbar* scrollbar, WebScrollb
 
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-    : m_layer(new WebLayerImpl(ScrollbarLayer::create(make_scoped_ptr(scrollbar), painter, make_scoped_ptr(geometry), 0)))
+    : m_layer(new WebLayerImpl(ScrollbarLayer::create(
+        make_scoped_ptr(scrollbar),
+        WebToCCScrollbarThemePainterAdapter::Create(
+            make_scoped_ptr(new WebScrollbarThemePainter(painter)))
+            .PassAs<ScrollbarThemePainter>(),
+        make_scoped_ptr(geometry),
+        0)))
 {
 }
 
