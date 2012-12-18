@@ -190,6 +190,7 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   PluginMetroModeInfoBarDelegate(InfoBarService* infobar_service,
                                  const string16& plugin_name,
                                  const string16& ok_label,
+                                 const GURL& learn_more_url,
                                  bool show_dont_ask_again_button);
  private:
   virtual ~PluginMetroModeInfoBarDelegate();
@@ -204,9 +205,10 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  string16 message_;
-  string16 ok_label_;
-  bool show_dont_ask_again_button_;
+  const string16 message_;
+  const string16 ok_label_;
+  const GURL learn_more_url_;
+  const bool show_dont_ask_again_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
 };

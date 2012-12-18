@@ -299,6 +299,7 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
           l10n_util::GetStringFUTF16(IDS_METRO_MISSING_PLUGIN_PROMPT,
                                      plugin_metadata->name()),
           l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART),
+          GURL("https://support.google.com/chrome/?ib_display_in_desktop"),
           false) :
       PluginInstallerInfoBarDelegate::Create(
           infobar_helper, installer, plugin_metadata.Pass(), callback);
@@ -385,6 +386,7 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
           l10n_util::GetStringFUTF16(IDS_METRO_NPAPI_PLUGIN_PROMPT,
                                      plugin->name()),
           l10n_util::GetStringUTF16(IDS_WIN8_RESTART),
+          GURL("https://support.google.com/chrome/?ib_redirect_to_desktop"),
           true));
 #else
   NOTREACHED();

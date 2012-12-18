@@ -440,10 +440,12 @@ PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
     InfoBarService* infobar_service,
     const string16& message,
     const string16& ok_label,
+    const GURL& learn_more_url,
     bool show_dont_ask_again_button)
     : ConfirmInfoBarDelegate(infobar_service),
       message_(message),
       ok_label_(ok_label),
+      learn_more_url_(learn_more_url),
       show_dont_ask_again_button_(show_dont_ask_again_button) {
 }
 
@@ -506,11 +508,8 @@ string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
 
 bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  // TODO(cpu): replace with the final url.
-  GURL url = google_util::AppendGoogleLocaleParam(GURL(
-      "https://support.google.com/chrome/?ib_display_in_desktop"));
   OpenURLParams params(
-      url, Referrer(),
+      learn_more_url_, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
   owner()->GetWebContents()->OpenURL(params);
