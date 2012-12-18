@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
+#include "v8/include/v8.h"
 
 class SkCanvas;
 
@@ -76,6 +77,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void CloseWebInspector();
   void EvaluateInWebInspector(int32_t call_id, const std::string& script);
   void ExecCommand(const std::string& command, const std::string& value);
+  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
 
   void NotImplemented(const std::string& object, const std::string& method);
 

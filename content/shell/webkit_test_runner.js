@@ -11,6 +11,7 @@ var testRunner = testRunner || {};
   native function ExecCommand();
   native function GetWorkerThreadCount();
   native function NotifyDone();
+  native function OverridePreference();
   native function SetCanOpenWindows();
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
@@ -77,6 +78,9 @@ var testRunner = testRunner || {};
                           "evaluateInWebInspector",
                           {value: EvaluateInWebInspector});
     Object.defineProperty(this, "execCommand", {value: ExecCommand});
+    Object.defineProperty(this,
+                          "overridePreference",
+                          {value: OverridePreference});
 
 
     Object.defineProperty(this,

@@ -75,6 +75,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool java_enabled;
   bool allow_scripts_to_close_windows;
   bool uses_page_cache;
+  bool page_cache_supports_plugins;
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
   bool xss_auditor_enabled;
@@ -146,8 +147,10 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool fixed_position_creates_stacking_context;
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;
+  bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;
+  bool supports_multiple_windows;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
@@ -161,7 +164,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   float font_scale_factor;
   bool force_enable_zoom;
   bool user_gesture_required_for_media_playback;
-  bool supports_multiple_windows;
 #endif
 
   // We try to keep the default values the same as the default values in

@@ -386,6 +386,60 @@ void WebKitTestRunner::ExecCommand(const std::string& command,
       WebString::fromUTF8(command), WebString::fromUTF8(value));
 }
 
+void WebKitTestRunner::OverridePreference(const std::string& key,
+                                          v8::Local<v8::Value> value) {
+  if (key == "WebKitDefaultFontSize") {
+    prefs_.defaultFontSize = value->Int32Value();
+  } else if (key == "WebKitMinimumFontSize") {
+    prefs_.minimumFontSize = value->Int32Value();
+  } else if (key == "WebKitDefaultTextEncodingName") {
+    prefs_.defaultTextEncodingName =
+        WebString::fromUTF8(std::string(*v8::String::AsciiValue(value)));
+  } else if (key == "WebKitJavaScriptEnabled") {
+    prefs_.javaScriptEnabled = value->BooleanValue();
+  } else if (key == "WebKitSupportsMultipleWindows") {
+    prefs_.supportsMultipleWindows = value->BooleanValue();
+  } else if (key == "WebKitDisplayImagesKey") {
+    prefs_.loadsImagesAutomatically = value->BooleanValue();
+  } else if (key == "WebKitPluginsEnabled") {
+    prefs_.pluginsEnabled = value->BooleanValue();
+  } else if (key == "WebKitJavaEnabled") {
+    prefs_.javaEnabled = value->BooleanValue();
+  } else if (key == "WebKitUsesPageCachePreferenceKey") {
+    prefs_.usesPageCache = value->BooleanValue();
+  } else if (key == "WebKitPageCacheSupportsPluginsPreferenceKey") {
+    prefs_.pageCacheSupportsPlugins = value->BooleanValue();
+  } else if (key == "WebKitOfflineWebApplicationCacheEnabled") {
+    prefs_.offlineWebApplicationCacheEnabled = value->BooleanValue();
+  } else if (key == "WebKitTabToLinksPreferenceKey") {
+    prefs_.tabsToLinks = value->BooleanValue();
+  } else if (key == "WebKitWebGLEnabled") {
+    prefs_.experimentalWebGLEnabled = value->BooleanValue();
+  } else if (key == "WebKitCSSRegionsEnabled") {
+    prefs_.experimentalCSSRegionsEnabled = value->BooleanValue();
+  } else if (key == "WebKitCSSGridLayoutEnabled") {
+    prefs_.experimentalCSSGridLayoutEnabled = value->BooleanValue();
+  } else if (key == "WebKitHyperlinkAuditingEnabled") {
+    prefs_.hyperlinkAuditingEnabled = value->BooleanValue();
+  } else if (key == "WebKitEnableCaretBrowsing") {
+    prefs_.caretBrowsingEnabled = value->BooleanValue();
+  } else if (key == "WebKitAllowDisplayingInsecureContent") {
+    prefs_.allowDisplayOfInsecureContent = value->BooleanValue();
+  } else if (key == "WebKitAllowRunningInsecureContent") {
+    prefs_.allowRunningOfInsecureContent = value->BooleanValue();
+  } else if (key == "WebKitCSSCustomFilterEnabled") {
+    prefs_.cssCustomFilterEnabled = value->BooleanValue();
+  } else if (key == "WebKitShouldRespectImageOrientation") {
+    prefs_.shouldRespectImageOrientation = value->BooleanValue();
+  } else if (key == "WebKitWebAudioEnabled") {
+    DCHECK(value->BooleanValue());
+  } else {
+    std::string message("CONSOLE MESSAGE: Invalid name for preference: ");
+    printMessage(message + key + "\n");
+  }
+  applyPreferences();
+}
+
 void WebKitTestRunner::NotImplemented(const std::string& object,
                                       const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
