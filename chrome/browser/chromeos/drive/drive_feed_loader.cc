@@ -10,8 +10,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -33,8 +31,6 @@ namespace drive {
 
 namespace {
 
-const FilePath::CharType kAccountMetadataFile[] =
-    FILE_PATH_LITERAL("account_metadata.json");
 const FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
 const FilePath::CharType kResourceMetadataDBFile[] =
