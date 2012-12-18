@@ -55,7 +55,7 @@ class BluetoothDeviceChromeOs
   virtual void Connect(
       device::BluetoothDevice::PairingDelegate* pairing_delegate,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ConnectErrorCallback& error_callback) OVERRIDE;
   virtual void SetPinCode(const std::string& pincode) OVERRIDE;
   virtual void SetPasskey(uint32 passkey) OVERRIDE;
   virtual void ConfirmPairing() OVERRIDE;
@@ -103,17 +103,17 @@ class BluetoothDeviceChromeOs
   // CreatePairedDevice() succeeds, provides the new object path for the remote
   // device in |device_path|. |callback| and |error_callback| are the callbacks
   // provided to Connect().
-  void ConnectCallback(const base::Closure& callback,
-                       const ErrorCallback& error_callback,
-                       const dbus::ObjectPath& device_path);
+  void OnCreateDevice(const base::Closure& callback,
+                      const ConnectErrorCallback& error_callback,
+                      const dbus::ObjectPath& device_path);
 
   // Called by BluetoothAdapterClient when a call to CreateDevice() or
   // CreatePairedDevice() fails with the error named |error_name| and
   // optional message |error_message|, |error_callback| is the callback
   // provided to Connect().
-  void ConnectErrorCallback(const ErrorCallback& error_callback,
-                            const std::string& error_name,
-                            const std::string& error_message);
+  void OnCreateDeviceError(const ConnectErrorCallback& error_callback,
+                           const std::string& error_name,
+                           const std::string& error_message);
 
   // Called by BluetoothAdapterClient when a call to DiscoverServices()
   // completes.  |callback| and |error_callback| are the callbacks provided to
@@ -138,7 +138,7 @@ class BluetoothDeviceChromeOs
   // paired or previously connected. |error_callback| is called on failure.
   // Otherwise, |callback| is called when the request is complete.
   void ConnectApplications(const base::Closure& callback,
-                           const ErrorCallback& error_callback);
+                           const ConnectErrorCallback& error_callback);
 
   // Called by IntrospectableClient when a call to Introspect() completes.
   // |success| indicates whether or not the request succeeded, |callback| and
@@ -146,7 +146,7 @@ class BluetoothDeviceChromeOs
   // |service_name| and |device_path| specify the remote object being
   // introspected and |xml_data| contains the XML-formatted protocol data.
   void OnIntrospect(const base::Closure& callback,
-                    const ErrorCallback& error_callback,
+                    const ConnectErrorCallback& error_callback,
                     const std::string& service_name,
                     const dbus::ObjectPath& device_path,
                     const std::string& xml_data, bool success);
@@ -164,7 +164,7 @@ class BluetoothDeviceChromeOs
   // |interface_name| specifies the interface being connected,
   // |device_path| the remote object path,
   // |error_name| the error name and |error_message| the optional message.
-  void OnConnectError(const ErrorCallback& error_callback,
+  void OnConnectError(const ConnectErrorCallback& error_callback,
                       const std::string& interface_name,
                       const dbus::ObjectPath& device_path,
                       const std::string& error_name,

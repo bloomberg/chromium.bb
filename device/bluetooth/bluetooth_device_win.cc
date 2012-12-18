@@ -65,7 +65,7 @@ bool BluetoothDeviceWin::ExpectingConfirmation() const {
 void BluetoothDeviceWin::Connect(
     PairingDelegate* pairing_delegate,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const ConnectErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

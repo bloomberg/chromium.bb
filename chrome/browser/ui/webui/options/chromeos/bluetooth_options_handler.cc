@@ -296,9 +296,13 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   }
 }
 
-void BluetoothOptionsHandler::ConnectError(const std::string& address) {
+void BluetoothOptionsHandler::ConnectError(
+    const std::string& address,
+    device::BluetoothDevice::ConnectErrorCode error_code) {
   DVLOG(1) << "Failed to connect to device: " << address;
   ReportError("bluetoothConnectFailed", address);
+  // TODO(deymo): Choose the right error message based on error_code and pass it
+  // to ReportError.
 }
 
 void BluetoothOptionsHandler::DisconnectError(const std::string& address) {

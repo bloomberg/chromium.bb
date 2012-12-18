@@ -146,8 +146,10 @@ class BluetoothOptionsHandler
   void StopDiscoveryError();
 
   // Called by device::BluetoothDevice in response to a failure to
-  // connect to the device with bluetooth address |address|.
-  void ConnectError(const std::string& address);
+  // connect to the device with bluetooth address |address| due to an error
+  // encoded in |error_code|.
+  void ConnectError(const std::string& address,
+                    device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Called by device::BluetoothDevice in response to a failure to
   // disconnect the device with bluetooth address |address|.

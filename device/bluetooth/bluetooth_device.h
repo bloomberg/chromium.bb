@@ -52,6 +52,19 @@ class BluetoothDevice {
     DEVICE_KEYBOARD_MOUSE_COMBO
   };
 
+  // Possible errors passed back to an error callback function in case of a
+  // failed call to Connect().
+  enum ConnectErrorCode {
+    ERROR_UNKNOWN,
+    ERROR_INPROGRESS,
+    ERROR_FAILED,
+    ERROR_CONNECT_FAILED,
+    ERROR_AUTH_FAILED,
+    ERROR_AUTH_CANCELED,
+    ERROR_AUTH_REJECTED,
+    ERROR_AUTH_TIMEOUT,
+  };
+
   // Interface for observing changes from bluetooth devices.
   class Observer {
    public:
@@ -173,6 +186,11 @@ class BluetoothDevice {
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;
 
+  // The ConnectErrorCallback is used for methods that can fail with an error,
+  // passed back as an error code argument to this callback.
+  // In the success case this callback is not called.
+  typedef base::Callback<void(enum ConnectErrorCode)> ConnectErrorCallback;
+
   // Returns the services (as BluetoothServiceRecord objects) that this device
   // provides.
   typedef ScopedVector<BluetoothServiceRecord> ServiceRecordList;
@@ -224,7 +242,7 @@ class BluetoothDevice {
   // |callback| is called when the request is complete.
   virtual void Connect(PairingDelegate* pairing_delegate,
                        const base::Closure& callback,
-                       const ErrorCallback& error_callback) = 0;
+                       const ConnectErrorCallback& error_callback) = 0;
 
   // Sends the PIN code |pincode| to the remote device during pairing.
   //

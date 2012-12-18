@@ -32,7 +32,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   virtual void Connect(
       PairingDelegate* pairing_delegate,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ConnectErrorCallback& error_callback) OVERRIDE;
   virtual void SetPinCode(const std::string& pincode) OVERRIDE;
   virtual void SetPasskey(uint32 passkey) OVERRIDE;
   virtual void ConfirmPairing() OVERRIDE;

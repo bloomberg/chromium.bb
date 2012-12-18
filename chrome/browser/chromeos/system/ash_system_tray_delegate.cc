@@ -160,7 +160,8 @@ void BluetoothDeviceDisconnectError() {
   // TODO(sad): Do something?
 }
 
-void BluetoothDeviceConnectError() {
+void BluetoothDeviceConnectError(
+    device::BluetoothDevice::ConnectErrorCode error_code) {
   // TODO(sad): Do something?
 }
 
