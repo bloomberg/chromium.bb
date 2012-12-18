@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "third_party/libxml/chromium/libxml_utils.h"
 
 using base::Value;
 using base::DictionaryValue;
@@ -277,33 +276,6 @@ void Author::RegisterJSONConverter(
   converter->RegisterStringField(kEmailField, &Author::email_);
 }
 
-Author* Author::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kAuthorNode)
-    return NULL;
-
-  if (!xml_reader->Read())
-    return NULL;
-
-  const int depth = xml_reader->Depth();
-  Author* author = new Author();
-  bool skip_read = false;
-  do {
-    skip_read = false;
-    DVLOG(1) << "Parsing author node " << xml_reader->NodeName()
-            << ", depth = " << depth;
-    if (xml_reader->NodeName() == kNameNode) {
-     std::string name;
-     if (xml_reader->ReadElementContent(&name))
-       author->name_ = UTF8ToUTF16(name);
-     skip_read = true;
-    } else if (xml_reader->NodeName() == kEmailNode) {
-     xml_reader->ReadElementContent(&author->email_);
-     skip_read = true;
-    }
-  } while (depth == xml_reader->Depth() && (skip_read || xml_reader->Next()));
-  return author;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Link implementation
 
@@ -373,28 +345,6 @@ void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
   converter->RegisterStringField(kTypeField, &Link::mime_type_);
 }
 
-// static.
-Link* Link::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kLinkNode)
-    return NULL;
-
-  Link* link = new Link();
-  xml_reader->NodeAttribute(kTypeAttr, &link->mime_type_);
-
-  std::string href;
-  if (xml_reader->NodeAttribute(kHrefAttr, &href))
-      link->href_ = GURL(href);
-
-  std::string rel;
-  if (xml_reader->NodeAttribute(kRelAttr, &rel)) {
-    GetLinkType(rel, &link->type_);
-    if (link->type_ == LINK_OPEN_WITH)
-      GetAppID(rel, &link->app_id_);
-  }
-
-  return link;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // FeedLink implementation
 
@@ -421,23 +371,6 @@ void FeedLink::RegisterJSONConverter(
       kRelField, &FeedLink::type_, &FeedLink::GetFeedLinkType);
   converter->RegisterCustomField(
       kHrefField, &FeedLink::href_, &GetGURLFromString);
-}
-
-// static
-FeedLink* FeedLink::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kFeedLinkNode)
-    return NULL;
-
-  FeedLink* link = new FeedLink();
-  std::string href;
-  if (xml_reader->NodeAttribute(kHrefAttr, &href))
-    link->href_ = GURL(href);
-
-  std::string rel;
-  if (xml_reader->NodeAttribute(kRelAttr, &rel))
-    GetFeedLinkType(rel, &link->type_);
-
-  return link;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -468,25 +401,6 @@ void Category::RegisterJSONConverter(
   converter->RegisterStringField(kTermField, &Category::term_);
 }
 
-// static
-Category* Category::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kCategoryNode)
-    return NULL;
-
-  Category* category = new Category();
-  xml_reader->NodeAttribute(kTermAttr, &category->term_);
-
-  std::string scheme;
-  if (xml_reader->NodeAttribute(kSchemeAttr, &scheme))
-    GetCategoryTypeFromScheme(scheme, &category->type_);
-
-  std::string label;
-  if (xml_reader->NodeAttribute(kLabelAttr, &label))
-    category->label_ = UTF8ToUTF16(label);
-
-  return category;
-}
-
 const Link* FeedEntry::GetLinkByType(Link::LinkType type) const {
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == type)
@@ -507,20 +421,6 @@ void Content::RegisterJSONConverter(
   converter->RegisterCustomField(kSrcField, &Content::url_, &GetGURLFromString);
   converter->RegisterStringField(kTypeField, &Content::mime_type_);
 }
-
-Content* Content::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kContentNode)
-    return NULL;
-
-  Content* content = new Content();
-  std::string src;
-  if (xml_reader->NodeAttribute(kSrcAttr, &src))
-    content->url_ = GURL(src);
-
-  xml_reader->NodeAttribute(kTypeAttr, &content->mime_type_);
-  return content;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppIcon implementation
@@ -786,97 +686,6 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFrom(const base::Value& value) {
     DVLOG(1) << "Invalid resource entry!";
     return scoped_ptr<ResourceEntry>();
   }
-
-  entry->FillRemainingFields();
-  return entry.Pass();
-}
-
-// static.
-scoped_ptr<ResourceEntry> ResourceEntry::CreateFromXml(XmlReader* xml_reader) {
-  if (xml_reader->NodeName() != kEntryNode)
-    return scoped_ptr<ResourceEntry>();
-
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  xml_reader->NodeAttribute(kETagAttr, &entry->etag_);
-
-  if (!xml_reader->Read())
-    return entry.Pass();
-
-  bool skip_read = false;
-  do {
-    DVLOG(1) << "Parsing node " << xml_reader->NodeName();
-    skip_read = false;
-
-    if (xml_reader->NodeName() == kAuthorNode) {
-      scoped_ptr<Author> author(Author::CreateFromXml(xml_reader));
-      if (author.get())
-        entry->authors_.push_back(author.release());
-    }
-
-    if (xml_reader->NodeName() == kContentNode) {
-      scoped_ptr<Content> content(Content::CreateFromXml(xml_reader));
-      if (content.get())
-        entry->content_ = *content.get();
-    } else if (xml_reader->NodeName() == kLinkNode) {
-      scoped_ptr<Link> link(Link::CreateFromXml(xml_reader));
-      if (link.get())
-        entry->links_.push_back(link.release());
-    } else if (xml_reader->NodeName() == kFeedLinkNode) {
-      scoped_ptr<FeedLink> link(FeedLink::CreateFromXml(xml_reader));
-      if (link.get())
-        entry->feed_links_.push_back(link.release());
-    } else if (xml_reader->NodeName() == kCategoryNode) {
-      scoped_ptr<Category> category(Category::CreateFromXml(xml_reader));
-      if (category.get())
-        entry->categories_.push_back(category.release());
-    } else if (xml_reader->NodeName() == kUpdatedNode) {
-      std::string time;
-      if (xml_reader->ReadElementContent(&time))
-        util::GetTimeFromString(time, &entry->updated_time_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kPublishedNode) {
-      std::string time;
-      if (xml_reader->ReadElementContent(&time))
-        util::GetTimeFromString(time, &entry->published_time_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kIDNode) {
-      xml_reader->ReadElementContent(&entry->id_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kResourceIdNode) {
-      xml_reader->ReadElementContent(&entry->resource_id_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kTitleNode) {
-      std::string title;
-      if (xml_reader->ReadElementContent(&title))
-        entry->title_ = UTF8ToUTF16(title);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kFilenameNode) {
-      std::string file_name;
-      if (xml_reader->ReadElementContent(&file_name))
-        entry->filename_ = UTF8ToUTF16(file_name);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kSuggestedFilenameNode) {
-      std::string suggested_filename;
-      if (xml_reader->ReadElementContent(&suggested_filename))
-        entry->suggested_filename_ = UTF8ToUTF16(suggested_filename);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kMd5ChecksumNode) {
-      xml_reader->ReadElementContent(&entry->file_md5_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kSizeNode) {
-      std::string size;
-      if (xml_reader->ReadElementContent(&size))
-        base::StringToInt64(size, &entry->file_size_);
-      skip_read = true;
-    } else if (xml_reader->NodeName() == kLastViewedNode) {
-      std::string time;
-      if (xml_reader->ReadElementContent(&time))
-        util::GetTimeFromString(time, &entry->last_viewed_time_);
-      skip_read = true;
-    } else {
-      DVLOG(1) << "Unknown node " << xml_reader->NodeName();
-    }
-  } while (skip_read || xml_reader->Next());
 
   entry->FillRemainingFields();
   return entry.Pass();

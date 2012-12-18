@@ -37,23 +37,42 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entry_proto.kind());
 
-  // 2011-12-14T00:40:47.330Z
-  base::Time::Exploded exploded;
-  exploded.year = 2011;
-  exploded.month = 12;
-  exploded.day_of_month = 14;
-  exploded.day_of_week = 3;  // Wednesday
-  exploded.hour = 0;
-  exploded.minute = 40;
-  exploded.second = 47;
-  exploded.millisecond = 330;
+  base::Time expected_creation_time;
+  base::Time expected_modified_time;
 
-  const base::Time expected_time = base::Time::FromUTCExploded(exploded);
-  EXPECT_EQ(expected_time.ToInternalValue(),
+  {
+    // 2011-12-14T00:40:47.330Z
+    base::Time::Exploded exploded;
+    exploded.year = 2011;
+    exploded.month = 12;
+    exploded.day_of_month = 13;
+    exploded.day_of_week = 2;  // Tuesday
+    exploded.hour = 0;
+    exploded.minute = 40;
+    exploded.second = 47;
+    exploded.millisecond = 330;
+    expected_creation_time = base::Time::FromUTCExploded(exploded);
+  }
+
+  {
+    // 2011-12-13T00:40:47.330Z
+    base::Time::Exploded exploded;
+    exploded.year = 2011;
+    exploded.month = 12;
+    exploded.day_of_month = 14;
+    exploded.day_of_week = 3;  // Wednesday
+    exploded.hour = 0;
+    exploded.minute = 40;
+    exploded.second = 47;
+    exploded.millisecond = 330;
+    expected_modified_time = base::Time::FromUTCExploded(exploded);
+  }
+
+  EXPECT_EQ(expected_modified_time.ToInternalValue(),
             entry_proto.file_info().last_modified());
   // Last accessed value equal to 0 means that the file has never been viewed.
   EXPECT_EQ(0, entry_proto.file_info().last_accessed());
-  EXPECT_EQ(expected_time.ToInternalValue(),
+  EXPECT_EQ(expected_creation_time.ToInternalValue(),
             entry_proto.file_info().creation_time());
 
   EXPECT_EQ("audio/mpeg",

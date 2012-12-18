@@ -19,7 +19,6 @@
 
 class FilePath;
 class Profile;
-class XmlReader;
 
 namespace base {
 class Value;
@@ -80,9 +79,6 @@ class Link {
   // this class.
   static void RegisterJSONConverter(base::JSONValueConverter<Link>* converter);
 
-  // Creates a link entry from parsed XML.
-  static Link* CreateFromXml(XmlReader* xml_reader);
-
   // Type of the link.
   LinkType type() const { return type_; }
 
@@ -142,8 +138,6 @@ class FeedLink {
   static void RegisterJSONConverter(
       base::JSONValueConverter<FeedLink>* converter);
 
-  static FeedLink* CreateFromXml(XmlReader* xml_reader);
-
   // MIME type of the feed.
   FeedLinkType type() const { return type_; }
 
@@ -177,8 +171,6 @@ class Author {
   static void RegisterJSONConverter(
       base::JSONValueConverter<Author>* converter);
 
-  static Author* CreateFromXml(XmlReader* xml_reader);
-
   // Getters.
   const string16& name() const { return name_; }
   const std::string& email() const { return email_; }
@@ -211,8 +203,6 @@ class Category {
   // this class.
   static void RegisterJSONConverter(
       base::JSONValueConverter<Category>* converter);
-
-  static Category* CreateFromXml(XmlReader* xml_reader);
 
   // Category label.
   const string16& label() const { return label_; }
@@ -252,8 +242,6 @@ class Content {
   // this class.
   static void RegisterJSONConverter(
       base::JSONValueConverter<Content>* converter);
-
-  static Content* CreateFromXml(XmlReader* xml_reader);
 
   const GURL& url() const { return url_; }
   const std::string& mime_type() const { return mime_type_; }
@@ -402,9 +390,6 @@ class ResourceEntry : public FeedEntry {
   // because this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation for the details.
   static scoped_ptr<ResourceEntry> CreateFrom(const base::Value& value);
-
-  // Creates resource entry from parsed XML.
-  static scoped_ptr<ResourceEntry> CreateFromXml(XmlReader* xml_reader);
 
   // Creates resource entry from FileResource.
   // TODO(kochi): This should go away soon. http://crbug.com/142293

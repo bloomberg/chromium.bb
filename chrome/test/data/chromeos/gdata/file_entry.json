@@ -83,9 +83,17 @@
          "href": "https://file_edit_media",
          "rel": "edit-media",
          "type": "audio/mpeg"
+      }, {
+         "href": "https://entry1_open_with_link/",
+         "rel": "http://schemas.google.com/docs/2007#open-with-the_app_id",
+         "type": "application/atom+xml"
+      },  {
+         "href": "https://entry1_fake_entry_open_with_link/",
+         "rel": "http://schemas.google.com/docs/2007#oh-no-not-open-with-the_app_id",
+         "type": "application/atom+xml"
       } ],
       "published": {
-         "$t": "2011-12-14T00:40:47.330Z"
+         "$t": "2011-12-13T00:40:47.330Z"
       },
       "title": {
          "$t": "File 1.mp3"
