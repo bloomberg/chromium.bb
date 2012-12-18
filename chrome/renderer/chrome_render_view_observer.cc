@@ -57,6 +57,7 @@ using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
+using WebKit::WebGestureEvent;
 using WebKit::WebIconURL;
 using WebKit::WebRect;
 using WebKit::WebSecurityOrigin;
@@ -689,6 +690,18 @@ void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
   if (accessibility.node() == node)
     render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
     render_view()->GetRoutingID()));
+}
+
+void ChromeRenderViewObserver::DidHandleGestureEvent(
+    const WebGestureEvent& event) {
+  if (event.type != WebKit::WebGestureEvent::GestureTap)
+    return;
+
+  if (render_view()->GetWebView()->textInputType() !=
+      WebKit::WebTextInputTypeNone) {
+    render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
+        routing_id()));
+  }
 }
 
 void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,

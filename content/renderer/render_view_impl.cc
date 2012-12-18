@@ -2087,6 +2087,8 @@ void RenderViewImpl::didHandleGestureEvent(const WebGestureEvent& event,
     UpdateTextInputState(SHOW_IME_IF_NEEDED);
   }
 #endif
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidHandleGestureEvent(event));
 }
 
 WebKit::WebColorChooser* RenderViewImpl::createColorChooser(

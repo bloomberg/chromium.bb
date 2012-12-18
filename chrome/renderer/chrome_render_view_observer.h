@@ -70,6 +70,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) OVERRIDE;
+  virtual void DidHandleGestureEvent(
+      const WebKit::WebGestureEvent& event) OVERRIDE;
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowDatabase(WebKit::WebFrame* frame,

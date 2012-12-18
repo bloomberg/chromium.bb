@@ -22,6 +22,7 @@ namespace WebKit {
 class WebDataSource;
 class WebFrame;
 class WebFormElement;
+class WebGestureEvent;
 class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebNode;
@@ -88,6 +89,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
+  virtual void DidHandleGestureEvent(const WebKit::WebGestureEvent& event) {}
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
   // These match incoming IPCs.
