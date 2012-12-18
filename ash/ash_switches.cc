@@ -71,7 +71,7 @@ const char kAshImmersive[] = "ash-immersive";
 const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
 
 // If present new lock animations are enabled.
-const char kAshNewLockAnimationsEnabled[] = "ash-new-lock-animations-enabled";
+const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,

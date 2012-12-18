@@ -936,11 +936,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kChromeCaptivePortalDetectionChoices),
   },
   {
-    "new-lock-animations",
+    "disable-new-lock-animations",
     IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS,
     IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshNewLockAnimationsEnabled),
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewLockAnimations),
   },
   {
     "file-manager-packaged",

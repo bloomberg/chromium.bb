@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/widget/widget.h"
 
@@ -135,6 +136,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _, _, _))
         .WillRepeatedly(Return(true));
+    ui::LayerAnimator::set_disable_animations_for_test(true);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {

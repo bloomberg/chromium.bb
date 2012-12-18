@@ -63,9 +63,9 @@ void StartSlowCloseAnimationForWindow(aura::Window* window,
       ui::LayerAnimationElement::CreateTransformElement(
           GetSlowCloseTransform(),
           duration));
-  animator->StartAnimation(sequence);
   if (observer)
     sequence->AddObserver(observer);
+  animator->StartAnimation(sequence);
 }
 
 // Quickly undoes the effects of the slow-close animation on |window|.
@@ -80,9 +80,9 @@ void StartUndoSlowCloseAnimationForWindow(
       ui::LayerAnimationElement::CreateTransformElement(
           gfx::Transform(),
           duration));
-  animator->StartAnimation(sequence);
   if (observer)
     sequence->AddObserver(observer);
+  animator->StartAnimation(sequence);
 }
 
 // Quickly shrinks |window| down to a point in the center of the screen and
@@ -99,9 +99,9 @@ void StartFastCloseAnimationForWindow(aura::Window* window,
               GetFastCloseTransform(), duration)));
   ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
       ui::LayerAnimationElement::CreateOpacityElement(0.0, duration));
-  animator->StartAnimation(sequence);
   if (observer)
     sequence->AddObserver(observer);
+  animator->StartAnimation(sequence);
 }
 
 // Fades |window| to |target_opacity| over |duration|.
@@ -115,9 +115,9 @@ void StartPartialFadeAnimation(aura::Window* window,
   ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
       ui::LayerAnimationElement::CreateOpacityElement(
           target_opacity, duration));
-  animator->StartAnimation(sequence);
   if (observer)
     sequence->AddObserver(observer);
+  animator->StartAnimation(sequence);
 }
 
 // Fades |window| to |opacity| over |duration|.
@@ -130,9 +130,9 @@ void StartOpacityAnimationForWindow(aura::Window* window,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
       ui::LayerAnimationElement::CreateOpacityElement(opacity, duration));
-  animator->StartAnimation(sequence);
   if (observer)
     sequence->AddObserver(observer);
+  animator->StartAnimation(sequence);
 }
 
 // Makes |window| fully transparent instantaneously.
