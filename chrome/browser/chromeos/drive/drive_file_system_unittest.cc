@@ -124,7 +124,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
   // Pretends that a new file was uploaded successfully, and returns the
   // contents of "gdata/uploaded_file.json" to the caller.
-  virtual int UploadNewFile(
+  virtual void UploadNewFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
@@ -145,15 +145,12 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
                    drive_file_path,
                    local_file_path,
                    base::Passed(&resource_entry)));
-
-    const int kUploadId = 123;
-    return kUploadId;
   }
 
   // Pretends that an existing file ("drive/File 1.txt") was uploaded
   // successfully, and returns an entry for the file in
   // "gdata/root_feed.json" to the caller.
-  virtual int UploadExistingFile(
+  virtual void UploadExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
@@ -173,7 +170,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     scoped_ptr<base::Value> value =
         google_apis::test_util::LoadJSONFile("gdata/root_feed.json");
     if (!value.get())
-      return -1;
+      return;
 
     base::DictionaryValue* as_dict = NULL;
     base::ListValue* entry_list = NULL;
@@ -190,7 +187,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       }
     }
     if (!resource_entry)
-      return -1;
+      return;
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -199,9 +196,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
                    drive_file_path,
                    local_file_path,
                    base::Passed(&resource_entry)));
-
-    const int kUploadId = 123;
-    return kUploadId;
   }
 };
 

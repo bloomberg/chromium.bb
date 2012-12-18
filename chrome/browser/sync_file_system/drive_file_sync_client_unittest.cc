@@ -45,7 +45,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
   // Pretends that a new file was uploaded successfully, and returns the
   // contents of "gdata/file_entry.json" to the caller.
-  virtual int UploadNewFile(
+  virtual void UploadNewFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
@@ -67,13 +67,12 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
                    drive_file_path,
                    local_file_path,
                    base::Passed(&file_entry)));
-    return 1;  // Return dummy upload ID.
   }
 
   // Pretends that an existing file ("file:resource_id") was uploaded
   // successfully, and returns the contents of "gdata/file_entry.json" to the
   // caller.
-  virtual int UploadExistingFile(
+  virtual void UploadExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
@@ -94,7 +93,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
                    drive_file_path,
                    local_file_path,
                    base::Passed(&file_entry)));
-    return 1;  // Return dummy upload ID.
   }
 };
 
