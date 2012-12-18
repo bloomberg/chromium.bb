@@ -267,6 +267,12 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     handlers_[i]->GetLocalizedStrings(localized_strings);
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
+#if defined(GOOGLE_CHROME_BUILD)
+  localized_strings->SetString("buildType", "chrome");
+#else
+  localized_strings->SetString("buildType", "chromium");
+#endif
+
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe))
     localized_strings->SetString("oobeType", "new");
   else

@@ -177,7 +177,7 @@ hr.bottom {
   padding-top: 1px;
 }
 
-/* TODO(nkostylev): Remove all #header, #header-sections related rules. */
+/* TODO(nkostylev): Remove all #header, #header-sections-old related rules. */
 html[oobe=new] #header {
   display: none;
 }
@@ -194,42 +194,42 @@ html[oobe=new] #header {
   cursor: default;
 }
 
-#header-sections {
+#header-sections-old {
   display: inline-block;
   height: 30px;
   position: relative;
 }
 
-.header-section::before {
+.header-section-old::before {
   /* Divider in header between product name and title,
    * like "[Product name] > [step header]". */
   content: '\00A0\203A\00A0\00A0';
 }
 
-.header-section {
+.header-section-old {
   -webkit-transition: left 200ms, opacity 200ms ease-in-out;
   position: absolute;
   text-transform: lowercase;
   width: 20em;
 }
 
-html[dir=rtl] .header-section {
+html[dir=rtl] .header-section-old {
   -webkit-transition: right 200ms, opacity 200ms ease-in-out;
 }
 
-.header-section.right {
+.header-section-old.right {
   left: 50px;
 }
 
-.header-section.left {
+.header-section-old.left {
   left: -20px;
 }
 
-html[dir=rtl]  .header-section.right {
+html[dir=rtl]  .header-section-old.right {
   right: 50px;
 }
 
-html[dir=rtl]  .header-section.left {
+html[dir=rtl]  .header-section-old.left {
   right: -20px;
 }
 
@@ -239,8 +239,36 @@ html[oobe=old] #step-logo {
 
 #step-logo {
   -webkit-margin-start: 17px;
+  display: -webkit-box;
   position: absolute;
   top: 15px;
+}
+
+html[build=chrome] #header-sections {
+  -webkit-margin-start: -48px;
+}
+
+html[build=chromium] #header-sections {
+  -webkit-margin-start: 5px;
+}
+
+#oobe.oauth-enrollment #header-oauth-enrollment {
+  display: block;
+}
+
+.header-section {
+  color: rgb(119, 120, 123);  /* Should matching text color of the logo. */
+  display: none;
+  font-size: 23px;
+  line-height: 31px;
+  text-transform: lowercase;
+  width: 20em;
+}
+
+.header-section::before {
+  /* Divider in header between product name and title,
+   * like "[Product name] > [step header]". */
+  content: '\00A0\203A\00A0\00A0';
 }
 
 html[oobe=new] #connect .step-contents {

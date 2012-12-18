@@ -341,9 +341,14 @@ cr.define('cr.ui.login', function() {
 
       var header = document.createElement('span');
       header.id = 'header-' + screenId;
-      header.className = 'header-section right';
       header.textContent = el.header ? el.header : '';
-      $('header-sections').appendChild(header);
+      if (this.isNewOobe()) {
+        header.className = 'header-section';
+        $('header-sections').appendChild(header);
+      } else {
+        header.className = 'header-section-old right';
+        $('header-sections-old').appendChild(header);
+      }
 
       var dot = document.createElement('div');
       dot.id = screenId + '-dot';
