@@ -62,11 +62,12 @@ class PowerButtonControllerTest : public AshTestBase {
   virtual ~PowerButtonControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshDisableNewLockAnimations);
+
     AshTestBase::SetUp();
     delegate_ = new TestPowerButtonControllerDelegate;
     controller_ = Shell::GetInstance()->power_button_controller();
-    CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-        ash::switches::kAshNewLockAnimationsEnabled));
     state_controller_ = static_cast<SessionStateControllerImpl*>(
         Shell::GetInstance()->session_state_controller());
     state_controller_->SetDelegate(delegate_);  // transfers ownership

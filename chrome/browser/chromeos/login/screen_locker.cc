@@ -215,7 +215,9 @@ void ScreenLocker::OnLoginSuccess(
   authentication_capture_->using_oauth = using_oauth;
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled)) {
+  if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations)) {
+    UnlockOnLoginSuccess();
+  } else {
     // Add guard for case when something get broken in call chain to unlock
     // for sure.
     MessageLoop::current()->PostDelayedTask(
@@ -224,8 +226,6 @@ void ScreenLocker::OnLoginSuccess(
             weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
     delegate_->AnimateAuthenticationSuccess();
-  } else {
-    UnlockOnLoginSuccess();
   }
 }
 

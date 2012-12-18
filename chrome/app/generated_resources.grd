@@ -6923,10 +6923,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Shill Captive Portal detector
         </message>
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS" desc="Name for the flag to switch lock animations.">
-          New lock animations.
+          Disable new lock animations.
         </message>
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION" desc="Description for the flag to switch lock animations.">
-          Enables new lock animations.
+          Disables new lock animations.
         </message>
         <message name="IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_NAME" desc="Name for the flag to enable launchers on all displays.">
           Enables launcher on all displays.

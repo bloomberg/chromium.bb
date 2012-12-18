@@ -103,8 +103,8 @@ class SessionStateControllerImpl2Test : public AshTestBase {
   virtual ~SessionStateControllerImpl2Test() {}
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshNewLockAnimationsEnabled);
+    CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+        ash::switches::kAshDisableNewLockAnimations));
 
     AshTestBase::SetUp();
 
