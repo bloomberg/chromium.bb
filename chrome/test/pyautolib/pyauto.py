@@ -768,7 +768,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return [
       '--sync-url=http://127.0.0.1:%s/chromiumsync' % port,
       '--sync-allow-insecure-xmpp-connection',
-      '--sync-notification-host=127.0.0.1:%s' % xmpp_port,
+      '--sync-notification-host-port=127.0.0.1:%s' % xmpp_port,
       '--sync-notification-method=p2p',
     ]
 
