@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -74,6 +75,13 @@ void SpellCheckerSubMenuObserver::InitMenu(
   submenu_model_.AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
+  // Add a check item "Automatically correct spelling".
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSpellingAutoCorrect)) {
+    submenu_model_.AddCheckItem(IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT));
+  }
+
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
@@ -96,6 +104,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
+    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return true;
   }
 
@@ -135,6 +144,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
+    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return true;
   }
 

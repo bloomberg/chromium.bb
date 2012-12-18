@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -34,9 +35,12 @@ SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
       succeeded_(false) {
-  if (proxy && proxy->GetProfile())
+  if (proxy && proxy->GetProfile()) {
     integrate_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
                                      proxy->GetProfile()->GetPrefs());
+    autocorrect_spelling_.Init(prefs::kEnableAutoSpellCorrect,
+                               proxy->GetProfile()->GetPrefs());
+  }
 }
 
 SpellingMenuObserver::~SpellingMenuObserver() {
@@ -135,6 +139,12 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   proxy_->AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSpellingAutoCorrect)) {
+    proxy_->AddCheckItem(IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT));
+  }
+
   proxy_->AddSeparator();
 }
 
@@ -148,6 +158,7 @@ bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS:
     case IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION:
     case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
+    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return true;
 
     default:
@@ -161,6 +172,8 @@ bool SpellingMenuObserver::IsCommandIdChecked(int command_id) {
 
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE)
     return integrate_spelling_service_.GetValue();
+  else if (command_id == IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE)
+    return autocorrect_spelling_.GetValue();
   return false;
 }
 
@@ -182,6 +195,9 @@ bool SpellingMenuObserver::IsCommandIdEnabled(int command_id) {
       return succeeded_;
 
     case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
+      return integrate_spelling_service_.IsUserModifiable();
+
+    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return integrate_spelling_service_.IsUserModifiable();
 
     default:
@@ -248,12 +264,40 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
                                 gfx::Point(rect.CenterPoint().x(), rect.y()),
                                 new SpellingBubbleModel(
                                     proxy_->GetProfile(),
-                                    proxy_->GetWebContents()));
+                                    proxy_->GetWebContents(),
+                                    false));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile)
         profile->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService,
                                         false);
+        profile->GetPrefs()->SetBoolean(prefs::kEnableAutoSpellCorrect,
+                                        false);
+    }
+  }
+  // Autocorrect requires use of the spelling service and the spelling service
+  // can be toggled by the user only if it is not managed.
+  if (command_id == IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE &&
+      integrate_spelling_service_.IsUserModifiable()) {
+    // When the user enables autocorrect, we'll need to make sure that we can
+    // ask Google for suggestions since that service is required. So we show
+    // the bubble and just make sure to enable autocorrect as well.
+    if (!integrate_spelling_service_.GetValue()) {
+      content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
+      gfx::Rect rect = rvh->GetView()->GetViewBounds();
+      chrome::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
+                                gfx::Point(rect.CenterPoint().x(), rect.y()),
+                                new SpellingBubbleModel(
+                                    proxy_->GetProfile(),
+                                    proxy_->GetWebContents(),
+                                    true));
+    } else {
+      Profile* profile = proxy_->GetProfile();
+      if (profile) {
+        bool current_value = autocorrect_spelling_.GetValue();
+        profile->GetPrefs()->SetBoolean(prefs::kEnableAutoSpellCorrect,
+                                        !current_value);
+      }
     }
   }
 }

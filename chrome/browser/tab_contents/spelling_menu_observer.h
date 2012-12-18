@@ -106,6 +106,9 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // JSON-RPC request to the service and retrieve suggestions.
   BooleanPrefMember integrate_spelling_service_;
 
+  // Flag indicating whether automatic spelling correction is enabled.
+  BooleanPrefMember autocorrect_spelling_;
+
   DISALLOW_COPY_AND_ASSIGN(SpellingMenuObserver);
 };
 

@@ -694,6 +694,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
           No more suggestions from Google
         </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
+          Automatically correct spelling
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
           Select &amp;all
         </message>
@@ -908,6 +911,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="In Title Case: The name of the Check the spelling of this field command in the content area context menu">
           &amp;Check Spelling in This Field
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_AUTOCORRECT" desc="In Title Case: The context-menu item that asks whether to use Google to automatically correct spelling in Chrome.">
+          Automatically Correct Spelling
         </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
           Select &amp;All

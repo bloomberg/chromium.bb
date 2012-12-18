@@ -60,8 +60,8 @@ void SpellcheckServiceFactory::RegisterUserPrefs(PrefService* user_prefs) {
                                   true,
                                   PrefService::SYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
-                                  true,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  false,
+                                  PrefService::SYNCABLE_PREF);
 }
 
 bool SpellcheckServiceFactory::ServiceRedirectedInIncognito() const {
