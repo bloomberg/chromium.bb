@@ -8,7 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/shell/shell_webpreferences.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 
 class SkCanvas;
@@ -98,7 +98,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   WebTestRunner::WebTestProxyBase* proxy_;
 
-  ShellWebPreferences prefs_;
+  WebTestRunner::WebPreferences prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

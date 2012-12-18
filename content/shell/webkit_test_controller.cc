@@ -18,9 +18,12 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
-#include "content/shell/shell_webpreferences.h"
+#include "content/shell/webkit_test_helpers.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/support/webkit_support_gfx.h"
+
+using WebTestRunner::WebPreferences;
 
 namespace content {
 
@@ -188,7 +191,8 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   did_finish_load_ = false;
-  prefs_.reset(new ShellWebPreferences);
+  prefs_ = webkit_glue::WebPreferences();
+  ExportPreferences(WebPreferences(), &prefs_);
   {
     base::AutoLock lock(lock_);
     can_open_windows_ = false;
@@ -374,8 +378,8 @@ void WebKitTestController::OnReadFileToString(const FilePath& local_file,
 }
 
 void WebKitTestController::OnOverridePreferences(
-    const ShellWebPreferences& prefs) {
-  *prefs_.get() = prefs;
+    const webkit_glue::WebPreferences& prefs) {
+  prefs_ = prefs;
 }
 
 void WebKitTestController::OnNotifyDone() {

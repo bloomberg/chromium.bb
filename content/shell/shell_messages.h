@@ -7,18 +7,10 @@
 #include <vector>
 
 #include "content/public/common/common_param_traits.h"
-#include "content/shell/shell_webpreferences.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #define IPC_MESSAGE_START ShellMsgStart
-
-IPC_STRUCT_TRAITS_BEGIN(content::ShellWebPreferences)
-  IPC_STRUCT_TRAITS_MEMBER(allowUniversalAccessFromFileURLs)
-  IPC_STRUCT_TRAITS_MEMBER(DOMPasteAllowed)
-  IPC_STRUCT_TRAITS_MEMBER(javaScriptCanAccessClipboard)
-  IPC_STRUCT_TRAITS_MEMBER(XSSAuditorEnabled)
-IPC_STRUCT_TRAITS_END()
 
 // Sets the current working directory to use for layout tests.
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetCurrentWorkingDirectory,
@@ -74,7 +66,7 @@ IPC_MESSAGE_ROUTED1(
     bool /* should_stay_on_page */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,
-                    content::ShellWebPreferences /* preferences */)
+                    webkit_glue::WebPreferences /* preferences */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CanOpenWindows)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowWebInspector)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseWebInspector)

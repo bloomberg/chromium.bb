@@ -18,6 +18,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_render_process_observer.h"
+#include "content/shell/webkit_test_helpers.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
@@ -284,9 +285,9 @@ WebPreferences* WebKitTestRunner::preferences() {
 
 void WebKitTestRunner::applyPreferences() {
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  prefs_.Export(&prefs);
+  ExportPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
-  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
+  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -331,10 +332,7 @@ void WebKitTestRunner::Display() {
 
 void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
   prefs_.XSSAuditorEnabled = enabled;
-  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  prefs_.Export(&prefs);
-  render_view()->SetWebkitPreferences(prefs);
-  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
+  applyPreferences();
 }
 
 void WebKitTestRunner::NotifyDone() {
@@ -396,7 +394,7 @@ void WebKitTestRunner::NotImplemented(const std::string& object,
 void WebKitTestRunner::Reset() {
   prefs_.reset();
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  prefs_.Export(&prefs);
+  ExportPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
 }
 

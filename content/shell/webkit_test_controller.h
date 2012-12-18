@@ -10,18 +10,17 @@
 
 #include "base/cancelable_callback.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "webkit/glue/webpreferences.h"
 
 class SkBitmap;
 
 namespace content {
 
 class Shell;
-struct ShellWebPreferences;
 
 class WebKitTestResultPrinter {
  public:
@@ -87,7 +86,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void set_printer(WebKitTestResultPrinter* printer) {
     printer_.reset(printer);
   }
-  const ShellWebPreferences& web_preferences() const { return *prefs_.get(); }
+  const webkit_glue::WebPreferences& web_preferences() const { return prefs_; }
   bool should_stay_on_page_after_handling_before_unload() const {
     return should_stay_on_page_after_handling_before_unload_;
   }
@@ -114,7 +113,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnReadFileToString(const FilePath& file_path, std::string* contents);
-  void OnOverridePreferences(const ShellWebPreferences& prefs);
+  void OnOverridePreferences(const webkit_glue::WebPreferences& prefs);
   void OnNotifyDone();
   void OnDumpAsText();
   void OnDumpChildFramesAsText();
@@ -149,9 +148,7 @@ class WebKitTestController : public base::NonThreadSafe,
   bool wait_until_done_;
   bool did_finish_load_;
 
-  // TODO(jochen): Once we remove layout tests from content_browsertests, make
-  // this a member instead of a scoped_ptr.
-  scoped_ptr<ShellWebPreferences> prefs_;
+  webkit_glue::WebPreferences prefs_;
 
   base::CancelableClosure watchdog_;
 
