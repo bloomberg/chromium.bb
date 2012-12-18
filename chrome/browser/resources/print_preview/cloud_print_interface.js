@@ -233,9 +233,7 @@ cr.define('cloudprint', function() {
         ticketItems.push(ticketItem);
       }
 
-      return {
-        'capabilities': ticketItems
-      };
+      return JSON.stringify({'capabilities': ticketItems});
     },
 
     /**
