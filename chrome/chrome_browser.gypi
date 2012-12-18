@@ -423,6 +423,8 @@
         'browser/chrome_browser_main_x11.h',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
+        'browser/chrome_metrics_helper.cc',
+        'browser/chrome_metrics_helper.h',
         'browser/chrome_page_zoom.cc',
         'browser/chrome_page_zoom.h',
         'browser/chrome_page_zoom_constants.cc',

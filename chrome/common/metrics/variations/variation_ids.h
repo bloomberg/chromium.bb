@@ -139,10 +139,20 @@ enum VariationID {
   kExtendedInstantIDDevGroupOne    = 3310055,
   kExtendedInstantIDDevControl     = 3310056,
 
+  // Name: OmniboxSearchSuggestTrialStarted2013Q1
+  // Range: 3310060 - 3310079
+  // Suggest (Autocomplete) field trial, 20 IDs.  This differs from
+  // the earlier omnibox suggest field trials in this file because
+  // we created a new trial (with a new name) in order to shuffle IDs.
+  // We assign new experiment IDs because it's a good practice not to
+  // reuse experiment IDs.
+  kSuggestTrialStarted2013Q1IDMin = 3310060,
+  kSuggestTrialStarted2013Q1IDMax = 3310079,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of kNextID, and updating kNextID to (end of your reserved
   // range) + 1.
-  kNextID = 3310060,
+  kNextID = 3310080,
 
 
   // USABLE IDs END HERE.

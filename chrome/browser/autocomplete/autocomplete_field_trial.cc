@@ -20,8 +20,8 @@ static const char kDisallowInlineHQPFieldTrialName[] =
 // Because we regularly change the name of the suggest field trial in
 // order to shuffle users among groups, we use the date the current trial
 // was created as part of the name.
-static const char kSuggestFieldTrialStarted2012Q4Name[] =
-    "OmniboxSearchSuggestTrialStarted2012Q4";
+static const char kSuggestFieldTrialStarted2013Q1Name[] =
+    "OmniboxSearchSuggestTrialStarted2013Q1";
 static const char kHQPNewScoringFieldTrialName[] =
     "OmniboxHQPNewScoringMax1400";
 static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
@@ -134,20 +134,20 @@ void AutocompleteFieldTrial::Activate() {
       kDisallowInlineHQPFieldTrialExperimentFraction);
 
   // Create the suggest field trial.
-  // Make it expire on July 1, 2013.
+  // Make it expire on September 1, 2013.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kSuggestFieldTrialStarted2012Q4Name, kSuggestFieldTrialNumberOfGroups,
-      "0", 2013, 7, 1, NULL);
+      kSuggestFieldTrialStarted2013Q1Name, kSuggestFieldTrialNumberOfGroups,
+      "0", 2013, 9, 1, NULL);
   trial->UseOneTimeRandomization();
 
   // Mark this group in suggest requests to Google.
   chrome_variations::AssociateGoogleVariationID(
       chrome_variations::GOOGLE_WEB_PROPERTIES,
-      kSuggestFieldTrialStarted2012Q4Name, "0",
-      chrome_variations::kSuggestTrialStarted2012Q4IDMin);
+      kSuggestFieldTrialStarted2013Q1Name, "0",
+      chrome_variations::kSuggestTrialStarted2013Q1IDMin);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
-      chrome_variations::kSuggestTrialStarted2012Q4IDMax -
-      chrome_variations::kSuggestTrialStarted2012Q4IDMin + 1);
+      chrome_variations::kSuggestTrialStarted2013Q1IDMax -
+      chrome_variations::kSuggestTrialStarted2013Q1IDMin + 1);
 
   // We've already created one group; now just need to create
   // kSuggestFieldTrialNumGroups - 1 more. Mark these groups in
@@ -157,9 +157,9 @@ void AutocompleteFieldTrial::Activate() {
     trial->AppendGroup(group_name, 1);
     chrome_variations::AssociateGoogleVariationID(
         chrome_variations::GOOGLE_WEB_PROPERTIES,
-        kSuggestFieldTrialStarted2012Q4Name, group_name,
+        kSuggestFieldTrialStarted2013Q1Name, group_name,
         static_cast<chrome_variations::VariationID>(
-            chrome_variations::kSuggestTrialStarted2012Q4IDMin + i));
+            chrome_variations::kSuggestTrialStarted2013Q1IDMin + i));
   }
 
   // Make sure that we participate in the suggest experiment by calling group()
@@ -236,10 +236,10 @@ bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
 
 bool AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
     uint32* field_trial_hash) {
-  if (!base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2012Q4Name))
+  if (!base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2013Q1Name))
     return false;
 
-  *field_trial_hash = metrics::HashName(kSuggestFieldTrialStarted2012Q4Name);
+  *field_trial_hash = metrics::HashName(kSuggestFieldTrialStarted2013Q1Name);
   return true;
 }
 
