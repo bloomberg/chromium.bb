@@ -27,9 +27,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -53,6 +56,11 @@
 #include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_error.h"
+#include "sync/api/sync_error_factory.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -968,9 +976,11 @@ TEST_F(HistoryTest, HistoryDBTaskCanceled) {
   ASSERT_FALSE(task->done_invoked);
 }
 
+// Create a delete directive for a few specific history entries,
+// including ones that don't exist.  The expected entries should be
+// deleted.
 TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   ASSERT_TRUE(history_service_.get());
-  // Add the page once from a child frame.
   const GURL test_url("http://www.google.com/");
   for (int64 i = 1; i <= 10; ++i) {
     base::Time t =
@@ -1009,9 +1019,10 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   EXPECT_EQ(7, query_url_row_.visit_count());
 }
 
+// Create a delete directive for a given time range.  The expected
+// entries should be deleted.
 TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
   ASSERT_TRUE(history_service_.get());
-  // Add the page once from a child frame.
   const GURL test_url("http://www.google.com/");
   for (int64 i = 1; i <= 10; ++i) {
     base::Time t =
@@ -1035,6 +1046,137 @@ TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
 
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(2, query_url_row_.visit_count());
+}
+
+// Create a local delete directive and process it while sync is
+// offline.  The expected entries should be deleted, and an error
+// should be returned.
+TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOffline) {
+  ASSERT_TRUE(history_service_.get());
+  const GURL test_url("http://www.google.com/");
+  for (int64 i = 1; i <= 10; ++i) {
+    base::Time t =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
+                              history::RedirectList(),
+                              content::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
+  sync_pb::GlobalIdDirective* global_id_directive =
+      delete_directive.mutable_global_id_directive();
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1))
+      .ToInternalValue());
+
+  EXPECT_TRUE(
+      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(9, query_url_row_.visit_count());
+}
+
+// Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
+// back up to Sync.
+//
+// TODO(akalin): Unify all the various test implementations of
+// syncer::SyncChangeProcessor.
+class TestChangeProcessor : public syncer::SyncChangeProcessor {
+ public:
+  TestChangeProcessor() {}
+  virtual ~TestChangeProcessor() {}
+
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE {
+    changes_.insert(changes_.end(), change_list.begin(), change_list.end());
+    return syncer::SyncError();
+  }
+
+  const syncer::SyncChangeList& GetChanges() const {
+    return changes_;
+  }
+
+ private:
+  syncer::SyncChangeList changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
+};
+
+// SyncChangeProcessor implementation that delegates to another one.
+// This is necessary since most things expect a
+// scoped_ptr<SyncChangeProcessor>.
+//
+// TODO(akalin): Unify this too.
+class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
+ public:
+  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient)
+      : recipient_(recipient) {
+    DCHECK(recipient_);
+  }
+
+  virtual ~SyncChangeProcessorDelegate() {}
+
+  // syncer::SyncChangeProcessor implementation.
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE {
+    return recipient_->ProcessSyncChanges(from_here, change_list);
+  }
+
+ private:
+  // The recipient of all sync changes.
+  syncer::SyncChangeProcessor* const recipient_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
+};
+
+// Create a local delete directive and process it while sync is
+// online, and then when offline.  The expected entries should be
+// deleted, the delete directive should be sent to sync, no error
+// should be returned for the first time, and an error should be
+// returned for the second time.
+TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOnline) {
+  ASSERT_TRUE(history_service_.get());
+
+  const GURL test_url("http://www.google.com/");
+  for (int64 i = 1; i <= 10; ++i) {
+    base::Time t =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
+                              history::RedirectList(),
+                              content::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
+  sync_pb::GlobalIdDirective* global_id_directive =
+      delete_directive.mutable_global_id_directive();
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1))
+      .ToInternalValue());
+
+  TestChangeProcessor change_processor;
+
+  EXPECT_FALSE(
+      history_service_->MergeDataAndStartSyncing(
+          syncer::HISTORY_DELETE_DIRECTIVES,
+          syncer::SyncDataList(),
+          scoped_ptr<syncer::SyncChangeProcessor>(
+              new SyncChangeProcessorDelegate(&change_processor)),
+          scoped_ptr<syncer::SyncErrorFactory>()).error().IsSet());
+  EXPECT_FALSE(
+      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
+  EXPECT_EQ(1u, change_processor.GetChanges().size());
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(9, query_url_row_.visit_count());
+
+  history_service_->StopSyncing(syncer::HISTORY_DELETE_DIRECTIVES);
+  EXPECT_TRUE(
+      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
+  EXPECT_EQ(1u, change_processor.GetChanges().size());
 }
 
 }  // namespace

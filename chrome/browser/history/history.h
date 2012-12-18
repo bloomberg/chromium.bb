@@ -640,6 +640,12 @@ class HistoryService : public CancelableRequestProvider,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
+  // Processes the given |delete_directive| and sends it to the
+  // SyncChangeProcessor (if it exists).  Returns any error resulting
+  // from sending the delete directive to sync.
+  syncer::SyncError ProcessLocalDeleteDirective(
+      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
+
  protected:
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.
@@ -1090,6 +1096,9 @@ class HistoryService : public CancelableRequestProvider,
   // on the background thread.
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
+
+  // Used to propagate local delete directives to sync.
+  scoped_ptr<syncer::SyncChangeProcessor> sync_change_processor_;
 
   // The profile, may be null when testing.
   Profile* profile_;

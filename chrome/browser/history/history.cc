@@ -33,10 +33,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -66,7 +68,9 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "sync/api/sync_change.h"
+#include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
+#include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "sync/protocol/proto_value_conversions.h"
@@ -1010,13 +1014,14 @@ syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
     DCHECK_EQ(it->GetDataType(), syncer::HISTORY_DELETE_DIRECTIVES);
     ProcessDeleteDirective(it->GetSpecifics().history_delete_directive());
   }
+  sync_change_processor_ = sync_processor.Pass();
   return syncer::SyncMergeResult(type);
 }
 
 void HistoryService::StopSyncing(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
-  // Do nothing.
+  sync_change_processor_.reset();
 }
 
 syncer::SyncDataList HistoryService::GetAllSyncData(
@@ -1046,6 +1051,31 @@ syncer::SyncError HistoryService::ProcessSyncChanges(
     }
   }
   return syncer::SyncError();
+}
+
+syncer::SyncError HistoryService::ProcessLocalDeleteDirective(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ProcessDeleteDirective(delete_directive);
+  if (!sync_change_processor_.get()) {
+    return syncer::SyncError(
+        FROM_HERE,
+        "Cannot send local delete directive to sync",
+        syncer::HISTORY_DELETE_DIRECTIVES);
+  }
+  // Generate a random sync tag since history delete directives don't
+  // have a 'built-in' ID.  8 bytes should suffice.
+  std::string sync_tag = base::RandBytesAsString(8);
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_history_delete_directive()->CopyFrom(
+      delete_directive);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData(
+          sync_tag, sync_tag, entity_specifics);
+  syncer::SyncChange change(
+      FROM_HERE, syncer::SyncChange::ACTION_ADD, sync_data);
+  syncer::SyncChangeList changes(1, change);
+  return sync_change_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
 void HistoryService::SetInMemoryBackend(int backend_id,
