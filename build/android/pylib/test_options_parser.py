@@ -73,6 +73,10 @@ def AddTestRunnerOptions(option_parser, default_timeout=60):
                            dest='tool',
                            help='Run the test under a tool '
                            '(use --tool help to list them)')
+  option_parser.add_option('--flakiness-dashboard-server',
+                           dest='flakiness_dashboard_server',
+                           help=('Address of the server that is hosting the '
+                                 'Chrome for Android flakiness dashboard.'))
   AddBuildTypeOption(option_parser)
 
 
@@ -126,10 +130,6 @@ def AddInstrumentationOptions(option_parser):
                                 'kept. When this is run via a sharder '
                                 'the test server ports should be kept and '
                                 'should not be reset.')
-  option_parser.add_option('--flakiness-dashboard-server',
-                           dest='flakiness_dashboard_server',
-                           help=('Address of the server that is hosting the '
-                                 'Chrome for Android flakiness dashboard.'))
   option_parser.add_option('--buildbot-step-failure',
                            action='store_true',
                            help=('If present, will set the buildbot status '

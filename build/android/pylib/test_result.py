@@ -11,6 +11,7 @@ import traceback
 
 import buildbot_report
 import constants
+import flakiness_dashboard_results_uploader
 
 
 class BaseTestResult(object):
@@ -125,11 +126,77 @@ class TestResults(object):
     """Returns the all broken tests including failed, crashed, unknown."""
     return self.failed + self.crashed + self.unknown
 
-  def LogFull(self, test_group, test_suite, build_type, tests_to_run):
-    """Output broken test logs, summarize in a log file and the test output."""
+  def _LogToFile(self, test_type, test_suite, build_type):
+    """Log results to local files which can be used for aggregation later."""
+    # TODO(frankf): Report tests that failed to run here too.
+    log_file_path = os.path.join(constants.CHROME_DIR, 'out',
+                                 build_type, 'test_logs')
+    if not os.path.exists(log_file_path):
+      os.mkdir(log_file_path)
+    full_file_name = os.path.join(log_file_path, test_type)
+    if not os.path.exists(full_file_name):
+      with open(full_file_name, 'w') as log_file:
+        print >> log_file, '\n%s results for %s build %s:' % (
+            test_type, os.environ.get('BUILDBOT_BUILDERNAME'),
+            os.environ.get('BUILDBOT_BUILDNUMBER'))
+      logging.info('Writing results to %s.' % full_file_name)
+    log_contents = ['  %s result : %d tests ran' % (test_suite,
+                                                    len(self.ok) +
+                                                    len(self.failed) +
+                                                    len(self.crashed) +
+                                                    len(self.unknown))]
+    content_pairs = [('passed', len(self.ok)), ('failed', len(self.failed)),
+                     ('crashed', len(self.crashed))]
+    for (result, count) in content_pairs:
+      if count:
+        log_contents.append(', %d tests %s' % (count, result))
+    with open(full_file_name, 'a') as log_file:
+      print >> log_file, ''.join(log_contents)
+    logging.info('Writing results to %s.' % full_file_name)
+    content = {'test_group': test_type,
+               'ok': [t.name for t in self.ok],
+               'failed': [t.name for t in self.failed],
+               'crashed': [t.name for t in self.failed],
+               'unknown': [t.name for t in self.unknown],}
+    json_file_path = os.path.join(log_file_path, 'results.json')
+    with open(json_file_path, 'a') as json_file:
+      print >> json_file, json.dumps(content)
+    logging.info('Writing results to %s.' % json_file_path)
+
+  def _LogToFlakinessDashboard(self, test_type, test_package, flakiness_server):
+    """Upload results to the flakiness dashboard"""
+    # TODO(frankf): Fix upstream/downstream reporting for both test types.
+    logging.info('Upload %s %s to %s' % (test_type, test_package,
+                                         flakiness_server))
+    flakiness_dashboard_results_uploader.Upload(
+        flakiness_server, 'Chromium_Android_Instrumentation', self)
+
+  def LogFull(self, test_type, test_package, annotation=None,
+              build_type='Debug', all_tests=None, flakiness_server=None):
+    """Log the tests results for the test suite.
+
+    The results will be logged three different ways:
+      1. Log to stdout.
+      2. Log to local files for aggregating multiple test steps
+         (on buildbots only).
+      3. Log to flakiness dashboard (on buildbots only).
+
+    Args:
+      test_type: Type of the test (e.g. 'Instrumentation', 'Unit test', etc.).
+      test_package: Test package name (e.g. 'ipc_tests' for gtests,
+                    'ContentShellTest' for instrumentation tests)
+      annotation: If instrumenation test type, this is a list of annotations
+                  (e.g. ['Smoke', 'SmallTest']).
+      build_type: Release/Debug
+      all_tests: A list of all tests that were supposed to run.
+                 This is used to determine which tests have failed to run.
+                 If None, we assume all tests ran.
+      flakiness_server: If provider, upload the results to flakiness dashboard
+                        with this URL.
+      """
     # Output all broken tests or 'passed' if none broken.
     logging.critical('*' * 80)
-    logging.critical('Final result')
+    logging.critical('Final result:')
     if self.failed:
       logging.critical('Failed:')
       self._Log(sorted(self.failed))
@@ -141,44 +208,12 @@ class TestResults(object):
       self._Log(sorted(self.unknown))
     if not self.GetAllBroken():
       logging.critical('Passed')
-    logging.critical('*' * 80)
-
-    # Summarize in a log file, if tests are running on bots.
-    if test_group and test_suite and os.environ.get('BUILDBOT_BUILDERNAME'):
-      log_file_path = os.path.join(constants.CHROME_DIR, 'out',
-                                   build_type, 'test_logs')
-      if not os.path.exists(log_file_path):
-        os.mkdir(log_file_path)
-      full_file_name = os.path.join(log_file_path, test_group)
-      if not os.path.exists(full_file_name):
-        with open(full_file_name, 'w') as log_file:
-          print >> log_file, '\n%s results for %s build %s:' % (
-              test_group, os.environ.get('BUILDBOT_BUILDERNAME'),
-              os.environ.get('BUILDBOT_BUILDNUMBER'))
-      log_contents = ['  %s result : %d tests ran' % (test_suite,
-                                                      len(self.ok) +
-                                                      len(self.failed) +
-                                                      len(self.crashed) +
-                                                      len(self.unknown))]
-      content_pairs = [('passed', len(self.ok)), ('failed', len(self.failed)),
-                       ('crashed', len(self.crashed))]
-      for (result, count) in content_pairs:
-        if count:
-          log_contents.append(', %d tests %s' % (count, result))
-      with open(full_file_name, 'a') as log_file:
-        print >> log_file, ''.join(log_contents)
-      content = {'test_group': test_group,
-                 'ok': [t.name for t in self.ok],
-                 'failed': [t.name for t in self.failed],
-                 'crashed': [t.name for t in self.failed],
-                 'unknown': [t.name for t in self.unknown],}
-      with open(os.path.join(log_file_path, 'results.json'), 'a') as json_file:
-        print >> json_file, json.dumps(content)
 
     # Summarize in the test output.
+    logging.critical('*' * 80)
     summary = ['Summary:\n']
-    if tests_to_run:
-      summary += ['TESTS_TO_RUN=%d\n' % (len(tests_to_run))]
+    if all_tests:
+      summary += ['TESTS_TO_RUN=%d\n' % len(all_tests)]
     num_tests_ran = (len(self.ok) + len(self.failed) +
                      len(self.crashed) + len(self.unknown))
     tests_passed = [t.name for t in self.ok]
@@ -190,16 +225,28 @@ class TestResults(object):
                 'FAILED=%d %s\n' % (len(tests_failed), tests_failed),
                 'CRASHED=%d %s\n' % (len(tests_crashed), tests_crashed),
                 'UNKNOWN=%d %s\n' % (len(tests_unknown), tests_unknown)]
-    if tests_to_run and num_tests_ran != len(tests_to_run):
+    if all_tests and num_tests_ran != len(all_tests):
       # Add the list of tests we failed to run.
-      tests_failed_to_run = list(set(tests_to_run) - set(tests_passed) -
+      tests_failed_to_run = list(set(all_tests) - set(tests_passed) -
                             set(tests_failed) - set(tests_crashed) -
                             set(tests_unknown))
       summary += ['FAILED_TO_RUN=%d %s\n' % (len(tests_failed_to_run),
                                              tests_failed_to_run)]
     summary_string = ''.join(summary)
     logging.critical(summary_string)
-    return summary_string
+    logging.critical('*' * 80)
+
+    if os.environ.get('BUILDBOT_BUILDERNAME'):
+      # It is possible to have multiple buildbot steps for the same
+      # instrumenation test package using different annotations.
+      if annotation and len(annotation) == 1:
+        test_suite = annotation[0]
+      else:
+        test_suite = test_package
+      self._LogToFile(test_type, test_suite, build_type)
+
+      if flakiness_server:
+        self._LogToFlakinessDashboard(test_type, test_package, flakiness_server)
 
   def PrintAnnotation(self):
     """Print buildbot annotations for test results."""

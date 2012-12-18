@@ -174,10 +174,10 @@ class TestSharder(BaseTestSharder):
 
   def __init__(self, attached_devices, test_suite, gtest_filter,
                test_arguments, timeout, cleanup_test_files, tool,
-               log_dump_name, fast_and_loose, build_type, in_webkit_checkout):
+               log_dump_name, fast_and_loose, build_type, in_webkit_checkout,
+               flakiness_server=None):
     BaseTestSharder.__init__(self, attached_devices, build_type)
     self.test_suite = test_suite
-    self.test_suite_basename = os.path.basename(test_suite)
     self.gtest_filter = gtest_filter or ''
     self.test_arguments = test_arguments
     self.timeout = timeout
@@ -186,6 +186,7 @@ class TestSharder(BaseTestSharder):
     self.log_dump_name = log_dump_name
     self.fast_and_loose = fast_and_loose
     self.in_webkit_checkout = in_webkit_checkout
+    self.flakiness_server = flakiness_server
     self.all_tests = []
     if not self.gtest_filter:
       # No filter has been specified, let's add all tests then.
@@ -272,9 +273,14 @@ class TestSharder(BaseTestSharder):
 
   def OnTestsCompleted(self, test_runners, test_results):
     """Notifies that we completed the tests."""
-    test_results.LogFull('Unit test', os.path.basename(self.test_suite),
-                         self.build_type, self.all_tests)
+    test_results.LogFull(
+        test_type='Unit test',
+        test_package=test_runners[0].test_package.test_suite_basename,
+        build_type=self.build_type,
+        all_tests=self.all_tests,
+        flakiness_server=self.flakiness_server)
     test_results.PrintAnnotation()
+
     if self.log_dump_name:
       # Zip all debug info outputs into a file named by log_dump_name.
       debug_info.GTestDebugInfo.ZipAndCleanResults(
@@ -347,7 +353,8 @@ def _RunATestSuite(options):
       options.log_dump,
       options.fast_and_loose,
       options.build_type,
-      options.webkit)
+      options.webkit,
+      options.flakiness_dashboard_server)
   test_results = sharder.RunShardedTests()
 
   for buildbot_emulator in buildbot_emulators:

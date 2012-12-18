@@ -108,7 +108,10 @@ def DispatchPythonTests(options):
   sharder = python_test_sharder.PythonTestSharder(
       attached_devices, available_tests, options)
   result = sharder.RunShardedTests()
-  result.LogFull('Monkey', 'Monkey', options.build_type, available_tests)
+  result.LogFull(
+      test_type='Monkey',
+      test_package='Monkey',
+      build_type=options.build_type)
   result.PrintAnnotation()
 
 
