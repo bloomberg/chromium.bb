@@ -281,30 +281,7 @@ void LayerAnimator::StopAnimatingProperty(
       break;
     // As was mentioned above, this sequence must be alive.
     DCHECK(running->is_sequence_alive());
-    FinishAnimation(running->sequence());
-  }
-}
-
-void LayerAnimator::StopAnimating() {
-  scoped_refptr<LayerAnimator> retain(this);
-  while (is_animating()) {
-    // We're going to attempt to finish the first running animation. Let's
-    // ensure that it's valid.
-    PurgeDeletedAnimations();
-
-    // If we've purged all running animations, attempt to start one up.
-    if (running_animations_.empty())
-      ProcessQueue();
-
-    DCHECK(!running_animations_.empty());
-
-    // Still no luck, let's just bail and clear all animations.
-    if (running_animations_.empty()) {
-      ClearAnimationsInternal();
-      break;
-    }
-
-    SAFE_INVOKE_VOID(FinishAnimation, running_animations_[0]);
+    FinishAnimation(running->sequence(), false);
   }
 }
 
@@ -339,7 +316,6 @@ void LayerAnimator::ProgressAnimationToEnd(LayerAnimationSequence* sequence) {
   sequence->ProgressToEnd(delegate());
 }
 
-
 bool LayerAnimator::HasAnimation(LayerAnimationSequence* sequence) const {
   for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
        queue_iter != animation_queue_.end(); ++queue_iter) {
@@ -368,9 +344,10 @@ void LayerAnimator::Step(base::TimeTicks now) {
       continue;
 
     if (running_animations_copy[i].sequence()->IsFinished(now)) {
-      SAFE_INVOKE_VOID(FinishAnimation, running_animations_copy[i]);
-    } else
+      SAFE_INVOKE_VOID(FinishAnimation, running_animations_copy[i], false);
+    } else {
       SAFE_INVOKE_VOID(ProgressAnimation, running_animations_copy[i], now);
+    }
   }
 }
 
@@ -380,6 +357,29 @@ void LayerAnimator::SetStartTime(base::TimeTicks start_time) {
 
 base::TimeDelta LayerAnimator::GetTimerInterval() const {
   return base::TimeDelta::FromMilliseconds(kTimerIntervalMs);
+}
+
+void LayerAnimator::StopAnimatingInternal(bool abort) {
+  scoped_refptr<LayerAnimator> retain(this);
+  while (is_animating()) {
+    // We're going to attempt to finish the first running animation. Let's
+    // ensure that it's valid.
+    PurgeDeletedAnimations();
+
+    // If we've purged all running animations, attempt to start one up.
+    if (running_animations_.empty())
+      ProcessQueue();
+
+    DCHECK(!running_animations_.empty());
+
+    // Still no luck, let's just bail and clear all animations.
+    if (running_animations_.empty()) {
+      ClearAnimationsInternal();
+      break;
+    }
+
+    SAFE_INVOKE_VOID(FinishAnimation, running_animations_[0], abort);
+  }
 }
 
 void LayerAnimator::UpdateAnimationState() {
@@ -421,10 +421,14 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
   return to_return.release();
 }
 
-void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
+void LayerAnimator::FinishAnimation(
+    LayerAnimationSequence* sequence, bool abort) {
   scoped_refptr<LayerAnimator> retain(this);
   scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
-  ProgressAnimationToEnd(sequence);
+  if (abort)
+    sequence->Abort();
+  else
+    ProgressAnimationToEnd(sequence);
   ProcessQueue();
   UpdateAnimationState();
 }

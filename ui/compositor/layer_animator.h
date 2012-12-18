@@ -146,8 +146,13 @@ class COMPOSITOR_EXPORT LayerAnimator
   void StopAnimatingProperty(
       LayerAnimationElement::AnimatableProperty property);
 
-  // Stops all animation and clears any queued animations.
-  void StopAnimating();
+  // Stops all animation and clears any queued animations. This call progresses
+  // animations to their end points and notifies all observers.
+  void StopAnimating() { StopAnimatingInternal(false); }
+
+  // This is similar to StopAnimating, but aborts rather than finishes the
+  // animations and notifies all observers.
+  void AbortAllAnimations() { StopAnimatingInternal(true); }
 
   // These functions are used for adding or removing observers from the observer
   // list. The observers are notified when animations end.
@@ -234,6 +239,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   virtual void Step(base::TimeTicks time_now) OVERRIDE;
   virtual base::TimeDelta GetTimerInterval() const OVERRIDE;
 
+  // Finishes all animations by either advancing them to their final state or by
+  // aborting them.
+  void StopAnimatingInternal(bool abort);
+
   // Starts or stops stepping depending on whether thare are running animations.
   void UpdateAnimationState();
 
@@ -244,7 +253,7 @@ class COMPOSITOR_EXPORT LayerAnimator
       LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
 
   // Progresses to the end of the sequence before removing it.
-  void FinishAnimation(LayerAnimationSequence* sequence);
+  void FinishAnimation(LayerAnimationSequence* sequence, bool abort);
 
   // Finishes any running animation with zero duration.
   void FinishAnyAnimationWithZeroDuration();

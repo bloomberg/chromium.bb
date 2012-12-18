@@ -207,6 +207,29 @@ TEST(LayerAnimatorTest, StopAnimating) {
   CheckApproximatelyEqual(delegate.GetBoundsForAnimation(), target_bounds);
 }
 
+// Checks that multiple running animation for separate properties can be stopped
+// simultaneously and that all animations are advanced to their target values.
+TEST(LayerAnimatorTest, AbortAllAnimations) {
+  scoped_refptr<LayerAnimator> animator(
+      LayerAnimator::CreateImplicitAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  double initial_opacity(1.0);
+  gfx::Rect initial_bounds(0, 0, 10, 10);
+  delegate.SetOpacityFromAnimation(initial_opacity);
+  delegate.SetBoundsFromAnimation(initial_bounds);
+  animator->SetDelegate(&delegate);
+  double target_opacity(0.5);
+  gfx::Rect target_bounds(0, 0, 50, 50);
+  animator->SetOpacity(target_opacity);
+  animator->SetBounds(target_bounds);
+  EXPECT_TRUE(animator->is_animating());
+  animator->AbortAllAnimations();
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_FLOAT_EQ(initial_opacity, delegate.GetOpacityForAnimation());
+  CheckApproximatelyEqual(initial_bounds, delegate.GetBoundsForAnimation());
+}
+
 // Schedule an animation that can run immediately. This is the trivial case and
 // should result in the animation being started immediately.
 TEST(LayerAnimatorTest, ScheduleAnimationThatCanRunImmediately) {
