@@ -5,8 +5,8 @@
 #include "remoting/codec/video_encoder_verbatim.h"
 
 #include "base/logging.h"
-#include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
+#include "remoting/capturer/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
 namespace remoting {

@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/base/shared_buffer.h"
-#include "remoting/host/video_frame_capturer.h"
+#include "remoting/capturer/shared_buffer.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -99,7 +99,7 @@ class DesktopSessionProxy
   void OnCaptureCompleted(const SerializedCapturedData& serialized_data);
 
   // Handles CursorShapeChanged notification from the desktop session agent.
-  void OnCursorShapeChanged(const std::string& serialized_cursor_shape);
+  void OnCursorShapeChanged(const MouseCursorShape& cursor_shape);
 
   // Posted to |video_capture_task_runner_| to pass a captured video frame back
   // to |video_capturer_|.
@@ -107,7 +107,7 @@ class DesktopSessionProxy
 
   // Posted to |video_capture_task_runner_| to pass |cursor_shape| back to
   // |video_capturer_|.
-  void PostCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
+  void PostCursorShape(scoped_ptr<MouseCursorShape> cursor_shape);
 
   // Handles InjectClipboardEvent request from the desktop integration process.
   void OnInjectClipboardEvent(const std::string& serialized_event);

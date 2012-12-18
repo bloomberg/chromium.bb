@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/capture_scheduler.h"
-#include "remoting/host/video_frame_capturer.h"
 #include "remoting/proto/video.pb.h"
 
 namespace base {
@@ -25,6 +25,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class CaptureData;
+class CursorShapeInfo;
 class VideoFrameCapturer;
 
 namespace protocol {
@@ -90,7 +91,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   virtual void OnCaptureCompleted(
       scoped_refptr<CaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
-      scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
+      scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
 
   // Stop scheduling frame captures.  |done_task| is executed on the network
   // thread when capturing has stopped.  This object cannot be re-used once

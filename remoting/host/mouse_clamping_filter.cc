@@ -4,7 +4,7 @@
 
 #include "remoting/host/mouse_clamping_filter.h"
 
-#include "remoting/host/video_frame_capturer.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {

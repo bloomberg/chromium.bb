@@ -10,7 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
-#include "remoting/base/capture_data.h"
+#include "remoting/capturer/capture_data.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
@@ -19,7 +20,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/ipc_event_executor.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
-#include "remoting/host/video_frame_capturer.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

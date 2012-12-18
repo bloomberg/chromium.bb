@@ -6,8 +6,6 @@
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
 #include "net/base/ip_endpoint.h"
-#include "remoting/base/capture_data.h"
-#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/continue_window.h"
@@ -22,37 +20,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
-
-class MockVideoFrameCapturer : public VideoFrameCapturer {
- public:
-  MockVideoFrameCapturer();
-  virtual ~MockVideoFrameCapturer();
-
-  MOCK_METHOD1(Start, void(Delegate* delegate));
-  MOCK_METHOD0(Stop, void());
-  MOCK_CONST_METHOD0(pixel_format, media::VideoFrame::Format());
-  MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
-  MOCK_METHOD0(CaptureFrame, void());
-  MOCK_CONST_METHOD0(size_most_recent, const SkISize&());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVideoFrameCapturer);
-};
-
-class MockVideoFrameCapturerDelegate : public VideoFrameCapturer::Delegate {
- public:
-  MockVideoFrameCapturerDelegate();
-  virtual ~MockVideoFrameCapturerDelegate();
-
-  virtual void OnCursorShapeChanged(
-      scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
-
-  MOCK_METHOD1(OnCaptureCompleted, void(scoped_refptr<CaptureData>));
-  MOCK_METHOD1(OnCursorShapeChangedPtr, void(protocol::CursorShapeInfo*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVideoFrameCapturerDelegate);
-};
 
 class MockDisconnectWindow : public DisconnectWindow {
  public:

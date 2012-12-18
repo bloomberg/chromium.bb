@@ -10,6 +10,7 @@ include_rules = [
   # at process start.
   "+net/socket",
 
+  "+remoting/capturer",
   "+remoting/codec",
   "+remoting/protocol",
   "+remoting/jingle_glue",

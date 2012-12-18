@@ -7,27 +7,10 @@
 #include "base/message_loop_proxy.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/base/capture_data.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
 
 namespace remoting {
-
-MockVideoFrameCapturer::MockVideoFrameCapturer() {}
-
-MockVideoFrameCapturer::~MockVideoFrameCapturer() {}
-
-MockVideoFrameCapturerDelegate::MockVideoFrameCapturerDelegate() {
-}
-
-MockVideoFrameCapturerDelegate::~MockVideoFrameCapturerDelegate() {
-}
-
-void MockVideoFrameCapturerDelegate::OnCursorShapeChanged(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
-  // Notify the mock method.
-  OnCursorShapeChangedPtr(cursor_shape.get());
-}
 
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory()
     : DesktopEnvironmentFactory(NULL, NULL) {

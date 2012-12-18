@@ -8,8 +8,8 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "media/base/yuv_convert.h"
-#include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
+#include "remoting/capturer/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
 extern "C" {

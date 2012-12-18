@@ -4,9 +4,9 @@
 
 #include "remoting/host/ipc_video_frame_capturer.h"
 
-#include "remoting/base/capture_data.h"
+#include "remoting/capturer/capture_data.h"
+#include "remoting/capturer/mouse_cursor_shape.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -56,7 +56,7 @@ void IpcVideoFrameCapturer::OnCaptureCompleted(
 }
 
 void IpcVideoFrameCapturer::OnCursorShapeChanged(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+    scoped_ptr<MouseCursorShape> cursor_shape) {
   if (delegate_)
     delegate_->OnCursorShapeChanged(cursor_shape.Pass());
 }

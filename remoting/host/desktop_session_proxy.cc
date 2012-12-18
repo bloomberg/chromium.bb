@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
-#include "remoting/base/capture_data.h"
+#include "remoting/capturer/capture_data.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
@@ -301,9 +301,9 @@ void DesktopSessionProxy::OnCaptureCompleted(
   capture_data->set_shared_buffer(shared_buffer);
 
   if (!serialized_data.dirty_region.empty()) {
-      capture_data->mutable_dirty_region().setRects(
-          &serialized_data.dirty_region[0],
-          serialized_data.dirty_region.size());
+    capture_data->mutable_dirty_region().setRects(
+        &serialized_data.dirty_region[0],
+        serialized_data.dirty_region.size());
   }
 
   --pending_capture_frame_requests_;
@@ -311,17 +311,10 @@ void DesktopSessionProxy::OnCaptureCompleted(
 }
 
 void DesktopSessionProxy::OnCursorShapeChanged(
-    const std::string& serialized_cursor_shape) {
+    const MouseCursorShape& cursor_shape) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  scoped_ptr<protocol::CursorShapeInfo> cursor_shape(
-      new protocol::CursorShapeInfo());
-  if (!cursor_shape->ParseFromString(serialized_cursor_shape)) {
-    LOG(ERROR) << "Failed to parse protocol::CursorShapeInfo.";
-    return;
-  }
-
-  PostCursorShape(cursor_shape.Pass());
+  PostCursorShape(
+      scoped_ptr<MouseCursorShape>(new MouseCursorShape(cursor_shape)));
 }
 
 void DesktopSessionProxy::OnInjectClipboardEvent(
@@ -352,7 +345,7 @@ void DesktopSessionProxy::PostCaptureCompleted(
 }
 
 void DesktopSessionProxy::PostCursorShape(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+    scoped_ptr<MouseCursorShape> cursor_shape) {
   if (!video_capture_task_runner_->BelongsToCurrentThread()) {
     video_capture_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DesktopSessionProxy::PostCursorShape,

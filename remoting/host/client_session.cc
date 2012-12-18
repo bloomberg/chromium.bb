@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
 #include "remoting/codec/audio_encoder_speex.h"
@@ -18,7 +19,6 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/video_scheduler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"

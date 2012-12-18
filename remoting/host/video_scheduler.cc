@@ -14,8 +14,9 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time.h"
-#include "remoting/base/capture_data.h"
-#include "remoting/host/video_frame_capturer.h"
+#include "remoting/capturer/capture_data.h"
+#include "remoting/capturer/mouse_cursor_shape.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -77,12 +78,20 @@ void VideoScheduler::OnCaptureCompleted(
 }
 
 void VideoScheduler::OnCursorShapeChanged(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+    scoped_ptr<MouseCursorShape> cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
+      new protocol::CursorShapeInfo());
+  cursor_proto->set_width(cursor_shape->size.width());
+  cursor_proto->set_height(cursor_shape->size.height());
+  cursor_proto->set_hotspot_x(cursor_shape->hotspot.x());
+  cursor_proto->set_hotspot_y(cursor_shape->hotspot.y());
+  cursor_proto->set_data(cursor_shape->data);
 
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::SendCursorShape, this,
-                            base::Passed(&cursor_shape)));
+                            base::Passed(&cursor_proto)));
 }
 
 void VideoScheduler::Stop(const base::Closure& done_task) {

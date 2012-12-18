@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "remoting/host/win/desktop.h"
-#include "remoting/host/win/scoped_thread_desktop.h"
+#include "remoting/capturer/win/desktop.h"
+#include "remoting/capturer/win/scoped_thread_desktop.h"
 
 namespace remoting {
 

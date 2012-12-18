@@ -8,6 +8,7 @@
 
 #include "ipc/ipc_channel_proxy.h"
 #include "base/platform_file.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -16,7 +17,6 @@
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/ipc_desktop_environment.h"
-#include "remoting/host/video_frame_capturer.h"
 
 namespace remoting {
 

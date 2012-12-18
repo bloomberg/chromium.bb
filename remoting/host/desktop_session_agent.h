@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/base/shared_buffer.h"
-#include "remoting/base/shared_buffer_factory.h"
-#include "remoting/host/video_frame_capturer.h"
+#include "remoting/capturer/shared_buffer.h"
+#include "remoting/capturer/shared_buffer_factory.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -70,7 +70,7 @@ class DesktopSessionAgent
   virtual void OnCaptureCompleted(
       scoped_refptr<CaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
-      scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
+      scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.

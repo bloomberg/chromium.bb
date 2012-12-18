@@ -6,15 +6,16 @@
 #define REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 
 #include "base/memory/ref_counted.h"
-#include "remoting/host/video_frame_capturer.h"
+#include "remoting/capturer/video_frame_capturer.h"
 
 namespace IPC {
 class Message;
-}  // IPC
+}  // namespace IPC
 
 namespace remoting {
 
 class DesktopSessionProxy;
+struct MouseCursorShape;
 
 // Routes VideoFrameCapturer calls though the IPC channel to the desktop session
 // agent running in the desktop integration process.
@@ -37,7 +38,7 @@ class IpcVideoFrameCapturer : public VideoFrameCapturer {
   void OnCaptureCompleted(scoped_refptr<CaptureData> capture_data);
 
   // Called when the cursor shape has changed.
-  void OnCursorShapeChanged(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
+  void OnCursorShapeChanged(scoped_ptr<MouseCursorShape> cursor_shape);
 
  private:
   // Points to the delegate passed to VideoFrameCapturer::Start().

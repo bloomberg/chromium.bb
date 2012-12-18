@@ -5,12 +5,12 @@
 #include "remoting/host/win/session_desktop_environment_factory.h"
 
 #include "base/single_thread_task_runner.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/host/video_frame_capturer.h"
 #include "remoting/host/win/session_event_executor.h"
 
 namespace remoting {

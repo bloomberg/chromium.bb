@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/capture_data.h"
+#include "remoting/capturer/capture_data.h"
 
 namespace remoting {
 

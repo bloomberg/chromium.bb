@@ -6,6 +6,7 @@
 #define REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
 #include "ipc/ipc_platform_file.h"
+#include "remoting/capturer/mouse_cursor_shape.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -127,6 +128,12 @@ IPC_STRUCT_TRAITS_BEGIN(SkISize)
   IPC_STRUCT_TRAITS_MEMBER(fHeight)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(remoting::MouseCursorShape)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(hotspot)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+IPC_STRUCT_TRAITS_END()
+
 // Serialized CaptureData structure.
 IPC_STRUCT_BEGIN(SerializedCapturedData)
   // ID of the shared memory buffer containing the pixels.
@@ -159,9 +166,8 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
                      SerializedCapturedData /* capture_data */ )
 
 // Carries a cursor share update from the desktop session agent to the client.
-// |serialized_cursor_shape| is a serialized protocol::CursorShapeInfo.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
-                     std::string /* serialized_cursor_shape */ )
+                     remoting::MouseCursorShape /* cursor_shape */ )
 
 // Carries a clipboard event from the desktop session agent to the client.
 // |serialized_event| is a serialized protocol::ClipboardEvent.

@@ -9,9 +9,9 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/base/capture_data.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
+#include "remoting/capturer/capture_data.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/proto/control.pb.h"
@@ -164,18 +164,11 @@ void DesktopSessionAgent::OnCaptureCompleted(
 }
 
 void DesktopSessionAgent::OnCursorShapeChanged(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+    scoped_ptr<MouseCursorShape> cursor_shape) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  // Serialize |cursor_shape| to a string.
-  std::string serialized_cursor_shape;
-  if (!cursor_shape->SerializeToString(&serialized_cursor_shape)) {
-    LOG(ERROR) << "Failed to serialize protocol::CursorShapeInfo.";
-    return;
-  }
-
   SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
-      serialized_cursor_shape));
+      *cursor_shape));
 }
 
 void DesktopSessionAgent::InjectClipboardEvent(

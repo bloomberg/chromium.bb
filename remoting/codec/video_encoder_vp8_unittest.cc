@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/base/capture_data.h"
+#include "remoting/capturer/capture_data.h"
 #include "remoting/codec/codec_test.h"
 #include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

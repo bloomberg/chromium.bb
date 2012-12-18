@@ -5,10 +5,10 @@
 #include "remoting/host/desktop_environment.h"
 
 #include "base/compiler_specific.h"
+#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/host/video_frame_capturer.h"
 
 namespace remoting {
 

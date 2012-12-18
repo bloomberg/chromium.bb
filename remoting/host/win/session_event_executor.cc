@@ -13,9 +13,9 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
+#include "remoting/capturer/win/desktop.h"
+#include "remoting/capturer/win/scoped_thread_desktop.h"
 #include "remoting/host/sas_injector.h"
-#include "remoting/host/win/desktop.h"
-#include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/proto/event.pb.h"
 
 namespace {

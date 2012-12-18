@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
+#include "remoting/capturer/video_capturer_mock_objects.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
