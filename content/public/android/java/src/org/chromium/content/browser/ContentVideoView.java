@@ -70,8 +70,8 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     private static final int STATE_PLAYBACK_COMPLETED = 3;
 
     private SurfaceHolder mSurfaceHolder = null;
-    private int mVideoWidth;
-    private int mVideoHeight;
+    private int mVideoWidth = 0;
+    private int mVideoHeight = 0;
     private int mCurrentBufferPercentage;
     private int mDuration;
     private MediaController mMediaController = null;
@@ -117,6 +117,10 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            if (mVideoWidth == 0 && mVideoHeight == 0) {
+                setMeasuredDimension(0, 0);
+                return;
+            }
             int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
             int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
             if (mVideoWidth > 0 && mVideoHeight > 0) {
