@@ -577,6 +577,36 @@ TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
     EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(10, 10), gfx::SizeF(5, 5)), implLayer->updateRect());
 }
 
+TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForTransform)
+{
+    scoped_refptr<Layer> testLayer = Layer::create();
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
+
+    gfx::Transform transform;
+    transform.Rotate(45.0);
+    testLayer->setTransform(transform);
+
+    EXPECT_FALSE(implLayer->layerSurfacePropertyChanged());
+
+    testLayer->pushPropertiesTo(implLayer.get());
+
+    EXPECT_TRUE(implLayer->layerSurfacePropertyChanged());
+}
+
+TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForOpacity)
+{
+    scoped_refptr<Layer> testLayer = Layer::create();
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
+
+    testLayer->setOpacity(0.5);
+
+    EXPECT_FALSE(implLayer->layerSurfacePropertyChanged());
+
+    testLayer->pushPropertiesTo(implLayer.get());
+
+    EXPECT_TRUE(implLayer->layerSurfacePropertyChanged());
+}
+
 class FakeLayerImplTreeHost : public LayerTreeHost {
 public:
     static scoped_ptr<FakeLayerImplTreeHost> create()
