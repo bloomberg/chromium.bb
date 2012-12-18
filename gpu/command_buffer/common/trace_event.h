@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 #define GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 
-#if defined(NACL_PPAPI_IPC_PROXY) || !defined(__native_client__)
+#if !defined(NACL_PPAPI_SRPC_PROXY)
 
 #include "base/debug/trace_event.h"
 
@@ -27,6 +27,6 @@
 #define TRACE_EVENT_IF_LONGER_THAN1(x0, x1, x2, x3, x4) { }
 #define TRACE_EVENT_IF_LONGER_THAN2(x0, x1, x2, x3, x4, x5, x6) { }
 
-#endif  // __native_client__
+#endif  // NACL_PPAPI_SRPC_PROXY
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_

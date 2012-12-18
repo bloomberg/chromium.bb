@@ -24,6 +24,9 @@
           '<(DEPTH)/media',
           '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/untrusted',
         ],
+        'defines': [
+          'NACL_PPAPI_SRPC_PROXY',
+        ],
         'sources': [
           '<(DEPTH)/gpu/command_buffer/common/cmd_buffer_common.cc',
           '<(DEPTH)/gpu/command_buffer/common/debug_marker_manager.cc',

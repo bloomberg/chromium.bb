@@ -9,7 +9,7 @@
 // ref_counted. This causes duplicate class warnings in the NaCl IPC proxy,
 // which uses base. Remove the custom ref_counted class after NaCl has switched
 // proxies.
-#if defined(__native_client__) && !defined(NACL_PPAPI_IPC_PROXY)
+#if defined(NACL_PPAPI_SRPC_PROXY)
 #include "native_client/src/include/ref_counted.h"
 namespace gpu {
 using nacl::RefCountedThreadSafe;
