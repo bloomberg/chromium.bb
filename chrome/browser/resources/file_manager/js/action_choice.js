@@ -256,7 +256,12 @@ ActionChoice.prototype.onOk_ = function(event) {
   if (this.document_.querySelector('#import-photos-to-drive').checked) {
     var url = util.platform.getURL('photo_import.html') +
         '#' + this.sourceEntry_.fullPath;
-    util.platform.createWindow(url, {height: 656, width: 728});
+    var width = 728;
+    var height = 656;
+    var top = Math.round((window.screen.availHeight - height) / 2);
+    var left = Math.round((window.screen.availWidth - width) / 2);
+    util.platform.createWindow(url,
+        {height: height, width: width, left: left, top: top});
   } else if (this.document_.querySelector('#view-files').checked) {
     this.viewFiles_();
   } else if (this.document_.querySelector('#watch-single-video').checked) {
