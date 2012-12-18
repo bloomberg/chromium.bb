@@ -13,7 +13,6 @@
       'web_transform_animation_curve_unittest.cc',
       'web_transform_operations_unittest.cc',
       'web_transformation_matrix_unittest.cc',
-      'test/fake_web_scrollbar_theme_geometry.h',
       'test/web_layer_tree_view_test_common.h',
     ],
   },
@@ -35,12 +34,7 @@
         'test/run_all_unittests.cc',
       ],
       'include_dirs': [
-        '.',
-        'test',
-        '<(DEPTH)/cc',
-        '<(DEPTH)/cc/stubs',
-        '<(DEPTH)/cc/test',
-        '../../third_party/WebKit/Source/Platform/chromium'
+        '../..'
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {

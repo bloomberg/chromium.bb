@@ -6,6 +6,9 @@
 
 #include "base/logging.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -13,9 +16,6 @@
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/size_f.h"
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
-#include <public/WebGraphicsContext3D.h>
 
 namespace cc {
 

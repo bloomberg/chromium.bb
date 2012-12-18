@@ -8,7 +8,7 @@
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
-#include <public/WebTransformOperations.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
 using cc::ActiveAnimation;
 using cc::AnimationCurve;

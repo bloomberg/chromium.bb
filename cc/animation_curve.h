@@ -5,10 +5,9 @@
 #ifndef CC_ANIMATION_CURVE_H_
 #define CC_ANIMATION_CURVE_H_
 
-#include <public/WebTransformationMatrix.h>
-
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
 namespace cc {
 

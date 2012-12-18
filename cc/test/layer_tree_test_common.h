@@ -13,7 +13,7 @@
 #include "cc/scoped_thread_proxy.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebAnimationDelegate.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 
 namespace cc {
 class LayerImpl;

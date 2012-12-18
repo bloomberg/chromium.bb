@@ -15,7 +15,7 @@
 #include "cc/scheduler.h"
 #include "cc/scoped_thread_proxy.h"
 #include "cc/thread.h"
-#include <public/WebSharedGraphicsContext3D.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 
 using WebKit::WebSharedGraphicsContext3D;
 

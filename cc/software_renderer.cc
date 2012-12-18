@@ -4,8 +4,6 @@
 
 #include "cc/software_renderer.h"
 
-#include <public/WebImage.h>
-
 #include "base/debug/trace_event.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/math_util.h"
@@ -14,6 +12,7 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/tile_draw_quad.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"

@@ -4,9 +4,8 @@
 
 #include "cc/test/geometry_test_utils.h"
 
-#include <public/WebTransformationMatrix.h>
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

@@ -8,7 +8,7 @@
 #include "cc/layer_tree_host_common.h"
 #include "cc/math_util.h"
 #include "cc/render_surface_impl.h"
-#include <public/WebFilterOperations.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
 namespace cc {
 

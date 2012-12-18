@@ -5,7 +5,6 @@
 #ifndef CC_LAYER_H_
 #define CC_LAYER_H_
 
-#include <public/WebFilterOperations.h>
 #include <string>
 #include <vector>
 
@@ -19,6 +18,7 @@
 #include "cc/region.h"
 #include "cc/render_surface.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect.h"

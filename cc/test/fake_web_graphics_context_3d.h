@@ -5,8 +5,8 @@
 #ifndef CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 #define CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include <public/WebGraphicsContext3D.h>
 
 namespace cc {
 

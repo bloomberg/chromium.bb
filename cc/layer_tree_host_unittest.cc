@@ -18,17 +18,17 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
-#include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/resource_update_queue.h"
+#include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
-#include <public/WebLayerScrollClient.h>
-#include <public/WebSize.h>
 
 namespace cc {
 namespace {

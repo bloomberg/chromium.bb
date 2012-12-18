@@ -5,7 +5,6 @@
 #ifndef CC_LAYER_IMPL_H_
 #define CC_LAYER_IMPL_H_
 
-#include <public/WebFilterOperations.h>
 #include <string>
 
 #include "base/logging.h"
@@ -21,6 +20,7 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect.h"

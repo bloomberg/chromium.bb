@@ -9,11 +9,11 @@
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebAnimationDelegate.h>
-#include <public/WebLayerScrollClient.h>
-#include <public/WebSize.h>
 
 using namespace std;
 

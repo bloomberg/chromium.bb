@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_WEB_SCROLLBAR_THEME_GEOMETRY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebScrollbarThemeGeometry.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 namespace cc {
 

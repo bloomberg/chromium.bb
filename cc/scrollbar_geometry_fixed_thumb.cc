@@ -5,8 +5,9 @@
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 
 #include <cmath>
-#include <public/WebRect.h>
-#include <public/WebScrollbar.h>
+
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 
 using WebKit::WebRect;
 using WebKit::WebScrollbar;

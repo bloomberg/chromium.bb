@@ -8,8 +8,8 @@
 #include "cc/cc_export.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include "cc/scrollbar_layer_impl_base.h"
-#include <public/WebRect.h>
-#include <public/WebVector.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace cc {
 

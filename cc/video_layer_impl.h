@@ -5,13 +5,12 @@
 #ifndef CC_VIDEO_LAYER_IMPL_H_
 #define CC_VIDEO_LAYER_IMPL_H_
 
-#include <public/WebVideoFrameProvider.h>
-
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "media/base/video_frame.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"

@@ -59,33 +59,19 @@
         'web_compositor_support_impl.cc',
         'web_compositor_support_impl.h',
       ],
-      'includes': [
-        '../../cc/cc.gypi',
-      ],
       'include_dirs': [
         '../..',
-        '../../cc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        '<(webkit_src_dir)/Source/Platform/chromium',
-        '<@(cc_stubs_dirs)',
       ],
     },
     {
       'target_name': 'webkit_compositor_bindings',
       'type': 'static_library',
-      'includes': [
-        '../../cc/cc.gypi',
-      ],
       'dependencies': [
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
-      ],
-      'include_dirs': [
-        '../../cc',
-        '<@(cc_stubs_dirs)',
-        '<(webkit_src_dir)/Source/Platform/chromium',
       ],
       'sources': [
         '<@(webkit_compositor_bindings_sources)',

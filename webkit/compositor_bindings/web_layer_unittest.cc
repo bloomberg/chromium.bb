@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <public/WebLayer.h>
-
-#include "cc/thread.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
-#include "web_layer_impl.h"
-#include "web_layer_tree_view_impl.h"
-#include "web_layer_tree_view_test_common.h"
-#include <public/WebContentLayer.h>
-#include <public/WebContentLayerClient.h>
-#include <public/WebExternalTextureLayer.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebLayerScrollClient.h>
-#include <public/WebLayerTreeView.h>
-#include <public/WebLayerTreeViewClient.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebSolidColorLayer.h>
-
-#include <gmock/gmock.h>
+#include "cc/thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
+#include "webkit/compositor_bindings/test/web_layer_tree_view_test_common.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
 
 using namespace WebKit;
 using testing::AnyNumber;

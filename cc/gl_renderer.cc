@@ -4,6 +4,10 @@
 
 #include "cc/gl_renderer.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -25,6 +29,8 @@
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/video_layer_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,11 +41,6 @@
 #include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebSharedGraphicsContext3D.h>
-#include <set>
-#include <string>
-#include <vector>
 
 using namespace std;
 using WebKit::WebGraphicsContext3D;

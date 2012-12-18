@@ -23,8 +23,8 @@
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
 using namespace WebKit;
 

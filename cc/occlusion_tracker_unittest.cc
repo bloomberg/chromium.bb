@@ -4,9 +4,6 @@
 
 #include "cc/occlusion_tracker.h"
 
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
-
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
@@ -21,6 +18,8 @@
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

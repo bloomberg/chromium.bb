@@ -41,10 +41,10 @@
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
-#include <public/WebVideoFrame.h>
-#include <public/WebVideoFrameProvider.h>
 
 using media::VideoFrame;
 using ::testing::Mock;

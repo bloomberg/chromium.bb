@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include <public/WebGraphicsContext3D.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 #define SHADER0(Src) #Src
 #define SHADER(Src) SHADER0(Src)

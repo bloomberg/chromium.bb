@@ -6,8 +6,8 @@
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
 using namespace WebKit;
 

@@ -9,7 +9,7 @@
 #include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/timing_function.h"
-#include <public/WebTransformOperations.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
 namespace cc {
 

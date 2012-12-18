@@ -15,12 +15,11 @@
 #include "cc/platform_color.h"
 #include "cc/texture_uploader.h"
 #include "cc/transferable_resource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
-
-#include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;
 

@@ -7,7 +7,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
-#include <public/WebScrollbar.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 
 namespace cc {
 

@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include <public/WebScrollbarThemeGeometry.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 namespace cc {
 

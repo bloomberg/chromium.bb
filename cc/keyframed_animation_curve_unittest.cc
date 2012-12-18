@@ -6,8 +6,8 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebTransformOperations.h>
-#include <public/WebTransformationMatrix.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
 using WebKit::WebTransformationMatrix;
 

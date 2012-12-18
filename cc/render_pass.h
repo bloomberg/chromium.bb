@@ -5,7 +5,6 @@
 #ifndef CC_RENDER_PASS_H_
 #define CC_RENDER_PASS_H_
 
-#include <public/WebFilterOperations.h>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -16,6 +15,7 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_f.h"

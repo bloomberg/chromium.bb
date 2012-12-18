@@ -4,13 +4,12 @@
 
 #include "cc/render_pass.h"
 
-#include <public/WebFilterOperations.h>
-
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/math_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
 

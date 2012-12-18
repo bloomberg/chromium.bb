@@ -9,9 +9,9 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
 
 using namespace WebKit;
 

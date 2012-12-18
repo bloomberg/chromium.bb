@@ -4,17 +4,18 @@
 
 #include "cc/resource_update_controller.h"
 
+#include <limits>
+
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_resource.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/thread.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
-#include <limits>
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebSharedGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebSharedGraphicsContext3D;

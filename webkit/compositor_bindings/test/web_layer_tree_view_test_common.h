@@ -7,8 +7,8 @@
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_output_surface.h"
-#include <gmock/gmock.h>
-#include <public/WebLayerTreeViewClient.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 
 namespace WebKit {
 

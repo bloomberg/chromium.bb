@@ -286,14 +286,25 @@
       'yuv_video_draw_quad.cc',
       'yuv_video_draw_quad.h',
     ],
+    'conditions': [
+      ['inside_chromium_build==1', {
+        'webkit_src_dir': '<(DEPTH)/third_party/WebKit',
+      }, {
+        'webkit_src_dir': '<(DEPTH)/../../..',
+      }],
+    ],
   },
+  'conditions': [
+    ['inside_chromium_build==0', {
+      'defines': [
+        'INSIDE_WEBKIT_BUILD=1',
+      ],
+    }],
+  ],
   'targets': [
     {
       'target_name': 'cc',
       'type': '<(component)',
-      'includes': [
-        'cc.gypi',
-      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -306,18 +317,14 @@
       'defines': [
         'CC_IMPLEMENTATION=1',
       ],
-      'include_dirs': [
-        '<(webkit_src_dir)/Source/Platform/chromium',
-        '<@(cc_stubs_dirs)',
-      ],
       'sources': [
         '<@(cc_source_files)',
       ],
       'all_dependent_settings': {
         'include_dirs': [
-          # Needed for <public/WebTransformationMatrix.h> in layer.h
-          '<(webkit_src_dir)/Source/Platform/chromium',
-        ],
+          # TODO(jamesr): Remove once https://webkit.org/b/105259 lands + rolls
+          '<(webkit_src_dir)/Source/Platform/chromium'
+        ]
       }
     },
   ],
