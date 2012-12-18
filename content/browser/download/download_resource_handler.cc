@@ -192,8 +192,8 @@ bool DownloadResourceHandler::OnResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread,
-                 base::Passed(info.Pass()),
-                 base::Passed(stream_reader.Pass()),
+                 base::Passed(&info),
+                 base::Passed(&stream_reader),
                  // Pass to StartOnUIThread so that variable
                  // access is always on IO thread but function
                  // is called on UI thread.

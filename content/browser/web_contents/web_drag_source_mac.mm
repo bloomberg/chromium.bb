@@ -363,7 +363,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                             FROM_HERE,
                             base::Bind(&PromiseWriterHelper,
                                        *dropData_,
-                                       base::Passed(fileStream.Pass())));
+                                       base::Passed(&fileStream)));
   }
 
   // Once we've created the file, we should return the file name.

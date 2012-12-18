@@ -1158,7 +1158,7 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   DCHECK(download_file_.get());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileDetach, base::Passed(download_file_.Pass())));
+      base::Bind(&DownloadFileDetach, base::Passed(&download_file_)));
 
   // We're not completely done with the download item yet, but at this
   // point we're committed to complete the download.  Cancels (or Interrupts,
@@ -1243,7 +1243,7 @@ void DownloadItemImpl::CancelDownloadFile() {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         // Will be deleted at end of task execution.
-        base::Bind(&DownloadFileCancel, base::Passed(download_file_.Pass())));
+        base::Bind(&DownloadFileCancel, base::Passed(&download_file_)));
   }
 }
 

@@ -544,7 +544,7 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->method() == "POST");
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &BeginDownload, base::Passed(params.Pass())));
+      &BeginDownload, base::Passed(&params)));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

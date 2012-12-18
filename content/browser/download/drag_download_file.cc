@@ -194,7 +194,7 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &DragDownloadFileUI::InitiateDownload, base::Unretained(drag_ui_),
-      base::Passed(file_stream_.Pass()), file_path_));
+      base::Passed(&file_stream_), file_path_));
 }
 
 bool DragDownloadFile::Wait() {

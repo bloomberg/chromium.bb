@@ -280,7 +280,7 @@ void ByteStreamWriterImpl::PostToPeer(
           &ByteStreamReaderImpl::TransferData,
           peer_lifetime_flag_,
           peer_,
-          base::Passed(transfer_buffer.Pass()),
+          base::Passed(&transfer_buffer),
           buffer_size,
           complete,
           status));
