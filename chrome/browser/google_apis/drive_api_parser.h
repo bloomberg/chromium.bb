@@ -35,6 +35,7 @@ namespace google_apis {
 // https://developers.google.com/drive/v2/reference/about
 class AboutResource {
  public:
+  AboutResource();
   ~AboutResource();
 
   // Registers the mapping between JSON field names and the members in this
@@ -54,10 +55,22 @@ class AboutResource {
   // Returns root folder ID.
   const std::string& root_folder_id() const { return root_folder_id_; }
 
+  void set_largest_change_id(int64 largest_change_id) {
+    largest_change_id_ = largest_change_id;
+  }
+  void set_quota_bytes_total(int64 quota_bytes_total) {
+    quota_bytes_total_ = quota_bytes_total;
+  }
+  void set_quota_bytes_used(int64 quota_bytes_used) {
+    quota_bytes_used_ = quota_bytes_used;
+  }
+  void set_root_folder_id(const std::string& root_folder_id) {
+    root_folder_id_ = root_folder_id;
+  }
+
  private:
   friend class DriveAPIParserTest;
   FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, AboutResourceParser);
-  AboutResource();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -82,6 +95,7 @@ class DriveAppIcon {
     SHARED_DOCUMENT,  // Icon for documents that are shared from other users.
   };
 
+  DriveAppIcon();
   ~DriveAppIcon();
 
   // Registers the mapping between JSON field names and the members in this
@@ -101,6 +115,16 @@ class DriveAppIcon {
   // Returns URL for this icon.
   const GURL& icon_url() const { return icon_url_; }
 
+  void set_category(IconCategory category) {
+    category_ = category;
+  }
+  void set_icon_side_length(int icon_side_length) {
+    icon_side_length_ = icon_side_length;
+  }
+  void set_icon_url(const GURL& icon_url) {
+    icon_url_ = icon_url;
+  }
+
  private:
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -113,7 +137,6 @@ class DriveAppIcon {
 
   friend class base::internal::RepeatedMessageConverter<DriveAppIcon>;
   friend class AppResource;
-  DriveAppIcon();
 
   IconCategory category_;
   int icon_side_length_;
@@ -127,6 +150,7 @@ class DriveAppIcon {
 class AppResource {
  public:
   ~AppResource();
+  AppResource();
 
   // Registers the mapping between JSON field names and the members in this
   // class.
@@ -198,10 +222,47 @@ class AppResource {
     return icons_;
   }
 
+  void set_application_id(const std::string& application_id) {
+    application_id_ = application_id;
+  }
+  void set_name(const std::string& name) { name_ = name; }
+  void set_object_type(const std::string& object_type) {
+    object_type_ = object_type;
+  }
+  void set_supports_create(bool supports_create) {
+    supports_create_ = supports_create;
+  }
+  void set_supports_import(bool supports_import) {
+    supports_import_ = supports_import;
+  }
+  void set_installed(bool installed) { installed_ = installed; }
+  void set_authorized(bool authorized) { authorized_ = authorized; }
+  void set_product_url(const GURL& product_url) {
+    product_url_ = product_url;
+  }
+  void set_primary_mimetypes(
+      ScopedVector<std::string>* primary_mimetypes) {
+    primary_mimetypes_.swap(*primary_mimetypes);
+  }
+  void set_secondary_mimetypes(
+      ScopedVector<std::string>* secondary_mimetypes) {
+    secondary_mimetypes_.swap(*secondary_mimetypes);
+  }
+  void set_primary_file_extensions(
+      ScopedVector<std::string>* primary_file_extensions) {
+    primary_file_extensions_.swap(*primary_file_extensions);
+  }
+  void set_secondary_file_extensions(
+      ScopedVector<std::string>* secondary_file_extensions) {
+    secondary_file_extensions_.swap(*secondary_file_extensions);
+  }
+  void set_icons(ScopedVector<DriveAppIcon>* icons) {
+    icons_.swap(*icons);
+  }
+
  private:
   friend class base::internal::RepeatedMessageConverter<AppResource>;
   friend class AppList;
-  AppResource();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -228,6 +289,7 @@ class AppResource {
 // https://developers.google.com/drive/v2/reference/apps/list
 class AppList {
  public:
+  AppList();
   ~AppList();
 
   // Registers the mapping between JSON field names and the members in this
@@ -244,10 +306,16 @@ class AppList {
   // Returns a vector of applications.
   const ScopedVector<AppResource>& items() const { return items_; }
 
+  void set_etag(const std::string& etag) {
+    etag_ = etag;
+  }
+  void set_items(ScopedVector<AppResource>* items) {
+    items_.swap(*items);
+  }
+
  private:
   friend class DriveAPIParserTest;
   FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, AppListParser);
-  AppList();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -263,6 +331,7 @@ class AppList {
 // https://developers.google.com/drive/v2/reference/parents
 class ParentReference {
  public:
+  ParentReference();
   ~ParentReference();
 
   // Registers the mapping between JSON field names and the members in this
@@ -282,9 +351,14 @@ class ParentReference {
   // Returns true if the reference is root directory.
   bool is_root() const { return is_root_; }
 
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+  void set_parent_link(const GURL& parent_link) {
+    parent_link_ = parent_link;
+  }
+  void set_is_root(bool is_root) { is_root_ = is_root; }
+
  private:
   friend class base::internal::RepeatedMessageConverter<ParentReference>;
-  ParentReference();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -301,6 +375,7 @@ class ParentReference {
 // https://developers.google.com/drive/v2/reference/files
 class FileLabels {
  public:
+  FileLabels();
   ~FileLabels();
 
   // Registers the mapping between JSON field names and the members in this
@@ -322,9 +397,14 @@ class FileLabels {
   // Whether this file has been viewed by this user.
   bool is_viewed() const { return viewed_; }
 
+  void set_starred(bool starred) { starred_ = starred; }
+  void set_hidden(bool hidden) { hidden_ = hidden; }
+  void set_trashed(bool trashed) { trashed_ = trashed; }
+  void set_restricted(bool restricted) { restricted_ = restricted; }
+  void set_viewed(bool viewed) { viewed_ = viewed; }
+
  private:
   friend class FileResource;
-  FileLabels();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -343,6 +423,7 @@ class FileLabels {
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {
  public:
+  FileResource();
   ~FileResource();
 
   // Registers the mapping between JSON field names and the members in this
@@ -422,11 +503,65 @@ class FileResource {
   // authentication.
   const GURL& web_content_link() const { return web_content_link_; }
 
+  void set_file_id(const std::string& file_id) {
+    file_id_ = file_id;
+  }
+  void set_etag(const std::string& etag) {
+    etag_ = etag;
+  }
+  void set_self_link(const GURL& self_link) {
+    self_link_ = self_link;
+  }
+  void set_title(const std::string& title) {
+    title_ = title;
+  }
+  void set_mime_type(const std::string& mime_type) {
+    mime_type_ = mime_type;
+  }
+  void set_labels(const FileLabels& labels) {
+    labels_ = labels;
+  }
+  void set_created_date(const base::Time& created_date) {
+    created_date_ = created_date;
+  }
+  void set_modified_by_me_date(const base::Time& modified_by_me_date) {
+    modified_by_me_date_ = modified_by_me_date;
+  }
+  void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
+    last_viewed_by_me_date_ = last_viewed_by_me_date;
+  }
+  void set_download_url(const GURL& download_url) {
+    download_url_ = download_url;
+  }
+  void set_file_extension(const std::string& file_extension) {
+    file_extension_ = file_extension;
+  }
+  void set_md5_checksum(const std::string& md5_checksum) {
+    md5_checksum_ = md5_checksum;
+  }
+  void set_file_size(int64 file_size) {
+    file_size_ = file_size;
+  }
+  void set_alternate_link(const GURL& alternate_link) {
+    alternate_link_ = alternate_link;
+  }
+  void set_embed_link(const GURL& embed_link) {
+    embed_link_ = embed_link;
+  }
+  void set_parents(ScopedVector<ParentReference>* parents) {
+    parents_.swap(*parents);
+  }
+  void set_thumbnail_link(const GURL& thumbnail_link) {
+    thumbnail_link_ = thumbnail_link;
+  }
+  void set_web_content_link(const GURL& web_content_link) {
+    web_content_link_ = web_content_link;
+  }
+
  private:
   friend class base::internal::RepeatedMessageConverter<FileResource>;
   friend class ChangeResource;
   friend class FileList;
-  FileResource();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -458,6 +593,7 @@ class FileResource {
 // https://developers.google.com/drive/v2/reference/files/list
 class FileList {
  public:
+  FileList();
   ~FileList();
 
   // Registers the mapping between JSON field names and the members in this
@@ -482,10 +618,22 @@ class FileList {
   // Returns a set of files in this list.
   const ScopedVector<FileResource>& items() const { return items_; }
 
+  void set_etag(const std::string& etag) {
+    etag_ = etag;
+  }
+  void set_next_page_token(const std::string& next_page_token) {
+    next_page_token_ = next_page_token;
+  }
+  void set_next_link(const GURL& next_link) {
+    next_link_ = next_link;
+  }
+  void set_items(ScopedVector<FileResource>* items) {
+    items_.swap(*items);
+  }
+
  private:
   friend class DriveAPIParserTest;
   FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, FileListParser);
-  FileList();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -503,6 +651,7 @@ class FileList {
 // https://developers.google.com/drive/v2/reference/changes
 class ChangeResource {
  public:
+  ChangeResource();
   ~ChangeResource();
 
   // Registers the mapping between JSON field names and the members in this
@@ -526,10 +675,22 @@ class ChangeResource {
   // Returns FileResource of the file which the change refers to.
   const FileResource& file() const { return file_; }
 
+  void set_change_id(int64 change_id) {
+    change_id_ = change_id;
+  }
+  void set_file_id(const std::string& file_id) {
+    file_id_ = file_id;
+  }
+  void set_deleted(bool deleted) {
+    deleted_ = deleted;
+  }
+  void set_file(const FileResource& file) {
+    file_ = file;
+  }
+
  private:
   friend class base::internal::RepeatedMessageConverter<ChangeResource>;
   friend class ChangeList;
-  ChangeResource();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -547,6 +708,7 @@ class ChangeResource {
 // https://developers.google.com/drive/v2/reference/changes/list
 class ChangeList {
  public:
+  ChangeList();
   ~ChangeList();
 
   // Registers the mapping between JSON field names and the members in this
@@ -574,10 +736,25 @@ class ChangeList {
   // Returns a set of changes in this list.
   const ScopedVector<ChangeResource>& items() const { return items_; }
 
+  void set_etag(const std::string& etag) {
+    etag_ = etag;
+  }
+  void set_next_page_token(const std::string& next_page_token) {
+    next_page_token_ = next_page_token;
+  }
+  void set_next_link(const GURL& next_link) {
+    next_link_ = next_link;
+  }
+  void set_largest_change_id(int64 largest_change_id) {
+    largest_change_id_ = largest_change_id;
+  }
+  void set_items(ScopedVector<ChangeResource>* items) {
+    items_.swap(*items);
+  }
+
  private:
   friend class DriveAPIParserTest;
   FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, ChangeListParser);
-  ChangeList();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
