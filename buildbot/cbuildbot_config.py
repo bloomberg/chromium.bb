@@ -1099,15 +1099,15 @@ _arm_release.add_config('arm-tegra2_kaen-release',
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-  useflags=official['useflags'] + ['widevine_cdm'],
-  hw_tests=[],
-  hw_tests_num=4,
+  useflags=official['useflags'],
+  hw_tests=['bvt'],
+  hw_tests_num=1,
   critical_for_chrome=True,
 )
 
 _arm_release.add_config('spring-release',
   boards=['daisy_spring'],
-  useflags=official['useflags'] + ['widevine_cdm'],
+  useflags=official['useflags'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
