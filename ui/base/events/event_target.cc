@@ -58,9 +58,10 @@ void EventTarget::OnKeyEvent(KeyEvent* event) {
     target_handler_->OnKeyEvent(event);
 }
 
-EventResult EventTarget::OnMouseEvent(MouseEvent* event) {
+void EventTarget::OnMouseEvent(MouseEvent* event) {
   CHECK_EQ(this, event->target());
-  return target_handler_ ? target_handler_->OnMouseEvent(event) : ER_UNHANDLED;
+  if (target_handler_)
+    target_handler_->OnMouseEvent(event);
 }
 
 void EventTarget::OnScrollEvent(ScrollEvent* event) {

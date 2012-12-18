@@ -111,7 +111,7 @@ class EventCountDelegate : public TestWindowDelegate {
 
   // Overridden from TestWindowDelegate:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Returns the counts of mouse motion events in the
   // form of "<enter> <move> <leave>".

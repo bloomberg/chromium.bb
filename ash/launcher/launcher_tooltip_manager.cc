@@ -243,11 +243,11 @@ bool LauncherTooltipManager::IsVisible() {
   return widget_ && widget_->IsVisible();
 }
 
-ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
+void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
   DCHECK(event);
   if (!widget_ || !widget_->IsVisible())
-    return ui::ER_UNHANDLED;
+    return;
 
   DCHECK(view_);
   DCHECK(launcher_view_);
@@ -255,7 +255,7 @@ ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_->GetNativeWindow()->GetRootWindow() != target->GetRootWindow()) {
     CloseSoon();
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   gfx::Point location_in_launcher_view = event->location();
@@ -274,8 +274,6 @@ ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
     // the closing event rather than directly calling Close().
     CloseSoon();
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 void LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {

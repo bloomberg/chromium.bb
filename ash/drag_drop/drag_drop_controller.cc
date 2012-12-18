@@ -292,19 +292,23 @@ void DragDropController::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {
+void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
   if (!IsDragDropInProgress())
-    return ui::ER_UNHANDLED;
+    return;
 
   // If current drag session was not started by mouse, dont process this mouse
   // event, but consume it so it does not interfere with current drag session.
-  if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE)
-    return ui::ER_CONSUMED;
+  if (current_drag_event_source_ !=
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
+    event->StopPropagation();
+    return;
+  }
 
   aura::Window* translated_target = drag_drop_tracker_->GetTarget(*event);
   if (!translated_target) {
     DragCancel();
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
+    return;
   }
   scoped_ptr<ui::LocatedEvent> translated_event(
       drag_drop_tracker_->ConvertEvent(translated_target, *event));
@@ -321,7 +325,7 @@ ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {
       // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
       break;
   }
-  return ui::ER_CONSUMED;
+  event->StopPropagation();
 }
 
 void DragDropController::OnTouchEvent(ui::TouchEvent* event) {

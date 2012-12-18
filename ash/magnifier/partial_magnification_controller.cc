@@ -76,8 +76,7 @@ void PartialMagnificationController::SetEnabled(bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // PartialMagnificationController: ui::EventHandler implementation
 
-ui::EventResult PartialMagnificationController::OnMouseEvent(
-    ui::MouseEvent* event) {
+void PartialMagnificationController::OnMouseEvent(ui::MouseEvent* event) {
   if (IsPartialMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     aura::RootWindow* current_root = target->GetRootWindow();
@@ -91,8 +90,6 @@ ui::EventResult PartialMagnificationController::OnMouseEvent(
       OnMouseMove(event->root_location());
     }
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

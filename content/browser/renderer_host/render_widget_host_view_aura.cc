@@ -1502,7 +1502,7 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   event->SetHandled();
 }
 
-ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
+void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
 
   if (mouse_locked_) {
@@ -1535,8 +1535,7 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       if (CanRendererHandleEvent(event))
         host_->ForwardMouseEvent(mouse_event);
     }
-
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   // As the overscroll is handled during scroll events from the trackpad, the
@@ -1550,7 +1549,8 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       event->flags() & ui::EF_IS_SYNTHESIZED &&
       (event->type() == ui::ET_MOUSE_ENTERED ||
        event->type() == ui::ET_MOUSE_MOVED)) {
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
+    return;
   }
 
   if (event->type() == ui::ET_MOUSEWHEEL) {
@@ -1583,8 +1583,7 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   if (window_->parent()->delegate())
     window_->parent()->delegate()->OnMouseEvent(event);
 
-  // Return true so that we receive released/drag events.
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {

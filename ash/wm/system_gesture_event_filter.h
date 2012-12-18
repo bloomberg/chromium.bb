@@ -45,7 +45,7 @@ class SystemGestureEventFilter : public ui::EventHandler,
   virtual ~SystemGestureEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 

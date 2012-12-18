@@ -152,10 +152,9 @@ void FocusController::OnWindowHiddenInRootWindow(
 void FocusController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
-ui::EventResult FocusController::OnMouseEvent(ui::MouseEvent* event) {
+void FocusController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()));
-  return ui::ER_UNHANDLED;
 }
 
 void FocusController::OnScrollEvent(ui::ScrollEvent* event) {

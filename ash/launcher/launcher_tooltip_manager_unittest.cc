@@ -204,14 +204,14 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
   ui::LocatedEvent::TestApi test_api(&mouse_event);
 
   SetEventTarget(root_window, &mouse_event);
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnMouseEvent(&mouse_event));
+  event_handler->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide if the mouse is out of the tooltip.
   test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnMouseEvent(&mouse_event));
+  event_handler->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(TooltipIsVisible());
 }

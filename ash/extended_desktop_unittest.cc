@@ -90,13 +90,12 @@ class MoveWindowByClickEventFilter : public ui::EventHandler {
 
  private:
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (event->type() == ui::ET_MOUSE_RELEASED) {
       Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
       DCHECK_LT(1u, root_windows.size());
       root_windows[1]->AddChild(target_);
     }
-    return ui::ER_UNHANDLED;
   }
 
   aura::Window* target_;

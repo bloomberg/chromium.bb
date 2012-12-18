@@ -88,23 +88,23 @@ void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
                   sizeof(MotifWmHints)/sizeof(long));
 }
 
-ui::EventResult X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
-    return ui::ER_UNHANDLED;
+    return;
 
   if (!event->IsLeftMouseButton())
-    return ui::ER_UNHANDLED;
+    return;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int component =
       target->delegate()->GetNonClientComponent(event->location());
   if (component == HTCLIENT)
-    return ui::ER_UNHANDLED;
+    return;
 
   // Get the |x_root_window_| location out of the native event.
   gfx::Point root_location = event->system_location();
-  return DispatchHostWindowDragMovement(component, root_location) ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  if (DispatchHostWindowDragMovement(component, root_location))
+    event->StopPropagation();
 }
 
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(

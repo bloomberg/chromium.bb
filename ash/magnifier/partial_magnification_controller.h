@@ -67,7 +67,7 @@ class PartialMagnificationController
   void RemoveZoomWidgetObservers();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Overridden from WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;

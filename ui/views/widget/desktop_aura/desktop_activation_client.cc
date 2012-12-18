@@ -161,10 +161,9 @@ bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
 void DesktopActivationClient::OnKeyEvent(ui::KeyEvent* event) {
 }
 
-ui::EventResult DesktopActivationClient::OnMouseEvent(ui::MouseEvent* event) {
+void DesktopActivationClient::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     FocusWindowWithEvent(event);
-  return ui::ER_UNHANDLED;
 }
 
 void DesktopActivationClient::OnScrollEvent(ui::ScrollEvent* event) {

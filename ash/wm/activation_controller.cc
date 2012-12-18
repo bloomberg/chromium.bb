@@ -275,10 +275,9 @@ void ActivationController::OnWindowFocused(aura::Window* gained_focus,
 void ActivationController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
-ui::EventResult ActivationController::OnMouseEvent(ui::MouseEvent* event) {
+void ActivationController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     FocusWindowWithEvent(event);
-  return ui::ER_UNHANDLED;
 }
 
 void ActivationController::OnScrollEvent(ui::ScrollEvent* event) {

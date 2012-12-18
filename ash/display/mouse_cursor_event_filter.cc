@@ -71,20 +71,20 @@ void MouseCursorEventFilter::HideSharedEdgeIndicator() {
   shared_display_edge_indicator_->Hide();
 }
 
-ui::EventResult MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // Handle both MOVED and DRAGGED events here because when the mouse pointer
   // enters the other root window while dragging, the underlying window system
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_DRAGGED) {
-      return ui::ER_UNHANDLED;
+      return;
   }
 
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
   wm::ConvertPointToScreen(target, &point_in_screen);
-  return WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen) ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  if (WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen))
+    event->StopPropagation();
 }
 
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(

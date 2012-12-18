@@ -1115,20 +1115,20 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
       DispatchKeyEvent(event);
 }
 
-bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
-  ScopedEvent scoped(this, event);
-  switch (event.type()) {
+void Widget::OnMouseEvent(ui::MouseEvent* event) {
+  ScopedEvent scoped(this, *event);
+  switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       last_mouse_event_was_move_ = false;
       // Make sure we're still visible before we attempt capture as the mouse
       // press processing may have made the window hide (as happens with menus).
-      if (GetRootView()->OnMousePressed(event) && IsVisible()) {
+      if (GetRootView()->OnMousePressed(*event) && IsVisible()) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasCapture())
           native_widget_->SetCapture();
-        return true;
+        event->SetHandled();
       }
-      return false;
+      return;
     case ui::ET_MOUSE_RELEASED:
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
@@ -1137,31 +1137,35 @@ bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
           ShouldReleaseCaptureOnMouseReleased()) {
         native_widget_->ReleaseCapture();
       }
-      GetRootView()->OnMouseReleased(event);
-      return ((event.flags() & ui::EF_IS_NON_CLIENT) == 0);
+      GetRootView()->OnMouseReleased(*event);
+      if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0)
+        event->SetHandled();
+      return;
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
       if (native_widget_->HasCapture() && is_mouse_button_pressed_) {
         last_mouse_event_was_move_ = false;
-        GetRootView()->OnMouseDragged(event);
+        GetRootView()->OnMouseDragged(*event);
       } else if (!last_mouse_event_was_move_ ||
-                 last_mouse_event_position_ != event.location()) {
-        last_mouse_event_position_ = event.location();
+                 last_mouse_event_position_ != event->location()) {
+        last_mouse_event_position_ = event->location();
         last_mouse_event_was_move_ = true;
-        GetRootView()->OnMouseMoved(event);
+        GetRootView()->OnMouseMoved(*event);
       }
-      return false;
+      return;
     case ui::ET_MOUSE_EXITED:
       last_mouse_event_was_move_ = false;
-      GetRootView()->OnMouseExited(event);
-      return false;
+      GetRootView()->OnMouseExited(*event);
+      return;
     case ui::ET_MOUSEWHEEL:
-      return GetRootView()->OnMouseWheel(
-          reinterpret_cast<const ui::MouseWheelEvent&>(event));
+      if (GetRootView()->OnMouseWheel(
+          reinterpret_cast<const ui::MouseWheelEvent&>(*event)))
+        event->SetHandled();
+      return;
     default:
-      return false;
+      return;
   }
-  return true;
+  event->SetHandled();
 }
 
 void Widget::OnMouseCaptureLost() {

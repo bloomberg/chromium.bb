@@ -259,7 +259,7 @@ void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult TooltipController::OnMouseEvent(ui::MouseEvent* event) {
+void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
@@ -298,7 +298,6 @@ ui::EventResult TooltipController::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  return ui::ER_UNHANDLED;
 }
 
 void TooltipController::OnTouchEvent(ui::TouchEvent* event) {

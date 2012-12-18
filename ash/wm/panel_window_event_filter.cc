@@ -35,7 +35,7 @@ PanelWindowEventFilter::~PanelWindowEventFilter() {
   panel_container_->RemovePreTargetHandler(this);
 }
 
-ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
@@ -46,13 +46,10 @@ ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
           dragged_panel_ = target;
           drag_location_in_dragged_window_ = event->location();
           drag_state_ = DRAG_CLICKED;
-          return ui::ER_CONSUMED;
-        } else {
-          return ui::ER_UNHANDLED;
+          event->StopPropagation();
         }
-      } else {
-        return ui::ER_UNHANDLED;
       }
+      return;
     }
 
     case ui::ET_MOUSE_DRAGGED:
@@ -60,35 +57,34 @@ ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
         drag_state_ = DRAG_STARTED;
         layout_manager_->StartDragging(dragged_panel_);
       }
-      if (drag_state_ == DRAG_STARTED)
-        return HandleDrag(target, event) ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
-      else
-        return ui::ER_UNHANDLED;
+      if (drag_state_ == DRAG_STARTED && HandleDrag(target, event))
+        event->StopPropagation();
+      return;
 
     case ui::ET_MOUSE_CAPTURE_CHANGED:
       if (drag_state_ == DRAG_STARTED) {
         FinishDrag();
-        return ui::ER_CONSUMED;
+        event->StopPropagation();
       } else if (drag_state_ == DRAG_CLICKED) {
         drag_state_ = DRAG_NONE;
         dragged_panel_ = NULL;
-        return ui::ER_CONSUMED;
+        event->StopPropagation();
       }
-      return ui::ER_UNHANDLED;
+      return;
 
     case ui::ET_MOUSE_RELEASED:
       if (drag_state_ == DRAG_STARTED) {
         FinishDrag();
-        return ui::ER_CONSUMED;
+        event->StopPropagation();
       } else if (dragged_panel_ != NULL) {
         drag_state_ = DRAG_NONE;
         layout_manager_->ToggleMinimize(dragged_panel_);
         dragged_panel_ = NULL;
-        return ui::ER_CONSUMED;
+        event->StopPropagation();
       }
-      return ui::ER_UNHANDLED;
+      return;
     default:
-      return ui::ER_UNHANDLED;
+      return;
   }
 }
 

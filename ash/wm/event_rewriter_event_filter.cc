@@ -39,19 +39,17 @@ void EventRewriterEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult EventRewriterEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void EventRewriterEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (!delegate_.get())
-    return ui::ER_UNHANDLED;
+    return;
 
   switch (delegate_->RewriteOrFilterLocatedEvent(event)) {
     case EventRewriterDelegate::ACTION_REWRITE_EVENT:
-      return ui::ER_UNHANDLED;
+      return;
     case EventRewriterDelegate::ACTION_DROP_EVENT:
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      break;
   }
-
-  NOTREACHED();
-  return ui::ER_UNHANDLED;
 }
 
 }  // namespace internal

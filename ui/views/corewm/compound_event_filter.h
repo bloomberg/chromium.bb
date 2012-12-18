@@ -64,7 +64,7 @@ class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
 
   // Dispatches event to additional filters.
   void FilterKeyEvent(ui::KeyEvent* event);
-  ui::EventResult FilterMouseEvent(ui::MouseEvent* event);
+  void FilterMouseEvent(ui::MouseEvent* event);
   void FilterTouchEvent(ui::TouchEvent* event);
 
   // Sets the visibility of the cursor if the event is not synthesized and
@@ -79,7 +79,7 @@ class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

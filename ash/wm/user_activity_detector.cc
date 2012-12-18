@@ -38,13 +38,12 @@ void UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
   MaybeNotify();
 }
 
-ui::EventResult UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
+void UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
   VLOG_IF(1, ignore_next_mouse_event_) << "ignoring mouse event";
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       !ignore_next_mouse_event_)
     MaybeNotify();
   ignore_next_mouse_event_ = false;
-  return ui::ER_UNHANDLED;
 }
 
 void UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {

@@ -25,11 +25,11 @@ void SystemModalContainerEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
-ui::EventResult SystemModalContainerEventFilter::OnMouseEvent(
+void SystemModalContainerEventFilter::OnMouseEvent(
     ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  return delegate_->CanWindowReceiveEvents(target) ? ui::ER_UNHANDLED :
-                                                     ui::ER_CONSUMED;
+  if (!delegate_->CanWindowReceiveEvents(target))
+    event->StopPropagation();
 }
 
 }  // namespace internal

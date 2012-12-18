@@ -59,7 +59,7 @@ class ImmersiveModeController : public ui::EventHandler,
   void CancelReveal();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

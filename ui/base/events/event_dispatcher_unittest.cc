@@ -85,9 +85,9 @@ class TestEventHandler : public EventHandler {
     SetStatusOnEvent(event);
   }
 
-  virtual EventResult OnMouseEvent(MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(MouseEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return event_result_;
+    SetStatusOnEvent(event);
   }
 
   virtual void OnScrollEvent(ScrollEvent* event) OVERRIDE {

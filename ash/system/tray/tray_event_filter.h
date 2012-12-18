@@ -26,7 +26,7 @@ class TrayEventFilter : public ui::EventHandler {
   virtual ~TrayEventFilter();
 
   // Overridden from ui::EventHandler.
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
  private:

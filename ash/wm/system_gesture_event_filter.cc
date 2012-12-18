@@ -53,7 +53,7 @@ SystemGestureEventFilter::SystemGestureEventFilter()
 SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
-ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
@@ -62,7 +62,6 @@ ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       UMA_MOUSE_DOWN);
   }
 #endif
-  return ui::ER_UNHANDLED;
 }
 
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {

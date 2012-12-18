@@ -21,29 +21,22 @@ EventHandler::~EventHandler() {
 }
 
 void EventHandler::OnEvent(Event* event) {
-  ui::EventResult result = ui::ER_UNHANDLED;
   if (event->IsKeyEvent())
     OnKeyEvent(static_cast<KeyEvent*>(event));
   else if (event->IsMouseEvent())
-    result = OnMouseEvent(static_cast<MouseEvent*>(event));
+    OnMouseEvent(static_cast<MouseEvent*>(event));
   else if (event->IsScrollEvent())
     OnScrollEvent(static_cast<ScrollEvent*>(event));
   else if (event->IsTouchEvent())
     OnTouchEvent(static_cast<TouchEvent*>(event));
   else if (event->IsGestureEvent())
     OnGestureEvent(static_cast<GestureEvent*>(event));
-
-  if (result & ui::ER_CONSUMED)
-    event->StopPropagation();
-  if (result & ui::ER_HANDLED)
-    event->SetHandled();
 }
 
 void EventHandler::OnKeyEvent(KeyEvent* event) {
 }
 
-EventResult EventHandler::OnMouseEvent(MouseEvent* event) {
-  return ui::ER_UNHANDLED;
+void EventHandler::OnMouseEvent(MouseEvent* event) {
 }
 
 void EventHandler::OnScrollEvent(ScrollEvent* event) {

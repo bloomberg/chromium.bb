@@ -107,7 +107,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
 
   // Mouse and key event handlers.
   virtual void OnKeyEvent(ui::KeyEvent* event) = 0;
-  virtual bool OnMouseEvent(const ui::MouseEvent& event) = 0;
+  virtual void OnMouseEvent(ui::MouseEvent* event) = 0;
   virtual void OnMouseCaptureLost() = 0;
 
   virtual void OnTouchEvent(ui::TouchEvent* event) = 0;

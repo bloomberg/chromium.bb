@@ -38,7 +38,7 @@ class UI_EXPORT EventHandler {
 
   virtual void OnKeyEvent(KeyEvent* event);
 
-  virtual EventResult OnMouseEvent(MouseEvent* event);
+  virtual void OnMouseEvent(MouseEvent* event);
 
   virtual void OnScrollEvent(ScrollEvent* event);
 

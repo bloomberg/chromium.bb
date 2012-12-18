@@ -373,7 +373,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool mouse_release() const { return mouse_release_; }
   bool double_click() const { return double_click_; }
 
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     switch (event->type()) {
       case ui::ET_MOUSE_PRESSED:
         double_click_ = event->flags() & ui::EF_IS_DOUBLE_CLICK;
@@ -394,7 +394,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
       default:
         NOTREACHED();
     }
-    return ui::ER_HANDLED;
+    event->SetHandled();
   }
 
  private:

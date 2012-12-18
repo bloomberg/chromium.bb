@@ -148,15 +148,13 @@ void CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
-  int result = ui::ER_UNHANDLED;
+void CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   if (handlers_.might_have_observers()) {
     ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
     ui::EventHandler* handler;
-    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
-      result |= handler->OnMouseEvent(event);
+    while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
+      handler->OnMouseEvent(event);
   }
-  return static_cast<ui::EventResult>(result);
 }
 
 void CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
@@ -199,7 +197,7 @@ void CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   FilterKeyEvent(event);
 }
 
-ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
   aura::WindowTracker window_tracker;
   window_tracker.Add(window);
@@ -220,7 +218,7 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     UpdateCursor(window, event);
   }
 
-  return FilterMouseEvent(event);
+  FilterMouseEvent(event);
 }
 
 void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {

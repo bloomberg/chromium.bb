@@ -159,7 +159,7 @@ void EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {
+void EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       mouse_move_count_++;
@@ -179,7 +179,6 @@ ui::EventResult EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  return ui::ER_UNHANDLED;
 }
 
 std::string EventCountDelegate::GetMouseMotionCountsAndReset() {

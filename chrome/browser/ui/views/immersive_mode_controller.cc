@@ -318,9 +318,9 @@ void ImmersiveModeController::CancelReveal() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // ui::EventHandler overrides:
-ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
+void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED)
-    return ui::ER_UNHANDLED;
+    return;
   if (event->location().y() == 0) {
     // Use a timer to detect if the cursor stays at the top past a delay.
     if (!top_timer_.IsRunning()) {
@@ -333,7 +333,6 @@ ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     top_timer_.Stop();
   }
   // Pass along event for further handling.
-  return ui::ER_UNHANDLED;
 }
 
 // ui::ImplicitAnimationObserver overrides:

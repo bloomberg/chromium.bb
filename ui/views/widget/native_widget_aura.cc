@@ -785,14 +785,17 @@ void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   event->SetHandled();
 }
 
-ui::EventResult NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
+void NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
-  if (event->type() == ui::ET_MOUSEWHEEL)
-    return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  if (event->type() == ui::ET_MOUSEWHEEL) {
+    delegate_->OnMouseEvent(event);
+    if (event->handled())
+      return;
+  }
 
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
-  return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  delegate_->OnMouseEvent(event);
 }
 
 void NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
@@ -803,8 +806,9 @@ void NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
 
     // Convert unprocessed scroll events into wheel events.
     ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
-    if (delegate_->OnMouseEvent(mwe))
-     event->SetHandled();
+    delegate_->OnMouseEvent(&mwe);
+    if (mwe.handled())
+      event->SetHandled();
     return;
   }
   delegate_->OnScrollEvent(event);

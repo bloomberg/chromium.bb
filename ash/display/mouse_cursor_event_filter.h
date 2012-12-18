@@ -47,7 +47,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   void HideSharedEdgeIndicator();
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, SetMouseWarpModeFlag);

@@ -103,14 +103,16 @@ TEST_F(UserActivityDetectorTest, Basic) {
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE);
   SetEventTarget(window.get(), &mouse_event);
-  EXPECT_FALSE(detector_->OnMouseEvent(&mouse_event));
+  detector_->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
   // Ignore one mouse event when all displays are turned off.
   detector_->OnAllOutputsTurnedOff();
   AdvanceTime(advance_delta);
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnMouseEvent(&mouse_event));
+  detector_->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
   observer_->reset_stats();
 
@@ -179,7 +181,8 @@ TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED);
   SetEventTarget(window.get(), &mouse_event);
-  EXPECT_EQ(ui::ER_UNHANDLED, detector_->OnMouseEvent(&mouse_event));
+  detector_->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
 }
 

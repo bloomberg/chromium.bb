@@ -57,11 +57,11 @@ class NonClientDelegate : public test::TestWindowDelegate {
     self->non_client_location_ = location;
     return HTTOPLEFT;
   }
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     mouse_event_count_++;
     mouse_event_location_ = event->location();
     mouse_event_flags_ = event->flags();
-    return ui::ER_HANDLED;
+    event->SetHandled();
   }
 
  private:
@@ -445,9 +445,8 @@ class EventFilterRecorder : public ui::EventHandler {
     events_.push_back(event->type());
   }
 
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::ER_UNHANDLED;
   }
 
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
@@ -644,10 +643,9 @@ class DeletingEventFilter : public ui::EventHandler {
       delete event->target();
   }
 
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (delete_during_pre_handle_)
       delete event->target();
-    return ui::ER_UNHANDLED;
   }
 
   bool delete_during_pre_handle_;
@@ -678,11 +676,10 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
     got_event_ = true;
   }
 
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
-    return ui::ER_UNHANDLED;
   }
 
   Window* window_;

@@ -65,7 +65,7 @@ WorkspaceEventHandler::~WorkspaceEventHandler() {
     *destroyed_ = true;
 }
 
-ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED: {
@@ -83,8 +83,10 @@ ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_PRESSED: {
       // Maximize behavior is implemented as post-target handling so the target
       // can cancel it.
-      if (ui::EventCanceledDefaultHandling(*event))
-        return ToplevelWindowEventHandler::OnMouseEvent(event);
+      if (ui::EventCanceledDefaultHandling(*event)) {
+        ToplevelWindowEventHandler::OnMouseEvent(event);
+        return;
+      }
 
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           target->delegate()->GetNonClientComponent(event->location()) ==
@@ -93,7 +95,7 @@ ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
         destroyed_ = &destroyed;
         ToggleMaximizedState(target);
         if (destroyed)
-          return ui::ER_UNHANDLED;
+          return;
         destroyed_ = NULL;
       }
       multi_window_resize_controller_.Hide();
@@ -103,7 +105,7 @@ ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  return ToplevelWindowEventHandler::OnMouseEvent(event);
+  ToplevelWindowEventHandler::OnMouseEvent(event);
 }
 
 void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {

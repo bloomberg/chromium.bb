@@ -74,7 +74,7 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
   bool in_mouse_drag() const { return in_mouse_drag_; }
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:
   ShelfLayoutManager* shelf_;
@@ -94,7 +94,7 @@ ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
+void ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
     ui::MouseEvent* event) {
   // This also checks IsShelfWindow() to make sure we don't attempt to hide the
   // shelf if the mouse down occurs on the shelf.
@@ -104,7 +104,7 @@ ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
       !shelf_->IsShelfWindow(static_cast<aura::Window*>(event->target()));
   if (event->type() == ui::ET_MOUSE_MOVED)
     shelf_->UpdateAutoHideState();
-  return ui::ER_UNHANDLED;
+  return;
 }
 
 // ShelfLayoutManager:UpdateShelfObserver --------------------------------------

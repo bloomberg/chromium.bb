@@ -911,9 +911,9 @@ scoped_refptr<ui::Texture> WebContentsViewAura::CopyTexture() {
 void WebContentsViewAura::OnKeyEvent(ui::KeyEvent* event) {
 }
 
-ui::EventResult WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
+void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
   if (!web_contents_->GetDelegate())
-    return ui::ER_UNHANDLED;
+    return;
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -928,7 +928,6 @@ ui::EventResult WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
-  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

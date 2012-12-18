@@ -566,15 +566,15 @@ void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
     event->SetHandled();
 }
 
-ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
+void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {
-    return native_widget_delegate_->OnMouseEvent(*event) ?
-        ui::ER_HANDLED : ui::ER_UNHANDLED;
+    native_widget_delegate_->OnMouseEvent(event);
+    if (event->handled())
+      return;
   }
 
-  return native_widget_delegate_->OnMouseEvent(*event) ?
-      ui::ER_HANDLED : ui::ER_UNHANDLED;
+  native_widget_delegate_->OnMouseEvent(event);
 }
 
 void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
@@ -585,7 +585,8 @@ void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
 
     // Convert unprocessed scroll events into wheel events.
     ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
-    if (native_widget_delegate_->OnMouseEvent(mwe))
+    native_widget_delegate_->OnMouseEvent(&mwe);
+    if (mwe.handled())
       event->SetHandled();
   } else {
     native_widget_delegate_->OnScrollEvent(event);

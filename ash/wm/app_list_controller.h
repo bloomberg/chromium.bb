@@ -77,7 +77,7 @@ class AppListController : public ui::EventHandler,
   void UpdateBounds();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // aura::client::FocusChangeObserver overrides:

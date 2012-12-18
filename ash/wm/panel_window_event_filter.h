@@ -30,7 +30,7 @@ class PanelWindowEventFilter : public ui::EventHandler,
   virtual ~PanelWindowEventFilter();
 
   // Overriden from ui::EventHandler:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;

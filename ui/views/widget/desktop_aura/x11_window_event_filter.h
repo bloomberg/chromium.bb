@@ -39,7 +39,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
   void SetUseHostWindowBorders(bool use_os_border);
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it

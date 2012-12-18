@@ -765,7 +765,8 @@ void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  return delegate_->OnMouseEvent(event);
+  delegate_->OnMouseEvent(const_cast<ui::MouseEvent*>(&event));
+  return event.handled();
 }
 
 bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {

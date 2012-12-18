@@ -284,7 +284,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   gfx::Point p1(45, 45);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
                          ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(pressed);
+  toplevel->OnMouseEvent(&pressed);
 
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child1));
@@ -292,7 +292,7 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
 
   ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1,
                           ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(released);
+  toplevel->OnMouseEvent(&released);
 
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
@@ -304,14 +304,15 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   gfx::Point p2(315, 45);
   ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2,
                           ui::EF_LEFT_MOUSE_BUTTON);
-  EXPECT_TRUE(toplevel->OnMouseEvent(pressed2));
+  toplevel->OnMouseEvent(&pressed2);
+  EXPECT_TRUE(pressed2.handled());
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child2));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
 
   ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2,
                            ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(released2);
+  toplevel->OnMouseEvent(&released2);
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));
@@ -336,26 +337,26 @@ TEST_F(WidgetTest, CheckResizeControllerEvents) {
   // Move to an outside position.
   gfx::Point p1(200, 200);
   ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE);
-  toplevel->OnMouseEvent(moved_out);
+  toplevel->OnMouseEvent(&moved_out);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the active view.
   gfx::Point p2(95, 95);
   ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE);
-  toplevel->OnMouseEvent(moved_over);
+  toplevel->OnMouseEvent(&moved_over);
   EXPECT_EQ(1, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the outer resizing border.
   gfx::Point p3(102, 95);
   ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE);
-  toplevel->OnMouseEvent(moved_resizer);
+  toplevel->OnMouseEvent(&moved_resizer);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(1, view->ExitedCalls());
 
   // Move onto the view again.
-  toplevel->OnMouseEvent(moved_over);
+  toplevel->OnMouseEvent(&moved_over);
   EXPECT_EQ(1, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
@@ -997,15 +998,15 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
       ui::EF_LEFT_MOUSE_BUTTON);
 
-  toplevel->OnMouseEvent(press);
-  toplevel->OnMouseEvent(release);
+  toplevel->OnMouseEvent(&press);
+  toplevel->OnMouseEvent(&release);
   EXPECT_EQ(0, mouse->pressed());
 
   // The end of the gesture should release the capture, and pressing on |mouse|
   // should now reach |mouse|.
   toplevel->OnGestureEvent(&end);
-  toplevel->OnMouseEvent(press);
-  toplevel->OnMouseEvent(release);
+  toplevel->OnMouseEvent(&press);
+  toplevel->OnMouseEvent(&release);
   EXPECT_EQ(1, mouse->pressed());
 
   toplevel->Close();

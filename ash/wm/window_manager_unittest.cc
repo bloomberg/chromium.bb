@@ -62,9 +62,12 @@ class CustomEventHandler : public aura::test::TestEventHandler {
       event->StopPropagation();
   }
 
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    ui::EventResult result = aura::test::TestEventHandler::OnMouseEvent(event);
-    return mouse_result_ == ui::ER_UNHANDLED ? result : mouse_result_;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    aura::test::TestEventHandler::OnMouseEvent(event);
+    if (mouse_result_ & ui::ER_HANDLED)
+      event->SetHandled();
+    if (mouse_result_ & ui::ER_CONSUMED)
+      event->StopPropagation();
   }
 
  private:

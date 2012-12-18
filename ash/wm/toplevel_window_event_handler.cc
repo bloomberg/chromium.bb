@@ -130,29 +130,33 @@ void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(
+void ToplevelWindowEventHandler::OnMouseEvent(
     ui::MouseEvent* event) {
   if ((event->flags() &
       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
-    return ui::ER_UNHANDLED;
+    return;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      return HandleMousePressed(target, event);
+      HandleMousePressed(target, event);
+      break;
     case ui::ET_MOUSE_DRAGGED:
-      return HandleDrag(target, event) ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
+      HandleDrag(target, event);
+      break;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
-      return HandleMouseReleased(target, event);
+      HandleMouseReleased(target, event);
+      break;
     case ui::ET_MOUSE_MOVED:
-      return HandleMouseMoved(target, event);
+      HandleMouseMoved(target, event);
+      break;
     case ui::ET_MOUSE_EXITED:
-      return HandleMouseExited(target, event);
+      HandleMouseExited(target, event);
+      break;
     default:
       break;
   }
-  return ui::ER_UNHANDLED;
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
@@ -321,13 +325,13 @@ void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status,
   }
 }
 
-ui::EventResult ToplevelWindowEventHandler::HandleMousePressed(
+void ToplevelWindowEventHandler::HandleMousePressed(
     aura::Window* target,
     ui::MouseEvent* event) {
   // Move/size operations are initiated post-target handling to give the target
   // an opportunity to cancel this default behavior by returning ER_HANDLED.
   if (ui::EventCanceledDefaultHandling(*event))
-    return ui::ER_UNHANDLED;
+    return;
 
   // We also update the current window component here because for the
   // mouse-drag-release-press case, where the mouse is released and
@@ -343,15 +347,15 @@ ui::EventResult ToplevelWindowEventHandler::HandleMousePressed(
   } else {
     window_resizer_.reset();
   }
-  return WindowResizer::GetBoundsChangeForWindowComponent(component) != 0 ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  if (WindowResizer::GetBoundsChangeForWindowComponent(component) != 0)
+    event->StopPropagation();
 }
 
-ui::EventResult ToplevelWindowEventHandler::HandleMouseReleased(
+void ToplevelWindowEventHandler::HandleMouseReleased(
     aura::Window* target,
     ui::MouseEvent* event) {
   if (event->phase() != ui::EP_PRETARGET)
-    return ui::ER_UNHANDLED;
+    return;
 
   CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
                     DRAG_COMPLETE : DRAG_REVERT,
@@ -365,12 +369,11 @@ ui::EventResult ToplevelWindowEventHandler::HandleMouseReleased(
   // they see the event on a hidden window.
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
       !target->IsVisible()) {
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
-  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult ToplevelWindowEventHandler::HandleDrag(
+void ToplevelWindowEventHandler::HandleDrag(
     aura::Window* target,
     ui::LocatedEvent* event) {
   // This function only be triggered to move window
@@ -382,23 +385,23 @@ ui::EventResult ToplevelWindowEventHandler::HandleDrag(
   // Drag actions are performed pre-target handling to prevent spurious mouse
   // moves from the move/size operation from being sent to the target.
   if (event->phase() != ui::EP_PRETARGET)
-    return ui::ER_UNHANDLED;
+    return;
 
   if (!window_resizer_.get())
-    return ui::ER_UNHANDLED;
+    return;
   window_resizer_->resizer()->Drag(
       ConvertPointToParent(target, event->location()), event->flags());
-  return ui::ER_CONSUMED;
+  event->StopPropagation();
 }
 
-ui::EventResult ToplevelWindowEventHandler::HandleMouseMoved(
+void ToplevelWindowEventHandler::HandleMouseMoved(
     aura::Window* target,
     ui::LocatedEvent* event) {
   // Shadow effects are applied after target handling. Note that we don't
   // respect ER_HANDLED here right now since we have not had a reason to allow
   // the target to cancel shadow rendering.
   if (event->phase() != ui::EP_POSTTARGET)
-    return ui::ER_UNHANDLED;
+    return;
 
   // TODO(jamescook): Move the resize cursor update code into here from
   // CompoundEventFilter?
@@ -413,23 +416,21 @@ ui::EventResult ToplevelWindowEventHandler::HandleMouseMoved(
       controller->HideShadow(target);
     }
   }
-  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult ToplevelWindowEventHandler::HandleMouseExited(
+void ToplevelWindowEventHandler::HandleMouseExited(
     aura::Window* target,
     ui::LocatedEvent* event) {
   // Shadow effects are applied after target handling. Note that we don't
   // respect ER_HANDLED here right now since we have not had a reason to allow
   // the target to cancel shadow rendering.
   if (event->phase() != ui::EP_POSTTARGET)
-    return ui::ER_UNHANDLED;
+    return;
 
   internal::ResizeShadowController* controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (controller)
     controller->HideShadow(target);
-  return ui::ER_UNHANDLED;
 }
 
 void ToplevelWindowEventHandler::ResizerWindowDestroyed() {

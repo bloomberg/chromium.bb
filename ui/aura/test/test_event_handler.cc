@@ -29,9 +29,8 @@ void TestEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   num_key_events_++;
 }
 
-ui::EventResult TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+void TestEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   num_mouse_events_++;
-  return ui::ER_UNHANDLED;
 }
 
 void TestEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
