@@ -943,13 +943,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kFileManagerPackaged),
   },
   {
-    "enable-chromebook-function-key",
-    IDS_FLAGS_ENABLE_CHROMEBOOK_FUNCTION_KEY_NAME,
-    IDS_FLAGS_ENABLE_CHROMEBOOK_FUNCTION_KEY_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableChromebookFunctionKey),
-  },
-  {
     "enable-launcher-per-display",
     IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_NAME,
     IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,

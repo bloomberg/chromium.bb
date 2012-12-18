@@ -66,13 +66,9 @@ class TestShellDelegate : public ShellDelegate {
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
   virtual aura::client::StackingClient* CreateStackingClient() OVERRIDE;
-  virtual bool IsSearchKeyActingAsFunctionKey() const OVERRIDE;
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
 
   int num_exit_requests() const { return num_exit_requests_; }
-  void set_is_search_key_acting_as_function_key(bool b) {
-    is_search_key_acting_as_function_key_ = b;
-  }
  private:
   friend class ash::test::AshTestBase;
 
@@ -101,7 +97,6 @@ class TestShellDelegate : public ShellDelegate {
   MagnifierType screen_magnifier_type_;
   bool user_logged_in_;
   bool can_lock_screen_;
-  bool is_search_key_acting_as_function_key_;
   int num_exit_requests_;
 
   scoped_ptr<content::BrowserContext> current_browser_context_;

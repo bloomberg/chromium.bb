@@ -303,8 +303,9 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeySym(
 
     *remapped_native_keysym = map.output_keysym;
     *remapped_keycode = map.output_keycode;
-    *remapped_native_mods = native_mods & ~map.input_native_mods;
-    *remapped_mods = mods & ~map.input_mods;
+    *remapped_native_mods = (native_mods & ~map.input_native_mods) |
+                            map.output_native_mods;
+    *remapped_mods = (mods & ~map.input_mods) | map.output_mods;
     return true;
   }
 
@@ -333,8 +334,9 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
 
     *remapped_native_keysym = map.output_keysym;
     *remapped_keycode = map.output_keycode;
-    *remapped_native_mods = native_mods & ~map.input_native_mods;
-    *remapped_mods = mods & ~map.input_mods;
+    *remapped_native_mods = (native_mods & ~map.input_native_mods) |
+                            map.output_native_mods;
+    *remapped_mods = (mods & ~map.input_mods) | map.output_mods;
     return true;
   }
 
@@ -634,10 +636,6 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
-  const bool search_as_function_key =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromebookFunctionKey);
-
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   const KeySym keysym = XLookupKeysym(xkey, 0);
@@ -647,80 +645,45 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
   unsigned int remapped_mods = 0;
 
-  if (!search_as_function_key) {
-    static const KeyboardRemapping remappings[] = {
-      { // Alt+BackSpace -> Delete
+  if (xkey->state & Mod4Mask) {
+    // Allow Search to avoid rewriting extended keys.
+    static const KeyboardRemapping kAvoidRemappings[] = {
+      { // Alt+Backspace
         XK_BackSpace,
+        ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+        XK_BackSpace, ui::VKEY_BACK,
         ui::EF_ALT_DOWN, Mod1Mask,
-        XK_Delete, ui::VKEY_DELETE,
       },
-      { // Control+Alt+Up -> Home
+      { // Control+Alt+Up
         XK_Up,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+        Mod1Mask | ControlMask | Mod4Mask,
+        XK_Up, ui::VKEY_UP,
         ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-        XK_Home, ui::VKEY_HOME,
       },
-      { // Alt+Up -> Prior (aka PageUp)
+      { // Alt+Up
         XK_Up,
+        ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+        XK_Up, ui::VKEY_UP,
         ui::EF_ALT_DOWN, Mod1Mask,
-        XK_Prior, ui::VKEY_PRIOR,
       },
-      { // Control+Alt+Down -> End
+      { // Control+Alt+Down
         XK_Down,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+        Mod1Mask | ControlMask | Mod4Mask,
+        XK_Down, ui::VKEY_DOWN,
         ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-        XK_End, ui::VKEY_END,
       },
-      { // Alt+Down -> Next (aka PageDown)
+      { // Alt+Down
         XK_Down,
+        ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+        XK_Down, ui::VKEY_DOWN,
         ui::EF_ALT_DOWN, Mod1Mask,
-        XK_Next, ui::VKEY_NEXT,
       }
     };
 
-    RewriteWithKeyboardRemappingsByKeySym(remappings,
-                                          arraysize(remappings),
-                                          keysym,
-                                          xkey->state,
-                                          event->flags(),
-                                          &remapped_native_keysym,
-                                          &remapped_native_mods,
-                                          &remapped_keycode,
-                                          &remapped_mods);
-  } else {
-    static const KeyboardRemapping remappings[] = {
-      { // Search+BackSpace -> Delete
-        XK_BackSpace,
-        0, Mod4Mask,
-        XK_Delete, ui::VKEY_DELETE,
-      },
-      { // Search+Left -> Home
-        XK_Left,
-        0, Mod4Mask,
-        XK_Home, ui::VKEY_HOME,
-      },
-      { // Search+Up -> Prior (aka PageUp)
-        XK_Up,
-        0, Mod4Mask,
-        XK_Prior, ui::VKEY_PRIOR,
-      },
-      { // Search+Right -> End
-        XK_Right,
-        0, Mod4Mask,
-        XK_End, ui::VKEY_END,
-      },
-      { // Search+Down -> Next (aka PageDown)
-        XK_Down,
-        0, Mod4Mask,
-        XK_Next, ui::VKEY_NEXT,
-      },
-      { // Search+Period -> Insert
-        XK_period,
-        0, Mod4Mask,
-        XK_Insert, ui::VKEY_INSERT,
-      }
-    };
-
-    RewriteWithKeyboardRemappingsByKeySym(remappings,
-                                          arraysize(remappings),
+    RewriteWithKeyboardRemappingsByKeySym(kAvoidRemappings,
+                                          arraysize(kAvoidRemappings),
                                           keysym,
                                           xkey->state,
                                           event->flags(),
@@ -730,7 +693,103 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
                                           &remapped_mods);
   }
 
-  if (!remapped_native_keysym || remapped_keycode == ui::VKEY_UNKNOWN)
+  if (remapped_keycode == ui::VKEY_UNKNOWN) {
+    static const KeyboardRemapping kSearchRemappings[] = {
+      { // Search+BackSpace -> Delete
+        XK_BackSpace,
+        0, Mod4Mask,
+        XK_Delete, ui::VKEY_DELETE,
+        0, 0
+      },
+      { // Search+Left -> Home
+        XK_Left,
+        0, Mod4Mask,
+        XK_Home, ui::VKEY_HOME,
+        0, 0
+      },
+      { // Search+Up -> Prior (aka PageUp)
+        XK_Up,
+        0, Mod4Mask,
+        XK_Prior, ui::VKEY_PRIOR,
+        0, 0
+      },
+      { // Search+Right -> End
+        XK_Right,
+        0, Mod4Mask,
+        XK_End, ui::VKEY_END,
+        0, 0
+      },
+      { // Search+Down -> Next (aka PageDown)
+        XK_Down,
+        0, Mod4Mask,
+        XK_Next, ui::VKEY_NEXT,
+        0, 0
+      },
+      { // Search+Period -> Insert
+        XK_period,
+        0, Mod4Mask,
+        XK_Insert, ui::VKEY_INSERT,
+        0, 0
+      }
+    };
+
+    RewriteWithKeyboardRemappingsByKeySym(kSearchRemappings,
+                                          arraysize(kSearchRemappings),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
+  }
+
+  if (remapped_keycode == ui::VKEY_UNKNOWN) {
+    static const KeyboardRemapping kNonSearchRemappings[] = {
+      { // Alt+BackSpace -> Delete
+        XK_BackSpace,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Delete, ui::VKEY_DELETE,
+        0, 0
+      },
+      { // Control+Alt+Up -> Home
+        XK_Up,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+        XK_Home, ui::VKEY_HOME,
+        0, 0
+      },
+      { // Alt+Up -> Prior (aka PageUp)
+        XK_Up,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Prior, ui::VKEY_PRIOR,
+        0, 0
+      },
+      { // Control+Alt+Down -> End
+        XK_Down,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+        XK_End, ui::VKEY_END,
+        0, 0
+      },
+      { // Alt+Down -> Next (aka PageDown)
+        XK_Down,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Next, ui::VKEY_NEXT,
+        0, 0
+      }
+    };
+
+    RewriteWithKeyboardRemappingsByKeySym(kNonSearchRemappings,
+                                          arraysize(kNonSearchRemappings),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
+  }
+
+  if (remapped_keycode == ui::VKEY_UNKNOWN)
     return false;
 
   OverwriteEvent(event,
@@ -747,10 +806,6 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
-  const bool search_as_function_key =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromebookFunctionKey);
-
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   const KeySym keysym = XLookupKeysym(xkey, 0);
@@ -760,9 +815,7 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
   unsigned int remapped_mods = 0;
 
-  bool remapped = false;
-
-  if (search_as_function_key && xkey->state & Mod4Mask) {
+  if (xkey->state & Mod4Mask) {
     // Allow Search to avoid rewriting F1-F12.
     static const KeyboardRemapping kFkeysToFkeys[] = {
       { XK_F1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
@@ -779,82 +832,78 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
       { XK_F12, 0, Mod4Mask, XK_F12, ui::VKEY_F12, },
     };
 
-    remapped =
-        RewriteWithKeyboardRemappingsByKeySym(kFkeysToFkeys,
-                                              arraysize(kFkeysToFkeys),
-                                              keysym,
-                                              xkey->state,
-                                              event->flags(),
-                                              &remapped_native_keysym,
-                                              &remapped_native_mods,
-                                              &remapped_keycode,
-                                              &remapped_mods);
+    RewriteWithKeyboardRemappingsByKeySym(kFkeysToFkeys,
+                                          arraysize(kFkeysToFkeys),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
   }
 
-  if (!remapped) {
+  if (remapped_keycode == ui::VKEY_UNKNOWN) {
     // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
     static const KeyboardRemapping kFkeysToSpecialKeys[] = {
-      { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, },
-      { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, },
-      { XK_F3, 0, 0, XF86XK_Reload, ui::VKEY_BROWSER_REFRESH, },
-      { XK_F4, 0, 0, XF86XK_LaunchB, ui::VKEY_MEDIA_LAUNCH_APP2, },
-      { XK_F5, 0, 0, XF86XK_LaunchA, ui::VKEY_MEDIA_LAUNCH_APP1, },
-      { XK_F6, 0, 0, XF86XK_MonBrightnessDown, ui::VKEY_BRIGHTNESS_DOWN, },
-      { XK_F7, 0, 0, XF86XK_MonBrightnessUp, ui::VKEY_BRIGHTNESS_UP, },
-      { XK_F8, 0, 0, XF86XK_AudioMute, ui::VKEY_VOLUME_MUTE, },
-      { XK_F9, 0, 0, XF86XK_AudioLowerVolume, ui::VKEY_VOLUME_DOWN, },
-      { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, },
+      { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, 0, 0 },
+      { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, 0, 0 },
+      { XK_F3, 0, 0, XF86XK_Reload, ui::VKEY_BROWSER_REFRESH, 0, 0 },
+      { XK_F4, 0, 0, XF86XK_LaunchB, ui::VKEY_MEDIA_LAUNCH_APP2, 0, 0 },
+      { XK_F5, 0, 0, XF86XK_LaunchA, ui::VKEY_MEDIA_LAUNCH_APP1, 0, 0 },
+      { XK_F6, 0, 0, XF86XK_MonBrightnessDown, ui::VKEY_BRIGHTNESS_DOWN, 0, 0 },
+      { XK_F7, 0, 0, XF86XK_MonBrightnessUp, ui::VKEY_BRIGHTNESS_UP, 0, 0 },
+      { XK_F8, 0, 0, XF86XK_AudioMute, ui::VKEY_VOLUME_MUTE, 0, 0 },
+      { XK_F9, 0, 0, XF86XK_AudioLowerVolume, ui::VKEY_VOLUME_DOWN, 0, 0 },
+      { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, 0, 0 },
     };
 
-    remapped =
-        RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
-                                              arraysize(kFkeysToSpecialKeys),
-                                              keysym,
-                                              xkey->state,
-                                              event->flags(),
-                                              &remapped_native_keysym,
-                                              &remapped_native_mods,
-                                              &remapped_keycode,
-                                              &remapped_mods);
+    RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
+                                          arraysize(kFkeysToSpecialKeys),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
   }
 
-  if (!remapped) {
-    // When using Search as a Function key, remap Search+<number> to F<number>.
-    if (search_as_function_key && xkey->state & Mod4Mask) {
-      // We check the keycode here instead of the keysym, as these keys have
-      // different keysyms when modifiers are pressed, such as shift.
+  if (remapped_keycode == ui::VKEY_UNKNOWN && xkey->state & Mod4Mask) {
+    // Remap Search+<number> to F<number>.
+    // We check the keycode here instead of the keysym, as these keys have
+    // different keysyms when modifiers are pressed, such as shift.
 
-      // TODO(danakj): On some i18n keyboards, these choices will be bad and we
-      // should make layout-specific choices here. For eg. on a french keyboard
-      // "-" and "6" are the same key, so F11 will not be accessible.
-      static const KeyboardRemapping kNumberKeysToFkeys[] = {
-        { XK_1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
-        { XK_2, 0, Mod4Mask, XK_F2, ui::VKEY_F2, },
-        { XK_3, 0, Mod4Mask, XK_F3, ui::VKEY_F3, },
-        { XK_4, 0, Mod4Mask, XK_F4, ui::VKEY_F4, },
-        { XK_5, 0, Mod4Mask, XK_F5, ui::VKEY_F5, },
-        { XK_6, 0, Mod4Mask, XK_F6, ui::VKEY_F6, },
-        { XK_7, 0, Mod4Mask, XK_F7, ui::VKEY_F7, },
-        { XK_8, 0, Mod4Mask, XK_F8, ui::VKEY_F8, },
-        { XK_9, 0, Mod4Mask, XK_F9, ui::VKEY_F9, },
-        { XK_0, 0, Mod4Mask, XK_F10, ui::VKEY_F10, },
-        { XK_minus, 0, Mod4Mask, XK_F11, ui::VKEY_F11, },
-        { XK_equal, 0, Mod4Mask, XK_F12, ui::VKEY_F12, }
-      };
+    // TODO(danakj): On some i18n keyboards, these choices will be bad and we
+    // should make layout-specific choices here. For eg. on a french keyboard
+    // "-" and "6" are the same key, so F11 will not be accessible.
+    static const KeyboardRemapping kNumberKeysToFkeys[] = {
+      { XK_1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, 0, 0 },
+      { XK_2, 0, Mod4Mask, XK_F2, ui::VKEY_F2, 0, 0 },
+      { XK_3, 0, Mod4Mask, XK_F3, ui::VKEY_F3, 0, 0 },
+      { XK_4, 0, Mod4Mask, XK_F4, ui::VKEY_F4, 0, 0 },
+      { XK_5, 0, Mod4Mask, XK_F5, ui::VKEY_F5, 0, 0 },
+      { XK_6, 0, Mod4Mask, XK_F6, ui::VKEY_F6, 0, 0 },
+      { XK_7, 0, Mod4Mask, XK_F7, ui::VKEY_F7, 0, 0 },
+      { XK_8, 0, Mod4Mask, XK_F8, ui::VKEY_F8, 0, 0 },
+      { XK_9, 0, Mod4Mask, XK_F9, ui::VKEY_F9, 0, 0 },
+      { XK_0, 0, Mod4Mask, XK_F10, ui::VKEY_F10, 0, 0 },
+      { XK_minus, 0, Mod4Mask, XK_F11, ui::VKEY_F11, 0, 0 },
+      { XK_equal, 0, Mod4Mask, XK_F12, ui::VKEY_F12, 0, 0 }
+    };
 
-      RewriteWithKeyboardRemappingsByKeyCode(kNumberKeysToFkeys,
-                                             arraysize(kNumberKeysToFkeys),
-                                             xkey->keycode,
-                                             xkey->state,
-                                             event->flags(),
-                                             &remapped_native_keysym,
-                                             &remapped_native_mods,
-                                             &remapped_keycode,
-                                             &remapped_mods);
-    }
+    RewriteWithKeyboardRemappingsByKeyCode(kNumberKeysToFkeys,
+                                           arraysize(kNumberKeysToFkeys),
+                                           xkey->keycode,
+                                           xkey->state,
+                                           event->flags(),
+                                           &remapped_native_keysym,
+                                           &remapped_native_mods,
+                                           &remapped_keycode,
+                                           &remapped_mods);
   }
 
-  if (!remapped_native_keysym || remapped_keycode == ui::VKEY_UNKNOWN)
+  if (remapped_keycode == ui::VKEY_UNKNOWN)
     return false;
 
   OverwriteEvent(event,

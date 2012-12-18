@@ -1438,12 +1438,6 @@ const char kEnableTouchpadThreeFingerSwipe[]
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
-// If true, show advanced keyboard options to overload the search key as a way
-// to access keys such as Home and End, similar to the "Function key" found
-// commonly on laptop keyboards.
-const char kEnableChromebookFunctionKey[] =
-    "enable-chromebook-function-key";
-
 // Enable Kiosk mode for ChromeOS.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 

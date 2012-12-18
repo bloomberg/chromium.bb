@@ -541,15 +541,6 @@ aura::client::StackingClient* ChromeShellDelegate::CreateStackingClient() {
   return new ash::StackingController;
 }
 
-bool ChromeShellDelegate::IsSearchKeyActingAsFunctionKey() const {
-#if defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromebookFunctionKey);
-#else
-  return false;
-#endif
-}
-
 ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {
   return ash::RootWindowHostFactory::Create();
 }

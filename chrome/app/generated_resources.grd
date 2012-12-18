@@ -6827,12 +6827,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_DESCRIPTION" desc="Description of the flag to show only apps in app list search.">
         Shows only apps in app list search.
       </message>
-      <message name="IDS_FLAGS_ENABLE_CHROMEBOOK_FUNCTION_KEY_NAME" desc="Name of the flag to enable the option for using the Search key as a Function key.">
-        Allow Search key to act as a Function key.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CHROMEBOOK_FUNCTION_KEY_DESCRIPTION" desc="Description of the flag to enable the option for using the Search key as a Function key.">
-        Adds an option to the Keyboard settings to allow using the Search key on a ChromeOS laptop keyboard for accessing extended keyboard shortcuts such as Delete, Home, and End.
-      </message>
       <message name="IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_NAME" desc="Name of the flag to use the new dialog style.">
         Enable New Dialog Style.
       </message>

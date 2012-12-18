@@ -2031,10 +2031,6 @@ Press any key to continue exploring.
            desc="The link to open 'Language and input settings' window.">
     Change language and input settings
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_AS_FUNCTION"
-           desc="The checkbox to enable the Search key to act as a Function key">
-    Use the Search key to access extended keybindings.
-  </message>
   <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
     No mouse or touchpad was detected.
   </message>
@@ -2610,9 +2606,6 @@ Battery full
     Keyboard Overlay
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS" desc="The instructions for the keyboard overlay.">
-    Hold Control, Alt, or Shift to see keyboard shortcuts for those modifiers.
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_WITH_SEARCH" desc="The instructions for the keyboard overlay.">
     Hold Control, Alt, Shift, or Search to see keyboard shortcuts for those modifiers.
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">

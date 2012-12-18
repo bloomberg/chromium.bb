@@ -394,7 +394,6 @@ extern const char kDisableStubEthernet[];
 extern const char kEnableBackgroundLoader[];
 extern const char kEnableCarrierSwitching[];
 extern const char kEnableChromeCaptivePortalDetector[];
-extern const char kEnableChromebookFunctionKey[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kSkipOAuthLogin[];

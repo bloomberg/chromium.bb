@@ -210,10 +210,6 @@ aura::client::StackingClient* ShellDelegateImpl::CreateStackingClient() {
   return new StackingController;
 }
 
-bool ShellDelegateImpl::IsSearchKeyActingAsFunctionKey() const {
-  return false;
-}
-
 RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {
   return RootWindowHostFactory::Create();
 }

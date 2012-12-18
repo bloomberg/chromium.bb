@@ -131,66 +131,51 @@ function getShortcutData() {
 
   shortcutDataCache = keyboardOverlayData['shortcut'];
 
-  var searchKeyIsModifier =
-      loadTimeData.getString('keyboardSearchKeyActsAsFunctionKey') == 'true';
-  if (searchKeyIsModifier) {
-    // TODO(mazda): Clean this up and move these out to the data js.
-    var searchModifierRemoveShortcuts = {
-      'backspace<>ALT': 'keyboardOverlayDelete',
-      'down<>ALT': 'keyboardOverlayPageDown',
-      'down<>ALT<>CTRL': 'keyboardOverlayEnd',
-      'up<>ALT': 'keyboardOverlayPageUp',
-      'up<>ALT<>CTRL': 'keyboardOverlayHome'
-    };
-    var searchModifierAddShortcuts = {
-      '1<>SEARCH': 'keyboardOverlayF1',
-      '2<>SEARCH': 'keyboardOverlayF2',
-      '3<>SEARCH': 'keyboardOverlayF3',
-      '4<>SEARCH': 'keyboardOverlayF4',
-      '5<>SEARCH': 'keyboardOverlayF5',
-      '6<>SEARCH': 'keyboardOverlayF6',
-      '7<>SEARCH': 'keyboardOverlayF7',
-      '8<>SEARCH': 'keyboardOverlayF8',
-      '9<>SEARCH': 'keyboardOverlayF9',
-      '0<>SEARCH': 'keyboardOverlayF10',
-      '-<>SEARCH': 'keyboardOverlayF11',
-      '=<>SEARCH': 'keyboardOverlayF12',
-      'F1<>SEARCH': 'keyboardOverlayF1',
-      'F2<>SEARCH': 'keyboardOverlayF2',
-      'F3<>SEARCH': 'keyboardOverlayF3',
-      'F4<>SEARCH': 'keyboardOverlayF4',
-      'F5<>SEARCH': 'keyboardOverlayF5',
-      'F6<>SEARCH': 'keyboardOverlayF6',
-      'F7<>SEARCH': 'keyboardOverlayF7',
-      'F8<>SEARCH': 'keyboardOverlayF8',
-      'F9<>SEARCH': 'keyboardOverlayF9',
-      'F10<>SEARCH': 'keyboardOverlayF10',
-      'F11<>SEARCH': 'keyboardOverlayF11',
-      'F12<>SEARCH': 'keyboardOverlayF12',
-      'back<>SEARCH': 'keyboardOverlayF1',
-      'forward<>SEARCH': 'keyboardOverlayF2',
-      'reload<>SEARCH': 'keyboardOverlayF3',
-      'maximize<>SEARCH': 'keyboardOverlayF4',
-      'switch window<>SEARCH': 'keyboardOverlayF5',
-      'bright down<>SEARCH': 'keyboardOverlayF6',
-      'bright up<>SEARCH': 'keyboardOverlayF7',
-      'mute<>SEARCH': 'keyboardOverlayF8',
-      'vol. down<>SEARCH': 'keyboardOverlayF9',
-      'vol. up<>SEARCH': 'keyboardOverlayF10',
-      'backspace<>SEARCH': 'keyboardOverlayDelete',
-      'down<>SEARCH': 'keyboardOverlayPageDown',
-      'right<>SEARCH': 'keyboardOverlayEnd',
-      'up<>SEARCH': 'keyboardOverlayPageUp',
-      'left<>SEARCH': 'keyboardOverlayHome',
-      '.<>SEARCH': 'keyboardOverlayInsert'
-    };
-
-    for (var key in searchModifierRemoveShortcuts)
-      delete shortcutDataCache[key];
-    for (var key in searchModifierAddShortcuts)
-      shortcutDataCache[key] = searchModifierAddShortcuts[key];
-  }
-
+  // TODO(mazda): Clean this up and move these out to the data js.
+  var searchModifierAddShortcuts = {
+    '1<>SEARCH': 'keyboardOverlayF1',
+    '2<>SEARCH': 'keyboardOverlayF2',
+    '3<>SEARCH': 'keyboardOverlayF3',
+    '4<>SEARCH': 'keyboardOverlayF4',
+    '5<>SEARCH': 'keyboardOverlayF5',
+    '6<>SEARCH': 'keyboardOverlayF6',
+    '7<>SEARCH': 'keyboardOverlayF7',
+    '8<>SEARCH': 'keyboardOverlayF8',
+    '9<>SEARCH': 'keyboardOverlayF9',
+    '0<>SEARCH': 'keyboardOverlayF10',
+    '-<>SEARCH': 'keyboardOverlayF11',
+    '=<>SEARCH': 'keyboardOverlayF12',
+    'F1<>SEARCH': 'keyboardOverlayF1',
+    'F2<>SEARCH': 'keyboardOverlayF2',
+    'F3<>SEARCH': 'keyboardOverlayF3',
+    'F4<>SEARCH': 'keyboardOverlayF4',
+    'F5<>SEARCH': 'keyboardOverlayF5',
+    'F6<>SEARCH': 'keyboardOverlayF6',
+    'F7<>SEARCH': 'keyboardOverlayF7',
+    'F8<>SEARCH': 'keyboardOverlayF8',
+    'F9<>SEARCH': 'keyboardOverlayF9',
+    'F10<>SEARCH': 'keyboardOverlayF10',
+    'F11<>SEARCH': 'keyboardOverlayF11',
+    'F12<>SEARCH': 'keyboardOverlayF12',
+    'back<>SEARCH': 'keyboardOverlayF1',
+    'forward<>SEARCH': 'keyboardOverlayF2',
+    'reload<>SEARCH': 'keyboardOverlayF3',
+    'maximize<>SEARCH': 'keyboardOverlayF4',
+    'switch window<>SEARCH': 'keyboardOverlayF5',
+    'bright down<>SEARCH': 'keyboardOverlayF6',
+    'bright up<>SEARCH': 'keyboardOverlayF7',
+    'mute<>SEARCH': 'keyboardOverlayF8',
+    'vol. down<>SEARCH': 'keyboardOverlayF9',
+    'vol. up<>SEARCH': 'keyboardOverlayF10',
+    'backspace<>SEARCH': 'keyboardOverlayDelete',
+    'down<>SEARCH': 'keyboardOverlayPageDown',
+    'right<>SEARCH': 'keyboardOverlayEnd',
+    'up<>SEARCH': 'keyboardOverlayPageUp',
+    'left<>SEARCH': 'keyboardOverlayHome',
+    '.<>SEARCH': 'keyboardOverlayInsert'
+  };
+  for (var key in searchModifierAddShortcuts)
+    shortcutDataCache[key] = searchModifierAddShortcuts[key];
   return shortcutDataCache;
 }
 
@@ -593,15 +578,8 @@ function initLayout() {
   var instructionsText = document.createElement('div');
   instructionsText.id = 'instructions-text';
   instructionsText.className = 'keyboard-overlay-instructions-text';
-  var searchKeyIsModifier =
-      loadTimeData.getString('keyboardSearchKeyActsAsFunctionKey') == 'true';
-  if (searchKeyIsModifier) {
-    instructionsText.innerHTML =
-        loadTimeData.getString('keyboardOverlayInstructionsWithSearch');
-  } else {
-    instructionsText.innerHTML =
-        loadTimeData.getString('keyboardOverlayInstructions');
-  }
+  instructionsText.innerHTML =
+      loadTimeData.getString('keyboardOverlayInstructions');
   instructions.appendChild(instructionsText);
   var instructionsHideText = document.createElement('div');
   instructionsHideText.id = 'instructions-hide-text';

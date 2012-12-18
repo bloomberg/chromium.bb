@@ -890,57 +890,13 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #endif
 }
 
-TEST_F(AcceleratorControllerTest,
-       GlobalAcceleratorsToggleAppListWithoutSearchAsModifier) {
-  ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
-
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-
-  // When Search is not acting as a modifier, pressing Search should toggle
-  // the AppList
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ProcessWithContext(
-      ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-
-  // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ProcessWithContext(
-      ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ProcessWithContext(
-      ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-
-  // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ProcessWithContext(
-      ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-}
-
-TEST_F(AcceleratorControllerTest,
-       GlobalAcceleratorsToggleAppListWithSearchAsModifier) {
+TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   test::TestShellDelegate* delegate =
       reinterpret_cast<test::TestShellDelegate*>(
           ash::Shell::GetInstance()->delegate());
-  delegate->set_is_search_key_acting_as_function_key(true);
-
   EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 
-  // When Search is acting as a modifier for accessing extended keyboard
-  // shortcuts, then the press event should not open the AppList, and the
-  // release should instead.
+  // The press event should not open the AppList, the release should instead.
   EXPECT_FALSE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_TRUE(ProcessWithContext(

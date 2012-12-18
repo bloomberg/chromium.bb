@@ -27,7 +27,6 @@ TestShellDelegate::TestShellDelegate()
       screen_magnifier_type_(MAGNIFIER_OFF),
       user_logged_in_(true),
       can_lock_screen_(true),
-      is_search_key_acting_as_function_key_(false),
       num_exit_requests_(0) {
 }
 
@@ -198,10 +197,6 @@ double TestShellDelegate::GetSavedScreenMagnifierScale() {
 
 aura::client::StackingClient* TestShellDelegate::CreateStackingClient() {
   return new StackingController;
-}
-
-bool TestShellDelegate::IsSearchKeyActingAsFunctionKey() const {
-  return is_search_key_acting_as_function_key_;
 }
 
 RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {

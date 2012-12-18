@@ -63,9 +63,6 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString("remapCapsLockKeyToContent",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL));
-  localized_strings->SetString("searchKeyActsAsFunctionKey",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_AS_FUNCTION));
   localized_strings->SetString("changeLanguageAndInputSettings",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS));

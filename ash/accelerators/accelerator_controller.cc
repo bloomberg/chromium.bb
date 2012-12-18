@@ -537,27 +537,13 @@ bool AcceleratorController::PerformAction(int action,
       // this key combination is reserved for partial screenshot.
       return true;
     case TOGGLE_APP_LIST:
-      if (accelerator.key_code() == ui::VKEY_LWIN) {
-        // For bindings on the Search key, activate the binding on press if the
-        // Search key is not acting as a modifier. Otherwise, activate it on
-        // release.
-        const bool search_as_function_key =
-            Shell::GetInstance()->delegate()->IsSearchKeyActingAsFunctionKey();
-        const bool type_pressed = accelerator.type() == ui::ET_KEY_PRESSED;
-
-        if (!search_as_function_key && !type_pressed)
-          return false;
-        if (search_as_function_key && type_pressed)
-          return false;
-        if (search_as_function_key &&
-            // If something else was pressed between the Search key (LWIN)
-            // being pressed and released, then ignore the release of the
-            // Search key.
-            (previous_event_type == ui::ET_KEY_RELEASED ||
-             previous_key_code != ui::VKEY_LWIN)) {
-          return false;
-        }
-      }
+      // If something else was pressed between the Search key (LWIN)
+      // being pressed and released, then ignore the release of the
+      // Search key.
+      if (key_code == ui::VKEY_LWIN &&
+          (previous_event_type == ui::ET_KEY_RELEASED ||
+           previous_key_code != ui::VKEY_LWIN))
+        return false;
       if (key_code == ui::VKEY_LWIN)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_SEARCH_LWIN);
       // When spoken feedback is enabled, we should neither toggle the list nor

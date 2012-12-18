@@ -105,6 +105,8 @@ class EventRewriter : public ash::EventRewriterDelegate,
     unsigned int input_native_mods;
     KeySym output_keysym;
     ui::KeyboardCode output_keycode;
+    unsigned int output_mods;
+    unsigned int output_native_mods;
   };
 
   // Given a set of KeyboardRemapping structs, it finds a matching struct

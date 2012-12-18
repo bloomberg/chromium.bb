@@ -1760,7 +1760,6 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
@@ -1786,6 +1785,16 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
       ui::VKEY_DELETE, keycode_delete_,
       ui::EF_CONTROL_DOWN, ControlMask, },
+    // Search+Alt+Backspace -> Alt+Backspace
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+      ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    // Search+Control+Alt+Backspace -> Control+Alt+Backspace
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
+      ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
     // Alt+Up -> Prior
     { ui::VKEY_UP, keycode_up_,
       ui::EF_ALT_DOWN, Mod1Mask,
@@ -1806,88 +1815,37 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
       ui::VKEY_END, keycode_end_,
       0, 0, },
+
+    // Search+Alt+Up -> Alt+Up
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask },
+    // Search+Alt+Down -> Alt+Down
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask | Mod4Mask,
+      ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask },
+    // Search+Ctrl+Alt+Up -> Search+Ctrl+Alt+Up
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask },
+    // Search+Ctrl+Alt+Down -> Ctrl+Alt+Down
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask | Mod4Mask,
+      ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask },
+
     // Period -> Period
     { ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0,
-      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 }
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
-                                        chromeos_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        chromeos_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        chromeos_tests[i].input,
-                                        chromeos_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        chromeos_tests[i].input_native_mods));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
-                                        chromeos_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        Mod4Mask |
-                                        chromeos_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        chromeos_tests[i].input,
-                                        chromeos_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        Mod4Mask |
-                                        chromeos_tests[i].input_native_mods));
-  }
-
-  // Make Search key act like a Function key for accessing extended key
-  // bindings.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableChromebookFunctionKey, "");
-
-  struct {
-    ui::KeyboardCode input;
-    KeyCode input_native;
-    unsigned int input_mods;
-    unsigned int input_native_mods;
-    ui::KeyboardCode output;
-    KeyCode output_native;
-    unsigned int output_mods;
-    unsigned int output_native_mods;
-  } search_tests[] = {
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_LEFT, keycode_left_, 0, 0,
-      ui::VKEY_LEFT, keycode_left_, 0, 0 },
-    { ui::VKEY_RIGHT, keycode_right_, 0, 0,
-      ui::VKEY_RIGHT, keycode_right_, 0, 0 },
+      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 },
 
     // Search+Backspace -> Delete
     { ui::VKEY_BACK, keycode_backspace_,
       0, Mod4Mask,
       ui::VKEY_DELETE, keycode_delete_,
       0, 0, },
-    // Alt+Search+Backspace -> Alt+Delete
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod4Mask | Mod1Mask,
-      ui::VKEY_DELETE, keycode_delete_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
     // Search+Up -> Prior
     { ui::VKEY_UP, keycode_up_,
       0, Mod4Mask,
@@ -1928,22 +1886,20 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
       ui::EF_CONTROL_DOWN, ControlMask }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(search_tests[i].output,
-                                        search_tests[i].output_mods,
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        chromeos_tests[i].output_mods,
                                         ui::ET_KEY_PRESSED,
-                                        search_tests[i].output_native,
-                                        search_tests[i].output_native_mods,
+                                        chromeos_tests[i].output_native,
+                                        chromeos_tests[i].output_native_mods,
                                         KeyPress),
               GetRewrittenEventAsString(&rewriter,
-                                        search_tests[i].input,
-                                        search_tests[i].input_mods,
+                                        chromeos_tests[i].input,
+                                        chromeos_tests[i].input_mods,
                                         ui::ET_KEY_PRESSED,
-                                        search_tests[i].input_native,
-                                        search_tests[i].input_native_mods));
+                                        chromeos_tests[i].input_native,
+                                        chromeos_tests[i].input_native_mods));
   }
-
-  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
@@ -1956,202 +1912,211 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   struct {
     ui::KeyboardCode input;
     KeyCode input_native;
+    unsigned int input_native_mods;
+    unsigned int input_mods;
     ui::KeyboardCode output;
     KeyCode output_native;
-  } chromeos_tests[] = {
-    { // F1 -> Back
-      ui::VKEY_F1, keycode_f1_,
-      ui::VKEY_BROWSER_BACK, keycode_browser_back_
-    },
-    { // F2 -> Forward
-      ui::VKEY_F2, keycode_f2_,
-      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_
-    },
-    { // F3 -> Refresh
-      ui::VKEY_F3, keycode_f3_,
-      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_
-    },
-    { // F4 -> Launch App 2
-      ui::VKEY_F4, keycode_f4_,
-      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_
-    },
-    { // F5 -> Launch App 1
-      ui::VKEY_F5, keycode_f5_,
-      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_
-    },
-    { // F6 -> Brightness down
-      ui::VKEY_F6, keycode_f6_,
-      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_
-    },
-    { // F7 -> Brightness up
-      ui::VKEY_F7, keycode_f7_,
-      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_
-    },
-    { // F8 -> Volume Mute
-      ui::VKEY_F8, keycode_f8_,
-      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_
-    },
-    { // F9 -> Volume Down
-      ui::VKEY_F9, keycode_f9_,
-      ui::VKEY_VOLUME_DOWN, keycode_volume_down_
-    },
-    { // F10 -> Volume Up
-      ui::VKEY_F10, keycode_f10_,
-      ui::VKEY_VOLUME_UP, keycode_volume_up_
-    },
-    { // F11 -> F11
-      ui::VKEY_F11, keycode_f11_,
-      ui::VKEY_F11, keycode_f11_
-    },
-    { // F12 -> F12
-      ui::VKEY_F12, keycode_f12_,
-      ui::VKEY_F12, keycode_f12_,
-    },
-    // The number row should not be rewritten.
-    { ui::VKEY_1, keycode_1_, ui::VKEY_1, keycode_1_, },
-    { ui::VKEY_2, keycode_2_, ui::VKEY_2, keycode_2_, },
-    { ui::VKEY_3, keycode_3_, ui::VKEY_3, keycode_3_, },
-    { ui::VKEY_4, keycode_4_, ui::VKEY_4, keycode_4_, },
-    { ui::VKEY_5, keycode_5_, ui::VKEY_5, keycode_5_, },
-    { ui::VKEY_6, keycode_6_, ui::VKEY_6, keycode_6_, },
-    { ui::VKEY_7, keycode_7_, ui::VKEY_7, keycode_7_, },
-    { ui::VKEY_8, keycode_8_, ui::VKEY_8, keycode_8_, },
-    { ui::VKEY_9, keycode_9_, ui::VKEY_9, keycode_9_, },
-    { ui::VKEY_0, keycode_0_, ui::VKEY_0, keycode_0_, },
-    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_OEM_MINUS, keycode_minus_, },
-    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_OEM_PLUS, keycode_equal_, },
+    unsigned int output_native_mods;
+    unsigned int output_mods;
+  } tests[] = {
+    // F1 -> Back
+    { ui::VKEY_F1, keycode_f1_, 0, 0,
+      ui::VKEY_BROWSER_BACK, keycode_browser_back_, 0, 0 },
+    { ui::VKEY_F1, keycode_f1_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_BROWSER_BACK, keycode_browser_back_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F1, keycode_f1_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_BROWSER_BACK, keycode_browser_back_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F2 -> Forward
+    { ui::VKEY_F2, keycode_f2_, 0, 0,
+      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_, 0, 0 },
+    { ui::VKEY_F2, keycode_f2_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F2, keycode_f2_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F3 -> Refresh
+    { ui::VKEY_F3, keycode_f3_, 0, 0,
+      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_, 0, 0 },
+    { ui::VKEY_F3, keycode_f3_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F3, keycode_f3_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F4 -> Launch App 2
+    { ui::VKEY_F4, keycode_f4_, 0, 0,
+      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_, 0, 0 },
+    { ui::VKEY_F4, keycode_f4_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F4, keycode_f4_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F5 -> Launch App 1
+    { ui::VKEY_F5, keycode_f5_, 0, 0,
+      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_, 0, 0 },
+    { ui::VKEY_F5, keycode_f5_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F5, keycode_f5_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F6 -> Brightness down
+    { ui::VKEY_F6, keycode_f6_, 0, 0,
+      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_, 0, 0 },
+    { ui::VKEY_F6, keycode_f6_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F6, keycode_f6_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F7 -> Brightness up
+    { ui::VKEY_F7, keycode_f7_, 0, 0,
+      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_, 0, 0 },
+    { ui::VKEY_F7, keycode_f7_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F7, keycode_f7_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F8 -> Volume Mute
+    { ui::VKEY_F8, keycode_f8_, 0, 0,
+      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_, 0, 0 },
+    { ui::VKEY_F8, keycode_f8_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F8, keycode_f8_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F9 -> Volume Down
+    { ui::VKEY_F9, keycode_f9_, 0, 0,
+      ui::VKEY_VOLUME_DOWN, keycode_volume_down_, 0, 0 },
+    { ui::VKEY_F9, keycode_f9_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_VOLUME_DOWN, keycode_volume_down_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F9, keycode_f9_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_VOLUME_DOWN, keycode_volume_down_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F10 -> Volume Up
+    { ui::VKEY_F10, keycode_f10_, 0, 0,
+      ui::VKEY_VOLUME_UP, keycode_volume_up_, 0, 0 },
+    { ui::VKEY_F10, keycode_f10_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_VOLUME_UP, keycode_volume_up_,
+      ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F10, keycode_f10_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_VOLUME_UP, keycode_volume_up_,
+      Mod1Mask, ui::EF_ALT_DOWN },
+    // F11 -> F11
+    { ui::VKEY_F11, keycode_f11_, 0, 0,
+      ui::VKEY_F11, keycode_f11_, 0, 0 },
+    { ui::VKEY_F11, keycode_f11_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_F11, keycode_f11_, ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F11, keycode_f11_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_F11, keycode_f11_, Mod1Mask, ui::EF_ALT_DOWN },
+    // F12 -> F12
+    { ui::VKEY_F12, keycode_f12_, 0, 0,
+      ui::VKEY_F12, keycode_f12_, 0, 0 },
+    { ui::VKEY_F12, keycode_f12_, ControlMask, ui::EF_CONTROL_DOWN,
+      ui::VKEY_F12, keycode_f12_, ControlMask, ui::EF_CONTROL_DOWN },
+    { ui::VKEY_F12, keycode_f12_, Mod1Mask, ui::EF_ALT_DOWN,
+      ui::VKEY_F12, keycode_f12_, Mod1Mask, ui::EF_ALT_DOWN },
+
+    // The number row should not be rewritten without Search key.
+    { ui::VKEY_1, keycode_1_, 0, 0,
+      ui::VKEY_1, keycode_1_, 0, 0 },
+    { ui::VKEY_2, keycode_2_, 0, 0,
+      ui::VKEY_2, keycode_2_, 0, 0 },
+    { ui::VKEY_3, keycode_3_, 0, 0,
+      ui::VKEY_3, keycode_3_, 0, 0 },
+    { ui::VKEY_4, keycode_4_, 0, 0,
+      ui::VKEY_4, keycode_4_, 0, 0 },
+    { ui::VKEY_5, keycode_5_, 0, 0,
+      ui::VKEY_5, keycode_5_, 0, 0 },
+    { ui::VKEY_6, keycode_6_, 0, 0,
+      ui::VKEY_6, keycode_6_, 0, 0 },
+    { ui::VKEY_7, keycode_7_, 0, 0,
+      ui::VKEY_7, keycode_7_, 0, 0 },
+    { ui::VKEY_8, keycode_8_, 0, 0,
+      ui::VKEY_8, keycode_8_, 0, 0 },
+    { ui::VKEY_9, keycode_9_, 0, 0,
+      ui::VKEY_9, keycode_9_, 0, 0 },
+    { ui::VKEY_0, keycode_0_, 0, 0,
+      ui::VKEY_0, keycode_0_, 0, 0 },
+    { ui::VKEY_OEM_MINUS, keycode_minus_, 0, 0,
+      ui::VKEY_OEM_MINUS, keycode_minus_, 0, 0 },
+    { ui::VKEY_OEM_PLUS, keycode_equal_, 0, 0,
+      ui::VKEY_OEM_PLUS, keycode_equal_, 0, 0 },
+
+    // The number row should be rewritten as the F<number> row with Search key.
+    { ui::VKEY_1, keycode_1_, Mod4Mask, 0,
+      ui::VKEY_F1, keycode_f1_, 0, 0 },
+    { ui::VKEY_2, keycode_2_, Mod4Mask, 0,
+      ui::VKEY_F2, keycode_f2_, 0, 0 },
+    { ui::VKEY_3, keycode_3_, Mod4Mask, 0,
+      ui::VKEY_F3, keycode_f3_, 0, 0 },
+    { ui::VKEY_4, keycode_4_, Mod4Mask, 0,
+      ui::VKEY_F4, keycode_f4_, 0, 0 },
+    { ui::VKEY_5, keycode_5_, Mod4Mask, 0,
+      ui::VKEY_F5, keycode_f5_, 0, 0 },
+    { ui::VKEY_6, keycode_6_, Mod4Mask, 0,
+      ui::VKEY_F6, keycode_f6_, 0, 0 },
+    { ui::VKEY_7, keycode_7_, Mod4Mask, 0,
+      ui::VKEY_F7, keycode_f7_, 0, 0 },
+    { ui::VKEY_8, keycode_8_, Mod4Mask, 0,
+      ui::VKEY_F8, keycode_f8_, 0, 0 },
+    { ui::VKEY_9, keycode_9_, Mod4Mask, 0,
+      ui::VKEY_F9, keycode_f9_, 0, 0 },
+    { ui::VKEY_0, keycode_0_, Mod4Mask, 0,
+      ui::VKEY_F10, keycode_f10_, 0, 0 },
+    { ui::VKEY_OEM_MINUS, keycode_minus_, Mod4Mask, 0,
+      ui::VKEY_F11, keycode_f11_, 0, 0 },
+    { ui::VKEY_OEM_PLUS, keycode_equal_, Mod4Mask, 0,
+      ui::VKEY_F12, keycode_f12_, 0, 0 },
+
+    // The function keys should not be rewritten with Search key pressed.
+    { ui::VKEY_F1, keycode_f1_, Mod4Mask, 0,
+      ui::VKEY_F1, keycode_f1_, 0, 0 },
+    { ui::VKEY_F2, keycode_f2_, Mod4Mask, 0,
+      ui::VKEY_F2, keycode_f2_, 0, 0 },
+    { ui::VKEY_F3, keycode_f3_, Mod4Mask, 0,
+      ui::VKEY_F3, keycode_f3_, 0, 0 },
+    { ui::VKEY_F4, keycode_f4_, Mod4Mask, 0,
+      ui::VKEY_F4, keycode_f4_, 0, 0 },
+    { ui::VKEY_F5, keycode_f5_, Mod4Mask, 0,
+      ui::VKEY_F5, keycode_f5_, 0, 0 },
+    { ui::VKEY_F6, keycode_f6_, Mod4Mask, 0,
+      ui::VKEY_F6, keycode_f6_, 0, 0 },
+    { ui::VKEY_F7, keycode_f7_, Mod4Mask, 0,
+      ui::VKEY_F7, keycode_f7_, 0, 0 },
+    { ui::VKEY_F8, keycode_f8_, Mod4Mask, 0,
+      ui::VKEY_F8, keycode_f8_, 0, 0 },
+    { ui::VKEY_F9, keycode_f9_, Mod4Mask, 0,
+      ui::VKEY_F9, keycode_f9_, 0, 0 },
+    { ui::VKEY_F10, keycode_f10_, Mod4Mask, 0,
+      ui::VKEY_F10, keycode_f10_, 0, 0 },
+    { ui::VKEY_F11, keycode_f11_, Mod4Mask, 0,
+      ui::VKEY_F11, keycode_f11_, 0, 0 },
+    { ui::VKEY_F12, keycode_f12_, Mod4Mask, 0,
+      ui::VKEY_F12, keycode_f12_, 0, 0 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
-                                        0,
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(tests[i].output,
+                                        tests[i].output_mods,
                                         ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        0U,
+                                        tests[i].output_native,
+                                        tests[i].output_native_mods,
                                         KeyPress),
               GetRewrittenEventAsString(&rewriter,
-                                        chromeos_tests[i].input,
-                                        0,
+                                        tests[i].input,
+                                        tests[i].input_mods,
                                         ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        0));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        Mod4Mask,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        chromeos_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        Mod4Mask));
+                                        tests[i].input_native,
+                                        tests[i].input_native_mods));
   }
-
-  // Make Search key act like a Function key for accessing extended key
-  // bindings. Now Search key as a modifier will make the number row
-  // act like the F<number> row.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableChromebookFunctionKey, "");
-
-  // Without a Search key modifier, the results should be the same as before.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].output_native,
-                                        0U,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        chromeos_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        chromeos_tests[i].input_native,
-                                        0));
-  }
-
-  struct {
-    ui::KeyboardCode input;
-    KeyCode input_native;
-    ui::KeyboardCode output;
-    KeyCode output_native;
-  } search_key_tests[] = {
-    // The number row should be rewritten as the F<number> row.
-    { ui::VKEY_1, keycode_1_, ui::VKEY_F1, keycode_f1_, },
-    { ui::VKEY_2, keycode_2_, ui::VKEY_F2, keycode_f2_, },
-    { ui::VKEY_3, keycode_3_, ui::VKEY_F3, keycode_f3_, },
-    { ui::VKEY_4, keycode_4_, ui::VKEY_F4, keycode_f4_, },
-    { ui::VKEY_5, keycode_5_, ui::VKEY_F5, keycode_f5_, },
-    { ui::VKEY_6, keycode_6_, ui::VKEY_F6, keycode_f6_, },
-    { ui::VKEY_7, keycode_7_, ui::VKEY_F7, keycode_f7_, },
-    { ui::VKEY_8, keycode_8_, ui::VKEY_F8, keycode_f8_, },
-    { ui::VKEY_9, keycode_9_, ui::VKEY_F9, keycode_f9_, },
-    { ui::VKEY_0, keycode_0_, ui::VKEY_F10, keycode_f10_, },
-    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_F11, keycode_f11_, },
-    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_F12, keycode_f12_, },
-
-    // The function keys should not be rewritten anymore.
-    { ui::VKEY_F1, keycode_f1_, ui::VKEY_F1, keycode_f1_, },
-    { ui::VKEY_F2, keycode_f2_, ui::VKEY_F2, keycode_f2_, },
-    { ui::VKEY_F3, keycode_f3_, ui::VKEY_F3, keycode_f3_, },
-    { ui::VKEY_F4, keycode_f4_, ui::VKEY_F4, keycode_f4_, },
-    { ui::VKEY_F5, keycode_f5_, ui::VKEY_F5, keycode_f5_, },
-    { ui::VKEY_F6, keycode_f6_, ui::VKEY_F6, keycode_f6_, },
-    { ui::VKEY_F7, keycode_f7_, ui::VKEY_F7, keycode_f7_, },
-    { ui::VKEY_F8, keycode_f8_, ui::VKEY_F8, keycode_f8_, },
-    { ui::VKEY_F9, keycode_f9_, ui::VKEY_F9, keycode_f9_, },
-    { ui::VKEY_F10, keycode_f10_, ui::VKEY_F10, keycode_f10_, },
-    { ui::VKEY_F11, keycode_f11_, ui::VKEY_F11, keycode_f11_, },
-    { ui::VKEY_F12, keycode_f12_, ui::VKEY_F12, keycode_f12_, },
-  };
-
-  // But with a Search key as a modifier, we should have new rewrite rules now.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_key_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].output_native,
-                                        0,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        search_key_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].input_native,
-                                        Mod4Mask));
-
-    // Other modifiers should be preserved.
-    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
-                                        ui::EF_ALT_DOWN,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].output_native,
-                                        Mod1Mask,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        search_key_tests[i].input,
-                                        ui::EF_ALT_DOWN,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].input_native,
-                                        Mod4Mask | Mod1Mask));
-
-    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
-                                        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].output_native,
-                                        ControlMask | Mod1Mask,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        search_key_tests[i].input,
-                                        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-                                        ui::ET_KEY_PRESSED,
-                                        search_key_tests[i].input_native,
-                                        Mod4Mask | ControlMask | Mod1Mask));
-  }
-
-  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
