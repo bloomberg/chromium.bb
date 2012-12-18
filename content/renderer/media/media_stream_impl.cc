@@ -602,6 +602,12 @@ MediaStreamImpl::CreateLocalAudioRenderer(int session_id) {
   // Ensure that the existing capturer reads data from the selected microphone.
   scoped_refptr<WebRtcAudioCapturer> source =
       dependency_factory_->GetWebRtcAudioDevice()->capturer();
+  if (!source) {
+    // The WebRtcAudioCapturer instance can be NULL e.g. if an unsupported
+    // sample rate is used.
+    // TODO(henrika): extend support of capture sample rates.
+    return NULL;
+  }
   source->SetDevice(session_id);
 
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
