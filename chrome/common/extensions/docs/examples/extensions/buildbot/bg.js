@@ -142,8 +142,7 @@ function requestURL(url, callback, opt_responseType) {
   };
 
   xhr.onerror = function(error) {
-    console.log("xhr error: " + JSON.stringify(error));
-    console.dir(error);
+    console.log("xhr error:", error);
   };
 
   xhr.open("GET", url, true);
