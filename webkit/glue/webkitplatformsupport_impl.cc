@@ -370,24 +370,6 @@ const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
   return TRACE_EVENT_API_GET_CATEGORY_ENABLED(category_name);
 }
 
-int WebKitPlatformSupportImpl::addTraceEvent(
-    char phase,
-    const unsigned char* category_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    int threshold_begin_id,
-    long long threshold,
-    unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_enabled, name, id,
-                                  num_args, arg_names, arg_types,
-                                  arg_values, flags);
-  return -1;
-}
-
 void WebKitPlatformSupportImpl::addTraceEvent(
     char phase,
     const unsigned char* category_enabled,

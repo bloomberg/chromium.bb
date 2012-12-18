@@ -83,20 +83,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
     const char* name, int sample, int boundary_value);
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name);
-  // TODO(caseq): compatibility overload. Remove once WebKitPlatformSupport
-  // is updated.
-  virtual int addTraceEvent(
-      char phase,
-      const unsigned char* category_enabled,
-      const char* name,
-      unsigned long long id,
-      int num_args,
-      const char** arg_names,
-      const unsigned char* arg_types,
-      const unsigned long long* arg_values,
-      int threshold_begin_id,
-      long long threshold,
-      unsigned char flags);
   virtual void addTraceEvent(
       char phase,
       const unsigned char* category_enabled,
