@@ -19,6 +19,8 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/debugger/devtools_browser_target.h"
+#include "content/browser/debugger/devtools_tracing_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -597,15 +599,27 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     const net::HttpServerRequestInfo& request) {
   if (!thread_.get())
     return;
+  std::string browser_prefix = "/devtools/browser";
+  size_t browser_pos = request.path.find(browser_prefix);
+  if (browser_pos == 0) {
+    if (browser_target_) {
+      Send500(connection_id, "Another client already attached");
+      return;
+    }
+    browser_target_.reset(new DevToolsBrowserTarget(connection_id));
+    browser_target_->RegisterHandler(new DevToolsTracingHandler());
+    AcceptWebSocket(connection_id, request);
+    return;
+  }
 
-  std::string prefix = "/devtools/page/";
-  size_t pos = request.path.find(prefix);
+  std::string page_prefix = "/devtools/page/";
+  size_t pos = request.path.find(page_prefix);
   if (pos != 0) {
     Send404(connection_id);
     return;
   }
 
-  std::string page_id = request.path.substr(prefix.length());
+  std::string page_id = request.path.substr(page_prefix.length());
   RenderViewHost* rvh = binding_->ForIdentifier(page_id);
   if (!rvh) {
     Send500(connection_id, "No such target id: " + page_id);
@@ -635,6 +649,18 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
 void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
     int connection_id,
     const std::string& data) {
+  if (browser_target_ && connection_id == browser_target_->connection_id()) {
+    std::string json_response = browser_target_->HandleMessage(data);
+
+    thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&net::HttpServer::SendOverWebSocket,
+                   server_.get(),
+                   connection_id,
+                   json_response));
+    return;
+  }
+
   ConnectionToClientHostMap::iterator it =
       connection_to_client_host_ui_.find(connection_id);
   if (it == connection_to_client_host_ui_.end())
@@ -653,6 +679,10 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
     DevToolsManager::GetInstance()->ClientHostClosing(client_host);
     delete client_host;
     connection_to_client_host_ui_.erase(connection_id);
+  }
+  if (browser_target_ && browser_target_->connection_id() == connection_id) {
+    browser_target_.reset();
+    return;
   }
 }
 

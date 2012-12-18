@@ -32,6 +32,7 @@ class URLRequestContextGetter;
 
 namespace content {
 
+class DevToolsBrowserTarget;
 class DevToolsClientHost;
 class RenderViewHost;
 
@@ -79,7 +80,7 @@ class DevToolsHttpHandlerImpl
   void OnJsonRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
   void OnThumbnailRequestUI(int connection_id,
-                       const net::HttpServerRequestInfo& info);
+                            const net::HttpServerRequestInfo& info);
   void OnDiscoveryPageRequestUI(int connection_id);
 
   void OnWebSocketRequestUI(int connection_id,
@@ -133,6 +134,7 @@ class DevToolsHttpHandlerImpl
   RenderViewHostBinding* binding_;
   scoped_ptr<RenderViewHostBinding> default_binding_;
   NotificationRegistrar registrar_;
+  scoped_ptr<DevToolsBrowserTarget> browser_target_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 
