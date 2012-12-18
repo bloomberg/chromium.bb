@@ -6,41 +6,58 @@
 //                               Util functions
 // =============================================================================
 
-// The maximum number of suggestions to show.
+/**
+ * The maximum number of suggestions to show.
+ * @type {number}
+ * @const
+ */
 var MAX_SUGGESTIONS_TO_SHOW = 5;
+
+/**
+ * The omnibox input value during the last onnativesuggestions event.
+ * @type {string}
+ */
+var lastInputValue = '';
+
+/**
+ * The ordered restricted ids of the currently displayed suggestions.  Since the
+ * suggestions contain the user's personal data (browser history) the searchBox
+ * API embeds the content of the suggestion in a shadow dom, and assigns a
+ * random restricted id to each suggestion which is accessible to the JS.
+ * @type {Array.<number>}
+ */
+
+var restrictedIds = [];
+
+/**
+ * The index of the currently selected suggestion or -1 if none are selected.
+ * @type {number}
+ */
+var selectedIndex = -1;
 
 /**
  * Displays a suggestion.
  * @param {Object} suggestion The suggestion to render.
  * @param {HTMLElement} box The html element to add the suggestion to.
- * @param {integer} suggestionRank The rank of the suggestion (0 based).
+ * @param {boolean} select True to select the selection.
  */
-function addSuggestionToBox(suggestion, box, suggestionRank) {
+function addSuggestionToBox(suggestion, box, select) {
   var suggestionDiv = document.createElement('div');
   suggestionDiv.classList.add('suggestion');
-  if (suggestionRank == 0)
+  if (select)
     suggestionDiv.classList.add('selected');
-
-  var clock = document.createElement('div');
-  clock.className = 'clock';
-  suggestionDiv.appendChild(clock);
 
   var contentsContainer = document.createElement('div');
   contentsContainer.className = 'contents';
   var contents = suggestion.combinedNode;
-  var restrictedId = suggestion.rid;
   contentsContainer.appendChild(contents);
   suggestionDiv.appendChild(contentsContainer);
+  var restrictedId = suggestion.rid;
   suggestionDiv.onclick = function() {
     handleSuggestionClick(restrictedId);
-  }
+  };
 
-  // TODO(shishir): Support hover over suggestions.
-  var restrictedIdDiv = document.createElement('div');
-  restrictedIdDiv.innerHTML = restrictedId;
-  restrictedIdDiv.className = 'restricted-id';
-  suggestionDiv.appendChild(restrictedIdDiv);
-
+  restrictedIds.push(restrictedId);
   box.appendChild(suggestionDiv);
 }
 
@@ -49,12 +66,14 @@ function addSuggestionToBox(suggestion, box, suggestionRank) {
  * @param {Array} nativeSuggestions An array of native suggestions to render.
  */
 function renderSuggestions(nativeSuggestions) {
-  clearSuggestions();
+  var box = document.createElement('div');
+  box.id = 'suggestionsBox';
+  $('suggestions-box-container').appendChild(box);
 
-  var box = $('suggestionsBox');
-  for (var i = 0; i < MAX_SUGGESTIONS_TO_SHOW && i < nativeSuggestions.length;
-       ++i) {
-    addSuggestionToBox(nativeSuggestions[i], box, i);
+  for (var i = 0, length = nativeSuggestions.length;
+       i < Math.min(MAX_SUGGESTIONS_TO_SHOW, length); ++i) {
+    // Select the first suggestion.
+    addSuggestionToBox(nativeSuggestions[i], box, i == 0);
   }
 }
 
@@ -62,62 +81,47 @@ function renderSuggestions(nativeSuggestions) {
  * Clears the suggestions being displayed.
  */
 function clearSuggestions() {
-  $('suggestionsBox').innerHTML = '';
+  $('suggestions-box-container').innerHTML = '';
+  restrictedIds = [];
+  selectedIndex = -1;
 }
 
 /**
  * @return {integer} The height of the dropdown.
  */
 function getDropdownHeight() {
-  return $('suggestionsBox').offsetHeight;
+  return $('suggestions-box-container').offsetHeight;
 }
 
 /**
- * @return {integer} the index of the suggestion currently selected.
+ * Updates selectedIndex, bounding it between -1 and the total number of
+ * of suggestions - 1 (looping as necessary), and selects the corresponding
+ * suggestion.
+ * @param {boolean} increment True to increment the selected suggestion, false
+ *     to decrement.
  */
-function getSelectedSuggestionIndex() {
-  var suggestions = $('suggestionsBox').childNodes;
-  for (var i = 0; i < suggestions.length; ++i) {
-    if (suggestions[i].classList.contains('selected'))
-      return i;
-  }
-  return -1;
-}
+function updateSelectedSuggestion(increment) {
+  var numSuggestions = restrictedIds.length;
+  if (!numSuggestions)
+    return;
 
-/**
- * Changes the selected suggestion.
- * @param {integer} index The index of the suggestion to select.
- * @param {function} restrictedIdCallback Callback to call on old selection.
- */
-function selectSuggestionAtIndex(index, restrictedIdCallback) {
   var oldSelection = $('suggestionsBox').querySelector('.selected');
-  oldSelection.classList.remove('selected');
+  if (oldSelection)
+    oldSelection.classList.remove('selected');
 
-  var numSuggestions = $('suggestionsBox').childNodes.length;
-  var sanitizedIndex = Math.min(Math.max(0, index), numSuggestions - 1);
-  var selection = sanitizedIndex + 1;
-  var newSelection = $('suggestionsBox').querySelector(
-      '.suggestion:nth-of-type(' + selection + ')');
-  newSelection.classList.add('selected');
-  var restrictedId = getRestrictedId(newSelection);
-  restrictedIdCallback(restrictedId);
-}
-
-/**
- * Returns the restricted id for the input suggestion. Since the suggestions
- * contain the user's personal data (browser history) the searchBox API embedds
- * the content of the suggestion in a shadow dom, and assigns a random id to
- * each suggestion called restricted id which is accessible to the js.
- *
- * @param {HTMLElement} suggestion The node representing the suggestion.
- * @return {integer} The restricted id of the suggestion.
- */
-function getRestrictedId(suggestion) {
-  for (var i = 0; i < suggestion.childNodes.length; ++i) {
-    if (suggestion.childNodes[i].classList.contains('restricted-id'))
-      return parseInt(suggestion.childNodes[i].innerHTML);
+  if (increment)
+    selectedIndex = ++selectedIndex > numSuggestions - 1 ? -1 : selectedIndex;
+  else
+    selectedIndex = --selectedIndex < -1 ? numSuggestions - 1 : selectedIndex;
+  var apiHandle = getApiObjectHandle();
+  if (selectedIndex == -1) {
+    apiHandle.setValue(lastInputValue);
+  } else {
+    var newSelection = $('suggestionsBox').querySelector(
+        '.suggestion:nth-of-type(' + (selectedIndex + 1) + ')');
+    newSelection.classList.add('selected');
+    apiHandle.setRestrictedValue(restrictedIds[selectedIndex]);
   }
-  return -1;
 }
 
 // =============================================================================
@@ -141,25 +145,54 @@ function getRestrictedId(suggestion) {
  * chrome.searchBox.onnativesuggestions implementation.
  */
 function handleNativeSuggestions() {
+  // This can't be done in setUpApi(), because apiHandle.font/fontSize
+  // isn't available yet.
+  var suggestionStyleNode = $('suggestionStyle');
+  if (!suggestionStyleNode)
+    appendSuggestionStyles();
+
   var apiHandle = getApiObjectHandle();
 
+  // Used to workaround repeated undesired asynchronous onnativesuggestions
+  // events and the fact that when a suggestion is clicked, the omnibox unfocus
+  // can cause onnativesuggestions to fire, preventing the suggestion onclick
+  // from registering.
+  if (lastInputValue == apiHandle.value && $('suggestionsBox')) {
+    return;
+  }
+  lastInputValue = apiHandle.value;
+
+  clearSuggestions();
   var nativeSuggestions = apiHandle.nativeSuggestions;
-  if (nativeSuggestions) {
+  if (nativeSuggestions.length) {
     nativeSuggestions.sort(function(a, b) {
       return b.rankingData.relevance - a.rankingData.relevance;
     });
     renderSuggestions(nativeSuggestions);
-  } else {
-    clearSuggestions();
+    selectedIndex = 0;
+    apiHandle.setRestrictedAutocompleteText(
+        nativeSuggestions[selectedIndex].rid);
   }
 
   var height = getDropdownHeight();
   apiHandle.show(2, height);
+}
 
-  if (nativeSuggestions && nativeSuggestions.length > 0) {
-    apiHandle.setRestrictedAutocompleteText(
-        nativeSuggestions[getSelectedSuggestionIndex()].rid);
-  }
+/**
+ * Appends a style node for suggestion properties that depend on apiHandle.
+ */
+function appendSuggestionStyles() {
+  var apiHandle = getApiObjectHandle();
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.id = 'suggestionStyle';
+  style.textContent =
+      '.suggestion {' +
+      '  -webkit-margin-start: ' + apiHandle.startMargin + 'px;' +
+      '  -webkit-margin-end: ' + apiHandle.endMargin + 'px;' +
+      '  font: ' + apiHandle.fontSize + 'px "' + apiHandle.font + '";' +
+      '}';
+  document.querySelector('head').appendChild(style);
 }
 
 /**
@@ -168,9 +201,8 @@ function handleNativeSuggestions() {
  *     clicked.
  */
 function handleSuggestionClick(restrictedId) {
-  var apiHandle = getApiObjectHandle();
   clearSuggestions();
-  apiHandle.navigateContentWindow(restrictedId);
+  getApiObjectHandle().navigateContentWindow(restrictedId);
 }
 
 /**
@@ -178,17 +210,12 @@ function handleSuggestionClick(restrictedId) {
  * @param {Object} e The key being pressed.
  */
 function handleKeyPress(e) {
-  var apiHandle = getApiObjectHandle();
-  function callback(restrictedId) {
-    apiHandle.setRestrictedValue(restrictedId);
-  }
-
   switch (e.keyCode) {
     case 38:  // Up arrow
-      selectSuggestionAtIndex(getSelectedSuggestionIndex() - 1, callback);
+      updateSelectedSuggestion(false);
       break;
     case 40:  // Down arrow
-      selectSuggestionAtIndex(getSelectedSuggestionIndex() + 1, callback);
+      updateSelectedSuggestion(true);
       break;
   }
 }

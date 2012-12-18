@@ -3,39 +3,50 @@
  * found in the LICENSE file. */
 
 body {
-  background-color: #EFEFEF;
+  background-color: white;
   cursor: default;
   margin: 0;
   overflow: hidden;
 }
 
-.restricted-id {
-  display: none
-}
-
-.suggestion {
-  -webkit-margin-start: 91px;
-  font: 16px arial;
-  line-height: 20px;
+#suggestionsBox {
+  border-bottom: 1px #d9d9d9 solid;
   padding-bottom: 6px;
   padding-top: 6px;
 }
 
+.suggestion {
+  -webkit-border-radius: 2px;
+  background: -webkit-image-set(
+      url('images/page_icon.png') 1x,
+      url('images/2x/page_icon.png') 2x)
+    5px 4px no-repeat;
+  padding-bottom: 2px;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+
+.suggestion:hover {
+  background-color: rgba(181, 213, 255, 0.2);
+}
+
+.selected,
+.selected:hover {
+  background-color: rgba(181, 213, 255, 0.5);
+}
+
 .contents {
-  -webkit-padding-start: 29px
+  -webkit-padding-start: 26px;
+  -webkit-user-select: none;
+  line-height: 22px;
+  overflow: hidden;
 }
 
-.selected {
-  background-color: rgb(217, 228, 247);
+/* Styling for native suggestions, hidden by the shadow DOM. */
+.chrome_url {
+  color: rgb(0, 153, 51);
 }
 
-.clock {
-  -webkit-margin-start: 5px;
-  background-image: -webkit-image-set(
-      url('images/history_icon.png') 1x,
-      url('images/2x/history_icon.png') 2x);
-  height: 19px;
-  margin-bottom: 2px;
-  position: absolute;
-  width: 19px;
+.chrome_title {
+  color: #666
 }
