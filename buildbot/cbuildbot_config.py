@@ -1101,7 +1101,7 @@ _arm_release.add_config('daisy-release',
   boards=['daisy'],
   useflags=official['useflags'],
   hw_tests=['bvt'],
-  hw_tests_num=1,
+  hw_tests_num=4,
   critical_for_chrome=True,
 )
 
