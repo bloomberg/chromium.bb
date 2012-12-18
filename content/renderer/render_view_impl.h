@@ -103,6 +103,7 @@ class WebApplicationCacheHostClient;
 class WebCompositorOutputSurface;
 class WebDOMMessageEvent;
 class WebDataSource;
+class WebDateTimeChooserCompletion;
 class WebDragData;
 class WebGeolocationClient;
 class WebGestureEvent;
@@ -124,6 +125,7 @@ class WebTouchEvent;
 class WebURLRequest;
 class WebUserMediaClient;
 struct WebActiveWheelFlingParameters;
+struct WebDateTimeChooserParams;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebMediaPlayerAction;
@@ -156,6 +158,7 @@ class NotificationProvider;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
+class RendererDateTimePicker;
 class RendererPpapiHost;
 class RendererWebColorChooserImpl;
 class RenderWidgetFullscreenPepper;
@@ -505,6 +508,11 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void cancelScheduledContentIntents();
   virtual WebKit::WebContentDetectionResult detectContentAround(
       const WebKit::WebHitTestResult& touch_hit);
+
+  // Only used on Android since all other platforms implement
+  // date and time input fields using MULTIPLE_FIELDS_UI
+  virtual bool openDateTimeChooser(const WebKit::WebDateTimeChooserParams&,
+                                   WebKit::WebDateTimeChooserCompletion*);
 #endif
 
   // WebKit::WebFrameClient implementation -------------------------------------
@@ -825,7 +833,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnHandleKeyboardEvent);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnImeStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnReplaceAll);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
@@ -968,7 +975,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
   void OnReplace(const string16& text);
-  void OnReplaceAll(const string16& text);
   void OnResetPageEncodingToDefault();
   void OnScriptEvalRequest(const string16& frame_xpath,
                            const string16& jscript,
@@ -1456,6 +1462,9 @@ class CONTENT_EXPORT RenderViewImpl
   // The active find-in-page match ordinal during synchronous requests.
   // Needed to be remembered across WebKit callbacks.
   int synchronous_find_active_match_ordinal_;
+
+  // A date/time picker object for date and time related input elements.
+  scoped_ptr<RendererDateTimePicker> date_time_picker_client_;
 #endif
 
   // Misc ----------------------------------------------------------------------

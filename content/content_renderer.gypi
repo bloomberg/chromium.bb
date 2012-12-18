@@ -253,6 +253,8 @@
     'renderer/renderer_accessibility_focus_only.h',
     'renderer/renderer_clipboard_client.cc',
     'renderer/renderer_clipboard_client.h',
+    'renderer/renderer_date_time_picker.cc',
+    'renderer/renderer_date_time_picker.h',
     'renderer/renderer_main.cc',
     'renderer/renderer_main_platform_delegate.h',
     'renderer/renderer_main_platform_delegate_android.cc',

@@ -1831,20 +1831,6 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(0, info.selectionEnd);
 }
 
-TEST_F(RenderViewImplTest, OnReplaceAll) {
-  // Load an HTML page consisting of an input field.
-  LoadHTML("<html>"
-           "<head>"
-           "</head>"
-           "<body>"
-           "<input id=\"test1\" value=\"some test text hello\"></input>"
-           "</body>"
-           "</html>");
-  ExecuteJavaScript("document.getElementById('test1').focus();");
-  view()->OnReplaceAll(UTF8ToUTF16("replacement words"));
-  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
-  EXPECT_EQ("replacement words", info.value);
-}
 
 TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   // Load an HTML page consisting of an input field.

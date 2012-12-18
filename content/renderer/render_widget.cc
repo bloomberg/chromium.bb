@@ -1718,11 +1718,24 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
+static bool IsDateTimeInput(ui::TextInputType type) {
+  return type == ui::TEXT_INPUT_TYPE_DATE ||
+      type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
+      type == ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL ||
+      type == ui::TEXT_INPUT_TYPE_MONTH ||
+      type == ui::TEXT_INPUT_TYPE_TIME ||
+      type == ui::TEXT_INPUT_TYPE_WEEK;
+}
+
+
 void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
   bool show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
   if (!show_ime_if_needed && !input_method_is_active_)
     return;
   ui::TextInputType new_type = GetTextInputType();
+  if (IsDateTimeInput(new_type))
+    return;  // Not considered as a text input field in WebKit/Chromium.
+
   WebKit::WebTextInputInfo new_info;
   if (webwidget_)
     new_info = webwidget_->textInputInfo();

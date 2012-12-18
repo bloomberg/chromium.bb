@@ -102,6 +102,7 @@
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_accessibility_complete.h"
 #include "content/renderer/renderer_accessibility_focus_only.h"
+#include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
@@ -127,6 +128,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserCompletion.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
@@ -937,7 +940,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReplaceAll, OnReplaceAll)
     IPC_MESSAGE_HANDLER(ViewMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
@@ -1365,15 +1367,6 @@ void RenderViewImpl::OnSelectAll() {
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
-}
-
-void RenderViewImpl::OnReplaceAll(const string16& text) {
-  WebNode node = GetFocusedNode();
-  if (node.isNull() || !IsEditableNode(node))
-    return;
-
-  OnSelectAll();
-  OnReplace(text);
 }
 
 void RenderViewImpl::OnUnselect() {
@@ -4622,7 +4615,6 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   string16 text;
   size_t offset;
   ui::Range range;
-
   if (pepper_helper_->IsPluginFocused()) {
     pepper_helper_->GetSurroundingText(&text, &range);
     offset = 0;  // Pepper API does not support offset reporting.
@@ -6338,6 +6330,15 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
   if (!intent.is_empty())
     Send(new ViewHostMsg_StartContentIntent(routing_id_, intent));
 }
+
+bool RenderViewImpl::openDateTimeChooser(
+    const WebKit::WebDateTimeChooserParams& params,
+    WebKit::WebDateTimeChooserCompletion* completion) {
+  date_time_picker_client_.reset(
+      new RendererDateTimePicker(this, params, completion));
+  return date_time_picker_client_->Open();
+}
+
 #endif  // defined(OS_ANDROID)
 
 void RenderViewImpl::OnAsyncFileOpened(

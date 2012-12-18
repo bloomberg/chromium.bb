@@ -63,6 +63,8 @@ bool RegisterImeAdapter(JNIEnv* env) {
                                            WebKit::WebInputEvent::ControlKey,
                                            WebKit::WebInputEvent::CapsLockOn,
                                            WebKit::WebInputEvent::NumLockOn);
+  // TODO(miguelg): remove date time related enums after
+  // https://bugs.webkit.org/show_bug.cgi?id=100935.
   Java_ImeAdapter_initializeTextInputTypes(
       env,
       ui::TEXT_INPUT_TYPE_NONE,
@@ -170,23 +172,24 @@ void ImeAdapterAndroid::CancelComposition() {
   Java_ImeAdapter_cancelComposition(AttachCurrentThread(), java_ime_adapter_);
 }
 
-void ImeAdapterAndroid::ReplaceText(JNIEnv* env, jobject, jstring text) {
+void ImeAdapterAndroid::ReplaceDateTime(JNIEnv* env, jobject, jstring text) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
       rwhva_->GetRenderWidgetHost());
   if (!rwhi)
     return;
 
   string16 text16 = ConvertJavaStringToUTF16(env, text);
-  rwhi->Send(new ViewMsg_ReplaceAll(rwhi->GetRoutingID(), text16));
+  rwhi->Send(new ViewMsg_ReplaceDateTime(rwhi->GetRoutingID(), text16));
 }
 
-void ImeAdapterAndroid::ClearFocus(JNIEnv* env, jobject) {
+
+void ImeAdapterAndroid::CancelDialog(JNIEnv* env, jobject) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
       rwhva_->GetRenderWidgetHost());
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_ClearFocusedNode(rwhi->GetRoutingID()));
+  rwhi->Send(new ViewMsg_CancelDateTimeDialog(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,

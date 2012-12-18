@@ -160,14 +160,16 @@ class ImeAdapter {
         mHandler = new Handler();
         mInputDialogContainer = new InputDialogContainer(context,
                 new InputDialogContainer.InputActionDelegate() {
+
                     @Override
-                    public void clearFocus() {
-                        nativeClearFocus(mNativeImeAdapterAndroid);
-                    }
-                    @Override
-                    public void replaceText(String text) {
-                        nativeReplaceText(mNativeImeAdapterAndroid, text);
+                    public void replaceDateTime(String text) {
                         mViewEmbedder.onSetFieldValue();
+                        nativeReplaceDateTime(mNativeImeAdapterAndroid, text);
+                    }
+
+                    @Override
+                    public void cancelDateTimeDialog() {
+                        nativeCancelDialog(mNativeImeAdapterAndroid);
                     }
                 });
     }
@@ -494,6 +496,7 @@ class ImeAdapter {
     static public class AdapterInputConnection extends BaseInputConnection {
         private View mInternalView;
         private ImeAdapter mImeAdapter;
+        private Editable mEditable;
         private boolean mSingleLine;
         private int numBatchEdits;
         private boolean shouldUpdateImeSelection;
@@ -522,13 +525,16 @@ class ImeAdapter {
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
 
-            Editable editable = getEditable();
-            int prevSelectionStart = Selection.getSelectionStart(editable);
-            int prevSelectionEnd = Selection.getSelectionEnd(editable);
-            int prevEditableLength = editable.length();
-            int prevCompositionStart = getComposingSpanStart(editable);
-            int prevCompositionEnd = getComposingSpanEnd(editable);
-            String prevText = editable.toString();
+            if (mEditable == null) {
+                mEditable = Editable.Factory.getInstance().newEditable("");
+            }
+
+            int prevSelectionStart = Selection.getSelectionStart(mEditable);
+            int prevSelectionEnd = Selection.getSelectionEnd(mEditable);
+            int prevEditableLength = mEditable.length();
+            int prevCompositionStart = getComposingSpanStart(mEditable);
+            int prevCompositionEnd = getComposingSpanEnd(mEditable);
+            String prevText = mEditable.toString();
 
             selectionStart = Math.min(selectionStart, text.length());
             selectionEnd = Math.min(selectionEnd, text.length());
@@ -553,9 +559,9 @@ class ImeAdapter {
             }
 
             if (!textUnchanged) {
-                editable.replace(0, editable.length(), text);
+                mEditable.replace(0, mEditable.length(), text);
             }
-            Selection.setSelection(editable, selectionStart, selectionEnd);
+            Selection.setSelection(mEditable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
 
             if (textUnchanged || prevText.equals("")) {
@@ -565,6 +571,15 @@ class ImeAdapter {
                 getInputMethodManager().updateSelection(mInternalView,
                         selectionStart, selectionEnd, compositionStart, compositionEnd);
             }
+        }
+
+        @Override
+        public Editable getEditable() {
+            if (mEditable == null) {
+                mEditable = Editable.Factory.getInstance().newEditable("");
+                Selection.setSelection(mEditable, 0);
+            }
+            return mEditable;
         }
 
         @Override
@@ -621,14 +636,13 @@ class ImeAdapter {
         @Override
         public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
             ExtractedText et = new ExtractedText();
-            Editable editable = getEditable();
-            if (editable == null) {
+            if (mEditable == null) {
                 et.text = "";
             } else {
-                et.text = editable.toString();
-                et.partialEndOffset = editable.length();
-                et.selectionStart = Selection.getSelectionStart(editable);
-                et.selectionEnd = Selection.getSelectionEnd(editable);
+                et.text = mEditable.toString();
+                et.partialEndOffset = mEditable.length();
+                et.selectionStart = Selection.getSelectionStart(mEditable);
+                et.selectionEnd = Selection.getSelectionEnd(mEditable);
             }
             et.flags = mSingleLine ? ExtractedText.FLAG_SINGLE_LINE : 0;
             return et;
@@ -678,9 +692,8 @@ class ImeAdapter {
 
         @Override
         public boolean finishComposingText() {
-            Editable editable = getEditable();
-            if (editable == null
-                    || (getComposingSpanStart(editable) == getComposingSpanEnd(editable))) {
+            if (mEditable == null
+                    || (getComposingSpanStart(mEditable) == getComposingSpanEnd(mEditable))) {
                 return true;
             }
             super.finishComposingText();
@@ -722,13 +735,12 @@ class ImeAdapter {
         }
 
         private void updateImeSelection() {
-            Editable editable = getEditable();
-            if (editable != null) {
+            if (mEditable != null) {
                 getInputMethodManager().updateSelection(mInternalView,
-                        Selection.getSelectionStart(editable),
-                        Selection.getSelectionEnd(editable),
-                        getComposingSpanStart(editable),
-                        getComposingSpanEnd(editable));
+                        Selection.getSelectionStart(mEditable),
+                        Selection.getSelectionEnd(mEditable),
+                        getComposingSpanStart(mEditable),
+                        getComposingSpanEnd(mEditable));
             }
         }
 
@@ -814,9 +826,9 @@ class ImeAdapter {
 
     private native void nativeAttachImeAdapter(int nativeImeAdapterAndroid);
 
-    private native void nativeReplaceText(int nativeImeAdapterAndroid, String text);
+    private native void nativeReplaceDateTime(int nativeImeAdapterAndroid, String text);
 
-    private native void nativeClearFocus(int nativeImeAdapterAndroid);
+    private native void nativeCancelDialog(int nativeImeAdapterAndroid);
 
     private native void nativeSetEditableSelectionOffsets(int nativeImeAdapterAndroid,
             int start, int end);

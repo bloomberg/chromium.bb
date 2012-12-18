@@ -29,8 +29,8 @@ import java.util.Date;
 class InputDialogContainer {
 
     interface InputActionDelegate {
-        void clearFocus();
-        void replaceText(String text);
+        void cancelDateTimeDialog();
+        void replaceDateTime(String dateTime);
     }
 
     // Default values used in Time representations of selected date/time before formatting.
@@ -122,6 +122,7 @@ class InputDialogContainer {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogAlreadyDismissed = true;
+                        mInputActionDelegate.cancelDateTimeDialog();
                     }
                 });
 
@@ -131,16 +132,10 @@ class InputDialogContainer {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogAlreadyDismissed = true;
-                        mInputActionDelegate.replaceText("");
+                        mInputActionDelegate.replaceDateTime("");
                     }
                 });
 
-        mDialog.setOnDismissListener(new OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        mInputActionDelegate.clearFocus();
-                    }
-                });
         mDialogAlreadyDismissed = false;
         mDialog.show();
     }
@@ -250,8 +245,8 @@ class InputDialogContainer {
 
     private void setFieldDateTimeValue(int year, int month, int monthDay, int hourOfDay,
             int minute, String dateFormat) {
-        // Just in case more than one signal is triggered by the dialog so that
-        // no more than one callback is sent to the native side.
+        // Prevents more than one callback being sent to the native
+        // side when the dialog triggers multiple events.
         mDialogAlreadyDismissed = true;
 
         Time time = new Time();
@@ -260,6 +255,6 @@ class InputDialogContainer {
         time.monthDay = monthDay;
         time.hour = hourOfDay;
         time.minute = minute;
-        mInputActionDelegate.replaceText(time.format(dateFormat));
+        mInputActionDelegate.replaceDateTime(time.format(dateFormat));
     }
 }

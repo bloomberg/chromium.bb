@@ -1018,9 +1018,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Replace,
 IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 
-// Replaces all text in the current input field with the specified string.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceAll,
-                    string16 /* text */)
+// Replaces a date time input field.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime, string16 /* text */)
+
 IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
 
 // Requests the renderer to select the region between two points.
@@ -2098,6 +2098,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
 
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
+
+// Tells the renderer to cancel an opened date/time dialog.
+IPC_MESSAGE_ROUTED0(ViewMsg_CancelDateTimeDialog)
 
 // WebKit and JavaScript error messages to log to the console
 // or debugger UI.

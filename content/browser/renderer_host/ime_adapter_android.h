@@ -38,8 +38,6 @@ class ImeAdapterAndroid {
   void SetComposingText(JNIEnv*, jobject, jstring text, int new_cursor_pos);
   void CommitText(JNIEnv*, jobject, jstring text);
   void AttachImeAdapter(JNIEnv*, jobject java_object);
-  void ReplaceText(JNIEnv*, jobject, jstring text);
-  void ClearFocus(JNIEnv*, jobject);
   void SetEditableSelectionOffsets(JNIEnv*, jobject, int start, int end);
   void SetComposingRegion(JNIEnv*, jobject, int start, int end);
   void DeleteSurroundingText(JNIEnv*, jobject, int before, int after);
@@ -51,6 +49,10 @@ class ImeAdapterAndroid {
 
   // Called from native -> java
   void CancelComposition();
+
+  // Native methods related to dialog like types
+  void CancelDialog(JNIEnv*, jobject);
+  void ReplaceDateTime(JNIEnv*, jobject, jstring text);
 
  private:
   RenderWidgetHostViewAndroid* rwhva_;

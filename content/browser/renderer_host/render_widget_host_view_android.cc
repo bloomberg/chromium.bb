@@ -276,6 +276,8 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
   if (!IsShowing())
     return;
 
+  // TODO(miguelg): this currently dispatches messages for text inputs
+  // and date/time value inputs. Split it into two adapters.
   content_view_core_->ImeUpdateAdapter(
       GetNativeImeAdapter(),
       static_cast<int>(params.type),
