@@ -6,6 +6,8 @@ var w, h;
 var gl;
 var extension;
 
+var alreadySetAutomationId = false;
+
 function testHorizontalBands() {
   gl.enable(gl.SCISSOR_TEST);
 
@@ -48,7 +50,8 @@ function testContextRestored() {
   var a = new Uint8Array(w * h * 4);
   gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, a);
 
-  window.domAutomationController.setAutomationId(1);
+  if (!alreadySetAutomationId)
+    window.domAutomationController.setAutomationId(1);
   if (a[0] == 0 && a[1] == 0 && a[2] == 255)
     window.domAutomationController.send("SUCCESS");
   else
@@ -67,6 +70,13 @@ function contextLostTest(kind)
     case "kill":
       // nothing -- the browser test navigates to about:gpucrash and kills
       // the GPU process.
+      break;
+    case "kill_after_notification":
+      // The browser test waits for notification from the page that it
+      // has been loaded before navigating to about:gpucrash.
+      window.domAutomationController.setAutomationId(1);
+      alreadySetAutomationId = true;
+      window.domAutomationController.send("LOADED");
       break;
   }
 }

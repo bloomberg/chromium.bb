@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -113,6 +114,56 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossRaisesInfobar) {
             InfoBarTabHelper::FromWebContents(
                 chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
 }
+
+IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossInfobarReload) {
+  // crbug.com/162982, flaky on Mac Retina Release.
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
+    return;
+
+  content::DOMMessageQueue message_queue;
+
+  // Load page and wait for it to load.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      content::GetFileUrlWithQuery(
+          gpu_test_dir_.AppendASCII("webgl.html"),
+          "query=kill_after_notification"));
+  observer.Wait();
+
+  std::string m;
+  ASSERT_TRUE(message_queue.WaitForMessage(&m));
+  EXPECT_EQ("\"LOADED\"", m);
+
+  message_queue.ClearQueue();
+
+  content::WindowedNotificationObserver infobar_added(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+        content::NotificationService::AllSources());
+  SimulateGPUCrash(browser());
+  infobar_added.Wait();
+  ASSERT_EQ(1u,
+            InfoBarTabHelper::FromWebContents(
+                chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
+  InfoBarDelegate* delegate =
+      InfoBarTabHelper::FromWebContents(
+          chrome::GetActiveWebContents(browser()))->GetInfoBarDelegateAt(0);
+  ASSERT_TRUE(delegate);
+  ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());
+  delegate->AsConfirmInfoBarDelegate()->Cancel();
+
+  // The page should reload and another message sent to the
+  // DomAutomationController.
+  m = "";
+  ASSERT_TRUE(message_queue.WaitForMessage(&m));
+  EXPECT_EQ("\"LOADED\"", m);
+}
+
+// There isn't any point in adding a test which calls Accept() on the
+// ThreeDAPIInfoBarDelegate; doing so doesn't remove the infobar, and
+// there's no concrete event that could be observed in response.
 
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
   content::DOMMessageQueue message_queue;
