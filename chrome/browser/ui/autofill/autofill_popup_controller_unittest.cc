@@ -59,7 +59,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
-  MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
 
  private:
@@ -70,21 +69,24 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 
 class AutofillPopupControllerUnitTest : public ::testing::Test {
  public:
-  AutofillPopupControllerUnitTest() {
-    autofill_popup_controller_.reset(
-        new testing::NiceMock<TestAutofillPopupController>(
-            &external_delegate_));
+  AutofillPopupControllerUnitTest()
+    : autofill_popup_controller_(
+          new testing::NiceMock<TestAutofillPopupController>(
+              &external_delegate_)) {}
+  virtual ~AutofillPopupControllerUnitTest() {
+    // This will make sure the controller and the view (if any) are both
+    // cleaned up.
+    if (autofill_popup_controller_)
+      autofill_popup_controller_->Hide();
   }
-  virtual ~AutofillPopupControllerUnitTest() {}
 
   AutofillPopupController* popup_controller() {
-    return autofill_popup_controller_.get();
+    return autofill_popup_controller_;
   }
 
-protected:
+ protected:
   testing::NiceMock<MockAutofillExternalDelegate> external_delegate_;
-  scoped_ptr<testing::NiceMock<TestAutofillPopupController> >
-      autofill_popup_controller_;
+  testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
 
 TEST_F(AutofillPopupControllerUnitTest, SetBounds) {
@@ -183,7 +185,8 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
   autofill_popup_controller_->SetSelectedLine(0);
   // The controller self-deletes here, don't double delete.
-  EXPECT_TRUE(autofill_popup_controller_.release()->RemoveSelectedLine());
+  EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
+  autofill_popup_controller_ = NULL;
 }
 
 TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {

@@ -6408,13 +6408,6 @@
    fun:_ZN3ash8internal13DragImageView7OnPaintEPN3gfx6CanvasE
 }
 {
-   bug_166161
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17AutofillPopupView6CreateEP23AutofillPopupController
-   fun:_ZN27AutofillPopupControllerImpl4ShowERKSt6vectorISbItN4base20string16_char_traitsESaItEESaIS4_EES8_S8_RKS0_IiSaIiEE
-}
-{
    bug_166470
    Memcheck:Leak
    fun:_Znw*
