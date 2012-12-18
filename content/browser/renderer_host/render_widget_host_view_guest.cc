@@ -59,7 +59,7 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle();
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
 }
 
 void RenderWidgetHostViewGuest::Show() {
@@ -95,10 +95,42 @@ void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_BuffersSwapped(
+          guest_->embedder_routing_id(),
+          guest_->instance_id(),
+          params.size,
+          params.surface_handle,
+          params.route_id,
+          gpu_host_id));
+}
+
+void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    int gpu_host_id) {
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_BuffersSwapped(
+          guest_->embedder_routing_id(),
+          guest_->instance_id(),
+          params.surface_size,
+          params.surface_handle,
+          params.route_id,
+          gpu_host_id));
 }
 
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
+}
+
+void RenderWidgetHostViewGuest::AcceleratedSurfaceNew(
+    uint64 surface_handle,
+    const std::string& mailbox_name) {
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_AcceleratedSurfaceNew(
+          guest_->embedder_routing_id(),
+          guest_->instance_id(),
+          surface_handle,
+          mailbox_name));
 }
 
 void RenderWidgetHostViewGuest::InitAsChild(
@@ -198,18 +230,6 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Size& /* dst_size */,
     const base::Callback<void(bool)>& callback,
     skia::PlatformBitmap* output) {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceNew(
-    uint64 surface_handle,
-    const std::string& mailbox_name) {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
-    int gpu_host_id) {
   NOTIMPLEMENTED();
 }
 

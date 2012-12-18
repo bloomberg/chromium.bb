@@ -243,15 +243,18 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 #endif
                                const gfx::Size& damage_view_size,
                                float scale_factor);
-  // Overridden in tests.
-  virtual void SetCompositingBufferData(int gpu_process_id,
-                                        uint32 client_id,
-                                        uint32 context_id,
-                                        uint32 texture_id_0,
-                                        uint32 texture_id_1,
-                                        uint32 sync_point);
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
+
+  // Helper to send messages to embedder. Overridden in test implementation
+  // since we want to intercept certain messages for testing.
+  virtual void SendMessageToEmbedder(IPC::Message* msg);
+
+  // Returns the embedder's routing ID.
+  int embedder_routing_id() const;
+  // Returns the identifier that uniquely identifies a browser plugin guest
+  // within an embedder.
+  int instance_id() const { return instance_id_; }
 
  private:
   friend class TestBrowserPluginGuest;
@@ -260,9 +263,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                      WebContentsImpl* web_contents,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
-  // Returns the identifier that uniquely identifies a browser plugin guest
-  // within an embedder.
-  int instance_id() const { return instance_id_; }
   TransportDIB* damage_buffer() const { return damage_buffer_.get(); }
   const gfx::Size& damage_view_size() const { return damage_view_size_; }
   float damage_buffer_scale_factor() const {
@@ -272,13 +272,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   TransportDIB* GetDamageBufferFromEmbedder(
       RenderViewHost* embedder_rvh,
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
-  // Returns the embedder's routing ID.
-  int embedder_routing_id() const;
-
-  // Helper to send messages to embedder. Overridden in test implementation
-  // since we want to intercept certain messages for testing.
-  virtual void SendMessageToEmbedder(IPC::Message* msg);
 
   // Called when a redirect notification occurs.
   void LoadRedirect(const GURL& old_url,
@@ -311,9 +304,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
-
-  // Hardware Accelerated Surface Params
-  gfx::GLSurfaceHandle surface_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

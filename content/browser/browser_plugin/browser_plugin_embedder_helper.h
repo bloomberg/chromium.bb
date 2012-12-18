@@ -71,7 +71,10 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
       int message_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-  void OnSwapBuffersACK(int route_id, int gpu_host_id, uint32 sync_point);
+  void OnSwapBuffersACK(int route_id,
+                        int gpu_host_id,
+                        uint64 surface_handle,
+                        uint32 sync_point);
   void OnHandleInputEvent(int instance_id,
                           const gfx::Rect& guest_window_rect,
                           const WebKit::WebInputEvent* input_event);

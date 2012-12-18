@@ -349,26 +349,6 @@ int BrowserPluginGuest::embedder_routing_id() const {
   return embedder_web_contents_->GetRoutingID();
 }
 
-void BrowserPluginGuest::SetCompositingBufferData(int gpu_process_id,
-                                                  uint32 client_id,
-                                                  uint32 context_id,
-                                                  uint32 texture_id_0,
-                                                  uint32 texture_id_1,
-                                                  uint32 sync_point) {
-  // This is the signal for having no context
-  if (texture_id_0 == 0) {
-    DCHECK(texture_id_1 == 0);
-    return;
-  }
-
-  DCHECK(texture_id_1 != 0);
-  DCHECK(texture_id_0 != texture_id_1);
-
-  surface_handle_ = gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
-  surface_handle_.parent_gpu_process_id = gpu_process_id;
-  surface_handle_.parent_client_id = client_id;
-}
-
 bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
   return size.width() <= max_auto_size_.width() &&
       size.height() <= max_auto_size_.height();
@@ -377,11 +357,26 @@ bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
 void BrowserPluginGuest::UpdateRect(
     RenderViewHost* render_view_host,
     const ViewHostMsg_UpdateRect_Params& params) {
-  // This handler is only of interest to us for the 2D software rendering path.
-  // needs_ack should always be true for the 2D path.
-  // TODO(fsamuel): Do we need to do something different in the 3D case?
-  if (!params.needs_ack)
-    return;
+  BrowserPluginMsg_UpdateRect_Params relay_params;
+  relay_params.view_size = params.view_size;
+  relay_params.scale_factor = params.scale_factor;
+  relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
+      params.flags);
+
+  // HW accelerated case, acknowledge resize only
+  if (!params.needs_ack) {
+#if defined(OS_MACOSX)
+    relay_params.damage_buffer_identifier = 0;
+#else
+    relay_params.damage_buffer_identifier = TransportDIB::DefaultHandleValue();
+#endif
+    SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
+        embedder_routing_id(),
+        instance_id(),
+        0,
+        relay_params));
+     return;
+  }
 
   // Only copy damage if the guest is in autosize mode and the guest's view size
   // is less than the maximum size or the guest's view size is equal to the
@@ -411,7 +406,6 @@ void BrowserPluginGuest::UpdateRect(
       memcpy(embedder_memory, guest_memory, size);
     }
   }
-  BrowserPluginMsg_UpdateRect_Params relay_params;
 #if defined(OS_MACOSX)
   relay_params.damage_buffer_identifier = damage_buffer_->id();
 #elif defined(OS_WIN)
@@ -425,10 +419,6 @@ void BrowserPluginGuest::UpdateRect(
   relay_params.scroll_delta = params.scroll_delta;
   relay_params.scroll_rect = params.scroll_rect;
   relay_params.copy_rects = params.copy_rects;
-  relay_params.view_size = params.view_size;
-  relay_params.scale_factor = params.scale_factor;
-  relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
-      params.flags);
 
   // We need to send the ACK to the same render_view_host that issued
   // the UpdateRect. We keep track of this correspondence via a message_id.

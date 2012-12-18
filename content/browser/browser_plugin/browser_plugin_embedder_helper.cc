@@ -109,9 +109,10 @@ void BrowserPluginEmbedderHelper::OnUpdateRectACK(
 
 void BrowserPluginEmbedderHelper::OnSwapBuffersACK(int route_id,
                                                    int gpu_host_id,
+                                                   uint64 surface_handle,
                                                    uint32 sync_point) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.surface_handle = 0; // TODO
+  ack_params.surface_handle = surface_handle;
   ack_params.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_host_id,

@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/process_util.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -46,6 +47,13 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
   // We use the GPU process for UI on Aura, and we need to share renderer GL
   // contexts with the compositor context.
   share_contexts_ = true;
+#else
+  // Share contexts when compositing webview plugin.
+  // Keep this behind a flag for now until we can run a
+  // stability experiment.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginCompositing))
+    share_contexts_ = true;
 #endif
 }
 
