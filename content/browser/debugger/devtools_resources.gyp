@@ -49,6 +49,7 @@
                      '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
                      '<@(grit_defines)' ],
           'message': 'Generating resources from <(grit_grd_file)',
+          'msvs_cygwin_shell': 1,
         }
       ],
       'includes': [ '../../../build/grit_target.gypi' ],
