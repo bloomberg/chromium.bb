@@ -16,7 +16,7 @@
 
 #if NACL_WINDOWS
 # define DLLEXPORT __declspec(dllexport)
-#elif defined(NACL_LINUX) || defined(NACL_OSX)
+#elif NACL_LINUX || NACL_OSX
 # define DLLEXPORT __attribute__ ((visibility("default")))
 #elif defined(__native_client__)
 /* do nothing */
