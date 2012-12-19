@@ -3,6 +3,38 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      ['OS=="linux"', {
+        'compile_suid_client': 1,
+      }, {
+        'compile_suid_client': 0,
+      }],
+      ['(OS=="linux" or OS=="android") and (target_arch=="ia32" '
+             'or target_arch=="x64" or target_arch=="arm")', {
+        'compile_seccomp_bpf': 1,
+      }, {
+        'compile_seccomp_bpf': 0,
+      }],
+    ],
+  },
+  'target_defaults': {
+    'target_conditions': [
+      # All linux/ files will automatically be excluded on Android
+      # so make sure we re-include them explicitly.
+      ['OS == "android"', {
+        'sources/': [
+          ['include', '^linux/'],
+          # TODO(jln): some files don't yet even compile on Android.
+          # crbug.com/166704
+          ['exclude', 'errorcode_unittest\\.cc$'],
+          ['exclude', 'sandbox_bpf\\.cc$'],
+          ['exclude', 'sandbox_bpf_unittest\\.cc$'],
+          ['exclude', 'syscall_unittest\\.cc$'],
+        ],
+      }],
+    ],
+  },
   'targets': [
     # We have two principal targets: sandbox and sandbox_linux_unittests
     # All other targets are listed as dependencies.
@@ -12,10 +44,14 @@
       'target_name': 'sandbox',
       'type': 'none',
       'dependencies': [
-        'suid_sandbox_client',
         'sandbox_services',
       ],
       'conditions': [
+        [ 'compile_suid_client==1', {
+          'dependencies': [
+            'suid_sandbox_client',
+          ],
+        }],
         # Only compile in the seccomp mode 1 code for the flag combination
         # where we support it.
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64") '
@@ -25,8 +61,7 @@
           ],
         }],
         # Similarly, compile seccomp BPF when we support it
-        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
-                           'or target_arch=="arm")', {
+        [ 'compile_seccomp_bpf==1', {
           'type': 'static_library',
           'dependencies': [
             'seccomp_bpf',
@@ -36,7 +71,7 @@
     },
     {
       'target_name': 'sandbox_linux_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         'sandbox',
         '../testing/gtest.gyp:gtest',
@@ -45,15 +80,18 @@
         'tests/main.cc',
         'tests/unit_tests.cc',
         'tests/unit_tests.h',
-        'suid/client/setuid_sandbox_client_unittest.cc',
         'services/broker_process_unittest.cc',
       ],
       'include_dirs': [
         '../..',
       ],
       'conditions': [
-        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
-                           'or target_arch=="arm")', {
+        [ 'compile_suid_client==1', {
+          'sources': [
+            'suid/client/setuid_sandbox_client_unittest.cc',
+          ],
+        }],
+        [ 'compile_seccomp_bpf==1', {
           'sources': [
             'seccomp-bpf/bpf_tests.h',
             'seccomp-bpf/codegen_unittest.cc',
@@ -161,5 +199,26 @@
       ],
     },
 
+  ],
+  'conditions': [
+    # Strategy copied from base_unittests_apk in base/base.gyp.
+    [ 'OS=="android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+        'target_name': 'sandbox_linux_unittests_apk',
+        'type': 'none',
+        'dependencies': [
+          'sandbox_linux_unittests',
+        ],
+        'variables': {
+          'test_suite_name': 'sandbox_linux_unittests',
+          'input_shlib_path':
+              '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)sandbox_linux_unittests'
+              '<(SHARED_LIB_SUFFIX)',
+        },
+        'includes': [ '../../build/apk_test.gypi' ],
+        }
+      ],
+    }],
   ],
 }

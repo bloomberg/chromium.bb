@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <asm/unistd.h>
-#include <bits/wordsize.h>
 #include <errno.h>
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"

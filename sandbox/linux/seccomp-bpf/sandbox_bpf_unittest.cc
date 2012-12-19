@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sys/prctl.h>
+#include <sys/syscall.h>
 #include <sys/utsname.h>
 
 #include <ostream>
@@ -12,6 +12,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace playground2;

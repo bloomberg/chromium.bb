@@ -5,6 +5,7 @@
 #include <asm/unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 #include <vector>

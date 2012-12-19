@@ -8,7 +8,7 @@
 #include <endian.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/audit.h>
+// #include <linux/audit.h>
 #include <linux/filter.h>
 // #include <linux/seccomp.h>
 #include <linux/unistd.h>
@@ -26,7 +26,6 @@
 #include <sys/ipc.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
-#include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -58,6 +57,34 @@
 // As we can't break compilation with these versions of the library,
 // we explicitly define all missing symbols.
 
+// For audit.h
+#ifndef EM_ARM
+#define EM_ARM    40
+#endif
+#ifndef EM_386
+#define EM_386    3
+#endif
+#ifndef EM_X86_64
+#define EM_X86_64 62
+#endif
+
+#ifndef __AUDIT_ARCH_64BIT
+#define __AUDIT_ARCH_64BIT 0x80000000
+#endif
+#ifndef __AUDIT_ARCH_LE
+#define __AUDIT_ARCH_LE    0x40000000
+#endif
+#ifndef AUDIT_ARCH_ARM
+#define AUDIT_ARCH_ARM    (EM_ARM|__AUDIT_ARCH_LE)
+#endif
+#ifndef AUDIT_ARCH_I386
+#define AUDIT_ARCH_I386   (EM_386|__AUDIT_ARCH_LE)
+#endif
+#ifndef AUDIT_ARCH_X86_64
+#define AUDIT_ARCH_X86_64 (EM_X86_64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
+#endif
+
+// For prctl.h
 #ifndef PR_SET_NO_NEW_PRIVS
 #define PR_SET_NO_NEW_PRIVS          38
 #define PR_GET_NO_NEW_PRIVS          39
@@ -165,11 +192,7 @@
 #define MAX_PRIVATE_SYSCALL (MIN_PRIVATE_SYSCALL + 16u)
 #define MIN_GHOST_SYSCALL   ((unsigned int)__ARM_NR_BASE + 0xfff0u)
 #define MAX_SYSCALL         (MIN_GHOST_SYSCALL + 4u)
-// <linux/audit.h> includes <linux/elf-em.h>, which does not define EM_ARM.
-// <linux/elf.h> only includes <asm/elf.h> if we're in the kernel.
-# if !defined(EM_ARM)
-# define EM_ARM 40
-# endif
+
 #define SECCOMP_ARCH AUDIT_ARCH_ARM
 
 // ARM sigcontext_t is different from i386/x86_64.
