@@ -81,12 +81,12 @@ class WebKitTestController : public base::NonThreadSafe,
   bool ResetAfterLayoutTest();
 
   void RendererUnresponsive();
+  void OverrideWebkitPrefs(webkit_glue::WebPreferences* prefs);
 
   WebKitTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(WebKitTestResultPrinter* printer) {
     printer_.reset(printer);
   }
-  const webkit_glue::WebPreferences& web_preferences() const { return prefs_; }
   bool should_stay_on_page_after_handling_before_unload() const {
     return should_stay_on_page_after_handling_before_unload_;
   }

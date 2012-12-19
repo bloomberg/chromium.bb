@@ -286,7 +286,7 @@ WebPreferences* WebKitTestRunner::preferences() {
 
 void WebKitTestRunner::applyPreferences() {
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  ExportPreferences(prefs_, &prefs);
+  ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
@@ -459,7 +459,7 @@ void WebKitTestRunner::NotImplemented(const std::string& object,
 void WebKitTestRunner::Reset() {
   prefs_.reset();
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  ExportPreferences(prefs_, &prefs);
+  ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   dump_editing_callbacks_ = false;
 }

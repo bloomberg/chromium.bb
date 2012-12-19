@@ -15,8 +15,16 @@ struct WebPreferences;
 
 namespace content {
 
-void ExportPreferences(const WebTestRunner::WebPreferences& from,
-                       webkit_glue::WebPreferences* to);
+// The TestRunner library keeps its settings in a WebTestRunner::WebPreferenes
+// object. The content_shell, however, uses webkit_glue::WebPreferences. This
+// method exports the settings from the WebTestRunner library which are relevant
+// for layout tests.
+void ExportLayoutTestSpecificPreferences(
+    const WebTestRunner::WebPreferences& from, webkit_glue::WebPreferences* to);
+
+// Copies the settings relevant to layout tests.
+void CopyLayoutTestSpecificPreferences(const webkit_glue::WebPreferences& from,
+                                       webkit_glue::WebPreferences* to);
 
 }  // namespace content
 

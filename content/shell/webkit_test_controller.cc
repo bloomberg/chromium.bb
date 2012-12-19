@@ -192,7 +192,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   wait_until_done_ = false;
   did_finish_load_ = false;
   prefs_ = webkit_glue::WebPreferences();
-  ExportPreferences(WebPreferences(), &prefs_);
+  ExportLayoutTestSpecificPreferences(WebPreferences(), &prefs_);
   {
     base::AutoLock lock(lock_);
     can_open_windows_ = false;
@@ -211,6 +211,11 @@ void WebKitTestController::RendererUnresponsive() {
   DCHECK(CalledOnValidThread());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
     printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
+}
+
+void WebKitTestController::OverrideWebkitPrefs(
+    webkit_glue::WebPreferences* prefs) {
+  CopyLayoutTestSpecificPreferences(prefs_, prefs);
 }
 
 bool WebKitTestController::CanOpenWindows() const {
