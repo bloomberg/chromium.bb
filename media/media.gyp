@@ -95,6 +95,8 @@
         'audio/fake_audio_output_stream.h',
         'audio/ios/audio_manager_ios.h',
         'audio/ios/audio_manager_ios.mm',
+        'audio/ios/audio_session_util_ios.h',
+        'audio/ios/audio_session_util_ios.mm',
         'audio/linux/alsa_input.cc',
         'audio/linux/alsa_input.h',
         'audio/linux/alsa_output.cc',
@@ -425,20 +427,21 @@
             '<@(shared_memory_support_sources)',
           ],
           'sources/': [
+            # Exclude everything but iOS-specific files.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '(^|/)ios/'],
+            # Re-include specific pieces.
             # iOS support is limited to audio input only.
-            ['exclude', '.*'],
             ['include', '^audio/audio_buffers_state\\.'],
             ['include', '^audio/audio_input_controller\\.'],
-            ['include', '^audio/audio_io\\.h$'],
             ['include', '^audio/audio_manager\\.'],
             ['include', '^audio/audio_manager_base\\.'],
             ['include', '^audio/audio_parameters\\.'],
             ['include', '^audio/fake_audio_input_stream\\.'],
             ['include', '^audio/fake_audio_output_stream\\.'],
-            ['include', '^audio/ios/audio_manager_ios\\.'],
             ['include', '^base/audio_bus\\.'],
             ['include', '^base/channel_layout\\.'],
-            ['include', '^base/media\\.h$'],
             ['include', '^base/media_stub\\.cc$'],
           ],
           'link_settings': {

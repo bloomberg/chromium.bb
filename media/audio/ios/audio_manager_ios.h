@@ -42,11 +42,6 @@ class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {
   virtual ~AudioManagerIOS();
 
  private:
-  // Initializes the audio session if necessary. Safe to call multiple times.
-  // Returns a bool indicating whether the audio session has been successfully
-  // initialized (either in the current call or in a previous call).
-  bool InitAudioSession();
-
   DISALLOW_COPY_AND_ASSIGN(AudioManagerIOS);
 };
 

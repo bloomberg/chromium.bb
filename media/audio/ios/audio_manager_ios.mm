@@ -9,27 +9,13 @@
 
 #include "base/sys_info.h"
 #include "media/audio/fake_audio_input_stream.h"
+#include "media/audio/ios/audio_session_util_ios.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/base/limits.h"
 
 namespace media {
 
 enum { kMaxInputChannels = 2 };
-
-// Initializes the audio session, returning a bool indicating whether
-// initialization was successful. Should only be called once.
-static bool InitAudioSessionInternal() {
-  OSStatus error = AudioSessionInitialize(NULL, NULL, NULL, NULL);
-  DCHECK(error != kAudioSessionAlreadyInitialized);
-  AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-  BOOL result = [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord
-                                    error:nil];
-  DCHECK(result);
-  UInt32 allowMixing = true;
-  AudioSessionSetProperty(kAudioSessionProperty_OverrideCategoryMixWithOthers,
-                          sizeof(allowMixing), &allowMixing);
-  return error == kAudioSessionNoError;
-}
 
 AudioManagerIOS::AudioManagerIOS() {
 }
@@ -43,7 +29,7 @@ bool AudioManagerIOS::HasAudioOutputDevices() {
 }
 
 bool AudioManagerIOS::HasAudioInputDevices() {
-  if (!InitAudioSession())
+  if (!InitAudioSessionIOS())
     return false;
   // Note that the |kAudioSessionProperty_AudioInputAvailable| property is a
   // 32-bit integer, not a boolean.
@@ -112,11 +98,6 @@ void AudioManagerIOS::ReleaseOutputStream(AudioOutputStream* stream) {
 // Called by the stream when it has been released by calling Close().
 void AudioManagerIOS::ReleaseInputStream(AudioInputStream* stream) {
   delete stream;
-}
-
-bool AudioManagerIOS::InitAudioSession() {
-  static const bool kSessionInitialized = InitAudioSessionInternal();
-  return kSessionInitialized;
 }
 
 // static
