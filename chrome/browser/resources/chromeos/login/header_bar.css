@@ -50,10 +50,10 @@ html[oobe=new] .header-bar-item:first-child {
   vertical-align: middle;
 }
 
-html[oobe=new] #login-header-bar button,
-html[oobe=new] #login-header-bar button:active,
-html[oobe=new] #login-header-bar button:focus,
-html[oobe=new] #login-header-bar button:hover {
+html[oobe=new] #login-header-bar button:not(.button-restricted),
+html[oobe=new] #login-header-bar button:active:not(.button-restricted),
+html[oobe=new] #login-header-bar button:focus:not(.button-restricted),
+html[oobe=new] #login-header-bar button:hover:not(.button-restricted) {
   color: white !important;
   opacity: 1 !important;
 }
@@ -115,6 +115,8 @@ html[oobe=new] #login-header-bar #add-user-button {
   background-image: url('chrome://theme/IDR_ICON_GUEST_WHITE');
 }
 
- .button-restricted {
+.button-restricted {
+  border: 1px solid transparent;
+  color: white !important;
   opacity: 0.4 !important;
 }

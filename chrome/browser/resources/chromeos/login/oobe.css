@@ -53,7 +53,8 @@ button {
 }
 
 /* Follow same focus coloring as in widgets.css */
-button.custom-appearance {
+/* Do not apply this style to restricted button state. */
+button.custom-appearance:not(.button-restricted) {
   -webkit-transition: border-color 200ms;
   border: 1px solid transparent;
   /* Don't grey out disabled buttons. */

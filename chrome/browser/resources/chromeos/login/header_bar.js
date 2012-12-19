@@ -62,9 +62,9 @@ cr.define('login', function() {
      */
     set disabled(value) {
       var buttons = this.getElementsByTagName('button');
-      for (var i = 0, button; button = buttons[i]; ++i) {
-        button.disabled = value;
-      }
+      for (var i = 0, button; button = buttons[i]; ++i)
+        if (!button.classList.contains('button-restricted'))
+          button.disabled = value;
     },
 
     /**
