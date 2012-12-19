@@ -155,8 +155,8 @@ AwContents::AwContents(JNIEnv* env,
 void AwContents::ResetCompositor() {
   if (UseCompositorDirectDraw()) {
     compositor_.reset(content::Compositor::Create(this));
-    if (webview_layer_.get())
-      AttachWebViewLayer();
+    if (scissor_clip_layer_.get())
+      AttachLayerTree();
   } else {
     LOG(WARNING) << "Running on unsupported device: using null Compositor";
     compositor_.reset(new NullCompositor);
@@ -188,7 +188,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   TRACE_EVENT0("AwContents", "AwContents::DrawGL");
 
-  if (!webview_layer_.get() || draw_info->mode == AwDrawGLInfo::kModeProcess)
+  if (!scissor_clip_layer_ || draw_info->mode == AwDrawGLInfo::kModeProcess)
     return;
 
   DCHECK_EQ(draw_info->mode, AwDrawGLInfo::kModeDraw);
@@ -293,11 +293,44 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   compositor_->SetWindowBounds(gfx::Size(draw_info->width, draw_info->height));
-  compositor_->SetHasTransparentBackground(!draw_info->is_layer);
 
-  gfx::Transform transform;
-  transform.matrix().setColMajorf(draw_info->transform);
-  webview_layer_->setTransform(transform);
+  if (draw_info->is_layer) {
+    // When rendering into a separate layer no view clipping, transform,
+    // scissoring or background transparency need to be handled.
+    // The Android framework will composite us afterwards.
+    compositor_->SetHasTransparentBackground(false);
+    view_clip_layer_->setMasksToBounds(false);
+    scissor_clip_layer_->setMasksToBounds(false);
+    scissor_clip_layer_->setPosition(gfx::PointF());
+    scissor_clip_layer_->setBounds(gfx::Size());
+    scissor_clip_layer_->setSublayerTransform(gfx::Transform());
+    transform_layer_->setTransform(gfx::Transform());
+
+  } else {
+    compositor_->SetHasTransparentBackground(true);
+
+    gfx::Rect clip_rect(draw_info->clip_left, draw_info->clip_top,
+                        draw_info->clip_right - draw_info->clip_left,
+                        draw_info->clip_bottom - draw_info->clip_top);
+
+    scissor_clip_layer_->setPosition(clip_rect.origin());
+    scissor_clip_layer_->setBounds(clip_rect.size());
+    scissor_clip_layer_->setMasksToBounds(true);
+
+    // The compositor clipping architecture enforces us to have the clip layer
+    // as an ancestor of the area we want to clip, but this makes the transform
+    // become relative to the clip area rather than the full surface. The clip
+    // position offset needs to be undone before applying the transform.
+    gfx::Transform undo_clip_position;
+    undo_clip_position.Translate(-clip_rect.x(), -clip_rect.y());
+    scissor_clip_layer_->setSublayerTransform(undo_clip_position);
+
+    gfx::Transform transform;
+    transform.matrix().setColMajorf(draw_info->transform);
+    transform_layer_->setTransform(transform);
+
+    view_clip_layer_->setMasksToBounds(true);
+  }
 
   compositor_->Composite();
   is_composite_pending_ = false;
@@ -367,14 +400,27 @@ void AwContents::DidInitializeContentViewCore(JNIEnv* env, jobject obj,
                                               jint content_view_core) {
   ContentViewCore* core = reinterpret_cast<ContentViewCore*>(content_view_core);
   DCHECK(core == ContentViewCore::FromWebContents(web_contents_.get()));
-  webview_layer_ = cc::Layer::create();
-  webview_layer_->addChild(core->GetLayer());
-  AttachWebViewLayer();
+
+  // Ensures content keeps clipped within the view during transformations.
+  view_clip_layer_ = cc::Layer::create();
+  view_clip_layer_->setBounds(view_size_);
+  view_clip_layer_->addChild(core->GetLayer());
+
+  // Applies the transformation matrix.
+  transform_layer_ = cc::Layer::create();
+  transform_layer_->addChild(view_clip_layer_);
+
+  // Ensures content is drawn within the scissor clip rect provided by the
+  // Android framework.
+  scissor_clip_layer_ = cc::Layer::create();
+  scissor_clip_layer_->addChild(transform_layer_);
+
+  AttachLayerTree();
 }
 
-void AwContents::AttachWebViewLayer() {
-  DCHECK(webview_layer_.get());
-  compositor_->SetRootLayer(webview_layer_.get());
+void AwContents::AttachLayerTree() {
+  DCHECK(scissor_clip_layer_.get());
+  compositor_->SetRootLayer(scissor_clip_layer_);
   Invalidate();
 }
 
@@ -674,7 +720,9 @@ void AwContents::UpdateLastHitTestData(JNIEnv* env, jobject obj) {
 
 void AwContents::OnSizeChanged(JNIEnv* env, jobject obj,
                                int w, int h, int ow, int oh) {
-  compositor_->SetWindowBounds(gfx::Size(w, h));
+  view_size_ = gfx::Size(w, h);
+  if (view_clip_layer_.get())
+    view_clip_layer_->setBounds(view_size_);
 }
 
 void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
@@ -685,11 +733,9 @@ void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
 }
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
-  // Seed the Compositor size here, as we'll only receive OnSizeChanged calls
-  // for a genuine change in size, not to set initial size. Note the |w| and |h|
-  // passed here are the Java view size, NOT window size (which correctly maps
-  // to the Compositor's "window" size).
-  compositor_->SetWindowBounds(gfx::Size(w, h));
+  view_size_ = gfx::Size(w, h);
+  if (view_clip_layer_.get())
+    view_clip_layer_->setBounds(view_size_);
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {

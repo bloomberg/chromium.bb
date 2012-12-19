@@ -124,7 +124,7 @@ class AwContents : public FindHelper::Listener,
   void SetWebContents(content::WebContents* web_contents);
   void SetCompositorVisibility(bool visible);
   void ResetCompositor();
-  void AttachWebViewLayer();
+  void AttachLayerTree();
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -135,7 +135,10 @@ class AwContents : public FindHelper::Listener,
 
   // Compositor-specific state.
   scoped_ptr<content::Compositor> compositor_;
-  scoped_refptr<cc::Layer> webview_layer_;
+  scoped_refptr<cc::Layer> scissor_clip_layer_;
+  scoped_refptr<cc::Layer> transform_layer_;
+  scoped_refptr<cc::Layer> view_clip_layer_;
+  gfx::Size view_size_;
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
