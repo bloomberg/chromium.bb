@@ -67,11 +67,6 @@ bindings to C so that it can be used from other bindings
 
 ** Add readline support to all the tools
 
-** Add Berts fabulous table debugger/tracer
-There is a as yet unannounced tool that allows you to see which
-opcodes have been used for a particular translation. Written in Java
-using Berts new java bindings mentioned above
-
 ** Use portable malloc from gnulib 
 to get rid of the windows #ifdefs
 
