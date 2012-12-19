@@ -780,6 +780,7 @@ std::string AboutSandbox() {
   data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
   data.append("</h1>");
 
+  // Get expected sandboxing status of renderers.
   const int status = content::ZygoteHost::GetInstance()->GetSandboxStatus();
 
   data.append("<table>");
@@ -797,12 +798,12 @@ std::string AboutSandbox() {
 
   data.append("</table>");
 
-  // We do not consider the seccomp-bpf status here as the renderers
-  // policy is weak at the moment.
-  // TODO(jln): fix when whe have better renderer policies.
-  bool good = ((status & content::kSandboxLinuxSUID) &&
-               (status & content::kSandboxLinuxPIDNS)) ||
-              (status & content::kSandboxLinuxSeccompLegacy);
+  // The setuid sandbox is required as our first-layer sandbox.  We do still
+  // consider ourselves adequately sandboxed without the second-layer
+  // seccomp-bpf sandbox at the moment.
+  bool good = status & content::kSandboxLinuxSUID &&
+              status & content::kSandboxLinuxPIDNS &&
+              status & content::kSandboxLinuxNetNS;
   if (good) {
     data.append("<p style=\"color: green\">");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));
