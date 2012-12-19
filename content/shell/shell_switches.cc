@@ -27,7 +27,4 @@ const char kNoTimeout[] = "no-timeout";
 // Save results when layout-as-browser tests fail.
 const char kOutputLayoutTestDifferences[] = "output-layout-test-differences";
 
-// Show the content_shell window, even when running in layout test mode.
-const char kShowContentShell[] = "show-content-shell";
-
 }  // namespace switches

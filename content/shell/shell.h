@@ -242,8 +242,6 @@ class Shell : public WebContentsDelegate,
   views::Widget* window_widget_;
 #endif
 
-  bool headless_;
-
   // A container of all the open windows. We use a vector so we can keep track
   // of ordering.
   static std::vector<Shell*> windows_;
