@@ -99,12 +99,12 @@ void CancelKeyRequest(PP_Instance instance, PP_Var session_id_arg) {
 void Decrypt(PP_Instance instance,
              PP_Resource encrypted_resource,
              const PP_EncryptedBlockInfo* encrypted_block_info) {
+  pp::Buffer_Dev encrypted_block(encrypted_resource);
+
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
-
-  pp::Buffer_Dev encrypted_block(encrypted_resource);
 
   static_cast<ContentDecryptor_Private*>(object)->Decrypt(
       encrypted_block,
@@ -115,12 +115,12 @@ void InitializeAudioDecoder(
     PP_Instance instance,
     const PP_AudioDecoderConfig* decoder_config,
     PP_Resource extra_data_resource) {
+  pp::Buffer_Dev extra_data_buffer(extra_data_resource);
+
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
-
-  pp::Buffer_Dev extra_data_buffer(pp::PASS_REF, extra_data_resource);
 
   static_cast<ContentDecryptor_Private*>(object)->InitializeAudioDecoder(
       *decoder_config,
@@ -131,12 +131,12 @@ void InitializeVideoDecoder(
     PP_Instance instance,
     const PP_VideoDecoderConfig* decoder_config,
     PP_Resource extra_data_resource) {
+  pp::Buffer_Dev extra_data_buffer(extra_data_resource);
+
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
-
-  pp::Buffer_Dev extra_data_buffer(pp::PASS_REF, extra_data_resource);
 
   static_cast<ContentDecryptor_Private*>(object)->InitializeVideoDecoder(
       *decoder_config,
@@ -170,12 +170,12 @@ void DecryptAndDecode(PP_Instance instance,
                       PP_DecryptorStreamType decoder_type,
                       PP_Resource encrypted_resource,
                       const PP_EncryptedBlockInfo* encrypted_block_info) {
+  pp::Buffer_Dev encrypted_buffer(encrypted_resource);
+
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
-
-  pp::Buffer_Dev encrypted_buffer(encrypted_resource);
 
   static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
       decoder_type,

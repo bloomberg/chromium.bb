@@ -14,6 +14,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -110,24 +111,6 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
   return true;
 }
 
-PP_Resource GetOrAddProxyResource(const PPPDecryptor_Buffer& buffer) {
-  PluginResourceTracker* resource_tracker =
-      PluginGlobals::Get()->plugin_resource_tracker();
-  PP_Resource resource =
-      resource_tracker->PluginResourceForHostResource(buffer.resource);
-  if (resource) {
-    // This buffer is already in the tracker. We don't need to create a plugin-
-    // side entry for it in the tracker; instead, just add a reference and
-    // return.
-    resource_tracker->AddRefResource(resource);
-    return resource;
-  }
-  // This is the first time we've seen this HostResource, so add it to the
-  // tracker.
-  return PPB_Buffer_Proxy::AddProxyResource(buffer.resource, buffer.handle,
-                                            buffer.size);
-}
-
 void GenerateKeyRequest(PP_Instance instance,
                         PP_Var key_system,
                         PP_Var type,
@@ -204,6 +187,11 @@ void Decrypt(PP_Instance instance,
     return;
   }
 
+  // PluginResourceTracker in the plugin process assumes that resources that it
+  // tracks have been addrefed on behalf of the plugin at the renderer side. So
+  // we explicitly do it for |encryped_block| here.
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(encrypted_block);
+
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_Decrypt(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
@@ -237,6 +225,11 @@ void InitializeAudioDecoder(
     return;
   }
 
+  // PluginResourceTracker in the plugin process assumes that resources that it
+  // tracks have been addrefed on behalf of the plugin at the renderer side. So
+  // we explicitly do it for |extra_data_buffer| here.
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(extra_data_buffer);
+
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
@@ -269,6 +262,11 @@ void InitializeVideoDecoder(
     NOTREACHED();
     return;
   }
+
+  // PluginResourceTracker in the plugin process assumes that resources that it
+  // tracks have been addrefed on behalf of the plugin at the renderer side. So
+  // we explicitly do it for |extra_data_buffer| here.
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(extra_data_buffer);
 
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder(
@@ -337,6 +335,11 @@ void DecryptAndDecode(PP_Instance instance,
     NOTREACHED();
     return;
   }
+
+  // PluginResourceTracker in the plugin process assumes that resources that it
+  // tracks have been addrefed on behalf of the plugin at the renderer side. So
+  // we explicitly do it for |encrypted_buffer| here.
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(encrypted_buffer);
 
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_DecryptAndDecode(
@@ -451,14 +454,18 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
     PP_Instance instance,
     const PPPDecryptor_Buffer& encrypted_buffer,
     const std::string& serialized_block_info) {
+  ScopedPPResource plugin_resource(
+      ScopedPPResource::PassRef(),
+      PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
+                                         encrypted_buffer.handle,
+                                         encrypted_buffer.size));
   if (ppp_decryptor_impl_) {
-    PP_Resource plugin_resource = GetOrAddProxyResource(encrypted_buffer);
     PP_EncryptedBlockInfo block_info;
     if (!DeserializeBlockInfo(serialized_block_info, &block_info))
       return;
     CallWhileUnlocked(ppp_decryptor_impl_->Decrypt,
                       instance,
-                      plugin_resource,
+                      plugin_resource.get(),
                       const_cast<const PP_EncryptedBlockInfo*>(&block_info));
   }
 }
@@ -467,21 +474,25 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeAudioDecoder(
     PP_Instance instance,
     const std::string& serialized_decoder_config,
     const PPPDecryptor_Buffer& extra_data_buffer) {
+  ScopedPPResource plugin_resource;
+  if (extra_data_buffer.size > 0) {
+    plugin_resource = ScopedPPResource(
+        ScopedPPResource::PassRef(),
+        PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
+                                           extra_data_buffer.handle,
+                                           extra_data_buffer.size));
+  }
 
   PP_AudioDecoderConfig decoder_config;
   if (!DeserializeBlockInfo(serialized_decoder_config, &decoder_config))
       return;
 
   if (ppp_decryptor_impl_) {
-    PP_Resource plugin_resource = 0;
-    if (extra_data_buffer.size > 0)
-      plugin_resource = GetOrAddProxyResource(extra_data_buffer);
-
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeAudioDecoder,
         instance,
         const_cast<const PP_AudioDecoderConfig*>(&decoder_config),
-        plugin_resource);
+        plugin_resource.get());
   }
 }
 
@@ -489,21 +500,25 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeVideoDecoder(
     PP_Instance instance,
     const std::string& serialized_decoder_config,
     const PPPDecryptor_Buffer& extra_data_buffer) {
+  ScopedPPResource plugin_resource;
+  if (extra_data_buffer.resource.host_resource() != 0) {
+    plugin_resource = ScopedPPResource(
+        ScopedPPResource::PassRef(),
+        PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
+                                           extra_data_buffer.handle,
+                                           extra_data_buffer.size));
+  }
 
   PP_VideoDecoderConfig decoder_config;
   if (!DeserializeBlockInfo(serialized_decoder_config, &decoder_config))
       return;
 
   if (ppp_decryptor_impl_) {
-    PP_Resource plugin_resource = 0;
-    if (extra_data_buffer.resource.host_resource() != 0)
-      plugin_resource = GetOrAddProxyResource(extra_data_buffer);
-
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeVideoDecoder,
         instance,
         const_cast<const PP_VideoDecoderConfig*>(&decoder_config),
-        plugin_resource);
+        plugin_resource.get());
   }
 }
 
@@ -538,20 +553,24 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecode(
     PP_DecryptorStreamType decoder_type,
     const PPPDecryptor_Buffer& encrypted_buffer,
     const std::string& serialized_block_info) {
+  ScopedPPResource plugin_resource;
+  if (encrypted_buffer.resource.host_resource() != 0) {
+    plugin_resource = ScopedPPResource(
+        ScopedPPResource::PassRef(),
+        PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
+                                           encrypted_buffer.handle,
+                                           encrypted_buffer.size));
+  }
+
   if (ppp_decryptor_impl_) {
     PP_EncryptedBlockInfo block_info;
     if (!DeserializeBlockInfo(serialized_block_info, &block_info))
       return;
-
-    PP_Resource plugin_resource = 0;
-    if (encrypted_buffer.resource.host_resource() != 0)
-      plugin_resource = GetOrAddProxyResource(encrypted_buffer);
-
     CallWhileUnlocked(
         ppp_decryptor_impl_->DecryptAndDecode,
         instance,
         decoder_type,
-        plugin_resource,
+        plugin_resource.get(),
         const_cast<const PP_EncryptedBlockInfo*>(&block_info));
   }
 }

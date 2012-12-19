@@ -16,6 +16,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
@@ -35,37 +36,33 @@ namespace ppapi {
 
 namespace {
 
-// Fills |resource| with a PP_Resource containing a PPB_Buffer_Impl and copies
-// |data| into the buffer resource. The |resource| has a reference count of 1.
-// If |data| is NULL, fills |resource| with a PP_Resource with ID of 0.
-// Returns true upon success and false if any error happened.
+// Fills |resource| with a PPB_Buffer_Impl and copies |data| into the buffer
+// resource. The |*resource|, if valid, will be in the ResourceTracker with a
+// reference-count of 0. If |data| is NULL, sets |*resource| to NULL. Returns
+// true upon success and false if any error happened.
 bool MakeBufferResource(PP_Instance instance,
-                        const uint8* data, int size,
-                        ScopedPPResource* resource) {
+                        const uint8* data, uint32_t size,
+                        scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("eme", "ContentDecryptorDelegate - MakeBufferResource");
   DCHECK(resource);
 
   if (!data || !size) {
     DCHECK(!data && !size);
-    resource->Release();
+    resource = NULL;
     return true;
   }
 
-  ScopedPPResource scoped_resource(ScopedPPResource::PassRef(),
-                                   PPB_Buffer_Impl::Create(instance, size));
-  if (!scoped_resource.get())
+  scoped_refptr<PPB_Buffer_Impl> buffer(
+      PPB_Buffer_Impl::CreateResource(instance, size));
+  if (!buffer)
     return false;
 
-  EnterResourceNoLock<PPB_Buffer_API> enter(scoped_resource, true);
-  if (enter.failed())
-    return false;
-
-  BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || mapper.size() < static_cast<size_t>(size))
+  BufferAutoMapper mapper(buffer.get());
+  if (!mapper.data() || mapper.size() < size)
     return false;
   memcpy(mapper.data(), data, size);
 
-  *resource = scoped_resource;
+  *resource = buffer;
   return true;
 }
 
@@ -283,8 +280,6 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_video_decoder_init_request_id_(0),
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
-      audio_input_resource_size_(0),
-      video_input_resource_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
 }
@@ -347,17 +342,18 @@ bool ContentDecryptorDelegate::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::DecryptCB& decrypt_cb) {
   DVLOG(3) << "Decrypt() - stream_type: " << stream_type;
-  // |{audio|video}_input_resource_[size_]| is not being used by the plugin
+  // |{audio|video}_input_resource_| is not being used by the plugin
   // now because there is only one pending audio/video decrypt request at any
   // time. This is enforced by the media pipeline.
-  ScopedPPResource encrypted_resource;
+  scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(stream_type,
                                encrypted_buffer->GetData(),
                                encrypted_buffer->GetDataSize(),
                                &encrypted_resource) ||
-      !encrypted_resource.get()) {
+      !encrypted_resource) {
     return false;
   }
+  ScopedPPResource pp_resource(encrypted_resource.get());
 
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "Decrypt() - request_id " << request_id;
@@ -395,7 +391,7 @@ bool ContentDecryptorDelegate::Decrypt(
   SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   plugin_decryption_interface_->Decrypt(pp_instance_,
-                                        encrypted_resource,
+                                        pp_resource,
                                         &block_info);
   return true;
 }
@@ -437,13 +433,14 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   pp_decoder_config.samples_per_second = decoder_config.samples_per_second();
   pp_decoder_config.request_id = next_decryption_request_id_++;
 
-  ScopedPPResource extra_data_resource;
+  scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
                           decoder_config.extra_data(),
                           decoder_config.extra_data_size(),
                           &extra_data_resource)) {
     return false;
   }
+  ScopedPPResource pp_resource(extra_data_resource.get());
 
   DCHECK_EQ(pending_audio_decoder_init_request_id_, 0u);
   DCHECK(pending_audio_decoder_init_cb_.is_null());
@@ -452,7 +449,7 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
 
   plugin_decryption_interface_->InitializeAudioDecoder(pp_instance_,
                                                        &pp_decoder_config,
-                                                       extra_data_resource);
+                                                       pp_resource);
   return true;
 }
 
@@ -470,13 +467,14 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   pp_decoder_config.height = decoder_config.coded_size().height();
   pp_decoder_config.request_id = next_decryption_request_id_++;
 
-  ScopedPPResource extra_data_resource;
+  scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
                           decoder_config.extra_data(),
                           decoder_config.extra_data_size(),
                           &extra_data_resource)) {
     return false;
   }
+  ScopedPPResource pp_resource(extra_data_resource.get());
 
   DCHECK_EQ(pending_video_decoder_init_request_id_, 0u);
   DCHECK(pending_video_decoder_init_cb_.is_null());
@@ -487,8 +485,7 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
 
   plugin_decryption_interface_->InitializeVideoDecoder(pp_instance_,
                                                        &pp_decoder_config,
-                                                       extra_data_resource);
-
+                                                       pp_resource);
   return true;
 }
 
@@ -519,21 +516,22 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::AudioDecodeCB& audio_decode_cb) {
   // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
-  // return NULL and 0 respectively. In that case, we'll just create a 0
+  // return NULL and 0 respectively. In that case, we'll just create a NULL
   // resource.
-  // |audio_input_resource_size_| is not being used by the plugin now
+  // |audio_input_resource_| is not being used by the plugin now
   // because there is only one pending audio decode request at any time.
   // This is enforced by the media pipeline.
-  ScopedPPResource encrypted_resource;
+  scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(media::Decryptor::kAudio,
                                encrypted_buffer->GetData(),
                                encrypted_buffer->GetDataSize(),
                                &encrypted_resource)) {
     return false;
   }
+  ScopedPPResource pp_resource(encrypted_resource.get());
 
-  // The resource should not be 0 for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
+  // The resource should not be NULL for non-EOS buffer.
+  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -552,7 +550,9 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   // There is only one pending audio decode request at any time. This is
-  // enforced by the media pipeline.
+  // enforced by the media pipeline. If this DCHECK is violated, our buffer
+  // reuse policy is not valid, and we may have race problems for the shared
+  // buffer.
   DCHECK_EQ(pending_audio_decode_request_id_, 0u);
   DCHECK(pending_audio_decode_cb_.is_null());
   pending_audio_decode_request_id_ = request_id;
@@ -560,7 +560,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
 
   plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
                                                  PP_DECRYPTORSTREAMTYPE_AUDIO,
-                                                 encrypted_resource,
+                                                 pp_resource,
                                                  &block_info);
   return true;
 }
@@ -569,21 +569,22 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::VideoDecodeCB& video_decode_cb) {
   // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
-  // return NULL and 0 respectively. In that case, we'll just create a 0
+  // return NULL and 0 respectively. In that case, we'll just get a NULL
   // resource.
-  // |video_input_resource_size_| is not being used by the plugin now
+  // |video_input_resource_| is not being used by the plugin now
   // because there is only one pending video decode request at any time.
   // This is enforced by the media pipeline.
-  ScopedPPResource encrypted_resource;
+  scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(media::Decryptor::kVideo,
                                encrypted_buffer->GetData(),
                                encrypted_buffer->GetDataSize(),
                                &encrypted_resource)) {
     return false;
   }
+  ScopedPPResource pp_resource(encrypted_resource.get());
 
   // The resource should not be 0 for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
+  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -604,7 +605,9 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   // Only one pending video decode request at any time. This is enforced by the
-  // media pipeline.
+  // media pipeline. If this DCHECK is violated, our buffer
+  // reuse policy is not valid, and we may have race problems for the shared
+  // buffer.
   DCHECK_EQ(pending_video_decode_request_id_, 0u);
   DCHECK(pending_video_decode_cb_.is_null());
   pending_video_decode_request_id_ = request_id;
@@ -613,7 +616,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   // TODO(tomfinegan): Need to get stream type from media stack.
   plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
                                                  PP_DECRYPTORSTREAMTYPE_VIDEO,
-                                                 encrypted_resource,
+                                                 pp_resource,
                                                  &block_info);
   return true;
 }
@@ -956,37 +959,35 @@ void ContentDecryptorDelegate::CancelDecode(
 
 bool ContentDecryptorDelegate::MakeMediaBufferResource(
     media::Decryptor::StreamType stream_type,
-    const uint8* data, int size,
-    ScopedPPResource* resource) {
+    const uint8* data, uint32_t size,
+    scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("eme", "ContentDecryptorDelegate::MakeMediaBufferResource");
 
   DCHECK(resource);
 
   if (!data || !size) {
     DCHECK(!data && !size);
-    resource->Release();
+    resource = NULL;
     return true;
   }
 
   DCHECK(stream_type == media::Decryptor::kAudio ||
          stream_type == media::Decryptor::kVideo);
-  ScopedPPResource& media_resource = (stream_type == media::Decryptor::kAudio) ?
-      audio_input_resource_ : video_input_resource_;
-  int& media_resource_size = (stream_type == media::Decryptor::kAudio) ?
-      audio_input_resource_size_ : video_input_resource_size_;
+  scoped_refptr<PPB_Buffer_Impl>& media_resource =
+      (stream_type == media::Decryptor::kAudio) ? audio_input_resource_ :
+                                                  video_input_resource_;
+  if (!media_resource || (media_resource->size() < size)) {
+    // Either the buffer hasn't been created yet, or we have one that isn't big
+    // enough to fit |size| bytes.
 
-  if (media_resource_size < size) {
     // Media resource size starts from |kMinimumMediaBufferSize| and grows
     // exponentially to avoid frequent re-allocation of PPB_Buffer_Impl,
     // which is usually expensive. Since input media buffers are compressed,
     // they are usually small (compared to outputs). The over-allocated memory
     // should be negligible.
-
-    if (media_resource_size == 0) {
-      const int kMinimumMediaBufferSize = 1024;
-      media_resource_size = kMinimumMediaBufferSize;
-    }
-
+    const uint32_t kMinimumMediaBufferSize = 1024;
+    uint32_t media_resource_size = media_resource ? media_resource->size() :
+                                                    kMinimumMediaBufferSize;
     while (media_resource_size < size)
       media_resource_size *= 2;
 
@@ -994,26 +995,15 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
              << ((stream_type == media::Decryptor::kAudio) ? "audio" : "video")
              << " stream bumped to " << media_resource_size
              << " bytes to fit input.";
-    media_resource = ScopedPPResource(
-        ScopedPPResource::PassRef(),
-        PPB_Buffer_Impl::Create(pp_instance_, media_resource_size));
-    if (!media_resource.get()) {
-      media_resource_size = 0;
+    media_resource = PPB_Buffer_Impl::CreateResource(pp_instance_,
+                                                     media_resource_size);
+    if (!media_resource)
       return false;
-    }
   }
 
-  EnterResourceNoLock<PPB_Buffer_API> enter(media_resource, true);
-  if (enter.failed()) {
-    media_resource.Release();
-    media_resource_size = 0;
-    return false;
-  }
-
-  BufferAutoMapper mapper(enter.object());
+  BufferAutoMapper mapper(media_resource);
   if (!mapper.data() || mapper.size() < static_cast<size_t>(size)) {
-    media_resource.Release();
-    media_resource_size = 0;
+    media_resource = NULL;
     return false;
   }
   memcpy(mapper.data(), data, size);

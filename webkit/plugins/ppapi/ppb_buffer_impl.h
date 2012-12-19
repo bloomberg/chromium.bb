@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_BUFFER_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -24,6 +25,8 @@ class WEBKIT_PLUGINS_EXPORT PPB_Buffer_Impl :
   virtual ~PPB_Buffer_Impl();
 
   static PP_Resource Create(PP_Instance instance, uint32_t size);
+  static scoped_refptr<PPB_Buffer_Impl> CreateResource(PP_Instance instance,
+                                                       uint32_t size);
 
   virtual PPB_Buffer_Impl* AsPPB_Buffer_Impl();
 
