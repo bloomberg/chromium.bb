@@ -145,6 +145,8 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(show_composited_layer_tree)
   IPC_STRUCT_TRAITS_MEMBER(show_fps_counter)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_compositing_for_overflow_scroll_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(
+      accelerated_compositing_for_scrollable_frames_enabled)
   IPC_STRUCT_TRAITS_MEMBER(show_paint_rects)
   IPC_STRUCT_TRAITS_MEMBER(render_vsync_enabled)
   IPC_STRUCT_TRAITS_MEMBER(asynchronous_spell_checking_enabled)
