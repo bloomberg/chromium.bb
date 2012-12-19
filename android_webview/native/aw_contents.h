@@ -97,6 +97,8 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
       JNIEnv* env, jobject obj);
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
+  void SetScrollForHWFrame(JNIEnv* env, jobject obj,
+                           int scroll_x, int scroll_y);
 
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
@@ -142,6 +144,7 @@ class AwContents : public FindHelper::Listener,
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
+  int last_scroll_x_, last_scroll_y_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.

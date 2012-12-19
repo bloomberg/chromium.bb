@@ -341,8 +341,8 @@ public class AwContents {
     }
 
     public boolean onPrepareDrawGL(Canvas canvas) {
-        // TODO(joth): Ensure the HW path is setup and read any required params out of canvas.
-        Log.e(TAG, "Not implemented: AwContents.onPrepareDrawGL()");
+        nativeSetScrollForHWFrame(mNativeAwContents,
+                mContainerView.getScrollX(), mContainerView.getScrollY());
 
         // returning false will cause a fallback to SW path.
         return true;
@@ -938,6 +938,7 @@ public class AwContents {
     private native void nativeSetInterceptNavigationDelegate(int nativeAwContents,
             InterceptNavigationDelegate navigationInterceptionDelegate);
 
+    private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
     private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);

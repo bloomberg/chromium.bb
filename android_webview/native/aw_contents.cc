@@ -142,6 +142,7 @@ AwContents::AwContents(JNIEnv* env,
       view_visible_(false),
       compositor_visible_(false),
       is_composite_pending_(false),
+      last_scroll_x_(0), last_scroll_y_(0),
       last_frame_context_(NULL) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
@@ -292,6 +293,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     last_frame_context_ = current_context;
   }
 
+  gfx::Transform transform;
   compositor_->SetWindowBounds(gfx::Size(draw_info->width, draw_info->height));
 
   if (draw_info->is_layer) {
@@ -304,7 +306,6 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     scissor_clip_layer_->setPosition(gfx::PointF());
     scissor_clip_layer_->setBounds(gfx::Size());
     scissor_clip_layer_->setSublayerTransform(gfx::Transform());
-    transform_layer_->setTransform(gfx::Transform());
 
   } else {
     compositor_->SetHasTransparentBackground(true);
@@ -325,12 +326,14 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     undo_clip_position.Translate(-clip_rect.x(), -clip_rect.y());
     scissor_clip_layer_->setSublayerTransform(undo_clip_position);
 
-    gfx::Transform transform;
     transform.matrix().setColMajorf(draw_info->transform);
-    transform_layer_->setTransform(transform);
-
     view_clip_layer_->setMasksToBounds(true);
   }
+
+  // The scrolling values of the Android Framework affect the transformation
+  // matrix. This needs to be undone to let the compositor handle scrolling.
+  transform.Translate(last_scroll_x_, last_scroll_y_);
+  transform_layer_->setTransform(transform);
 
   compositor_->Composite();
   is_composite_pending_ = false;
@@ -771,6 +774,12 @@ jboolean AwContents::RestoreFromOpaqueState(
   PickleIterator iterator(pickle);
 
   return RestoreFromPickle(&iterator, web_contents_.get());
+}
+
+void AwContents::SetScrollForHWFrame(JNIEnv* env, jobject obj,
+                                     int scroll_x, int scroll_y) {
+  last_scroll_x_ = scroll_x;
+  last_scroll_y_ = scroll_y;
 }
 
 void AwContents::SetPendingWebContentsForPopup(

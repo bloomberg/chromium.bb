@@ -27,6 +27,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(
 }
 
 AwHttpAuthHandler:: ~AwHttpAuthHandler() {
+  // TODO(joth): tell java counterpart, so it can null its native back-pointer.
 }
 
 void AwHttpAuthHandler::Proceed(JNIEnv* env,
