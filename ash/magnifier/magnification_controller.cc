@@ -343,7 +343,7 @@ void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
     // animation.
     if (!cursor_client->IsCursorVisible())
       return;
-    cursor_client->ShowCursor(false);
+    cursor_client->DisableMouseEvents();
   }
   move_cursor_after_animation_ = true;
   position_after_animation_ = location;
@@ -393,7 +393,7 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root_window_);
     if (cursor_client)
-      cursor_client->ShowCursor(true);
+      cursor_client->EnableMouseEvents();
   }
 
   is_on_animation_ = false;

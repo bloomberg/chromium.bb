@@ -11,6 +11,7 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
@@ -732,6 +733,13 @@ void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
 
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
     gfx::Point* location_return) {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(GetRootWindow());
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
+    *location_return = gfx::Point(0, 0);
+    return false;
+  }
+
   ::Window root_return, child_return;
   int root_x_return, root_y_return, win_x_return, win_y_return;
   unsigned int mask_return;

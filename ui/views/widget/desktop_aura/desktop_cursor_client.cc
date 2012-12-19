@@ -26,19 +26,32 @@ void DesktopCursorClient::SetCursor(gfx::NativeCursor cursor) {
     root_window_->SetCursor(current_cursor_);
 }
 
-void DesktopCursorClient::ShowCursor(bool show) {
-  if (cursor_visible_ == show)
-    return;
-  cursor_visible_ = show;
-  if (cursor_visible_)
-    root_window_->SetCursor(current_cursor_);
-  else
-    root_window_->SetCursor(ui::kCursorNone);
-  root_window_->OnCursorVisibilityChanged(cursor_visible_);
+void DesktopCursorClient::ShowCursor() {
+  SetCursorVisibility(true);
+}
+
+void DesktopCursorClient::HideCursor() {
+  SetCursorVisibility(false);
 }
 
 bool DesktopCursorClient::IsCursorVisible() const {
   return cursor_visible_;
+}
+
+void DesktopCursorClient::EnableMouseEvents() {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DesktopCursorClient::DisableMouseEvents() {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+}
+
+bool DesktopCursorClient::IsMouseEventsEnabled() const {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return true;
 }
 
 void DesktopCursorClient::SetDeviceScaleFactor(float device_scale_factor) {
@@ -54,6 +67,14 @@ void DesktopCursorClient::LockCursor() {
 void DesktopCursorClient::UnlockCursor() {
   // TODO(mazda): Implement this.
   NOTIMPLEMENTED();
+}
+
+void DesktopCursorClient::SetCursorVisibility(bool visible) {
+  if (cursor_visible_ == visible)
+    return;
+  cursor_visible_ = visible;
+  root_window_->SetCursor(current_cursor_);
+  root_window_->OnCursorVisibilityChanged(visible);
 }
 
 }  // namespace views

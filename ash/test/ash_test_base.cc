@@ -65,7 +65,7 @@ void AshTestBase::SetUp() {
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  Shell::GetInstance()->cursor_manager()->ShowCursor(true);
+  Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 }
 
 void AshTestBase::TearDown() {

@@ -20,20 +20,36 @@ base::TimeDelta GetTime() {
   return base::Time::NowFromSystemTime() - base::Time();
 }
 
-class TestVisibleClient : public aura::client::CursorClient {
+class TestCursorClient : public aura::client::CursorClient {
  public:
-  TestVisibleClient() : visible_(true) {}
-  virtual ~TestVisibleClient() {}
+  TestCursorClient() : visible_(true), mouse_events_enabled_(true) {}
+  virtual ~TestCursorClient() {}
 
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE {
   }
 
-  virtual void ShowCursor(bool show) OVERRIDE {
-    visible_ = show;
+  virtual void ShowCursor() OVERRIDE {
+    visible_ = true;
+  }
+
+  virtual void HideCursor() OVERRIDE {
+    visible_ = false;
   }
 
   virtual bool IsCursorVisible() const OVERRIDE {
     return visible_;
+  }
+
+  virtual void EnableMouseEvents() OVERRIDE {
+    mouse_events_enabled_ = true;
+  }
+
+  virtual void DisableMouseEvents() OVERRIDE {
+    mouse_events_enabled_ = false;
+  }
+
+  virtual bool IsMouseEventsEnabled() const OVERRIDE {
+    return mouse_events_enabled_;
   }
 
   virtual void SetDeviceScaleFactor(float scale_factor) OVERRIDE {
@@ -47,6 +63,7 @@ class TestVisibleClient : public aura::client::CursorClient {
 
  private:
   bool visible_;
+  bool mouse_events_enabled_;
 };
 
 }
@@ -84,35 +101,35 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   window->Show();
   window->SetCapture();
 
-  TestVisibleClient cursor_client;
+  TestCursorClient cursor_client;
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
   ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse0);
-  EXPECT_TRUE(cursor_client.IsCursorVisible());
+  EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
   ui::TouchEvent press0(
       ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press0);
-  EXPECT_FALSE(cursor_client.IsCursorVisible());
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
-  EXPECT_FALSE(cursor_client.IsCursorVisible());
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-  EXPECT_FALSE(cursor_client.IsCursorVisible());
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0);
   // Move the cursor again. The cursor should be visible.
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
-  EXPECT_TRUE(cursor_client.IsCursorVisible());
+  EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
 
   // Now activate the window and press on it again.
   ui::TouchEvent press1(
@@ -120,7 +137,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   aura::client::GetActivationClient(
       root_window())->ActivateWindow(window.get());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
-  EXPECT_FALSE(cursor_client.IsCursorVisible());
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 

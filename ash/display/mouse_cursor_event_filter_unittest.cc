@@ -121,8 +121,7 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentSizeDisplays) {
           display_controller()->default_display_layout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->SetLastMouseLocation(*root_windows[1],
-                                                 gfx::Point(123, 123));
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(623, 123));
 
   // Touch the left edge of the secondary root window. Pointer should NOT warp
   // because 1px left of (0, 500) is outside the primary root window.
@@ -162,8 +161,7 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentScaleDisplays) {
           display_controller()->default_display_layout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->SetLastMouseLocation(*root_windows[1],
-                                                 gfx::Point(400, 123));
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 
   // This emulates the dragging back to the 2nd display, which has
   // higher scale factor, by having 2nd display's root as target
@@ -199,8 +197,7 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_SetMouseWarpModeFlag) {
       Shell::GetInstance()->mouse_cursor_filter();
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->SetLastMouseLocation(*root_windows[0],
-                                                 gfx::Point(1, 1));
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(1, 1));
 
   event_filter->set_mouse_warp_mode(MouseCursorEventFilter::WARP_NONE);
   bool is_warped = event_filter->WarpMouseCursorIfNecessary(root_windows[0],

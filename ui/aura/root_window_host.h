@@ -75,7 +75,8 @@ class AURA_EXPORT RootWindowHost {
   // Queries the mouse's current position relative to the host window and sets
   // it in |location_return|. Returns true if the cursor is within the host
   // window. The position set to |location_return| is constrained within the
-  // host window.
+  // host window. If the cursor is disabled, returns false and (0, 0) is set to
+  // |location_return|.
   // This method is expensive, instead use gfx::Screen::GetCursorScreenPoint().
   virtual bool QueryMouseLocation(gfx::Point* location_return) = 0;
 

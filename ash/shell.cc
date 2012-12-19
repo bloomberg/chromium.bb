@@ -564,7 +564,7 @@ void Shell::Init() {
   user_wallpaper_delegate_->InitializeWallpaper();
 
   if (initially_hide_cursor_)
-    cursor_manager_.ShowCursor(false);
+    cursor_manager_.DisableMouseEvents();
   cursor_manager_.SetCursor(ui::kCursorPointer);
 
   // Cursor might have been hidden by somethign other than chrome.

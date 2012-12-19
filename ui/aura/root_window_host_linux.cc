@@ -595,6 +595,13 @@ void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
 }
 
 bool RootWindowHostLinux::QueryMouseLocation(gfx::Point* location_return) {
+  client::CursorClient* cursor_client =
+      client::GetCursorClient(GetRootWindow());
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
+    *location_return = gfx::Point(0, 0);
+    return false;
+  }
+
   ::Window root_return, child_return;
   int root_x_return, root_y_return, win_x_return, win_y_return;
   unsigned int mask_return;

@@ -175,11 +175,11 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
     if (client) {
       if (show && cursor_hidden_by_filter_) {
         cursor_hidden_by_filter_ = false;
-        client->ShowCursor(true);
+        client->EnableMouseEvents();
       } else if (client->IsCursorVisible() && !show &&
                  !cursor_hidden_by_filter_) {
         cursor_hidden_by_filter_ = true;
-        client->ShowCursor(false);
+        client->DisableMouseEvents();
       }
     }
   }

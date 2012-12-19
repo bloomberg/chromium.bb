@@ -17,11 +17,11 @@ CursorManagerTestApi::CursorManagerTestApi(CursorManager* cursor_manager)
 CursorManagerTestApi::~CursorManagerTestApi() {
 }
 
-gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() {
-  return cursor_manager_->current_cursor_;
+gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
+  return cursor_manager_->GetCurrentCursor();
 }
 
-float CursorManagerTestApi::GetDeviceScaleFactor() {
+float CursorManagerTestApi::GetDeviceScaleFactor() const {
   return cursor_manager_->image_cursors_->GetDeviceScaleFactor();
 }
 

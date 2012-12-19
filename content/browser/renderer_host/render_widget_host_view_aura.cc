@@ -1095,7 +1095,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->ShowCursor(false);
+    cursor_client->DisableMouseEvents();
   synthetic_move_sent_ = true;
   window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
@@ -1115,7 +1115,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->ShowCursor(true);
+    cursor_client->EnableMouseEvents();
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 
@@ -1510,7 +1510,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(window_->GetRootWindow());
     if (cursor_client && cursor_client->IsCursorVisible())
-      cursor_client->ShowCursor(false);
+      cursor_client->DisableMouseEvents();
 
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());

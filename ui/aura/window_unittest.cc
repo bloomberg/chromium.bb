@@ -375,8 +375,10 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   root->SetTransform(transform);
   root->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
+  gfx::Point mouse_location;
+  EXPECT_TRUE(root->QueryMouseLocationForTest(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
-  EXPECT_EQ("50,120", root->QueryMouseLocationForTest().ToString());
+  EXPECT_EQ("50,120", mouse_location.ToString());
 #endif
   EXPECT_EQ("10,10",
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());
@@ -456,7 +458,9 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
-  EXPECT_EQ("169,80", root->QueryMouseLocationForTest().ToString());
+  gfx::Point mouse_location;
+  EXPECT_TRUE(root->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_EQ("169,80", mouse_location.ToString());
 #endif
   EXPECT_EQ("20,53",
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());

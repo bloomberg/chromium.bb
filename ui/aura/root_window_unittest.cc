@@ -144,47 +144,6 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   EXPECT_TRUE(delegate1->mouse_event_flags() & ui::EF_IS_NON_CLIENT);
 }
 
-#if defined(OS_WIN)
-// Temporarily disabled for windows. See crbug.com/112222.
-TEST_F(RootWindowTest, DISABLED_HideCursor) {
-#else
-TEST_F(RootWindowTest, HideCursor) {
-#endif  // defined(OS_WIN)
-  scoped_ptr<NonClientDelegate> delegate(new NonClientDelegate());
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      delegate.get(), -1234, bounds, root_window()));
-  aura::Window* window_ptr = &*window;
-
-  root_window()->OnCursorVisibilityChanged(true);
-  // Send a mouse event to window.
-  gfx::Point point(101, 201);
-  gfx::Point local_point;
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, point, point, 0);
-  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&event);
-
-  // Location was in window.
-  local_point = delegate->mouse_event_location();
-  aura::Window::ConvertPointToTarget(window_ptr, root_window(), &local_point);
-  EXPECT_TRUE(window->bounds().Contains(local_point));
-
-  // Location is now out of window.
-  root_window()->OnCursorVisibilityChanged(false);
-  RunAllPendingInMessageLoop();
-  local_point = delegate->mouse_event_location();
-  aura::Window::ConvertPointToTarget(window_ptr, root_window(), &local_point);
-  EXPECT_FALSE(window->bounds().Contains(local_point));
-
-  // Location is back in window.
-  root_window()->OnCursorVisibilityChanged(true);
-  RunAllPendingInMessageLoop();
-  local_point = delegate->mouse_event_location();
-  aura::Window::ConvertPointToTarget(window_ptr, root_window(), &local_point);
-  EXPECT_TRUE(window->bounds().Contains(local_point));
-}
-
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
 TEST_F(RootWindowTest, MouseButtonState) {

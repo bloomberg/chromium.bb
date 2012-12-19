@@ -29,13 +29,19 @@ class VIEWS_EXPORT DesktopCursorClient : public aura::client::CursorClient {
 
   // Overridden from client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void ShowCursor(bool show) OVERRIDE;
+  virtual void ShowCursor() OVERRIDE;
+  virtual void HideCursor() OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void EnableMouseEvents() OVERRIDE;
+  virtual void DisableMouseEvents() OVERRIDE;
+  virtual bool IsMouseEventsEnabled() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
 
  private:
+  void SetCursorVisibility(bool visible);
+
   aura::RootWindow* root_window_;
   scoped_ptr<ui::CursorLoader> cursor_loader_;
 

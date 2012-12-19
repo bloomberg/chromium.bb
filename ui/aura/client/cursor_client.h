@@ -18,22 +18,37 @@ class AURA_EXPORT CursorClient {
   // Notes that |window| has requested the change to |cursor|.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 
-  // Changes the visibility of the cursor.
-  virtual void ShowCursor(bool show) = 0;
+  // Shows the cursor. This does not take effect When mouse events are disabled.
+  virtual void ShowCursor() = 0;
+
+  // Hides the cursor. Mouse events keep being sent even when the cursor is
+  // invisible.
+  virtual void HideCursor() = 0;
 
   // Gets whether the cursor is visible.
   virtual bool IsCursorVisible() const = 0;
 
+  // Makes mouse events start being sent and shows the cursor if it was hidden
+  // with DisableMouseEvents.
+  virtual void EnableMouseEvents() = 0;
+
+  // Makes mouse events stop being sent and hides the cursor if it is visible.
+  virtual void DisableMouseEvents() = 0;
+
+  // Returns true if mouse events are enabled.
+  virtual bool IsMouseEventsEnabled() const = 0;
+
   // Sets the device scale factor of the cursor.
   virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
 
-  // Locks the cursor change. The cursor type and cursor visibility never change
-  // as long as lock is held by anyone.
+  // Locks the cursor change. The cursor type, cursor visibility, and mouse
+  // events enable state never change as long as lock is held by anyone.
   virtual void LockCursor() = 0;
 
-  // Unlocks the cursor change. If all the locks are released, the cursor type
-  // and visibility are restored to the ones set by the lastest call of
-  // SetCursor and ShowCursor.
+  // Unlocks the cursor change. If all the locks are released, the cursor type,
+  // cursor visibility, and mouse events enable state are restored to the ones
+  // set by the lastest call of SetCursor, ShowCursor/HideCursor, and
+  // EnableMouseEvents/DisableMouseEvents.
   virtual void UnlockCursor() = 0;
 
  protected:

@@ -20,8 +20,8 @@ class CursorManagerTestApi {
   explicit CursorManagerTestApi(CursorManager* cursor_manager);
   ~CursorManagerTestApi();
 
-  gfx::NativeCursor GetCurrentCursor();
-  float GetDeviceScaleFactor();
+  gfx::NativeCursor GetCurrentCursor() const;
+  float GetDeviceScaleFactor() const;
 
  private:
   CursorManager* cursor_manager_;

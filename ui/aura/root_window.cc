@@ -68,9 +68,17 @@ Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
       static_cast<Window*>(consumer) : NULL;
 }
 
-void SetLastMouseLocation(const Window* root_window,
-                          const gfx::Point& location) {
-  Env::GetInstance()->SetLastMouseLocation(*root_window, location);
+void SetLastMouseLocation(const RootWindow* root_window,
+                          const gfx::Point& location_in_root) {
+  client::ScreenPositionClient* client =
+      client::GetScreenPositionClient(root_window);
+  if (client) {
+    gfx::Point location_in_screen = location_in_root;
+    client->ConvertPointToScreen(root_window, &location_in_screen);
+    Env::GetInstance()->set_last_mouse_location(location_in_screen);
+  } else {
+    Env::GetInstance()->set_last_mouse_location(location_in_root);
+  }
 }
 
 RootWindowHost* CreateHost(RootWindow* root_window,
@@ -206,11 +214,14 @@ void RootWindow::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void RootWindow::OnCursorVisibilityChanged(bool show) {
-  // Send entered / exited so that visual state can be updated to match
-  // cursor state.
-  Env::GetInstance()->SetCursorShown(show);
-  PostMouseMoveEventAfterWindowChange();
   host_->OnCursorVisibilityChanged(show);
+}
+
+void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
+  // Send entered / exited so that visual state can be updated to match
+  // mouse events state.
+  PostMouseMoveEventAfterWindowChange();
+  // TODO(mazda): Add code to disable mouse events when |enabled| == false.
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
@@ -498,7 +509,7 @@ void RootWindow::OnDeviceScaleFactorChanged(
   if (cursor_is_in_bounds && cursor_client) {
     cursor_visible = cursor_client->IsCursorVisible();
     if (cursor_visible)
-      cursor_client->ShowCursor(false);
+      cursor_client->HideCursor();
   }
   host_->OnDeviceScaleFactorChanged(device_scale_factor);
   Window::OnDeviceScaleFactorChanged(device_scale_factor);
@@ -509,7 +520,7 @@ void RootWindow::OnDeviceScaleFactorChanged(
       cursor_client->SetDeviceScaleFactor(device_scale_factor);
   }
   if (cursor_is_in_bounds && cursor_client && cursor_visible)
-    cursor_client->ShowCursor(true);
+    cursor_client->ShowCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -568,10 +579,8 @@ void RootWindow::ReleaseNativeCapture() {
   host_->ReleaseCapture();
 }
 
-gfx::Point RootWindow::QueryMouseLocationForTest() const {
-  gfx::Point point;
-  host_->QueryMouseLocation(&point);
-  return point;
+bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
+  return host_->QueryMouseLocation(point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

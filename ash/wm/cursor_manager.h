@@ -11,8 +11,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 
 namespace ash {
+
+namespace internal {
+class CursorState;
+}
 
 namespace test {
 class CursorManagerTestApi;
@@ -32,8 +37,12 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
 
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor) OVERRIDE;
-  virtual void ShowCursor(bool show) OVERRIDE;
+  virtual void ShowCursor() OVERRIDE;
+  virtual void HideCursor() OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void EnableMouseEvents() OVERRIDE;
+  virtual void DisableMouseEvents() OVERRIDE;
+  virtual bool IsMouseEventsEnabled() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
@@ -42,31 +51,24 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
   friend class test::CursorManagerTestApi;
 
   void SetCursorInternal(gfx::NativeCursor cursor);
-  void ShowCursorInternal(bool show);
+  void SetCursorVisibility(bool visible);
+  void SetMouseEventsEnabled(bool enabled);
+
+  // Returns the current cursor.
+  gfx::NativeCursor GetCurrentCursor() const;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().
   int cursor_lock_count_;
 
-  // Set to true if SetCursor() is invoked while |cursor_lock_count_| == 0.
-  bool did_cursor_change_;
+  // The cursor location where the cursor was disabled.
+  gfx::Point disabled_cursor_location_;
 
-  // Cursor to set once |cursor_lock_count_| is set to 0. Only valid if
-  // |did_cursor_change_| is true.
-  gfx::NativeCursor cursor_to_set_on_unlock_;
+  // The current state of the cursor.
+  scoped_ptr<internal::CursorState> current_state_;
 
-  // Set to true if ShowCursor() is invoked while |cursor_lock_count_| == 0.
-  bool did_visibility_change_;
-
-  // The visibility to set once |cursor_lock_count_| is set to 0. Only valid if
-  // |did_visibility_change_| is true.
-  bool show_on_unlock_;
-
-  // Is cursor visible?
-  bool cursor_visible_;
-
-  // The cursor currently set.
-  gfx::NativeCursor current_cursor_;
+  // The cursor state to restore when the cursor is unlocked.
+  scoped_ptr<internal::CursorState> state_on_unlock_;
 
   scoped_ptr<ImageCursors> image_cursors_;
 

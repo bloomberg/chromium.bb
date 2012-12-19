@@ -117,6 +117,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Invoked when the cursor's visibility has changed.
   void OnCursorVisibilityChanged(bool visible);
 
+  // Invoked when the mouse events get enabled or disabled.
+  void OnMouseEventsEnableStateChanged(bool enabled);
+
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
@@ -256,7 +259,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void ReleaseNativeCapture() OVERRIDE;
 
   // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
-  gfx::Point QueryMouseLocationForTest() const;
+  bool QueryMouseLocationForTest(gfx::Point* point) const;
 
  private:
   friend class Window;

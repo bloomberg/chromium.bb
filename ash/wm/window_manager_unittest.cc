@@ -671,7 +671,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 
   // If someone else made cursor invisible keep it invisible even after it
   // received mouse events.
-  cursor_manager->ShowCursor(false);
+  cursor_manager->DisableMouseEvents();
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
@@ -682,7 +682,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
 
   // Back to normal.
-  cursor_manager->ShowCursor(true);
+  cursor_manager->EnableMouseEvents();
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);

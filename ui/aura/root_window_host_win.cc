@@ -10,6 +10,7 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
@@ -177,6 +178,13 @@ void RootWindowHostWin::ReleaseCapture() {
 }
 
 bool RootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
+  client::CursorClient* cursor_client =
+      client::GetCursorClient(GetRootWindow());
+  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
+    *location_return = gfx::Point(0, 0);
+    return false;
+  }
+
   POINT pt;
   GetCursorPos(&pt);
   ScreenToClient(hwnd(), &pt);
