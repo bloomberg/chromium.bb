@@ -848,6 +848,12 @@ void RenderThreadImpl::UpdateHistograms(int sequence_number) {
   child_histogram_message_filter()->SendHistograms(sequence_number);
 }
 
+bool RenderThreadImpl::ResolveProxy(const GURL& url, std::string* proxy_list) {
+  bool result = false;
+  Send(new ViewHostMsg_ResolveProxy(url, &result, proxy_list));
+  return result;
+}
+
 void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }

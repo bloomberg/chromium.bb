@@ -15,6 +15,7 @@
 #include <windows.h>
 #endif
 
+class GURL;
 class MessageLoop;
 
 namespace base {
@@ -104,6 +105,11 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual void ToggleWebKitSharedTimer(bool suspend) = 0;
 
   virtual void UpdateHistograms(int sequence_number) = 0;
+
+  // Resolve the proxy servers to use for a given url. On success true is
+  // returned and |proxy_list| is set to a PAC string containing a list of
+  // proxy servers.
+  virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) = 0;
 
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser so it's cached by the

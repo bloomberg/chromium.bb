@@ -69,6 +69,7 @@ class MockRenderThread : public RenderThread {
       int64 idle_notification_delay_in_ms) OVERRIDE;
   virtual void ToggleWebKitSharedTimer(bool suspend) OVERRIDE;
   virtual void UpdateHistograms(int sequence_number) OVERRIDE;
+  virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) OVERRIDE;
 #if defined(OS_WIN)
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;

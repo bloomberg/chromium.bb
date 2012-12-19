@@ -4,9 +4,8 @@
 
 #include "content/renderer/pepper/pepper_flash_renderer_host.h"
 
-#include "content/common/view_messages.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
@@ -42,10 +41,8 @@ int32_t PepperFlashRendererHost::OnMsgGetProxyForURL(
   GURL gurl(url);
   if (!gurl.is_valid())
     return PP_ERROR_FAILED;
-  bool result;
   std::string proxy;
-  RenderThreadImpl::current()->Send(
-      new ViewHostMsg_ResolveProxy(gurl, &result, &proxy));
+  bool result = RenderThread::Get()->ResolveProxy(gurl, &proxy);
   if (!result)
     return PP_ERROR_FAILED;
   host_context->reply_msg = PpapiPluginMsg_Flash_GetProxyForURLReply(proxy);

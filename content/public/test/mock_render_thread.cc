@@ -176,6 +176,10 @@ void MockRenderThread::ToggleWebKitSharedTimer(bool suspend) {
 void MockRenderThread::UpdateHistograms(int sequence_number) {
 }
 
+bool MockRenderThread::ResolveProxy(const GURL& url, std::string* proxy_list) {
+  return false;
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }
