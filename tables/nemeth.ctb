@@ -114,19 +114,34 @@ always ^* 16
 repeated ^1 a
 
 # Function names and abbreviations
-word arc =
-word arg =
-word cosh =
-word coth =
-word covers =
-word erf =
-word inf =
-word min =
-word sech =
-word arccos =
-word sin =
-word sinh =
-word vers =
+word acos 1-14-135-245-a
+word antilog 1-1345-2345-24-123-135-1234-a
+word arc 1-1235-14-a
+word arccos 1-1235-14-14-135-234-a
+word arg 1-1235-1245-a
+word asin 1-234-24-1235-a
+word atan 1-2345-1-135-a
+word colog 14-123-135-1245-a
+word cos 14-135-245-a
+word cosh 14-135-234-a
+word cot 14-135-2345-a
+word coth 14-135-2345-125-a
+word covers 14-135-1236-15-1235-245-a
+word csc 14-234-14-a
+word csch 14-234-14-125-a
+word erf 15-1235-124-a
+word inf 24-1345-124-a
+word ln 123-1345-a
+word log 123-135-1234-a
+word max 135-1-1346-a
+word min 134-24-1345-a
+word sec 234-15-14-a
+word sech 234-15-14-a
+word sin 234-24-1345-a
+word sinh 234-24-1345-125-a
+word tan 2345-1-1345-a
+word tanh 2345-1-135-125-a
+word vers 1236-15-1235-234-a
 
 
 
