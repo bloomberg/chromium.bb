@@ -105,8 +105,8 @@ if ragel_involved:
   (byte_machines,) = env.AutoDepsCommand(
       'byte_machines.rl',
       ['${PYTHON}',
-       env.File('unreviewed/byte_machines.py'),
-       '-o', '${TARGET}'])
+       env.File('byte_machines.py'),
+       '>${TARGET}'])
 
   # Source generation step 2: Generate decoder automata.
   #
