@@ -99,7 +99,7 @@ function createDatabase(
     db.onerror = function(ev) {
       console.log("db error", arguments, openRequest.webkitErrorMessage);
       errorHandler(ev);
-    }
+    };
     if (curVersion != baseVersion) {
       // This is the legacy path, which runs only in Chrome.
       var setVersionRequest = db.setVersion(baseVersion);
@@ -110,11 +110,11 @@ function createDatabase(
         var versionTransaction = setVersionRequest.result;
         versionTransaction.oncomplete = function() { handler(db); };
         versionTransaction.onerror = onError;
-      }
+      };
     } else {
       handler(db);
     }
-  }
+  };
 }
 
 // You must close all database connections before calling this.
@@ -124,8 +124,6 @@ function alterObjectStores(
   var openRequest = indexedDB.open(name, version);
   openRequest.onblocked = errorHandler;
   openRequest.onupgradeneeded = function(ev) {
-    // This is the spec-compliant path, which doesn't yet run in Chrome, but
-    // works in Firefox.
     doAlteration(ev.target.transaction);
     // onsuccess will get called after this exits.
   };
@@ -136,9 +134,9 @@ function alterObjectStores(
       console.log("error altering db", arguments,
           openRequest.webkitErrorMessage);
       errorHandler();
-    }
+    };
     if (db.version != version) {
-      // This is the legacy path, which runs only in Chrome.
+      // This is the legacy path, which runs only in Chrome before M23.
       var setVersionRequest = db.setVersion(version);
       setVersionRequest.onerror = errorHandler;
       setVersionRequest.onsuccess =
@@ -149,11 +147,11 @@ function alterObjectStores(
             versionTransaction.oncomplete = function() { handler(db); };
             versionTransaction.onerror = onError;
             doAlteration(versionTransaction);
-          }
+          };
     } else {
       handler(db);
     }
-  }
+  };
   function doAlteration(target) {
     for (var store in objectStoreNames) {
       func(target.objectStore(objectStoreNames[store]));
@@ -192,13 +190,17 @@ function getCompletionFunc(db, testName, startTime, onTestComplete) {
     automation.setStatus("Deleting database.");
     db.close();
     deleteDatabase(testName, onDeleted);
-  }
+  };
 }
 
 function getDisplayName(args) {
+  function functionName(f) {
+    // Function.prototype.name is nonstandard, and not implemented in IE10-
+    return f.name || f.toString().match(/^function\s*([^(\s]*)/)[1];
+  }
   // The last arg is the completion callback the test runner tacks on.
   // TODO(ericu): Make test errors delete the database automatically.
-  return getDisplayName.caller.name + (args.length > 1 ? "_" : "") +
+  return functionName(getDisplayName.caller) + (args.length > 1 ? "_" : "") +
       Array.prototype.slice.call(args, 0, args.length - 1).join("_");
 }
 
@@ -227,6 +229,10 @@ function getSimpleKey(i) {
 
 function getSimpleValue(i) {
   return "value " + padToWidth(i, 10);
+}
+
+function getIndexableValue(i) {
+  return { id: getSimpleValue(i) };
 }
 
 function getForwardIndexKey(i) {
@@ -376,7 +382,7 @@ function getValuesFromCursor(
     } else {
       assert(!numReadsLeft);
     }
-  }
+  };
   request.onerror = onError;
 }
 
