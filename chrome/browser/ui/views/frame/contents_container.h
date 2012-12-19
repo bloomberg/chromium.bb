@@ -43,7 +43,8 @@ class ContentsContainer : public views::View {
   void SetPreview(views::WebView* preview,
                   content::WebContents* preview_web_contents,
                   int height,
-                  InstantSizeUnits units);
+                  InstantSizeUnits units,
+                  bool draw_drop_shadow);
 
   // When the active content is reset and we have a visible preview,
   // the preview must be stacked back at top.
@@ -67,17 +68,26 @@ class ContentsContainer : public views::View {
   int extra_content_height() const { return extra_content_height_; }
   void SetExtraContentHeight(int height);
 
+  // Returns true if preview occupies full height of content page.
+  bool IsPreviewFullHeight(int preview_height,
+                           InstantSizeUnits preview_height_units) const;
+
  private:
+  // Returns true if |shadow_view_| was a child of |ContentsContainer| and
+  // successfully removed from view hierarchy.
+  // If |delete_view| is true, |shadow_view_| is deleted regardless if it is a
+  // child of |ContentsContainer|.
+  bool RemoveShadowView(bool delete_view);
+
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
-  // Returns |preview_height_| in pixels.
-  int PreviewHeightInPixels() const;
-
   views::WebView* active_;
   views::WebView* preview_;
+  scoped_ptr<views::View> shadow_view_;
   content::WebContents* preview_web_contents_;
+  bool draw_drop_shadow_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.
