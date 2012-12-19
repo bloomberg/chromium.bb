@@ -302,11 +302,6 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
              << " with type " << message.type();
   }
 
-  // Control messages are not deferred and can be handled out of order with
-  // respect to routed ones.
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
-    return OnControlMessageReceived(message);
-
   if (message.type() == GpuCommandBufferMsg_GetStateFast::ID) {
     if (processed_get_state_fast_) {
       // Require a non-GetStateFast message in between two GetStateFast
@@ -502,13 +497,11 @@ void GpuChannel::OnDestroy() {
 }
 
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
-  // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
-  // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateOffscreenCommandBuffer,
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
                                     OnCreateOffscreenCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                                     OnDestroyCommandBuffer)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterStreamTextureProxy,
@@ -516,7 +509,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_EstablishStreamTexture,
                         OnEstablishStreamTexture)
 #endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+    IPC_MESSAGE_HANDLER(
         GpuChannelMsg_CollectRenderingStatsForSurface,
         OnCollectRenderingStatsForSurface)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -551,10 +544,13 @@ void GpuChannel::HandleMessage() {
         (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
 
     currently_processing_message_ = message.get();
-    bool result = router_.RouteMessage(*message);
+    bool result;
+    if (message->routing_id() == MSG_ROUTING_CONTROL)
+      result = OnControlMessageReceived(*message);
+    else
+      result = router_.RouteMessage(*message);
     currently_processing_message_ = NULL;
 
-    // Handle deferred control messages.
     if (!result) {
       // Respond to sync messages even if router failed to route.
       if (message->is_sync()) {
@@ -584,15 +580,11 @@ void GpuChannel::HandleMessage() {
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply_message) {
+    int32* route_id) {
   TRACE_EVENT0("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer");
-
-  int32 route_id = MSG_ROUTING_NONE;
-
-#if defined(ENABLE_GPU)
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
-  route_id = GenerateRouteID();
+  *route_id = GenerateRouteID();
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
@@ -605,26 +597,19 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.allowed_extensions,
       init_params.attribs,
       init_params.gpu_preference,
-      route_id,
+      *route_id,
       0, watchdog_,
       software_,
       init_params.active_url));
   if (preempt_by_counter_.get())
     stub->SetPreemptByCounter(preempt_by_counter_);
-  router_.AddRoute(route_id, stub.get());
-  stubs_.AddWithID(stub.release(), route_id);
+  router_.AddRoute(*route_id, stub.get());
+  stubs_.AddWithID(stub.release(), *route_id);
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
                "route_id", route_id);
-#endif
-
-  GpuChannelMsg_CreateOffscreenCommandBuffer::WriteReplyParams(
-      reply_message,
-      route_id);
-  Send(reply_message);
 }
 
-void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
-                                        IPC::Message* reply_message) {
+void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
                "route_id", route_id);
 
@@ -638,9 +623,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
     if (need_reschedule)
       OnScheduled();
   }
-
-  if (reply_message)
-    Send(reply_message);
 }
 
 #if defined(OS_ANDROID)
@@ -663,9 +645,7 @@ void GpuChannel::OnEstablishStreamTexture(
 #endif
 
 void GpuChannel::OnCollectRenderingStatsForSurface(
-    int32 surface_id, IPC::Message* reply_message) {
-  GpuRenderingStats stats;
-
+    int32 surface_id, GpuRenderingStats* stats) {
   for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
        !it.IsAtEnd(); it.Advance()) {
     int texture_upload_count =
@@ -675,21 +655,16 @@ void GpuChannel::OnCollectRenderingStatsForSurface(
     base::TimeDelta total_processing_commands_time =
         it.GetCurrentValue()->decoder()->GetTotalProcessingCommandsTime();
 
-    stats.global_texture_upload_count += texture_upload_count;
-    stats.global_total_texture_upload_time += total_texture_upload_time;
-    stats.global_total_processing_commands_time +=
+    stats->global_texture_upload_count += texture_upload_count;
+    stats->global_total_texture_upload_time += total_texture_upload_time;
+    stats->global_total_processing_commands_time +=
         total_processing_commands_time;
     if (it.GetCurrentValue()->surface_id() == surface_id) {
-      stats.texture_upload_count += texture_upload_count;
-      stats.total_texture_upload_time += total_texture_upload_time;
-      stats.total_processing_commands_time += total_processing_commands_time;
+      stats->texture_upload_count += texture_upload_count;
+      stats->total_texture_upload_time += total_texture_upload_time;
+      stats->total_processing_commands_time += total_processing_commands_time;
     }
   }
-
-  GpuChannelMsg_CollectRenderingStatsForSurface::WriteReplyParams(
-      reply_message,
-      stats);
-  Send(reply_message);
 }
 
 }  // namespace content
