@@ -122,11 +122,14 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     @CalledByNative
     public void releaseResources() {
         if (mContext != null) {
-            // Unregister the listener.
-            TelephonyManager mgr =
-                    (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            if (mgr != null) {
-                mgr.listen(this, PhoneStateListener.LISTEN_NONE);
+            if (PackageManager.PERMISSION_GRANTED ==
+                mContext.checkCallingOrSelfPermission(permission.READ_PHONE_STATE)) {
+                // Unregister the listener.
+                TelephonyManager mgr =
+                        (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+                if (mgr != null) {
+                    mgr.listen(this, PhoneStateListener.LISTEN_NONE);
+                }
             }
 
             // Unregister the wish for audio focus.
@@ -153,10 +156,13 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
             mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
         }
 
-        TelephonyManager mgr =
-                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        if (mgr != null) {
-            mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+        if (PackageManager.PERMISSION_GRANTED ==
+            context.checkCallingOrSelfPermission(permission.READ_PHONE_STATE)) {
+            TelephonyManager mgr =
+                    (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (mgr != null) {
+                mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+            }
         }
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
