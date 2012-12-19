@@ -192,7 +192,7 @@ PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
 # Default gerrit query used to find changes for CQ.
 DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                          'AND CommitReady=+1 '
+                          'AND CommitQueue=+1 '
                           'AND NOT ( CodeReview=-2 OR Verified=-1 )')
 
 # Some files need permissions set for several distinct groups. A google storage

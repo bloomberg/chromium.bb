@@ -878,7 +878,7 @@ def _CreateParser():
                           default=None,
                           help=
       "If given, this gerrit query will be used to find what patches to test, "
-      "rather than the normal 'CommitReady=2 AND Verified=1 AND CodeReview=2' "
+      "rather than the normal 'CommitQueue=1 AND Verified=1 AND CodeReview=2' "
       "query it defaults to.  Use with care- note additionally this setting "
       "only has an effect if the buildbot target is a cq target, and we're "
       "in buildbot mode.")
