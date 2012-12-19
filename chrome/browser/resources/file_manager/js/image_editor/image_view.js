@@ -359,8 +359,10 @@ ImageView.prototype.load = function(url, metadata, effect,
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     } else if ((!effect || (effect.constructor.name == 'Slide')) &&
-        metadata.thumbnail && metadata.thumbnail.url) {
+        metadata.thumbnail && metadata.thumbnail.url &&
+        !(metadata.media && ImageUtil.ImageLoader.isTooLarge(metadata.media))) {
       // Only show thumbnails if there is no effect or the effect is Slide.
+      // Also no thumbnail if the image is too large to be loaded.
       this.imageLoader_.load(
           metadata.thumbnail.url,
           function(url, callback) { callback(metadata.thumbnail.transform); },

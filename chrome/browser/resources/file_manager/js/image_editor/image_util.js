@@ -426,6 +426,15 @@ ImageUtil.ImageLoader = function(document) {
 ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT = 25 * 1000 * 1000;
 
 /**
+ * @param {HTMLImageElement|HTMLCanvasElement|Object} image Image or image
+ *   metadata, should have |width| and |height| properties.
+ * @return {boolean} True if the image is too large to be loaded.
+ */
+ImageUtil.ImageLoader.isTooLarge = function(image) {
+  return image.width * image.height > ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT;
+};
+
+/**
  * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
  *    the image transform (which we need for the image orientation)
@@ -458,15 +467,15 @@ ImageUtil.ImageLoader.prototype.load = function(
     this.image_ = new Image();
     var errorCallback = function(error) {
       this.image_ = null;
+      var tmpCallback = this.callback_;
       this.callback_ = null;
       var emptyCanvas = this.document_.createElement('canvas');
       emptyCanvas.width = 0;
       emptyCanvas.height = 0;
-      callback(emptyCanvas, error);
+      tmpCallback(emptyCanvas, error);
     }.bind(this);
     this.image_.onload = function(e) {
-      if (this.image_.width * this.image_.height >
-          ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT) {
+      if (ImageUtil.ImageLoader.isTooLarge(this.image_)) {
         errorCallback('IMAGE_TOO_BIG_ERROR');
         return;
       }
