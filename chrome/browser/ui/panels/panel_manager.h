@@ -37,6 +37,9 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Returns true if panels should be used for the extension.
   static bool ShouldUsePanels(const std::string& extension_id);
 
+  // Returns true if panel stacking support is enabled.
+  static bool IsPanelStackingEnabled();
+
   // Returns the default top-left position for a detached panel.
   gfx::Point GetDefaultDetachedPanelOrigin();
 

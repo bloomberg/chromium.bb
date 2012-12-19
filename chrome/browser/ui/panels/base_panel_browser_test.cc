@@ -210,6 +210,7 @@ bool BasePanelBrowserTest::SkipTestIfCompizWM() {
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePanels);
+  command_line->AppendSwitch(switches::kEnablePanelStacking);
 }
 
 void BasePanelBrowserTest::SetUpOnMainThread() {

@@ -94,6 +94,16 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   return true;
 }
 
+// static
+bool PanelManager::IsPanelStackingEnabled() {
+#if defined(OS_WIN)
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePanelStacking);
+#else
+  return false;
+#endif
+}
+
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true) {
