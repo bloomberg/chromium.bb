@@ -24,11 +24,6 @@ static bool usingPictureLayer()
     return CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
 }
 
-WebContentLayer* WebContentLayer::create(WebContentLayerClient* client)
-{
-    return new WebContentLayerImpl(client);
-}
-
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
     : m_client(client)
 {

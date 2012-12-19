@@ -10,13 +10,14 @@
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace webkit {
 
 class WebCompositorSupportSoftwareOutputDevice
     : public cc::SoftwareOutputDevice {
  public:
-  WebCompositorSupportSoftwareOutputDevice();
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebCompositorSupportSoftwareOutputDevice();
   virtual ~WebCompositorSupportSoftwareOutputDevice();
 
   virtual WebKit::WebImage* Lock(bool forWrite) OVERRIDE;

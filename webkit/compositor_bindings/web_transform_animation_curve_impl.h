@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformAnimationCurve.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
 class AnimationCurve;
@@ -17,7 +18,7 @@ namespace WebKit {
 
 class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
 public:
-    WebTransformAnimationCurveImpl();
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformAnimationCurveImpl();
     virtual ~WebTransformAnimationCurveImpl();
 
     // WebAnimationCurve implementation.

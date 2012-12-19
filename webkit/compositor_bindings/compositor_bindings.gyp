@@ -17,8 +17,6 @@
       'web_compositor_support_software_output_device.h',
       'web_content_layer_impl.cc',
       'web_content_layer_impl.h',
-      'web_delegated_renderer_layer_impl.cc',
-      'web_delegated_renderer_layer_impl.h',
       'web_external_texture_layer_impl.cc',
       'web_external_texture_layer_impl.h',
       'web_float_animation_curve_impl.cc',
@@ -46,6 +44,13 @@
       'web_transform_animation_curve_impl.cc',
       'web_transform_animation_curve_impl.h',
     ],
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../../..',
+      },{
+        'webkit_src_dir': '../../third_party/WebKit',
+      }],
+    ],
   },
   'targets': [
     {
@@ -53,6 +58,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
+        '../../cc/cc.gyp:cc',
         'webkit_compositor_bindings',
       ],
       'sources': [
@@ -66,16 +72,20 @@
     },
     {
       'target_name': 'webkit_compositor_bindings',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         '<@(webkit_compositor_bindings_sources)',
       ],
+      'defines': [
+        'WEBKIT_COMPOSITOR_BINDINGS_IMPLEMENTATION=1'
+      ]
     },
   ],
 }

@@ -17,8 +17,11 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "webkit/compositor_bindings/test/web_layer_tree_view_test_common.h"
+#include "webkit/compositor_bindings/web_content_layer_impl.h"
+#include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
+#include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 
 using namespace WebKit;
 using testing::AnyNumber;
@@ -42,7 +45,7 @@ public:
 
     virtual void SetUp()
     {
-        m_rootLayer.reset(WebLayer::create());
+        m_rootLayer.reset(new WebLayerImpl);
         EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
         m_view.reset(new WebLayerTreeViewImpl(&m_client));
         EXPECT_TRUE(m_view->initialize(WebLayerTreeView::Settings(), scoped_ptr<cc::Thread>(NULL)));
@@ -71,7 +74,7 @@ TEST_F(WebLayerTest, Client)
 {
     // Base layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebLayer> layer(WebLayer::create());
+    scoped_ptr<WebLayer> layer(new WebLayerImpl);
     layer->setDrawsContent(true);
     m_rootLayer->addChild(layer.get());
     Mock::VerifyAndClearExpectations(&m_client);
@@ -100,7 +103,7 @@ TEST_F(WebLayerTest, Client)
     EXPECT_TRUE(layer->masksToBounds());
 
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebLayer> otherLayer(WebLayer::create());
+    scoped_ptr<WebLayer> otherLayer(new WebLayerImpl);
     m_rootLayer->addChild(otherLayer.get());
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
     layer->setMaskLayer(otherLayer.get());
@@ -124,7 +127,7 @@ TEST_F(WebLayerTest, Client)
 
     // Texture layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    scoped_ptr<WebExternalTextureLayer> textureLayer(WebExternalTextureLayer::create());
+    scoped_ptr<WebExternalTextureLayer> textureLayer(new WebExternalTextureLayerImpl(NULL));
     m_rootLayer->addChild(textureLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 
@@ -147,7 +150,7 @@ TEST_F(WebLayerTest, Client)
     EXPECT_CALL(contentClient, paintContents(_, _, _, _)).Times(AnyNumber());
                                              
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebContentLayer> contentLayer(WebContentLayer::create(&contentClient));
+    scoped_ptr<WebContentLayer> contentLayer(new WebContentLayerImpl(&contentClient));
     m_rootLayer->addChild(contentLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 
@@ -158,7 +161,7 @@ TEST_F(WebLayerTest, Client)
 
     // Solid color layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    scoped_ptr<WebSolidColorLayer> solidColorLayer(WebSolidColorLayer::create());
+    scoped_ptr<WebSolidColorLayer> solidColorLayer(new WebSolidColorLayerImpl);
     m_rootLayer->addChild(solidColorLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 

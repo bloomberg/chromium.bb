@@ -11,7 +11,6 @@
 #include "webkit/compositor_bindings/web_compositor_support_output_surface.h"
 #include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
-#include "webkit/compositor_bindings/web_delegated_renderer_layer_impl.h"
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
 #include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_image_layer_impl.h"
@@ -29,7 +28,6 @@ using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;
 using WebKit::WebContentLayer;
 using WebKit::WebContentLayerClient;
-using WebKit::WebDelegatedRendererLayer;
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebExternalTextureLayerClient;
 using WebKit::WebFloatAnimationCurve;
@@ -118,11 +116,6 @@ WebLayer* WebCompositorSupportImpl::createLayer() {
 WebContentLayer* WebCompositorSupportImpl::createContentLayer(
     WebContentLayerClient* client) {
   return new WebKit::WebContentLayerImpl(client);
-}
-
-WebDelegatedRendererLayer*
-    WebCompositorSupportImpl::createDelegatedRendererLayer() {
-  return new WebKit::WebDelegatedRendererLayerImpl();
 }
 
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(

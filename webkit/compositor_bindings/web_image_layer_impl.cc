@@ -17,11 +17,6 @@ static bool usingPictureLayer()
 
 namespace WebKit {
 
-WebImageLayer* WebImageLayer::create()
-{
-    return new WebImageLayerImpl();
-}
-
 WebImageLayerImpl::WebImageLayerImpl()
 {
     if (usingPictureLayer())

@@ -11,11 +11,6 @@
 
 namespace WebKit {
 
-WebFloatAnimationCurve* WebFloatAnimationCurve::create()
-{
-    return new WebFloatAnimationCurveImpl();
-}
-
 WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
     : m_curve(cc::KeyframedFloatAnimationCurve::create())
 {

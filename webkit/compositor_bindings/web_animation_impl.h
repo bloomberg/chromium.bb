@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
 class ActiveAnimation;
@@ -16,7 +17,8 @@ namespace WebKit {
 
 class WebAnimationImpl : public WebAnimation {
 public:
-    WebAnimationImpl(const WebAnimationCurve&, TargetProperty, int animationId, int groupId = 0);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebAnimationImpl(
+        const WebAnimationCurve&, TargetProperty, int animationId, int groupId = 0);
     virtual ~WebAnimationImpl();
 
     // WebAnimation implementation

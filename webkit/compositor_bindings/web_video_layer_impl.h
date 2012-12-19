@@ -7,13 +7,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVideoLayer.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
 class WebLayerImpl;
 
 class WebVideoLayerImpl : public WebVideoLayer {
 public:
-    explicit WebVideoLayerImpl(WebVideoFrameProvider*);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebVideoLayerImpl(
+        WebVideoFrameProvider*);
     virtual ~WebVideoLayerImpl();
 
     // WebVideoLayer implementation.

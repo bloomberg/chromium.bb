@@ -7,13 +7,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
 class WebLayerImpl;
 
 class WebSolidColorLayerImpl : public WebSolidColorLayer {
 public:
-    WebSolidColorLayerImpl();
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebSolidColorLayerImpl();
     virtual ~WebSolidColorLayerImpl();
 
     // WebSolidColorLayer implementation.

@@ -7,13 +7,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarLayer.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
 class WebLayerImpl;
 
 class WebScrollbarLayerImpl : public WebScrollbarLayer {
 public:
-    WebScrollbarLayerImpl(WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
+        WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*);
     virtual ~WebScrollbarLayerImpl();
 
     // WebScrollbarLayer implementation.

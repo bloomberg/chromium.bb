@@ -23,11 +23,6 @@ using cc::Layer;
 
 namespace WebKit {
 
-WebLayer* WebLayer::create()
-{
-    return new WebLayerImpl();
-}
-
 WebLayerImpl::WebLayerImpl()
     : m_layer(Layer::create())
 {

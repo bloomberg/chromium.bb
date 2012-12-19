@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layer_tree_host_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
 class FontAtlas;
@@ -22,10 +23,12 @@ class WebLayerTreeViewClientAdapter;
 
 class WebLayerTreeViewImpl : public WebLayerTreeView, public cc::LayerTreeHostClient {
 public:
-    explicit WebLayerTreeViewImpl(WebLayerTreeViewClient*);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebLayerTreeViewImpl(
+        WebLayerTreeViewClient*);
     virtual ~WebLayerTreeViewImpl();
 
-    bool initialize(const Settings&, scoped_ptr<cc::Thread> implThread);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
+        const Settings&, scoped_ptr<cc::Thread> implThread);
 
     // WebLayerTreeView implementation.
     virtual void setSurfaceReady() OVERRIDE;

@@ -37,7 +37,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebLayer* createLayer();
   virtual WebKit::WebContentLayer* createContentLayer(
       WebKit::WebContentLayerClient* client);
-  virtual WebKit::WebDelegatedRendererLayer* createDelegatedRendererLayer();
   virtual WebKit::WebExternalTextureLayer*
     createExternalTextureLayer(WebKit::WebExternalTextureLayerClient* client);
   virtual WebKit::WebIOSurfaceLayer*

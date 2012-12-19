@@ -13,12 +13,6 @@ using cc::ScrollbarThemePainter;
 
 namespace WebKit {
 
-WebScrollbarLayer* WebScrollbarLayer::create(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-{
-    return new WebScrollbarLayerImpl(scrollbar, painter, geometry);
-}
-
-
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
     : m_layer(new WebLayerImpl(ScrollbarLayer::create(
         make_scoped_ptr(scrollbar),

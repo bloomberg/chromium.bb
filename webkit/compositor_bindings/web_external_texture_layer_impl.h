@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/texture_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
 
@@ -16,7 +17,8 @@ class WebLayerImpl;
 class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
                                     public cc::TextureLayerClient {
 public:
-    explicit WebExternalTextureLayerImpl(WebExternalTextureLayerClient*);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
+        WebExternalTextureLayerClient*);
     virtual ~WebExternalTextureLayerImpl();
 
     // WebExternalTextureLayer implementation.

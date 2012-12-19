@@ -8,7 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/content_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
-#include "web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
 class IntRect;
@@ -21,7 +22,8 @@ class WebContentLayerClient;
 class WebContentLayerImpl : public WebContentLayer,
                             public cc::ContentLayerClient {
 public:
-    explicit WebContentLayerImpl(WebContentLayerClient*);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebContentLayerImpl(
+        WebContentLayerClient*);
 
     // WebContentLayer implementation.
     virtual WebLayer* layer() OVERRIDE;

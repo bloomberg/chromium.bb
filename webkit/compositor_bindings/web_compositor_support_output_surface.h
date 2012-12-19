@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/output_surface.h"
 #include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace webkit {
 
@@ -38,9 +39,9 @@ class WebCompositorSupportOutputSurface : public cc::OutputSurface {
   virtual void SendFrameToParentCompositor(const cc::CompositorFrame&) OVERRIDE;
 
 private:
-  explicit WebCompositorSupportOutputSurface(
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebCompositorSupportOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
-  explicit WebCompositorSupportOutputSurface(
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebCompositorSupportOutputSurface(
       scoped_ptr<cc::SoftwareOutputDevice> software_device);
 
   struct cc::OutputSurface::Capabilities capabilities_;

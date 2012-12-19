@@ -197,6 +197,7 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../ui/gl/gl.gyp:gl',
+        '../ui/ui.gyp:ui',
       ],
       'sources': [
         '<@(cc_tests_support_files)',
