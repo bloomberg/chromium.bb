@@ -98,6 +98,8 @@ bool QuicSession::OnCanWrite() {
 
 int QuicSession::WriteData(QuicStreamId id, StringPiece data,
                            QuicStreamOffset offset, bool fin) {
+  // TODO(wtc): type mismatch -- connection_->SendStreamData() returns a
+  // size_t.
   return connection_->SendStreamData(id, data, offset, fin, NULL);
 }
 

@@ -45,6 +45,7 @@ void QuicCryptoStream::SetHandshakeComplete(QuicErrorCode error) {
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   scoped_ptr<QuicData> data(crypto_framer_.ConstructHandshakeMessage(message));
+  // TODO(wtc): check the return value.
   WriteData(string(data->data(), data->length()), false);
 }
 

@@ -39,6 +39,7 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
 
   // Sends |message| to the peer.
+  // TODO(wtc): return a success/failure status.
   void SendHandshakeMessage(const CryptoHandshakeMessage& message);
 
   bool handshake_complete() { return handshake_complete_; }

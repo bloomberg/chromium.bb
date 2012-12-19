@@ -586,6 +586,7 @@ bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
       */
       return false;
     }
+    // TODO(wtc): is it correct to fall through to return true?
   }
 
   time_of_last_packet_ = clock_->Now();
