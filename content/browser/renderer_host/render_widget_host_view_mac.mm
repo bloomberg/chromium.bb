@@ -96,9 +96,6 @@ typedef NSUInteger NSEventPhase;
 
 @interface NSEvent (LionAPI)
 - (NSEventPhase)phase;
-+ (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
-                                   handler:(NSEvent* (^)(NSEvent*))block;
-+ (void)removeMonitor:(id)eventMonitor;
 @end
 
 @interface NSWindow (LionAPI)
