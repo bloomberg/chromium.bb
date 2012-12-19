@@ -85,7 +85,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
     [image drawInRect:imageRect
              fromRect:NSZeroRect
             operation:NSCompositeSourceOver
-             fraction:alpha * 0.5
+             fraction:alpha * 0.3
        respectFlipped:YES
                 hints:nil];
 

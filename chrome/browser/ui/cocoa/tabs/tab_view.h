@@ -9,7 +9,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
 namespace tabs {
@@ -38,7 +37,7 @@ enum AlertState {
 // on the tab strip. Relies on an associated TabController to provide a
 // target/action for selecting the tab.
 
-@interface TabView : BackgroundGradientView {
+@interface TabView : NSView {
  @private
   TabController* controller_;
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it

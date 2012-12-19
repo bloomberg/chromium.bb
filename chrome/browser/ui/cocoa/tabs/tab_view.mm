@@ -68,7 +68,6 @@ const CGFloat kRapidCloseDist = 2.5;
         closeButton:(HoverCloseButton*)closeButton {
   self = [super initWithFrame:frame];
   if (self) {
-    [self setShowsDivider:NO];
     controller_ = controller;
     closeButton_ = closeButton;
   }
@@ -258,44 +257,38 @@ const CGFloat kRapidCloseDist = 2.5;
   NSRect rect = [self bounds];
   NSBezierPath* path = [self bezierPathForRect:rect];
 
-  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
-  BOOL selected = [self state];
+  int bitmapResources[2][2] = {
+    // Background window.
+    {
+      IDR_THEME_TAB_BACKGROUND_INACTIVE,  // Background tab.
+      IDR_THEME_TOOLBAR_INACTIVE,         // Active tab.
+    },
+    // Currently focused window.
+    {
+      IDR_THEME_TAB_BACKGROUND,  // Background tab.
+      IDR_THEME_TOOLBAR,         // Active tab.
+    },
+  };
+
+  bool selected = [self state];
+
+  NSColor* backgroundImageColor;
+  if (themeProvider) {
+    // Themes don't have an inactive image so only look for one if there's no
+    // theme.
+    bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
+                  !themeProvider->UsingDefaultTheme();
+    backgroundImageColor = themeProvider->GetNSImageColorNamed(
+        bitmapResources[active][selected], true);
+  } else {
+    backgroundImageColor = [[self window] backgroundColor];
+  }
+
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
-  BOOL hasBackgroundImage = NO;
   if (!selected) {
-    // ui::ThemeProvider::HasCustomImage is true only if the theme provides the
-    // image. However, even if the theme doesn't provide a tab background, the
-    // theme machinery will make one if given a frame image. See
-    // BrowserThemePack::GenerateTabBackgroundImages for details.
-    hasBackgroundImage = themeProvider &&
-        (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
-         themeProvider->HasCustomImage(IDR_THEME_FRAME));
-
-    NSColor* backgroundImageColor = hasBackgroundImage ?
-        themeProvider->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true) :
-        nil;
-
-    if (backgroundImageColor) {
-      [backgroundImageColor set];
-      [path fill];
-    } else {
-      CGFloat grey = active ? 0.8 : 0.9;
-      scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
-          initWithStartingColor:[NSColor colorWithCalibratedWhite:grey alpha:1]
-            endingColor:[NSColor colorWithCalibratedWhite:0.9 * grey alpha:1]]);
-      [gradient drawInBezierPath:path angle:270];
-
-      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
-      NSGraphicsContext* context = [NSGraphicsContext currentContext];
-      CGContextRef cgContext =
-          static_cast<CGContextRef>([context graphicsPort]);
-      CGContextBeginTransparencyLayer(cgContext, 0);
-      CGContextSetAlpha(cgContext, 0.5);
-      [path addClip];
-      [super drawBackgroundWithOpaque:NO];
-      CGContextEndTransparencyLayer(cgContext);
-    }
+    [backgroundImageColor set];
+    [path fill];
   }
 
   // Use the same overlay for the selected state and for hover and alert
@@ -320,14 +313,19 @@ const CGFloat kRapidCloseDist = 2.5;
       CGContextSetAlpha(cgContext, backgroundAlpha);
     }
 
-    {
-      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
-      [super drawBackgroundWithOpaque:NO];
-    }
+    [backgroundImageColor set];
+    NSRectFill(dirtyRect);
 
+    // ui::ThemeProvider::HasCustomImage is true only if the theme provides the
+    // image. However, even if the theme doesn't provide a tab background, the
+    // theme machinery will make one if given a frame image. See
+    // BrowserThemePack::GenerateTabBackgroundImages for details.
+    BOOL hasCustomTheme = themeProvider &&
+        (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
+         themeProvider->HasCustomImage(IDR_THEME_FRAME));
     // Draw a mouse hover gradient for the default themes.
     if (!selected && hoverAlpha > 0) {
-      if (themeProvider && !hasBackgroundImage) {
+      if (themeProvider && !hasCustomTheme) {
         scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
                                         alpha:1.0 * hoverAlpha]

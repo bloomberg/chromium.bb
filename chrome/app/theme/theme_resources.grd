@@ -793,7 +793,7 @@
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_ATTRIBUTION" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND" file="common/ntp_background.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND_WHITE" file="common/ntp_background_white.png" />
-      <if expr="not pp_ifdef('use_ash')">
+      <if expr="not pp_ifdef('use_ash') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="theme_tab_background_incognito.png" />
       </if>
@@ -802,11 +802,11 @@
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="cros/theme_default_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="cros/theme_default_inactive.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_V" file="theme_tab_background_glass.png" />
-      <if expr="not pp_ifdef('use_ash') and is_macosx">
-        <!-- TODO(jamescook): Is this right? -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="mac/theme_default_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INACTIVE" file="mac/theme_default_inactive_background.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_V" file="theme_tab_background_glass.png" />
       <if expr="not pp_ifdef('use_ash') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" />
       </if>
@@ -815,8 +815,8 @@
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="cros/theme_default_active.png" />
       </if>
       <if expr="is_macosx">
-        <!-- TODO(jamescook): Is this right? -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="mac/theme_default_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="mac/theme_default_active_background.png" />
       </if>
       <!-- Instant Extended API toolbar background is common for all platforms. -->
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
