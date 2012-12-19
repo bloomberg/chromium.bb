@@ -55,8 +55,6 @@ extern const char kDistroImportHomePagePref[];
 extern const char kDistroImportSearchPref[];
 // Integer. RLZ ping delay in seconds.
 extern const char kDistroPingDelay[];
-// Boolean pref that triggers loading the welcome page.
-extern const char kDistroShowWelcomePage[];
 // Boolean pref that triggers skipping the first run dialogs.
 extern const char kDistroSkipFirstRunPref[];
 // Boolean. Do not show first run bubble, even if it would otherwise be shown.

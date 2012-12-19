@@ -81,7 +81,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
 
   const char* expected_true[] = {
     installer::master_preferences::kDistroSkipFirstRunPref,
-    installer::master_preferences::kDistroShowWelcomePage,
     installer::master_preferences::kDistroImportSearchPref,
     installer::master_preferences::kDistroImportHistoryPref,
     installer::master_preferences::kDistroImportBookmarksPref,
@@ -155,8 +154,6 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   }
 
   const char* missing_bools[] = {
-    installer::master_preferences::kDistroShowWelcomePage,
-    installer::master_preferences::kDistroImportHistoryPref,
     installer::master_preferences::kDistroImportHomePagePref,
     installer::master_preferences::kDoNotRegisterForUpdateLaunch,
     installer::master_preferences::kMakeChromeDefault,

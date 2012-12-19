@@ -327,16 +327,6 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
   }
 }
 
-void SetShowWelcomePagePrefIfNeeded(
-    installer::MasterPreferences* install_prefs) {
-  bool value = false;
-  if (install_prefs->GetBool(
-          installer::master_preferences::kDistroShowWelcomePage, &value)
-          && value) {
-    SetShowWelcomePagePref();
-  }
-}
-
 bool SkipFirstRunUI(installer::MasterPreferences* install_prefs) {
   bool value = false;
   install_prefs->GetBool(installer::master_preferences::kDistroSkipFirstRunPref,
@@ -682,7 +672,6 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   if (!CreateSentinel())
     return SKIP_FIRST_RUN;
 
-  internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
 
