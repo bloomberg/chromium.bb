@@ -745,16 +745,17 @@ void OneClickSigninHelper::DidStopLoading(
   // If the user left the sign in process, clear all members.
   // TODO(rogerta): might need to allow some youtube URLs.
   content::WebContents* contents = web_contents();
-  if (!gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin())) {
-    CleanTransientState();
-    return;
-  }
 
-  if (!error_message_.empty()) {
+  // If an error has already occured during the sign in flow, make sure to
+  // display it to the user and abort the process.  Do this only for
+  // explicit sign ins.
+  if (!error_message_.empty() && auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
+    VLOG(1) << "OneClickSigninHelper::DidStopLoading: error=" << error_message_;
     RedirectToNTP();
     return;
   }
 
+  // If there is no valid email or password yet, there is nothing to do.
   if (email_.empty() || password_.empty())
     return;
 
