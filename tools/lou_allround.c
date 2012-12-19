@@ -53,7 +53,7 @@ static void
 print_help (void)
 {
   printf ("\
-Usage: %s [OPTION]\n", program_name);
+Usage: %s [OPTIONS]\n", program_name);
   
   fputs ("\
 This program tests every capability of the liblouis library. It is\n\

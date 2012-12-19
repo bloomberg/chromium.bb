@@ -52,7 +52,7 @@ static void
 print_help (void)
 {
   printf ("\
-Usage: %s [OPTION]\n", program_name);
+Usage: %s [OPTIONS]\n", program_name);
   
   fputs ("\
 Check the accuracy of hyphenation in Braille translation for both\n\

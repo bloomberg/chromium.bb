@@ -97,7 +97,7 @@ static void
 print_help (void)
 {
   printf ("\
-Usage: %s [OPTION] TABLE\n", program_name);
+Usage: %s [OPTIONS] TABLE[,TABLE,...]\n", program_name);
   
   fputs ("\
 Translate whatever is on standard input and print it on standard\n\
