@@ -10,6 +10,9 @@ PHONE_HOME_NUMBER | BILL_PHONE<>exchange | Exchange |
 UNKNOWN_TYPE | BILL_PHONE<>extension | Extension | 
 PHONE_HOME_WHOLE_NUMBER | bill_phone | Contact Phone: | 
 EMAIL_ADDRESS | CURRENT_USER<>email | E-mail Address: | 
+UNKNOWN_TYPE | EMAIL_OPT_STATUS_ARRAY<>opt_status | Yes, sign me up for Sale Alerts. (optional) | true
+UNKNOWN_TYPE | indShipIsBillTo | Yes | true
+UNKNOWN_TYPE | indShipIsBillTo | Yes No | false
 NAME_FIRST | SHIP_TO_ADDRESS<>firstName | First Name: | 
 NAME_LAST | SHIP_TO_ADDRESS<>lastName | Last Name: | 
 ADDRESS_HOME_LINE1 | SHIP_TO_ADDRESS<>address1 | Address: | 

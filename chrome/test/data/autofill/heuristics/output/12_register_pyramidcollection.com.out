@@ -19,3 +19,4 @@ ADDRESS_HOME_COUNTRY | SC3 | Country * | 0000
 ADDRESS_HOME_ZIP | SZ1 | Zip Code * | 
 PHONE_HOME_WHOLE_NUMBER | SP2 | Day Phone * | 
 PHONE_HOME_WHOLE_NUMBER | SP3 | Evening Phone | 
+UNKNOWN_TYPE | sameAsBilling | Email Address * First Name * Last Name Address Line 1 First Name Last Name | on

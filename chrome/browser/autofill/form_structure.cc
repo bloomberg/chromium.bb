@@ -227,6 +227,7 @@ FormStructure::FormStructure(const FormData& form)
       source_url_(form.origin),
       target_url_(form.action),
       autofill_count_(0),
+      checkable_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
       has_author_specified_types_(false) {
@@ -235,10 +236,17 @@ FormStructure::FormStructure(const FormData& form)
   for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
        field != form.fields.end(); field++) {
-    // Add all supported form fields (including with empty names) to the
-    // signature.  This is a requirement for Autofill servers.
-    form_signature_field_names_.append("&");
-    form_signature_field_names_.append(UTF16ToUTF8(field->name));
+    // Skipping checkable elements when flag is not set, else these fields will
+    // interfere with existing field signatures with Autofill servers.
+    // TODO(ramankk): Add checkable elements only on whitelisted pages
+    if (!field->is_checkable ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalFormFilling)) {
+      // Add all supported form fields (including with empty names) to the
+      // signature.  This is a requirement for Autofill servers.
+      form_signature_field_names_.append("&");
+      form_signature_field_names_.append(UTF16ToUTF8(field->name));
+    }
 
     // Generate a unique name for this field by appending a counter to the name.
     // Make sure to prepend the counter with a non-numeric digit so that we are
@@ -250,6 +258,9 @@ FormStructure::FormStructure(const FormData& form)
     string16 unique_name = field->name + ASCIIToUTF16("_") +
         base::IntToString16(unique_names[field->name]);
     fields_.push_back(new AutofillField(*field, unique_name));
+
+    if (field->is_checkable)
+      ++checkable_field_count_;
   }
 
   std::string method = UTF16ToUTF8(form.method);
@@ -406,10 +417,10 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
-  std::vector<AutofillFieldType> field_types;
+  std::vector<AutofillServerFieldInfo> field_infos;
   UploadRequired upload_required;
   std::string experiment_id;
-  AutofillQueryXmlParser parse_handler(&field_types, &upload_required,
+  AutofillQueryXmlParser parse_handler(&field_infos, &upload_required,
                                        &experiment_id);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
@@ -423,7 +434,8 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   bool query_response_overrode_heuristics = false;
 
   // Copy the field types into the actual form.
-  std::vector<AutofillFieldType>::iterator current_type = field_types.begin();
+  std::vector<AutofillServerFieldInfo>::iterator current_info =
+      field_infos.begin();
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
@@ -431,22 +443,26 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     form->server_experiment_id_ = experiment_id;
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
-         field != form->fields_.end(); ++field, ++current_type) {
+         field != form->fields_.end(); ++field, ++current_info) {
       // In some cases *successful* response does not return all the fields.
       // Quit the update of the types then.
-      if (current_type == field_types.end())
+      if (current_info == field_infos.end())
         break;
 
       // UNKNOWN_TYPE is reserved for use by the client.
-      DCHECK_NE(*current_type, UNKNOWN_TYPE);
+      DCHECK_NE(current_info->field_type, UNKNOWN_TYPE);
 
       AutofillFieldType heuristic_type = (*field)->type();
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;
 
-      (*field)->set_server_type(*current_type);
+      (*field)->set_server_type(current_info->field_type);
       if (heuristic_type != (*field)->type())
         query_response_overrode_heuristics = true;
+
+      // Copy default value into the field if available.
+      if (!current_info->default_value.empty())
+        (*field)->set_default_value(current_info->default_value);
     }
 
     form->UpdateAutofillCount();
@@ -551,7 +567,10 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
           switches::kEnableExperimentalFormFilling))
     return true;
 
-  if (field_count() < kRequiredFillableFields)
+  // Ignore counting checkable elements towards minimum number of elements
+  // required to parse. This avoids trying to crowdsource forms with few text
+  // or select elements.
+  if ((field_count() - checkable_field_count()) < kRequiredFillableFields)
     return false;
 
   // Rule out http(s)://*/search?...
@@ -813,6 +832,10 @@ size_t FormStructure::field_count() const {
   return fields_.size();
 }
 
+size_t FormStructure::checkable_field_count() const {
+  return checkable_field_count_;
+}
+
 std::string FormStructure::server_experiment_id() const {
   return server_experiment_id_;
 }
@@ -884,6 +907,10 @@ bool FormStructure::EncodeFormRequest(
   for (size_t index = 0; index < field_count(); ++index) {
     const AutofillField* field = fields_[index];
     if (request_type == FormStructure::UPLOAD) {
+      // Don't upload checkable fields.
+      if (field->is_checkable)
+        continue;
+
       FieldTypeSet types = field->possible_types();
       // |types| could be empty in unit-tests only.
       for (FieldTypeSet::iterator field_type = types.begin();
@@ -898,6 +925,12 @@ bool FormStructure::EncodeFormRequest(
         encompassing_xml_element->AddElement(field_element);
       }
     } else {
+      // Skip putting checkable fields in the request if the flag is not set.
+      if (field->is_checkable &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalFormFilling))
+        continue;
+
       buzz::XmlElement *field_element = new buzz::XmlElement(
           buzz::QName(kXMLElementField));
       field_element->SetAttr(buzz::QName(kAttributeSignature),

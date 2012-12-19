@@ -4,3 +4,4 @@ CREDIT_CARD_NUMBER | txtCreditCardNumber | *Card number: |
 CREDIT_CARD_EXP_MONTH | drpdwnExpirationMonth | *Expiration date: | 00
 CREDIT_CARD_EXP_4_DIGIT_YEAR | drpdwnExpirationYear | *Expiration date: | 2011
 CREDIT_CARD_VERIFICATION_CODE | txtVisaVerificationNumber | VISA Card Verification # | 
+UNKNOWN_TYPE | chkUnreadable | I can't read the numbers | on
