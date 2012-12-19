@@ -111,7 +111,7 @@ typedef struct {
 typedef struct {
 	const FLAC__byte *data;
 	unsigned capacity;
-	unsigned bytes;
+	size_t bytes;
 } verify_output;
 
 typedef enum {
@@ -2428,8 +2428,8 @@ FLAC__bool write_bitbuffer_(FLAC__StreamEncoder *encoder, unsigned samples, FLAC
 	FLAC__bitwriter_clear(encoder->private_->frame);
 
 	if(samples > 0) {
-		encoder->private_->streaminfo.data.stream_info.min_framesize = min(bytes, encoder->private_->streaminfo.data.stream_info.min_framesize);
-		encoder->private_->streaminfo.data.stream_info.max_framesize = max(bytes, encoder->private_->streaminfo.data.stream_info.max_framesize);
+		encoder->private_->streaminfo.data.stream_info.min_framesize = (unsigned)min(bytes, encoder->private_->streaminfo.data.stream_info.min_framesize);
+		encoder->private_->streaminfo.data.stream_info.max_framesize = (unsigned)max(bytes, encoder->private_->streaminfo.data.stream_info.max_framesize);
 	}
 
 	return true;
@@ -3753,9 +3753,9 @@ unsigned find_best_partition_order_(
 
 		/* save best parameters and raw_bits */
 		FLAC__format_entropy_coding_method_partitioned_rice_contents_ensure_size(prc, max(6, best_partition_order));
-		memcpy(prc->parameters, private_->partitioned_rice_contents_extra[best_parameters_index].parameters, sizeof(unsigned)*(1<<(best_partition_order)));
+		memcpy(prc->parameters, private_->partitioned_rice_contents_extra[best_parameters_index].parameters, sizeof(unsigned)*((size_t)1<<(best_partition_order)));
 		if(do_escape_coding)
-			memcpy(prc->raw_bits, private_->partitioned_rice_contents_extra[best_parameters_index].raw_bits, sizeof(unsigned)*(1<<(best_partition_order)));
+			memcpy(prc->raw_bits, private_->partitioned_rice_contents_extra[best_parameters_index].raw_bits, sizeof(unsigned)*((size_t)1<<(best_partition_order)));
 		/*
 		 * Now need to check if the type should be changed to
 		 * FLAC__ENTROPY_CODING_METHOD_PARTITIONED_RICE2 based on the
