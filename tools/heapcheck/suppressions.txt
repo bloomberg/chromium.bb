@@ -216,28 +216,22 @@
    bug_148477_b
    Heapcheck:Leak
    ...
-   fun:gfx::RealGLApi::glCompileShaderFn
+   fun:gfx::GLApiBase::glCompileShaderFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
    fun:cc::ProgramBindingBase::loadShader
    fun:cc::ProgramBindingBase::init
    fun:ProgramBinding
-   ...
-   fun:cc::SingleThreadProxy::commitAndComposite
-   fun:cc::SingleThreadProxy::compositeImmediately
 }
 {
    bug_148477_c
    Heapcheck:Leak
    ...
-   fun:gfx::RealGLApi::glLinkProgramFn
+   fun:gfx::GLApiBase::glLinkProgramFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
    fun:cc::ProgramBindingBase::link
    fun:cc::ProgramBinding::initialize
-   ...
-   fun:cc::GLRenderer::drawQuad
-   fun:cc::DirectRenderer::drawRenderPass
-   fun:cc::DirectRenderer::drawFrame
 }
+
 # There is not CloseTestNSSDB due to NSS bug 588269.
 # When NSS 3.14 is the minimum version required, this should be removed.
 # http://crbug.com/156433 .
