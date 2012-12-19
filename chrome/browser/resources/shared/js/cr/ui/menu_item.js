@@ -255,6 +255,12 @@ cr.define('cr.ui', function() {
    */
   cr.defineProperty(MenuItem, 'checked', cr.PropertyKind.BOOL_ATTR);
 
+  /**
+   * Whether the menu item is checkable or not.
+   * @type {boolean}
+   */
+  cr.defineProperty(MenuItem, 'checkable', cr.PropertyKind.BOOL_ATTR);
+
   // Export
   return {
     MenuItem: MenuItem

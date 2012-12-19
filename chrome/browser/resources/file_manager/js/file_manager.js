@@ -490,6 +490,9 @@ DialogType.isModal = function(type) {
 
     this.gdataSettingsMenu_.addEventListener('menushow',
         this.onGDataMenuShow_.bind(this));
+
+    this.syncButton.checkable = true;
+    this.hostedButton.checkable = true;
   };
 
   /**
