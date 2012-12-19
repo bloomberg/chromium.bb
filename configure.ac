@@ -5,6 +5,12 @@ AC_INIT(liblouis, 2.5.2, john.boyer@abilitiessoft.com)
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_CONFIG_HEADER(liblouis/config.h)
 
+dnl backwards compatibility for autoconf <= 2.64
+dnl PACKAGE_URL should be the fifth argument of AC_INIT
+m4_define([AC_PACKAGE_URL], [http://code.google.com/p/liblouis/])
+AC_DEFINE(PACKAGE_URL, "AC_PACKAGE_URL", [Package URL])
+AC_SUBST(PACKAGE_URL, AC_PACKAGE_URL)
+
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
