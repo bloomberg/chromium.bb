@@ -9,9 +9,10 @@
         'pkg-config': './pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
       }, {
         'pkg-config': 'pkg-config'
-      }]
+      }],
     ],
 
+    'linux_link_libgps%': 0,
     'linux_link_libpci%': 0,
     'linux_link_libspeechd%': 0,
   },
@@ -115,6 +116,75 @@
           ],
         },
       ],  # targets
+    }],
+    ['linux_use_libgps==1', {
+      'targets': [
+        {
+          'target_name': 'libgps',
+          'type': 'static_library',
+          'dependencies': [
+            '../../base/base.gyp:base',
+          ],
+          'all_dependent_settings': {
+            'defines': [
+              'USE_LIBGPS',
+            ],
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)',
+            ],
+            'conditions': [
+              ['linux_link_libgps==1', {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags libgps)',
+                ],
+                'link_settings': {
+                  'ldflags': [
+                    '<!@(<(pkg-config) --libs-only-L --libs-only-other libgps)',
+                  ],
+                  'libraries': [
+                    '<!@(<(pkg-config) --libs-only-l libgps)',
+                  ],
+                }
+              }],
+            ],
+          },
+          'hard_dependency': 1,
+          'actions': [
+            {
+              'variables': {
+                'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libgps.h',
+                'output_cc': '<(INTERMEDIATE_DIR)/libgps_loader.cc',
+                'generator': '../../tools/generate_library_loader/generate_library_loader.py',
+              },
+              'action_name': 'generate_libgps_loader',
+              'inputs': [
+                '<(generator)',
+              ],
+              'outputs': [
+                '<(output_h)',
+                '<(output_cc)',
+              ],
+              'action': ['python',
+                         '<(generator)',
+                         '--name', 'LibGpsLoader',
+                         '--output-h', '<(output_h)',
+                         '--output-cc', '<(output_cc)',
+                         '--header', '<gps.h>',
+                         '--bundled-header', '"third_party/gpsd/release-3.1/gps.h"',
+                         '--link-directly=<(linux_link_libgps)',
+                         'gps_open',
+                         'gps_close',
+                         'gps_read',
+                         # We don't use gps_shm_read() directly, just to make
+                         # sure that libgps has the shared memory support.
+                         'gps_shm_read',
+              ],
+              'message': 'Generating libgps library loader.',
+              'process_outputs_as_sources': 1,
+            },
+          ],
+        },
+      ],
     }],
   ],  # conditions
   'targets': [

@@ -3,17 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      ['chromeos==1', {
-        'use_libgps%': 1,
-      }, { # chromeos==0
-        # Do not use libgps on desktop Linux by default,
-        # see http://crbug.com/103751.
-        'use_libgps%': 0,
-      }],
-    ],
-  },
   'dependencies': [
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     '../base/base.gyp:base_static',
@@ -1163,19 +1152,10 @@
         ['exclude', '^browser/speech/'],
       ],
     }],
-    ['use_libgps==1', {
-      'defines': [
-        'USE_LIBGPS',
+    ['linux_use_libgps==1', {
+      'dependencies': [
+        '../build/linux/system.gyp:libgps',
       ],
-      # Because of component build, this .gypi file may be included either
-      # in content_browser target, or content target. To be sure
-      # the USE_LIBGPS setting propagates to the "real" dependent target,
-      # we use all_dependent_settings here.
-      'all_dependent_settings': {
-        'defines': [
-          'USE_LIBGPS',
-        ],
-      },
     }],
   ],
 }

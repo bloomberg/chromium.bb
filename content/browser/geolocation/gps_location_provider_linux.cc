@@ -4,7 +4,6 @@
 
 #include "content/browser/geolocation/gps_location_provider_linux.h"
 
-#include <dlfcn.h>
 #include <errno.h>
 
 #include <algorithm>
@@ -17,10 +16,6 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "content/public/common/geoposition.h"
-
-#if defined(USE_LIBGPS)
-#include "third_party/gpsd/release-3.1/gps.h"
-#endif  // defined(USE_LIBGPS)
 
 namespace content {
 namespace {
@@ -71,56 +66,21 @@ const char kLibGpsName[] = "libgps.so.20";
 
 }  // namespace
 
-LibGps::LibGps(void* dl_handle,
-               gps_open_fn gps_open,
-               gps_close_fn gps_close,
-               gps_read_fn gps_read)
-    : dl_handle_(dl_handle),
-      gps_open_(gps_open),
-      gps_close_(gps_close),
-      gps_read_(gps_read),
-      gps_data_(new gps_data_t),
+LibGps::LibGps()
+    : gps_data_(new gps_data_t),
       is_open_(false) {
-  DCHECK(gps_open_);
-  DCHECK(gps_close_);
-  DCHECK(gps_read_);
 }
 
 LibGps::~LibGps() {
   Stop();
-  if (dl_handle_) {
-    const int err = dlclose(dl_handle_);
-    DCHECK_EQ(0, err) << "Error closing dl handle: " << err;
-  }
 }
 
 LibGps* LibGps::New() {
-  void* dl_handle = dlopen(kLibGpsName, RTLD_LAZY);
-  if (!dl_handle) {
-    DLOG(WARNING) << "Could not open " << kLibGpsName << ": " << dlerror();
+  scoped_ptr<LibGps> libgps(new LibGps);
+  if (!libgps->libgps_loader_.Load(kLibGpsName))
     return NULL;
-  }
 
-  DLOG(INFO) << "Loaded " << kLibGpsName;
-
-  #define DECLARE_FN_POINTER(function)                                   \
-    function##_fn function = reinterpret_cast<function##_fn>(            \
-        dlsym(dl_handle, #function));                                    \
-    if (!function) {                                                     \
-      DLOG(WARNING) << "libgps " << #function << " error: " << dlerror(); \
-      dlclose(dl_handle);                                                \
-      return NULL;                                                       \
-    }
-  DECLARE_FN_POINTER(gps_open);
-  DECLARE_FN_POINTER(gps_close);
-  DECLARE_FN_POINTER(gps_read);
-  // We don't use gps_shm_read() directly, just to make sure that libgps has
-  // the shared memory support.
-  typedef int (*gps_shm_read_fn)(struct gps_data_t*);
-  DECLARE_FN_POINTER(gps_shm_read);
-  #undef DECLARE_FN_POINTER
-
-  return new LibGps(dl_handle, gps_open, gps_close, gps_read);
+  return libgps.release();
 }
 
 bool LibGps::Start() {
@@ -128,7 +88,7 @@ bool LibGps::Start() {
     return true;
 
   errno = 0;
-  if (gps_open_(GPSD_SHARED_MEMORY, 0, gps_data_.get()) != 0) {
+  if (libgps_loader_.gps_open(GPSD_SHARED_MEMORY, 0, gps_data_.get()) != 0) {
     // See gps.h NL_NOxxx for definition of gps_open() error numbers.
     DLOG(WARNING) << "gps_open() failed " << errno;
     return false;
@@ -140,7 +100,7 @@ bool LibGps::Start() {
 
 void LibGps::Stop() {
   if (is_open_)
-    gps_close_(gps_data_.get());
+    libgps_loader_.gps_close(gps_data_.get());
   is_open_ = false;
 }
 
@@ -153,7 +113,7 @@ bool LibGps::Read(Geoposition* position) {
       return false;
   }
 
-  if (gps_read_(gps_data_.get()) < 0) {
+  if (libgps_loader_.gps_read(gps_data_.get()) < 0) {
       DLOG(WARNING) << "gps_read() fails";
       position->error_message = "gps_read() fails";
       return false;
@@ -224,10 +184,7 @@ bool LibGps::GetPositionIfFixed(Geoposition* position) {
 #else  // !defined(USE_LIBGPS)
 
 // Stub implementation of LibGps.
-LibGps::LibGps(void* dl_handle,
-               gps_open_fn gps_open,
-               gps_close_fn gps_close,
-               gps_read_fn gps_read) {
+LibGps::LibGps() {
 }
 
 LibGps::~LibGps() {

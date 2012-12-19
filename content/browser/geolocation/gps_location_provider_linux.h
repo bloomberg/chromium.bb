@@ -17,6 +17,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
 
+#if defined(USE_LIBGPS)
+#include "library_loaders/libgps.h"
+#endif
+
 struct gps_data_t;
 
 namespace content {
@@ -35,29 +39,19 @@ class CONTENT_EXPORT LibGps {
   bool Read(content::Geoposition* position);
 
  protected:
-  typedef int (*gps_open_fn)(const char*, const char*, struct gps_data_t*);
-  typedef int (*gps_close_fn)(struct gps_data_t*);
-  typedef int (*gps_read_fn)(struct gps_data_t*);
-
-  explicit LibGps(void* dl_handle,
-                  gps_open_fn gps_open,
-                  gps_close_fn gps_close,
-                  gps_read_fn gps_read);
+  LibGps();
 
   // Returns false if there is no fix available.
   virtual bool GetPositionIfFixed(content::Geoposition* position);
 
- private:
 #if defined(USE_LIBGPS)
-  void* dl_handle_;
-  gps_open_fn gps_open_;
-  gps_close_fn gps_close_;
-  gps_read_fn gps_read_;
+  LibGpsLoader libgps_loader_;
 
   scoped_ptr<gps_data_t> gps_data_;
   bool is_open_;
 #endif  // defined(USE_LIBGPS)
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(LibGps);
 };
 
