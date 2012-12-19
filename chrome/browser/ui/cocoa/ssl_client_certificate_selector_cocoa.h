@@ -33,6 +33,10 @@ class SSLClientAuthObserverCocoaBridge;
   scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
   scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
+  // A copy of the sheet's frame used to restore on show.
+  NSRect oldSheetFrame_;
+  // A copy of the sheet's |autoresizesSubviews| flag to restore on show.
+  BOOL oldResizesSubviews_;
 }
 
 @property (readonly, nonatomic) SFChooseIdentityPanel* panel;
@@ -41,6 +45,8 @@ class SSLClientAuthObserverCocoaBridge;
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
                     callback:(const chrome::SelectCertificateCallback&)callback;
 - (void)displayForWebContents:(content::WebContents*)webContents;
+
+- (NSWindow*)overlayWindow;
 
 @end
 

@@ -20,6 +20,7 @@
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
 #include "net/base/x509_util_mac.h"
+#include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::BrowserThread;
@@ -159,6 +160,10 @@ void ShowSSLClientCertificateSelector(
       new ConstrainedWindowMac(observer_.get(), webContents, self));
 }
 
+- (NSWindow*)overlayWindow {
+  return overlayWindow_;
+}
+
 - (SFChooseIdentityPanel*)panel {
   return panel_;
 }
@@ -184,10 +189,26 @@ void ShowSSLClientCertificateSelector(
 }
 
 - (void)hideSheet {
-  [[overlayWindow_ attachedSheet] setAlphaValue:0.0];
+  NSWindow* sheetWindow = [overlayWindow_ attachedSheet];
+  [sheetWindow setAlphaValue:0.0];
+
+  oldResizesSubviews_ = [[sheetWindow contentView] autoresizesSubviews];
+  [[sheetWindow contentView] setAutoresizesSubviews:NO];
+
+  oldSheetFrame_ = [sheetWindow frame];
+  NSRect overlayFrame = [overlayWindow_ frame];
+  oldSheetFrame_.origin.x -= NSMinX(overlayFrame);
+  oldSheetFrame_.origin.y -= NSMinY(overlayFrame);
+  [sheetWindow setFrame:ui::kWindowSizeDeterminedLater display:NO];
 }
 
 - (void)unhideSheet {
+  NSWindow* sheetWindow = [overlayWindow_ attachedSheet];
+  NSRect overlayFrame = [overlayWindow_ frame];
+  oldSheetFrame_.origin.x += NSMinX(overlayFrame);
+  oldSheetFrame_.origin.y += NSMinY(overlayFrame);
+  [sheetWindow setFrame:oldSheetFrame_ display:NO];
+  [[sheetWindow contentView] setAutoresizesSubviews:oldResizesSubviews_];
   [[overlayWindow_ attachedSheet] setAlphaValue:1.0];
 }
 

@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/cocoa/window_size_constants.h"
 
 namespace {
 
@@ -55,4 +57,31 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
 
   EXPECT_EQ(NULL, cert);
   EXPECT_EQ(1, count);
+}
+
+// Test that switching to another tab correctly hides the sheet.
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
+  SSLClientCertificateSelectorCocoa* selector =
+      [[SSLClientCertificateSelectorCocoa alloc]
+          initWithNetworkSession:auth_requestor_->http_network_session_
+                 certRequestInfo:auth_requestor_->cert_request_info_
+                        callback:chrome::SelectCertificateCallback()];
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  [selector displayForWebContents:web_contents];
+  content::RunAllPendingInMessageLoop();
+
+  NSWindow* sheetWindow = [[selector overlayWindow] attachedSheet];
+  NSRect sheetFrame = [sheetWindow frame];
+  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
+
+  // Switch to another tab and verify that the sheet is hidden.
+  AddBlankTabAndShow(browser());
+  EXPECT_EQ(0.0, [sheetWindow alphaValue]);
+  EXPECT_TRUE(NSEqualRects(ui::kWindowSizeDeterminedLater,
+                           [sheetWindow frame]));
+
+  // Switch back and verify that the sheet is shown.
+  chrome::SelectNumberedTab(browser(), 0);
+  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
+  EXPECT_TRUE(NSEqualRects(sheetFrame, [sheetWindow frame]));
 }
