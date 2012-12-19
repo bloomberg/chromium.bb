@@ -916,6 +916,20 @@
    fun:gfx::RenderTextLinux::GetStringSize
 }
 {
+   bug_90013_c
+   Heapcheck:Leak
+   fun:??
+   fun:::FindBestMatchFontFamilyName
+   fun:PlatformFontPango
+}
+{
+   bug_90013_d
+   Heapcheck:Leak
+   fun:??
+   fun:gfx::GetPangoFontMetrics
+   fun:gfx::PlatformFontPango::InitPangoMetrics
+}
+{
    bug_91845_a
    Heapcheck:Leak
    ...
