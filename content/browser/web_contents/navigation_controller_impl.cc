@@ -467,9 +467,7 @@ NavigationEntry* NavigationControllerImpl::GetEntryAtOffset(
 }
 
 int NavigationControllerImpl::GetIndexForOffset(int offset) const {
-  return (transient_entry_index_ != -1) ?
-             transient_entry_index_ + offset :
-             last_committed_entry_index_ + offset;
+  return GetCurrentEntryIndex() + offset;
 }
 
 bool NavigationControllerImpl::CanGoBack() const {

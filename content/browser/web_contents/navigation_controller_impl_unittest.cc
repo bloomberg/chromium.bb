@@ -1043,7 +1043,10 @@ TEST_F(NavigationControllerTest, Back) {
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoToOffset(-1));
   EXPECT_TRUE(controller.CanGoForward());
+  EXPECT_TRUE(controller.CanGoToOffset(1));
+  EXPECT_FALSE(controller.CanGoToOffset(2));  // Cannot go foward 2 steps.
 
   // Timestamp for entry 1 should be on or after that of entry 0.
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
@@ -1060,7 +1063,10 @@ TEST_F(NavigationControllerTest, Back) {
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoToOffset(-1));
   EXPECT_TRUE(controller.CanGoForward());
+  EXPECT_TRUE(controller.CanGoToOffset(1));
+  EXPECT_FALSE(controller.CanGoToOffset(2));  // Cannot go foward 2 steps.
 
   // Timestamp for entry 0 should be on or after that of entry 1
   // (since we went back to it).
@@ -1221,7 +1227,10 @@ TEST_F(NavigationControllerTest, Forward) {
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoToOffset(-1));
+  EXPECT_FALSE(controller.CanGoToOffset(-2));  // Cannot go back 2 steps.
   EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_FALSE(controller.CanGoToOffset(1));
 
   // Timestamp for entry 0 should be on or after that of entry 1
   // (since we went back to it).
@@ -1239,7 +1248,10 @@ TEST_F(NavigationControllerTest, Forward) {
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoToOffset(-1));
+  EXPECT_FALSE(controller.CanGoToOffset(-2));  // Cannot go back 2 steps.
   EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_FALSE(controller.CanGoToOffset(1));
 
   // Timestamp for entry 1 should be on or after that of entry 0
   // (since we went forward to it).
