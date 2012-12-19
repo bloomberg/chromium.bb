@@ -125,15 +125,15 @@ void VideoCaptureManager::OnEnumerateDevices(MediaStreamType stream_type) {
   media::VideoCaptureDevice::Names device_names;
   GetAvailableDevices(stream_type, &device_names);
 
-  StreamDeviceInfoArray devices;
+  scoped_ptr<StreamDeviceInfoArray> devices(new StreamDeviceInfoArray());
   for (media::VideoCaptureDevice::Names::iterator it =
            device_names.begin(); it != device_names.end(); ++it) {
     bool opened = DeviceOpened(*it);
-    devices.push_back(StreamDeviceInfo(
+    devices->push_back(StreamDeviceInfo(
         stream_type, it->device_name, it->unique_id, opened));
   }
 
-  PostOnDevicesEnumerated(stream_type, devices);
+  PostOnDevicesEnumerated(stream_type, devices.Pass());
 }
 
 void VideoCaptureManager::OnOpen(int capture_session_id,
@@ -307,13 +307,13 @@ void VideoCaptureManager::OnClosed(MediaStreamType stream_type,
 
 void VideoCaptureManager::OnDevicesEnumerated(
     MediaStreamType stream_type,
-    const StreamDeviceInfoArray& devices) {
+    scoped_ptr<StreamDeviceInfoArray> devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!listener_) {
     // Listener has been removed.
     return;
   }
-  listener_->DevicesEnumerated(stream_type, devices);
+  listener_->DevicesEnumerated(stream_type, *devices);
 }
 
 void VideoCaptureManager::OnError(MediaStreamType stream_type,
@@ -347,12 +347,12 @@ void VideoCaptureManager::PostOnClosed(
 
 void VideoCaptureManager::PostOnDevicesEnumerated(
     MediaStreamType stream_type,
-    const StreamDeviceInfoArray& devices) {
+    scoped_ptr<StreamDeviceInfoArray> devices) {
   DCHECK(IsOnDeviceThread());
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&VideoCaptureManager::OnDevicesEnumerated,
-                                     this, stream_type, devices));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&VideoCaptureManager::OnDevicesEnumerated,
+                 this, stream_type, base::Passed(&devices)));
 }
 
 void VideoCaptureManager::PostOnError(int capture_session_id,

@@ -71,7 +71,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // Callback used by EnumerateOnDeviceThread(), called with a list of
   // enumerated devices on IO thread.
   void DevicesEnumeratedOnIOThread(MediaStreamType stream_type,
-                                   StreamDeviceInfoArray* devices);
+                                   scoped_ptr<StreamDeviceInfoArray> devices);
   // Callback used by OpenOnDeviceThread(), called with the session_id
   // referencing the opened device on IO thread.
   void OpenedOnIOThread(MediaStreamType type, int session_id);

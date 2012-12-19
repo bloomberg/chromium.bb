@@ -106,7 +106,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void OnOpened(MediaStreamType type, int capture_session_id);
   void OnClosed(MediaStreamType type, int capture_session_id);
   void OnDevicesEnumerated(MediaStreamType stream_type,
-                           const StreamDeviceInfoArray& devices);
+                           scoped_ptr<StreamDeviceInfoArray> devices);
   void OnError(MediaStreamType type, int capture_session_id,
                MediaStreamProviderError error);
 
@@ -115,7 +115,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void PostOnOpened(MediaStreamType type, int capture_session_id);
   void PostOnClosed(MediaStreamType type, int capture_session_id);
   void PostOnDevicesEnumerated(MediaStreamType stream_type,
-                               const StreamDeviceInfoArray& devices);
+                               scoped_ptr<StreamDeviceInfoArray> devices);
   void PostOnError(int capture_session_id, MediaStreamProviderError error);
 
   // Helpers

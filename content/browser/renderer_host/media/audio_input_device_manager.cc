@@ -151,7 +151,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
       break;
   }
 
-  StreamDeviceInfoArray* devices = new StreamDeviceInfoArray;
+  scoped_ptr<StreamDeviceInfoArray> devices(new StreamDeviceInfoArray());
   for (media::AudioDeviceNames::iterator it = device_names.begin();
        it != device_names.end(); ++it) {
     devices->push_back(StreamDeviceInfo(
@@ -164,7 +164,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
-                 this, stream_type, devices));
+                 this, stream_type, base::Passed(&devices)));
 }
 
 void AudioInputDeviceManager::OpenOnDeviceThread(
@@ -204,12 +204,11 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
 
 void AudioInputDeviceManager::DevicesEnumeratedOnIOThread(
     MediaStreamType stream_type,
-    StreamDeviceInfoArray* devices) {
+    scoped_ptr<StreamDeviceInfoArray> devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ensure that |devices| gets deleted on exit.
-  scoped_ptr<StreamDeviceInfoArray> devices_array(devices);
   if (listener_)
-    listener_->DevicesEnumerated(stream_type, *devices_array);
+    listener_->DevicesEnumerated(stream_type, *devices);
 }
 
 void AudioInputDeviceManager::OpenedOnIOThread(MediaStreamType stream_type,
