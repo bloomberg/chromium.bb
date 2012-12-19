@@ -8,13 +8,17 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
+}
+
+namespace extensions {
+class BookmarkManagerPrivateEventRouter;
 }
 
 class PrefService;
@@ -32,8 +36,8 @@ class ExtensionWebUI : public content::WebUIController {
 
   virtual ~ExtensionWebUI();
 
-  virtual BookmarkManagerExtensionEventRouter*
-      bookmark_manager_extension_event_router();
+  virtual extensions::BookmarkManagerPrivateEventRouter*
+      bookmark_manager_private_event_router();
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url,
@@ -72,8 +76,8 @@ class ExtensionWebUI : public content::WebUIController {
 
   // TODO(aa): This seems out of place. Why is it not with the event routers for
   // the other extension APIs?
-  scoped_ptr<BookmarkManagerExtensionEventRouter>
-      bookmark_manager_extension_event_router_;
+  scoped_ptr<extensions::BookmarkManagerPrivateEventRouter>
+      bookmark_manager_private_event_router_;
 
   // The URL this WebUI was created for.
   GURL url_;

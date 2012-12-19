@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
-#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
@@ -177,17 +177,17 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<ShowInfoBarFunction>();
 
   // BookmarkManager
-  RegisterFunction<CopyBookmarkManagerFunction>();
-  RegisterFunction<CutBookmarkManagerFunction>();
-  RegisterFunction<PasteBookmarkManagerFunction>();
-  RegisterFunction<CanPasteBookmarkManagerFunction>();
-  RegisterFunction<SortChildrenBookmarkManagerFunction>();
-  RegisterFunction<BookmarkManagerGetStringsFunction>();
-  RegisterFunction<StartDragBookmarkManagerFunction>();
-  RegisterFunction<DropBookmarkManagerFunction>();
-  RegisterFunction<GetSubtreeBookmarkManagerFunction>();
-  RegisterFunction<CanEditBookmarkManagerFunction>();
-  RegisterFunction<CanOpenNewWindowsBookmarkFunction>();
+  RegisterFunction<extensions::CopyBookmarkManagerFunction>();
+  RegisterFunction<extensions::CutBookmarkManagerFunction>();
+  RegisterFunction<extensions::PasteBookmarkManagerFunction>();
+  RegisterFunction<extensions::CanPasteBookmarkManagerFunction>();
+  RegisterFunction<extensions::SortChildrenBookmarkManagerFunction>();
+  RegisterFunction<extensions::BookmarkManagerGetStringsFunction>();
+  RegisterFunction<extensions::StartDragBookmarkManagerFunction>();
+  RegisterFunction<extensions::DropBookmarkManagerFunction>();
+  RegisterFunction<extensions::GetSubtreeBookmarkManagerFunction>();
+  RegisterFunction<extensions::CanEditBookmarkManagerFunction>();
+  RegisterFunction<extensions::CanOpenNewWindowsBookmarkFunction>();
 
   // History
   RegisterFunction<extensions::AddUrlHistoryFunction>();

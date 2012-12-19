@@ -10,14 +10,6 @@ include_rules = [
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/extensions/api/bookmarks/bookmark_api.h",
-  "!chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h",
-  "!chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h",
-  "!chrome/browser/extensions/event_router.h",
-  "!chrome/browser/extensions/extension_function.h",
-  "!chrome/browser/extensions/extension_function_dispatcher.h",
-  "!chrome/browser/extensions/extension_system.h",
-  "!chrome/browser/extensions/extension_web_ui.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/favicon/favicon_service_factory.h",
   "!chrome/browser/history/history.h",
@@ -37,7 +29,6 @@ include_rules = [
   "!chrome/browser/ui/bookmarks/bookmark_tab_helper.h",
   "!chrome/browser/ui/chrome_select_file_policy.h",
   "!chrome/browser/ui/webui/chrome_url_data_manager.h",
-  "!chrome/browser/view_type_utils.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
@@ -47,7 +38,6 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
-    "!chrome/browser/extensions/extension_apitest.h",
     "!chrome/browser/history/in_memory_database.h",
     "!chrome/browser/importer/firefox2_importer.h",
     "!chrome/browser/ui/browser.h",

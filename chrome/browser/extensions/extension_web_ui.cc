@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -172,9 +172,9 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
 
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
-    bookmark_manager_extension_event_router_.reset(
-        new BookmarkManagerExtensionEventRouter(profile,
-                                                web_ui->GetWebContents()));
+    bookmark_manager_private_event_router_.reset(
+        new extensions::BookmarkManagerPrivateEventRouter(
+            profile, web_ui->GetWebContents()));
 
     web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
   }
@@ -182,9 +182,9 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
 
 ExtensionWebUI::~ExtensionWebUI() {}
 
-BookmarkManagerExtensionEventRouter*
-ExtensionWebUI::bookmark_manager_extension_event_router() {
-  return bookmark_manager_extension_event_router_.get();
+extensions::BookmarkManagerPrivateEventRouter*
+ExtensionWebUI::bookmark_manager_private_event_router() {
+  return bookmark_manager_private_event_router_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -19,9 +19,6 @@ const char kChildIdsKey[] = "childIds";
 const char kRecursiveKey[] = "recursive";
 const char kDateAddedKey[] = "dateAdded";
 const char kDateFolderModifiedKey[] = "dateGroupModified";
-// TODO(arv): Move bookmark manager related constants out of this file.
-const char kSameProfileKey[] = "sameProfile";
-const char kElementsKey[] = "elements";
 
 const char kNoNodeError[] = "Can't find bookmark for id.";
 const char kNoParentError[] = "Can't find parent bookmark for id.";
@@ -40,11 +37,6 @@ const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
 const char kOnBookmarkImportBegan[] = "bookmarks.onImportBegan";
 const char kOnBookmarkImportEnded[] = "bookmarks.onImportEnded";
-
-// TODO(arv): Move bookmark manager related constants out of this file.
-const char kOnBookmarkDragEnter[] = "bookmarkManagerPrivate.onDragEnter";
-const char kOnBookmarkDragLeave[] = "bookmarkManagerPrivate.onDragLeave";
-const char kOnBookmarkDrop[] = "bookmarkManagerPrivate.onDrop";
 
 }  // namespace bookmark_api_constants
 }  // namespace extensions

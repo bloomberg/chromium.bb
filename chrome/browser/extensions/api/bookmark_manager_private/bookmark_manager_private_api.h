@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_
 
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-// TODO (rdevlin.cronin): Move BookmarkManagerAPI to
-// chrome/browser/extensions/api/bookmark so these two aren't interdependent.
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -20,13 +18,15 @@ namespace content {
 class WebContents;
 }
 
+namespace extensions {
+
 // Class that handles the chrome.bookmarkManagerPrivate events.
-class BookmarkManagerExtensionEventRouter
+class BookmarkManagerPrivateEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
-  BookmarkManagerExtensionEventRouter(Profile* profile,
-                                      content::WebContents* web_contents);
-  virtual ~BookmarkManagerExtensionEventRouter();
+  BookmarkManagerPrivateEventRouter(Profile* profile,
+                                    content::WebContents* web_contents);
+  virtual ~BookmarkManagerPrivateEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
   virtual void OnDragEnter(const BookmarkNodeData& data) OVERRIDE;
@@ -52,7 +52,7 @@ class BookmarkManagerExtensionEventRouter
   content::WebContents* web_contents_;
   BookmarkNodeData bookmark_drag_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerExtensionEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateEventRouter);
 };
 
 class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
@@ -195,5 +195,6 @@ class CanOpenNewWindowsBookmarkFunction : public extensions::BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_

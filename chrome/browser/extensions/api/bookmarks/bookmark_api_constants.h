@@ -23,9 +23,6 @@ extern const char kChildIdsKey[];
 extern const char kRecursiveKey[];
 extern const char kDateAddedKey[];
 extern const char kDateFolderModifiedKey[];
-// TODO(arv): Move bookmark manager related constants out of this file.
-extern const char kSameProfileKey[];
-extern const char kElementsKey[];
 
 // Errors.
 extern const char kNoNodeError[];
@@ -45,10 +42,6 @@ extern const char kOnBookmarkMoved[];
 extern const char kOnBookmarkChildrenReordered[];
 extern const char kOnBookmarkImportBegan[];
 extern const char kOnBookmarkImportEnded[];
-// TODO(arv): Move bookmark manager related constants out of this file.
-extern const char kOnBookmarkDragEnter[];
-extern const char kOnBookmarkDragLeave[];
-extern const char kOnBookmarkDrop[];
 
 }  // namespace bookmark_api_constants
 }  // namespace extensions

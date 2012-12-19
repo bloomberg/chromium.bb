@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 
 #include <vector>
 
@@ -14,8 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-// TODO (rdevlin.cronin): Move BookmarkManagerAPI to
-// chrome/browser/extensions/api so these two aren't interdependent.
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -36,7 +35,10 @@
 #include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
-namespace keys = extensions::bookmark_api_constants;
+namespace extensions {
+
+namespace bookmark_keys = bookmark_api_constants;
+namespace manager_keys = bookmark_manager_api_constants;
 
 using content::WebContents;
 
@@ -93,20 +95,20 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
   std::string id_string = base::Int64ToString(node.id());
-  dict->SetString(keys::kIdKey, id_string);
+  dict->SetString(bookmark_keys::kIdKey, id_string);
 
   std::string parent_id_string = base::Int64ToString(node.parent()->id());
-  dict->SetString(keys::kParentIdKey, parent_id_string);
+  dict->SetString(bookmark_keys::kParentIdKey, parent_id_string);
 
   if (node.is_url())
-    dict->SetString(keys::kUrlKey, node.url().spec());
+    dict->SetString(bookmark_keys::kUrlKey, node.url().spec());
 
-  dict->SetString(keys::kTitleKey, node.GetTitle());
+  dict->SetString(bookmark_keys::kTitleKey, node.GetTitle());
 
   ListValue* children = new ListValue();
   for (int i = 0; i < node.child_count(); ++i)
     AddNodeToList(children, *node.GetChild(i));
-  dict->Set(keys::kChildrenKey, children);
+  dict->Set(bookmark_keys::kChildrenKey, children);
 
   list->Append(dict);
 }
@@ -119,14 +121,14 @@ void AddElementToList(ListValue* list,
   DictionaryValue* dict = new DictionaryValue();
 
   if (element.is_url)
-    dict->SetString(keys::kUrlKey, element.url.spec());
+    dict->SetString(bookmark_keys::kUrlKey, element.url.spec());
 
-  dict->SetString(keys::kTitleKey, element.title);
+  dict->SetString(bookmark_keys::kTitleKey, element.title);
 
   ListValue* children = new ListValue();
   for (size_t i = 0; i < element.children.size(); ++i)
     AddElementToList(children, element.children[i]);
-  dict->Set(keys::kChildrenKey, children);
+  dict->Set(bookmark_keys::kChildrenKey, children);
 
   list->Append(dict);
 }
@@ -136,7 +138,7 @@ void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
                             ListValue* args) {
   bool same_profile = data.IsFromProfile(profile);
   DictionaryValue* value = new DictionaryValue();
-  value->SetBoolean(keys::kSameProfileKey, same_profile);
+  value->SetBoolean(manager_keys::kSameProfileKey, same_profile);
 
   ListValue* list = new ListValue();
   if (same_profile) {
@@ -149,14 +151,14 @@ void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
     for (size_t i = 0; i < elements.size(); ++i)
       AddElementToList(list, elements[i]);
   }
-  value->Set(keys::kElementsKey, list);
+  value->Set(manager_keys::kElementsKey, list);
 
   args->Append(value);
 }
 
 }  // namespace
 
-BookmarkManagerExtensionEventRouter::BookmarkManagerExtensionEventRouter(
+BookmarkManagerPrivateEventRouter::BookmarkManagerPrivateEventRouter(
     Profile* profile,
     content::WebContents* web_contents)
     : profile_(profile),
@@ -166,26 +168,24 @@ BookmarkManagerExtensionEventRouter::BookmarkManagerExtensionEventRouter(
   bookmark_tab_helper->set_bookmark_drag_delegate(this);
 }
 
-BookmarkManagerExtensionEventRouter::~BookmarkManagerExtensionEventRouter() {
+BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents_);
   if (bookmark_tab_helper->bookmark_drag_delegate() == this)
     bookmark_tab_helper->set_bookmark_drag_delegate(NULL);
 }
 
-void BookmarkManagerExtensionEventRouter::DispatchEvent(
+void BookmarkManagerPrivateEventRouter::DispatchEvent(
     const char* event_name,
     scoped_ptr<ListValue> args) {
-  if (!extensions::ExtensionSystem::Get(profile_)->event_router())
+  if (!ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      event_name, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
+void BookmarkManagerPrivateEventRouter::DispatchDragEvent(
     const BookmarkNodeData& data,
     const char* event_name) {
   if (data.size() == 0)
@@ -196,25 +196,24 @@ void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
   DispatchEvent(event_name, args.Pass());
 }
 
-void BookmarkManagerExtensionEventRouter::OnDragEnter(
+void BookmarkManagerPrivateEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, keys::kOnBookmarkDragEnter);
+  DispatchDragEvent(data, manager_keys::kOnBookmarkDragEnter);
 }
 
-void BookmarkManagerExtensionEventRouter::OnDragOver(
+void BookmarkManagerPrivateEventRouter::OnDragOver(
     const BookmarkNodeData& data) {
   // Intentionally empty since these events happens too often and floods the
   // message queue. We do not need this event for the bookmark manager anyway.
 }
 
-void BookmarkManagerExtensionEventRouter::OnDragLeave(
+void BookmarkManagerPrivateEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, keys::kOnBookmarkDragLeave);
+  DispatchDragEvent(data, manager_keys::kOnBookmarkDragLeave);
 }
 
-void BookmarkManagerExtensionEventRouter::OnDrop(
-    const BookmarkNodeData& data) {
-  DispatchDragEvent(data, keys::kOnBookmarkDrop);
+void BookmarkManagerPrivateEventRouter::OnDrop(const BookmarkNodeData& data) {
+  DispatchDragEvent(data, manager_keys::kOnBookmarkDrop);
 
   // Make a copy that is owned by this instance.
   ClearBookmarkNodeData();
@@ -222,13 +221,13 @@ void BookmarkManagerExtensionEventRouter::OnDrop(
 }
 
 const BookmarkNodeData*
-BookmarkManagerExtensionEventRouter::GetBookmarkNodeData() {
+BookmarkManagerPrivateEventRouter::GetBookmarkNodeData() {
   if (bookmark_drag_data_.is_valid())
     return &bookmark_drag_data_;
   return NULL;
 }
 
-void BookmarkManagerExtensionEventRouter::ClearBookmarkNodeData() {
+void BookmarkManagerPrivateEventRouter::ClearBookmarkNodeData() {
   bookmark_drag_data_.Clear();
 }
 
@@ -257,7 +256,7 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
-    error_ = keys::kNoParentError;
+    error_ = bookmark_keys::kNoParentError;
     return false;
   }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
@@ -286,7 +285,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
-    error_ = keys::kNoParentError;
+    error_ = bookmark_keys::kNoParentError;
     return false;
   }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
@@ -300,7 +299,7 @@ bool SortChildrenBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
-    error_ = keys::kNoParentError;
+    error_ = bookmark_keys::kNoParentError;
     return false;
   }
   model->SortChildren(parent_node);
@@ -425,13 +424,13 @@ bool DropBookmarkManagerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id_string));
 
   if (!base::StringToInt64(id_string, &id)) {
-    error_ = keys::kInvalidIdError;
+    error_ = bookmark_keys::kInvalidIdError;
     return false;
   }
 
   const BookmarkNode* drop_parent = model->GetNodeByID(id);
   if (!drop_parent) {
-    error_ = keys::kNoParentError;
+    error_ = bookmark_keys::kNoParentError;
     return false;
   }
 
@@ -450,8 +449,8 @@ bool DropBookmarkManagerFunction::RunImpl() {
     ExtensionWebUI* web_ui =
         static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());
     CHECK(web_ui);
-    BookmarkManagerExtensionEventRouter* router =
-        web_ui->bookmark_manager_extension_event_router();
+    BookmarkManagerPrivateEventRouter* router =
+        web_ui->bookmark_manager_private_event_router();
 
     DCHECK(router);
     const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();
@@ -483,23 +482,20 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
     node = model->root_node();
   } else {
      if (!base::StringToInt64(id_string, &id)) {
-      error_ = keys::kInvalidIdError;
+      error_ = bookmark_keys::kInvalidIdError;
       return false;
     }
     node = model->GetNodeByID(id);
   }
   if (!node) {
-    error_ = keys::kNoNodeError;
+    error_ = bookmark_keys::kNoNodeError;
     return false;
   }
   scoped_ptr<ListValue> json(new ListValue());
-  if (folders_only) {
-    extensions::bookmark_api_helpers::AddNodeFoldersOnly(node,
-                                                   json.get(),
-                                                   true);
-  } else {
-    extensions::bookmark_api_helpers::AddNode(node, json.get(), true);
-  }
+  if (folders_only)
+    bookmark_api_helpers::AddNodeFoldersOnly(node, json.get(), true);
+  else
+    bookmark_api_helpers::AddNode(node, json.get(), true);
   SetResult(json.release());
   return true;
 }
@@ -527,3 +523,5 @@ bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
   SetResult(new base::FundamentalValue(can_open_new_windows));
   return true;
 }
+
+}  // namespace extensions
