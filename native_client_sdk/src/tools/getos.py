@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,17 +17,21 @@ import subprocess
 import sys
 
 
-TOOL_PATH = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+if sys.version_info < (2, 6, 0):
+  sys.stderr.write("python 2.6 or later is required run this script\n")
+  sys.exit(1)
 
 
 def ErrOut(text):
   sys.stderr.write(text + '\n')
   sys.exit(1)
-  
 
 
 def GetSDKPath():
-  return os.getenv('NACL_SDK_ROOT', os.path.dirname(TOOL_PATH))
+  return os.getenv('NACL_SDK_ROOT', os.path.dirname(SCRIPT_DIR))
 
 
 def GetPlatform():

@@ -26,6 +26,10 @@ import re
 import subprocess
 import sys
 
+if sys.version_info < (2, 6, 0):
+  sys.stderr.write("python 2.6 or later is required run this script\n")
+  sys.exit(1)
+
 # local includes
 import buildbot_common
 import build_updater
