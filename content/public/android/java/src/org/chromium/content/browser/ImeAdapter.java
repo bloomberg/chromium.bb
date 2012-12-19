@@ -498,8 +498,6 @@ class ImeAdapter {
         private ImeAdapter mImeAdapter;
         private Editable mEditable;
         private boolean mSingleLine;
-        private int numBatchEdits;
-        private boolean shouldUpdateImeSelection;
 
         // Factory function.
         static public AdapterInputConnection getInstance(View view, ImeAdapter imeAdapter,
@@ -585,7 +583,6 @@ class ImeAdapter {
         @Override
         public boolean setComposingText(CharSequence text, int newCursorPosition) {
             super.setComposingText(text, newCursorPosition);
-            shouldUpdateImeSelection = true;
             return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
                     newCursorPosition, false);
         }
@@ -593,7 +590,6 @@ class ImeAdapter {
         @Override
         public boolean commitText(CharSequence text, int newCursorPosition) {
             super.commitText(text, newCursorPosition);
-            shouldUpdateImeSelection = true;
             return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
                     newCursorPosition, text.length() > 0);
         }
@@ -653,7 +649,6 @@ class ImeAdapter {
             if (!super.deleteSurroundingText(leftLength, rightLength)) {
                 return false;
             }
-            shouldUpdateImeSelection = true;
             return mImeAdapter.deleteSurroundingText(leftLength, rightLength);
         }
 
@@ -686,7 +681,6 @@ class ImeAdapter {
                     }
                 }
             }
-            shouldUpdateImeSelection = true;
             return super.sendKeyEvent(event);
         }
 
@@ -704,7 +698,6 @@ class ImeAdapter {
         public boolean setSelection(int start, int end) {
             if (start < 0 || end < 0) return true;
             super.setSelection(start, end);
-            shouldUpdateImeSelection = true;
             return mImeAdapter.setEditableSelectionOffsets(start, end);
         }
 
@@ -732,31 +725,6 @@ class ImeAdapter {
         private InputMethodManager getInputMethodManager() {
             return (InputMethodManager) mInternalView.getContext()
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
-        }
-
-        private void updateImeSelection() {
-            if (mEditable != null) {
-                getInputMethodManager().updateSelection(mInternalView,
-                        Selection.getSelectionStart(mEditable),
-                        Selection.getSelectionEnd(mEditable),
-                        getComposingSpanStart(mEditable),
-                        getComposingSpanEnd(mEditable));
-            }
-        }
-
-        @Override
-        public boolean beginBatchEdit() {
-            ++numBatchEdits;
-            return false;
-        }
-
-        @Override
-        public boolean endBatchEdit() {
-            if (--numBatchEdits == 0 && shouldUpdateImeSelection) {
-                updateImeSelection();
-                shouldUpdateImeSelection = false;
-            }
-            return false;
         }
 
         private AdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
