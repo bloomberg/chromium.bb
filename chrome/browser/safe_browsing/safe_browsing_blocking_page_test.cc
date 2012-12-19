@@ -644,9 +644,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// Crashy, http://crbug.com/68834.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       DISABLED_MalwareIframeProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
   GURL url = SetupMalwareIframeWarningAndNavigate();
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
