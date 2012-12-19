@@ -749,15 +749,6 @@
       <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="common/tab_close_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
-      <if expr="pp_ifdef('toolkit_views')">
-        <!-- Art for experimental "immersive mode" light-bar at top of screen. crbug.com/157612 -->
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_ACTIVE_CENTER" file="common/tab_immersive_active_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_ACTIVE_LEFT" file="common/tab_immersive_active_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_ACTIVE_RIGHT" file="common/tab_immersive_active_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_INACTIVE_CENTER" file="common/tab_immersive_inactive_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_INACTIVE_LEFT" file="common/tab_immersive_inactive_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_IMMERSIVE_INACTIVE_RIGHT" file="common/tab_immersive_inactive_right.png" />
-      </if>
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" />

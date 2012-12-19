@@ -328,8 +328,6 @@ class Tab : public ui::AnimationDelegate,
   static TabImage tab_active_;
   static TabImage tab_inactive_;
   static TabImage tab_alpha_;
-  static TabImage tab_immersive_active_;
-  static TabImage tab_immersive_inactive_;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.

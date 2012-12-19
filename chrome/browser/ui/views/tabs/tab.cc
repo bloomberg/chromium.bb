@@ -238,6 +238,9 @@ static const SkColor kMiniTitleChangeGradientColor2 =
 // errors may lead to tabs in the same tabstrip having different sizes.
 const size_t kMaxImageCacheSize = 4;
 
+// Height of the "light bar" tabs in the tab strip in immersive mode.
+const int kImmersiveTabHeight = 3;
+
 // Height of the colored bar representing the favicon in immersive mode.
 const int kImmersiveBarHeight = 2;
 
@@ -400,8 +403,6 @@ const char Tab::kViewClassName[] = "BrowserTab";
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
-Tab::TabImage Tab::tab_immersive_active_ = {0};
-Tab::TabImage Tab::tab_immersive_inactive_ = {0};
 // static
 gfx::Font* Tab::font_ = NULL;
 // static
@@ -629,8 +630,7 @@ int Tab::GetMiniWidth() {
 
 // static
 int Tab::GetImmersiveHeight() {
-  InitTabResources();
-  return tab_immersive_active_.image_l->height();
+  return kImmersiveTabHeight;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1590,24 +1590,6 @@ void Tab::LoadTabImages() {
   tab_inactive_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive_.l_width = tab_inactive_.image_l->width();
   tab_inactive_.r_width = tab_inactive_.image_r->width();
-
-  tab_immersive_active_.image_l =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_LEFT);
-  tab_immersive_active_.image_c =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_CENTER);
-  tab_immersive_active_.image_r =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_RIGHT);
-  tab_immersive_active_.l_width = tab_immersive_active_.image_l->width();
-  tab_immersive_active_.r_width = tab_immersive_active_.image_r->width();
-
-  tab_immersive_inactive_.image_l =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_LEFT);
-  tab_immersive_inactive_.image_c =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_CENTER);
-  tab_immersive_inactive_.image_r =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_RIGHT);
-  tab_immersive_inactive_.l_width = tab_immersive_inactive_.image_l->width();
-  tab_immersive_inactive_.r_width = tab_immersive_inactive_.image_r->width();
 }
 
 // static
