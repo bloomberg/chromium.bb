@@ -689,8 +689,11 @@
       ],
       'include_dirs': [
         '..',
+        '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
+        '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.cc',
+        '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.h',
         'test/chromedriver/chrome.h',
         'test/chromedriver/chrome_finder.cc',
         'test/chromedriver/chrome_finder.h',
@@ -731,6 +734,26 @@
         'test/chromedriver/status.cc',
         'test/chromedriver/status.h',
         'test/chromedriver/synchronized_map.h',
+      ],
+      'actions': [
+        {
+          'action_name': 'embed_js_in_cpp',
+          'inputs': [
+            'test/chromedriver/embed_js_in_cpp.py',
+            'test/chromedriver/js/call_function.js',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.cc',
+            '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.h',
+          ],
+          'action': [ 'python',
+                      'test/chromedriver/embed_js_in_cpp.py',
+                      '--directory',
+                      '<(INTERMEDIATE_DIR)/chrome/test/chromedriver',
+                      'test/chromedriver/js/call_function.js',
+          ],
+          'message': 'Generating sources for embedding js in chromedriver',
+        },
       ],
     },
     {

@@ -13,12 +13,12 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/devtools_client_impl.h"
+#include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/webdriver/atoms.h"
 
 namespace {
 
@@ -88,7 +88,7 @@ Status ChromeImpl::CallFunction(const std::string& function,
   base::JSONWriter::Write(&args, &json);
   std::string expression = base::StringPrintf(
       "(%s).apply(null, [%s, %s])",
-      webdriver::atoms::asString(webdriver::atoms::EXECUTE_SCRIPT).c_str(),
+      kCallFunctionScript,
       function.c_str(),
       json.c_str());
   return EvaluateScript(expression, result);

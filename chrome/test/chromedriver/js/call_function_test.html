@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html>
+<script src='test.js'></script>
+<script src='call_function.js'></script>
+<script>
+
+function testCallFunctionNoArgs() {
+  var result = callFunction(function() { return 1; }, []);
+  assertEquals(0, result.status);
+  assertEquals(1, result.value);
+}
+
+function testCallFunctionThrows() {
+  var result = callFunction(function() { throw new Error('fake error'); }, []);
+  assertEquals(StatusCode.UNKNOWN_ERROR, result.status);
+  assertEquals('fake error', result.value);
+
+  result = callFunction(function() {
+    var e = new Error('fake error');
+    e.code = 77;
+    e.message = 'CUSTOM';
+    throw e;
+  }, []);
+  assertEquals(77, result.status);
+  assertEquals('CUSTOM', result.value);
+}
+
+function testCallFunctionArgs() {
+  function func(primitive, elem) {
+    return [primitive, elem.querySelector('div')];
+  }
+  var cache = getPageCache();
+  var result = callFunction(func, [1, cache.wrap(document)]);
+  assertEquals(0, result.status);
+  assertEquals(1, result.value[0]);
+  assertEquals(document.querySelector('div'), cache.unwrap(result.value[1]));
+}
+
+function testCallFunctionArgsUnwrappedReturn() {
+  function func(elem) {
+    return elem.querySelector('div');
+  }
+  var cache = getPageCache();
+  var result = callFunction(func, [cache.wrap(document)], true);
+  assertEquals(document.querySelector('div'), result);
+}
+
+function testCacheWrap() {
+  var cache = new Cache();
+  assertEquals(1, cache.wrap(1));
+  assertEquals(1, cache.unwrap(1));
+  assertEquals("1", cache.wrap("1"));
+  assertEquals("1", cache.unwrap("1"));
+  assertEquals(false, cache.wrap(false));
+  assertEquals(false, cache.unwrap(false));
+  assertEquals(null, cache.wrap(null));
+  assertEquals(null, cache.unwrap(null));
+  assertEquals(undefined, cache.wrap(undefined));
+  assertEquals(undefined, cache.unwrap(undefined));
+  function func() {}
+  assertEquals(func, cache.wrap(func));
+  assertEquals(func, cache.unwrap(func));
+
+  var arr = [1, new Array(1, new Object({a: 1, b: {a: 1, b: {}, c: 3}}), 3)];
+  var originalJson = JSON.stringify(arr);
+  arr[1][1].b.b[ELEMENT_KEY] = cache.nextId_;
+  var wrappedJson = JSON.stringify(arr);
+  arr[1][1].b.b = document;
+  assertEquals(wrappedJson, JSON.stringify(cache.wrap(arr)));
+  var unwrapped = cache.unwrap(JSON.parse(wrappedJson));
+  assertEquals(document, unwrapped[1][1].b.b);
+  unwrapped[1][1].b.b = {};
+  assertEquals(originalJson, JSON.stringify(unwrapped));
+}
+
+function testCacheDoubleWrap() {
+  var cache = new Cache();
+  assertEquals(cache.wrap(document)[ELEMENT_KEY],
+               cache.wrap(document)[ELEMENT_KEY]);
+}
+
+function testCacheUnwrapThrows() {
+  try {
+    var cache = new Cache();
+    var wrapped = {};
+    wrapped[ELEMENT_KEY] = 1;
+    cache.unwrap(wrapped);
+  } catch (e) {
+    return;
+  }
+  assert(false);
+}
+
+function testClearStale() {
+  var doc = document;
+  var div = doc.querySelector('div');
+  var span = doc.querySelector('span');
+
+  var cache = new Cache();
+  var wrappedDoc = cache.wrap(doc);
+  var wrappedDiv = cache.wrap(div);
+  var wrappedSpan = cache.wrap(span);
+
+  cache.clearStale();
+  assertEquals(doc, cache.unwrap(wrappedDoc));
+  assertEquals(div, cache.unwrap(wrappedDiv));
+  assertEquals(span, cache.unwrap(wrappedSpan));
+
+  div.removeChild(span);
+  cache.clearStale();
+  assertEquals(doc, cache.unwrap(wrappedDoc));
+  assertEquals(div, cache.unwrap(wrappedDiv));
+  try {
+    cache.unwrap(wrappedSpan);
+  } catch (e) {
+    return;
+  }
+  assert(false);
+}
+
+function testCacheQuerySelector() {
+  var cache = new Cache();
+  assertEquals(document.querySelector('div'),
+               cache.unwrap(cache.wrap(document.querySelector('div'))));
+  assertEquals(document.querySelectorAll('div')[0],
+               cache.unwrap(cache.wrap(document.querySelectorAll('div')))[0]);
+}
+
+function testCacheStaleRef() {
+  var cache = new Cache();
+  var img = document.createElement('img');
+  document.body.appendChild(img);
+  var wrappedImg = cache.wrap(img);
+  document.body.removeChild(img);
+  cache.clearStale();
+  try {
+    cache.unwrap(wrappedImg);
+  } catch (e) {
+    assertEquals(StatusCode.STALE_ELEMENT_REFERENCE, e.code);
+    return;
+  }
+  assert(false);
+}
+
+</script>
+<body>
+<div><span></span></div>
+</body>
+</html>
