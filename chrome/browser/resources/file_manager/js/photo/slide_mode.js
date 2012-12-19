@@ -231,6 +231,7 @@ SlideMode.prototype.enter = function(
 
     this.selectionModel_.addEventListener('change', this.onSelectionBound_);
     this.dataModel_.addEventListener('splice', this.onSpliceBound_);
+    this.dataModel_.addEventListener('content', this.onContentBound_);
 
     ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
     this.ribbon_.enable();
@@ -291,6 +292,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       this.selectionModel_.removeEventListener(
           'change', this.onSelectionBound_);
       this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
+      this.dataModel_.removeEventListener('content', this.onContentBound_);
       this.ribbon_.disable();
       this.active_ = false;
       if (this.savedSelection_)
@@ -889,9 +891,9 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
 SlideMode.prototype.onContentChange_ = function(event) {
   var newUrl = event.item.getUrl();
   if (newUrl != event.oldUrl) {
-    this.metadataCache_.clear(event.oldUrl, Gallery.METADATA_TYPE);
     this.imageView_.changeUrl(newUrl);
   }
+  this.metadataCache_.clear(event.oldUrl, Gallery.METADATA_TYPE);
 };
 
 /**
