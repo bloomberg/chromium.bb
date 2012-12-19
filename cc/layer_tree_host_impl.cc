@@ -384,13 +384,6 @@ void LayerTreeHostImpl::trackDamageForAllSurfaces(LayerImpl* rootDrawLayer, cons
     }
 }
 
-void LayerTreeHostImpl::updateRootScrollLayerImplTransform()
-{
-    if (rootScrollLayer()) {
-        rootScrollLayer()->setImplTransform(implTransform());
-    }
-}
-
 void LayerTreeHostImpl::updateDrawProperties()
 {
     if (!needsUpdateDrawProperties())
@@ -402,20 +395,16 @@ void LayerTreeHostImpl::updateDrawProperties()
     if (!rootLayer())
         return;
 
-    calculateRenderSurfaceLayerList(m_renderSurfaceLayerList);
-}
+    if (!m_renderer) // For maxTextureSize.
+      return;
 
-void LayerTreeHostImpl::calculateRenderSurfaceLayerList(LayerList& renderSurfaceLayerList)
-{
-    DCHECK(renderSurfaceLayerList.empty());
-    DCHECK(rootLayer());
-    DCHECK(m_renderer); // For maxTextureSize.
+    if (rootScrollLayer())
+      rootScrollLayer()->setImplTransform(implTransform());
+
     {
-        updateRootScrollLayerImplTransform();
-
         TRACE_EVENT0("cc", "LayerTreeHostImpl::calcDrawEtc");
         float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, renderSurfaceLayerList);
+        LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, m_renderSurfaceLayerList);
     }
 }
 
@@ -516,6 +505,9 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     DCHECK(frame.renderPasses.empty());
 
     updateDrawProperties();
+    if (!canDraw())
+      return false;
+
     trackDamageForAllSurfaces(rootLayer(), *frame.renderSurfaceLayerList);
 
     TRACE_EVENT1("cc", "LayerTreeHostImpl::calculateRenderPasses", "renderSurfaceLayerList.size()", static_cast<long long unsigned>(frame.renderSurfaceLayerList->size()));
@@ -778,7 +770,6 @@ void LayerTreeHostImpl::removeRenderPasses(RenderPassCuller culler, FrameData& f
 bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::prepareToDraw");
-    DCHECK(canDraw());
 
     if (m_tileManager)
         m_tileManager->CheckForCompletedSetPixels();
@@ -1227,25 +1218,7 @@ void LayerTreeHostImpl::setNeedsRedraw()
 
 bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
 {
-    // TODO(enne): See http://crbug.com/164949.  This function should really
-    // just call updateDrawProperties(), but that breaks a number of
-    // impl transform tests that don't expect the tree to be updated.
-    if (!rootLayer())
-        return false;
-    if (!m_renderer)
-        return false;
-
-    // We need both a non-empty render surface layer list and a root render
-    // surface to be able to iterate over the visible layers.
-    if (m_renderSurfaceLayerList.size() && rootLayer()->renderSurface())
-        return true;
-
-    // If we are called after setRootLayer() but before prepareToDraw(), we need
-    // to recalculate the visible layers. This prevents being unable to scroll
-    // during part of a commit.
-    setNeedsUpdateDrawProperties();
     updateDrawProperties();
-
     return m_renderSurfaceLayerList.size();
 }
 

@@ -152,7 +152,6 @@ public:
 
     // Make these public.
     typedef std::vector<LayerImpl*> LayerList;
-    using LayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime) OVERRIDE;

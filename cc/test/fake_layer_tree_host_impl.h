@@ -16,7 +16,11 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   FakeLayerTreeHostImpl(Proxy* proxy);
   virtual ~FakeLayerTreeHostImpl();
 
-  using LayerTreeHostImpl::resetNeedsUpdateDrawPropertiesForTesting;
+  void forcePrepareToDraw() {
+    LayerTreeHostImpl::FrameData frameData;
+    prepareToDraw(frameData);
+    didDrawAllLayers(frameData);
+  }
 
  private:
   FakeLayerTreeHostImplClient client_;

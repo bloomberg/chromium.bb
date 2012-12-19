@@ -1365,8 +1365,12 @@ public:
         EXPECT_EQ(gfx::Point(2, 2), child->position());
 
         // Compute all the layer transforms for the frame.
-        MockLayerTreeHostImpl::LayerList renderSurfaceLayerList;
-        mockImpl->calculateRenderSurfaceLayerList(renderSurfaceLayerList);
+        LayerTreeHostImpl::FrameData frameData;
+        mockImpl->prepareToDraw(frameData);
+        mockImpl->didDrawAllLayers(frameData);
+
+        const MockLayerTreeHostImpl::LayerList& renderSurfaceLayerList =
+          *frameData.renderSurfaceLayerList;
 
         // Both layers should be drawing into the root render surface.
         ASSERT_EQ(1u, renderSurfaceLayerList.size());
