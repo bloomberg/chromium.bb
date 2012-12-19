@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -47,20 +48,27 @@ using ::base::files::FilePathWatcher;
 namespace content {
 namespace {
 
+bool LoadPluginListInProcess() {
+#if defined(OS_WIN)
+  return true;
+#else
+  // If on POSIX, we don't want to load the list of NPAPI plugins in-process as
+  // that causes instability.
+  return !webkit::npapi::NPAPIPluginsSupported();
+#endif
+}
+
 // Callback set on the PluginList to assert that plugin loading happens on the
 // correct thread.
-#if defined(OS_WIN)
-void WillLoadPluginsCallbackWin(
+void WillLoadPluginsCallback(
     base::SequencedWorkerPool::SequenceToken token) {
-  CHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
-      token));
+  if (LoadPluginListInProcess()) {
+    CHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+        token));
+  } else {
+    CHECK(false) << "Plugin loading should happen out-of-process.";
+  }
 }
-#else
-void WillLoadPluginsCallbackPosix() {
-  CHECK(false) << "Plugin loading should happen out-of-process.";
-}
-#endif
-
 }  // namespace
 
 #if defined(OS_MACOSX)
@@ -137,14 +145,9 @@ void PluginServiceImpl::Init() {
   if (!plugin_list_)
     plugin_list_ = webkit::npapi::PluginList::Singleton();
 
-#if defined(OS_WIN)
   plugin_list_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
   plugin_list_->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallbackWin, plugin_list_token_));
-#else
-  plugin_list_->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallbackPosix));
-#endif
+      base::Bind(&WillLoadPluginsCallback, plugin_list_token_));
 
   RegisterPepperPlugins();
 
@@ -506,14 +509,18 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> target_loop(
       MessageLoop::current()->message_loop_proxy());
 
-#if defined(OS_WIN)
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      plugin_list_token_,
-      FROM_HERE,
-      base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
-                 target_loop, callback),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-#elif defined(OS_POSIX)
+  if (LoadPluginListInProcess()) {
+    BrowserThread::GetBlockingPool()->
+        PostSequencedWorkerTaskWithShutdownBehavior(
+            plugin_list_token_,
+            FROM_HERE,
+            base::Bind(&PluginServiceImpl::GetPluginsInternal,
+                       base::Unretained(this),
+                       target_loop, callback),
+        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+    return;
+  }
+#if defined(OS_POSIX)
   std::vector<webkit::WebPluginInfo> cached_plugins;
   if (plugin_list_->GetPluginsNoRefresh(&cached_plugins)) {
     // Can't assume the caller is reentrant.
@@ -529,11 +536,10 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
                    target_loop, callback));
   }
 #else
-#error Not implemented
+  NOTREACHED();
 #endif
 }
 
-#if defined(OS_WIN)
 void PluginServiceImpl::GetPluginsInternal(
      base::MessageLoopProxy* target_loop,
      const PluginService::GetPluginsCallback& callback) {
@@ -546,7 +552,6 @@ void PluginServiceImpl::GetPluginsInternal(
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
 }
-#endif
 
 void PluginServiceImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {

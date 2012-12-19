@@ -11,7 +11,14 @@
 
 typedef InProcessBrowserTest ImmersiveModeControllerTest;
 
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+#define MAYBE_ImmersiveMode DISABLED_ImmersiveMode
+#else
+#define MAYBE_ImmersiveMode ImmersiveMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   ui::LayerAnimator::set_disable_animations_for_test(true);
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());

@@ -14,7 +14,8 @@ using views::FocusManager;
 typedef InProcessBrowserTest BrowserViewTest;
 
 // Active window and focus testing is not reliable on Windows crbug.com/79493
-#if defined(OS_WIN)
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 #define MAYBE_FullscreenClearsFocus DISABLED_FullscreenClearsFocus
 #else
 #define MAYBE_FullscreenClearsFocus FullscreenClearsFocus

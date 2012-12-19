@@ -505,7 +505,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
 // Invoke a save page during the initial navigation.
 // (Regression test for http://crbug.com/156538).
 // Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 #define MAYBE_SaveDuringInitialNavigationIncognito DISABLED_SaveDuringInitialNavigationIncognito
 #else
 #define MAYBE_SaveDuringInitialNavigationIncognito SaveDuringInitialNavigationIncognito

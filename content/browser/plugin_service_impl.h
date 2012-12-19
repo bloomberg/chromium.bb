@@ -172,11 +172,9 @@ class CONTENT_EXPORT PluginServiceImpl
 
   void RegisterPepperPlugins();
 
-#if defined(OS_WIN)
   // Run on the blocking pool to load the plugins synchronously.
   void GetPluginsInternal(base::MessageLoopProxy* target_loop,
                           const GetPluginsCallback& callback);
-#endif
 
   // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible
   // because more arity is needed <http://crbug.com/98542>. This just forwards.
@@ -235,10 +233,9 @@ class CONTENT_EXPORT PluginServiceImpl
 
   std::set<PluginProcessHost::Client*> pending_plugin_clients_;
 
-#if defined(OS_WIN)
   // Used to sequentialize loading plug-ins from disk.
   base::SequencedWorkerPool::SequenceToken plugin_list_token_;
-#endif
+
 #if defined(OS_POSIX)
   scoped_refptr<PluginLoaderPosix> plugin_loader_;
 #endif

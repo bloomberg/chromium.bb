@@ -26,7 +26,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
 }
 
 // http://crbug.com/31663
-#if !(defined(OS_WIN) && defined(USE_AURA))
+// TODO(linux_aura) http://crbug.com/163931
+#if !(defined(OS_WIN) && defined(USE_AURA)) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(

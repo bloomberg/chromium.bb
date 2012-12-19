@@ -39,8 +39,14 @@ class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
   }
 };
 
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+#define MAYBE_NoticeNotificationChanges DISABLED_NoticeNotificationChanges
+#else
+#define MAYBE_NoticeNotificationChanges NoticeNotificationChanges
+#endif
 IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
-                       NoticeNotificationChanges) {
+                       MAYBE_NoticeNotificationChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager.

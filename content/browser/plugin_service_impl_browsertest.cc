@@ -18,6 +18,7 @@
 #include "content/test/content_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 
 namespace content {
 
@@ -137,6 +138,8 @@ class PluginServiceTest : public ContentBrowserTest {
 // Try to open a channel to the test plugin. Minimal plugin process spawning
 // test for the PluginService interface.
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
+  if (!webkit::npapi::NPAPIPluginsSupported())
+    return;
   MockPluginProcessHostClient mock_client(GetResourceContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -270,6 +273,8 @@ class MockCanceledBeforeSentPluginProcessHostClient
 
 IN_PROC_BROWSER_TEST_F(
     PluginServiceTest, CancelBeforeSentOpenChannelToPluginProcessHost) {
+  if (!webkit::npapi::NPAPIPluginsSupported())
+    return;
   ::testing::StrictMock<MockCanceledBeforeSentPluginProcessHostClient>
       mock_client(GetResourceContext());
   BrowserThread::PostTask(
@@ -322,6 +327,8 @@ class MockCanceledAfterSentPluginProcessHostClient
 // Should not attempt to open a channel, since it should be canceled early on.
 IN_PROC_BROWSER_TEST_F(
     PluginServiceTest, CancelAfterSentOpenChannelToPluginProcessHost) {
+  if (!webkit::npapi::NPAPIPluginsSupported())
+    return;
   ::testing::StrictMock<MockCanceledAfterSentPluginProcessHostClient>
       mock_client(GetResourceContext());
   BrowserThread::PostTask(

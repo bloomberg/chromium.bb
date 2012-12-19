@@ -41,7 +41,14 @@
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif  // defined(USE_AURA) || defined(OS_MACOSX)
 
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+#define MAYBE_FocusWindowDoesNotExitFullscreen \
+  DISABLED_FocusWindowDoesNotExitFullscreen
+#else
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
+#endif
+
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #define MAYBE_UpdateWindowResize UpdateWindowResize
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)

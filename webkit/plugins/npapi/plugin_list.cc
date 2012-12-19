@@ -17,6 +17,7 @@
 #include "net/base/mime_util.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -86,6 +87,13 @@ void PluginList::RefreshPlugins() {
 }
 
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
+  if (!NPAPIPluginsSupported()) {
+    // TODO(jam): remove and just have CHECK once we're sure this doesn't get
+    // triggered.
+    DLOG(INFO) << "NPAPI plugins not supported";
+    return;
+  }
+
   // Chrome OS only loads plugins from /opt/google/chrome/plugins.
 #if !defined(OS_CHROMEOS)
   base::AutoLock lock(lock_);
@@ -120,6 +128,12 @@ void PluginList::RegisterInternalPluginWithEntryPoints(
     const webkit::WebPluginInfo& info,
     bool add_at_beginning,
     const PluginEntryPoints& entry_points) {
+  if (!NPAPIPluginsSupported() &&
+      info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+    DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
+    return;
+  }
+
   InternalPlugin plugin = { info, entry_points };
 
   base::AutoLock lock(lock_);
@@ -313,9 +327,6 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
     extra_plugin_dirs = extra_plugin_dirs_;
   }
 
-  std::vector<FilePath> directories_to_scan;
-  GetPluginDirectories(&directories_to_scan);
-
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
     const FilePath& path = extra_plugin_paths[i];
     if (std::find(plugin_paths->begin(), plugin_paths->end(), path) !=
@@ -325,15 +336,21 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
     plugin_paths->push_back(path);
   }
 
-  for (size_t i = 0; i < extra_plugin_dirs.size(); ++i)
-    GetPluginsInDir(extra_plugin_dirs[i], plugin_paths);
+  if (NPAPIPluginsSupported()) {
+    // A bit confusingly, this function is used to load Pepper plugins as well.
+    // Those are all internal plugins so we have to use extra_plugin_paths.
+    for (size_t i = 0; i < extra_plugin_dirs.size(); ++i)
+      GetPluginsInDir(extra_plugin_dirs[i], plugin_paths);
 
-  for (size_t i = 0; i < directories_to_scan.size(); ++i)
-    GetPluginsInDir(directories_to_scan[i], plugin_paths);
+    std::vector<FilePath> directories_to_scan;
+    GetPluginDirectories(&directories_to_scan);
+    for (size_t i = 0; i < directories_to_scan.size(); ++i)
+      GetPluginsInDir(directories_to_scan[i], plugin_paths);
 
 #if defined(OS_WIN)
   GetPluginPathsFromRegistry(plugin_paths);
 #endif
+  }
 }
 
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {

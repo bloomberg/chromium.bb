@@ -19,6 +19,8 @@ WEBKIT_PLUGINS_EXPORT void CreateVersionFromString(
     const string16& version_string,
     Version* parsed_version);
 
+// Returns true iff NPAPI plugins are supported on the current platform.
+WEBKIT_PLUGINS_EXPORT bool NPAPIPluginsSupported();
 }  // namespace npapi
 }  // namespace webkit
 

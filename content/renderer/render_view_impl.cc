@@ -203,6 +203,7 @@
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/media/webmediaplayer_ms.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
@@ -4434,12 +4435,11 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
   if (pepper_webplugin)
     return pepper_webplugin;
 
-#if defined(USE_AURA) && !defined(OS_WIN)
-  return NULL;
-#else
+  if (!webkit::npapi::NPAPIPluginsSupported())
+    return NULL;
+
   return new webkit::npapi::WebPluginImpl(
       frame, params, info.path, AsWeakPtr());
-#endif
 }
 
 void RenderViewImpl::EvaluateScript(const string16& frame_xpath,

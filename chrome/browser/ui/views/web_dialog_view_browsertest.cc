@@ -83,7 +83,8 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
   WebDialogBrowserTest() {}
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_AURA)
 #define MAYBE_SizeWindow SizeWindow
 #else
 // http://code.google.com/p/chromium/issues/detail?id=52602
