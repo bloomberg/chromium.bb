@@ -39,7 +39,6 @@ namespace {
 #define GotoState(s) next_handshake_state_ = s
 #endif
 
-const size_t kMaxRecvBufferSize = 4096;
 const int kSessionCacheTimeoutSeconds = 60 * 60;
 const size_t kSessionCacheMaxEntires = 1024;
 
@@ -1045,9 +1044,6 @@ int SSLClientSocketOpenSSL::BufferRecv(void) {
     return ERR_IO_PENDING;
 
   size_t max_write = BIO_ctrl_get_write_guarantee(transport_bio_);
-  if (max_write > kMaxRecvBufferSize)
-    max_write = kMaxRecvBufferSize;
-
   if (!max_write)
     return ERR_IO_PENDING;
 
