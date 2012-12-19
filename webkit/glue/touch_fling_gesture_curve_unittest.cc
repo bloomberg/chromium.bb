@@ -4,7 +4,7 @@
 
 // Tests for the TouchFlingGestureCurve.
 
-#include "webkit/glue/touch_fling_platform_gesture_curve.h"
+#include "webkit/glue/touch_fling_gesture_curve.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"

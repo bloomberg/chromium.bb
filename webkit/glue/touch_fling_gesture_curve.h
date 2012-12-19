@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_TOUCH_FLING_PLATFORM_GESTURE_CURVE_H_
-#define WEBKIT_GLUE_TOUCH_FLING_PLATFORM_GESTURE_CURVE_H_
+#ifndef WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
+#define WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
@@ -56,4 +56,4 @@ class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
 
 } // namespace webkit_glue
 
-#endif // WEBKIT_GLUE_TOUCH_FLING_PLATFORM_GESTURE_CURVE_H_
+#endif // WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_

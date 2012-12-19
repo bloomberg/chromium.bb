@@ -377,7 +377,7 @@
 	    '../../glue/regular_expression_unittest.cc',
 	    '../../glue/resource_fetcher_unittest.cc',
 	    '../../glue/resource_request_body_unittest.cc',
-	    '../../glue/touch_fling_platform_gesture_curve_unittest.cc',
+	    '../../glue/touch_fling_gesture_curve_unittest.cc',
 	    '../../glue/unittest_test_server.h',
 	    '../../glue/webcursor_unittest.cc',
 	    '../../glue/webkit_glue_unittest.cc',

@@ -45,7 +45,7 @@
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/glue/touch_fling_platform_gesture_curve.h"
+#include "webkit/glue/touch_fling_gesture_curve.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
