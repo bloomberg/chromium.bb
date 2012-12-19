@@ -11,6 +11,9 @@ namespace ibus {
 
 const char kServiceName[] = "org.freedesktop.IBus";
 
+// Constants used to receive NameOwner signals from ibus-daemon. Note that
+// "org.freedesktop.DBus" is used instead of "org.freedesktop.IBus" for these
+// signals.
 const char kDBusServiceName[] = "org.freedesktop.DBus";
 const char kDBusObjectPath[] = "/org/freedesktop/DBus";
 const char kDBusInterface[] = "org.freedesktop.DBus";

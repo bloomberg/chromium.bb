@@ -48,8 +48,11 @@ class IBusConfigClientImpl : public IBusConfigClient {
   virtual void InitializeAsync(const OnIBusConfigReady& on_ready) OVERRIDE {
     // We should check that the ibus-config daemon actually works first, so we
     // can't initialize synchronously.
+    // NameOwnerChanged signal will be emitted by ibus-daemon, but from the
+    // service name kDBusServiceName instead of kServiceName. The signal will be
+    // used to detect start of ibus-daemon.
     dbus::ObjectProxy* dbus_proxy = bus_->GetObjectProxy(
-        ibus::kServiceName,
+        ibus::kDBusServiceName,
         dbus::ObjectPath(ibus::kDBusObjectPath));
 
     // Watch NameOwnerChanged signal which is fired when the ibus-config daemon

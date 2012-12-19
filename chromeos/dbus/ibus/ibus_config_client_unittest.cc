@@ -307,7 +307,7 @@ class IBusConfigClientTest : public testing::Test {
                                     ibus::kDBusServiceName,
                                     dbus::ObjectPath(ibus::kDBusObjectPath));
     EXPECT_CALL(*mock_bus_,
-                GetObjectProxy(ibus::kServiceName,
+                GetObjectProxy(ibus::kDBusServiceName,
                                dbus::ObjectPath(ibus::kDBusObjectPath)))
         .WillOnce(Return(mock_dbus_proxy.get()));
 
@@ -479,10 +479,10 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_NotAvailableTest) {
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
-                                  ibus::kServiceName,
+                                  ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
   EXPECT_CALL(*mock_bus_,
-              GetObjectProxy(ibus::kServiceName,
+              GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
   EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
@@ -521,10 +521,10 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_SlowInitializeTest) {
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
-                                  ibus::kServiceName,
+                                  ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
   EXPECT_CALL(*mock_bus_,
-              GetObjectProxy(ibus::kServiceName,
+              GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
   EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
@@ -573,10 +573,10 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_ShutdownTest) {
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
-                                  ibus::kServiceName,
+                                  ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
   EXPECT_CALL(*mock_bus_,
-              GetObjectProxy(ibus::kServiceName,
+              GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
   EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
