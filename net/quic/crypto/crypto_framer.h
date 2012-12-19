@@ -57,6 +57,12 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   // false if there was an error, and true otherwise.
   bool ProcessInput(base::StringPiece input);
 
+  // Returns the number of bytes of buffered input data remaining to be
+  // parsed.
+  size_t InputBytesRemaining() const {
+    return buffer_.length();
+  }
+
   // Returns a new QuicData owned by the caller that contains a serialized
   // |message|, or NULL if there was an error.
   QuicData* ConstructHandshakeMessage(const CryptoHandshakeMessage& message);

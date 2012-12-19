@@ -70,8 +70,13 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
         tags_.push_back(tag);
       }
       state_ = STATE_READING_LENGTHS;
-    case STATE_READING_LENGTHS:
-      if (reader.BytesRemaining() < num_entries_ * kValueLenSize) {
+    case STATE_READING_LENGTHS: {
+      size_t expected_bytes = num_entries_ * kValueLenSize;
+      bool has_padding = (num_entries_ % 2 == 1);
+      if (has_padding) {
+        expected_bytes += kValueLenSize;
+      }
+      if (reader.BytesRemaining() < expected_bytes) {
         break;
       }
       values_len_ = 0;
@@ -80,12 +85,18 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
         reader.ReadUInt16(&len);
         tag_length_map_[tags_[i]] = len;
         values_len_ += len;
-        if (len == 0 && i != num_entries_ - 1) {
+      }
+      // Possible padding
+      if (has_padding) {
+        uint16 len;
+        reader.ReadUInt16(&len);
+        if (len != 0) {
           error_ = QUIC_CRYPTO_INVALID_VALUE_LENGTH;
           return false;
         }
       }
       state_ = STATE_READING_VALUES;
+    }
     case STATE_READING_VALUES:
       if (reader.BytesRemaining() < values_len_) {
         break;
@@ -120,9 +131,6 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
     len += sizeof(uint32);  // tag
     len += sizeof(uint16);  // value len
     len += it->second.length(); // value
-    if (it->second.length() == 0) {
-      return NULL;
-    }
     ++it;
   }
   if (message.tag_value_map.size() % 2 == 1) {
@@ -156,7 +164,7 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
   }
   // Possible padding
   if (message.tag_value_map.size() % 2 == 1) {
-    if (!writer.WriteUInt16(0xABAB)) {
+    if (!writer.WriteUInt16(0)) {
       DCHECK(false) << "Failed to write padding.";
       return NULL;
     }

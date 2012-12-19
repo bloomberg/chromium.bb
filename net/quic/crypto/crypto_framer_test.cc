@@ -51,8 +51,6 @@ class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
     }
   }
 
-  CryptoFramer framer_;
-
   // Counters from the visitor callbacks.
   int error_count_;
 
@@ -61,6 +59,16 @@ class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
 };
 
 }  // namespace test
+
+TEST(CryptoFramerTest, MakeCryptoTag) {
+  CryptoTag tag = MAKE_TAG('A', 'B', 'C', 'D');
+  char bytes[4];
+  memcpy(bytes, &tag, 4);
+  EXPECT_EQ('A', bytes[0]);
+  EXPECT_EQ('B', bytes[1]);
+  EXPECT_EQ('C', bytes[2]);
+  EXPECT_EQ('D', bytes[3]);
+}
 
 TEST(CryptoFramerTest, ConstructHandshakeMessage) {
   CryptoHandshakeMessage message;
@@ -87,7 +95,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessage) {
     // len 3
     0x07, 0x00,
     // padding
-    0xAB, 0xAB,
+    0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -143,23 +151,39 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageWithTwoKeys) {
                                       AsChars(packet), arraysize(packet));
 }
 
+TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
+  CryptoHandshakeMessage message;
+  message.tag = 0xFFAA7733;
+  message.tag_value_map[0x12345678] = "";
+
+  unsigned char packet[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x01, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // len 1
+    0x00, 0x00,
+    // padding
+    0x00, 0x00,
+  };
+
+  CryptoFramer framer;
+  scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
+  ASSERT_TRUE(data.get() != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
 TEST(CryptoFramerTest, ConstructHandshakeMessageTooManyEntries) {
   CryptoHandshakeMessage message;
   message.tag = 0xFFAA7733;
   for (uint32 key = 1; key <= kMaxEntries + 1; ++key) {
     message.tag_value_map[key] = "abcdef";
   }
-
-  CryptoFramer framer;
-  scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  EXPECT_TRUE(data.get() == NULL);
-}
-
-
-TEST(CryptoFramerTest, ConstructHandshakeMessageInvalidLength) {
-  CryptoHandshakeMessage message;
-  message.tag = 0xFFAA7733;
-  message.tag_value_map[0x12345678] = "";
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
@@ -194,11 +218,60 @@ TEST(CryptoFramerTest, ProcessInput) {
 
   EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
                                               arraysize(input))));
+  EXPECT_EQ(0u, framer.InputBytesRemaining());
   ASSERT_EQ(1u, visitor.message_tags_.size());
   EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
+  ASSERT_EQ(1u, visitor.message_maps_.size());
   EXPECT_EQ(2u, visitor.message_maps_[0].size());
   EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
   EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
+}
+
+TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
+  test::TestCryptoVisitor visitor;
+  CryptoFramer framer;
+  framer.set_visitor(&visitor);
+
+  unsigned char input[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x03, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // tag 2
+    0x79, 0x56, 0x34, 0x12,
+    // tag 3
+    0x7A, 0x56, 0x34, 0x12,
+    // len 1
+    0x06, 0x00,
+    // len 2
+    0x05, 0x00,
+    // len 3
+    0x07, 0x00,
+    // padding
+    0x00, 0x00,
+    // value 1
+    'a',  'b',  'c',  'd',
+    'e',  'f',
+    // value 2
+    'g',  'h',  'i',  'j',
+    'k',
+    // value 3
+    'l',  'm',  'n',  'o',
+    'p',  'q',  'r',
+  };
+
+  EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
+                                              arraysize(input))));
+  EXPECT_EQ(0u, framer.InputBytesRemaining());
+  ASSERT_EQ(1u, visitor.message_tags_.size());
+  EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
+  ASSERT_EQ(1u, visitor.message_maps_.size());
+  EXPECT_EQ(3u, visitor.message_maps_[0].size());
+  EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
+  EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
+  EXPECT_EQ("lmnopqr", visitor.message_maps_[0][0x1234567A]);
 }
 
 TEST(CryptoFramerTest, ProcessInputIncrementally) {
@@ -230,8 +303,10 @@ TEST(CryptoFramerTest, ProcessInputIncrementally) {
   for (size_t i = 0; i < arraysize(input); i++) {
     EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input)+ i, 1)));
   }
+  EXPECT_EQ(0u, framer.InputBytesRemaining());
   ASSERT_EQ(1u, visitor.message_tags_.size());
   EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
+  ASSERT_EQ(1u, visitor.message_maps_.size());
   EXPECT_EQ(2u, visitor.message_maps_[0].size());
   EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
   EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
@@ -248,9 +323,9 @@ TEST(CryptoFramerTest, ProcessInputTagsOutOfOrder) {
     // num entries
     0x02, 0x00,
     // tag 1
-    0x79, 0x56, 0x34, 0x12,
+    0x78, 0x56, 0x34, 0x13,
     // tag 2
-    0x78, 0x56, 0x34, 0x12,
+    0x79, 0x56, 0x34, 0x12,
   };
 
   EXPECT_FALSE(framer.ProcessInput(StringPiece(AsChars(input),
@@ -275,7 +350,7 @@ TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
   EXPECT_EQ(QUIC_CRYPTO_TOO_MANY_ENTRIES, framer.error());
 }
 
-TEST(CryptoFramerTest, ProcessInputInvalidLength) {
+TEST(CryptoFramerTest, ProcessInputZeroLength) {
   test::TestCryptoVisitor visitor;
   CryptoFramer framer;
   framer.set_visitor(&visitor);
@@ -292,6 +367,28 @@ TEST(CryptoFramerTest, ProcessInputInvalidLength) {
     // len 1
     0x00, 0x00,
     // len 2
+    0x05, 0x00,
+  };
+
+  EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
+                                              arraysize(input))));
+}
+
+TEST(CryptoFramerTest, ProcessInputInvalidLengthPadding) {
+  test::TestCryptoVisitor visitor;
+  CryptoFramer framer;
+  framer.set_visitor(&visitor);
+
+  unsigned char input[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x01, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // len 1
+    0x05, 0x00,
+    // padding
     0x05, 0x00,
   };
 
