@@ -9,7 +9,6 @@
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
 #endif
@@ -19,11 +18,18 @@ namespace chrome {
 namespace {
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-void AddDelegateToMTPDeviceMapService(
-    const FilePath::StringType& device_location,
-    fileapi::MTPDeviceDelegate* delegate) {
-  fileapi::MTPDeviceMapService::GetInstance()->AddDelegate(device_location,
-                                                           delegate);
+bool IsMediaTaskRunnerThread() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+  return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
+}
+
+base::SequencedTaskRunner* GetSequencedTaskRunner() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+  return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 #endif
 
@@ -31,17 +37,14 @@ void AddDelegateToMTPDeviceMapService(
 
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location,
-    const base::Closure& no_references_callback)
+    const base::Closure& on_destruction_callback)
     : device_location_(device_location),
-      no_references_callback_(no_references_callback) {
+      on_destruction_callback_(on_destruction_callback) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner =
-      pool->GetSequencedTaskRunner(media_sequence_token);
   CreateMTPDeviceDelegateCallback callback =
-      base::Bind(&AddDelegateToMTPDeviceMapService, device_location_);
+      base::Bind(&ScopedMTPDeviceMapEntry::OnMTPDeviceDelegateCreated, this);
+  scoped_refptr<base::SequencedTaskRunner> media_task_runner =
+      GetSequencedTaskRunner();
   media_task_runner->PostTask(FROM_HERE,
                               base::Bind(&CreateMTPDeviceDelegate,
                                          device_location_,
@@ -53,7 +56,16 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   fileapi::MTPDeviceMapService::GetInstance()->RemoveDelegate(device_location_);
-  no_references_callback_.Run();
+  on_destruction_callback_.Run();
+#endif
+}
+
+void ScopedMTPDeviceMapEntry::OnMTPDeviceDelegateCreated(
+    fileapi::MTPDeviceDelegate* delegate) {
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+  DCHECK(IsMediaTaskRunnerThread());
+  fileapi::MTPDeviceMapService::GetInstance()->AddDelegate(device_location_,
+                                                           delegate);
 #endif
 }
 

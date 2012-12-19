@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Class to manage the lifetime of MTPDeviceDelegateImpl object for the
-// attached media transfer protocol (MTP) device. This object is constructed
-// for each MTP device. Refcounted to reuse the same MTP device delegate entry
-// across extensions.
+// ScopedMTPDeviceMapEntry manages the lifetime of a MTPDeviceDelegate.
+// Each extension that uses a device holds a reference to the device's
+// ScopedMTPDeviceMapEntry.
 
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
@@ -13,32 +12,48 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner_helpers.h"
+#include "content/public/browser/browser_thread.h"
+
+namespace fileapi {
+class MTPDeviceDelegate;
+}
 
 namespace chrome {
 
 class ScopedMTPDeviceMapEntry
-    : public base::RefCounted<ScopedMTPDeviceMapEntry> {
+    : public base::RefCountedThreadSafe<
+          ScopedMTPDeviceMapEntry, content::BrowserThread::DeleteOnUIThread> {
  public:
-  // |no_references_callback| is called when the last ScopedMTPDeviceMapEntry
-  // reference goes away.
+  // |on_destruction_callback| is called when ScopedMTPDeviceMapEntry gets
+  // destroyed.
+  // Created on the UI thread.
   ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
-                          const base::Closure& no_references_callback);
+                          const base::Closure& on_destruction_callback);
 
  private:
-  // Friend declaration for ref counted implementation.
-  friend class base::RefCounted<ScopedMTPDeviceMapEntry>;
+  // Friend declarations for ref counted implementation.
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<ScopedMTPDeviceMapEntry>;
 
-  // Private because this class is ref-counted. Destructed when the last user of
-  // this MTP device is destroyed or when the MTP device is detached from the
-  // system or when the browser is in shutdown mode or when the last extension
-  // revokes the MTP device gallery permissions.
+  // Private because this class is ref-counted. Destroyed when:
+  // - no extension is using the device.
+  // - no extension has permission to access to device.
+  // - the device is detached.
+  // - the browser shuts down.
+  // Destroyed on the UI thread.
   ~ScopedMTPDeviceMapEntry();
+
+  // Callback to add the managed MTPDeviceDelegate to the MTPDeviceMapService.
+  // Called on the media task runner thread.
+  void OnMTPDeviceDelegateCreated(fileapi::MTPDeviceDelegate* delegate);
 
   // The MTP or PTP device location.
   const FilePath::StringType device_location_;
 
-  // A callback to call when the last reference of this object goes away.
-  base::Closure no_references_callback_;
+  // Called when the object is destroyed.
+  base::Closure on_destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
 };
