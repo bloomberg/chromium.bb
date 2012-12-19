@@ -31,13 +31,13 @@ using api::experimental_system_info_storage::StorageUnitInfo;
 class StorageInfoProviderMac : public StorageInfoProvider {
  public:
   StorageInfoProviderMac() {}
-  virtual ~StorageInfoProviderMac() {}
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
   virtual bool QueryUnitInfo(const std::string& id,
                              StorageUnitInfo* info) OVERRIDE;
 
  private:
+  virtual ~StorageInfoProviderMac() {}
   void BuildStorageTypeMap();
   std::map<std::string, std::string> dev_path_to_type_map_;
 };

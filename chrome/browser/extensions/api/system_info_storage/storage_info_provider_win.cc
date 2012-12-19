@@ -22,11 +22,13 @@ const unsigned long kMaxLogicalDriveString = 4 * 26;
 class StorageInfoProviderWin : public StorageInfoProvider {
  public:
   StorageInfoProviderWin() {}
-  virtual ~StorageInfoProviderWin() {}
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
   virtual bool QueryUnitInfo(const std::string& id,
                              StorageUnitInfo* info) OVERRIDE;
+
+ private:
+  virtual ~StorageInfoProviderWin() {}
 };
 
 bool StorageInfoProviderWin::QueryInfo(StorageInfo* info) {
