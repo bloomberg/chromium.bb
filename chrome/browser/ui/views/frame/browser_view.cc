@@ -1068,13 +1068,14 @@ LocationBar* BrowserView::GetLocationBar() const {
 }
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
-#if defined(OS_WIN)
-  // On Windows changing focus to the location bar causes the browser window
-  // to become active. This can steal focus if the user has another window
-  // open already.
+  // On Windows, changing focus to the location bar causes the browser
+  // window to become active. This can steal focus if the user has
+  // another window open already. On ChromeOS, changing focus makes a
+  // view believe it has a focus even if the widget doens't have a
+  // focus. Either cases, we need to ignore this when the browser
+  // window isn't active.
   if (!force_location_bar_focus_ && !IsActive())
     return;
-#endif
 
   // The location bar view must be visible for it to be considered focusable,
   // so always reveal it before testing for focusable.
