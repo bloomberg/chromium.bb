@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -128,6 +129,11 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (frame_->IsFullscreen())
     return;
 
+  // Prevent bleeding paint onto the client area below the window frame, which
+  // may become visible when the WebContent is transparent.
+  canvas->Save();
+  canvas->ClipRect(gfx::Rect(0, 0, width(), NonClientTopBorderHeight()));
+
   bool paint_as_active = ShouldPaintAsActive();
   int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
@@ -139,6 +145,7 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       NULL);
   frame_painter_->PaintTitleBar(this, canvas, GetTitleFont());
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
+  canvas->Restore();
 }
 
 std::string CustomFrameViewAsh::GetClassName() const {
