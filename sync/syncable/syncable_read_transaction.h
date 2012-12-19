@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_READ_TRANSACTION_H_
-#define SYNC_SYNCABLE_READ_TRANSACTION_H_
+#ifndef SYNC_SYNCABLE_SYNCABLE_READ_TRANSACTION_H_
+#define SYNC_SYNCABLE_SYNCABLE_READ_TRANSACTION_H_
 
-#include "sync/syncable/base_transaction.h"
+#include "sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
 class ReadTransaction;
@@ -29,4 +29,4 @@ class ReadTransaction : public BaseTransaction {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_READ_TRANSACTION_H_
+#endif  // SYNC_SYNCABLE_SYNCABLE_READ_TRANSACTION_H_

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_BASE_TRANSACTION_H_
-#define SYNC_SYNCABLE_BASE_TRANSACTION_H_
+#ifndef SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_
+#define SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_
 
 #include "base/location.h"
 #include "sync/syncable/syncable_id.h"
@@ -79,4 +79,4 @@ class BaseTransaction {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_BASE_TRANSACTION_H_
+#endif  // SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_

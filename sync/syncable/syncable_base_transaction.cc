@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/syncable/base_transaction.h"
+#include "sync/syncable/syncable_base_transaction.h"
 
 #include "base/debug/trace_event.h"
 #include "sync/syncable/directory.h"

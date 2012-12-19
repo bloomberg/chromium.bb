@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,17 +10,17 @@
 #include "base/string_number_conversions.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
-#include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
-#include "sync/syncable/read_transaction.h"
 #include "sync/syncable/scoped_index_updater.h"
 #include "sync/syncable/syncable-inl.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
+#include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/syncable/write_transaction.h"
+#include "sync/syncable/syncable_write_transaction.h"
 
 using std::string;
 

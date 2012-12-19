@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_id.h"
-#include "sync/syncable/write_transaction.h"
+#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/fake_extensions_activity_monitor.h"

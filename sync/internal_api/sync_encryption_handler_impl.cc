@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,10 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/base_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/nigori_util.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/encryptor.h"
 #include "sync/util/time.h"

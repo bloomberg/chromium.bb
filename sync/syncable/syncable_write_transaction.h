@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_WRITE_TRANSACTION_H_
-#define SYNC_SYNCABLE_WRITE_TRANSACTION_H_
+#ifndef SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
+#define SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
 
 #include "sync/base/sync_export.h"
-#include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry_kernel.h"
+#include "sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
 namespace syncable {
@@ -65,4 +65,4 @@ class WriteTransaction : public BaseTransaction {
 }  // namespace syncable
 }  // namespace syncer
 
-#endif //  SYNC_SYNCABLE_WRITE_TRANSACTION_H_
+#endif //  SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_

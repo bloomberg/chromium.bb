@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <iomanip>
 
 #include "base/json/string_escape.h"
-#include "sync/syncable/base_transaction.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/syncable/syncable_columns.h"
 
 using std::string;

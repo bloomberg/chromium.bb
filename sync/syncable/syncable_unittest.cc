@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,10 +26,10 @@
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
-#include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_proto_util.h"
+#include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/syncable/write_transaction.h"
+#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/engine/test_syncable_utils.h"
 #include "sync/test/fake_encryptor.h"

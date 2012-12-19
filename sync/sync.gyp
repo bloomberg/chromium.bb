@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -126,8 +126,6 @@
         'sessions/sync_session.h',
         'sessions/sync_session_context.cc',
         'sessions/sync_session_context.h',
-        'syncable/base_transaction.cc',
-        'syncable/base_transaction.h',
         'syncable/blob.h',
         'syncable/dir_open_result.h',
         'syncable/directory.cc',
@@ -153,10 +151,10 @@
         'syncable/nigori_util.h',
         'syncable/on_disk_directory_backing_store.cc',
         'syncable/on_disk_directory_backing_store.h',
-        'syncable/read_transaction.cc',
-        'syncable/read_transaction.h',
         'syncable/scoped_kernel_lock.h',
         'syncable/syncable-inl.h',
+        'syncable/syncable_base_transaction.cc',
+        'syncable/syncable_base_transaction.h',
         'syncable/syncable_changes_version.h',
         'syncable/syncable_columns.h',
         'syncable/syncable_enum_conversions.cc',
@@ -165,11 +163,13 @@
         'syncable/syncable_id.h',
         'syncable/syncable_proto_util.cc',
         'syncable/syncable_proto_util.h',
+        'syncable/syncable_read_transaction.cc',
+        'syncable/syncable_read_transaction.h',
         'syncable/syncable_util.cc',
         'syncable/syncable_util.h',
+        'syncable/syncable_write_transaction.cc',
+        'syncable/syncable_write_transaction.h',
         'syncable/transaction_observer.h',
-        'syncable/write_transaction.cc',
-        'syncable/write_transaction.h',
         'syncable/write_transaction_info.cc',
         'syncable/write_transaction_info.h',
         'util/cryptographer.cc',
