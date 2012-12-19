@@ -46,11 +46,11 @@ namespace {
 // ContextGroup's memory type managers and the GpuMemoryManager class.
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  GpuCommandBufferMemoryTracker(GpuChannel* channel) {
-    gpu_memory_manager_tracking_group_ = new GpuMemoryTrackingGroup(
+  GpuCommandBufferMemoryTracker(GpuChannel* channel) :
+    gpu_memory_manager_tracking_group_(new GpuMemoryTrackingGroup(
         channel->renderer_pid(),
         this,
-        channel->gpu_channel_manager()->gpu_memory_manager());
+        channel->gpu_channel_manager()->gpu_memory_manager())) {
   }
 
   void TrackMemoryAllocatedChange(size_t old_size,
@@ -62,9 +62,8 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
 
  private:
   ~GpuCommandBufferMemoryTracker() {
-    delete gpu_memory_manager_tracking_group_;
   }
-  GpuMemoryTrackingGroup* gpu_memory_manager_tracking_group_;
+  scoped_ptr<GpuMemoryTrackingGroup> gpu_memory_manager_tracking_group_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };
@@ -849,16 +848,10 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
   TRACE_EVENT0(
       "gpu",
       "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
-  if (has_callback) {
-    GetMemoryManager()->AddClient(
-        this,
-        surface_id_ != 0,
-        true,
-        base::TimeTicks::Now());
-  } else {
-    GetMemoryManager()->RemoveClient(
-        this);
-  }
+  if (has_callback)
+    GetMemoryManager()->AddClient(this, surface_id_ != 0, true);
+  else
+    GetMemoryManager()->RemoveClient(this);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

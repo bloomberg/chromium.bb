@@ -68,6 +68,9 @@ GpuMemoryManager::GpuMemoryManager(
 GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
   DCHECK(clients_.empty());
+  DCHECK(clients_visible_mru_.empty());
+  DCHECK(clients_nonvisible_mru_.empty());
+  DCHECK(clients_nonsurface_.empty());
   DCHECK(!bytes_allocated_managed_current_);
   DCHECK(!bytes_allocated_unmanaged_current_);
   DCHECK(!bytes_allocated_managed_visible_);
@@ -151,8 +154,7 @@ size_t GpuMemoryManager::CalcAvailableFromGpuTotal(size_t total_gpu_memory) {
   return std::min(3 * total_gpu_memory / 4, total_gpu_memory - 64*1024*1024);
 }
 
-void GpuMemoryManager::UpdateAvailableGpuMemory(
-   const ClientStateVector& clients) {
+void GpuMemoryManager::UpdateAvailableGpuMemory() {
   // If the amount of video memory to use was specified at the command
   // line, never change it.
   if (bytes_available_gpu_memory_overridden_)
@@ -171,8 +173,9 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
 
   // Only use the clients that are visible, because otherwise the set of clients
   // we are querying could become extremely large.
-  for (ClientStateVector::const_iterator it = clients.begin();
-      it != clients.end(); ++it) {
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+      it != clients_visible_mru_.end();
+      ++it) {
     ClientState* client_state = *it;
     if (!client_state->has_surface)
       continue;
@@ -223,18 +226,6 @@ void GpuMemoryManager::UpdateBackgroundedAvailableGpuMemory() {
   bytes_backgrounded_available_gpu_memory_ = bytes_available_gpu_memory_ / 4;
 #endif
 }
-
-bool GpuMemoryManager::ClientsComparator::operator()(
-    ClientState* lhs,
-    ClientState* rhs) {
-  if (lhs->has_surface != rhs->has_surface)
-    return lhs->has_surface > rhs->has_surface;
-  if (lhs->visible != rhs->visible)
-    return lhs->visible > rhs->visible;
-  if (lhs->last_used_time != rhs->last_used_time)
-    return lhs->last_used_time > rhs->last_used_time;
-  return lhs > rhs;
-};
 
 void GpuMemoryManager::ScheduleManage(bool immediate) {
   if (disable_schedule_manage_)
@@ -292,16 +283,21 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
 
 void GpuMemoryManager::AddClient(GpuMemoryManagerClient* client,
                                  bool has_surface,
-                                 bool visible,
-                                 base::TimeTicks last_used_time) {
+                                 bool visible) {
   if (clients_.count(client))
     return;
-  ClientState* client_state =
-      new ClientState(client, has_surface, visible, last_used_time);
+  TrackingGroupMap::iterator tracking_group_it =
+      tracking_groups_.find(client->GetMemoryTracker());
+  DCHECK(tracking_group_it != tracking_groups_.end());
+  GpuMemoryTrackingGroup* tracking_group = tracking_group_it->second;
+
+  ClientState* client_state = new ClientState(
+      client, tracking_group, has_surface, visible);
   TrackValueChanged(0, client_state->managed_memory_stats.bytes_allocated,
                     client_state->visible ?
                         &bytes_allocated_managed_visible_ :
                         &bytes_allocated_managed_backgrounded_);
+  AddClientToList(client_state);
   clients_.insert(std::make_pair(client, client_state));
   ScheduleManage(true);
 }
@@ -311,6 +307,7 @@ void GpuMemoryManager::RemoveClient(GpuMemoryManagerClient* client) {
   if (it == clients_.end())
     return;
   ClientState* client_state = it->second;
+  RemoveClientFromList(client_state);
   TrackValueChanged(client_state->managed_memory_stats.bytes_allocated, 0,
                     client_state->visible ?
                         &bytes_allocated_managed_visible_ :
@@ -327,10 +324,14 @@ void GpuMemoryManager::SetClientVisible(GpuMemoryManagerClient* client,
   if (it == clients_.end())
     return;
   ClientState* client_state = it->second;
+  DCHECK(client_state->has_surface);
   if (client_state->visible == visible)
     return;
+
+  RemoveClientFromList(client_state);
   client_state->visible = visible;
-  client_state->last_used_time = base::TimeTicks::Now();
+  AddClientToList(client_state);
+
   TrackValueChanged(client_state->managed_memory_stats.bytes_allocated, 0,
                     client_state->visible ?
                         &bytes_allocated_managed_backgrounded_ :
@@ -364,59 +365,34 @@ void GpuMemoryManager::SetClientManagedMemoryStats(
     ScheduleManage(false);
 }
 
-void GpuMemoryManager::TestingSetClientVisible(
-    GpuMemoryManagerClient* client, bool visible) {
-  DCHECK(clients_.count(client));
-  clients_[client]->visible = visible;
-}
-
-void GpuMemoryManager::TestingSetClientLastUsedTime(
-    GpuMemoryManagerClient* client, base::TimeTicks last_used_time) {
-  DCHECK(clients_.count(client));
-  clients_[client]->last_used_time = last_used_time;
-}
-
-void GpuMemoryManager::TestingSetClientHasSurface(
-    GpuMemoryManagerClient* client, bool has_surface) {
-  DCHECK(clients_.count(client));
-  clients_[client]->has_surface = has_surface;
-}
-
-bool GpuMemoryManager::TestingCompareClients(
-    GpuMemoryManagerClient* lhs, GpuMemoryManagerClient* rhs) const {
-  ClientMap::const_iterator it_lhs = clients_.find(lhs);
-  ClientMap::const_iterator it_rhs = clients_.find(rhs);
-  DCHECK(it_lhs != clients_.end());
-  DCHECK(it_rhs != clients_.end());
-  ClientsComparator comparator;
-  return comparator.operator()(it_lhs->second, it_rhs->second);
-}
-
 void GpuMemoryManager::AddTrackingGroup(
     GpuMemoryTrackingGroup* tracking_group) {
-  tracking_groups_.insert(tracking_group);
+  DCHECK(!tracking_groups_.count(tracking_group->GetMemoryTracker()));
+  tracking_groups_.insert(std::make_pair(tracking_group->GetMemoryTracker(),
+                                         tracking_group));
 }
 
 void GpuMemoryManager::RemoveTrackingGroup(
     GpuMemoryTrackingGroup* tracking_group) {
-  tracking_groups_.erase(tracking_group);
+  DCHECK(tracking_groups_.count(tracking_group->GetMemoryTracker()));
+  tracking_groups_.erase(tracking_group->GetMemoryTracker());
 }
 
 void GpuMemoryManager::GetVideoMemoryUsageStats(
-    GPUVideoMemoryUsageStats& video_memory_usage_stats) const {
+    GPUVideoMemoryUsageStats* video_memory_usage_stats) const {
   // For each context group, assign its memory usage to its PID
-  video_memory_usage_stats.process_map.clear();
-  for (std::set<GpuMemoryTrackingGroup*>::const_iterator i =
+  video_memory_usage_stats->process_map.clear();
+  for (TrackingGroupMap::const_iterator i =
        tracking_groups_.begin(); i != tracking_groups_.end(); ++i) {
-    const GpuMemoryTrackingGroup* tracking_group = (*i);
-    video_memory_usage_stats.process_map[
+    const GpuMemoryTrackingGroup* tracking_group = i->second;
+    video_memory_usage_stats->process_map[
         tracking_group->GetPid()].video_memory += tracking_group->GetSize();
   }
 
   // Assign the total across all processes in the GPU process
-  video_memory_usage_stats.process_map[
+  video_memory_usage_stats->process_map[
       base::GetCurrentProcId()].video_memory = GetCurrentUsage();
-  video_memory_usage_stats.process_map[
+  video_memory_usage_stats->process_map[
       base::GetCurrentProcId()].has_duplicates = true;
 }
 
@@ -462,145 +438,162 @@ void GpuMemoryManager::Manage() {
   manage_immediate_scheduled_ = false;
   delayed_manage_callback_.Cancel();
 
-  // Create a vector of clients, sorted by
-  // - visible clients with surfaces, sorted in MRU order
-  // - backgrounded clients with surfaces, sorted in MRU order
-  // - clients without surfaces
-  ClientStateVector clients;
-  for (ClientMap::iterator it = clients_.begin(); it != clients_.end(); ++it) {
-    clients.push_back(it->second);
-  }
-  std::sort(clients.begin(), clients.end(), ClientsComparator());
-  DCHECK(std::unique(clients.begin(), clients.end()) == clients.end());
-
   // Update the amount of GPU memory available on the system.
-  UpdateAvailableGpuMemory(clients);
+  UpdateAvailableGpuMemory();
 
   // Determine which clients are "hibernated" (which determines the
   // distribution of frontbuffers and memory among clients that don't have
   // surfaces).
-  SetClientsHibernatedState(clients);
+  SetClientsHibernatedState();
 
   // Determine how much memory to assign to give to visible and backgrounded
   // clients.
-  size_t bytes_limit_when_visible = GetVisibleClientAllocation(clients);
+  size_t bytes_limit_when_visible = GetVisibleClientAllocation();
 
-  // Now give out allocations to everyone.
-  size_t bytes_allocated_backgrounded = 0;
-  for (ClientStateVector::iterator it = clients.begin();
-       it != clients.end();
+  // Experiment to determine if aggressively discarding tiles on OS X
+  // results in greater stability.
+#if defined(OS_MACOSX)
+  GpuMemoryAllocationForRenderer::PriorityCutoff priority_cutoff_when_visible =
+      GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
+#else
+  GpuMemoryAllocationForRenderer::PriorityCutoff priority_cutoff_when_visible =
+      GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+#endif
+
+  // Assign memory allocations to visible clients.
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+       it != clients_visible_mru_.end();
        ++it) {
     ClientState* client_state = *it;
     GpuMemoryAllocation allocation;
-    if (client_state->has_surface) {
-      allocation.browser_allocation.suggest_have_frontbuffer =
-          !client_state->hibernated;
 
-      // Set the state when visible.
-      allocation.renderer_allocation.bytes_limit_when_visible =
-          bytes_limit_when_visible;
-      // Experiment to determine if aggressively discarding tiles on OS X
-      // results in greater stability.
-#if defined(OS_MACOSX)
-      allocation.renderer_allocation.priority_cutoff_when_visible =
-          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
-#else
-      allocation.renderer_allocation.priority_cutoff_when_visible =
-          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
-#endif
+    allocation.browser_allocation.suggest_have_frontbuffer = true;
+    allocation.renderer_allocation.bytes_limit_when_visible =
+        bytes_limit_when_visible;
+    allocation.renderer_allocation.priority_cutoff_when_visible =
+        priority_cutoff_when_visible;
 
-      // Set the state when backgrounded.
-      bool allow_allocation_when_backgrounded = false;
-      if (client_state->visible) {
-        // If the client is visible, then allow it to keep its textures, should
-        // it be backgrounded, but only if all textures required to draw will
-        // fit in total backgrounded memory limit.
-        allow_allocation_when_backgrounded =
-            client_state->managed_memory_stats.bytes_required <
-            bytes_backgrounded_available_gpu_memory_;
-      } else {
-        // If the client is backgrounded, then allow it to keep its textures
-        // if everything required to draw fits in-budget.
-        allow_allocation_when_backgrounded =
-            client_state->managed_memory_stats.bytes_required +
-            bytes_allocated_backgrounded <
-            GetCurrentBackgroundedAvailableGpuMemory();
-        if (allow_allocation_when_backgrounded) {
-          bytes_allocated_backgrounded +=
-              client_state->managed_memory_stats.bytes_allocated;
-        }
-      }
-      if (allow_allocation_when_backgrounded) {
-        allocation.renderer_allocation.bytes_limit_when_not_visible =
-            GetCurrentBackgroundedAvailableGpuMemory();
-        allocation.renderer_allocation.priority_cutoff_when_not_visible =
-            GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
-      } else {
+    // Allow this client to keep its textures when backgrounded if they
+    // aren't so expensive that they won't fit.
+    if (client_state->managed_memory_stats.bytes_required <=
+        bytes_backgrounded_available_gpu_memory_) {
+      allocation.renderer_allocation.bytes_limit_when_not_visible =
+          GetCurrentBackgroundedAvailableGpuMemory();
+      allocation.renderer_allocation.priority_cutoff_when_not_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
+    } else {
         allocation.renderer_allocation.bytes_limit_when_not_visible = 0;
         allocation.renderer_allocation.priority_cutoff_when_not_visible =
             GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing;
-      }
-    } else {
-      if (!client_state->hibernated) {
-        allocation.renderer_allocation.bytes_limit_when_visible =
-            GetMinimumTabAllocation();
-        allocation.renderer_allocation.priority_cutoff_when_visible =
-            GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
-      }
     }
+
+    client_state->client->SetMemoryAllocation(allocation);
+  }
+
+  // Assign memory allocations to backgrounded clients.
+  size_t bytes_allocated_backgrounded = 0;
+  for (ClientStateList::const_iterator it = clients_nonvisible_mru_.begin();
+       it != clients_nonvisible_mru_.end();
+       ++it) {
+    ClientState* client_state = *it;
+    GpuMemoryAllocation allocation;
+
+    allocation.browser_allocation.suggest_have_frontbuffer =
+        !client_state->hibernated;
+    allocation.renderer_allocation.bytes_limit_when_visible =
+        bytes_limit_when_visible;
+    allocation.renderer_allocation.priority_cutoff_when_visible =
+        priority_cutoff_when_visible;
+
+    if (client_state->managed_memory_stats.bytes_required +
+        bytes_allocated_backgrounded <=
+        GetCurrentBackgroundedAvailableGpuMemory()) {
+      bytes_allocated_backgrounded +=
+          client_state->managed_memory_stats.bytes_required;
+      allocation.renderer_allocation.bytes_limit_when_not_visible =
+          GetCurrentBackgroundedAvailableGpuMemory();
+      allocation.renderer_allocation.priority_cutoff_when_not_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
+    } else {
+      allocation.renderer_allocation.bytes_limit_when_not_visible = 0;
+      allocation.renderer_allocation.priority_cutoff_when_not_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing;
+    }
+
+    client_state->client->SetMemoryAllocation(allocation);
+  }
+
+  // Assign memory allocations to clients that don't have surfaces.
+  for (ClientStateList::const_iterator it = clients_nonsurface_.begin();
+       it != clients_nonsurface_.end();
+       ++it) {
+    ClientState* client_state = *it;
+    GpuMemoryAllocation allocation;
+
+    if (!client_state->hibernated) {
+      allocation.renderer_allocation.bytes_limit_when_visible =
+          GetMinimumTabAllocation();
+      allocation.renderer_allocation.priority_cutoff_when_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+    }
+
     client_state->client->SetMemoryAllocation(allocation);
   }
 
   SendUmaStatsToBrowser();
 }
 
-void GpuMemoryManager::SetClientsHibernatedState(
-    const ClientStateVector& clients) const {
-  std::set<gpu::gles2::MemoryTracker*> memory_trackers_not_hibernated;
+void GpuMemoryManager::SetClientsHibernatedState() const {
+  // Re-set all tracking groups as being hibernated.
+  for (TrackingGroupMap::const_iterator it = tracking_groups_.begin();
+       it != tracking_groups_.end();
+       ++it) {
+    GpuMemoryTrackingGroup* tracking_group = it->second;
+    tracking_group->hibernated_ = true;
+  }
+  // All clients with surfaces that are visible are non-hibernated.
   size_t non_hibernated_clients = 0;
-  for (ClientStateVector::const_iterator it = clients.begin();
-       it != clients.end();
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+       it != clients_visible_mru_.end();
        ++it) {
     ClientState* client_state = *it;
-    if (client_state->has_surface) {
-      // All clients with surfaces that are visible are non-hibernated. Then
-      // an additional few clients with surfaces are non-hibernated too, up to
-      // a fixed limit.
-      if (client_state->visible) {
-        client_state->hibernated = false;
-      } else {
-        client_state->hibernated = non_hibernated_clients >=
-                                   max_surfaces_with_frontbuffer_soft_limit_;
-      }
-      if (!client_state->hibernated) {
-        non_hibernated_clients++;
-        memory_trackers_not_hibernated.insert(
-            client_state->client->GetMemoryTracker());
-      }
+    client_state->hibernated = false;
+    client_state->tracking_group->hibernated_ = false;
+    non_hibernated_clients++;
+  }
+  // Then an additional few clients with surfaces are non-hibernated too, up to
+  // a fixed limit.
+  for (ClientStateList::const_iterator it = clients_nonvisible_mru_.begin();
+       it != clients_nonvisible_mru_.end();
+       ++it) {
+    ClientState* client_state = *it;
+    if (non_hibernated_clients < max_surfaces_with_frontbuffer_soft_limit_) {
+      client_state->hibernated = false;
+      client_state->tracking_group->hibernated_ = false;
+      non_hibernated_clients++;
     } else {
-      // Clients that don't have surfaces are non-hibernated if they are
-      // in a GL share group with a non-hibernated surface.
-      client_state->hibernated = !memory_trackers_not_hibernated.count(
-          client_state->client->GetMemoryTracker());
+      client_state->hibernated = true;
     }
+  }
+  // Clients that don't have surfaces are non-hibernated if they are
+  // in a GL share group with a non-hibernated surface.
+  for (ClientStateList::const_iterator it = clients_nonsurface_.begin();
+       it != clients_nonsurface_.end();
+       ++it) {
+    ClientState* client_state = *it;
+    client_state->hibernated = client_state->tracking_group->hibernated_;
   }
 }
 
-size_t GpuMemoryManager::GetVisibleClientAllocation(
-    const ClientStateVector& clients) const {
+size_t GpuMemoryManager::GetVisibleClientAllocation() const {
   // Count how many clients will get allocations.
-  size_t clients_with_surface_visible_count = 0;
+  size_t clients_with_surface_visible_count = clients_visible_mru_.size();
   size_t clients_without_surface_not_hibernated_count = 0;
-  for (ClientStateVector::const_iterator it = clients.begin();
-       it != clients.end();
+  for (ClientStateList::const_iterator it = clients_nonsurface_.begin();
+       it != clients_nonsurface_.end();
        ++it) {
     ClientState* client_state = *it;
-    if (client_state->has_surface &&
-        client_state->visible &&
-        !client_state->hibernated)
-      clients_with_surface_visible_count++;
-    if (!client_state->has_surface &&
-        !client_state->hibernated)
+    if (!client_state->hibernated)
       clients_without_surface_not_hibernated_count++;
   }
 
@@ -644,15 +637,42 @@ void GpuMemoryManager::SendUmaStatsToBrowser() {
   channel_manager_->Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }
 
+GpuMemoryManager::ClientStateList* GpuMemoryManager::GetClientList(
+    ClientState* client_state) {
+  if (client_state->has_surface) {
+    if (client_state->visible)
+      return &clients_visible_mru_;
+    else
+      return &clients_nonvisible_mru_;
+  }
+  return &clients_nonsurface_;
+}
+
+void GpuMemoryManager::AddClientToList(ClientState* client_state) {
+  DCHECK(!client_state->list_iterator_valid);
+  ClientStateList* client_list = GetClientList(client_state);
+  client_state->list_iterator = client_list->insert(
+      client_list->begin(), client_state);
+  client_state->list_iterator_valid = true;
+}
+
+void GpuMemoryManager::RemoveClientFromList(ClientState* client_state) {
+  DCHECK(client_state->list_iterator_valid);
+  ClientStateList* client_list = GetClientList(client_state);
+  client_list->erase(client_state->list_iterator);
+  client_state->list_iterator_valid = false;
+}
+
 GpuMemoryManager::ClientState::ClientState(
     GpuMemoryManagerClient* client,
+    GpuMemoryTrackingGroup* tracking_group,
     bool has_surface,
-    bool visible,
-    base::TimeTicks last_used_time)
+    bool visible)
     : client(client),
+      tracking_group(tracking_group),
       has_surface(has_surface),
       visible(visible),
-      last_used_time(last_used_time),
+      list_iterator_valid(false),
       hibernated(false) {
 }
 

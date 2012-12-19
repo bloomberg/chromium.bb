@@ -22,6 +22,7 @@ class GpuMemoryTrackingGroup {
                          GpuMemoryManager* memory_manager)
       : pid_(pid),
         size_(0),
+        hibernated_(false),
         memory_tracker_(memory_tracker),
         memory_manager_(memory_manager) {
     memory_manager_->AddTrackingGroup(this);
@@ -56,8 +57,14 @@ class GpuMemoryTrackingGroup {
   }
 
  private:
+  friend class GpuMemoryManager;
   base::ProcessId pid_;
   size_t size_;
+
+  // Set and used only during the Manage function, to determine which
+  // non-surface clients should be hibernated.
+  bool hibernated_;
+
   gpu::gles2::MemoryTracker* memory_tracker_;
   GpuMemoryManager* memory_manager_;
 };

@@ -190,7 +190,7 @@ void GpuChildThread::OnGetVideoMemoryUsageStats() {
   GPUVideoMemoryUsageStats video_memory_usage_stats;
   if (gpu_channel_manager_.get())
     gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
-        video_memory_usage_stats);
+        &video_memory_usage_stats);
   Send(new GpuHostMsg_VideoMemoryUsageStats(video_memory_usage_stats));
 }
 

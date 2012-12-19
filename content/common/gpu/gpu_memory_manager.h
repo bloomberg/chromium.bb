@@ -7,8 +7,8 @@
 
 #if defined(ENABLE_GPU)
 
+#include <list>
 #include <set>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
@@ -59,14 +59,13 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
-      content::GPUVideoMemoryUsageStats& video_memory_usage_stats) const;
+      content::GPUVideoMemoryUsageStats* video_memory_usage_stats) const;
   void SetWindowCount(uint32 count);
 
   // Add and remove clients
   void AddClient(GpuMemoryManagerClient* client,
                  bool has_surface,
-                 bool visible,
-                 base::TimeTicks last_used_time);
+                 bool visible);
   void RemoveClient(GpuMemoryManagerClient* client);
   void SetClientVisible(GpuMemoryManagerClient* client, bool visible);
   void SetClientManagedMemoryStats(GpuMemoryManagerClient* client,
@@ -115,19 +114,28 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   struct ClientState {
     ClientState(GpuMemoryManagerClient* client,
+                GpuMemoryTrackingGroup* tracking_group,
                 bool has_surface,
-                bool visible,
-                base::TimeTicks last_used_time);
+                bool visible);
+
     // The client to send allocations to.
     GpuMemoryManagerClient* client;
 
-    // Offscreen commandbuffers will not have a surface.
-    bool has_surface;
+    // The tracking group for this client.
+    GpuMemoryTrackingGroup* tracking_group;
 
-    // The last used time is determined by the last time that visibility
-    // was changed.
+    // Offscreen commandbuffers will not have a surface.
+    const bool has_surface;
+
+    // Whether or not this client is visible.
     bool visible;
-    base::TimeTicks last_used_time;
+
+    // If the client has a surface, then this is an iterator in the
+    // clients_visible_mru_ if this client is visible and
+    // clients_nonvisible_mru_ if this is non-visible. Otherwise this is an
+    // iterator in clients_nonsurface_.
+    std::list<ClientState*>::iterator list_iterator;
+    bool list_iterator_valid;
 
     // Statistics about memory usage.
     GpuManagedMemoryStats managed_memory_stats;
@@ -137,24 +145,20 @@ class CONTENT_EXPORT GpuMemoryManager :
     bool hibernated;
   };
 
-  class CONTENT_EXPORT ClientsComparator {
-   public:
-    bool operator()(ClientState* lhs,
-                    ClientState* rhs);
-  };
-
   typedef std::map<GpuMemoryManagerClient*, ClientState*> ClientMap;
+  typedef std::map<gpu::gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
+      TrackingGroupMap;
 
-  typedef std::vector<ClientState*> ClientStateVector;
+  typedef std::list<ClientState*> ClientStateList;
 
   void Manage();
-  void SetClientsHibernatedState(const ClientStateVector& clients) const;
-  size_t GetVisibleClientAllocation(const ClientStateVector& clients) const;
+  void SetClientsHibernatedState() const;
+  size_t GetVisibleClientAllocation() const;
   size_t GetCurrentBackgroundedAvailableGpuMemory() const;
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
-  void UpdateAvailableGpuMemory(const ClientStateVector& clients);
+  void UpdateAvailableGpuMemory();
   void UpdateBackgroundedAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
@@ -184,14 +188,13 @@ class CONTENT_EXPORT GpuMemoryManager :
         bytes_allocated_unmanaged_current_;
   }
 
+  // Add or remove a client from its clients list (visible, nonvisible, or
+  // nonsurface). When adding the client, add it to the front of the list.
+  void AddClientToList(ClientState* client_state);
+  void RemoveClientFromList(ClientState* client_state);
+  ClientStateList* GetClientList(ClientState* client_state);
+
   // Interfaces for testing
-  void TestingSetClientVisible(GpuMemoryManagerClient* client, bool visible);
-  void TestingSetClientLastUsedTime(GpuMemoryManagerClient* client,
-                                    base::TimeTicks last_used_time);
-  void TestingSetClientHasSurface(GpuMemoryManagerClient* client,
-                                  bool has_surface);
-  bool TestingCompareClients(GpuMemoryManagerClient* lhs,
-                             GpuMemoryManagerClient* rhs) const;
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
   void TestingSetAvailableGpuMemory(size_t bytes) {
     bytes_available_gpu_memory_ = bytes;
@@ -208,8 +211,16 @@ class CONTENT_EXPORT GpuMemoryManager :
   // can use to adjust memory usage
   ClientMap clients_;
 
+  // A list of all visible and nonvisible clients, in most-recently-used
+  // order (most recently used is first).
+  ClientStateList clients_visible_mru_;
+  ClientStateList clients_nonvisible_mru_;
+
+  // A list of all clients that don't have a surface.
+  ClientStateList clients_nonsurface_;
+
   // All context groups' tracking structures
-  std::set<GpuMemoryTrackingGroup*> tracking_groups_;
+  TrackingGroupMap tracking_groups_;
 
   base::CancelableClosure delayed_manage_callback_;
   bool manage_immediate_scheduled_;
