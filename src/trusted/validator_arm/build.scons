@@ -15,6 +15,8 @@ if env.Bit('linux') and not env.Bit('android'):
       CXXFLAGS='-Weffc++ -Woverloaded-virtual -fomit-frame-pointer',
 )
 
+untrusted_env = env.MakeUntrustedNativeEnv()
+
 # ------------------------------------------------------------------
 # Source generation is controlled by command line directives. To update
 # source generation, you must add one of the following arguments:
@@ -176,6 +178,7 @@ address_set_test = gtest_env.Command(target='address_set_test.out',
 # TODO(cbiffle): get this wrapped in QEMU.
 #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
 
+# TODO(jfb) Remove this, see issue #3217.
 # The rest are ncval and tests, they currently only work on 32bit linux.
 if not env.Bit('linux') or env.Bit('target_x86_64'):
   Return()
@@ -205,18 +208,25 @@ validator_tests = {
   'test_vector_loads': 1,
 }
 
-for test, exit_status in validator_tests.iteritems():
-  node = gtest_env.CommandTest(
-      test + '_actual.out',
-      [ncval, gtest_env.File('testdata/' + test + '.nexe')],
-      exit_status = str(exit_status),
-      filter_regex = "'^ncval'",
-      # NOTE: all stdout_golden are currently empty
-      stdout_golden = gtest_env.File('testdata/' + test + '.out'),
-      stderr_golden = gtest_env.File('testdata/' + test + '.err'))
-
-  gtest_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
-                               "run_arm_" + test)
+# The following tests generate ARM nexes from assembly and validate the
+# generate file. They're all expected to fail and produce the golden files'
+# stdout (currently all empty) and stderr.
+if env.Bit('target_arm'):
+  for test, exit_status in validator_tests.iteritems():
+    nexe = untrusted_env.ComponentProgram(test, 'testdata/' + test + '.S',
+                                          LINKFLAGS=['-nodefaultlibs',
+                                                     '-nostdlib'])
+    node = untrusted_env.CommandTest(
+        test + '_actual.out',
+        [ncval, untrusted_env.File(nexe)],
+        exit_status = str(exit_status),
+        filter_regex = "'^ncval'",
+        stdout_golden = untrusted_env.File('testdata/' + test + '.out'),
+        stderr_golden = untrusted_env.File('testdata/' + test + '.err'))
+    untrusted_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                                     "run_arm_" + test,
+                                     # TODO(jfb) Remove this, see issue #3217.
+                                     is_broken=untrusted_env.Bit('windows'))
 
 gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',

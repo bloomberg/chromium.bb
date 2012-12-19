@@ -1885,6 +1885,14 @@ def MakeGTestEnv(env):
 
 pre_base_env.AddMethod(MakeGTestEnv)
 
+def MakeUntrustedNativeEnv(env):
+  native_env = nacl_env.Clone()
+  if native_env.Bit('bitcode'):
+    native_env = native_env.PNaClGetNNaClEnv()
+  return native_env
+
+pre_base_env.AddMethod(MakeUntrustedNativeEnv)
+
 def MakeBaseTrustedEnv():
   base_env = MakeArchSpecificEnv()
   base_env.Append(
