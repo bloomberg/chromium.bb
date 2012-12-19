@@ -946,6 +946,7 @@
         'browser/extensions/api/cookies/cookies_apitest.cc',
         'browser/extensions/api/debugger/debugger_apitest.cc',
         'browser/extensions/api/declarative/declarative_apitest.cc',
+        'browser/extensions/api/developer_private/developer_private_apitest.cc',
         'browser/extensions/api/dial/dial_apitest.cc',
         'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/dns/mock_host_resolver_creator.cc',

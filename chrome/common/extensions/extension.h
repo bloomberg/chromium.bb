@@ -795,6 +795,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_platform_app() const;
   bool is_hosted_app() const;
   bool is_legacy_packaged_app() const;
+  bool is_extension() const;
   bool is_storage_isolated() const { return is_storage_isolated_; }
   bool can_be_incognito_enabled() const;
   const URLPatternSet& web_extent() const { return extent_; }

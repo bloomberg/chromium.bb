@@ -47,6 +47,7 @@
           'app_window.idl',
           'autotest_private.idl',
           'bluetooth.idl',
+          'developer_private.idl',
           'dial.idl',
           'downloads.idl',
           'experimental_discovery.idl',
