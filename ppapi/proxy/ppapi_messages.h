@@ -1250,30 +1250,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBVideoDecoder_Destroy,
                            ppapi::HostResource /* video_decoder */)
 
 // PPB_Flash.
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
-                    PP_Instance /* instance */,
-                    PP_Bool /* on_top */)
-// This has to be synchronous becuase the caller may want to composite on
-// top of the resulting text after the call is complete.
-IPC_SYNC_MESSAGE_ROUTED2_1(
-    PpapiHostMsg_PPBFlash_DrawGlyphs,
-    PP_Instance /* instance */,
-    ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */,
-    PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFlash_Navigate,
-                           PP_Instance /* instance */,
-                           ppapi::URLRequestInfoData /* request_data */,
-                           std::string /* target */,
-                           PP_Bool /* from_user_action */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
-                           PP_Instance /* instance */,
-                           PP_Time /* t */,
-                           double /* offset */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
-                           PP_Instance /* instance */,
-                           PP_Rect /* rect */,
-                           PP_Bool /* result */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_InvokePrinting,
                     PP_Instance /* instance */)
 
@@ -1615,6 +1591,33 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_GetLocalDataRestrictions)
 // use. These are PP_FlashLSORestrictions cast to an int32_t.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply,
                      int32_t /* restrictions */)
+
+// Notifies the renderer whether the Flash instance is in windowed mode. No
+// reply is sent.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_SetInstanceAlwaysOnTop,
+                     bool /* on_top */)
+
+// Notifies the renderer to draw text to the given PP_ImageData resource. All
+// parmeters for drawing (including the resource to draw to) are contianed in
+// the PPBFlash_DrawGlyphs_Params structure. An error code is sent in a reply
+// message indicating success.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_DrawGlyphs,
+                     ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */)
+
+// Notifies the renderer to navigate to the given URL contained in the
+// URLRequestInfoData. An error code is sent in a reply message indicating
+// success.
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_Flash_Navigate,
+                     ppapi::URLRequestInfoData /* data */,
+                     std::string /* target */,
+                     bool /* from_user_action */)
+
+// Queries the renderer on whether the plugin instance is the topmost element
+// in the area of the instance specified by the given PP_Rect. PP_OK is sent as
+// the error code in a reply message if the rect is topmost otherwise
+// PP_ERROR_FAILED is sent.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_IsRectTopmost,
+                     PP_Rect /* rect */)
 
 // DeviceEnumeration -----------------------------------------------------------
 // Device enumeration messages used by audio input and video capture.

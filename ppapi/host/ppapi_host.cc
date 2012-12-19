@@ -134,6 +134,7 @@ void PpapiHost::HandleResourceCall(
     HostMessageContext* context) {
   ResourceHost* resource_host = GetResourceHost(params.pp_resource());
   if (resource_host) {
+    // CAUTION: Handling the message may cause the destruction of this object.
     resource_host->HandleMessage(nested_msg, context);
   } else {
     if (context->params.has_callback()) {

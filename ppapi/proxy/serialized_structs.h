@@ -62,7 +62,7 @@ struct SerializedDirEntry {
   bool is_dir;
 };
 
-struct PPBFlash_DrawGlyphs_Params {
+struct PPAPI_PROXY_EXPORT PPBFlash_DrawGlyphs_Params {
   PPBFlash_DrawGlyphs_Params();
   ~PPBFlash_DrawGlyphs_Params();
 

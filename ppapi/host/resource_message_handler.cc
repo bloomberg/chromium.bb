@@ -22,6 +22,11 @@ void ResourceMessageHandler::RunMessageHandlerAndReply(
     const IPC::Message& msg,
     HostMessageContext* context) {
   ReplyMessageContext reply_context = context->MakeReplyMessageContext();
+  // CAUTION: Handling the message may cause the destruction of this object.
+  // The message handler should ensure that if there is a chance that the
+  // object will be destroyed, PP_OK_COMPLETIONPENDING is returned as the
+  // result of the message handler. Otherwise the code below will attempt to
+  // send a reply message on a destroyed object.
   reply_context.params.set_result(OnResourceMessageReceived(msg, context));
 
   // Sanity check the resource handler. Note if the result was
