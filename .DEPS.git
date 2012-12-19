@@ -82,7 +82,7 @@ deps = {
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@f491a094c7a12863ea71f0402b6fb217b3801568',
     'src/third_party/opus/src':
-        Var('git_url') + '/chromium/deps/opus.git@660e25f9ad9e0b421241dcf675c6883fecb859cd',
+        Var('git_url') + '/chromium/deps/opus.git@79181daa729bbfd77c8bf51dbcac8aac1593ccba',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@54380c8e93060a771a2b4bf608e6d7160b3a71e4',
     'src/third_party/pyftpdlib/src':
