@@ -226,9 +226,6 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
   // Return as soon as all items that can be run are taken care of.
   void RunUntilIdle();
 
-  // TODO(jbates) remove this. crbug.com/131220. See RunUntilIdle().
-  void RunAllPending() { RunUntilIdle(); }
-
   // TODO(jbates) remove this. crbug.com/131220. See QuitWhenIdle().
   void Quit() { QuitWhenIdle(); }
 
