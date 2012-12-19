@@ -25,6 +25,7 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile) {
     return 0;
 
   // Check Finch field trials.
+  /* temporarily disabled for next Canary.
   base::FieldTrial* trial = base::FieldTrialList::Find("InstantExtended");
   if (trial && StartsWithASCII(trial->group_name(), "Group", true)) {
     uint64 group_number;
@@ -32,7 +33,7 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile) {
       return group_number;
     }
   }
-
+  */
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableInstantExtendedAPI)) {
     // The user has manually flipped the about:flags switch - give the default
