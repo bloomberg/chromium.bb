@@ -1149,6 +1149,11 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
           new UsageTracker(clients_, kStorageTypePersistent,
                            special_storage_policy_));
       return true;
+    case kStorageTypeSyncable:
+      syncable_usage_tracker_.reset(
+          new UsageTracker(clients_, kStorageTypeSyncable,
+                           special_storage_policy_));
+      return true;
     default:
       NOTREACHED();
   }
