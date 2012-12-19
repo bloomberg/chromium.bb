@@ -16,7 +16,7 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': 'd9041abb73d42d32c22585646f03eae63ac838c0',
-    'gcc': '22607889cc389dca7a505be4e104a69eacda9456',
+    'gcc': 'a3c786322619ab7549fd0e4afe7dcea520aee548',
     'newlib': '5feee65e182c08a7e89fbffc3223c57e4335420f',
     }
 
