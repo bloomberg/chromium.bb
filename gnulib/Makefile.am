@@ -246,6 +246,7 @@ EXTRA_DIST += sys_types.in.h
 ## begin gnulib module unistd
 
 BUILT_SOURCES += unistd.h
+libgnu_la_SOURCES += unistd.c
 
 # We need the following in order to create an empty placeholder for
 # <unistd.h> when the system doesn't have one.

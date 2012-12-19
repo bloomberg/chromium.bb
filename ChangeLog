@@ -1,5 +1,13 @@
 2012-12-19  Christian Egli  <christian.egli@sbs.ch>
 
+	* gnulib/m4/unistd_h.m4:
+	* gnulib/m4/gnulib-comp.m4:
+	* gnulib/m4/extern-inline.m4:
+	* gnulib/unistd.in.h:
+	* gnulib/unistd.c:
+	* gnulib/Makefile.am (libgnu_la_SOURCES):
+	* build-aux/snippet/warn-on-use.h: Upgrade to newest gnulib
+
 	* tests/brl_checks.c (convert_typeform): Make it compile under
 	C89.
 

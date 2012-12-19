@@ -40,6 +40,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  # Code from module extern-inline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
@@ -76,6 +77,7 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='gnulib'
+  AC_REQUIRE([gl_EXTERN_INLINE])
   gl_FUNC_GETOPT_GNU
   if test $REPLACE_GETOPT = 1; then
     AC_LIBOBJ([getopt])
@@ -255,11 +257,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/stdarg.in.h
   lib/stddef.in.h
   lib/sys_types.in.h
+  lib/unistd.c
   lib/unistd.in.h
   lib/version-etc.c
   lib/version-etc.h
   m4/00gnulib.m4
   m4/extensions.m4
+  m4/extern-inline.m4
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
