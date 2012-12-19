@@ -516,6 +516,13 @@
     ],
   },
 
+  # WebRTC / AppRTC Integration tests.
+  'WEBRTC_APPRTC': {
+    'all': [
+      'webrtc_apprtc_call',
+    ],
+  },
+
   # WebRTC quality tests. Requires webcam, an audio device and a special setup
   # where the webcam is playing a barcode-encoded video.
   'WEBRTC_QUALITY': {
