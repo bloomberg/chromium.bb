@@ -25,7 +25,6 @@ include_rules = [
   "!chrome/browser/chromeos/login/existing_user_controller.h",
   "!chrome/browser/content_settings/cookie_settings.h",
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
-  "!chrome/browser/extensions/extension_function.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/instant/instant_loader.h",
   "!chrome/browser/prefs/pref_service.h",
@@ -57,7 +56,7 @@ include_rules = [
 
 specific_include_rules = {
   # Browser tests, by definition, need access to the browser objects.
-  '.*_(api|browser|extension_)test\.cc': [
+  '.*_(api|browser|)test\.cc': [
     "+chrome/browser",
   ],
   # TODO(erikwright): Bring this list to zero.
