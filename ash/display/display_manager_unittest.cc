@@ -392,6 +392,23 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 }
 
+TEST_F(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+
+  // Don't change the display info if all displays are disconnected.
+  std::vector<gfx::Display> displays;
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+
+  // Connect another display which will become primary.
+  const gfx::Display external_display(10, gfx::Rect(1, 1, 100, 100));
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("1,1 100x100",
+            FindDisplayForId(10).bounds_in_pixel().ToString());
+}
+
 TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

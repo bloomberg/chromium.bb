@@ -181,6 +181,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   ObserverList<Observer> observers_;
 
+  // Store the primary root window temporarily while replacing
+  // display.
+  aura::RootWindow* primary_root_window_for_replace_;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };
 

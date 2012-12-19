@@ -161,7 +161,8 @@ void DisplayLayout::RegisterJSONConverter(
 }
 
 DisplayController::DisplayController()
-    : desired_primary_display_id_(gfx::Display::kInvalidDisplayID) {
+    : desired_primary_display_id_(gfx::Display::kInvalidDisplayID),
+      primary_root_window_for_replace_(NULL) {
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
@@ -467,14 +468,23 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  DCHECK(!root_windows_.empty());
   NotifyDisplayConfigurationChanging();
-  aura::RootWindow* root = AddRootWindowForDisplay(display);
-  UpdateDisplayBoundsForLayout();
-  if (desired_primary_display_id_ == display.id())
-    SetPrimaryDisplay(display);
-
-  Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+  if (primary_root_window_for_replace_) {
+    DCHECK(root_windows_.empty());
+    primary_display_id = display.id();
+    root_windows_[display.id()] = primary_root_window_for_replace_;
+    primary_root_window_for_replace_->SetProperty(
+        internal::kDisplayIdKey, display.id());
+    primary_root_window_for_replace_ = NULL;
+    UpdateDisplayBoundsForLayout();
+  } else {
+    DCHECK(!root_windows_.empty());
+    aura::RootWindow* root = AddRootWindowForDisplay(display);
+    UpdateDisplayBoundsForLayout();
+    if (desired_primary_display_id_ == display.id())
+      SetPrimaryDisplay(display);
+    Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+  }
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
@@ -489,6 +499,13 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   // When the primary root window's display is removed, move the primary
   // root to the other display.
   if (primary_display_id == display.id()) {
+    // Temporarily store the primary root window in
+    // |primary_root_window_for_replace_| when replacing the display.
+    if (root_windows_.size() == 0) {
+      primary_display_id = gfx::Display::kInvalidDisplayID;
+      primary_root_window_for_replace_ = root_to_delete;
+      return;
+    }
     DCHECK_EQ(1U, root_windows_.size());
     primary_display_id = GetSecondaryDisplay()->id();
     aura::RootWindow* primary_root = root_to_delete;
