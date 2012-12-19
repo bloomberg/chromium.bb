@@ -316,7 +316,7 @@ TEST_F(ResourceBundleTest, DelegateGetFont) {
   // font will be created.
   gfx::Font* test_font = NULL;
   EXPECT_CALL(delegate, GetFontMock(_))
-      .Times(7)
+      .Times(8)
       .WillRepeatedly(Return(test_font));
 
   const gfx::Font* font =

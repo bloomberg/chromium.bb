@@ -521,6 +521,8 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
       return *small_font_;
     case MediumFont:
       return *medium_font_;
+    case SmallBoldFont:
+      return *small_bold_font_;
     case MediumBoldFont:
       return *medium_bold_font_;
     case LargeFont:
@@ -594,6 +596,7 @@ void ResourceBundle::LoadFontsIfNecessary() {
       base_font_.reset(delegate_->GetFont(BaseFont).release());
       bold_font_.reset(delegate_->GetFont(BoldFont).release());
       small_font_.reset(delegate_->GetFont(SmallFont).release());
+      small_bold_font_.reset(delegate_->GetFont(SmallBoldFont).release());
       medium_font_.reset(delegate_->GetFont(MediumFont).release());
       medium_bold_font_.reset(delegate_->GetFont(MediumBoldFont).release());
       large_font_.reset(delegate_->GetFont(LargeFont).release());
@@ -612,6 +615,12 @@ void ResourceBundle::LoadFontsIfNecessary() {
     if (!small_font_.get()) {
       small_font_.reset(new gfx::Font());
       *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
+    }
+
+    if (!small_bold_font_.get()) {
+      small_bold_font_.reset(new gfx::Font());
+      *small_bold_font_ = base_font_->DeriveFont(
+          kSmallFontSizeDelta, base_font_->GetStyle() | gfx::Font::BOLD);
     }
 
     if (!medium_font_.get()) {
