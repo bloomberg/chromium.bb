@@ -81,6 +81,10 @@ void UtilityProcessHostImpl::EnableZygote() {
   use_linux_zygote_ = true;
 }
 
+const ChildProcessData& UtilityProcessHostImpl::GetData() {
+  return process_->GetData();
+}
+
 #if defined(OS_POSIX)
 
 void UtilityProcessHostImpl::SetEnv(const base::EnvironmentVector& env) {

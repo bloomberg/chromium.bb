@@ -37,6 +37,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual void SetExposedDir(const FilePath& dir) OVERRIDE;
   virtual void DisableSandbox() OVERRIDE;
   virtual void EnableZygote() OVERRIDE;
+  virtual const ChildProcessData& GetData() OVERRIDE;
 #if defined(OS_POSIX)
   virtual void SetEnv(const base::EnvironmentVector& env) OVERRIDE;
 #endif

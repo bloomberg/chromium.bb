@@ -13,8 +13,8 @@
 class FilePath;
 
 namespace content {
-
 class UtilityProcessHostClient;
+struct ChildProcessData;
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived process that is created to run a specific
@@ -54,6 +54,9 @@ class UtilityProcessHost : public IPC::Sender,
   // If the sandbox is being used and we are on Linux, launch the process from
   // the zygote. Can only be used for tasks that do not require FS access.
   virtual void EnableZygote() = 0;
+
+  // Returns information about the utility child process.
+  virtual const ChildProcessData& GetData() = 0;
 
 #if defined(OS_POSIX)
   virtual void SetEnv(const base::EnvironmentVector& env) = 0;
