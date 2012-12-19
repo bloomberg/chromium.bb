@@ -21,6 +21,13 @@ class RuntimeCustomBindings : public ChromeV8Extension {
 
   virtual ~RuntimeCustomBindings();
 
+  // Creates a new messaging channel to the given extension.
+  static v8::Handle<v8::Value> OpenChannelToExtension(
+      const v8::Arguments& args);
+
+  static v8::Handle<v8::Value> OpenChannelToNativeApp(
+      const v8::Arguments& args);
+
  private:
   v8::Handle<v8::Value> GetManifest(const v8::Arguments& args);
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This script contains unprivileged javascript APIs related to chrome
-// extensions.  It is loaded by any extension-related context, such as content
-// scripts or background pages.
-// See user_script_slave.cc for script that is loaded by content scripts only.
+// This contains unprivileged javascript APIs for extensions and apps.  It
+// can be loaded by any extension-related context, such as content scripts or
+// background pages. See user_script_slave.cc for script that is loaded by
+// content scripts only.
 
   require('json_schema');
   require('event_bindings');
@@ -26,8 +26,8 @@
   // The reserved channel name for the sendRequest/sendMessage APIs.
   // Note: sendRequest is deprecated.
   chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
-  chromeHidden.kMessageChannel = "chrome.extension.sendMessage";
-  chromeHidden.kNativeMessageChannel = "chrome.extension.sendNativeMessage";
+  chromeHidden.kMessageChannel = "chrome.runtime.sendMessage";
+  chromeHidden.kNativeMessageChannel = "chrome.runtime.sendNativeMessage";
 
   // Map of port IDs to port object.
   var ports = {};
@@ -106,7 +106,7 @@
                                   sourceExtensionId, targetExtensionId) {
     var errorMsg;
     var eventName = (isSendMessage  ?
-        "chrome.extension.onMessage" : "chrome.extension.onRequest");
+        "chrome.runtime.onMessage" : "chrome.extension.onRequest");
     if (isSendMessage && !responseCallbackPreserved) {
       errorMsg =
           "The " + eventName + " listener must return true if you want to" +
@@ -131,7 +131,7 @@
     var isSendMessage = channelName == chromeHidden.kMessageChannel;
     var requestEvent = (isSendMessage ?
        (isExternal ?
-           chrome.extension.onMessageExternal : chrome.extension.onMessage) :
+           chrome.runtime.onMessageExternal : chrome.runtime.onMessage) :
        (isExternal ?
            chrome.extension.onRequestExternal : chrome.extension.onRequest));
     if (requestEvent.hasListeners()) {
@@ -209,7 +209,7 @@
     }
 
     var connectEvent = (isExternal ?
-        chrome.extension.onConnectExternal : chrome.extension.onConnect);
+        chrome.runtime.onConnectExternal : chrome.runtime.onConnect);
     if (connectEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       port.sender = sender;
@@ -291,4 +291,32 @@
         port = null;
       }
     });
+  };
+
+  function sendMessageUpdateArguments(functionName) {
+    // Align missing (optional) function arguments with the arguments that
+    // schema validation is expecting, e.g.
+    //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
+    //   extension.sendRequest(req, cb) -> extension.sendRequest(null, req, cb)
+    var args = Array.prototype.splice.call(arguments, 1);  // skip functionName
+    var lastArg = args.length - 1;
+
+    // responseCallback (last argument) is optional.
+    var responseCallback = null;
+    if (typeof(args[lastArg]) == 'function')
+      responseCallback = args[lastArg--];
+
+    // request (second argument) is required.
+    var request = args[lastArg--];
+
+    // targetId (first argument, extensionId in the manfiest) is optional.
+    var targetId = null;
+    if (lastArg >= 0)
+      targetId = args[lastArg--];
+
+    if (lastArg != -1)
+      throw new Error('Invalid arguments to ' + functionName + '.');
+    return [targetId, request, responseCallback];
   }
+
+exports.sendMessageUpdateArguments = sendMessageUpdateArguments;

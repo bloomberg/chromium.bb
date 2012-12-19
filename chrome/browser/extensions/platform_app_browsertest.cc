@@ -922,4 +922,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Messaging) {
+  ExtensionApiTest::ResultCatcher result_catcher;
+  LoadAndLaunchPlatformApp("messaging/app2");
+  LoadAndLaunchPlatformApp("messaging/app1");
+  EXPECT_TRUE(result_catcher.GetNextResult());
+}
+
 }  // namespace extensions

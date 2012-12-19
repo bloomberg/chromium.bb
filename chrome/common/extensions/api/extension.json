@@ -19,8 +19,9 @@
       },
       {
         "id": "Port",
+        "nodoc": true,
         "type": "object",
-        "description": "An object which allows two way communication with other pages.",
+        "description": "(Deprecated - use runtime.Port instead) An object which allows two way communication with other pages.",
         "properties": {
           "name": {"type": "string"},
           "onDisconnect": { "$ref": "events.Event" },
@@ -55,9 +56,11 @@
     "functions": [
       {
         "name": "connect",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "unprivileged": true,
-        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via $ref:tabs.connect.",
+        "description": "(Deprecated - use runtime.connect) Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via $ref:tabs.connect.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           {
@@ -77,8 +80,9 @@
       {
         "name": "connectNative",
         "nodoc": true,
+        "nocompile": true,
         "type": "function",
-        "description": "Attempts to connect a native application in the host machine. The native application must have already registered itself in the proper directory.",
+        "description": "(Deprecated - use runtime.connectNative instead) Attempts to connect a native application in the host machine. The native application must have already registered itself in the proper directory.",
         "parameters": [
           {
             "type": "string",
@@ -125,6 +129,8 @@
       },
       {
         "name": "sendMessage",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
         "unprivileged": true,
@@ -149,8 +155,9 @@
       {
         "name": "sendNativeMessage",
         "nodoc": true,
+        "nocompile": true,
         "type": "function",
-        "description": "Send a single message to a registered native application.",
+        "description": "(Deprecated - use runtime.sendNativeMessage) Send a single message to a registered native application.",
         "parameters": [
           {
             "name": "registeredNativeApp",
@@ -304,6 +311,8 @@
     "events": [
       {
         "name": "onConnect",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "unprivileged": true,
         "anonymous": true,
@@ -314,6 +323,8 @@
       },
       {
         "name": "onConnectExternal",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "anonymous": true,
         "description": "Fired when a connection is made from another extension.",
@@ -348,10 +359,12 @@
       },
       {
         "name": "onMessage",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "anonymous": true,
         "unprivileged": true,
-        "description": "Fired when a message is sent from either an extension process or a content script.",
+        "description": "(Deprecated - use runtime.onMessage instead) Fired when a message is sent from either an extension process or a content script.",
         "parameters": [
           {"name": "message", "type": "any", "description": "The message sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },
@@ -365,9 +378,11 @@
       },
       {
         "name": "onMessageExternal",
+        "nodoc": true,
+        "nocompile": true,
         "type": "function",
         "anonymous": true,
-        "description": "Fired when a message is sent from another extension. Cannot be used in a content script.",
+        "description": "(Deprecated - use runtime.onMessageExternal instead) Fired when a message is sent from another extension. Cannot be used in a content script.",
         "parameters": [
           {"name": "message", "type": "any", "description": "The message sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },

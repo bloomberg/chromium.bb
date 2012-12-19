@@ -1,0 +1,10 @@
+{
+  "name": "Messaging Test App 1",
+  "version": "0.5",
+  "permissions": [ "app.runtime" ],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}
