@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_mouse_lock.idl modified Wed Dec 21 19:08:34 2011. */
+/* From ppb_mouse_lock.idl modified Mon Dec 17 16:09:50 2012. */
 
 #ifndef PPAPI_C_PPB_MOUSE_LOCK_H_
 #define PPAPI_C_PPB_MOUSE_LOCK_H_
@@ -36,8 +36,7 @@
  */
 struct PPB_MouseLock_1_0 {
   /**
-   * LockMouse() requests the mouse to be locked. The browser will permit mouse
-   * lock only while the tab is in fullscreen mode.
+   * LockMouse() requests the mouse to be locked.
    *
    * While the mouse is locked, the cursor is implicitly hidden from the user.
    * Any movement of the mouse will generate a
