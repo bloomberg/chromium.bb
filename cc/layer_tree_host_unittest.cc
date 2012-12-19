@@ -401,7 +401,7 @@ public:
             m_layerTreeHost->setViewportSize(gfx::Size(0, 0), gfx::Size(0, 0));
         } else if (m_numCommits == 2) {
             char pixels[4];
-            m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
+            m_layerTreeHost->compositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
         } else if (m_numCommits == 3) {
             // Let it draw so we go idle and end the test.
             m_layerTreeHost->setViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
@@ -1847,47 +1847,6 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFinishAllRendering)
 
-// Layers added to tree with existing active animations should have the animation
-// correctly recognized.
-class LayerTreeHostTestLayerAddedWithAnimation : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestLayerAddedWithAnimation()
-        : m_addedAnimation(false)
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        EXPECT_FALSE(m_addedAnimation);
-
-        scoped_refptr<Layer> layer = Layer::create();
-        layer->setLayerAnimationDelegate(this);
-
-        // Any valid AnimationCurve will do here.
-        scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
-        scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.Pass(), 1, 1, ActiveAnimation::Opacity));
-        layer->layerAnimationController()->addAnimation(animation.Pass());
-
-        // We add the animation *before* attaching the layer to the tree.
-        m_layerTreeHost->rootLayer()->addChild(layer);
-        EXPECT_TRUE(m_addedAnimation);
-
-        endTest();
-    }
-
-    virtual void didAddAnimation() OVERRIDE
-    {
-        m_addedAnimation = true;
-    }
-
-    virtual void afterTest() OVERRIDE { }
-
-private:
-    bool m_addedAnimation;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLayerAddedWithAnimation)
-
 class LayerTreeHostTestScrollChildLayer : public LayerTreeHostTest, public WebKit::WebLayerScrollClient {
 public:
     LayerTreeHostTestScrollChildLayer(float deviceScaleFactor)
@@ -2201,48 +2160,6 @@ public:
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackCleanup)
-
-class LayerTreeHostTestCompositeAndReadbackAnimateCount : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestCompositeAndReadbackAnimateCount()
-        : m_layoutCount(0)
-    {
-    }
-
-    virtual void animate(base::TimeTicks) OVERRIDE
-    {
-        // We shouldn't animate on the compositeAndReadback-forced commit, but we should
-        // for the setNeedsCommit-triggered commit.
-        EXPECT_EQ(1, m_layoutCount);
-    }
-
-    virtual void layout() OVERRIDE
-    {
-        m_layoutCount++;
-        if (m_layoutCount == 2)
-            endTest();
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        m_layerTreeHost->setNeedsCommit();
-
-        char pixels[4];
-        m_layerTreeHost->compositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-
-private:
-    int m_layoutCount;
-};
-
-TEST_F(LayerTreeHostTestCompositeAndReadbackAnimateCount, runMultiThread)
-{
-    runTest(true);
-}
 
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit : public LayerTreeHostTest {
 public:
@@ -2868,63 +2785,6 @@ public:
 };
 
 TEST_F(LayerTreeHostTestAdjustPointForZoom, runMultiThread)
-{
-    runTest(true);
-}
-
-class LayerTreeHostTestContinuousAnimate : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestContinuousAnimate()
-        : m_numCommitComplete(0)
-        , m_numDrawLayers(0)
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
-        m_layerTreeHost->rootLayer()->setBounds(gfx::Size(10, 10));
-
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void animate(base::TimeTicks) OVERRIDE
-    {
-        if (m_numDrawLayers == 2)
-            return;
-        m_layerTreeHost->setNeedsAnimate();
-    }
-
-    virtual void layout() OVERRIDE
-    {
-        m_layerTreeHost->rootLayer()->setNeedsDisplay();
-    }
-
-    virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE
-    {
-        if (m_numDrawLayers == 1)
-            m_numCommitComplete++;
-    }
-
-    virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
-    {
-        m_numDrawLayers++;
-        if (m_numDrawLayers == 2)
-            endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-        // Check that we didn't commit twice between first and second draw.
-        EXPECT_EQ(1, m_numCommitComplete);
-    }
-
-private:
-    int m_numCommitComplete;
-    int m_numDrawLayers;
-};
-
-TEST_F(LayerTreeHostTestContinuousAnimate, runMultiThread)
 {
     runTest(true);
 }

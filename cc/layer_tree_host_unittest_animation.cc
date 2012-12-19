@@ -11,6 +11,7 @@
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/timing_function.h"
 
 namespace cc {
 namespace {
@@ -25,8 +26,8 @@ class LayerTreeHostAnimationTest : public ThreadedTest {
 
 // Makes sure that setNeedsAnimate does not cause the commitRequested() state to
 // be set.
-class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
-    : public LayerTreeHostAnimationTest {
+class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested :
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested()
       : num_commits_(0) {
@@ -78,7 +79,7 @@ MULTI_THREAD_TEST_F(
 // handling the case where setNeedsAnimate() is called inside the begin frame
 // flow.
 class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback()
       : num_animates_(0) {
@@ -109,7 +110,7 @@ MULTI_THREAD_TEST_F(
 // Add a layer animation and confirm that LayerTreeHostImpl::animateLayers does
 // get called and continues to get called.
 class LayerTreeHostAnimationTestAddAnimation :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestAddAnimation()
       : num_animates_(0)
@@ -156,7 +157,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAddAnimation)
 // Add a layer animation to a layer, but continually fail to draw. Confirm that
 // after a while, we do eventually force a draw.
 class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws()
       : started_animating_(false) {
@@ -192,7 +193,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws)
 
 // Ensures that animations continue to be ticked when we are backgrounded.
 class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestTickAnimationWhileBackgrounded()
       : num_animates_(0) {
@@ -231,7 +232,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 
 // Ensures that animations continue to be ticked when we are backgrounded.
 class LayerTreeHostAnimationTestAddAnimationWithTimingFunction :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
 public:
   LayerTreeHostAnimationTestAddAnimationWithTimingFunction() {}
 
@@ -280,7 +281,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 // Ensures that main thread animations have their start times synchronized with
 // impl thread animations.
 class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestSynchronizeAnimationStartTimes()
       : main_start_time_(-1),
@@ -333,7 +334,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestSynchronizeAnimationSta
 
 // Ensures that notifyAnimationFinished is called.
 class LayerTreeHostAnimationTestAnimationFinishedEvents :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestAnimationFinishedEvents() {}
 
@@ -359,7 +360,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 // Ensures that when opacity is being animated, this value does not cause the
 // subtree to be skipped.
 class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity :
-      public LayerTreeHostAnimationTest {
+    public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity()
       : update_check_layer_(FakeContentLayer::Create(&client_)) {
@@ -395,6 +396,142 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity :
 
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity)
+
+// Layers added to tree with existing active animations should have the
+// animation correctly recognized.
+class LayerTreeHostAnimationTestLayerAddedWithAnimation :
+    public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestLayerAddedWithAnimation()
+      : added_animation_(false) {
+  }
+
+  virtual void beginTest() OVERRIDE {
+    EXPECT_FALSE(added_animation_);
+
+    scoped_refptr<Layer> layer = Layer::create();
+    layer->setLayerAnimationDelegate(this);
+
+    // Any valid AnimationCurve will do here.
+    scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
+    scoped_ptr<ActiveAnimation> animation(
+        ActiveAnimation::create(curve.Pass(), 1, 1, ActiveAnimation::Opacity));
+    layer->layerAnimationController()->addAnimation(animation.Pass());
+
+    // We add the animation *before* attaching the layer to the tree.
+    m_layerTreeHost->rootLayer()->addChild(layer);
+    EXPECT_TRUE(added_animation_);
+
+    endTest();
+  }
+
+  virtual void didAddAnimation() OVERRIDE {
+    added_animation_ = true;
+  }
+
+  virtual void afterTest() OVERRIDE {}
+
+private:
+  bool added_animation_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestLayerAddedWithAnimation)
+
+class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount :
+    public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount()
+      : animated_commit_(-1) {
+  }
+
+  virtual void animate(base::TimeTicks) OVERRIDE {
+    // We shouldn't animate on the compositeAndReadback-forced commit, but we
+    // should for the setNeedsCommit-triggered commit.
+    animated_commit_ = m_layerTreeHost->commitNumber();
+    EXPECT_NE(2, animated_commit_);
+  }
+
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    switch (m_layerTreeHost->commitNumber()) {
+      case 1:
+        m_layerTreeHost->setNeedsCommit();
+        break;
+      case 2: {
+        char pixels[4];
+        m_layerTreeHost->compositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
+        break;
+      }
+      case 3:
+        // This is finishing the readback's commit.
+        break;
+      case 4:
+        // This is finishing the followup commit.
+        endTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  virtual void afterTest() OVERRIDE {
+    EXPECT_EQ(3, animated_commit_);
+  }
+
+ private:
+  int animated_commit_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount)
+
+class LayerTreeHostAnimationTestContinuousAnimate :
+    public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestContinuousAnimate()
+      : num_commit_complete_(0),
+        num_draw_layers_(0) {
+  }
+
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void animate(base::TimeTicks) OVERRIDE {
+    if (num_draw_layers_ == 2)
+      return;
+    m_layerTreeHost->setNeedsAnimate();
+  }
+
+  virtual void layout() OVERRIDE {
+    m_layerTreeHost->rootLayer()->setNeedsDisplay();
+  }
+
+  virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {
+    if (num_draw_layers_ == 1)
+      num_commit_complete_++;
+  }
+
+  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    num_draw_layers_++;
+    if (num_draw_layers_ == 2)
+      endTest();
+  }
+
+  virtual void afterTest() OVERRIDE {
+    // Check that we didn't commit twice between first and second draw.
+    EXPECT_EQ(1, num_commit_complete_);
+  }
+
+ private:
+  int num_commit_complete_;
+  int num_draw_layers_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate)
 
 }  // namespace
 }  // namespace cc
