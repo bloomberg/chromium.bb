@@ -57,6 +57,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
@@ -217,6 +218,8 @@ ProfileDependencyManager::~ProfileDependencyManager() {}
 void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
+
+  AboutSigninInternalsFactory::GetInstance();
 
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();

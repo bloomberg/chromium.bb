@@ -50,7 +50,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -99,6 +101,12 @@ class TokenService : public GaiaAuthConsumer,
     std::string service_;
     GoogleServiceAuthError error_;
   };
+
+  // Methods to register or remove SigninDiagnosticObservers
+  void AddSigninDiagnosticsObserver(
+      signin_internals_util::SigninDiagnosticsObserver* observer);
+  void RemoveSigninDiagnosticsObserver(
+      signin_internals_util::SigninDiagnosticsObserver* observer);
 
   // Initialize this token service with a request source
   // (usually from a GaiaAuthConsumer constant), and the profile.
@@ -238,6 +246,10 @@ class TokenService : public GaiaAuthConsumer,
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
+
+  // The list of SigninDiagnosticObservers
+  ObserverList<signin_internals_util::SigninDiagnosticsObserver>
+      signin_diagnostics_observers_;
 
   friend class TokenServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);

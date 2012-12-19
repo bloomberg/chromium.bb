@@ -17,6 +17,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -29,6 +31,8 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
 #include "unicode/regex.h"
+
+using namespace signin_internals_util;
 
 namespace {
 
@@ -101,7 +105,6 @@ void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
-  about_signin_internals_.Initialize(profile);
   PrefService* local_state = g_browser_process->local_state();
   // local_state can be null during unit tests.
   if (local_state) {
@@ -182,11 +185,31 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
   // authenticated_username_ are consistent once established (e.g. remove
   // authenticated_username_ altogether). Bug 107160.
 
+  NotifyDiagnosticsObservers(USERNAME, username);
+
   // Go ahead and update the last signed in username here as well. Once a
   // user is signed in the two preferences should match. Doing it here as
   // opposed to on signin allows us to catch the upgrade scenario.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername, username);
 }
+
+std::string SigninManager::SigninTypeToString(
+    SigninManager::SigninType type) {
+  switch (type) {
+    case SIGNIN_TYPE_NONE:
+      return "No Signin";
+    case SIGNIN_TYPE_CLIENT_LOGIN:
+      return "Client Login";
+    case SIGNIN_TYPE_WITH_CREDENTIALS:
+      return "Signin with credentials";
+    case SIGNIN_TYPE_CLIENT_OAUTH:
+      return "Client OAuth";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 
 bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& username,
@@ -215,6 +238,8 @@ bool SigninManager::PrepareForSignin(SigninType type,
   client_login_.reset(new GaiaAuthFetcher(this,
                                           GaiaConstants::kChromeSource,
                                           profile_->GetRequestContext()));
+
+  NotifyDiagnosticsObservers(SIGNIN_TYPE, SigninTypeToString(type));
   return true;
 }
 
@@ -371,6 +396,13 @@ void SigninManager::SignOut() {
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
+
+  // Erase (now) stale information from AboutSigninInternals.
+  NotifyDiagnosticsObservers(USERNAME, "");
+  NotifyDiagnosticsObservers(LSID, "");
+  NotifyDiagnosticsObservers(
+      signin_internals_util::SID, "");
+
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
@@ -399,6 +431,11 @@ void SigninManager::DisableOneClickSignIn(Profile* profile) {
 
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   last_result_ = result;
+  // Update signin_internals_
+  NotifyDiagnosticsObservers(CLIENT_LOGIN_STATUS, "Successful");
+  NotifyDiagnosticsObservers(LSID, result.lsid);
+  NotifyDiagnosticsObservers(
+      signin_internals_util::SID, result.sid);
   // Make a request for the canonical email address and services.
   client_login_->StartGetUserInfo(result.lsid);
 }
@@ -418,12 +455,15 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   if (current_error.state() == GoogleServiceAuthError::TWO_FACTOR)
     had_two_factor_error_ = true;
 
+  NotifyDiagnosticsObservers(CLIENT_LOGIN_STATUS, error.ToString());
   HandleAuthError(current_error, !had_two_factor_error_);
 }
 
 void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   DVLOG(1) << "SigninManager::OnClientOAuthSuccess access_token="
            << result.access_token;
+
+  NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, "Successful");
 
   switch (type_) {
     case SIGNIN_TYPE_CLIENT_OAUTH:
@@ -440,6 +480,7 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 
 void SigninManager::OnClientOAuthFailure(const GoogleServiceAuthError& error) {
   bool clear_transient_data = true;
+  NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, error.ToString());
   if (type_ == SIGNIN_TYPE_CLIENT_OAUTH) {
     // If the error is a challenge (captcha or 2-factor), then don't sign out.
     clear_transient_data =
@@ -452,6 +493,8 @@ void SigninManager::OnClientOAuthFailure(const GoogleServiceAuthError& error) {
 }
 
 void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
+  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, "Successful");
+
   UserInfoMap::const_iterator email_iter = data.find(kGetInfoEmailKey);
   UserInfoMap::const_iterator display_email_iter =
       data.find(kGetInfoDisplayEmailKey);
@@ -518,6 +561,7 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
 
 void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   LOG(ERROR) << "Unable to retreive the canonical email address. Login failed.";
+  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, error.ToString());
   // REVIEW: why does this call OnClientLoginFailure?
   OnClientLoginFailure(error);
 }
@@ -564,6 +608,28 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
   }
 }
 
-AboutSigninInternals* SigninManager::about_signin_internals() {
-  return &about_signin_internals_;
+void SigninManager::AddSigninDiagnosticsObserver(
+    SigninDiagnosticsObserver* observer) {
+  signin_diagnostics_observers_.AddObserver(observer);
+}
+
+void SigninManager::RemoveSigninDiagnosticsObserver(
+    SigninDiagnosticsObserver* observer) {
+  signin_diagnostics_observers_.RemoveObserver(observer);
+}
+
+void SigninManager::NotifyDiagnosticsObservers(
+    const UntimedSigninStatusField& field,
+    const std::string& value) {
+  FOR_EACH_OBSERVER(SigninDiagnosticsObserver,
+                    signin_diagnostics_observers_,
+                    NotifySigninValueChanged(field, value));
+}
+
+void SigninManager::NotifyDiagnosticsObservers(
+    const TimedSigninStatusField& field,
+    const std::string& value) {
+  FOR_EACH_OBSERVER(SigninDiagnosticsObserver,
+                    signin_diagnostics_observers_,
+                    NotifySigninValueChanged(field, value));
 }

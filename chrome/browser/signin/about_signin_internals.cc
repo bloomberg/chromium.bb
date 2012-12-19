@@ -11,20 +11,211 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {}
+using namespace signin_internals_util;
 
-AboutSigninInternals::~AboutSigninInternals() {
-  DCHECK(signin_observers_.size() == 0);
+AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
+  // Initialize default values for tokens.
+  for (size_t i = 0; i < kNumTokenPrefs; ++i) {
+    signin_status_.token_info_map.insert(std::pair<std::string, TokenInfo>(
+        kTokenPrefsArray[i],
+        TokenInfo("", "Not Loaded", "", kTokenPrefsArray[i])));
+  }
 }
 
-void AboutSigninInternals::AddSigninObserver(SigninObserver* observer) {
+AboutSigninInternals::~AboutSigninInternals() {
+}
+
+void AboutSigninInternals::AddSigninObserver(
+    AboutSigninInternals::Observer* observer) {
   signin_observers_.AddObserver(observer);
 }
 
-void AboutSigninInternals::RemoveSigninObserver(SigninObserver* observer) {
+void AboutSigninInternals::RemoveSigninObserver(
+    AboutSigninInternals::Observer* observer) {
   signin_observers_.RemoveObserver(observer);
+}
+
+void AboutSigninInternals::NotifySigninValueChanged(
+    const UntimedSigninStatusField& field,
+    const std::string& value) {
+  unsigned int field_index = field - UNTIMED_FIELDS_BEGIN;
+  DCHECK(field_index >= 0 &&
+         field_index < signin_status_.untimed_signin_fields.size());
+
+  signin_status_.untimed_signin_fields[field_index] = value;
+
+  // Also persist these values in the prefs.
+  const std::string pref_path = SigninStatusFieldToString(field);
+  profile_->GetPrefs()->SetString(pref_path.c_str(), value);
+
+  NotifyObservers();
+}
+
+void AboutSigninInternals::NotifySigninValueChanged(
+    const TimedSigninStatusField& field,
+    const std::string& value) {
+  unsigned int field_index = field - TIMED_FIELDS_BEGIN;
+  DCHECK(field_index >= 0 &&
+         field_index < signin_status_.timed_signin_fields.size());
+
+  std::string time_as_str = UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+      base::Time::NowFromSystemTime()));
+  TimedSigninStatusValue timed_value(value, time_as_str);
+
+  signin_status_.timed_signin_fields[field_index] = timed_value;
+
+  // Also persist these values in the prefs.
+  const std::string value_pref = SigninStatusFieldToString(field) + ".value";
+  const std::string time_pref =  SigninStatusFieldToString(field) + ".time";
+  profile_->GetPrefs()->SetString(value_pref.c_str(), value);
+  profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+
+  NotifyObservers();
+}
+
+void AboutSigninInternals::RefreshSigninPrefs() {
+  // Return if no profile exists. Can occur in unit tests.
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
+    const std::string pref_path =
+        SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
+
+    signin_status_.untimed_signin_fields[i - UNTIMED_FIELDS_BEGIN] =
+        pref_service->GetString(pref_path.c_str());
+  }
+  for (int i = TIMED_FIELDS_BEGIN ; i < TIMED_FIELDS_END; ++i) {
+    const std::string value_pref = SigninStatusFieldToString(
+        static_cast<TimedSigninStatusField>(i)) + ".value";
+    const std::string time_pref = SigninStatusFieldToString(
+        static_cast<TimedSigninStatusField>(i)) + ".time";
+
+    TimedSigninStatusValue value(pref_service->GetString(value_pref.c_str()),
+                                 pref_service->GetString(time_pref.c_str()));
+    signin_status_.timed_signin_fields[i - TIMED_FIELDS_BEGIN] = value;
+  }
+
+  // Get status and timestamps for all token services.
+  for (size_t i = 0; i < kNumTokenPrefs; i++) {
+    const std::string pref = TokenPrefPath(kTokenPrefsArray[i]);
+    const std::string value = pref + ".value";
+    const std::string status = pref + ".status";
+    const std::string time = pref + ".time";
+
+    TokenInfo token_info(pref_service->GetString(value.c_str()),
+                         pref_service->GetString(status.c_str()),
+                         pref_service->GetString(time.c_str()),
+                         kTokenPrefsArray[i]);
+
+    signin_status_.token_info_map[kTokenPrefsArray[i]] = token_info;
+  }
+
+  NotifyObservers();
+}
+
+void AboutSigninInternals::NotifyTokenReceivedSuccess(
+    const std::string& token_name,
+    const std::string& token,
+    bool update_time) {
+  // This should have been initialized already.
+  DCHECK(signin_status_.token_info_map.count(token_name));
+
+  const std::string status_success = "Successful";
+  signin_status_.token_info_map[token_name].token = token;
+  signin_status_.token_info_map[token_name].status = status_success;
+
+  // Also update preferences.
+  const std::string value_pref = TokenPrefPath(token_name) + ".value";
+  const std::string time_pref = TokenPrefPath(token_name) + ".time";
+  const std::string status_pref = TokenPrefPath(token_name) + ".status";
+  profile_->GetPrefs()->SetString(value_pref.c_str(), token);
+  profile_->GetPrefs()->SetString(status_pref.c_str(), "Successful");
+
+  // Update timestamp if needed.
+  if (update_time) {
+    const std::string time_as_str = UTF16ToUTF8(
+        base::TimeFormatFriendlyDateAndTime(base::Time::NowFromSystemTime()));
+    signin_status_.token_info_map[token_name].time = time_as_str;
+    profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+  }
+
+  NotifyObservers();
+}
+
+
+void AboutSigninInternals::NotifyTokenReceivedFailure(
+    const std::string& token_name,
+    const std::string& error) {
+  const std::string time_as_str =
+      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+          base::Time::NowFromSystemTime()));
+
+  // This should have been initialized already.
+  DCHECK(signin_status_.token_info_map.count(token_name));
+
+  signin_status_.token_info_map[token_name].token.clear();
+  signin_status_.token_info_map[token_name].status = error;
+  signin_status_.token_info_map[token_name].time = time_as_str;
+
+  // Also update preferences.
+  const std::string value_pref = TokenPrefPath(token_name) + ".value";
+  const std::string time_pref = TokenPrefPath(token_name) + ".time";
+  const std::string status_pref = TokenPrefPath(token_name) + ".status";
+  profile_->GetPrefs()->SetString(value_pref.c_str(), "");
+  profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+  profile_->GetPrefs()->SetString(status_pref.c_str(), error);
+
+  NotifyObservers();
+}
+
+// While clearing tokens, we don't update the time or status.
+void AboutSigninInternals::NotifyClearStoredToken(
+    const std::string& token_name) {
+  // This should have been initialized already.
+  DCHECK(signin_status_.token_info_map.count(token_name));
+
+  signin_status_.token_info_map[token_name].token.clear();
+
+  const std::string value_pref = TokenPrefPath(token_name) + ".value";
+  profile_->GetPrefs()->SetString(value_pref.c_str(), "");
+
+  NotifyObservers();
+}
+
+void AboutSigninInternals::Initialize(Profile* profile) {
+  DCHECK(!profile_);
+  profile_ = profile;
+
+  RefreshSigninPrefs();
+
+  SigninManagerFactory::GetForProfile(profile)->
+      AddSigninDiagnosticsObserver(this);
+  TokenServiceFactory::GetForProfile(profile)->
+      AddSigninDiagnosticsObserver(this);
+}
+
+void AboutSigninInternals::Shutdown() {
+  SigninManagerFactory::GetForProfile(profile_)->
+      RemoveSigninDiagnosticsObserver(this);
+  TokenServiceFactory::GetForProfile(profile_)->
+      RemoveSigninDiagnosticsObserver(this);
+}
+
+void AboutSigninInternals::NotifyObservers() {
+  FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
+                    signin_observers_,
+                    OnSigninStateChanged(signin_status_.ToValue()));
+}
+
+scoped_ptr<DictionaryValue> AboutSigninInternals::GetSigninStatus() {
+  return signin_status_.ToValue().Pass();
 }

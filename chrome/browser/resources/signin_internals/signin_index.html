@@ -5,8 +5,51 @@
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://signin-internals/strings.js"></script>
+  <link rel="stylesheet" type="text/css" href="signin_index.css">
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <h2>Signin Internals UI Page</h2>
+  <div id='signin-info'>
+    <div class="section" jsselect="signin_info">
+      <h2 jscontent="title"></h2>
+      <table class="signin-details">
+        <tr jsselect="data"
+            jsvalues="class:chrome.signin.setClassFromValue($this.value)"
+            jseval="chrome.signin.highlightIfChanged(this,
+                      this.children[1].innerText, value)">
+          <td jscontent="label"></td>
+          <td jscontent="value"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div id='token-info'>
+    <div class="tokenSection" jsselect="token_info">
+      <h2 jscontent="title"></h2>
+      <table class="signin-details">
+        <tr class="header">
+          <td>Service</td>
+          <td>Current Token Hash</td>
+          <td>Last Token Received On</td>
+          <td>Last Token Fetch Status</td>
+        </tr>
+        <tr jsselect="data"
+            jsvalues="class:chrome.signin.setClassFromValue($this.status)"
+            jseval="chrome.signin.highlightIfAnyChanged(this,
+                      [[this.children[1].innerText, token],
+                      [this.children[2].innerText, time],
+                      [this.children[3].innerText, status]])">
+          <td jscontent="service"></td>
+          <td jscontent="token"
+              jsvalues="class:chrome.signin.setClassFromValue(token)"></td>
+          <td jscontent="time"></td>
+          <td jscontent="status"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <script src="chrome://resources/js/i18n_template.js"></script>
+  <script src="chrome://resources/js/i18n_process.js"></script>
+  <script src="chrome://resources/js/jstemplate_compiled.js"></script>
+  <script src="chrome://signin-internals/signin_internals.js"></script>
 </body>
 </html>

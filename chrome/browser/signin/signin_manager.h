@@ -23,9 +23,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/signin/about_signin_internals.h"
+#include "chrome/browser/signin/signin_internals_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -59,6 +60,12 @@ class SigninManager : public GaiaAuthConsumer,
                       public content::NotificationObserver,
                       public ProfileKeyedService {
  public:
+  // Methods to register or remove SigninDiagnosticObservers
+  void AddSigninDiagnosticsObserver(
+      signin_internals_util::SigninDiagnosticsObserver* observer);
+  void RemoveSigninDiagnosticsObserver(
+      signin_internals_util::SigninDiagnosticsObserver* observer);
+
   // Returns true if the cookie policy for the given profile allows cookies
   // for the Google signin domain.
   static bool AreSigninCookiesAllowed(Profile* profile);
@@ -158,8 +165,6 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  AboutSigninInternals* about_signin_internals();
-
  protected:
   // Weak pointer to parent profile (protected so FakeSigninManager can access
   // it).
@@ -172,6 +177,8 @@ class SigninManager : public GaiaAuthConsumer,
     SIGNIN_TYPE_WITH_CREDENTIALS,
     SIGNIN_TYPE_CLIENT_OAUTH,
   };
+
+  std::string SigninTypeToString(SigninType type);
 
   friend class FakeSigninManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
@@ -207,6 +214,14 @@ class SigninManager : public GaiaAuthConsumer,
 
   void OnGoogleServicesUsernamePatternChanged();
 
+  // Helper methods to notify all registered diagnostics observers with.
+  void NotifyDiagnosticsObservers(
+      const signin_internals_util::UntimedSigninStatusField& field,
+      const std::string& value);
+  void NotifyDiagnosticsObservers(
+      const signin_internals_util::TimedSigninStatusField& field,
+      const std::string& value);
+
   // Result of the last client login, kept pending the lookup of the
   // canonical email.
   ClientLoginResult last_result_;
@@ -234,10 +249,9 @@ class SigninManager : public GaiaAuthConsumer,
   // not need to mint new ones.
   ClientOAuthResult temp_oauth_login_tokens_;
 
-  // A class that encapsulates information relevant to the
-  // about:signin-internals page and takes care of communication
-  // with the UI front-end.
-  AboutSigninInternals about_signin_internals_;
+  // The list of SigninDiagnosticObservers
+  ObserverList<signin_internals_util::SigninDiagnosticsObserver>
+      signin_diagnostics_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

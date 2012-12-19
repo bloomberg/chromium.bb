@@ -7,18 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/signin/about_signin_internals.h"
 #include "content/public/browser/web_ui_controller.h"
-
-// An Observer class that gets notified on changes to AboutSigninInternals.
-class SigninObserver {
- public:
-  virtual void OnSigninStateChanged(const DictionaryValue* info) = 0;
-};
 
 // The implementation for the chrome://signin-internals page.
 class SignInInternalsUI : public content::WebUIController,
-                          public SigninObserver {
+                          public AboutSigninInternals::Observer {
  public:
   explicit SignInInternalsUI(content::WebUI* web_ui);
   virtual ~SignInInternalsUI();
@@ -29,7 +25,8 @@ class SignInInternalsUI : public content::WebUIController,
                                           const std::string& name,
                                           const base::ListValue& args) OVERRIDE;
 
-  virtual void OnSigninStateChanged(const DictionaryValue* info) OVERRIDE;
+  // AboutSigninInternals::Observer::OnSigninStateChanged implementation.
+  virtual void OnSigninStateChanged(scoped_ptr<DictionaryValue> info) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignInInternalsUI);
