@@ -221,6 +221,9 @@
    fun:cc::ProgramBindingBase::loadShader
    fun:cc::ProgramBindingBase::init
    fun:ProgramBinding
+   ...
+   fun:cc::SingleThreadProxy::commitAndComposite	
+   fun:cc::SingleThreadProxy::compositeImmediately
 }
 {
    bug_148477_c
@@ -230,6 +233,10 @@
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
    fun:cc::ProgramBindingBase::link
    fun:cc::ProgramBinding::initialize
+   ...
+   fun:cc::GLRenderer::drawQuad	
+   fun:cc::DirectRenderer::drawRenderPass	
+   fun:cc::DirectRenderer::drawFrame
 }
 
 # There is not CloseTestNSSDB due to NSS bug 588269.
@@ -909,20 +916,6 @@
    fun:gfx::RenderTextLinux::GetStringSize
 }
 {
-   bug_90013_c
-   Heapcheck:Leak
-   fun:??
-   fun:::FindBestMatchFontFamilyName
-   fun:PlatformFontPango
-}
-{
-   bug_90013_d
-   Heapcheck:Leak
-   fun:??
-   fun:gfx::GetPangoFontMetrics
-   fun:gfx::PlatformFontPango::InitPangoMetrics
-}
-{
    bug_91845_a
    Heapcheck:Leak
    ...
@@ -1023,19 +1016,13 @@
    bug_99304
    Heapcheck:Leak
    fun:v8::internal::SkipList::Update
-   ...
-   fun:v8::internal::Deserializer::Allocate
-   fun:v8::internal::Deserializer::ReadObject
-   fun:v8::internal::Deserializer::ReadChunk
-   fun:v8::internal::Deserializer::ReadObject
-   fun:v8::internal::Deserializer::ReadChunk
-   fun:v8::internal::Deserializer::VisitPointers
-   fun:v8::internal::Heap::IterateStrongRoots
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::ReserveSpace
    fun:v8::internal::Deserializer::Deserialize
    fun:v8::internal::Isolate::Init
    fun:v8::internal::V8::Initialize
-   fun:v8::internal::Snapshot::Deserialize
    fun:v8::internal::Snapshot::Initialize
+   fun:InitializeHelper
 }
 {
    bug_100146
@@ -1172,16 +1159,8 @@
    fun:PlatformFontPango
    fun:gfx::PlatformFont::CreateDefault
    fun:Font
-   fun:Label
-   fun:ash::internal::TrayItemView::CreateLabel
-   fun:ash::internal::TrayIME::CreateTrayView
-   fun:ash::SystemTray::AddTrayItem
-   fun:ash::SystemTray::CreateItems
-   fun:ash::SystemTray::Initialize
-   fun:ash::internal::StatusAreaWidget::CreateTrayViews
-   fun:ash::Shell::Init
-   fun:ash::Shell::CreateInstance
-   fun:ash::test::AshTestBase::SetUp
+   ...
+   fun:*Test*
 }
 {
    bug_114758
@@ -1497,18 +1476,6 @@
    fun:::TestWebFrameClient::didClearWindowObject
    fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
-}
-{
-   bug_151907
-   Heapcheck:Leak
-   fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
-   fun:v8::internal::Heap::ReserveSpace
-   fun:v8::internal::Deserializer::Deserialize
-   fun:v8::internal::Isolate::Init
-   fun:v8::internal::V8::Initialize
-   fun:v8::internal::Snapshot::Initialize
-   fun:v8::InitializeHelper
 }
 {
    bug_153791
