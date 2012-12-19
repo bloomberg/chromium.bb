@@ -315,8 +315,6 @@ InputImeEventRouter::GetInstance() {
   return Singleton<InputImeEventRouter>::get();
 }
 
-void InputImeEventRouter::Init() {}
-
 #if defined(OS_CHROMEOS)
 bool InputImeEventRouter::RegisterIme(
     Profile* profile,
@@ -836,5 +834,44 @@ bool KeyEventHandled::RunImpl() {
   return true;
 }
 #endif
+
+InputImeAPI::InputImeAPI(Profile* profile)
+    : profile_(profile) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile));
+}
+
+InputImeAPI::~InputImeAPI() {
+}
+
+void InputImeAPI::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
+    const Extension* extension =
+        content::Details<const Extension>(details).ptr();
+    for (std::vector<Extension::InputComponentInfo>::const_iterator component =
+             extension->input_components().begin();
+         component != extension->input_components().end();
+         ++component) {
+      if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
+        input_ime_event_router()->RegisterIme(
+            profile_, extension->id(), *component);
+      }
+    }
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    const Extension* extension =
+        content::Details<const UnloadedExtensionInfo>(details)->extension;
+    if (extension->input_components().size() > 0) {
+      input_ime_event_router()->UnregisterAllImes(profile_, extension->id());
+    }
+  }
+}
+
+InputImeEventRouter* InputImeAPI::input_ime_event_router() {
+  return InputImeEventRouter::GetInstance();
+}
 
 }  // namespace extensions

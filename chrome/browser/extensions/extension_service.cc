@@ -115,7 +115,6 @@
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "content/public/browser/storage_partition.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -530,7 +529,6 @@ void ExtensionService::InitEventRouters() {
       profile_)->ObserveFileSystemEvents();
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
-  extensions::InputImeEventRouter::GetInstance()->Init();
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
@@ -1137,18 +1135,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
-
-#if defined(OS_CHROMEOS)
-  for (std::vector<Extension::InputComponentInfo>::const_iterator component =
-           extension->input_components().begin();
-       component != extension->input_components().end();
-       ++component) {
-    if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
-      extensions::InputImeEventRouter::GetInstance()->RegisterIme(
-          profile_, extension->id(), *component);
-    }
-  }
-#endif
 }
 
 void ExtensionService::NotifyExtensionUnloaded(
@@ -1195,11 +1181,6 @@ void ExtensionService::NotifyExtensionUnloaded(
   if (filesystem_context && filesystem_context->external_provider()) {
     filesystem_context->external_provider()->
         RevokeAccessForExtension(extension->id());
-  }
-
-  if (extension->input_components().size() > 0) {
-    extensions::InputImeEventRouter::GetInstance()->UnregisterAllImes(
-        profile_, extension->id());
   }
 #endif
 

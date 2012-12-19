@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include <map>
+#include <string>
+#include <vector>
 
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension.h"
-
-#include <map>
-#include <string>
-#include <vector>
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -28,7 +30,6 @@ namespace extensions {
 class InputImeEventRouter {
  public:
   static InputImeEventRouter* GetInstance();
-  void Init();
 
   bool RegisterIme(Profile* profile,
                    const std::string& extension_id,
@@ -168,6 +169,24 @@ class KeyEventHandled : public AsyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+};
+
+class InputImeAPI : public ProfileKeyedService,
+                    public content::NotificationObserver {
+ public:
+  explicit InputImeAPI(Profile* profile);
+  virtual ~InputImeAPI();
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  InputImeEventRouter* input_ime_event_router();
+
+  Profile* const profile_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace extensions

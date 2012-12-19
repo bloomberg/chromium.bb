@@ -85,6 +85,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -249,6 +250,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::HistoryAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
 #if defined(OS_CHROMEOS)
+  extensions::InputImeAPIFactory::GetInstance();
   extensions::InputMethodAPIFactory::GetInstance();
 #endif
   extensions::ManagedModeAPIFactory::GetInstance();
