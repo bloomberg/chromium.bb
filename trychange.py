@@ -149,8 +149,12 @@ class SCM(object):
     return self.codereview_settings.get(key, '')
 
   def _GclStyleSettings(self):
-    """Set default settings based on the gcl-style settings from the
-    repository."""
+    """Set default settings based on the gcl-style settings from the repository.
+
+    The settings in the self.options object will only be set if no previous
+    value exists (i.e. command line flags to the try command will override the
+    settings in codereview.settings).
+    """
     settings = {
       'port': self.GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
       'host': self.GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
@@ -162,14 +166,14 @@ class SCM(object):
     logging.info('\n'.join(['%s: %s' % (k, v)
                             for (k, v) in settings.iteritems() if v]))
     for (k, v) in settings.iteritems():
+      # Avoid overwriting options already set using command line flags.
       if v and getattr(self.options, k) is None:
         setattr(self.options, k, v)
 
   def AutomagicalSettings(self):
     """Determines settings based on supported code review and checkout tools.
     """
-    self._GclStyleSettings()
-    # Try to find gclient or repo root.
+    # Try to find gclient or repo root first.
     if not self.options.no_search:
       self.toplevel_root = gclient_utils.FindGclientRoot(self.checkout_root)
       if self.toplevel_root:
@@ -181,10 +185,17 @@ class SCM(object):
           logging.info('Found .repo dir at %s'
                        % os.path.dirname(self.toplevel_root))
 
+      # Parse TRYSERVER_* settings from codereview.settings before falling back
+      # on setting self.options.root manually further down. Otherwise
+      # TRYSERVER_ROOT would never be used in codereview.settings.
+      self._GclStyleSettings()
+
       if self.toplevel_root and not self.options.root:
         assert os.path.abspath(self.toplevel_root) == self.toplevel_root
         self.options.root = gclient_utils.PathDifference(self.toplevel_root,
                                                          self.checkout_root)
+    else:
+      self._GclStyleSettings()
 
   def ReadRootFile(self, filename):
     cur = self.checkout_root
