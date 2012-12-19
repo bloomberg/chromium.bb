@@ -122,6 +122,16 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     provider->AddLocalMountPoint(path);
   }
 
+  void CheckJavascriptErrors() {
+    content::RenderViewHost* host = dialog_->GetRenderViewHost();
+    scoped_ptr<base::Value> value(host->ExecuteJavascriptAndGetValue(
+        string16(),
+        ASCIIToUTF16("window.JSErrorCount")));
+    int js_error_count = 0;
+    ASSERT_TRUE(value->GetAsInteger(&js_error_count));
+    ASSERT_EQ(0, js_error_count);
+  }
+
   void OpenDialog(ui::SelectFileDialog::Type dialog_type,
                   const FilePath& file_path,
                   const gfx::NativeWindow& owning_window,
@@ -157,6 +167,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
     // Dialog should be running now.
     ASSERT_TRUE(dialog_->IsRunning(owning_window));
+
+    ASSERT_NO_FATAL_FAILURE(CheckJavascriptErrors());
   }
 
   void TryOpeningSecondDialog(const gfx::NativeWindow& owning_window) {
@@ -237,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // FilePath() for default path.
-  OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window,
-             "");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     FilePath(), owning_window, ""));
 
   // Press cancel button.
   CloseDialog(DIALOG_BTN_CANCEL, owning_window);
@@ -267,8 +279,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // waiting for chrome.test.sendMessage('selection-change-complete').
   // The extension starts a Web Worker to read file metadata, so it may send
   // 'selection-change-complete' before 'worker-initialized'.  This is OK.
-  OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE, test_file, owning_window,
-             "selection-change-complete");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     test_file, owning_window,
+                                     "selection-change-complete"));
 
   // Click open button.
   CloseDialog(DIALOG_BTN_OK, owning_window);
@@ -293,8 +306,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // chrome.test.sendMessage().
   // The extension starts a Web Worker to read file metadata, so it may send
   // 'directory-change-complete' before 'worker-initialized'.  This is OK.
-  OpenDialog(ui::SelectFileDialog::SELECT_SAVEAS_FILE, test_file,
-             owning_window, "directory-change-complete");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+                                     test_file, owning_window,
+                                     "directory-change-complete"));
 
   // Click save button.
   CloseDialog(DIALOG_BTN_OK, owning_window);
@@ -312,8 +326,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
-  OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window,
-             "");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     FilePath(), owning_window, ""));
 
   // Open a singleton tab in background.
   chrome::NavigateParams p(browser(), GURL("www.google.com"),
@@ -337,8 +351,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
-  OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window,
-             "");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     FilePath(), owning_window, ""));
 
   TryOpeningSecondDialog(owning_window);
 
