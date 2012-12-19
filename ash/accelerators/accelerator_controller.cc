@@ -294,8 +294,15 @@ bool HandlePrintViewHierarchy() {
 
 void PrintWindowHierarchy(aura::Window* window, int indent) {
   std::string indent_str(indent, ' ');
-  DLOG(INFO) << indent_str << window->name() << " type " << window->type()
-      << (wm::IsActiveWindow(window) ? "active" : "");
+  std::string name(window->name());
+  if (name.empty())
+    name = "\"\"";
+  DLOG(INFO) << indent_str << name << " (" << window << ")"
+             << " type=" << window->type()
+             << (wm::IsActiveWindow(window) ? " [active] " : " ")
+             << (window->IsVisible() ? " visible " : " ")
+             << window->bounds().ToString();
+
   for (size_t i = 0; i < window->children().size(); ++i)
     PrintWindowHierarchy(window->children()[i], indent + 3);
 }
@@ -306,9 +313,7 @@ bool HandlePrintWindowHierarchy() {
       Shell::GetAllRootWindowControllers();
   for (size_t i = 0; i < controllers.size(); ++i) {
     DLOG(INFO) << "RootWindow " << i << ":";
-    aura::Window* container = controllers[i]->GetContainer(
-        internal::kShellWindowId_DefaultContainer);
-    PrintWindowHierarchy(container, 0);
+    PrintWindowHierarchy(controllers[i]->root_window(), 0);
   }
   return true;
 }
