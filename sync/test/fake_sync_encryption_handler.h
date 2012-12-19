@@ -48,8 +48,8 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
       syncable::BaseTransaction* const trans) const OVERRIDE;
   virtual bool NeedKeystoreKey(
       syncable::BaseTransaction* const trans) const OVERRIDE;
-  virtual bool SetKeystoreKey(
-      const std::string& key,
+  virtual bool SetKeystoreKeys(
+      const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
       syncable::BaseTransaction* const trans) OVERRIDE;
   virtual ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const OVERRIDE;

@@ -630,9 +630,11 @@ message GetUpdatesResponse {
   // |timestamp_token_for_migration| field set.
   repeated DataTypeProgressMarker new_progress_marker = 5;
 
-  // The current encryption key associated with this account. Only set if the
-  // GetUpdatesMessage in the request had need_encryption_key == true.
-  optional bytes encryption_key = 6;
+  // The current encryption keys associated with this account. Will be set if
+  // the GetUpdatesMessage in the request had need_encryption_key == true or
+  // the server has updated the set of encryption keys (e.g. due to a key
+  // rotation).
+  repeated bytes encryption_keys = 6;
 };
 
 // The metadata response for GetUpdatesMessage.  This response is sent when

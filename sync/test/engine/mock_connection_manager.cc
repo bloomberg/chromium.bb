@@ -454,7 +454,7 @@ void MockConnectionManager::ProcessGetUpdates(
 
   // Fill the keystore key if requested.
   if (gu.need_encryption_key())
-    response->mutable_get_updates()->set_encryption_key(keystore_key_);
+    response->mutable_get_updates()->add_encryption_keys(keystore_key_);
 
   update_queue_.pop_front();
 

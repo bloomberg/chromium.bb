@@ -1739,7 +1739,8 @@ class SyncPageHandler(BasePageHandler):
                     self.ChromiumSyncErrorOpHandler,
                     self.ChromiumSyncSyncTabFaviconsOpHandler,
                     self.ChromiumSyncCreateSyncedBookmarksOpHandler,
-                    self.ChromiumSyncEnableKeystoreEncryptionOpHandler]
+                    self.ChromiumSyncEnableKeystoreEncryptionOpHandler,
+                    self.ChromiumSyncRotateKeystoreKeysOpHandler]
 
     post_handlers = [self.ChromiumSyncCommandHandler,
                      self.ChromiumSyncTimeHandler]
@@ -1983,6 +1984,19 @@ class SyncPageHandler(BasePageHandler):
       return False
     result, raw_reply = (
         self.server._sync_handler.HandleEnableKeystoreEncryption())
+    self.send_response(result)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(raw_reply))
+    self.end_headers()
+    self.wfile.write(raw_reply)
+    return True
+
+  def ChromiumSyncRotateKeystoreKeysOpHandler(self):
+    test_name = "/chromiumsync/rotatekeystorekeys"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+    result, raw_reply = (
+        self.server._sync_handler.HandleRotateKeystoreKeys())
     self.send_response(result)
     self.send_header('Content-Type', 'text/html')
     self.send_header('Content-Length', len(raw_reply))

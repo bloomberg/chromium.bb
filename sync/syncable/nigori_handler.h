@@ -7,6 +7,13 @@
 
 #include "sync/internal_api/public/base/model_type.h"
 
+namespace google{
+namespace protobuf{
+template <typename T>
+class RepeatedPtrField;
+}
+}
+
 namespace sync_pb {
 class NigoriSpecifics;
 }
@@ -39,10 +46,10 @@ class NigoriHandler {
   virtual bool NeedKeystoreKey(
       syncable::BaseTransaction* const trans) const = 0;
 
-  // Set the keystore key the server returned for this account.
+  // Set the keystore keys the server returned for this account.
   // Returns true on success, false otherwise.
-  virtual bool SetKeystoreKey(
-      const std::string& key,
+  virtual bool SetKeystoreKeys(
+      const google::protobuf::RepeatedPtrField<std::string>& keys,
       syncable::BaseTransaction* const trans) = 0;
 
   // Returns the set of currently encrypted types.

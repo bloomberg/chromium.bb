@@ -977,10 +977,11 @@ void ProfileSyncService::OnPassphraseRequired(
 
 void ProfileSyncService::OnPassphraseAccepted() {
   DVLOG(1) << "Received OnPassphraseAccepted.";
-  // If we are not using an explicit passphrase, and we have a cache of the gaia
-  // password, use it for encryption at this point.
-  DCHECK(cached_passphrase_.empty()) <<
-      "Passphrase no longer required but there is still a cached passphrase";
+
+  // If the pending keys were resolved via keystore, it's possible we never
+  // consumed our cached passphrase. Clear it now.
+  if (!cached_passphrase_.empty())
+    cached_passphrase_.clear();
 
   // Reset passphrase_required_reason_ since we know we no longer require the
   // passphrase. We do this here rather than down in ResolvePassphraseRequired()

@@ -73,8 +73,8 @@ class SyncEncryptionHandlerImpl
       syncable::BaseTransaction* const trans) const OVERRIDE;
   virtual bool NeedKeystoreKey(
       syncable::BaseTransaction* const trans) const OVERRIDE;
-  virtual bool SetKeystoreKey(
-      const std::string& key,
+  virtual bool SetKeystoreKeys(
+      const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
       syncable::BaseTransaction* const trans) OVERRIDE;
   // Can be called from any thread.
   virtual ModelTypeSet GetEncryptedTypes(
@@ -90,6 +90,7 @@ class SyncEncryptionHandlerImpl
   base::Time custom_passphrase_time() const;
 
  private:
+  friend class SyncEncryptionHandlerImplTest;
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
                            NigoriEncryptionTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
@@ -216,8 +217,8 @@ class SyncEncryptionHandlerImpl
   // triggered or not.
   // Conditions for triggering migration:
   // 1. Cryptographer has no pending keys
-  // 2. Nigori node isn't already properly migrated.
-  // 3. Keystore key is available (if we are not migrated yet).
+  // 2. Nigori node isn't already properly migrated or we need to rotate keys.
+  // 3. Keystore key is available.
   // Note: if the nigori node is migrated but has an invalid state, will return
   // true (e.g. node has KEYSTORE_PASSPHRASE, local is CUSTOM_PASSPHRASE).
   bool ShouldTriggerMigration(const sync_pb::NigoriSpecifics& nigori,
@@ -283,8 +284,14 @@ class SyncEncryptionHandlerImpl
   // keys stored in the nigori node.
   PassphraseType passphrase_type_;
 
-  // The keystore key provided by the server.
+  // The current keystore key provided by the server.
   std::string keystore_key_;
+
+  // The set of old keystore keys. Every time a key rotation occurs, the server
+  // sends down all previous keystore keys as well as the new key. We preserve
+  // the old keys so that when we re-encrypt we can ensure they're all added to
+  // the keybag (and to detect that a key rotation has occurred).
+  std::vector<std::string> old_keystore_keys_;
 
   // The number of times we've automatically (i.e. not via SetPassphrase or
   // conflict resolver) updated the nigori's encryption keys in this chrome

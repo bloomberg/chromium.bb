@@ -224,6 +224,12 @@ def DataTypeStringToSyncTypeLoose(data_type_string):
   raise DataTypeIdNotRecognized
 
 
+def MakeNewKeystoreKey():
+  """Returns a new random keystore key."""
+  return ''.join(random.choice(string.ascii_uppercase + string.digits)
+        for x in xrange(KEYSTORE_KEY_LENGTH))
+
+
 def SyncTypeToString(data_type):
   """Formats a sync type enum (from ALL_TYPES) to a human-readable string."""
   return SYNC_TYPE_TO_DESCRIPTOR[data_type].name
@@ -490,8 +496,7 @@ class SyncDataModel(object):
     self.induced_error_frequency = 0
     self.sync_count_before_errors = 0
 
-    self._key = ''.join(random.choice(string.ascii_uppercase + string.digits)
-        for x in xrange(KEYSTORE_KEY_LENGTH))
+    self._keys = [MakeNewKeystoreKey()]
 
   def _SaveEntry(self, entry):
     """Insert or update an entry in the change log, and give it a new version.
@@ -689,10 +694,10 @@ class SyncDataModel(object):
     # batch, even if that item was filtered out.
     return (batch[-1].version, filtered, len(new_changes) - len(batch))
 
-  def GetKey(self):
-    """Returns the encryption key for this account."""
-    print "Returning encryption key: %s" % self._key
-    return self._key
+  def GetKeystoreKeys(self):
+    """Returns the encryption keys for this account."""
+    print "Returning encryption keys: %s" % self._keys
+    return self._keys
 
   def _CopyOverImmutableFields(self, entry):
     """Preserve immutable fields by copying pre-commit state.
@@ -1005,6 +1010,23 @@ class SyncDataModel(object):
 
     self._SaveEntry(keystore_entry)
 
+  def TriggerRotateKeystoreKeys(self):
+    """Rotate the current set of keystore encryption keys.
+
+    |self._keys| will have a new random encryption key appended to it. We touch
+    the nigori node so that each client will receive the new encryption keys
+    only once.
+    """
+
+    # Add a new encryption key.
+    self._keys += [MakeNewKeystoreKey(), ]
+
+    # Increment the nigori node's timestamp, so clients will get the new keys
+    # on their next GetUpdates (any time the nigori node is sent back, we also
+    # send back the keystore keys).
+    nigori_tag = "google_chrome_nigori"
+    self._SaveEntry(self._entries.get(self._ServerTagToId(nigori_tag)))
+
   def SetInducedError(self, error, error_frequency,
                       sync_count_before_errors):
     self.induced_error = error
@@ -1169,6 +1191,14 @@ class TestServer(object):
         '<html><title>Enable Keystore Encryption</title>'
             '<H1>Enable Keystore Encryption</H1></html>')
 
+  def HandleRotateKeystoreKeys(self):
+    """Rotate the keystore encryption keys."""
+    self.account.TriggerRotateKeystoreKeys()
+    return (
+        200,
+        '<html><title>Rotate Keystore Keys</title>'
+            '<H1>Rotate Keystore Keys</H1></html>')
+
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.
 
@@ -1324,10 +1354,13 @@ class TestServer(object):
     new_timestamp, entries, remaining = self.account.GetChanges(update_sieve)
 
     update_response.changes_remaining = remaining
+    sending_nigori_node = False
     for entry in entries:
+      if entry.name == 'Nigori':
+        sending_nigori_node = True
       reply = update_response.entries.add()
       reply.CopyFrom(entry)
     update_sieve.SaveProgress(new_timestamp, update_response)
 
-    if update_request.need_encryption_key:
-      update_response.encryption_key = self.account.GetKey()
+    if update_request.need_encryption_key or sending_nigori_node:
+      update_response.encryption_keys.extend(self.account.GetKeystoreKeys())

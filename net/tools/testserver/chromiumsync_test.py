@@ -599,10 +599,27 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertEqual(version2, version)
 
   def testGetKey(self):
-    key1 = self.model.GetKey()
-    key2 = self.model.GetKey()
-    self.assertTrue(len(key1) > 0)
+    [key1] = self.model.GetKeystoreKeys()
+    [key2] = self.model.GetKeystoreKeys()
+    self.assertTrue(len(key1))
     self.assertEqual(key1, key2)
+
+    # Trigger the rotation. A subsequent GetUpdates should return the nigori
+    # node (whose timestamp was bumped by the rotation).
+    version1, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.NIGORI], 0))
+    self.model.TriggerRotateKeystoreKeys()
+    version2, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.NIGORI], version1))
+    self.assertNotEqual(version1, version2)
+    self.assertEquals(len(changes), 1)
+    self.assertEquals(changes[0].name, "Nigori")
+
+    # The current keys should contain the old keys, with the new key appended.
+    [key1, key3] = self.model.GetKeystoreKeys()
+    self.assertEquals(key1, key2)
+    self.assertNotEqual(key1, key3)
+    self.assertTrue(len(key3) > 0)
 
   def testTriggerEnableKeystoreEncryption(self):
     version1, changes, remaining = (
