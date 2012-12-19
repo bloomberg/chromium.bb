@@ -128,7 +128,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
      * Returns the currently showing dialog, null if none is showing.
      */
     @VisibleForTesting
-    public static JavascriptAppPromptDialog getCurrentDialogForTest() {
+    public static JavascriptAppModalDialog getCurrentDialogForTest() {
         return nativeGetCurrentModalDialog();
     }
 
@@ -274,5 +274,5 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     private native void nativeDidCancelAppModalDialog(int nativeJavascriptAppModalDialogAndroid,
             boolean suppress);
 
-    private static native JavascriptAppPromptDialog nativeGetCurrentModalDialog();
+    private static native JavascriptAppModalDialog nativeGetCurrentModalDialog();
 }
