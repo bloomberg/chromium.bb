@@ -238,8 +238,9 @@ ButterBar.prototype.showProgress_ = function() {
   if (this.isVisible_()) {
     this.update_(progressString, options);
   } else {
+    var self = this;
     options.actions['Cancel'] = function() {
-      this.xhr_.abort();
+      self.xhr_.abort();
     };
     this.show(progressString, options);
   }
