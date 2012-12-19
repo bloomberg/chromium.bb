@@ -43,7 +43,6 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
@@ -2238,6 +2237,7 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+            '../third_party/libusb/libusb.gyp:libusb',
             '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/re2/re2.gyp:re2',
             '../ui/gl/gl.gyp:gl',
@@ -2387,7 +2387,6 @@
           ],
           'dependencies!': [
             'safe_browsing_proto',
-            '../third_party/libusb/libusb.gyp:libusb',
           ],
          'sources!': [
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
@@ -2421,7 +2420,6 @@
           'dependencies!': [
             'safe_browsing_proto',
             'safe_browsing_report_proto',
-            '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources!': [
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
@@ -2730,6 +2728,9 @@
           'dependencies': [
             '../content/content.gyp:web_contents_delegate_android',
             'chrome_browser_jni_headers',
+          ],
+          'dependencies!': [
+            '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
             'browser/sessions/in_memory_tab_restore_service.cc',
