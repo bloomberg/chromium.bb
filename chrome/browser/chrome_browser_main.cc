@@ -273,6 +273,9 @@ PrefService* InitializeLocalState(
   // since the parent profile command line flag can be present even when the
   // current profile is not a new one, and in that case we do not want to
   // inherit and reset the user's setting.
+  //
+  // TODO(mnissler): We should probably just instantiate a
+  // JSONPrefStore here instead of an entire PrefService.
   if (!local_state_file_exists &&
       parsed_command_line.HasSwitch(switches::kParentProfile)) {
     FilePath parent_profile =
