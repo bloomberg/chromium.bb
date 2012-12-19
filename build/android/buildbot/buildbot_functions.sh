@@ -220,6 +220,7 @@ function bb_print_logcat {
 
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_unit_tests {
+  echo "@@@BUILD_STEP Run unit tests on device@@@"
   build/android/run_tests.py --xvfb --verbose
 }
 
