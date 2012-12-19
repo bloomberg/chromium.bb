@@ -6459,3 +6459,30 @@
    fun:_ZN4base12SimpleThread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_166818
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_dir_open
+   fun:get_file_formats
+   fun:_gdk_pixbuf_get_module
+   fun:gdk_pixbuf_loader_load_module
+   fun:gdk_pixbuf_loader_close
+   fun:_ZN2ui12_GLOBAL__N_110LoadPixbufEPN4base22RefCountedStaticMemoryEb
+   fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEiNS0_8ImageRTLE
+   fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEi
+   fun:_ZN14TabRendererGtk13InitResourcesEv
+}
+{
+   bug_166819
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK3sql10Connection21GetUntrackedStatementEPKc
+   fun:_ZNK3sql10Connection21DoesTableOrIndexExistEPKcS2_
+   fun:_ZNK3sql10Connection14DoesTableExistEPKc
+   fun:_ZN3sql9MetaTable14DoesTableExistEPNS_10ConnectionE
+   ...
+   fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
+   fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
+}
