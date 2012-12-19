@@ -219,26 +219,22 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 void AudioRendererHost::OnCreateStream(
     int stream_id, const media::AudioParameters& params, int input_channels) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(LookupById(stream_id) == NULL);
+  // media::AudioParameters is validated in the deserializer.
+  if (input_channels < 0 ||
+      input_channels > media::limits::kMaxChannels ||
+      LookupById(stream_id) != NULL) {
+    SendErrorMessage(stream_id);
+    return;
+  }
 
   media::AudioParameters audio_params(params);
-  uint32 buffer_size = media::AudioBus::CalculateMemorySize(audio_params);
-  DCHECK_GT(buffer_size, 0U);
-  DCHECK_LE(buffer_size,
-            static_cast<uint32>(media::limits::kMaxPacketSizeInBytes));
-
-  DCHECK_GE(input_channels, 0);
-  DCHECK_LT(input_channels, media::limits::kMaxChannels);
 
   // Calculate output and input memory size.
   int output_memory_size = AudioBus::CalculateMemorySize(audio_params);
-  DCHECK_GT(output_memory_size, 0);
 
   int frames = audio_params.frames_per_buffer();
   int input_memory_size =
       AudioBus::CalculateMemorySize(input_channels, frames);
-
-  DCHECK_GE(input_memory_size, 0);
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
