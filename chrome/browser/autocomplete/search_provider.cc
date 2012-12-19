@@ -351,12 +351,13 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   new_entry.set_provider_done(done_);
   uint32 field_trial_hash = 0;
   if (AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
-          &field_trial_hash)) {
+      &field_trial_hash)) {
     if (field_trial_triggered_)
       new_entry.mutable_field_trial_triggered()->Add(field_trial_hash);
-    if (field_trial_triggered_in_session_)
+    if (field_trial_triggered_in_session_) {
       new_entry.mutable_field_trial_triggered_in_session()->Add(
           field_trial_hash);
+    }
   }
 }
 

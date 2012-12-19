@@ -473,6 +473,7 @@ void OmniboxEditModel::StartAutocomplete(
     // inline autocomplete text.
     // TODO: Rethink how we are going to handle this case to avoid
     // inconsistent behavior when user presses Ctrl key.
+    // See http://crbug.com/165961 and http://crbug.com/165968 for more details.
     cursor_position = user_text_.length();
   }
 

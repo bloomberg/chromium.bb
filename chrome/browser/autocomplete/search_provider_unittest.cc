@@ -132,26 +132,26 @@ class SearchProviderTest : public testing::Test,
   bool quit_when_done_;
 
   // Needed for AutucompleteFieldTrial::Activate();
-  static scoped_ptr<base::FieldTrialList> field_trial_list_;
+  static base::FieldTrialList* field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
 
 // static
-scoped_ptr<base::FieldTrialList> SearchProviderTest::field_trial_list_;
+base::FieldTrialList* SearchProviderTest::field_trial_list_ = NULL;
 
 // static
 void SearchProviderTest::SetUpTestCase() {
   // Set up Suggest experiments.
-  field_trial_list_.reset(new base::FieldTrialList(
-      new metrics::SHA1EntropyProvider("foo")));
+  field_trial_list_ = new base::FieldTrialList(
+      new metrics::SHA1EntropyProvider("foo"));
   AutocompleteFieldTrial::Activate();
 }
 
 // static
 void SearchProviderTest::TearDownTestCase() {
   // Make sure the global instance of FieldTrialList is gone.
-  field_trial_list_.reset();
+  delete field_trial_list_;
 }
 
 void SearchProviderTest::SetUp() {

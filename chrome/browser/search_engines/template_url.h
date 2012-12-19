@@ -72,8 +72,7 @@ class TemplateURLRef {
     int accepted_suggestion;
 
     // The 0-based position of the cursor within the query string at the time
-    // the request was issued.  Set to string16::npos if not used or after the
-    // last character.
+    // the request was issued.  Set to string16::npos if not used.
     size_t cursor_position;
   };
 
