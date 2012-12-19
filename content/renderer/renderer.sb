@@ -16,6 +16,7 @@
 
 (allow file-read*
   (regex #"^/System/Library/ColorSync($|/)")  ; 10.5.6 - http://crbug.com/46648
+  (regex #"^/System/Library/Keyboard Layouts($|/)")  ; http://crbug.com/152566
   (literal "/Library/Preferences/.GlobalPreferences.plist") ; http://crbug.com/60917
   (literal "@USER_HOMEDIR_AS_LITERAL@/Library/Preferences/.GlobalPreferences.plist")
 )

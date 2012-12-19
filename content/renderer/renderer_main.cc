@@ -39,50 +39,10 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
 namespace content {
-
-namespace {
-
-#if defined(OS_MACOSX)
-
-CFArrayRef ChromeTISCreateInputSourceList(
-   CFDictionaryRef properties,
-   Boolean includeAllInstalled) {
-  CFTypeRef values[] = { CFSTR("") };
-  return CFArrayCreate(
-      kCFAllocatorDefault, values, arraysize(values), &kCFTypeArrayCallBacks);
-}
-
-void InstallFrameworkHacks() {
-  // See http://crbug.com/31225
-  // TODO: Don't do this on newer OS X revisions that have a fix for
-  // http://openradar.appspot.com/radar?id=1156410
-  // To check if this is broken:
-  // 1. Enable Multi language input (simplified chinese)
-  // 2. Ensure "Show/Hide Trackpad Handwriting" shortcut works.
-  //    (ctrl+shift+space).
-  // 3. Now open a new tab in Google Chrome or start Google Chrome
-  // 4. Try ctrl+shift+space shortcut again. Shortcut will not work, IME will
-  //    either not appear or (worse) not disappear on ctrl-shift-space.
-  //    (Run `ps aux | grep Chinese` (10.6/10.7) or `ps aux | grep Trackpad`
-  //    and then kill that pid to make it go away.)
-
-  // Chinese Handwriting was introduced in 10.6 and is confirmed broken on
-  // 10.6, 10.7, and 10.8.
-  mach_error_t err = mach_override_ptr(
-      (void*)&TISCreateInputSourceList,
-      (void*)&ChromeTISCreateInputSourceList,
-      NULL);
-  CHECK_EQ(err_none, err);
-}
-
-#endif  // OS_MACOSX
-
-}  // namespace
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
@@ -132,7 +92,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
-  InstallFrameworkHacks();
 #endif  // OS_MACOSX
 
 #if defined(OS_CHROMEOS)
