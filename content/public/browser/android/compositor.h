@@ -97,7 +97,15 @@ class CONTENT_EXPORT Compositor {
 
   // Grabs a copy of |texture_id| and saves it into |bitmap|.  No scaling is
   // done.  It is assumed that the texture size matches that of the bitmap.
-  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) = 0;
+
+  // Grabs a copy of |texture_id| and saves it into |bitmap|.  No scaling is
+  // done. |src_rect| allows the caller to specify which rect of |texture_id|
+  // to copy to |bitmap|.  It needs to match the size of |bitmap|.  Returns
+  // true if the |texture_id| was copied into |bitmap|, false if not.
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   const gfx::Rect& src_rect,
                                    gfx::JavaBitmap& bitmap) = 0;
  protected:
   Compositor() {}

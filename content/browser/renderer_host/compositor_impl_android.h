@@ -56,7 +56,10 @@ class CONTENT_EXPORT CompositorImpl
   virtual WebKit::WebGLId GenerateCompressedTexture(
       gfx::Size& size, int data_size, void* data) OVERRIDE;
   virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE;
-  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   const gfx::Rect& sub_rect,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
 
   // LayerTreeHostClient implementation.

@@ -165,7 +165,7 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
     return false;
 
   helper->ReadbackTextureSync(texture,
-                              bitmap.size(),
+                              gfx::Rect(bitmap.size()),
                               static_cast<unsigned char*> (bitmap.pixels()));
 
   WebKit::WebGraphicsContext3D* context =

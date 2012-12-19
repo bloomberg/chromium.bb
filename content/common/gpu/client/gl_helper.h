@@ -50,7 +50,7 @@ class GLHelper {
   // GL_UNSIGNED_BYTE.  This is a blocking call that calls glReadPixels on this
   // current context.
   void ReadbackTextureSync(WebKit::WebGLId texture,
-                           const gfx::Size& size,
+                           const gfx::Rect& src_rect,
                            unsigned char* out);
 
   // Creates a copy of the specified texture. |size| is the size of the texture.

@@ -268,7 +268,7 @@ class GLHelper::CopyTextureToImpl {
       const base::Callback<void(bool)>& callback);
 
   void ReadbackTextureSync(WebGLId texture,
-                           const gfx::Size& size,
+                           const gfx::Rect& src_rect,
                            unsigned char* out);
 
   WebKit::WebGLId CopyAndScaleTexture(WebGLId texture,
@@ -558,7 +558,7 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackTextureSync(WebGLId texture,
-                                                      const gfx::Size& size,
+                                                      const gfx::Rect& src_rect,
                                                       unsigned char* out) {
   ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
   ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
@@ -569,10 +569,10 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureSync(WebGLId texture,
                                  GL_TEXTURE_2D,
                                  texture,
                                  0);
-  context_->readPixels(0,
-                       0,
-                       size.width(),
-                       size.height(),
+  context_->readPixels(src_rect.x(),
+                       src_rect.y(),
+                       src_rect.width(),
+                       src_rect.height(),
                        GL_RGBA,
                        GL_UNSIGNED_BYTE,
                        out);
@@ -740,11 +740,11 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
 }
 
 void GLHelper::ReadbackTextureSync(WebKit::WebGLId texture,
-                                   const gfx::Size& size,
+                                   const gfx::Rect& src_rect,
                                    unsigned char* out) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureSync(texture,
-                                             size,
+                                             src_rect,
                                              out);
 }
 

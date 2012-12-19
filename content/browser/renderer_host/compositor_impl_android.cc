@@ -272,12 +272,23 @@ void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
   DCHECK(context->getError() == GL_NO_ERROR);
 }
 
-void CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
+bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
                                          gfx::JavaBitmap& bitmap) {
+  return CopyTextureToBitmap(texture_id, gfx::Rect(bitmap.size()), bitmap);
+}
+
+bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                         const gfx::Rect& sub_rect,
+                                         gfx::JavaBitmap& bitmap) {
+  // The sub_rect should match the bitmap size.
+  DCHECK(bitmap.size() == sub_rect.size());
+  if (bitmap.size() != sub_rect.size() || texture_id == 0) return false;
+
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
   helper->ReadbackTextureSync(texture_id,
-                              bitmap.size(),
+                              sub_rect,
                               static_cast<unsigned char*> (bitmap.pixels()));
+  return true;
 }
 
 void CompositorImpl::animate(double monotonicFrameBeginTime) {

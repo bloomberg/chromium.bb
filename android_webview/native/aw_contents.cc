@@ -120,8 +120,15 @@ class NullCompositor : public content::Compositor {
     return 0;
   }
   virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE {}
-  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
-                                   gfx::JavaBitmap& bitmap) OVERRIDE {}
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE {
+    return false;
+  }
+  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   const gfx::Rect& src_rect,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE {
+    return false;
+  }
   virtual void SetHasTransparentBackground(bool flag) OVERRIDE {}
 };
 
