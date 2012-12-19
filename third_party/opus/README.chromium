@@ -8,5 +8,8 @@ Security Critical: yes
 Description:
 This contains a copy of opus-1.0.1 library
 
+Modifications:
+Import fix for padding in decoder http://git.xiph.org/?p=opus.git;a=commitdiff;h=9345aaa5ca1c2fb7d62981b2a538e0ce20612c38
+
 This library is used by Chrome Remote Desktop for audio stream
 encoding/decoding. It will also be used by WebRTC.
