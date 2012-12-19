@@ -51,7 +51,8 @@ void PanelDragController::StartDragging(Panel* panel,
 }
 
 void PanelDragController::Drag(const gfx::Point& mouse_location) {
-  DCHECK(dragging_panel_);
+  if (!dragging_panel_)
+    return;
 
   PanelCollection* current_collection = dragging_panel_->collection();
 
@@ -96,7 +97,8 @@ void PanelDragController::Drag(const gfx::Point& mouse_location) {
 }
 
 void PanelDragController::EndDragging(bool cancelled) {
-  DCHECK(dragging_panel_);
+  if (!dragging_panel_)
+    return;
 
   PanelCollection* current_collection = dragging_panel_->collection();
   if (cancelled) {

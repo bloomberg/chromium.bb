@@ -644,11 +644,20 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_EQ(panel1, panels[1]);
     EXPECT_EQ(position1, panel4->GetBounds().origin());
 
-    // Closing the dragging panel should end the drag.
+    // Closing the dragging panel should make the drag controller abort.
     // We have:  P4
-    CloseWindowAndWait(panel1);
+    content::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_PANEL_CLOSED, content::Source<Panel>(panel1));
+    panel1->Close();
     EXPECT_FALSE(drag_controller->IsDragging());
 
+    // Continue the drag to ensure the drag controller does not crash.
+    panel1_new_position.Offset(20, 30);
+    panel1_testing->DragTitlebar(panel1_new_position);
+    panel1_testing->FinishDragTitlebar();
+
+    // Wait till the panel is fully closed.
+    signal.Wait();
     ASSERT_EQ(1, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel4, panels[0]);
@@ -832,10 +841,19 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
-    // Closing the dragging panel should end the drag.
-    CloseWindowAndWait(panel1);
+    // Closing the dragging panel should make the drag controller abort.
+    content::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_PANEL_CLOSED, content::Source<Panel>(panel1));
+    panel1->Close();
     EXPECT_FALSE(drag_controller->IsDragging());
 
+    // Continue the drag to ensure the drag controller does not crash.
+    panel1_new_position.Offset(20, 30);
+    panel1_testing->DragTitlebar(panel1_new_position);
+    panel1_testing->FinishDragTitlebar();
+
+    // Wait till the panel is fully closed.
+    signal.Wait();
     ASSERT_EQ(1, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
