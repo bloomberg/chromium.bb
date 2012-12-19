@@ -86,8 +86,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgIsRectTopmost)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
                         OnHostMsgInvokePrinting)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetSetting,
-                        OnHostMsgGetSetting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -176,34 +174,6 @@ PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
   return result;
 }
 
-PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
-                                   PP_FlashSetting setting) {
-  PluginDispatcher* plugin_dispatcher =
-      static_cast<PluginDispatcher*>(dispatcher());
-  switch (setting) {
-    case PP_FLASHSETTING_3DENABLED:
-      return PP_MakeBool(PP_FromBool(
-          plugin_dispatcher->preferences().is_3d_supported));
-    case PP_FLASHSETTING_INCOGNITO:
-      return PP_MakeBool(PP_FromBool(plugin_dispatcher->incognito()));
-    case PP_FLASHSETTING_STAGE3DENABLED:
-      return PP_MakeBool(PP_FromBool(
-          plugin_dispatcher->preferences().is_stage3d_supported));
-    case PP_FLASHSETTING_LANGUAGE:
-      return StringVar::StringToPPVar(
-          PluginGlobals::Get()->GetUILanguage());
-    case PP_FLASHSETTING_NUMCORES:
-      return PP_MakeInt32(plugin_dispatcher->preferences().number_of_cpu_cores);
-    case PP_FLASHSETTING_LSORESTRICTIONS: {
-      ReceiveSerializedVarReturnValue result;
-      dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetSetting(
-          API_ID_PPB_FLASH, instance, setting, &result));
-      return result.Return(dispatcher());
-    }
-  }
-  return PP_MakeUndefined();
-}
-
 void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                                       PP_Bool on_top) {
   EnterInstanceNoLock enter(instance);
@@ -280,19 +250,6 @@ void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,
     *result = enter.functions()->GetFlashAPI()->IsRectTopmost(instance, &rect);
   else
     *result = PP_FALSE;
-}
-
-void PPB_Flash_Proxy::OnHostMsgGetSetting(PP_Instance instance,
-                                          PP_FlashSetting setting,
-                                          SerializedVarReturnValue id) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    id.Return(dispatcher(),
-              enter.functions()->GetFlashAPI()->GetSetting(
-                  instance, setting));
-  } else {
-    id.Return(dispatcher(), PP_MakeUndefined());
-  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgInvokePrinting(PP_Instance instance) {

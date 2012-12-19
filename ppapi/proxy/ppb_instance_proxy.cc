@@ -391,7 +391,8 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       new_singleton = new FlashFullscreenResource(connection, instance);
       break;
     case FLASH_SINGLETON_ID:
-      new_singleton = new FlashResource(connection, instance);
+      new_singleton = new FlashResource(connection, instance,
+          static_cast<PluginDispatcher*>(dispatcher()));
       break;
 #else
     case FLASH_CLIPBOARD_SINGLETON_ID:

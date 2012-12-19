@@ -182,10 +182,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
                         OnX509CertificateParseDER);
 
-    // Flash messages.
-    IPC_MESSAGE_HANDLER(PepperMsg_GetLocalDataRestrictions,
-                        OnGetLocalDataRestrictions)
-
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -700,25 +696,6 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     *succeeded = false;
   *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
                                                      result);
-}
-
-void PepperMessageFilter::OnGetLocalDataRestrictions(
-    const GURL& document_url,
-    const GURL& plugin_url,
-    PP_FlashLSORestrictions* restrictions) {
-  ContentBrowserClient* client = GetContentClient()->browser();
-  if (!client->AllowPluginLocalDataAccess(document_url, plugin_url,
-                                          resource_context_)) {
-    *restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
-    return;
-  }
-
-  if (client->AllowPluginLocalDataSessionOnly(plugin_url, resource_context_)) {
-    *restrictions = PP_FLASHLSORESTRICTIONS_IN_MEMORY;
-    return;
-  }
-
-  *restrictions = PP_FLASHLSORESTRICTIONS_NONE;
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

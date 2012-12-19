@@ -61,7 +61,7 @@ int32_t Navigate(PP_Resource request_id,
   // To work around this, use the PP_Instance from the resource.
   PP_Instance instance;
   {
-    thunk::EnterResource<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
+    EnterResource<PPB_URLRequestInfo_API> enter(request_id, true);
     if (enter.failed())
       return PP_ERROR_BADRESOURCE;
     instance = enter.resource()->pp_instance();
@@ -138,10 +138,10 @@ int32_t GetSettingInt(PP_Instance instance, PP_FlashSetting setting) {
 }
 
 PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
-  return enter.functions()->GetFlashAPI()->GetSetting(instance, setting);
+  return enter.functions()->GetSetting(instance, setting);
 }
 
 PP_Bool SetCrashData(PP_Instance instance,
@@ -156,7 +156,7 @@ PP_Bool SetCrashData(PP_Instance instance,
 int32_t EnumerateVideoCaptureDevices(PP_Instance instance,
                                      PP_Resource video_capture,
                                      PP_ArrayOutput devices) {
-  thunk::EnterResource<thunk::PPB_VideoCapture_API> enter(video_capture, true);
+  EnterResource<PPB_VideoCapture_API> enter(video_capture, true);
   if (enter.failed())
     return enter.retval();
   return enter.object()->EnumerateDevicesSync(devices);

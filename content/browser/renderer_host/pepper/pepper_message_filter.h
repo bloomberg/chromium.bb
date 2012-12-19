@@ -233,9 +233,6 @@ class PepperMessageFilter
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);
   void OnUpdateActivity();
-  void OnGetLocalDataRestrictions(const GURL& document_url,
-                                  const GURL& plugin_url,
-                                  PP_FlashLSORestrictions* restrictions);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

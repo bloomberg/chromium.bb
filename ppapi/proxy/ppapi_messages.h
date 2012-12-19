@@ -1274,10 +1274,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
                            PP_Instance /* instance */,
                            PP_Rect /* rect */,
                            PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetSetting,
-                           PP_Instance /* instance */,
-                           PP_FlashSetting /* setting */,
-                           ppapi::proxy::SerializedVar /* result */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_InvokePrinting,
                     PP_Instance /* instance */)
 
@@ -1594,10 +1590,15 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_AudioInput_OpenReply)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_AudioInput_StartOrStop, bool /* capture */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Close)
 
-// Flash.
+// Flash -----------------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_Create)
+
+// Message to notify the browser to register an update in system activity.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_UpdateActivity)
+
+// Query the browser for the proxy server to use for the given URL.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_GetProxyForURL, std::string /* url */)
+// Reply message for GetProxyForURL containing the proxy server.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetProxyForURLReply,
                      std::string /* proxy */)
 
@@ -1608,6 +1609,14 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetLocalTimeZoneOffsetReply,
                      double /* offset */)
 
+// Query the browser for the restrictions on storing Flash LSOs.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_GetLocalDataRestrictions)
+// Reply message for GetLocalDataRestrictions containing the restrictions to
+// use. These are PP_FlashLSORestrictions cast to an int32_t.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply,
+                     int32_t /* restrictions */)
+
+// DeviceEnumeration -----------------------------------------------------------
 // Device enumeration messages used by audio input and video capture.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_DeviceEnumeration_EnumerateDevices)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply,

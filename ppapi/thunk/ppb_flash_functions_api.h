@@ -24,10 +24,10 @@ class PPAPI_THUNK_EXPORT PPB_Flash_Functions_API {
   virtual PP_Var GetProxyForURL(PP_Instance instance,
                                 const std::string& url) = 0;
   virtual void UpdateActivity(PP_Instance instance) = 0;
-  virtual PP_Bool SetCrashData(PP_Instance instance,
-                               PP_FlashCrashKey key,
+  virtual PP_Bool SetCrashData(PP_Instance instance, PP_FlashCrashKey key,
                                PP_Var value) = 0;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) = 0;
+  virtual PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) = 0;
 
   static const SingletonResourceID kSingletonResourceID = FLASH_SINGLETON_ID;
 };

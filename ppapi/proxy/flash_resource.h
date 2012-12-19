@@ -16,11 +16,15 @@
 namespace ppapi {
 namespace proxy {
 
+class PluginDispatcher;
+
 class PPAPI_PROXY_EXPORT FlashResource
     : public PluginResource,
       public NON_EXPORTED_BASE(thunk::PPB_Flash_Functions_API) {
  public:
-  FlashResource(Connection connection, PP_Instance instance);
+  FlashResource(Connection connection,
+                PP_Instance instance,
+                PluginDispatcher* plugin_dispatcher);
   virtual ~FlashResource();
 
   // Resource override.
@@ -35,8 +39,13 @@ class PPAPI_PROXY_EXPORT FlashResource
                                PP_Var value) OVERRIDE;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance,
                                         PP_Time t) OVERRIDE;
+  virtual PP_Var GetSetting(PP_Instance instance,
+                            PP_FlashSetting setting) OVERRIDE;
 
  private:
+  // Non-owning pointer to the PluginDispatcher that owns this object.
+  PluginDispatcher* plugin_dispatcher_;
+
   DISALLOW_COPY_AND_ASSIGN(FlashResource);
 };
 

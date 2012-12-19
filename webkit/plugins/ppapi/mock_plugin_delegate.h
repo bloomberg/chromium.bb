@@ -184,9 +184,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
   virtual void StopEnumerateDevices(int request_id);
-  virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
-      const GURL& document_url,
-      const GURL& plugin_url);
 };
 
 }  // namespace ppapi

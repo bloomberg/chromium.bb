@@ -11,10 +11,14 @@
 #include "base/time.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
@@ -40,8 +44,11 @@ base::LazyInstance<LocalTimeZoneOffsetCache>::Leaky
 
 } //  namespace
 
-FlashResource::FlashResource(Connection connection, PP_Instance instance)
-    : PluginResource(connection, instance) {
+FlashResource::FlashResource(Connection connection,
+                             PP_Instance instance,
+                             PluginDispatcher* plugin_dispatcher)
+    : PluginResource(connection, instance),
+      plugin_dispatcher_(plugin_dispatcher) {
   SendCreate(RENDERER, PpapiHostMsg_Flash_Create());
   SendCreate(BROWSER, PpapiHostMsg_Flash_Create());
 }
@@ -126,6 +133,36 @@ double FlashResource::GetLocalTimeZoneOffset(PP_Instance instance,
 
   cache.Put(t_minute_base, cache_entry);
   return cache_entry.offset;
+}
+
+PP_Var FlashResource::GetSetting(PP_Instance instance,
+                                 PP_FlashSetting setting) {
+  switch (setting) {
+    case PP_FLASHSETTING_3DENABLED:
+      return PP_MakeBool(PP_FromBool(
+          plugin_dispatcher_->preferences().is_3d_supported));
+    case PP_FLASHSETTING_INCOGNITO:
+      return PP_MakeBool(PP_FromBool(plugin_dispatcher_->incognito()));
+    case PP_FLASHSETTING_STAGE3DENABLED:
+      return PP_MakeBool(PP_FromBool(
+          plugin_dispatcher_->preferences().is_stage3d_supported));
+    case PP_FLASHSETTING_LANGUAGE:
+      return StringVar::StringToPPVar(
+          PluginGlobals::Get()->GetUILanguage());
+    case PP_FLASHSETTING_NUMCORES:
+      return PP_MakeInt32(
+          plugin_dispatcher_->preferences().number_of_cpu_cores);
+    case PP_FLASHSETTING_LSORESTRICTIONS: {
+      int32_t restrictions;
+      int32_t result =
+          SyncCall<PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply>(BROWSER,
+              PpapiHostMsg_Flash_GetLocalDataRestrictions(), &restrictions);
+      if (result != PP_OK)
+        return PP_MakeInt32(PP_FLASHLSORESTRICTIONS_NONE);
+      return PP_MakeInt32(restrictions);
+    }
+  }
+  return PP_MakeUndefined();
 }
 
 }  // namespace proxy

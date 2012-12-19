@@ -77,23 +77,28 @@ std::string TestFlash::TestGetCommandLineArgs() {
 }
 
 std::string TestFlash::TestGetSetting() {
-  // This only works out of process.
-  if (testing_interface_->IsOutOfProcess()) {
-    Var is_3denabled = Flash::GetSetting(instance_, PP_FLASHSETTING_3DENABLED);
-    ASSERT_TRUE(is_3denabled.is_bool());
+  Var is_3denabled = Flash::GetSetting(instance_, PP_FLASHSETTING_3DENABLED);
+  ASSERT_TRUE(is_3denabled.is_bool());
 
-    Var is_incognito = Flash::GetSetting(instance_, PP_FLASHSETTING_INCOGNITO);
-    ASSERT_TRUE(is_incognito.is_bool());
+  Var is_incognito = Flash::GetSetting(instance_, PP_FLASHSETTING_INCOGNITO);
+  ASSERT_TRUE(is_incognito.is_bool());
 
-    Var is_stage3denabled = Flash::GetSetting(instance_,
-                                              PP_FLASHSETTING_STAGE3DENABLED);
-    // This may "fail" if 3d isn't enabled.
-    ASSERT_TRUE(is_stage3denabled.is_bool() ||
-                (is_stage3denabled.is_undefined() && !is_3denabled.AsBool()));
+  Var is_stage3denabled = Flash::GetSetting(instance_,
+                                            PP_FLASHSETTING_STAGE3DENABLED);
+  // This may "fail" if 3d isn't enabled.
+  ASSERT_TRUE(is_stage3denabled.is_bool() ||
+              (is_stage3denabled.is_undefined() && !is_3denabled.AsBool()));
 
-    Var num_cores = Flash::GetSetting(instance_, PP_FLASHSETTING_NUMCORES);
-    ASSERT_TRUE(num_cores.is_int() && num_cores.AsInt() > 0);
-  }
+  Var num_cores = Flash::GetSetting(instance_, PP_FLASHSETTING_NUMCORES);
+  ASSERT_TRUE(num_cores.is_int() && num_cores.AsInt() > 0);
+
+  Var lso_restrictions = Flash::GetSetting(instance_,
+                                           PP_FLASHSETTING_LSORESTRICTIONS);
+  ASSERT_TRUE(lso_restrictions.is_int());
+  int32_t lso_restrictions_int = lso_restrictions.AsInt();
+  ASSERT_TRUE(lso_restrictions_int == PP_FLASHLSORESTRICTIONS_NONE ||
+              lso_restrictions_int == PP_FLASHLSORESTRICTIONS_BLOCK ||
+              lso_restrictions_int == PP_FLASHLSORESTRICTIONS_IN_MEMORY);
 
   // Invalid instance cases.
   Var result = Flash::GetSetting(

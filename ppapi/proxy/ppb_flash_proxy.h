@@ -72,8 +72,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
                            PP_Bool from_user_action) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
-  virtual PP_Var GetSetting(PP_Instance instance,
-                            PP_FlashSetting setting) OVERRIDE;
 
   static const ApiID kApiID = API_ID_PPB_FLASH;
 
@@ -92,9 +90,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
   void OnHostMsgIsRectTopmost(PP_Instance instance,
                               PP_Rect rect,
                               PP_Bool* result);
-  void OnHostMsgGetSetting(PP_Instance instance,
-                           PP_FlashSetting setting,
-                           SerializedVarReturnValue result);
   void OnHostMsgInvokePrinting(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);

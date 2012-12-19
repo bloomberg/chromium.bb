@@ -419,11 +419,5 @@ int MockPluginDelegate::EnumerateDevices(
 void MockPluginDelegate::StopEnumerateDevices(int request_id) {
 }
 
-PP_FlashLSORestrictions MockPluginDelegate::GetLocalDataRestrictions(
-    const GURL& document_url,
-    const GURL& plugin_url) {
-  return PP_FLASHLSORESTRICTIONS_NONE;
-}
-
 }  // namespace ppapi
 }  // namespace webkit

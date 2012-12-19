@@ -55,7 +55,6 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
                            PP_Bool from_user_action) = 0;
 
   virtual PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) = 0;
-  virtual PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) = 0;
 };
 
 }  // namespace thunk

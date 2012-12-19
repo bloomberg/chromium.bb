@@ -175,20 +175,5 @@ PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
                 rect->size.width, rect->size.height)));
 }
 
-PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
-                                  PP_FlashSetting setting) {
-  switch(setting) {
-    case PP_FLASHSETTING_LSORESTRICTIONS: {
-      return PP_MakeInt32(
-          instance_->delegate()->GetLocalDataRestrictions(
-              instance_->container()->element().document().url(),
-              instance_->plugin_url()));
-    }
-    default:
-      // No other settings are supported in-process.
-      return PP_MakeUndefined();
-  }
-}
-
 }  // namespace ppapi
 }  // namespace webkit

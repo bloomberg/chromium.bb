@@ -46,8 +46,6 @@ class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
                            PP_Bool from_user_action) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
-  virtual PP_Var GetSetting(PP_Instance instance,
-                            PP_FlashSetting setting) OVERRIDE;
 
  private:
   PluginInstance* instance_;

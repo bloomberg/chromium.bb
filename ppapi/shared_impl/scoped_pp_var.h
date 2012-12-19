@@ -16,7 +16,7 @@ class PPAPI_SHARED_EXPORT ScopedPPVar {
 
   ScopedPPVar();
 
-  // Takes one reference to the given resource.
+  // Takes one reference to the given var.
   explicit ScopedPPVar(const PP_Var& v);
 
   // Assumes responsibility for one ref that the var already has.
