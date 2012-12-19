@@ -295,7 +295,7 @@ Press any key to continue exploring.
     High contrast
   </message>
   <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
-    Screen magnifier 
+    Screen magnifier
   </message>
   <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
     Sign in
@@ -362,7 +362,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON" desc="Button to proceed without providing old password on the password changed dialog">
     Proceed anyway
-  </message>  
+  </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_RESET" desc="Reset option of the password changed dialog">
     Only retrieve synced settings and data
   </message>
@@ -1367,7 +1367,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_EULA_TPM_KEY_DESCRIPTION_POWERWASH" desc="Dialog box text in case TPM is already in owned state">
     The randomly generated TPM password is not available. This is normal after a Powerwash.
-  </message>  
+  </message>
   <message name="IDS_EULA_TPM_WAIT" desc="Dialog box text">
     The TPM is being set up. Please be patient; this may take a few minutes.
   </message>
