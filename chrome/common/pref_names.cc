@@ -1128,6 +1128,9 @@ const char kPasswordsUseLocalProfileId[] =
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
 
+// Whether the profile is managed.
+const char kProfileIsManaged[] = "profile.is_managed";
+
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";

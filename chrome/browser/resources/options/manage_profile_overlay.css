@@ -31,28 +31,12 @@
   width: 50%;
 }
 
-#create-profile-name:invalid {
-  background-color: pink;
-}
-
+#create-profile-name:invalid,
 #manage-profile-name:invalid {
   background-color: pink;
 }
 
-#create-profile-error-bubble {
-  -webkit-transition: max-height 200ms, padding 200ms;
-  background-color: rgb(238, 185, 57);
-  border-radius: 4px;
-  font-weight: bold;
-  margin-left: auto;
-  margin-right: auto;
-  max-height: 50px;
-  overflow: hidden;
-  padding: 1px 10px;
-  text-align: center;
-  width: 80%;
-}
-
+#create-profile-error-bubble,
 #manage-profile-error-bubble {
   -webkit-transition: max-height 200ms, padding 200ms;
   background-color: rgb(238, 185, 57);
@@ -67,12 +51,7 @@
   width: 80%;
 }
 
-#create-profile-error-bubble[hidden] {
-  display: block !important;
-  max-height: 0;
-  padding: 0 10px;
-}
-
+#create-profile-error-bubble[hidden],
 #manage-profile-error-bubble[hidden] {
   display: block !important;
   max-height: 0;
@@ -96,41 +75,24 @@
   width: 100%;
 }
 
-#create-profile-content > :first-child {
+:-webkit-any(#create-profile-content, #manage-profile-content) >
+    :not(:last-child) {
   margin-bottom: 10px;
 }
 
-#manage-profile-content > :first-child {
-  margin-bottom: 10px;
-}
-
-#create-profile-content > :last-child {
+:-webkit-any(#create-profile-content, #manage-profile-content) >
+    :not(:first-child) {
   margin-top: 10px;
 }
 
-#manage-profile-content > :last-child {
-  margin-top: 10px;
-}
-
-#create-profile-content > :not(:first-child):not(:last-child) {
-  margin-bottom: 10px;
-  margin-top: 10px;
-}
-
-#manage-profile-content > :not(:first-child):not(:last-child) {
-  margin-bottom: 10px;
-  margin-top: 10px;
-}
-
-#create-profile-content > #create-profile-name-input-container,
-#manage-profile-content > #manage-profile-name-input-container {
+:-webkit-any(#create-profile-content, #manage-profile-content) >
+    .name-input-container {
   margin-top: 5px;
 }
 
-#create-profile-content > #create-profile-name-label-container,
-#manage-profile-content > #manage-profile-name-label-container {
+:-webkit-any(#create-profile-content, #manage-profile-content) >
+    .name-label-container {
   margin-bottom: 5px;
-  margin-top: 10px;
 }
 
 .action-area-checkbox-container {

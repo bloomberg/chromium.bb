@@ -150,6 +150,8 @@ class StartupBrowserCreator {
   // of testing.)
   static bool was_restarted_read_;
 
+  static bool in_synchronous_profile_launch_;
+
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreator);
 };
 

@@ -1091,7 +1091,7 @@ void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync(
       string16(), string16(), ProfileManager::CreateCallback(),
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::HOST_DESKTOP_TYPE_NATIVE, false);
 }
 
 // Sample json input: { "command": "GetMultiProfileInfo" }

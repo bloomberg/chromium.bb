@@ -932,11 +932,13 @@ scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
 
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
-    FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
     profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
+    profile_value->SetBoolean("isManaged", cache.ProfileIsManagedAtIndex(i));
+
 
     bool is_gaia_picture =
         cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
@@ -968,8 +970,6 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   // the user fiddled with the web inspector. Silently return in this case.
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
-  string16 name, icon;
-  bool create_box_checked;
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
@@ -977,33 +977,37 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   if (browser)
     desktop_type = browser->host_desktop_type();
 
+  string16 name;
+  string16 icon;
+  ProfileManager::CreateCallback callback;
+  bool managed_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
-    if (args->GetBoolean(2, &create_box_checked) && create_box_checked) {
-      ProfileManager::CreateMultiProfileAsync(
-        name, icon, base::Bind(&CreateDesktopShortcutForProfile), desktop_type);
-    } else {
-      ProfileManager::CreateMultiProfileAsync(
-        name, icon, ProfileManager::CreateCallback(), desktop_type);
+    bool create_box_checked = false;
+    if (args->GetBoolean(2, &create_box_checked)) {
+      if (create_box_checked)
+        callback = base::Bind(&CreateDesktopShortcutForProfile);
+
+      bool success = args->GetBoolean(3, &managed_user);
+      DCHECK(success);
     }
-  } else {
-    ProfileManager::CreateMultiProfileAsync(
-        string16(), string16(), ProfileManager::CreateCallback(), desktop_type);
   }
+
+  ProfileManager::CreateMultiProfileAsync(name, icon, callback, desktop_type,
+                                          managed_user);
 }
 
 void BrowserOptionsHandler::CreateProfileInfo(const ListValue* args) {
-  DictionaryValue* profile_info = new DictionaryValue();
+  DictionaryValue profile_info;
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
   size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
 
-  profile_info->SetString("name", cache.ChooseNameForNewProfile(icon_index));
-  profile_info->SetString("iconURL", cache.GetDefaultAvatarIconUrl(
-      icon_index));
+  profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
+  profile_info.SetString("iconURL", cache.GetDefaultAvatarIconUrl(icon_index));
 
   web_ui()->CallJavascriptFunction("ManageProfileOverlay.showCreateDialog",
-                                   *profile_info);
+                                   profile_info);
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

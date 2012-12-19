@@ -19,6 +19,10 @@
       </div>
     </div>
     <div class="action-area">
+      <div class="action-area-settings-container">
+        <button id="managed-user-settings-button"
+            i18n-content="manageProfilesManagedUserSettings">
+      </div>
       <!-- TODO(rlp): Enable checkbox for M24
       <if expr="is_win">
         <div class="action-area-checkbox-container">
@@ -69,9 +73,15 @@
       <div id="create-profile-error-bubble" hidden></div>
     </div>
     <div class="action-area">
-      <!-- TODO(rlp): Enable checkbox for M24
-      <if expr="is_win">
-        <div class="action-area-checkbox-container">
+      <div class="action-area-checkbox-container">
+        <div id="create-profile-managed-container" class="checkbox" hidden>
+          <label>
+            <input id="create-profile-managed" type="checkbox">
+            <span i18n-content="manageProfilesManagedLabel"></span>
+          </label>
+        </div>
+        <!-- TODO(rlp): Enable checkbox for M24
+        <if expr="is_win">
           <div class="checkbox">
             <label>
               <input id="create-shortcut" type="checkbox">
@@ -80,8 +90,8 @@
               </span>
             </label>
           </div>
-        </div>
-      </if> -->
+        </if> -->
+      </div>
       <div class="button-strip">
         <button id="create-profile-cancel" i18n-content="cancel"></button>
         <button id="create-profile-ok" i18n-content="createProfileConfirm">

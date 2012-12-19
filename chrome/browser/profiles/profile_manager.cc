@@ -75,18 +75,6 @@ std::vector<FilePath>& ProfilesToDelete() {
   return profiles_to_delete;
 }
 
-// Checks if any user prefs for |profile| have default values.
-bool HasAnyDefaultUserPrefs(Profile* profile) {
-  const PrefService::Preference* avatar_index =
-      profile->GetPrefs()->FindPreference(prefs::kProfileAvatarIndex);
-  DCHECK(avatar_index);
-  const PrefService::Preference* profile_name =
-    profile->GetPrefs()->FindPreference(prefs::kProfileName);
-  DCHECK(profile_name);
-  return avatar_index->IsDefaultValue() ||
-         profile_name->IsDefaultValue();
-}
-
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const FilePath& path, int extension_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -421,7 +409,8 @@ void ProfileManager::CreateProfileAsync(
     const FilePath& profile_path,
     const CreateCallback& callback,
     const string16& name,
-    const string16& icon_url) {
+    const string16& icon_url,
+    bool is_managed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
@@ -451,7 +440,8 @@ void ProfileManager::CreateProfileAsync(
     std::string icon_url_std = UTF16ToASCII(icon_url);
     if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
-      cache.AddProfileToCache(profile_path, name, string16(), icon_index);
+      cache.AddProfileToCache(profile_path, name, string16(), icon_index,
+                              is_managed);
     }
     info->callbacks.push_back(callback);
   }
@@ -468,7 +458,7 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
       profile_manager->GetInitialProfileDir());
 
   profile_manager->CreateProfileAsync(
-      default_profile_dir, callback, string16(), string16());
+      default_profile_dir, callback, string16(), string16(), false);
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
@@ -805,7 +795,8 @@ void ProfileManager::CreateMultiProfileAsync(
     const string16& name,
     const string16& icon_url,
     const CreateCallback& callback,
-    chrome::HostDesktopType desktop_type) {
+    chrome::HostDesktopType desktop_type,
+    bool is_managed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -817,7 +808,8 @@ void ProfileManager::CreateMultiProfileAsync(
                                                  desktop_type,
                                                  callback),
                                       name,
-                                      icon_url);
+                                      icon_url,
+                                      is_managed);
 }
 
 // static
@@ -875,10 +867,13 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   size_t icon_index = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarIndex);
 
+  bool is_managed = profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+
   cache.AddProfileToCache(profile->GetPath(),
                           profile_name,
                           username,
-                          icon_index);
+                          icon_index,
+                          is_managed);
 }
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
@@ -887,30 +882,35 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
 
-  // Initialize the user preferences (name and avatar) only if the profile
-  // doesn't have default preference values for them.
-  if (HasAnyDefaultUserPrefs(profile)) {
-    size_t profile_cache_index =
-        cache.GetIndexOfProfileWithPath(profile->GetPath());
-    // If the cache has an entry for this profile, use the cache data
-    if (profile_cache_index != std::string::npos) {
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex,
-          cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index));
-      profile->GetPrefs()->SetString(prefs::kProfileName,
-          UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index)));
-    } else if (profile->GetPath() ==
-               GetDefaultProfileDir(cache.GetUserDataDir())) {
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, 0);
-      profile->GetPrefs()->SetString(prefs::kProfileName,
-          l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME));
-    } else {
-      size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
-      profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, icon_index);
-      profile->GetPrefs()->SetString(
-          prefs::kProfileName,
-          UTF16ToUTF8(cache.ChooseNameForNewProfile(icon_index)));
-    }
+  size_t avatar_index;
+  std::string profile_name;
+  bool is_managed = false;
+  size_t profile_cache_index =
+      cache.GetIndexOfProfileWithPath(profile->GetPath());
+  // If the cache has an entry for this profile, use the cache data.
+  if (profile_cache_index != std::string::npos) {
+    avatar_index =
+        cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
+    profile_name =
+        UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
+    is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
+  } else if (profile->GetPath() ==
+             GetDefaultProfileDir(cache.GetUserDataDir())) {
+    avatar_index = 0;
+    profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
+  } else {
+    avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
+    profile_name = UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
   }
+
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileAvatarIndex))
+    profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, avatar_index);
+
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
+    profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
+
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged))
+    profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord() {
@@ -947,7 +947,8 @@ void ProfileManager::ScheduleProfileForDeletion(
                                   desktop_type,
                                   CreateCallback()),
                        string16(),
-                       string16());
+                       string16(),
+                       false);
   }
 
   // Update the last used profile pref before closing browser windows. This way

@@ -46,6 +46,7 @@ const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
+const char kIsManagedKey[] = "is_managed";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
@@ -193,7 +194,8 @@ ProfileInfoCache::~ProfileInfoCache() {
 void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
                                          const string16& name,
                                          const string16& username,
-                                         size_t icon_index) {
+                                         size_t icon_index,
+                                         bool is_managed) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
@@ -204,6 +206,7 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
+  info->SetBoolean(kIsManagedKey, is_managed);
   cache->Set(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
@@ -362,6 +365,12 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
           const_cast<ProfileInfoCache*>(this)->AsWeakPtr(), path, image));
 
   return NULL;
+}
+
+bool ProfileInfoCache::ProfileIsManagedAtIndex(size_t index) const {
+  bool value = false;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kIsManagedKey, &value);
+  return value;
 }
 
 void ProfileInfoCache::OnGAIAPictureLoaded(const FilePath& path,

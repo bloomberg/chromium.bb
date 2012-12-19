@@ -276,6 +276,7 @@ extern const char kExtensionsSubPage[];
 extern const char kHandlerSettingsSubPage[];
 extern const char kImportDataSubPage[];
 extern const char kLanguageOptionsSubPage[];
+extern const char kManagedUserSettingsSubPage[];
 extern const char kManageProfileSubPage[];
 extern const char kPasswordManagerSubPage[];
 extern const char kSearchEnginesSubPage[];

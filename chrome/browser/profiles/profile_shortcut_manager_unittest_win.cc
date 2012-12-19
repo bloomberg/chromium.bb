@@ -102,7 +102,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     // A non-badged shortcut for chrome is automatically created with the
     // first profile (for the case when the user deletes their only profile).
     profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
-                                           string16(), 0);
+                                           string16(), 0, false);
     RunPendingTasks();
     // We now have 1 profile, so we expect a new shortcut with no profile
     // information.
@@ -116,7 +116,7 @@ class ProfileShortcutManagerTest : public testing::Test {
         << location.ToString();
 
     profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
-                                           string16(), 0);
+                                           string16(), 0, false);
     CreateProfileWithShortcut(location, profile_2_name_, profile_2_path_);
     ValidateProfileShortcut(location, profile_1_name_, profile_1_path_);
   }
@@ -171,7 +171,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_name))
         << location.ToString();
     profile_info_cache_->AddProfileToCache(profile_path, profile_name,
-                                           string16(), 0);
+                                           string16(), 0, false);
     profile_shortcut_manager_->CreateProfileShortcut(profile_path);
     RunPendingTasks();
     ValidateProfileShortcut(location, profile_name, profile_path);
@@ -276,7 +276,7 @@ TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
 
   // Create a second profile without a shortcut.
   profile_info_cache_->AddProfileToCache(profile_2_path_, profile_2_name_,
-                                         string16(), 0);
+                                         string16(), 0, false);
   RunPendingTasks();
 
   // Ensure that the second profile doesn't have a shortcut and that the first

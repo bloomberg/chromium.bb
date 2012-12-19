@@ -49,6 +49,8 @@ class ProfileInfoInterface {
   // Checks if the GAIA picture should be used as the profile's avatar icon.
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const = 0;
 
+  virtual bool ProfileIsManagedAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

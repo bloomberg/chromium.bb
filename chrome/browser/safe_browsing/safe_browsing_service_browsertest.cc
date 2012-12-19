@@ -856,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
       temp_profile_dir_.path(),
       base::Bind(&SafeBrowsingServiceShutdownTest::OnUnblockOnProfileCreation,
                  this),
-      string16(), string16());
+      string16(), string16(), false);
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.

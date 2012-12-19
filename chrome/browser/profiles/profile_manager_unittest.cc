@@ -240,6 +240,7 @@ MATCHER(NotFail, "Profile creation failure status is not reported.") {
 }
 
 // Tests asynchronous profile creation mechanism.
+// Crashes: http://crbug.com/89421
 TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
   FilePath dest_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile"));
@@ -250,7 +251,8 @@ TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
 
   g_browser_process->profile_manager()->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)), string16(), string16());
+                 base::Unretained(&mock_observer)),
+      string16(), string16(), false);
 
   message_loop_.RunUntilIdle();
 }
@@ -282,15 +284,15 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
                  base::Unretained(&mock_observer1)),
-                 string16(), string16());
+                 string16(), string16(), false);
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
                  base::Unretained(&mock_observer2)),
-                 string16(), string16());
+                 string16(), string16(), false);
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
                  base::Unretained(&mock_observer3)),
-                 string16(), string16());
+                 string16(), string16(), false);
 
   message_loop_.RunUntilIdle();
 }
@@ -309,10 +311,12 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 
   profile_manager->CreateProfileAsync(dest_path1,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)), string16(), string16());
+                 base::Unretained(&mock_observer)),
+                 string16(), string16(), false);
   profile_manager->CreateProfileAsync(dest_path2,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)), string16(), string16());
+                 base::Unretained(&mock_observer)),
+                 string16(), string16(), false);
 
   message_loop_.RunUntilIdle();
 }
@@ -332,11 +336,11 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
-                          ASCIIToUTF16("name_1"), string16(), 0);
+                          ASCIIToUTF16("name_1"), string16(), 0, false);
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
-                          ASCIIToUTF16("name_2"), string16(), 0);
+                          ASCIIToUTF16("name_2"), string16(), 0, false);
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_3"),
-                          ASCIIToUTF16("name_3"), string16(), 0);
+                          ASCIIToUTF16("name_3"), string16(), 0, false);
   cache.SetBackgroundStatusOfProfileAtIndex(0, true);
   cache.SetBackgroundStatusOfProfileAtIndex(2, true);
   EXPECT_EQ(3u, cache.GetNumberOfProfiles());
@@ -354,9 +358,9 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
-                          ASCIIToUTF16("name_1"), string16(), 0);
+                          ASCIIToUTF16("name_1"), string16(), 0, false);
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
-                          ASCIIToUTF16("name_2"), string16(), 0);
+                          ASCIIToUTF16("name_2"), string16(), 0, false);
   cache.SetBackgroundStatusOfProfileAtIndex(0, false);
   cache.SetBackgroundStatusOfProfileAtIndex(1, true);
   EXPECT_EQ(2u, cache.GetNumberOfProfiles());

@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(new_path,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16());
+                                      string16(), string16(), false);
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.

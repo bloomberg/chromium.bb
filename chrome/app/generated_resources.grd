@@ -11769,7 +11769,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-        Add new user
+        Add new user...
       </message>
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
         Edit...
@@ -15183,6 +15183,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
       Whoops, this name is already in use!
     </message>
+    <message name="IDS_PROFILES_MANAGE_MANAGED_USER_SETTINGS_BUTTON" desc="Label for button to open managed user settings in the manage profile dialog.">
+      Managed user settings...
+    </message>
 
     <!-- Delete Profile Dialog -->
     <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
@@ -15217,6 +15220,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
       Create
+    </message>
+    <message name="IDS_PROFILES_CREATE_MANAGED_CHECKBOX" desc="Label for the 'Managed user' checkbox in the create profile dialog">
+      Managed user
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHKBOX" desc="Create Shortcut Checkbox">
       Create desktop shortcut for this user

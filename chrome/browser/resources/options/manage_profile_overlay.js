@@ -58,6 +58,14 @@ cr.define('options', function() {
       $('create-profile-name').oninput = function(event) {
         self.onNameChanged_(event, 'create');
       };
+      if (loadTimeData.getBoolean('managedUsersEnabled')) {
+        $('create-profile-managed-container').hidden = false;
+        $('managed-user-settings-button').onclick = function(event) {
+          OptionsPage.navigateToPage('managedUser');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ManagedUserPassphraseOverlay']);
+        };
+      }
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick =
               $('create-profile-cancel').onclick = function(event) {
@@ -77,10 +85,12 @@ cr.define('options', function() {
         // wish to customize their profile.
         var name = $('create-profile-name').value;
         var icon_url = createIconGrid.selectedItem;
-        var create_checkbox = false;
+        var create_shortcut = false;
         if ($('create-shortcut'))
-          create_checkbox = $('create-shortcut').checked;
-        chrome.send('createProfile', [name, icon_url, create_checkbox]);
+          create_shortcut = $('create-shortcut').checked;
+        var is_managed = $('create-profile-managed').checked;
+        chrome.send('createProfile',
+                    [name, icon_url, create_shortcut, is_managed]);
       };
     },
 
@@ -120,6 +130,9 @@ cr.define('options', function() {
       this.profileInfo_ = profileInfo;
       $(mode + '-profile-name').value = profileInfo.name;
       $(mode + '-profile-icon-grid').selectedItem = profileInfo.iconURL;
+      $('managed-user-settings-button').hidden =
+          !loadTimeData.getBoolean('managedUsersEnabled') ||
+          !profileInfo.isManaged;
     },
 
     /**

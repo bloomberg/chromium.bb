@@ -97,7 +97,8 @@ void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
                  always_create,
                  desktop_type),
       string16(),
-      string16());
+      string16(),
+      false);
 
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
@@ -122,7 +123,8 @@ void AvatarMenuModel::AddNewProfile() {
     desktop_type = browser_->host_desktop_type();
 
   ProfileManager::CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback(), desktop_type);
+      string16(), string16(), ProfileManager::CreateCallback(), desktop_type,
+      false);
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 

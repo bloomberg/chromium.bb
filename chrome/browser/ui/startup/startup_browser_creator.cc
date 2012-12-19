@@ -84,8 +84,6 @@
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 
-bool in_synchronous_profile_launch = false;
-
 namespace {
 
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
@@ -164,13 +162,16 @@ StartupBrowserCreator::~StartupBrowserCreator() {}
 // static
 bool StartupBrowserCreator::was_restarted_read_ = false;
 
+// static
+bool StartupBrowserCreator::in_synchronous_profile_launch_ = false;
+
 void StartupBrowserCreator::AddFirstRunTab(const GURL& url) {
   first_run_tabs_.push_back(url);
 }
 
 // static
 bool StartupBrowserCreator::InSynchronousProfileLaunch() {
-  return in_synchronous_profile_launch;
+  return in_synchronous_profile_launch_;
 }
 
 bool StartupBrowserCreator::LaunchBrowser(
@@ -180,7 +181,7 @@ bool StartupBrowserCreator::LaunchBrowser(
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
     int* return_code) {
-  in_synchronous_profile_launch =
+  in_synchronous_profile_launch_ =
       process_startup == chrome::startup::IS_PROCESS_STARTUP;
   DCHECK(profile);
 
@@ -196,11 +197,10 @@ bool StartupBrowserCreator::LaunchBrowser(
 
   StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
   std::vector<GURL> urls_to_launch =
-      StartupBrowserCreator::GetURLsFromCommandLine(command_line, cur_dir,
-                                                    profile);
+      GetURLsFromCommandLine(command_line, cur_dir, profile);
   bool launched = lwp.Launch(profile, urls_to_launch,
-                             in_synchronous_profile_launch);
-  in_synchronous_profile_launch = false;
+                             in_synchronous_profile_launch_);
+  in_synchronous_profile_launch_ = false;
 
   if (!launched) {
     LOG(ERROR) << "launch error";
@@ -276,6 +276,7 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
   profile_launch_observer.Get().Clear();
 }
 
+// static
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const CommandLine& command_line,
     const FilePath& cur_dir,
@@ -580,7 +581,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     path = profile_manager->user_data_dir().Append(path);
     profile_manager->CreateProfileAsync(path,
         base::Bind(&StartupBrowserCreator::ProcessCommandLineOnProfileCreated,
-                   cmd_line, cur_dir), string16(), string16());
+                   cmd_line, cur_dir), string16(), string16(), false);
     return;
   }
 

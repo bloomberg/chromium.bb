@@ -76,7 +76,8 @@ class ProfileManager : public base::NonThreadSafe,
   void CreateProfileAsync(const FilePath& profile_path,
                           const CreateCallback& callback,
                           const string16& name,
-                          const string16& icon_url);
+                          const string16& icon_url,
+                          bool is_managed);
 
   // Initiates default profile creation. If default profile has already been
   // created then the callback is called immediately. Should be called on the
@@ -170,7 +171,8 @@ class ProfileManager : public base::NonThreadSafe,
       const string16& name,
       const string16& icon_url,
       const CreateCallback& callback,
-      chrome::HostDesktopType desktop_type);
+      chrome::HostDesktopType desktop_type,
+      bool is_managed);
 
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);

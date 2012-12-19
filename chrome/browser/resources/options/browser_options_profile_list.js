@@ -39,6 +39,13 @@ cr.define('options.browser_options', function() {
       return this.profileInfo_.filePath;
     },
 
+    /**
+     * @type {boolean} whether this profile is managed.
+     */
+    get isManaged() {
+      return this.profileInfo_.isManaged;
+    },
+
     /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);

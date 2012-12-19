@@ -111,8 +111,6 @@ using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using extensions::Extension;
 
-extern bool in_synchronous_profile_launch;
-
 namespace {
 
 // Utility functions ----------------------------------------------------------
@@ -599,9 +597,9 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
                                          chrome::HOST_DESKTOP_TYPE_NATIVE);
   }
   // This will launch a browser; prevent session restore.
-  in_synchronous_profile_launch = true;
+  StartupBrowserCreator::in_synchronous_profile_launch_ = true;
   browser = OpenURLsInBrowser(browser, process_startup, adjust_urls);
-  in_synchronous_profile_launch = false;
+  StartupBrowserCreator::in_synchronous_profile_launch_ = false;
   AddInfoBarsIfNecessary(browser, is_process_startup);
 }
 
@@ -919,9 +917,15 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     }
   }
 
-  // If the sync promo page is going to be displayed then insert it at the front
-  // of the list.
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+  PrefService* prefs = profile_->GetPrefs();
+  if (is_first_run_ && prefs->GetBoolean(prefs::kProfileIsManaged)) {
+    startup_urls->insert(startup_urls->begin(),
+                         GURL(std::string(chrome::kChromeUISettingsURL) +
+                              chrome::kManagedUserSettingsSubPage));
+  } else if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_,
+                                                       is_first_run_)) {
+    // If the sync promo page is going to be displayed then insert it at the
+    // front of the list.
     GURL continue_url;
     if (!SyncPromoUI::UseWebBasedSigninFlow()) {
       continue_url = GURL(chrome::kChromeUINewTabURL);

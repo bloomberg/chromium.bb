@@ -80,7 +80,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
       profile_manager->user_data_dir().Append("test"),
       create_callback,
       ASCIIToUTF16("avatar_test"),
-      string16());
+      string16(),
+      false);
 
   run_loop.Run();
 

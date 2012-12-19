@@ -125,7 +125,8 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
 
-    GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i);
+    GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i,
+                                  false);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
     string16 gaia_name = ASCIIToUTF16(StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
@@ -160,12 +161,12 @@ TEST_F(ProfileInfoCacheTest, DeleteProfile) {
 
   FilePath path_1 = GetProfilePath("path_1");
   GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"), string16(),
-                            0);
+                                0, false);
   EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
 
   FilePath path_2 = GetProfilePath("path_2");
   string16 name_2 = ASCIIToUTF16("name_2");
-  GetCache()->AddProfileToCache(path_2, name_2, string16(), 0);
+  GetCache()->AddProfileToCache(path_2, name_2, string16(), 0, false);
   EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
 
   GetCache()->DeleteProfileFromCache(path_1);
@@ -178,9 +179,9 @@ TEST_F(ProfileInfoCacheTest, DeleteProfile) {
 
 TEST_F(ProfileInfoCacheTest, MutateProfile) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
 
   string16 new_name = ASCIIToUTF16("new_name");
   GetCache()->SetNameOfProfileAtIndex(1, new_name);
@@ -201,11 +202,11 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
 TEST_F(ProfileInfoCacheTest, Sort) {
   string16 name_a = ASCIIToUTF16("apple");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_a"), name_a, string16(), 0);
+      GetProfilePath("path_a"), name_a, string16(), 0, false);
 
   string16 name_c = ASCIIToUTF16("cat");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_c"), name_c, string16(), 0);
+      GetProfilePath("path_c"), name_c, string16(), 0, false);
 
   // Sanity check the initial order.
   EXPECT_EQ(name_a, GetCache()->GetNameOfProfileAtIndex(0));
@@ -214,7 +215,7 @@ TEST_F(ProfileInfoCacheTest, Sort) {
   // Add a new profile (start with a capital to test case insensitive sorting.
   string16 name_b = ASCIIToUTF16("Banana");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_b"), name_b, string16(), 0);
+      GetProfilePath("path_b"), name_b, string16(), 0, false);
 
   // Verify the new order.
   EXPECT_EQ(name_a, GetCache()->GetNameOfProfileAtIndex(0));
@@ -240,9 +241,9 @@ TEST_F(ProfileInfoCacheTest, Sort) {
 
 TEST_F(ProfileInfoCacheTest, BackgroundModeStatus) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
 
   EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
   EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
@@ -265,9 +266,9 @@ TEST_F(ProfileInfoCacheTest, BackgroundModeStatus) {
 
 TEST_F(ProfileInfoCacheTest, HasMigrated) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
 
   // Sanity check.
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(0));
@@ -291,10 +292,10 @@ TEST_F(ProfileInfoCacheTest, HasMigrated) {
 
 TEST_F(ProfileInfoCacheTest, GAIAName) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   string16 profile_name(ASCIIToUTF16("profile name 2"));
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), profile_name, string16(), 0);
+      GetProfilePath("path_2"), profile_name, string16(), 0, false);
 
   // Sanity check.
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
@@ -323,9 +324,9 @@ TEST_F(ProfileInfoCacheTest, GAIAName) {
 
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
 
   // Sanity check.
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
@@ -366,7 +367,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
 
 TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
   gfx::Image gaia_image(gfx::test::CreateImage());
 
   content::WindowedNotificationObserver save_observer(
@@ -398,7 +399,7 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
       ResourceBundle::GetSharedInstance().GetImageNamed(id));
 
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), profile_name, string16(), 0);
+      GetProfilePath("path_1"), profile_name, string16(), 0, false);
 
   // Set empty GAIA info.
   GetCache()->SetGAIANameOfProfileAtIndex(0, string16());

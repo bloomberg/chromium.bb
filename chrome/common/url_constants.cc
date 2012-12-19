@@ -283,6 +283,7 @@ const char kExtensionsSubPage[] = "extensions";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";
 const char kLanguageOptionsSubPage[] = "languages";
+const char kManagedUserSettingsSubPage[] = "managedUser";
 const char kManageProfileSubPage[] = "manageProfile";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kSearchEnginesSubPage[] = "searchEngines";

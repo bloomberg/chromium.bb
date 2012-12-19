@@ -40,7 +40,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void AddProfileToCache(const FilePath& profile_path,
                          const string16& name,
                          const string16& username,
-                         size_t icon_index);
+                         size_t icon_index,
+                         bool is_managed);
   void DeleteProfileFromCache(const FilePath& profile_path);
 
   // ProfileInfoInterface:
@@ -70,6 +71,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
       size_t index) const OVERRIDE;
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(
       size_t index) const OVERRIDE;
+  virtual bool ProfileIsManagedAtIndex(size_t index) const OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
