@@ -149,9 +149,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #endif
   AddTrayItem(new internal::TrayVolume(this));
   AddTrayItem(new internal::TrayBrightness(this));
-  AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TraySettings(this));
+  AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(new internal::TrayDate(this));
 
 #if defined(OS_LINUX)
