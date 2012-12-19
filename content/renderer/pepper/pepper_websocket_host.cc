@@ -271,7 +271,7 @@ int32_t PepperWebSocketHost::OnHostMsgSendText(
 int32_t PepperWebSocketHost::OnHostMsgSendBinary(
     ppapi::host::HostMessageContext* context,
     const std::vector<uint8_t>& message) {
-  if (websocket_.get()) {
+  if (websocket_.get() && !message.empty()) {
     WebArrayBuffer web_message = WebArrayBuffer::create(message.size(), 1);
     memcpy(web_message.data(), &message.front(), message.size());
     websocket_->sendArrayBuffer(web_message);
