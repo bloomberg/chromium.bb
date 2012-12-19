@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -93,6 +95,90 @@ std::string DnsHostsToString(const DnsHosts& dns_hosts) {
   return output;
 }
 
+struct ReplayLogEntry {
+  base::TimeDelta start_time;
+  std::string domain_name;
+};
+
+typedef std::vector<ReplayLogEntry> ReplayLog;
+
+// Loads and parses a replay log file and fills |replay_log| with a structured
+// representation. Returns whether the operation was successful. If not, the
+// contents of |replay_log| are undefined.
+//
+// The replay log is a text file where each line contains
+//
+//   timestamp_in_milliseconds domain_name
+//
+// The timestamp_in_milliseconds needs to be an integral delta from start of
+// resolution and is in milliseconds. domain_name is the name to be resolved.
+//
+// The file should be sorted by timestamp in ascending time.
+bool LoadReplayLog(const FilePath& file_path, ReplayLog* replay_log) {
+  std::string original_replay_log_contents;
+  if (!file_util::ReadFileToString(file_path, &original_replay_log_contents)) {
+    fprintf(stderr, "Unable to open replay file %s\n",
+            file_path.MaybeAsASCII().c_str());
+    return false;
+  }
+
+  // Strip out \r characters for Windows files. This isn't as efficient as a
+  // smarter line splitter, but this particular use does not need to target
+  // efficiency.
+  std::string replay_log_contents;
+  RemoveChars(original_replay_log_contents, "\r", &replay_log_contents);
+
+  std::vector<std::string> lines;
+  base::SplitString(replay_log_contents, '\n', &lines);
+  base::TimeDelta previous_delta;
+  bool bad_parse = false;
+  for (size_t i = 0; i < lines.size(); ++i) {
+    if (lines[i].empty())
+      continue;
+    std::vector<std::string> time_and_name;
+    base::SplitString(lines[i], ' ', &time_and_name);
+    if (time_and_name.size() != 2) {
+      fprintf(
+          stderr,
+          "[%s %zu] replay log should have format 'timestamp domain_name\\n'\n",
+          file_path.MaybeAsASCII().c_str(),
+          i + 1);
+      bad_parse = true;
+      continue;
+    }
+
+    int64 delta_in_milliseconds;
+    if (!base::StringToInt64(time_and_name[0], &delta_in_milliseconds)) {
+      fprintf(
+          stderr,
+          "[%s %zu] replay log should have format 'timestamp domain_name\\n'\n",
+          file_path.MaybeAsASCII().c_str(),
+          i + 1);
+      bad_parse = true;
+      continue;
+    }
+
+    base::TimeDelta delta =
+        base::TimeDelta::FromMilliseconds(delta_in_milliseconds);
+    if (delta < previous_delta) {
+      fprintf(
+          stderr,
+          "[%s %zu] replay log should be sorted by time\n",
+          file_path.MaybeAsASCII().c_str(),
+          i + 1);
+      bad_parse = true;
+      continue;
+    }
+
+    previous_delta = delta;
+    ReplayLogEntry entry;
+    entry.start_time = delta;
+    entry.domain_name = time_and_name[1];
+    replay_log->push_back(entry);
+  }
+  return !bad_parse;
+}
+
 class GDig {
  public:
   GDig();
@@ -114,18 +200,22 @@ class GDig {
   void Finish(Result);
 
   void OnDnsConfig(const DnsConfig& dns_config_const);
-  void OnResolveComplete(int val);
+  void OnResolveComplete(size_t index, AddressList* address_list,
+                         base::TimeDelta time_since_start, int val);
   void OnTimeout();
+  void ReplayNextEntry();
 
   base::TimeDelta config_timeout_;
-  std::string domain_name_;
   bool print_config_;
   bool print_hosts_;
   net::IPEndPoint nameserver_;
   base::TimeDelta timeout_;
-
+  int parallellism_;
+  ReplayLog replay_log_;
+  size_t replay_log_index_;
+  base::Time start_time_;
+  int active_resolves_;
   Result result_;
-  AddressList addrlist_;
 
   base::CancelableClosure timeout_closure_;
   scoped_ptr<DnsConfigService> dns_config_service_;
@@ -136,7 +226,10 @@ class GDig {
 GDig::GDig()
     : config_timeout_(base::TimeDelta::FromSeconds(5)),
       print_config_(false),
-      print_hosts_(false) {
+      print_hosts_(false),
+      parallellism_(6),
+      replay_log_index_(0u),
+      active_resolves_(0) {
 }
 
 GDig::Result GDig::Main(int argc, const char* argv[]) {
@@ -145,8 +238,11 @@ GDig::Result GDig::Main(int argc, const char* argv[]) {
               "usage: %s [--net_log[=<basic|no_bytes|all>]]"
               " [--print_config] [--print_hosts]"
               " [--nameserver=<ip_address[:port]>]"
-              " [--timeout=<milliseconds>] [--config_timeout=<seconds>]"
-              " domain_name\n",
+              " [--timeout=<milliseconds>]"
+              " [--config_timeout=<seconds>]"
+              " [--j=<parallel resolves>]"
+              " [--replay_file=<path>]"
+              " [domain_name]\n",
               argv[0]);
       return RESULT_WRONG_USAGE;
   }
@@ -232,16 +328,38 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
     }
   }
 
+  if (parsed_command_line.HasSwitch("replay_file")) {
+    FilePath replay_path =
+        parsed_command_line.GetSwitchValuePath("replay_file");
+    if (!LoadReplayLog(replay_path, &replay_log_))
+      return false;
+  }
+
+  if (parsed_command_line.HasSwitch("j")) {
+    int parallellism = 0;
+    bool parsed = base::StringToInt(
+        parsed_command_line.GetSwitchValueASCII("j"),
+        &parallellism);
+    if (parsed && parallellism > 0) {
+      parallellism_ = parallellism;
+    } else {
+      fprintf(stderr, "Invalid parallellism parameter\n");
+    }
+  }
+
   if (parsed_command_line.GetArgs().size() == 1) {
+    ReplayLogEntry entry;
+    entry.start_time = base::TimeDelta();
 #if defined(OS_WIN)
-    domain_name_ = WideToASCII(parsed_command_line.GetArgs()[0]);
+    entry.domain_name = WideToASCII(parsed_command_line.GetArgs()[0]);
 #else
-    domain_name_ = parsed_command_line.GetArgs()[0];
+    entry.domain_name = parsed_command_line.GetArgs()[0];
 #endif
+    replay_log_.push_back(entry);
   } else if (parsed_command_line.GetArgs().size() != 0) {
     return false;
   }
-  return print_config_ || print_hosts_ || domain_name_.length() > 0;
+  return print_config_ || print_hosts_ || !replay_log_.empty();
 }
 
 void GDig::Start() {
@@ -286,8 +404,7 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
            "%s", DnsHostsToString(dns_config.hosts).c_str());
   }
 
-  // If the user didn't specify a name to resolve we can stop here.
-  if (domain_name_.length() == 0) {
+  if (replay_log_.empty()) {
     Finish(RESULT_OK);
     return;
   }
@@ -297,40 +414,77 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
   scoped_ptr<HostResolverImpl> resolver(
       new HostResolverImpl(
           HostCache::CreateDefaultCache(),
-          PrioritizedDispatcher::Limits(NUM_PRIORITIES, 1),
+          PrioritizedDispatcher::Limits(NUM_PRIORITIES, parallellism_),
           HostResolverImpl::ProcTaskParams(NULL, 1),
           log_.get()));
   resolver->SetDnsClient(dns_client.Pass());
   resolver_ = resolver.Pass();
 
-  HostResolver::RequestInfo info(HostPortPair(domain_name_.c_str(), 80));
+  start_time_ = base::Time::Now();
 
-  CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,
-                                           base::Unretained(this));
-  int ret = resolver_->Resolve(
-      info, &addrlist_, callback, NULL,
-      BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
-  switch (ret) {
-  case OK:
-    OnResolveComplete(ret);
-    break;
-  case ERR_IO_PENDING: break;
-  default:
-    Finish(RESULT_NO_RESOLVE);
-    fprintf(stderr, "Error calling resolve  %s\n", ErrorToString(ret));
+  ReplayNextEntry();
+}
+
+void GDig::ReplayNextEntry() {
+  DCHECK_LT(replay_log_index_, replay_log_.size());
+
+  base::TimeDelta time_since_start = base::Time::Now() - start_time_;
+  while (replay_log_index_ < replay_log_.size()) {
+    const ReplayLogEntry& entry = replay_log_[replay_log_index_];
+    if (time_since_start < entry.start_time) {
+      // Delay call to next time and return.
+      MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GDig::ReplayNextEntry, base::Unretained(this)),
+        entry.start_time - time_since_start);
+      return;
+    }
+
+    HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80));
+    AddressList* addrlist = new AddressList();
+    size_t current_index = replay_log_index_;
+    CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,
+                                             base::Unretained(this),
+                                             current_index,
+                                             base::Owned(addrlist),
+                                             time_since_start);
+    ++active_resolves_;
+    ++replay_log_index_;
+    int ret = resolver_->Resolve(
+        info, addrlist, callback, NULL,
+        BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
+    if (ret != ERR_IO_PENDING)
+      callback.Run(ret);
   }
 }
 
-void GDig::OnResolveComplete(int val) {
+void GDig::OnResolveComplete(size_t entry_index,
+                             AddressList* address_list,
+                             base::TimeDelta resolve_start_time,
+                             int val) {
+  DCHECK_GT(active_resolves_, 0);
+  DCHECK(address_list);
+  DCHECK_LT(entry_index, replay_log_.size());
+  --active_resolves_;
+  base::TimeDelta resolve_end_time = base::Time::Now() - start_time_;
+  base::TimeDelta resolve_time = resolve_end_time - resolve_start_time;
+  printf("%zu %d %d %s %d ",
+         entry_index,
+         static_cast<int>(resolve_end_time.InMilliseconds()),
+         static_cast<int>(resolve_time.InMilliseconds()),
+         replay_log_[entry_index].domain_name.c_str(), val);
   if (val != OK) {
-    fprintf(stderr, "Error trying to resolve hostname %s: %s\n",
-            domain_name_.c_str(), ErrorToString(val));
-    Finish(RESULT_NO_RESOLVE);
+    printf("%s", ErrorToString(val));
   } else {
-    for (size_t i = 0; i < addrlist_.size(); ++i)
-      printf("%s\n", addrlist_[i].ToStringWithoutPort().c_str());
-    Finish(RESULT_OK);
+    for (size_t i = 0; i < address_list->size(); ++i) {
+      if (i != 0)
+        printf(" ");
+      printf("%s", (*address_list)[i].ToStringWithoutPort().c_str());
+    }
   }
+  printf("\n");
+  if (active_resolves_ == 0 && replay_log_index_ >= replay_log_.size())
+    Finish(RESULT_OK);
 }
 
 void GDig::OnTimeout() {
