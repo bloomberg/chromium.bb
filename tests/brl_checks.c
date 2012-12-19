@@ -33,7 +33,8 @@ convert_typeform(const char* typeform_string)
 {
   int len = strlen(typeform_string);
   char *typeform = malloc(len * sizeof(char));
-  for (int i=0; i<len; i++)
+  int i;
+  for (i=0; i<len; i++)
     typeform[i] = typeform_string[i] - '0';
   return typeform;
 }

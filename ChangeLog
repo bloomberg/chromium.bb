@@ -1,5 +1,8 @@
 2012-12-19  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/brl_checks.c (convert_typeform): Make it compile under
+	C89.
+
 	* tools/lou_translate.c (print_help):
 	* tools/lou_trace.c (print_help):
 	* tools/lou_debug.c (print_help):
