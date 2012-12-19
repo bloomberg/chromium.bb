@@ -1,3 +1,7 @@
+# For simple changes (add/remove flag). For other changes use
+# usual OWNERS rules.
+per-file about_flags.cc=*
+
 per-file chrome_content_browser_client.cc=*
 per-file chrome_content_browser_client.h=*
 
