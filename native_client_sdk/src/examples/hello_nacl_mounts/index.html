@@ -49,10 +49,14 @@ found in the LICENSE file.
     <span>
       Filename:
       <input type="text" id="fopenFilename">
-      Write:
-      <input type="checkbox" id="fopenWrite">
-      Read:
-      <input type="checkbox" id="fopenRead">
+      <select id="fopenMode">
+        <option value="r">Read Existing (r)</option>
+        <option value="r+">Read/Write Existing (r+)</option>
+        <option value="w">Write New File (w)</option>
+        <option value="w+">Read/Write New File (w+)</option>
+        <option value="a">Append Write (a)</option>
+        <option value="w+">Append Read/Write (a+)</option>
+      </select>
       <button id="fopenExecute">fopen</button>
     </span>
   </div>

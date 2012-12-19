@@ -70,13 +70,7 @@ var filehandle_map = {};
 
 function fopen(e) {
   var filename = document.getElementById('fopenFilename').value;
-
-  var access = '';
-  if (document.getElementById('fopenWrite').checked)
-    access += 'w';
-  if (document.getElementById('fopenRead').checked)
-    access += 'r';
-
+  var access = document.getElementById('fopenMode').value;
   nacl_module.postMessage(makeCall('fopen', filename, access));
 }
 
