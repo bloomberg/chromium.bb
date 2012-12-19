@@ -40,8 +40,6 @@ def test_repo():
     '/OWNERS': owners_file(owners.EVERYONE),
     '/base/vlog.h': '',
     '/chrome/OWNERS': owners_file(ben, brett),
-    '/chrome/browser/OWNERS': owners_file(brett),
-    '/chrome/browser/defaults.h': '',
     '/chrome/gpu/OWNERS': owners_file(ken),
     '/chrome/gpu/gpu_channel.h': '',
     '/chrome/renderer/OWNERS': owners_file(peter),
@@ -60,7 +58,7 @@ def test_repo():
   })
 
 
-class _BaseTestCase(unittest.TestCase):
+class OwnersDatabaseTest(unittest.TestCase):
   def setUp(self):
     self.repo = test_repo()
     self.files = self.repo.files
@@ -75,8 +73,6 @@ class _BaseTestCase(unittest.TestCase):
     glob = glob or self.glob
     return owners.Database(root, fopen, os_path, glob)
 
-
-class OwnersDatabaseTest(_BaseTestCase):
   def test_constructor(self):
     self.assertNotEquals(self.db(), None)
 
@@ -209,41 +205,16 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assertRaises(owners.SyntaxErrorInOwnersFile,
         self.db().directories_not_covered_by, ['DEPS'], [brett])
 
-  def assert_syntax_error(self, owners_file_contents):
+  def assert_reviewers_for(self, files, expected_reviewers):
     db = self.db()
-    self.files['/foo/OWNERS'] = owners_file_contents
-    self.files['/foo/DEPS'] = ''
-    try:
-      db.reviewers_for(['foo/DEPS'])
-      self.fail()  # pragma: no cover
-    except owners.SyntaxErrorInOwnersFile, e:
-      self.assertTrue(str(e).startswith('/foo/OWNERS:1'))
-
-  def test_syntax_error__unknown_token(self):
-    self.assert_syntax_error('{}\n')
-
-  def test_syntax_error__unknown_set(self):
-    self.assert_syntax_error('set myfatherisbillgates\n')
-
-  def test_syntax_error__bad_email(self):
-    self.assert_syntax_error('ben\n')
-
-
-class ReviewersForTest(_BaseTestCase):
-  def assert_reviewers_for(self, files, *potential_suggested_reviewers):
-    db = self.db()
-    suggested_reviewers = db.reviewers_for(set(files))
-    self.assertTrue(suggested_reviewers in
-        [set(suggestion) for suggestion in potential_suggested_reviewers])
+    self.assertEquals(db.reviewers_for(set(files)), set(expected_reviewers))
 
   def test_reviewers_for__basic_functionality(self):
     self.assert_reviewers_for(['chrome/gpu/gpu_channel.h'],
-                              [ken])
+                             [brett])
 
   def test_reviewers_for__set_noparent_works(self):
-    self.assert_reviewers_for(['content/content.gyp'],
-                              [john],
-                              [darin])
+    self.assert_reviewers_for(['content/content.gyp'], [darin])
 
   def test_reviewers_for__valid_inputs(self):
     db = self.db()
@@ -265,16 +236,15 @@ class ReviewersForTest(_BaseTestCase):
     self.assert_reviewers_for([
         'chrome/gpu/gpu_channel.h',
         'content/baz/froboz.h',
-        'chrome/renderer/gpu/gpu_channel_host.h'],
-        [brett])
+        'chrome/renderer/gpu/gpu_channel_host.h'], [brett])
 
   def test_reviewers_for__two_owners(self):
     self.assert_reviewers_for([
         'chrome/gpu/gpu_channel.h',
         'content/content.gyp',
         'content/baz/froboz.h',
-        'content/views/pie.h'],
-        [ken, john])
+        'content/views/pie.h'
+        ], [john, brett])
 
   def test_reviewers_for__all_files(self):
     self.assert_reviewers_for([
@@ -284,100 +254,32 @@ class ReviewersForTest(_BaseTestCase):
         'content/content.gyp',
         'content/bar/foo.cc',
         'content/baz/froboz.h',
-        'content/views/pie.h'],
-        [peter, ken, john])
+        'content/views/pie.h'], [john, brett])
 
   def test_reviewers_for__per_file_owners_file(self):
     self.files['/content/baz/OWNERS'] = owners_file(lines=[
         'per-file ugly.*=tom@example.com'])
-    self.assert_reviewers_for(['content/baz/OWNERS'],
-                              [john],
-                              [darin])
+    self.assert_reviewers_for(['content/baz/OWNERS'], [darin])
 
-  def test_reviewers_for__per_file(self):
-    self.files['/content/baz/OWNERS'] = owners_file(lines=[
-        'per-file ugly.*=tom@example.com'])
-    self.assert_reviewers_for(['content/baz/ugly.cc'],
-                              [tom])
+  def assert_syntax_error(self, owners_file_contents):
+    db = self.db()
+    self.files['/foo/OWNERS'] = owners_file_contents
+    self.files['/foo/DEPS'] = ''
+    try:
+      db.reviewers_for(['foo/DEPS'])
+      self.fail()  # pragma: no cover
+    except owners.SyntaxErrorInOwnersFile, e:
+      self.assertTrue(str(e).startswith('/foo/OWNERS:1'))
 
-  def test_reviewers_for__two_nested_dirs(self):
-    # The same owner is listed in two directories (one above the other)
-    self.assert_reviewers_for(['chrome/browser/defaults.h'],
-                              [brett])
+  def test_syntax_error__unknown_token(self):
+    self.assert_syntax_error('{}\n')
 
-class LowestCostOwnersTest(_BaseTestCase):
-  # Keep the data in the test_lowest_cost_owner* methods as consistent with
-  # test_repo() where possible to minimize confusion.
+  def test_syntax_error__unknown_set(self):
+    self.assert_syntax_error('set myfatherisbillgates\n')
 
-  def check(self, possible_owners, dirs, *possible_lowest_cost_owners):
-    suggested_owner = owners.Database.lowest_cost_owner(possible_owners, dirs)
-    self.assertTrue(suggested_owner in possible_lowest_cost_owners)
+  def test_syntax_error__bad_email(self):
+    self.assert_syntax_error('ben\n')
 
-  def test_one_dir_with_owner(self):
-    # brett is the only immediate owner for stuff in baz; john is also
-    # an owner, but further removed. We should always get brett.
-    self.check({brett: [('content/baz', 1)],
-                john:  [('content/baz', 2)]},
-               ['content/baz'],
-               brett)
-
-    # john and darin are owners for content; the suggestion could be either.
-  def test_one_dir_with_two_owners(self):
-    self.check({john:  [('content', 1)],
-                darin: [('content', 1)]},
-               ['content'],
-               john, darin)
-
-  def test_one_dir_with_two_owners_in_parent(self):
-    # As long as the distance is the same, it shouldn't matter (brett isn't
-    # listed in this case).
-    self.check({john:  [('content/baz', 2)],
-                darin: [('content/baz', 2)]},
-               ['content/baz'],
-               john, darin)
-
-  def test_two_dirs_two_owners(self):
-    # If they both match both dirs, they should be treated equally.
-    self.check({john:  [('content/baz', 2), ('content/bar', 2)],
-                darin: [('content/baz', 2), ('content/bar', 2)]},
-               ['content/baz', 'content/bar'],
-               john, darin)
-
-    # Here brett is better since he's closer for one of the two dirs.
-    self.check({brett: [('content/baz', 1), ('content/views', 1)],
-                darin: [('content/baz', 2), ('content/views', 1)]},
-               ['content/baz', 'content/views'],
-               brett)
-
-  def test_hierarchy(self):
-    # the choices in these tests are more arbitrary value judgements;
-    # also, here we drift away from test_repo() to cover more cases.
-
-    # Here ben isn't picked, even though he can review both; we prefer
-    # closer reviewers.
-    self.check({ben: [('chrome/gpu', 2), ('chrome/renderer', 2)],
-                ken: [('chrome/gpu', 1)],
-                peter: [('chrome/renderer', 1)]},
-               ['chrome/gpu', 'chrome/renderer'],
-               ken, peter)
-
-    # Here we always pick ben since he can review either dir as well as
-    # the others but can review both (giving us fewer total reviewers).
-    self.check({ben: [('chrome/gpu', 1), ('chrome/renderer', 1)],
-                ken: [('chrome/gpu', 1)],
-                peter: [('chrome/renderer', 1)]},
-               ['chrome/gpu', 'chrome/renderer'],
-               ben)
-
-    # However, three reviewers is too many, so ben gets this one.
-    self.check({ben: [('chrome/gpu', 2), ('chrome/renderer', 2),
-                      ('chrome/browser', 2)],
-                ken: [('chrome/gpu', 1)],
-                peter: [('chrome/renderer', 1)],
-                brett: [('chrome/browser', 1)]},
-               ['chrome/gpu', 'chrome/renderer',
-                'chrome/browser'],
-               ben)
 
 if __name__ == '__main__':
   unittest.main()
