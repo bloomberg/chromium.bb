@@ -6,6 +6,8 @@
 //  USB HID Usage Tables (v1.11) 27 June 2001
 //  HIToolbox/Events.h (Mac)
 
+#include <stdint.h>
+
 typedef struct {
   // USB keycode:
   //  Upper 16-bits: USB Usage Page.
@@ -106,12 +108,12 @@ const usb_keymap usb_keycode_map[] = {
 
   USB_KEYMAP(0x070030, 0x0023, 0x001b, 0x001e),  // }]
   USB_KEYMAP(0x070031, 0x0033, 0x002b, 0x002a),  // \| (US keyboard only)
-  // USB#070032 is not present on US keyboard.
+  // USB#070032 never appears on keyboards that have USB#070031.
+  // Platforms use the same scancode as for the two keys.
   // The keycap varies on international keyboards:
   //   Dan: '*  Dutch: <>  Ger: #'  UK: #~
-  // For XKB, it uses the same scancode as the US \| key.
   // TODO(garykac): Verify Mac intl keyboard.
-  USB_KEYMAP(0x070032, 0x0033, 0x002b, 0x002a),  // #~ (Non-US)
+  //USB_KEYMAP(0x070032, 0x0033, 0x002b, 0x002a),  // #~ (Non-US)
   USB_KEYMAP(0x070033, 0x002f, 0x0027, 0x0029),  // ;:
   USB_KEYMAP(0x070034, 0x0030, 0x0028, 0x0027),  // '"
   USB_KEYMAP(0x070035, 0x0031, 0x0029, 0x0032),  // `~
@@ -134,7 +136,8 @@ const usb_keymap usb_keycode_map[] = {
   USB_KEYMAP(0x070043, 0x004c, 0x0044, 0x006d),  // F10
   USB_KEYMAP(0x070044, 0x005f, 0x0057, 0x0067),  // F11
   USB_KEYMAP(0x070045, 0x0060, 0x0058, 0x006f),  // F12
-  USB_KEYMAP(0x070046, 0x006b, 0xe037, 0x0069),  // PrintScreen
+  // PrintScreen is effectively F13 on Mac OS X.
+  USB_KEYMAP(0x070046, 0x006b, 0xe037, 0xffff),  // PrintScreen
   USB_KEYMAP(0x070047, 0x004e, 0x0046, 0xffff),  // ScrollLock
 
   USB_KEYMAP(0x070048, 0x007f, 0x0000, 0xffff),  // Pause
@@ -376,6 +379,14 @@ const usb_keymap usb_keycode_map[] = {
 const uint16_t kInvalidKeycode = usb_keycode_map[0].native_keycode;
 
 static uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
+  // Deal with some special-cases that don't fit the 1:1 mapping.
+  if (usb_keycode == 0x070032) // non-US hash.
+    usb_keycode = 0x070031; // US backslash.
+#if defined(OS_MACOSX)
+  if (usb_keycode == 0x070046) // PrintScreen.
+    usb_keycode = 0x070068; // F13.
+#endif
+
   for (size_t i = 0; i < arraysize(usb_keycode_map); ++i) {
     if (usb_keycode_map[i].usb_keycode == usb_keycode)
       return usb_keycode_map[i].native_keycode;
