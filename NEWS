@@ -4,8 +4,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 While initially planned as mainly a bug fix release this release
 contains some notable new features: There is a new tool to trace which
-rules have been used to perform a translation. Also along other new
-tables the long awaited table for UEB is finally here.
+rules have been used to perform a translation. Also along with other
+new tables the long awaited table for UEB is finally here.
 
 ** New features
 *** New tool to trace rule application
@@ -31,7 +31,6 @@ tables the long awaited table for UEB is finally here.
      results when translating. Thanks to Bert Frees.
    - Fixes for compiler warnings.
    - Fix some Valgrind warnings about invalid reads
-
  
 * Noteworthy changes in release 2.5.1 (2012-9-24)
 
