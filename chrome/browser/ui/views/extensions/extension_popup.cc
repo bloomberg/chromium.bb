@@ -205,6 +205,10 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
 void ExtensionPopup::ShowBubble() {
   Show();
 
+  // Request focus for the View. Without this, the FocusManager gets confused.
+  host()->view()->SetVisible(true);
+  host()->view()->RequestFocus();
+
   // Focus on the host contents when the bubble is first shown.
   host()->host_contents()->Focus();
 
