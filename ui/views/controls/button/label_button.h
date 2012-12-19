@@ -67,9 +67,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Font);
 
-  // Resets the colors from the NativeTheme. If |reset_all| is true all colors
-  // are reset, otherwise only those not explicitly set are changed.
-  void ResetColorsFromNativeTheme(bool reset_all);
+  // Resets colors from the NativeTheme, explicitly set colors are unchanged.
+  void ResetColorsFromNativeTheme();
 
   // Overridden from CustomButton:
   virtual void StateChanged() OVERRIDE;

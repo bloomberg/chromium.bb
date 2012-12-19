@@ -48,10 +48,13 @@ void PaintHelper(LabelButtonBorder* border,
                  ui::NativeTheme::State state,
                  const gfx::Rect& rect,
                  const ui::NativeTheme::ExtraParams& extra) {
-  if (border->native_theme())
+  if (border->native_theme()) {
     theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
-  else
-    border->GetPainter(GetButtonState(state))->Paint(canvas, rect.size());
+  } else {
+    Painter* painter = border->GetPainter(GetButtonState(state));
+    if (painter)
+      painter->Paint(canvas, rect.size());
+  }
 }
 
 }  // namespace

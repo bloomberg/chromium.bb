@@ -13,10 +13,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
-namespace {
-const int kLayoutSpacing = 10;  // pixels
-}  // namespace
-
 namespace views {
 namespace examples {
 
@@ -37,8 +33,7 @@ ButtonExample::~ButtonExample() {
 }
 
 void ButtonExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(
-      new BoxLayout(BoxLayout::kVertical, 0, 0, kLayoutSpacing));
+  container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 0, 0, 10));
 
   text_button_ = new TextButton(this, ASCIIToUTF16("Text Button"));
   text_button_->set_focusable(true);
