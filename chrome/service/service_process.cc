@@ -224,7 +224,12 @@ bool ServiceProcess::Teardown() {
   file_thread_.reset();
 
   if (blocking_pool_.get()) {
-    blocking_pool_->Shutdown();
+    // The goal is to make it impossible for chrome to 'infinite loop' during
+    // shutdown, but to reasonably expect that all BLOCKING_SHUTDOWN tasks
+    // queued during shutdown get run. There's nothing particularly scientific
+    // about the number chosen.
+    const int kMaxNewShutdownBlockingTasks = 1000;
+    blocking_pool_->Shutdown(kMaxNewShutdownBlockingTasks);
     blocking_pool_ = NULL;
   }
 

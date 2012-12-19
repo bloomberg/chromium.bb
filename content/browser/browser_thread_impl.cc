@@ -78,8 +78,13 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier,
 
 // static
 void BrowserThreadImpl::ShutdownThreadPool() {
+  // The goal is to make it impossible for chrome to 'infinite loop' during
+  // shutdown, but to reasonably expect that all BLOCKING_SHUTDOWN tasks queued
+  // during shutdown get run. There's nothing particularly scientific about the
+  // number chosen.
+  const int kMaxNewShutdownBlockingTasks = 1000;
   BrowserThreadGlobals& globals = g_globals.Get();
-  globals.blocking_pool->Shutdown();
+  globals.blocking_pool->Shutdown(kMaxNewShutdownBlockingTasks);
 }
 
 void BrowserThreadImpl::Init() {
