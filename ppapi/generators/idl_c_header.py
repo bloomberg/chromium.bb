@@ -177,7 +177,7 @@ class HGen(GeneratorByFile):
     out.Write('%s\n' % cgen.Copyright(cright_node))
 
     # Wrap the From ... modified ... comment if it would be >80 characters.
-    from_text = 'From %s' % GetPathFromNode(filenode)
+    from_text = 'From %s' % GetPathFromNode(filenode).replace(os.sep, '/')
     modified_text = 'modified %s.' % (
         filenode.GetProperty('DATETIME'))
     if len(from_text) + len(modified_text) < 74:
