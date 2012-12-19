@@ -479,15 +479,18 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     flags = ['--ignore-externals']
     if revision:
       flags.extend(['--revision', str(revision)])
-    if not os.path.isdir(self.project_path):
+    if os.path.isdir(self.project_path):
+      # This may remove any part (or all) of the checkout.
+      scm.SVN.Revert(self.project_path, no_ignore=True)
+
+    if os.path.isdir(self.project_path):
+      # Revive files that were deleted in scm.SVN.Revert().
+      self._check_call_svn(['update', '--force'] + flags)
+    else:
       logging.info(
           'Directory %s is not present, checking it out.' % self.project_path)
       self._check_call_svn(
           ['checkout', self.svn_url, self.project_path] + flags, cwd=None)
-    else:
-      scm.SVN.Revert(self.project_path, no_ignore=True)
-      # Revive files that were deleted in scm.SVN.Revert().
-      self._check_call_svn(['update', '--force'] + flags)
     return self._get_revision()
 
   def _get_revision(self):
