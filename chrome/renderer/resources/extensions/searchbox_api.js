@@ -64,12 +64,14 @@ if (!chrome.searchBox) {
       var nodeShadow = safeObjects.createShadowRoot.apply(node);
       nodeShadow.applyAuthorStyles = true;
       nodeShadow.innerHTML =
-          '<div style="width:700px!important;' +
-          '            height:22px!important;' +
-          '            font-family:\'' + GetFont() + '\',\'Arial\'!important;' +
-          '            overflow:hidden!important;' +
-          '            text-overflow:ellipsis!important">' +
-          '  <nobr>' + restrictedText + '</nobr>' +
+          '<div style="' +
+              'width: ' + (window.innerWidth - 155) + 'px !important;' +
+              'height: 22px !important;' +
+              'font-family: \'' + GetFont() + '\', \'Arial\' !important;' +
+              'overflow: hidden !important;' +
+              'text-overflow: ellipsis !important;' +
+              'white-space: nowrap !important">' +
+            restrictedText +
           '</div>';
       safeObjects.defineProperty(node, 'webkitShadowRoot', { value: null });
       return node;
