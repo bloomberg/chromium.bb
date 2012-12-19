@@ -5,6 +5,11 @@
 #ifndef CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 #define CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
+#include <vector>
+
+#include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -14,10 +19,15 @@ namespace cc {
 // All operations are no-ops (returning 0 if necessary).
 class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
 public:
-    FakeWebGraphicsContext3D()
-        : m_nextTextureId(1)
+    static scoped_ptr<FakeWebGraphicsContext3D> create()
     {
+        return make_scoped_ptr(new FakeWebGraphicsContext3D());
     }
+    static scoped_ptr<FakeWebGraphicsContext3D> create(const WebKit::WebGraphicsContext3D::Attributes& attributes)
+    {
+        return make_scoped_ptr(new FakeWebGraphicsContext3D(attributes));
+    }
+    virtual ~FakeWebGraphicsContext3D();
 
     virtual bool makeContextCurrent();
 
@@ -39,6 +49,7 @@ public:
     virtual void synthesizeGLError(WebKit::WGC3Denum) { }
 
     virtual bool isContextLost();
+    virtual WebKit::WGC3Denum getGraphicsResetStatusARB();
 
     virtual void* mapBufferSubDataCHROMIUM(WebKit::WGC3Denum target, WebKit::WGC3Dintptr offset, WebKit::WGC3Dsizeiptr size, WebKit::WGC3Denum access);
 
@@ -65,7 +76,7 @@ public:
     virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer) { }
     virtual void bindFramebuffer(WebKit::WGC3Denum target, WebKit::WebGLId framebuffer) { }
     virtual void bindRenderbuffer(WebKit::WGC3Denum target, WebKit::WebGLId renderbuffer) { }
-    virtual void bindTexture(WebKit::WGC3Denum target, WebKit::WebGLId texture) { }
+    virtual void bindTexture(WebKit::WGC3Denum target, WebKit::WebGLId texture);
     virtual void blendColor(WebKit::WGC3Dclampf red, WebKit::WGC3Dclampf green, WebKit::WGC3Dclampf blue, WebKit::WGC3Dclampf alpha) { }
     virtual void blendEquation(WebKit::WGC3Denum mode) { }
     virtual void blendEquationSeparate(WebKit::WGC3Denum modeRGB, WebKit::WGC3Denum modeAlpha) { }
@@ -223,7 +234,7 @@ public:
     virtual void deleteProgram(WebKit::WebGLId) { }
     virtual void deleteRenderbuffer(WebKit::WebGLId) { }
     virtual void deleteShader(WebKit::WebGLId) { }
-    virtual void deleteTexture(WebKit::WebGLId) { }
+    virtual void deleteTexture(WebKit::WebGLId);
 
     virtual void texStorage2DEXT(WebKit::WGC3Denum target, WebKit::WGC3Dint levels, WebKit::WGC3Duint internalformat,
                                  WebKit::WGC3Dint width, WebKit::WGC3Dint height) { }
@@ -236,9 +247,27 @@ public:
     virtual void getQueryivEXT(WebKit::WGC3Denum, WebKit::WGC3Denum, WebKit::WGC3Dint*) { }
     virtual void getQueryObjectuivEXT(WebKit::WebGLId, WebKit::WGC3Denum, WebKit::WGC3Duint*) { }
 
+    virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback);
+
+    virtual void loseContextCHROMIUM();
+
+    size_t numTextures() const { return m_textures.size(); }
+    WebKit::WebGLId texture(int i) const { return m_textures[i]; }
+
+    size_t numUsedTextures() const { return m_usedTextures.size(); }
+    bool usedTexture(int texture) const { return ContainsKey(m_usedTextures, texture); }
+    void resetUsedTextures() { m_usedTextures.clear(); }
+
 protected:
+    FakeWebGraphicsContext3D();
+    FakeWebGraphicsContext3D(const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
     unsigned m_nextTextureId;
     Attributes m_attrs;
+    bool m_contextLost;
+    WebGraphicsContextLostCallback* m_contextLostCallback;
+    std::vector<WebKit::WebGLId> m_textures;
+    base::hash_set<WebKit::WebGLId> m_usedTextures;
 };
 
 }  // namespace cc

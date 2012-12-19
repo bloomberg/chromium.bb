@@ -8,8 +8,8 @@
 #include "cc/output_surface.h"
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
-#include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -96,7 +96,7 @@ private:
     base::hash_map<unsigned, unsigned> m_syncPointForMailbox;
 };
 
-class ResourceProviderContext : public CompositorFakeWebGraphicsContext3D {
+class ResourceProviderContext : public FakeWebGraphicsContext3D {
 public:
     static scoped_ptr<ResourceProviderContext> create(ContextSharedData* sharedData) { return make_scoped_ptr(new ResourceProviderContext(Attributes(), sharedData)); }
 
@@ -125,7 +125,7 @@ public:
 
     virtual WebGLId createTexture()
     {
-        WebGLId id = CompositorFakeWebGraphicsContext3D::createTexture();
+        WebGLId id = FakeWebGraphicsContext3D::createTexture();
         m_textures.add(id, scoped_ptr<Texture>());
         return id;
     }
@@ -223,7 +223,7 @@ public:
 
 protected:
     ResourceProviderContext(const Attributes& attrs, ContextSharedData* sharedData)
-        : CompositorFakeWebGraphicsContext3D(attrs)
+        : FakeWebGraphicsContext3D(attrs)
         , m_sharedData(sharedData)
         , m_currentTexture(0)
         , m_lastWaitedSyncPoint(0)

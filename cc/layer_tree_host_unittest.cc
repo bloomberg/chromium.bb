@@ -502,63 +502,6 @@ TEST_F(LayerTreeHostTestAbortFrameWhenInvisible, runMultiThread)
     runTest(true);
 }
 
-// Makes sure that setNedsAnimate does not cause the commitRequested() state to be set.
-class LayerTreeHostTestSetNeedsAnimateShouldNotSetCommitRequested : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestSetNeedsAnimateShouldNotSetCommitRequested()
-        : m_numCommits(0)
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void animate(base::TimeTicks monotonicTime) OVERRIDE
-    {
-        // We skip the first commit becasue its the commit that populates the
-        // impl thread with a tree. After the second commit, the test is done.
-        if (m_numCommits != 1)
-            return;
-
-        m_layerTreeHost->setNeedsAnimate();
-        // Right now, commitRequested is going to be true, because during
-        // beginFrame, we force commitRequested to true to prevent requests from
-        // hitting the impl thread. But, when the next didCommit happens, we should
-        // verify that commitRequested has gone back to false.
-    }
-
-    virtual void didCommit() OVERRIDE
-    {
-        if (!m_numCommits) {
-            EXPECT_FALSE(m_layerTreeHost->commitRequested());
-            m_layerTreeHost->setNeedsAnimate();
-            EXPECT_FALSE(m_layerTreeHost->commitRequested());
-        }
-
-        // Verifies that the setNeedsAnimate we made in ::animate did not
-        // trigger commitRequested.
-        EXPECT_FALSE(m_layerTreeHost->commitRequested());
-        endTest();
-        m_numCommits++;
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-
-private:
-    int m_numCommits;
-};
-
-TEST_F(LayerTreeHostTestSetNeedsAnimateShouldNotSetCommitRequested, runMultiThread)
-{
-    runTest(true);
-}
-
-
-
 // Trigger a frame with setNeedsCommit. Then, inside the resulting animate
 // callback, requet another frame using setNeedsAnimate. End the test when
 // animate gets called yet-again, indicating that the proxy is correctly
@@ -1445,7 +1388,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
+        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1484,7 +1427,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
+        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for draw should always be one.
         EXPECT_EQ(1, context->numUsedTextures());
@@ -1550,7 +1493,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
+        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1610,7 +1553,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
+        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for drawing should two except for frame 4
         // where the viewport only contains one layer.
@@ -2947,11 +2890,11 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLostContextAfterEvictTextures)
 
-class CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext : public CompositorFakeWebGraphicsContext3D {
+class FakeWebGraphicsContext3DWithEndQueryCausingLostContext : public FakeWebGraphicsContext3D {
 public:
-    static scoped_ptr<CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext> create(Attributes attrs)
+    static scoped_ptr<FakeWebGraphicsContext3DWithEndQueryCausingLostContext> create(Attributes attrs)
     {
-        return make_scoped_ptr(new CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext(attrs));
+        return make_scoped_ptr(new FakeWebGraphicsContext3DWithEndQueryCausingLostContext(attrs));
     }
 
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { m_contextLostCallback = callback; }
@@ -2974,8 +2917,8 @@ public:
     }
 
 private:
-    explicit CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext(Attributes attrs)
-        : CompositorFakeWebGraphicsContext3D(attrs)
+    explicit FakeWebGraphicsContext3DWithEndQueryCausingLostContext(Attributes attrs)
+        : FakeWebGraphicsContext3D(attrs)
         , m_contextLostCallback(0)
         , m_isContextLost(false) { }
 

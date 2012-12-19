@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/output_surface.h"
-#include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_software_output_device.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 namespace cc {
@@ -64,7 +64,7 @@ private:
 static inline scoped_ptr<cc::OutputSurface> createFakeOutputSurface()
 {
     return FakeOutputSurface::Create3d(
-        CompositorFakeWebGraphicsContext3D::create(
+        FakeWebGraphicsContext3D::create(
             WebKit::WebGraphicsContext3D::Attributes())
         .PassAs<WebKit::WebGraphicsContext3D>())
         .PassAs<cc::OutputSurface>();

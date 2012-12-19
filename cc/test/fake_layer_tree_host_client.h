@@ -9,7 +9,6 @@
 #include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
-#include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_output_surface.h"
 
 namespace cc {

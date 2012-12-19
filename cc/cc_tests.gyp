@@ -28,6 +28,7 @@
       'layer_tree_host_common_unittest.cc',
       'layer_tree_host_impl_unittest.cc',
       'layer_tree_host_unittest.cc',
+      'layer_tree_host_unittest_animation.cc',
       'layer_unittest.cc',
       'math_util_unittest.cc',
       'nine_patch_layer_impl_unittest.cc',
@@ -63,8 +64,6 @@
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
       'test/animation_test_common.h',
-      'test/compositor_fake_web_graphics_context_3d.cc',
-      'test/compositor_fake_web_graphics_context_3d.h',
       'test/fake_content_layer_client.cc',
       'test/fake_content_layer_client.h',
       'test/fake_impl_proxy.h',

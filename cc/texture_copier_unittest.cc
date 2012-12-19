@@ -54,8 +54,8 @@ TEST(TextureCopierTest, testDrawArraysCopy)
         EXPECT_CALL(*mockContext, enable(GL_SCISSOR_TEST));
     }
 
-    int sourceTextureId = 1;
-    int destTextureId = 2;
+    int sourceTextureId = mockContext->createTexture();
+    int destTextureId = mockContext->createTexture();
     gfx::Size size(256, 128);
     scoped_ptr<AcceleratedTextureCopier> copier(AcceleratedTextureCopier::create(mockContext.get(), false));
     TextureCopier::Parameters copy = { sourceTextureId, destTextureId, size };

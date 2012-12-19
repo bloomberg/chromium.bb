@@ -4,7 +4,6 @@
 
 #include "cc/test/layer_tree_test_common.h"
 
-#include "base/stl_util.h"
 #include "cc/active_animation.h"
 #include "cc/content_layer.h"
 #include "cc/font_atlas.h"
@@ -18,7 +17,6 @@
 #include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/timing_function.h"
@@ -30,50 +28,6 @@ using namespace WebKit;
 
 namespace cc {
 
-scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFakeWebGraphicsContext3DWithTextureTracking::create(Attributes attrs)
-{
-    return make_scoped_ptr(new CompositorFakeWebGraphicsContext3DWithTextureTracking(attrs));
-}
-
-WebKit::WebGLId CompositorFakeWebGraphicsContext3DWithTextureTracking::createTexture()
-{
-    WebKit::WebGLId texture = m_textures.size() + 1;
-    m_textures.push_back(texture);
-    return texture;
-}
-
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::deleteTexture(WebKit::WebGLId texture)
-{
-    std::vector<WebKit::WebGLId>::iterator i(std::find(m_textures.begin(), m_textures.end(), texture));
-    if (i != m_textures.end())
-      m_textures.erase(i);
-}
-
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::bindTexture(WebKit::WGC3Denum /* target */, WebKit::WebGLId texture)
-{
-    m_usedTextures.insert(texture);
-}
-
-int CompositorFakeWebGraphicsContext3DWithTextureTracking::numTextures() const { return static_cast<int>(m_textures.size()); }
-int CompositorFakeWebGraphicsContext3DWithTextureTracking::texture(int i) const { return m_textures[i]; }
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::resetTextures() { m_textures.clear(); }
-
-int CompositorFakeWebGraphicsContext3DWithTextureTracking::numUsedTextures() const { return static_cast<int>(m_usedTextures.size()); }
-bool CompositorFakeWebGraphicsContext3DWithTextureTracking::usedTexture(int texture) const
-{
-  return ContainsKey(m_usedTextures, texture);
-}
-
-void CompositorFakeWebGraphicsContext3DWithTextureTracking::resetUsedTextures() { m_usedTextures.clear(); }
-
-CompositorFakeWebGraphicsContext3DWithTextureTracking::CompositorFakeWebGraphicsContext3DWithTextureTracking(Attributes attrs) : CompositorFakeWebGraphicsContext3D(attrs)
-{
-}
-
-CompositorFakeWebGraphicsContext3DWithTextureTracking::~CompositorFakeWebGraphicsContext3DWithTextureTracking()
-{
-}
-
 bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
 {
     return true;
@@ -81,7 +35,7 @@ bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
 
 scoped_ptr<OutputSurface> TestHooks::createOutputSurface()
 {
-    return FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return createFakeOutputSurface();
 }
 
 scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
@@ -136,18 +90,11 @@ MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const LayerTr
 // Adapts LayerTreeHost for test. Injects MockLayerTreeHostImpl.
 class MockLayerTreeHost : public cc::LayerTreeHost {
 public:
-    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, scoped_refptr<cc::Layer> rootLayer, const cc::LayerTreeSettings& settings, scoped_ptr<cc::Thread> implThread)
+    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, const cc::LayerTreeSettings& settings, scoped_ptr<cc::Thread> implThread)
     {
         scoped_ptr<MockLayerTreeHost> layerTreeHost(new MockLayerTreeHost(testHooks, client, settings));
         bool success = layerTreeHost->initialize(implThread.Pass());
         EXPECT_TRUE(success);
-        layerTreeHost->setRootLayer(rootLayer);
-
-        // LayerTreeHostImpl won't draw if it has 1x1 viewport.
-        layerTreeHost->setViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
-
-        layerTreeHost->rootLayer()->setLayerAnimationDelegate(testHooks);
-
         return layerTreeHost.Pass();
     }
 
@@ -341,17 +288,16 @@ void ThreadedTest::doBeginTest()
 {
     m_client = ThreadedMockLayerTreeHostClient::create(this);
 
-    scoped_refptr<Layer> rootLayer = Layer::create();
     scoped_ptr<cc::Thread> implCCThread(NULL);
     if (m_implThread)
         implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
-    m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), rootLayer, m_settings, implCCThread.Pass());
+    m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), m_settings, implCCThread.Pass());
     ASSERT_TRUE(m_layerTreeHost.get());
-    rootLayer->setLayerTreeHost(m_layerTreeHost.get());
-    m_layerTreeHost->setSurfaceReady();
 
     m_started = true;
     m_beginning = true;
+    setupTree();
+    m_layerTreeHost->setSurfaceReady();
     beginTest();
     m_beginning = false;
     if (m_endWhenBeginReturns)
@@ -361,6 +307,21 @@ void ThreadedTest::doBeginTest()
     // so that those tasks will happen before the first commit.
     if (m_layerTreeHost)
         static_cast<MockLayerTreeHost*>(m_layerTreeHost.get())->setTestStarted(true);
+}
+
+void ThreadedTest::setupTree()
+{
+    if (!m_layerTreeHost->rootLayer()) {
+        scoped_refptr<Layer> rootLayer = Layer::create();
+        rootLayer->setBounds(gfx::Size(1, 1));
+        m_layerTreeHost->setRootLayer(rootLayer);
+
+        // TODO(danakj): Remove this when all the animation tests are moved.
+        m_layerTreeHost->rootLayer()->setLayerAnimationDelegate(this);
+    }
+
+    gfx::Size rootBounds = m_layerTreeHost->rootLayer()->bounds();
+    m_layerTreeHost->setViewportSize(rootBounds, rootBounds);
 }
 
 void ThreadedTest::timeout()

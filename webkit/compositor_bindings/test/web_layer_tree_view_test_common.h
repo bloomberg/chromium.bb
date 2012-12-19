@@ -5,7 +5,6 @@
 #ifndef WebLayerTreeViewTestCommon_h
 #define WebLayerTreeViewTestCommon_h
 
-#include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_output_surface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
@@ -23,7 +22,7 @@ public:
 
     virtual cc::OutputSurface* createOutputSurface() OVERRIDE
     {
-      return cc::FakeOutputSurface::Create3d(cc::CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).release();
+      return cc::createFakeOutputSurface().release();
     }
     virtual void didRecreateOutputSurface(bool) OVERRIDE { }
 

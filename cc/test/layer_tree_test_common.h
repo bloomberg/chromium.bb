@@ -5,13 +5,11 @@
 #ifndef CC_TEST_LAYER_TREE_TEST_COMMON_H_
 #define CC_TEST_LAYER_TREE_TEST_COMMON_H_
 
-#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"
-#include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 
@@ -71,6 +69,7 @@ public:
 
     virtual void afterTest() = 0;
     virtual void beginTest() = 0;
+    virtual void setupTree();
 
     void endTest();
     void endTestAfterDelay(int delayMilliseconds);
@@ -161,32 +160,6 @@ private:
     MockLayerTreeHostImpl(TestHooks*, const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
 
     TestHooks* m_testHooks;
-};
-
-class CompositorFakeWebGraphicsContext3DWithTextureTracking : public CompositorFakeWebGraphicsContext3D {
-public:
-    static scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> create(Attributes);
-    virtual ~CompositorFakeWebGraphicsContext3DWithTextureTracking();
-
-    virtual WebKit::WebGLId createTexture();
-
-    virtual void deleteTexture(WebKit::WebGLId texture);
-
-    virtual void bindTexture(WebKit::WGC3Denum target, WebKit::WebGLId texture);
-
-    int numTextures() const;
-    int texture(int texture) const;
-    void resetTextures();
-
-    int numUsedTextures() const;
-    bool usedTexture(int texture) const;
-    void resetUsedTextures();
-
-private:
-    explicit CompositorFakeWebGraphicsContext3DWithTextureTracking(Attributes attrs);
-
-    std::vector<WebKit::WebGLId> m_textures;
-    base::hash_set<WebKit::WebGLId> m_usedTextures;
 };
 
 } // namespace cc
