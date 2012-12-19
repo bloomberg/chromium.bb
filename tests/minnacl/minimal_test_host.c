@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <string.h>
+
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -41,9 +43,11 @@ static int32_t MySyscallExit(struct NaClAppThread *natp) {
 
 int main(int argc, char **argv) {
   struct NaClApp app;
+  struct NaClApp *nap = &app;
   struct GioMemoryFileSnapshot gio_file;
   struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
   int index;
+  int use_separate_thread = 0;
 
   NaClHandleBootstrapArgs(&argc, &argv);
 
@@ -53,6 +57,11 @@ int main(int argc, char **argv) {
   syscall_table[TEST_SYSCALL_INVOKE].handler = MySyscallInvoke;
   syscall_table[TEST_SYSCALL_EXIT].handler = MySyscallExit;
 
+  if (argc >= 2 && strcmp(argv[1], "--use_separate_thread") == 0) {
+    use_separate_thread = 1;
+    argc--;
+    argv++;
+  }
   if (argc != 2) {
     NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
   }
@@ -64,14 +73,30 @@ int main(int argc, char **argv) {
   CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
   CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
-  /*
-   * TODO(mseaborn): It would be nice if we did not have to create a
-   * separate thread for running the sandboxed code.
-   */
-  CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
-  NaClWaitForMainThreadToExit(&app);
 
-  NaClLog(LOG_FATAL, "The exit syscall is not supposed to be callable\n");
+  /* These are examples of two different ways to run untrusted code. */
+  if (use_separate_thread) {
+    /* Create a new host thread that is managed by NaCl. */
+    CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
+    NaClWaitForMainThreadToExit(&app);
+
+    NaClLog(LOG_FATAL, "The exit syscall is not supposed to be callable\n");
+  } else {
+    /* Reuse the existing host thread for running untrusted code. */
+    struct NaClAppThread *natp;
+    uintptr_t stack_ptr = NaClGetInitialStackTop(nap);
+    /* Ensure the stack pointer is suitably aligned. */
+    stack_ptr &= ~NACL_STACK_ALIGN_MASK;
+    stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
+    /* TODO(mseaborn): Make this interface more straightforward to use. */
+    stack_ptr = NaClSysToUserStackAddr(nap, NaClUserToSys(nap, stack_ptr));
+
+    natp = NaClAppThreadMake(nap, nap->initial_entry_pt, stack_ptr, 0, 0);
+    CHECK(natp != NULL);
+    NaClAppThreadLauncher(natp);
+
+    NaClLog(LOG_FATAL, "NaClThreadLauncher() should not return\n");
+  }
 
   return 1;
 }

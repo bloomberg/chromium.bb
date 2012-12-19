@@ -17,6 +17,11 @@ struct NaClAppThreadSuspendedRegisters {
   CONTEXT context;
 };
 
+static HANDLE GetHostThreadHandle(struct NaClAppThread *natp) {
+  CHECK(natp->host_thread_is_defined);
+  return natp->host_thread.tid;
+}
+
 void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
                                   enum NaClSuspendState old_state,
                                   enum NaClSuspendState new_state) {
@@ -45,8 +50,9 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     CONTEXT temp_context;
     CONTEXT *context;
+    HANDLE thread_handle = GetHostThreadHandle(natp);
 
-    if (SuspendThread(natp->thread.tid) == (DWORD) -1) {
+    if (SuspendThread(thread_handle) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "SuspendThread() call failed\n");
     }
@@ -79,7 +85,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
       context->ContextFlags = CONTEXT_CONTROL;
     }
 
-    if (!GetThreadContext(natp->thread.tid, context)) {
+    if (!GetThreadContext(thread_handle, context)) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "GetThreadContext() failed\n");
     }
@@ -92,7 +98,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
-    if (ResumeThread(natp->thread.tid) == (DWORD) -1) {
+    if (ResumeThread(GetHostThreadHandle(natp)) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
               "ResumeThread() call failed\n");
     }
@@ -108,7 +114,7 @@ void NaClAppThreadGetSuspendedRegistersInternal(
 void NaClAppThreadSetSuspendedRegistersInternal(
     struct NaClAppThread *natp, const struct NaClSignalContext *regs) {
   NaClSignalContextToHandler(natp->suspended_registers, regs);
-  if (!SetThreadContext(natp->thread.tid,
+  if (!SetThreadContext(GetHostThreadHandle(natp),
                         &natp->suspended_registers->context)) {
     NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendedRegistersInternal: "
             "SetThreadContext() failed\n");
@@ -128,7 +134,7 @@ int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
    * Decrement Windows' suspension count for the thread.  This undoes
    * the effect of debug_exception_handler.c's SuspendThread() call.
    */
-  previous_suspend_count = ResumeThread(natp->thread.tid);
+  previous_suspend_count = ResumeThread(GetHostThreadHandle(natp));
   if (previous_suspend_count == (DWORD) -1) {
     NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: "
             "ResumeThread() call failed\n");

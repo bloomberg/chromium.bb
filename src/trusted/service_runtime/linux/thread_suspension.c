@@ -251,7 +251,8 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
         NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: malloc() failed\n");
       }
     }
-    if (pthread_kill(natp->thread.tid, NACL_THREAD_SUSPEND_SIGNAL) != 0) {
+    CHECK(natp->host_thread_is_defined);
+    if (pthread_kill(natp->host_thread.tid, NACL_THREAD_SUSPEND_SIGNAL) != 0) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "pthread_kill() call failed\n");
     }

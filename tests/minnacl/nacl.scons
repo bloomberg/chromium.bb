@@ -31,8 +31,18 @@ if env.ShouldTranslateToNexe(test_prog):
   env.Replace(TRANSLATEFLAGS=['-nostdlib'])
   test_prog = env.GetTranslatedNexe(test_prog)
 
+is_broken = not env.Bit('nacl_static_link')
+
 node = env.CommandTest('minimal_test.out',
                        env.AddBootstrap(runner, [test_prog]),
                        stdout_golden=env.File('minimal_test.stdout'))
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_minnacl_test',
-                       is_broken=not env.Bit('nacl_static_link'))
+                       is_broken=is_broken)
+
+node = env.CommandTest('minimal_test_separate_thread.out',
+                       env.AddBootstrap(runner,
+                                        ['--use_separate_thread', test_prog]),
+                       stdout_golden=env.File('minimal_test.stdout'))
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_minnacl_separate_thread_test',
+                       is_broken=is_broken)

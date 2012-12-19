@@ -115,12 +115,13 @@ TEST_F(ThreadSuspensionTest, TestThreadSuspendsSynchronously) {
   thread_args.natp = NULL;
   thread_args.var = 0;
   thread_args.should_exit = false;
-  ASSERT_EQ(NaClThreadCreateJoinable(&app_thread.thread, MutatorThread,
+  app_thread.host_thread_is_defined = 1;
+  ASSERT_EQ(NaClThreadCreateJoinable(&app_thread.host_thread, MutatorThread,
                                      &thread_args, NACL_KERN_STACK_SIZE), 1);
   ASSERT_EQ(NaClAddThread(&app, &app_thread), 0);
   TrySuspendingMutatorThread(&app, &thread_args.var);
   thread_args.should_exit = true;
-  NaClThreadJoin(&app_thread.thread);
+  NaClThreadJoin(&app_thread.host_thread);
 }
 
 
@@ -172,12 +173,14 @@ TEST_F(ThreadSuspensionTest, TestNoDeadlockInSyscallCrossing) {
   thread_args.natp = &app_thread;
   thread_args.var = 0;
   thread_args.should_exit = false;
-  ASSERT_EQ(NaClThreadCreateJoinable(&app_thread.thread, SyscallInvokerThread,
+  app_thread.host_thread_is_defined = 1;
+  ASSERT_EQ(NaClThreadCreateJoinable(&app_thread.host_thread,
+                                     SyscallInvokerThread,
                                      &thread_args, NACL_KERN_STACK_SIZE), 1);
   ASSERT_EQ(NaClAddThread(&app, &app_thread), 0);
   TrySuspendingSyscallInvokerThread(&app, &thread_args.var);
   thread_args.should_exit = true;
-  NaClThreadJoin(&app_thread.thread);
+  NaClThreadJoin(&app_thread.host_thread);
 }
 
 #endif

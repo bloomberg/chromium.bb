@@ -667,6 +667,20 @@ int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
   return rv;
 }
 
+uintptr_t NaClGetInitialStackTop(struct NaClApp *nap) {
+  /*
+   * We keep the top of useful memory a page below the top of the
+   * sandbox region so that compilers can do tricks like computing a
+   * base register of sp + constant and then using a
+   * register-minus-constant addressing mode, which comes up at least
+   * on ARM where the compiler is trying to optimize given the limited
+   * size of immediate offsets available.  The maximum such negative
+   * constant on ARM will be -4095, but we use page size (64k) for
+   * good measure and do it on all machines just for uniformity.
+   */
+  return ((uintptr_t) 1U << nap->addr_bits) - NACL_MAP_PAGESIZE;
+}
+
 /*
  * preconditions:
  *  * argc is the length of the argv array
@@ -690,7 +704,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   char                  *strp;
   size_t                *argv_len;
   size_t                *envv_len;
-  struct NaClAppThread  *natp;
   uintptr_t             stack_ptr;
 
   retval = 0;  /* fail */
@@ -779,18 +792,14 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   }
 
   /*
-   * Write strings and char * arrays to stack.  We keep the top of useful
-   * memory a page below the top of the sandbox region so that compilers
-   * can do tricks like computing a base register of sp + constant and then
-   * using a register-minus-constant addressing mode, which comes up at
-   * least on ARM where the compiler is trying to optimize given the
-   * limited size of immediate offsets available.  The maximum such
-   * negative constant on ARM will be -4095, but we use page size (64k)
-   * for good measure and do it on all machines just for uniformity.
+   * Write strings and char * arrays to stack.
    */
-  stack_ptr = (nap->mem_start +
-               ((uintptr_t) 1U << nap->addr_bits) - NACL_MAP_PAGESIZE -
-               size);
+  stack_ptr = NaClUserToSysAddrRange(nap, NaClGetInitialStackTop(nap) - size,
+                                     size);
+  if (stack_ptr == kNaClBadAddress) {
+    retval = 0;
+    goto cleanup;
+  }
 
   NaClLog(2, "setting stack to : %016"NACL_PRIxPTR"\n", stack_ptr);
 
@@ -865,17 +874,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
           NaClSysToUserStackAddr(nap, stack_ptr));
 
   /* e_entry is user addr */
-  natp = NaClAppThreadMake(nap,
-                           nap->initial_entry_pt,
-                           NaClSysToUserStackAddr(nap, stack_ptr),
-                           /* user_tls1= */ (uint32_t) nap->break_addr,
-                           /* user_tls2= */ 0);
-  if (natp == NULL) {
-    retval = 0;
-    goto cleanup;
-  }
+  retval = NaClAppThreadSpawn(nap,
+                              nap->initial_entry_pt,
+                              NaClSysToUserStackAddr(nap, stack_ptr),
+                              /* user_tls1= */ (uint32_t) nap->break_addr,
+                              /* user_tls2= */ 0);
 
-  retval = 1;
 cleanup:
   free(argv_len);
   free(envv_len);
@@ -912,14 +916,11 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      sys_stack_ptr,
                                    uint32_t       user_tls1,
                                    uint32_t       user_tls2) {
-  struct NaClAppThread  *natp;
-
-  natp = NaClAppThreadMake(nap,
-                           prog_ctr,
-                           NaClSysToUserStackAddr(nap, sys_stack_ptr),
-                           user_tls1,
-                           user_tls2);
-  if (natp == NULL) {
+  if (!NaClAppThreadSpawn(nap,
+                          prog_ctr,
+                          NaClSysToUserStackAddr(nap, sys_stack_ptr),
+                          user_tls1,
+                          user_tls2)) {
     NaClLog(LOG_WARNING,
             ("NaClCreateAdditionalThread: could not allocate thread."
              "  Returning EAGAIN per POSIX specs.\n"));

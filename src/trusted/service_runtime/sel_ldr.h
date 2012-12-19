@@ -515,6 +515,11 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap);
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status);
 
 /*
+ * Get the top of the initial thread's stack.  Returns a user address.
+ */
+uintptr_t NaClGetInitialStackTop(struct NaClApp *nap);
+
+/*
  * Used to launch the main thread.  NB: calling thread may in the
  * future become the main NaCl app thread, and this function will
  * return only after the NaCl app main thread exits.  In such an
