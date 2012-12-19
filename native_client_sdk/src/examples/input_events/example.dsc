@@ -1,10 +1,15 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'input_events',
       'TYPE' : 'main',
-      'SOURCES' : ['input_events.cc'],
+      'SOURCES' : [
+        'custom_events.cc',
+        'custom_events.h',
+        'input_events.cc',
+        'shared_queue.h',
+      ],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
@@ -12,12 +17,13 @@
   'DEST': 'examples',
   'NAME': 'input_events',
   'TITLE': 'Input Events',
-  'DESC': """
-The Input Events example demonstrates how to handle events triggered by
-the user. This example allows a user to interact with a square representing a
-module instance. Events are displayed on the screen as the user clicks,
-scrolls, types, inside or outside of the square.""",
-  'FOCUS': 'Keyboard and mouse input, view change, and focus events.',
+  'DESC': """The Input Events example shows how to handle input events in a
+multi-threaded application.  The main thread converts input events to
+non-pepper events and puts them on a queue. The worker thread pulls them off of
+the queue, converts them to a string, and then uses CallOnMainThread so that
+PostMessage can be send the result of the worker thread to the browser.""",
+  'FOCUS': """Multi-threading, keyboard and mouse input, view change, and focus
+events.""",
   'GROUP': 'API',
 }
 

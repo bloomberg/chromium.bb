@@ -11,6 +11,11 @@ function moduleDidLoad() {
 }
 
 // Called by the common.js module.
+function attachListeners() {
+  document.getElementById('killButton').addEventListener('click', cancelQueue);
+}
+
+// Called by the common.js module.
 function handleMessage(message) {
   // Show last |kMaxArraySize| events in html.
   messageArray.push(message.data);
@@ -21,4 +26,12 @@ function handleMessage(message) {
   document.getElementById('eventString').innerHTML = newData;
   // Print event to console.
   console.log(message.data);
+}
+
+function cancelQueue() {
+  if (common.naclModule == null) {
+    console.log('Module is not loaded.');
+    return;
+  }
+  common.naclModule.postMessage('CANCEL');
 }

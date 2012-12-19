@@ -10,92 +10,88 @@
 #include <sstream>
 #include <string>
 
-// NaCl
+// PPAPI headers
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
-namespace {
+#include "custom_events.h"
+#include "shared_queue.h"
+
+namespace event_queue {
 const char* const kDidChangeView = "DidChangeView";
 const char* const kHandleInputEvent = "DidHandleInputEvent";
 const char* const kDidChangeFocus = "DidChangeFocus";
 const char* const kHaveFocus = "HaveFocus";
 const char* const kDontHaveFocus = "DontHaveFocus";
+const char* const kCancelMessage = "CANCEL";
 
-// Convert a given modifier to a descriptive string.  Note that the actual
-// declared type of modifier in each of the event classes is uint32_t, but it is
-// expected to be interpreted as a bitfield of 'or'ed PP_InputEvent_Modifier
-// values.
-std::string ModifierToString(uint32_t modifier) {
-  std::string s;
-  if (modifier & PP_INPUTEVENT_MODIFIER_SHIFTKEY) {
-    s += "shift ";
+// Convert a pepper inputevent modifier value into a
+// custom event modifier.
+unsigned int ConvertEventModifier(uint32_t pp_modifier) {
+  unsigned int custom_modifier = 0;
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_SHIFTKEY) {
+    custom_modifier |= kShiftKeyModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_CONTROLKEY) {
-    s += "ctrl ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_CONTROLKEY) {
+    custom_modifier |= kControlKeyModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_ALTKEY) {
-    s += "alt ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_ALTKEY) {
+    custom_modifier |= kAltKeyModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_METAKEY) {
-    s += "meta ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_METAKEY) {
+    custom_modifier |= kMetaKeyModifer;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_ISKEYPAD) {
-    s += "keypad ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_ISKEYPAD) {
+    custom_modifier |= kKeyPadModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT) {
-    s += "autorepeat ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT) {
+    custom_modifier |= kAutoRepeatModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
-    s += "left-button-down ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
+    custom_modifier |= kLeftButtonModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) {
-    s += "middle-button-down ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) {
+    custom_modifier |= kMiddleButtonModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN) {
-    s += "right-button-down ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN) {
+    custom_modifier |= kRightButtonModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY) {
-    s += "caps-lock ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY) {
+    custom_modifier |= kCapsLockModifier;
   }
-  if (modifier & PP_INPUTEVENT_MODIFIER_NUMLOCKKEY) {
-    s += "num-lock ";
+  if (pp_modifier & PP_INPUTEVENT_MODIFIER_NUMLOCKKEY) {
+    custom_modifier |= kNumLockModifier;
   }
-  return s;
+  return custom_modifier;
 }
-
-std::string MouseButtonToString(PP_InputEvent_MouseButton button) {
-  switch (button) {
-    case PP_INPUTEVENT_MOUSEBUTTON_NONE:
-      return "None";
-    case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
-      return "Left";
-    case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
-      return "Middle";
-    case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
-      return "Right";
-    default:
-      std::ostringstream stream;
-      stream << "Unrecognized ("
-             << static_cast<int32_t>(button)
-             << ")";
-      return stream.str();
-  }
-}
-
-}  // namespace
 
 class EventInstance : public pp::Instance {
  public:
   explicit EventInstance(PP_Instance instance)
-      : pp::Instance(instance) {
+      : pp::Instance(instance),
+        event_thread_(NULL),
+        callback_factory_(this) {
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL
         | PP_INPUTEVENT_CLASS_TOUCH);
     RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
   }
-  virtual ~EventInstance() {}
+
+  // Not guaranteed to be called in Pepper, but a good idea to cancel the
+  // queue and signal to workers to die if it is called.
+  virtual ~EventInstance() {
+    CancelQueueAndWaitForWorker();
+  }
+
+  // Create the 'worker thread'.
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+    pthread_create(&event_thread_, NULL, ProcessEventOnWorkerThread, this);
+    return true;
+  }
 
   /// Clicking outside of the instance's bounding box
   /// will create a DidChangeFocus event (the NaCl instance is
@@ -117,148 +113,219 @@ class EventInstance : public pp::Instance {
     PostMessage(pp::Var(kDidChangeView));
   }
 
-  void GotKeyEvent(const pp::KeyboardInputEvent& key_event,
-                   const std::string& kind) {
-    std::ostringstream stream;
-    stream << pp_instance() << ":"
-           << " Key event:" << kind
-           << " modifier:" << ModifierToString(key_event.GetModifiers())
-           << " key_code:" << key_event.GetKeyCode()
-           << " time:" << key_event.GetTimeStamp()
-           << " text:" << key_event.GetCharacterText().DebugString()
-           << "\n";
-    PostMessage(stream.str());
-  }
-
-  void GotMouseEvent(const pp::MouseInputEvent& mouse_event,
-                     const std::string& kind) {
-    std::ostringstream stream;
-    stream << pp_instance() << ":"
-           << " Mouse event:" << kind
-           << " modifier:" << ModifierToString(mouse_event.GetModifiers())
-           << " button:" << MouseButtonToString(mouse_event.GetButton())
-           << " x:" << mouse_event.GetPosition().x()
-           << " y:" << mouse_event.GetPosition().y()
-           << " click_count:" << mouse_event.GetClickCount()
-           << " time:" << mouse_event.GetTimeStamp()
-           << "\n";
-    PostMessage(stream.str());
-  }
-
-  void GotWheelEvent(const pp::WheelInputEvent& wheel_event) {
-    std::ostringstream stream;
-    stream << pp_instance() << ": Wheel event."
-           << " modifier:" << ModifierToString(wheel_event.GetModifiers())
-           << " deltax:" << wheel_event.GetDelta().x()
-           << " deltay:" << wheel_event.GetDelta().y()
-           << " wheel_ticks_x:" << wheel_event.GetTicks().x()
-           << " wheel_ticks_y:"<< wheel_event.GetTicks().y()
-           << " scroll_by_page: "
-           << (wheel_event.GetScrollByPage() ? "true" : "false")
-           << "\n";
-    PostMessage(stream.str());
-  }
-
-  void GotTouchEvent(const pp::TouchInputEvent& touch_event,
-                     const std::string& kind) {
-    std::ostringstream stream;
-    stream << pp_instance() << ":"
-           << " Touch event:" << kind
-           << " modifier:" << ModifierToString(touch_event.GetModifiers());
-    uint32_t touch_count =
-        touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES);
-    for (uint32_t i = 0; i < touch_count; ++i) {
-      pp::TouchPoint point =
-          touch_event.GetTouchByIndex(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES, i);
-      stream << " x[" << point.id() << "]:" << point.position().x();
-      stream << " y[" << point.id() << "]:" << point.position().y();
-      stream << " radius_x[" << point.id() << "]:" << point.radii().x();
-      stream << " radius_y[" << point.id() << "]:" << point.radii().y();
-      stream << " angle[" << point.id() << "]:" << point.rotation_angle();
-      stream << " pressure[" << point.id() << "]:" << point.pressure();
+  /// Called by the browser to handle the postMessage() call in Javascript.
+  /// Detects which method is being called from the message contents, and
+  /// calls the appropriate function.  Posts the result back to the browser
+  /// asynchronously.
+  /// @param[in] var_message The message posted by the browser.  The only
+  ///     supported message is |kCancelMessage|.  If we receive this, we
+  ///     cancel the shared queue.
+  virtual void HandleMessage(const pp::Var& var_message) {
+    std::string message = var_message.AsString();
+    if (kCancelMessage == message) {
+      std::string reply = "Received cancel : only Focus events will be "
+          "displayed. Worker thread for mouse/wheel/keyboard will exit.";
+      PostMessage(pp::Var(reply));
+      printf("Calling cancel queue\n");
+      CancelQueueAndWaitForWorker();
     }
-    PostMessage(stream.str());
   }
 
-  // Handle an incoming input event by switching on type and dispatching
-  // to the appropriate subtype handler.
-  //
-  // HandleInputEvent operates on the main Pepper thread. In large
-  // real-world applications, you'll want to create a separate thread
-  // that puts events in a queue and handles them independant of the main
-  // thread so as not to slow down the browser. There is an additional
-  // version of this example in the examples directory that demonstrates
-  // this best practice.
+  // HandleInputEvent operates on the main Pepper thread.  Here we
+  // illustrate copying the Pepper input event to our own custom event type.
+  // Since we need to use Pepper API calls to convert it, we must do the
+  // conversion on the main thread.  Once we have converted it to our own
+  // event type, we push that into a thread-safe queue and quickly return.
+  // The worker thread can process the custom event and do whatever
+  // (possibly slow) things it wants to do without making the browser
+  // become unresponsive.
+  // We dynamically allocate a sub-class of our custom event (Event)
+  // so that the queue can contain an Event*.
   virtual bool HandleInputEvent(const pp::InputEvent& event) {
-    PostMessage(pp::Var(kHandleInputEvent));
+    Event* event_ptr = NULL;
     switch (event.GetType()) {
+      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
+      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
+      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
+      case PP_INPUTEVENT_TYPE_IME_TEXT:
+        // these cases are not handled...fall through below...
       case PP_INPUTEVENT_TYPE_UNDEFINED:
         break;
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-        GotMouseEvent(pp::MouseInputEvent(event), "Down");
-        break;
       case PP_INPUTEVENT_TYPE_MOUSEUP:
-        GotMouseEvent(pp::MouseInputEvent(event), "Up");
-        break;
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-        GotMouseEvent(pp::MouseInputEvent(event), "Move");
-        break;
       case PP_INPUTEVENT_TYPE_MOUSEENTER:
-        GotMouseEvent(pp::MouseInputEvent(event), "Enter");
-        break;
       case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-        GotMouseEvent(pp::MouseInputEvent(event), "Leave");
+        {
+          pp::MouseInputEvent mouse_event(event);
+          PP_InputEvent_MouseButton pp_button = mouse_event.GetButton();
+          MouseEvent::MouseButton mouse_button = MouseEvent::kNone;
+          switch (pp_button) {
+            case PP_INPUTEVENT_MOUSEBUTTON_NONE:
+              mouse_button = MouseEvent::kNone;
+              break;
+            case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
+              mouse_button = MouseEvent::kLeft;
+              break;
+            case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
+              mouse_button = MouseEvent::kMiddle;
+              break;
+            case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
+              mouse_button = MouseEvent::kRight;
+              break;
+          }
+          event_ptr = new MouseEvent(
+              ConvertEventModifier(mouse_event.GetModifiers()),
+              mouse_button, mouse_event.GetPosition().x(),
+              mouse_event.GetPosition().y(), mouse_event.GetClickCount(),
+              mouse_event.GetTimeStamp());
+        }
         break;
       case PP_INPUTEVENT_TYPE_WHEEL:
-        GotWheelEvent(pp::WheelInputEvent(event));
+        {
+          pp::WheelInputEvent wheel_event(event);
+          event_ptr = new WheelEvent(
+              ConvertEventModifier(wheel_event.GetModifiers()),
+              wheel_event.GetDelta().x(), wheel_event.GetDelta().y(),
+              wheel_event.GetTicks().x(), wheel_event.GetTicks().y(),
+              wheel_event.GetScrollByPage(), wheel_event.GetTimeStamp());
+        }
         break;
       case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-        GotKeyEvent(pp::KeyboardInputEvent(event), "RawKeyDown");
-        break;
       case PP_INPUTEVENT_TYPE_KEYDOWN:
-        GotKeyEvent(pp::KeyboardInputEvent(event), "Down");
-        break;
       case PP_INPUTEVENT_TYPE_KEYUP:
-        GotKeyEvent(pp::KeyboardInputEvent(event), "Up");
-        break;
       case PP_INPUTEVENT_TYPE_CHAR:
-        GotKeyEvent(pp::KeyboardInputEvent(event), "Character");
-        break;
       case PP_INPUTEVENT_TYPE_CONTEXTMENU:
-        GotKeyEvent(pp::KeyboardInputEvent(event), "Context");
-        break;
-      // Note that if we receive an IME event we just send a message back
-      // to the browser to indicate we have received it.
-      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
-        PostMessage(pp::Var("PP_INPUTEVENT_TYPE_IME_COMPOSITION_START"));
-        break;
-      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
-        PostMessage(pp::Var("PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE"));
-        break;
-      case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
-        PostMessage(pp::Var("PP_INPUTEVENT_TYPE_IME_COMPOSITION_END"));
-        break;
-      case PP_INPUTEVENT_TYPE_IME_TEXT:
-        PostMessage(pp::Var("PP_INPUTEVENT_TYPE_IME_COMPOSITION_TEXT"));
+        {
+          pp::KeyboardInputEvent key_event(event);
+          event_ptr = new KeyEvent(
+              ConvertEventModifier(key_event.GetModifiers()),
+              key_event.GetKeyCode(), key_event.GetTimeStamp(),
+              key_event.GetCharacterText().DebugString());
+        }
         break;
       case PP_INPUTEVENT_TYPE_TOUCHSTART:
-        GotTouchEvent(pp::TouchInputEvent(event), "Start");
-        break;
       case PP_INPUTEVENT_TYPE_TOUCHMOVE:
-        GotTouchEvent(pp::TouchInputEvent(event), "Move");
-        break;
       case PP_INPUTEVENT_TYPE_TOUCHEND:
-        GotTouchEvent(pp::TouchInputEvent(event), "End");
-        break;
       case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-        GotTouchEvent(pp::TouchInputEvent(event), "Cancel");
+        {
+          pp::TouchInputEvent touch_event(event);
+
+          TouchEvent::Kind touch_kind = TouchEvent::kNone;
+          if (event.GetType() == PP_INPUTEVENT_TYPE_TOUCHSTART)
+            touch_kind = TouchEvent::kStart;
+          else if (event.GetType() == PP_INPUTEVENT_TYPE_TOUCHMOVE)
+            touch_kind = TouchEvent::kMove;
+          else if (event.GetType() == PP_INPUTEVENT_TYPE_TOUCHEND)
+            touch_kind = TouchEvent::kEnd;
+          else if (event.GetType() == PP_INPUTEVENT_TYPE_TOUCHCANCEL)
+            touch_kind = TouchEvent::kCancel;
+
+          TouchEvent* touch_event_ptr = new TouchEvent(
+              ConvertEventModifier(touch_event.GetModifiers()),
+              touch_kind, touch_event.GetTimeStamp());
+          event_ptr = touch_event_ptr;
+
+          uint32_t touch_count =
+              touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES);
+          for (uint32_t i = 0; i < touch_count; ++i) {
+            pp::TouchPoint point = touch_event.GetTouchByIndex(
+                PP_TOUCHLIST_TYPE_CHANGEDTOUCHES, i);
+            touch_event_ptr->AddTouch(point.id(), point.position().x(),
+                point.position().y(), point.radii().x(), point.radii().y(),
+                point.rotation_angle(), point.pressure());
+          }
+        }
         break;
       default:
-        assert(false);
-        return false;
+        {
+          // For any unhandled events, send a message to the browser
+          // so that the user is aware of these and can investigate.
+          std::stringstream oss;
+          oss << "Default (unhandled) event, type=" << event.GetType();
+          PostMessage(oss.str());
+        }
+        break;
     }
+    event_queue_.Push(event_ptr);
     return true;
   }
+
+  // Return an event from the thread-safe queue, waiting for a new event
+  // to occur if the queue is empty.  Set |was_queue_cancelled| to indicate
+  // whether the queue was cancelled.  If it was cancelled, then the
+  // Event* will be NULL.
+  const Event* GetEventFromQueue(bool *was_queue_cancelled) {
+    Event* event = NULL;
+    QueueGetResult result = event_queue_.GetItem(&event, kWait);
+    if (result == kQueueWasCancelled) {
+      *was_queue_cancelled = true;
+      return NULL;
+    }
+    *was_queue_cancelled = false;
+    return event;
+  }
+
+  // This method is called from the worker thread using CallOnMainThread.
+  // It is not static, and allows PostMessage to be called.
+  void* PostStringToBrowser(int32_t result, std::string data_to_send) {
+    PostMessage(pp::Var(data_to_send));
+    return 0;
+  }
+
+  // |ProcessEventOnWorkerThread| is a static method that is run
+  // by a thread.  It pulls events from the queue, converts
+  // them to a string, and calls CallOnMainThread so that
+  // PostStringToBrowser will be called, which will call PostMessage
+  // to send the converted event back to the browser.
+  static void* ProcessEventOnWorkerThread(void* param) {
+    EventInstance* event_instance = static_cast<EventInstance*>(param);
+    while (1) {
+      // Grab a generic Event* so that down below we can call
+      // event->ToString(), which will use the correct virtual method
+      // to convert the event to a string.  This 'conversion' is
+      // the 'work' being done on the worker thread.  In an application
+      // the work might involve changing application state based on
+      // the event that was processed.
+      bool queue_cancelled;
+      const Event* event = event_instance->GetEventFromQueue(&queue_cancelled);
+      if (queue_cancelled) {
+        printf("Queue was cancelled, worker thread exiting\n");
+        pthread_exit(NULL);
+      }
+      std::string event_string = event->ToString();
+      delete event;
+      // Need to invoke callback on main thread.
+      pp::Module::Get()->core()->CallOnMainThread(
+          0,
+          event_instance->callback_factory().NewCallback(
+              &EventInstance::PostStringToBrowser,
+              event_string));
+    }  // end of while loop.
+    return 0;
+  }
+
+  // Return the callback factory.
+  // Allows the static method (ProcessEventOnWorkerThread) to use
+  // the |event_instance| pointer to get the factory.
+  pp::CompletionCallbackFactory<EventInstance>& callback_factory() {
+    return callback_factory_;
+  }
+
+  private:
+    // Cancels the queue (which will cause the thread to exit).
+    // Wait for the thread.  Set |event_thread_| to NULL so we only
+    // execute the body once.
+    void CancelQueueAndWaitForWorker() {
+      if (event_thread_) {
+        event_queue_.CancelQueue();
+        pthread_join(event_thread_, NULL);
+        event_thread_ = NULL;
+      }
+    }
+    pthread_t event_thread_;
+    LockingQueue<Event*> event_queue_;
+    pp::CompletionCallbackFactory<EventInstance> callback_factory_;
 };
 
 // The EventModule provides an implementation of pp::Module that creates
@@ -274,11 +341,14 @@ class EventModule : public pp::Module {
   }
 };
 
+}  // namespace
+
 // Implement the required pp::CreateModule function that creates our specific
 // kind of Module (in this case, EventModule).  This is part of the glue code
 // that makes our example accessible to ppapi.
 namespace pp {
   Module* CreateModule() {
-    return new EventModule();
+    return new event_queue::EventModule();
   }
 }
+
