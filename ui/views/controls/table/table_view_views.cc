@@ -49,6 +49,7 @@ TableView::TableView(ui::TableModel* model,
                      TableTypes table_type,
                      bool single_selection,
                      bool resizable_columns,
+                     // TODO(sky); remove autosize_columns as it's not needed.
                      bool autosize_columns)
     : model_(NULL),
       columns_(columns),
@@ -128,6 +129,39 @@ void TableView::Select(int model_row) {
 
 int TableView::FirstSelectedRow() {
   return selected_row_;
+}
+
+void TableView::SetColumnVisibility(int id, bool is_visible) {
+  if (is_visible == IsColumnVisible(id))
+    return;
+
+  if (is_visible) {
+    VisibleColumn visible_column;
+    visible_column.column = FindColumnByID(id);
+    visible_columns_.push_back(visible_column);
+  } else {
+    for (size_t i = 0; i < visible_columns_.size(); ++i) {
+      if (visible_columns_[i].column.id == id) {
+        visible_columns_.erase(visible_columns_.begin() + i);
+        break;
+      }
+    }
+  }
+  UpdateVisibleColumnSizes();
+  Layout();
+  SchedulePaint();
+  if (header_) {
+    header_->Layout();
+    header_->SchedulePaint();
+  }
+}
+
+bool TableView::IsColumnVisible(int id) const {
+  for (size_t i = 0; i < visible_columns_.size(); ++i) {
+    if (visible_columns_[i].column.id == id)
+      return true;
+  }
+  return false;
 }
 
 void TableView::Layout() {
@@ -259,7 +293,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   if (!RowCount() || visible_columns_.empty())
     return;
 
-  const PaintRegion region(GetPaintRegion(canvas));
+  const PaintRegion region(GetPaintRegion(GetPaintBounds(canvas)));
   if (region.min_column == -1)
     return;  // No need to paint anything.
 
@@ -353,22 +387,16 @@ void TableView::UpdateVisibleColumnSizes() {
   }
 }
 
-TableView::PaintRegion TableView::GetPaintRegion(gfx::Canvas* canvas) {
+TableView::PaintRegion TableView::GetPaintRegion(
+    const gfx::Rect& bounds) const {
   DCHECK(!visible_columns_.empty());
   DCHECK(RowCount());
 
-  gfx::Rect paint_rect;
-  SkRect sk_clip_rect;
-  if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
-    paint_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
-  else
-    paint_rect = GetVisibleBounds();
-
   PaintRegion region;
   region.min_row = std::min(RowCount() - 1,
-                            std::max(0, paint_rect.y() / row_height_));
-  region.max_row = paint_rect.bottom() / row_height_;
-  if (paint_rect.bottom() % row_height_ != 0)
+                            std::max(0, bounds.y() / row_height_));
+  region.max_row = bounds.bottom() / row_height_;
+  if (bounds.bottom() % row_height_ != 0)
     region.max_row++;
   region.max_row = std::min(region.max_row, RowCount());
 
@@ -381,15 +409,22 @@ TableView::PaintRegion TableView::GetPaintRegion(gfx::Canvas* canvas) {
   region.max_column = visible_columns_.size();
   for (size_t i = 0; i < visible_columns_.size(); ++i) {
     int max_x = visible_columns_[i].x + visible_columns_[i].width;
-    if (region.min_column == -1 && max_x >= paint_rect.x())
+    if (region.min_column == -1 && max_x >= bounds.x())
       region.min_column = static_cast<int>(i);
     if (region.min_column != -1 &&
-        visible_columns_[i].x >= paint_rect.right()) {
+        visible_columns_[i].x >= bounds.right()) {
       region.max_column = i;
       break;
     }
   }
   return region;
+}
+
+gfx::Rect TableView::GetPaintBounds(gfx::Canvas* canvas) const {
+  SkRect sk_clip_rect;
+  if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
+    return gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
+  return GetVisibleBounds();
 }
 
 int TableView::GetIconIndex() {
@@ -403,6 +438,15 @@ int TableView::GetIconIndex() {
       return static_cast<int>(i);
   }
   return -1;
+}
+
+ui::TableColumn TableView::FindColumnByID(int id) const {
+  for (size_t i = 0; i < columns_.size(); ++i) {
+    if (columns_[i].id == id)
+      return columns_[i];
+  }
+  NOTREACHED();
+  return ui::TableColumn();
 }
 
 }  // namespace views

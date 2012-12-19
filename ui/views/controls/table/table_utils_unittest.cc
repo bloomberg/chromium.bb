@@ -32,7 +32,7 @@ ui::TableColumn CreateTableColumnWithWidth(int width) {
   return column;
 }
 
-}
+}  // namespace
 
 // Verifies columns with a specified width is honored.
 TEST(TableUtilsTest, SetWidthHonored) {

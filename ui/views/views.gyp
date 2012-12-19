@@ -674,6 +674,7 @@
         'controls/tabbed_pane/tabbed_pane_unittest.cc',
         'controls/table/table_utils_unittest.cc',
         'controls/table/table_view_unittest.cc',
+        'controls/table/table_view_views_unittest.cc',
         'controls/table/test_table_model.cc',
         'controls/table/test_table_model.h',
         'controls/textfield/native_textfield_views_unittest.cc',
@@ -722,8 +723,9 @@
           'sources/': [
             ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
             ['exclude', 'controls/table/table_utils_unittest.cc'],
+            ['exclude', 'controls/table/table_view_views_unittest.cc'],
             ['exclude', 'controls/table/test_table_model.cc'],
-            ['exclude', 'controls/table/test_table_model.cc'],
+            ['exclude', 'controls/table/test_table_model.h'],
             ['exclude', 'controls/tree/tree_view_views_unittest.cc'],
           ],
         }],

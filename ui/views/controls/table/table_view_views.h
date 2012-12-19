@@ -40,6 +40,7 @@ namespace views {
 
 class TableHeader;
 class TableViewObserver;
+class TableViewTestHelper;
 
 // The cells in the first column of a table can contain:
 // - only text
@@ -55,7 +56,7 @@ class VIEWS_EXPORT TableView
       public ui::TableModelObserver {
  public:
   // Used to track a visible column. Useful only for the header.
-  struct VisibleColumn {
+  struct VIEWS_EXPORT VisibleColumn {
     VisibleColumn();
     ~VisibleColumn();
 
@@ -113,6 +114,10 @@ class VIEWS_EXPORT TableView
   // Returns the first selected row in terms of the model.
   int FirstSelectedRow();
 
+  // Changes the visibility of the specified column (by id).
+  void SetColumnVisibility(int id, bool is_visible);
+  bool IsColumnVisible(int id) const;
+
   void SetObserver(TableViewObserver* observer) {
     table_view_observer_ = observer;
   }
@@ -143,9 +148,13 @@ class VIEWS_EXPORT TableView
   virtual void OnBlur() OVERRIDE;
 
  private:
+  friend class TableViewTestHelper;
+
   // Used during painting to determine the range of cells that need to be
   // painted.
-  struct PaintRegion {
+  // NOTE: the indices returned by this are in terms of the view and in
+  // particular |visible_columns_|.
+  struct VIEWS_EXPORT PaintRegion {
     PaintRegion();
     ~PaintRegion();
 
@@ -171,12 +180,20 @@ class VIEWS_EXPORT TableView
   // Updates the |x| and |width| of each of the columns in |visible_columns_|.
   void UpdateVisibleColumnSizes();
 
-  // Returns the cells that need to be painted.
-  PaintRegion GetPaintRegion(gfx::Canvas* canvas);
+  // Returns the cells that need to be painted for the specified region.
+  // |bounds| is in terms of |this|.
+  PaintRegion GetPaintRegion(const gfx::Rect& bounds) const;
+
+  // Returns the bounds that need to be painted based on the clip set on
+  // |canvas|.
+  gfx::Rect GetPaintBounds(gfx::Canvas* canvas) const;
 
   // Returns the index into |visible_columns_| to draw the icon at, or -1 if no
   // icon is to be drawn.
   int GetIconIndex();
+
+  // Returns the TableColumn matching the specified id.
+  ui::TableColumn FindColumnByID(int id) const;
 
   ui::TableModel* model_;
 
