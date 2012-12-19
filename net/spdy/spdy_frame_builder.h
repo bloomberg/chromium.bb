@@ -26,6 +26,9 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
  public:
   ~SpdyFrameBuilder();
 
+  // Initializes a SpdyFrameBuilder with a buffer of given size
+  explicit SpdyFrameBuilder(size_t size);
+
   // Initializes a SpdyFrameBuilder with a buffer of given size,
   // populate with a SPDY control frame header based on
   // |type|, |flags|, and |spdy_version|.

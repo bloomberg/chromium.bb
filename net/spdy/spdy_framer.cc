@@ -617,9 +617,10 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
   return bytes_to_read;
 }
 
-size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock* headers) const {
+size_t SpdyFramer::GetSerializedLength(const int spdy_version,
+                                       const SpdyHeaderBlock* headers) {
   const size_t num_name_value_pairs_size
-      = (spdy_version_ < 3) ? sizeof(uint16) : sizeof(uint32);
+      = (spdy_version < 3) ? sizeof(uint16) : sizeof(uint32);
   const size_t length_of_name_size = num_name_value_pairs_size;
   const size_t length_of_value_size = num_name_value_pairs_size;
 
@@ -636,8 +637,9 @@ size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock* headers) const {
 }
 
 void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
-                                  const SpdyHeaderBlock* headers) const {
-  if (spdy_version_ < 3) {
+                                  const int spdy_version,
+                                  const SpdyHeaderBlock* headers) {
+  if (spdy_version < 3) {
     frame->WriteUInt16(headers->size());  // Number of headers.
   } else {
     frame->WriteUInt32(headers->size());  // Number of headers.
@@ -645,7 +647,7 @@ void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
   SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
     bool wrote_header;
-    if (spdy_version_ < 3) {
+    if (spdy_version < 3) {
       wrote_header = frame->WriteString(it->first);
       wrote_header &= frame->WriteString(it->second);
     } else {
@@ -1260,7 +1262,7 @@ SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
 
   // Find our length.
   size_t frame_size = SpdySynStreamControlFrame::size() +
-                      GetSerializedLength(headers);
+                      GetSerializedLength(spdy_version_, headers);
 
   SpdyFrameBuilder frame(SYN_STREAM, flags, spdy_version_, frame_size);
   frame.WriteUInt32(stream_id);
@@ -1273,7 +1275,7 @@ SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
   // Priority is 2 bits for <spdy3, 3 bits otherwise.
   frame.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
   frame.WriteUInt8((spdy_version_ < 3) ? 0 : credential_slot);
-  WriteHeaderBlock(&frame, headers);
+  WriteHeaderBlock(&frame, spdy_version_, headers);
   DCHECK_EQ(frame.length(), frame_size);
 
   scoped_ptr<SpdySynStreamControlFrame> syn_frame(
@@ -1295,7 +1297,7 @@ SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
 
   // Find our length.
   size_t frame_size = SpdySynReplyControlFrame::size() +
-                      GetSerializedLength(headers);
+                      GetSerializedLength(spdy_version_, headers);
   // In SPDY 2, there were 2 unused bytes before payload.
   if (spdy_version_ < 3) {
     frame_size += 2;
@@ -1306,7 +1308,7 @@ SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
   if (spdy_version_ < 3) {
     frame.WriteUInt16(0);  // Unused
   }
-  WriteHeaderBlock(&frame, headers);
+  WriteHeaderBlock(&frame, spdy_version_, headers);
   DCHECK_EQ(frame.length(), frame_size);
 
   scoped_ptr<SpdySynReplyControlFrame> reply_frame(
@@ -1391,7 +1393,7 @@ SpdyHeadersControlFrame* SpdyFramer::CreateHeaders(
 
   // Find our length.
   size_t frame_size = SpdyHeadersControlFrame::size() +
-                      GetSerializedLength(headers);
+                      GetSerializedLength(spdy_version_, headers);
   // In SPDY 2, there were 2 unused bytes before payload.
   if (spdy_version_ < 3) {
     frame_size += 2;
@@ -1402,7 +1404,7 @@ SpdyHeadersControlFrame* SpdyFramer::CreateHeaders(
   if (spdy_version_ < 3) {
     frame.WriteUInt16(0);  // Unused
   }
-  WriteHeaderBlock(&frame, headers);
+  WriteHeaderBlock(&frame, spdy_version_, headers);
   DCHECK_EQ(frame.length(), frame_size);
 
   scoped_ptr<SpdyHeadersControlFrame> headers_frame(

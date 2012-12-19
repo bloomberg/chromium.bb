@@ -263,6 +263,15 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // purposes.)
   static const size_t kHeaderDataChunkMaxSize;
 
+  // Serializes a SpdyHeaderBlock.
+  static void WriteHeaderBlock(SpdyFrameBuilder* frame,
+                               const int spdy_version,
+                               const SpdyHeaderBlock* headers);
+
+  // Retrieve serialized length of SpdyHeaderBlock.
+  static size_t GetSerializedLength(const int spdy_version,
+                                    const SpdyHeaderBlock* headers);
+
   // Create a new Framer, provided a SPDY version.
   explicit SpdyFramer(int version);
   virtual ~SpdyFramer();
@@ -514,13 +523,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   //   *len is reduced by the number of bytes read.
   size_t UpdateCurrentFrameBuffer(const char** data, size_t* len,
                                   size_t max_bytes);
-
-  // Retrieve serialized length of SpdyHeaderBlock.
-  size_t GetSerializedLength(const SpdyHeaderBlock* headers) const;
-
-  // Serializes a SpdyHeaderBlock.
-  void WriteHeaderBlock(SpdyFrameBuilder* frame,
-                        const SpdyHeaderBlock* headers) const;
 
   void WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
                            z_stream* out) const;

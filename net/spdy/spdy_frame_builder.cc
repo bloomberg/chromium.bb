@@ -23,6 +23,12 @@ FlagsAndLength CreateFlagsAndLength(SpdyControlFlags flags, size_t length) {
 
 }  // namespace
 
+SpdyFrameBuilder::SpdyFrameBuilder(size_t size)
+    : buffer_(new char[size]),
+      capacity_(size),
+      length_(0) {
+}
+
 SpdyFrameBuilder::SpdyFrameBuilder(SpdyControlType type,
                                    SpdyControlFlags flags,
                                    int spdy_version,
