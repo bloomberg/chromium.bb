@@ -1043,6 +1043,24 @@ int SSLClientSocketOpenSSL::BufferRecv(void) {
   if (transport_recv_busy_)
     return ERR_IO_PENDING;
 
+  // Determine how much was requested from |transport_bio_| that was not
+  // actually available.
+  size_t requested = BIO_ctrl_get_read_request(transport_bio_);
+  if (requested == 0) {
+    // This is not a perfect match of error codes, as no operation is
+    // actually pending. However, returning 0 would be interpreted as
+    // a possible sign of EOF, which is also an inappropriate match.
+    return ERR_IO_PENDING;
+  }
+
+  // Known Issue: While only reading |requested| data is the more correct
+  // implementation, it has the downside of resulting in frequent reads:
+  // One read for the SSL record header (~5 bytes) and one read for the SSL
+  // record body. Rather than issuing these reads to the underlying socket
+  // (and constantly allocating new IOBuffers), a single Read() request to
+  // fill |transport_bio_| is issued. As long as an SSL client socket cannot
+  // be gracefully shutdown (via SSL close alerts) and re-used for non-SSL
+  // traffic, this over-subscribed Read()ing will not cause issues.
   size_t max_write = BIO_ctrl_get_write_guarantee(transport_bio_);
   if (!max_write)
     return ERR_IO_PENDING;
