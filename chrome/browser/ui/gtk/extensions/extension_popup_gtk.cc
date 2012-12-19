@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"

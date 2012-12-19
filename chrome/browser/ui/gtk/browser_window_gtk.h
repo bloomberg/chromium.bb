@@ -15,7 +15,7 @@
 #include "base/prefs/public/pref_member.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser_window.h"

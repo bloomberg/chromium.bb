@@ -1,0 +1,30 @@
+<head>
+  <script>
+    function attachListener() {
+      document.getElementById("target").addEventListener("click", listenerFunction, true);
+      document.getElementById("targetParent").addEventListener("click", listenerFunctionParent, true);
+    }
+    function listenerFunctionParent(event) {
+      event.target.textContent = "event handled";
+    }
+    function listenerFunction(event) {
+      event.target.textContent = "event handled";
+    }
+  </script>
+</head>
+<body onload="attachListener()">
+<div id="targetParent">
+  <div id="target"></div>
+</div>
+<p>To begin test, open DevTools, select the Elements panel. Expand the Event Listeners
+pane in the sidebar.
+<ul>
+  <li>Choose the <b>&lt;div id="targetParent"...></b> element.
+You should see the "click" section in the Event Listeners pane. Expand the section to see
+the "listenerFunctionParent" function (at "div#targetParent") under it.
+  <li>Expand the targetParent node in the tree and choose the <b>&lt;div id="target"...></b>
+element. You should see the "click" section in the Event Listeners pane. Expand the section
+to see two functions, "listenerFunctionParent" (at "div#targetParent") and
+"listenerFunction" (at "div#target") under it.
+</ul>
+</body>

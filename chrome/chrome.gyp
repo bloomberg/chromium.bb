@@ -206,15 +206,15 @@
             '..',
           ],
           'sources': [
-            'browser/devtools/browser_list_tabcontents_provider.cc',
-            'browser/devtools/browser_list_tabcontents_provider.h',
-            'browser/devtools/devtools_file_helper.cc',
-            'browser/devtools/devtools_file_helper.h',
-            'browser/devtools/devtools_toggle_action.h',
-            'browser/devtools/devtools_window.cc',
-            'browser/devtools/devtools_window.h',
-            'browser/devtools/remote_debugging_server.cc',
-            'browser/devtools/remote_debugging_server.h',
+            'browser/debugger/browser_list_tabcontents_provider.cc',
+            'browser/debugger/browser_list_tabcontents_provider.h',
+            'browser/debugger/devtools_file_helper.cc',
+            'browser/debugger/devtools_file_helper.h',
+            'browser/debugger/devtools_toggle_action.h',
+            'browser/debugger/devtools_window.cc',
+            'browser/debugger/devtools_window.h',
+            'browser/debugger/remote_debugging_server.cc',
+            'browser/debugger/remote_debugging_server.h',
           ],
           'conditions': [
             ['toolkit_uses_gtk == 1', {
@@ -224,9 +224,9 @@
             }],
             ['OS=="android"', {
               'sources!': [
-                'browser/devtools/browser_list_tabcontents_provider.cc',
-                'browser/devtools/devtools_window.cc',
-                'browser/devtools/remote_debugging_server.cc',
+                'browser/debugger/browser_list_tabcontents_provider.cc',
+                'browser/debugger/devtools_window.cc',
+                'browser/debugger/remote_debugging_server.cc',
               ],
             }],
             ['debug_devtools==1', {

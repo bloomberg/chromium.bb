@@ -167,7 +167,7 @@
     "includes": [22000],
   },
   # This file is generated during the build.
-  "chrome/browser/devtools/frontend/devtools_discovery_page_resources.grd": {
+  "chrome/browser/debugger/frontend/devtools_discovery_page_resources.grd": {
     "includes": [22500],
   },
   "chrome/browser/resources/options_resources.grd": {

@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
