@@ -212,6 +212,13 @@ cr.define('cr.ui', function() {
     DisplayManager.setEnterpriseInfo(messageText);
   };
 
+  /**
+   * Enforces focus on user pod of locked user.
+   */
+  Oobe.forceLockedUserPodFocus = function() {
+    login.AccountPickerScreen.forceLockedUserPodFocus();
+  };
+
   // Export
   return {
     Oobe: Oobe

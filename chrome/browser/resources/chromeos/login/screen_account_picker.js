@@ -175,6 +175,15 @@ cr.define('login', function() {
   };
 
   /**
+   * Enforces focus on user pod of locked user.
+   */
+  AccountPickerScreen.forceLockedUserPodFocus = function() {
+    var row = $('pod-row');
+    if (row.lockedPod)
+      row.focusPod(row.lockedPod, true);
+  };
+
+  /**
    * Sets wallpaper for lock screen.
    */
   AccountPickerScreen.setWallpaper = function() {

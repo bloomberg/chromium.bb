@@ -21,6 +21,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/root_power_manager_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -28,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace {
 
@@ -44,10 +48,12 @@ namespace chromeos {
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
     : ScreenLockerDelegate(screen_locker),
       lock_ready_(false),
-      webui_ready_(false) {
+      webui_ready_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   set_should_emit_login_prompt_visible(false);
   if (ash::Shell::GetInstance())
     ash::Shell::GetInstance()->session_state_controller()->AddObserver(this);
+  DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 }
 
 void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
@@ -124,7 +130,16 @@ content::WebUI* WebUIScreenLocker::GetAssociatedWebUI() {
   return GetWebUI();
 }
 
+void WebUIScreenLocker::FocusUserPod() {
+  if (!webui_ready_)
+    return;
+  webui_login_->RequestFocus();
+  GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.forceLockedUserPodFocus");
+}
+
 WebUIScreenLocker::~WebUIScreenLocker() {
+  DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
+
   if (ash::Shell::GetInstance())
     ash::Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
@@ -261,6 +276,23 @@ void WebUIScreenLocker::OnSessionStateEvent(
 void WebUIScreenLocker::OnWidgetClosing(views::Widget* widget) {
   lock_window_->RemoveObserver(this);
   lock_window_ = NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootPowerManagerObserver override.
+
+void WebUIScreenLocker::OnResume(const base::TimeDelta& sleep_duration) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
+}
+
+void WebUIScreenLocker::OnLidEvent(bool open, const base::TimeTicks& time) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

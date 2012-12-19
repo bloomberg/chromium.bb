@@ -10,11 +10,13 @@
 #include "ash/wm/session_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/lock_window.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
+#include "chromeos/dbus/root_power_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget.h"
@@ -40,7 +42,8 @@ class WebUIScreenLocker : public WebUILoginView,
                           public ScreenLockerDelegate,
                           public LockWindow::Observer,
                           public ash::SessionStateObserver,
-                          public views::WidgetObserver {
+                          public views::WidgetObserver,
+                          public RootPowerManagerObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
@@ -91,10 +94,17 @@ class WebUIScreenLocker : public WebUILoginView,
   // WidgetObserver override.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
+  // RootPowerManagerObserver overrides:
+  virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void OnLidEvent(bool open, const base::TimeTicks& time) OVERRIDE;
+
  private:
   friend class test::WebUIScreenLockerTester;
 
   virtual ~WebUIScreenLocker();
+
+  // Ensures that user pod is focused.
+  void FocusUserPod();
 
   // The screen locker window.
   views::Widget* lock_window_;
@@ -113,6 +123,8 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
+
+  base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLocker);
 };
