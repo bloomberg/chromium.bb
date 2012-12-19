@@ -64,6 +64,8 @@
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
       'test/animation_test_common.h',
+      'test/fake_content_layer.cc',
+      'test/fake_content_layer.h',
       'test/fake_content_layer_client.cc',
       'test/fake_content_layer_client.h',
       'test/fake_impl_proxy.h',

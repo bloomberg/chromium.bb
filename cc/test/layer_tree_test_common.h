@@ -164,14 +164,20 @@ private:
 
 } // namespace cc
 
-#define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
-    TEST_F(TEST_FIXTURE_NAME, runSingleThread)            \
-    {                                                     \
-        runTest(false);                                   \
-    }                                                     \
-    TEST_F(TEST_FIXTURE_NAME, runMultiThread)             \
-    {                                                     \
-        runTest(true);                                    \
+#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME) \
+    TEST_F(TEST_FIXTURE_NAME, runSingleThread) \
+    { \
+        runTest(false); \
     }
+
+#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
+    TEST_F(TEST_FIXTURE_NAME, runMultiThread) \
+    { \
+        runTest(true); \
+    }
+
+#define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
+    SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME) \
+    MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
 
 #endif  // CC_TEST_LAYER_TREE_TEST_COMMON_H_
