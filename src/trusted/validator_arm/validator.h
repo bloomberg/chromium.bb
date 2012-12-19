@@ -11,11 +11,13 @@
  * The SFI validator, and some utility classes it uses.
  */
 
+#include <limits>
 #include <stdlib.h>
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator_arm/address_set.h"
 #include "native_client/src/trusted/validator_arm/cpuid_arm.h"
@@ -408,7 +410,12 @@ class DecodedInstruction {
 class CodeSegment {
  public:
   CodeSegment(const uint8_t* base, uint32_t start_addr, size_t size)
-      : base_(base), start_addr_(start_addr), size_(size) {}
+      : base_(base),
+        start_addr_(start_addr),
+        size_(static_cast<uint32_t>(size)) {
+    CHECK(size <= std::numeric_limits<uint32_t>::max());
+    CHECK(start_addr <= std::numeric_limits<uint32_t>::max() - size_);
+  }
 
   uint32_t begin_addr() const { return start_addr_; }
   uint32_t end_addr() const { return start_addr_ + size_; }
@@ -434,7 +441,7 @@ class CodeSegment {
  private:
   const uint8_t* base_;
   uint32_t start_addr_;
-  size_t size_;
+  uint32_t size_;
 };
 
 // Enumerated type of possible problems reported by the validator.

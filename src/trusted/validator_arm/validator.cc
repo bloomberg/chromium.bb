@@ -631,7 +631,7 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
   // bundle-aligned. This invariant is checked in the validator's C
   // interface and it therefore not checked again.
   NACL_COMPILE_TIME_ASSERT((nacl_arm_dec::kArm32InstSize / CHAR_BIT) == 4);
-  for (uintptr_t va = old_code.begin_addr();
+  for (uint32_t va = old_code.begin_addr();
        va != old_code.end_addr();
        va += nacl_arm_dec::kArm32InstSize / CHAR_BIT) {
     Instruction old_insn = old_code[va];

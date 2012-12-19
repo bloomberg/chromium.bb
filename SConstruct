@@ -1940,7 +1940,8 @@ def MakeBaseTrustedEnv():
       'src/trusted/threading/build.scons',
       'src/trusted/validator/build.scons',
       'src/trusted/validator/driver/build.scons',
-      'src/trusted/validator_ragel/build.scons',
+      'src/trusted/validator/x86/32/build.scons',
+      'src/trusted/validator/x86/64/build.scons',
       'src/trusted/validator/x86/build.scons',
       'src/trusted/validator/x86/decoder/build.scons',
       'src/trusted/validator/x86/decoder/generator/build.scons',
@@ -1948,8 +1949,8 @@ def MakeBaseTrustedEnv():
       'src/trusted/validator/x86/ncval_seg_sfi/build.scons',
       'src/trusted/validator/x86/ncval_seg_sfi/generator/build.scons',
       'src/trusted/validator/x86/testing/enuminsts/build.scons',
-      'src/trusted/validator/x86/32/build.scons',
-      'src/trusted/validator/x86/64/build.scons',
+      'src/trusted/validator_arm/build.scons',
+      'src/trusted/validator_ragel/build.scons',
       'src/trusted/validator_x86/build.scons',
       'src/trusted/weak_ref/build.scons',
       'tests/common/build.scons',
@@ -1963,7 +1964,7 @@ def MakeBaseTrustedEnv():
       'tests/unittests/trusted/asan/build.scons',
       'tests/unittests/trusted/bits/build.scons',
       'tests/unittests/trusted/platform_qualify/build.scons',
-      'tests/unittests/trusted/service_runtime/build.scons'
+      'tests/unittests/trusted/service_runtime/build.scons',
   ])
 
   base_env.AddMethod(SDKInstallBin)
@@ -1973,7 +1974,6 @@ def MakeBaseTrustedEnv():
   if not base_env.Bit('target_x86_64'):
     base_env.Append(
         BUILD_SCONSCRIPTS = [
-          'src/trusted/validator_arm/build.scons',
           'src/trusted/validator_mips/build.scons',
         ])
 

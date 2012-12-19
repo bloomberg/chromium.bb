@@ -6,10 +6,8 @@
 import os
 Import('env')
 
-if not env.Bit('linux'): Return()
-
 # Android compiler cannot compile NDK C++ headers with these.
-if not env.Bit('android'):
+if env.Bit('linux') and not env.Bit('android'):
   env.Append(
       # TODO(cbiffle): give everyone else these warnings too.
       # TODO(karl): Why does -fno-rtti cause linking issues.
@@ -154,17 +152,6 @@ env.ComponentLibrary('ncvalidate_arm_v2',
 env.ComponentLibrary('arm_validator_reporters',
                      ['problem_reporter.cc'])
 
-ncval = env.ComponentProgram(
-    'arm-ncval-core',
-    ['ncval.cc'],
-    EXTRA_LIBS=['arm_validator_reporters',
-                'arm_validator_core',
-                'platform',
-                env.NaClTargetArchSuffix('ncfileutils'),
-                '${OPTIONAL_COVERAGE_LIBS}'])
-
-env.SDKInstallBin('ncval', ncval, target='arm')
-
 # Build test environment to show that we are compiling in the test
 # environment (rather than for the TCB).
 gtest_env = env.MakeGTestEnv()
@@ -188,6 +175,24 @@ address_set_test = gtest_env.Command(target='address_set_test.out',
 
 # TODO(cbiffle): get this wrapped in QEMU.
 #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
+
+# The rest are ncval and tests, they currently only work on 32bit linux.
+if not env.Bit('linux') or env.Bit('target_x86_64'):
+  Return()
+
+ncval = env.ComponentProgram(
+    'arm-ncval-core',
+    ['ncval.cc'],
+    EXTRA_LIBS=['arm_validator_reporters',
+                'arm_validator_core',
+                'platform',
+                env.NaClTargetArchSuffix('ncfileutils'),
+                '${OPTIONAL_COVERAGE_LIBS}'])
+
+env.SDKInstallBin('ncval', ncval, target='arm')
+
+# TODO(shcherbina): make these tests run on windows as well once
+# http://code.google.com/p/nativeclient/issues/detail?id=3217 is fixed.
 
 validator_tests = {
   'test_external_jumps': 1,
