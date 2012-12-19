@@ -1,7 +1,7 @@
 In order to use this with spec2k you will need to:
 
 * copy stuff from a real spec harness via:
-  run_all.sh PoplateFromSpecHarness <path-to-real-spec-harness>
+  run_all.sh PopulateFromSpecHarness <path-to-real-spec-harness>
 
 * possibly edit the run_all.sh
 

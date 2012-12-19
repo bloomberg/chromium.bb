@@ -611,7 +611,7 @@ build-libs-pnacl() {
 #@
 #@ CleanBenchmarks <benchmark>*
 #@
-#@   this is a deep clean and you have to rerun PoplateFromSpecHarness
+#@   this is a deep clean and you have to rerun PopulateFromSpecHarness
 CleanBenchmarks() {
   local list=$(GetBenchmarkList "$@")
   rm -rf bin/
