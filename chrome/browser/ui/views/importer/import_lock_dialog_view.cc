@@ -92,7 +92,3 @@ bool ImportLockDialogView::Cancel() {
                  importer_host_.get(), false));
   return true;
 }
-
-views::View* ImportLockDialogView::GetContentsView() {
-  return this;
-}

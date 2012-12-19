@@ -47,7 +47,6 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   virtual int GetDialogButtons() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
  private:
   friend class MockIdleLogoutSettingsProvider;

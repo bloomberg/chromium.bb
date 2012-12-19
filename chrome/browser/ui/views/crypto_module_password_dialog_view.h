@@ -37,7 +37,6 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::DialogDelegate:
   virtual string16 GetDialogButtonLabel(

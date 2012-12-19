@@ -42,7 +42,6 @@ class DisplayErrorDialog : public views::DialogDelegateView,
 
   // views::WidgetDelegate overrides::
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

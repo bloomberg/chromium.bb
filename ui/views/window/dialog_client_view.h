@@ -35,21 +35,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public FocusChangeListener {
  public:
-  // Parameters for the internal dialog styling.  Default construction
-  // produces parameters for native dialog styling.
-  struct VIEWS_EXPORT StyleParams {
-    StyleParams();
-
-    int button_vedge_margin;
-    int button_hedge_margin;
-    int button_shadow_margin;
-    int button_content_spacing;
-    int related_button_hspacing;
-  };
-
-  DialogClientView(Widget* widget,
-                   View* contents_view,
-                   const StyleParams &params);
+  DialogClientView(Widget* widget, View* contents_view);
   virtual ~DialogClientView();
 
   // Adds the dialog buttons required by the supplied DialogDelegate to the
@@ -69,9 +55,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Accessors in case the user wishes to adjust these buttons.
   TextButton* ok_button() const { return ok_button_; }
   TextButton* cancel_button() const { return cancel_button_; }
-
-  // Creates a StyleParams struct in Chrome style (default is native style).
-  static StyleParams GetChromeStyleParams();
 
   // Returns the number of pixels at the bottom of the dialog which are visually
   // part of the frame, but are actually rendered by the DialogClientView.
@@ -110,6 +93,17 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                              const ui::Event& event) OVERRIDE;
 
  private:
+  // Parameters for the internal dialog styling.
+  struct StyleParams {
+    StyleParams();
+
+    int button_vedge_margin;
+    int button_hedge_margin;
+    int button_shadow_margin;
+    int button_content_spacing;
+    int related_button_hspacing;
+  };
+
   // Create a dialog button of the appropriate type.
   TextButton* CreateDialogButton(ui::DialogButton type, const string16& title);
 

@@ -4,19 +4,27 @@
 
 #include "ui/views/window/dialog_delegate.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_frame_view.h"
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
 
-DialogDelegate* DialogDelegate::AsDialogDelegate() { return this; }
-
 DialogDelegate::~DialogDelegate() {
+}
+
+// static
+bool DialogDelegate::UseNewStyle() {
+  static const bool use_new_style = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewDialogStyle);
+  return use_new_style;
 }
 
 int DialogDelegate::GetDialogButtons() const {
@@ -43,10 +51,6 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 
 bool DialogDelegate::IsDialogButtonVisible(ui::DialogButton button) const {
   return true;
-}
-
-bool DialogDelegate::UseChromeStyle() const {
-  return false;
 }
 
 bool DialogDelegate::AreAcceleratorsEnabled(ui::DialogButton button) {
@@ -93,12 +97,17 @@ View* DialogDelegate::GetInitiallyFocusedView() {
   return NULL;
 }
 
-ClientView* DialogDelegate::CreateClientView(Widget* widget) {
-  DialogClientView::StyleParams params = UseChromeStyle() ?
-      DialogClientView::GetChromeStyleParams() :
-      DialogClientView::StyleParams();
+DialogDelegate* DialogDelegate::AsDialogDelegate() {
+  return this;
+}
 
-  return new DialogClientView(widget, GetContentsView(), params);
+ClientView* DialogDelegate::CreateClientView(Widget* widget) {
+  return new DialogClientView(widget, GetContentsView());
+}
+
+NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
+  return UseNewStyle() ? new DialogFrameView() :
+      WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {
@@ -128,6 +137,10 @@ Widget* DialogDelegateView::GetWidget() {
 
 const Widget* DialogDelegateView::GetWidget() const {
   return View::GetWidget();
+}
+
+View* DialogDelegateView::GetContentsView() {
+  return this;
 }
 
 }  // namespace views

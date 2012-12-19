@@ -251,10 +251,6 @@ gfx::Size AboutIPCDialog::GetPreferredSize() {
   return gfx::Size(800, 400);
 }
 
-views::View* AboutIPCDialog::GetContentsView() {
-  return this;
-}
-
 int AboutIPCDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }

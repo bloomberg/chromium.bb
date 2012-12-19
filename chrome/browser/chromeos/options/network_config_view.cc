@@ -186,10 +186,6 @@ ui::ModalType NetworkConfigView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-views::View* NetworkConfigView::GetContentsView() {
-  return this;
-}
-
 void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name =
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);

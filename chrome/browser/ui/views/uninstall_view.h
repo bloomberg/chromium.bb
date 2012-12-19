@@ -44,7 +44,6 @@ class UninstallView : public views::ButtonListener,
 
   // Overridden from views::WidgetDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;

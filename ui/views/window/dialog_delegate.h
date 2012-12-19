@@ -14,7 +14,6 @@
 namespace views {
 
 class DialogClientView;
-class View;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -28,9 +27,10 @@ class View;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
-  virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
-
   virtual ~DialogDelegate();
+
+  // Returns whether to use the new dialog style.
+  static bool UseNewStyle();
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: If an OK button is provided, you should provide a
@@ -57,10 +57,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Returns whether the specified dialog button is visible.
   virtual bool IsDialogButtonVisible(ui::DialogButton button) const;
-
-  // Returns whether to use chrome style for the button strip (like WebUI). If
-  // false, native style padding is used.
-  virtual bool UseChromeStyle() const;
 
   // Returns whether accelerators are enabled on the button. This is invoked
   // when an accelerator is pressed, not at construction time. This
@@ -95,9 +91,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   virtual bool Accept(bool window_closing);
   virtual bool Accept();
 
-  // Overridden from WindowDelegate:
+  // Overridden from WidgetDelegate:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
+  virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
   virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 
   // Called when the window has been closed.
   virtual void OnClose() {}
@@ -124,6 +122,7 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
   // Overridden from DialogDelegate:
   virtual Widget* GetWidget() OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
+  virtual View* GetContentsView() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DialogDelegateView);

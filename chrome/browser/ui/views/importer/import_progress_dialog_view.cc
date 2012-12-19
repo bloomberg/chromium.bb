@@ -135,10 +135,6 @@ bool ImportProgressDialogView::Cancel() {
   return false;
 }
 
-views::View* ImportProgressDialogView::GetContentsView() {
-  return this;
-}
-
 void ImportProgressDialogView::InitControlLayout() {
   using views::GridLayout;
   using views::ColumnSet;

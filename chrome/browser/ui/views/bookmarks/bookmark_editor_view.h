@@ -85,7 +85,6 @@ class BookmarkEditorView : public BookmarkEditor,
   virtual string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool AreAcceleratorsEnabled(ui::DialogButton button) OVERRIDE;
-  virtual views::View* GetContentsView()  OVERRIDE;
 
   // views::View:
   virtual void Layout() OVERRIDE;

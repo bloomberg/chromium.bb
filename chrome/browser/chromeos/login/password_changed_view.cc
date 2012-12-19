@@ -72,10 +72,6 @@ ui::ModalType PasswordChangedView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-views::View* PasswordChangedView::GetContentsView() {
-  return this;
-}
-
 string16 PasswordChangedView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE);

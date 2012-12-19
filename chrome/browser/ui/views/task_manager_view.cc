@@ -302,7 +302,6 @@ class TaskManagerView : public views::ButtonListener,
   virtual std::string GetWindowName() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::TableViewObserver:
   virtual void OnSelectionChanged() OVERRIDE;
@@ -684,10 +683,6 @@ void TaskManagerView::WindowClosing() {
   if (instance_ == this)
     instance_ = NULL;
   task_manager_->OnWindowClosed();
-}
-
-views::View* TaskManagerView::GetContentsView() {
-  return this;
 }
 
 // views::TableViewObserver implementation.

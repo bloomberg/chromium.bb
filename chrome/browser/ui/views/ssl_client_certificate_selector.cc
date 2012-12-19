@@ -213,10 +213,6 @@ views::View* SSLClientCertificateSelector::GetInitiallyFocusedView() {
   return table_;
 }
 
-views::View* SSLClientCertificateSelector::GetContentsView() {
-  return this;
-}
-
 views::View* SSLClientCertificateSelector::GetExtraView() {
   return view_cert_button_container_;
 }

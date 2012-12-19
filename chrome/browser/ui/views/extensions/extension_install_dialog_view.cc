@@ -116,7 +116,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -581,10 +580,6 @@ ui::ModalType ExtensionInstallDialogView::GetModalType() const {
 
 string16 ExtensionInstallDialogView::GetWindowTitle() const {
   return prompt_.GetDialogTitle();
-}
-
-views::View* ExtensionInstallDialogView::GetContentsView() {
-  return this;
 }
 
 void ExtensionInstallDialogView::LinkClicked(views::Link* source,

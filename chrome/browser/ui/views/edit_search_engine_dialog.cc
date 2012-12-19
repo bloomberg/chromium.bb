@@ -98,10 +98,6 @@ bool EditSearchEngineDialog::Accept() {
   return true;
 }
 
-views::View* EditSearchEngineDialog::GetContentsView() {
-  return this;
-}
-
 void EditSearchEngineDialog::ContentsChanged(Textfield* sender,
                                              const string16& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();

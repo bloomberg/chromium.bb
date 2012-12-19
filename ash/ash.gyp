@@ -305,8 +305,6 @@
         'wm/custom_frame_view_ash.h',
         'wm/default_window_resizer.cc',
         'wm/default_window_resizer.h',
-        'wm/dialog_frame_view.cc',
-        'wm/dialog_frame_view.h',
         'wm/drag_window_controller.cc',
         'wm/drag_window_controller.h',
         'wm/drag_window_resizer.cc',

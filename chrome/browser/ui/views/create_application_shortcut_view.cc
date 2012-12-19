@@ -372,11 +372,6 @@ bool CreateApplicationShortcutView::Accept() {
   return true;
 }
 
-
-views::View* CreateApplicationShortcutView::GetContentsView() {
-  return this;
-}
-
 views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
     const string16& text, bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);

@@ -113,19 +113,8 @@ template <> const char DialogButton<TextButton>::kViewClassName[] =
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, public:
 
-DialogClientView::StyleParams::StyleParams()
-    : button_vedge_margin(kButtonVEdgeMargin),
-      button_hedge_margin(kButtonHEdgeMargin),
-      button_shadow_margin(0),
-      button_content_spacing(kDialogButtonContentSpacing),
-      related_button_hspacing(kRelatedButtonHSpacing) {
-}
-
-DialogClientView::DialogClientView(Widget* owner,
-                                   View* contents_view,
-                                   const StyleParams &params)
+DialogClientView::DialogClientView(Widget* owner, View* contents_view)
     : ClientView(owner, contents_view),
-      style_params_(params),
       ok_button_(NULL),
       cancel_button_(NULL),
       default_button_(NULL),
@@ -194,7 +183,7 @@ void DialogClientView::OnWillChangeFocus(View* focused_before,
   // change once we move completely to Chrome style.  See
   // http://codereview.chromium.org/10230 for a rough idea of changes to be
   // undone.
-  if (GetDialogDelegate()->UseChromeStyle())
+  if (DialogDelegate::UseNewStyle())
     return;
 
   TextButton* new_default_button = NULL;
@@ -258,17 +247,6 @@ void DialogClientView::CancelWindow() {
   // proceeding. This checking _isn't_ done here, but in the WM_CLOSE handler,
   // so that the close box on the window also shares this code path.
   Close();
-}
-
-// static
-DialogClientView::StyleParams DialogClientView::GetChromeStyleParams() {
-  StyleParams params;
-  params.button_vedge_margin = 0;
-  params.button_hedge_margin = 0;
-  params.button_shadow_margin = views::GetChromeStyleButtonShadowMargin();
-  params.button_content_spacing = 0;
-  params.related_button_hspacing = 10;
-  return params;
 }
 
 int DialogClientView::GetBottomMargin() {
@@ -418,15 +396,30 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, private:
 
+DialogClientView::StyleParams::StyleParams()
+    : button_vedge_margin(kButtonVEdgeMargin),
+      button_hedge_margin(kButtonHEdgeMargin),
+      button_shadow_margin(0),
+      button_content_spacing(kDialogButtonContentSpacing),
+      related_button_hspacing(kRelatedButtonHSpacing) {
+  if (DialogDelegate::UseNewStyle()) {
+    button_vedge_margin = 0;
+    button_hedge_margin = 0;
+    button_shadow_margin = GetChromeStyleButtonShadowMargin();
+    button_content_spacing = 0;
+    related_button_hspacing = 10;
+  }
+}
+
 TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type,
                                                  const string16& title) {
   TextButton* button = NULL;
-  if (GetDialogDelegate()->UseChromeStyle())
+  if (DialogDelegate::UseNewStyle())
     button = new DialogButton<TextButton>(this, GetWidget(), type, title);
   else
     button = new DialogButton<NativeTextButton>(this, GetWidget(), type, title);
 
-  if (!GetDialogDelegate()->UseChromeStyle())
+  if (!DialogDelegate::UseNewStyle())
     button->set_min_width(kDialogMinButtonWidth);
 
   button->SetGroup(kButtonGroup);
@@ -436,7 +429,7 @@ TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type,
     button->SetIsDefault(true);
   }
 
-  if (GetDialogDelegate()->UseChromeStyle())
+  if (DialogDelegate::UseNewStyle())
     ApplyChromeStyle(button);
 
   return button;

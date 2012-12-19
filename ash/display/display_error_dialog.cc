@@ -85,10 +85,6 @@ ui::ModalType DisplayErrorDialog::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-views::View* DisplayErrorDialog::GetContentsView() {
-  return this;
-}
-
 gfx::Size DisplayErrorDialog::GetPreferredSize() {
   return label_->GetPreferredSize();
 }

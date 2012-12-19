@@ -99,7 +99,6 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE {
     return ui::MODAL_TYPE_WINDOW;
   }
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
   virtual string16 GetWindowTitle() const OVERRIDE;
 
   // views::View:

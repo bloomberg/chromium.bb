@@ -149,10 +149,6 @@ string16 UninstallView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME);
 }
 
-views::View* UninstallView::GetContentsView() {
-  return this;
-}
-
 int UninstallView::GetItemCount() const {
   DCHECK(!browsers_->empty());
   return browsers_->size();

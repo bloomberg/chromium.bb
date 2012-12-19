@@ -47,10 +47,6 @@ string16 CryptoModulePasswordDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE);
 }
 
-views::View* CryptoModulePasswordDialogView::GetContentsView() {
-  return this;
-}
-
 string16 CryptoModulePasswordDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?

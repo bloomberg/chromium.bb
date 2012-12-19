@@ -44,7 +44,6 @@
 #include "ash/wm/capture_controller.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/custom_frame_view_ash.h"
-#include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/overlay_event_filter.h"
@@ -97,6 +96,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_frame_view.h"
 
 #if !defined(OS_MACOSX)
 #include "ash/accelerators/accelerator_controller.h"
@@ -641,7 +641,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableNewDialogStyle)) {
-    return new internal::DialogFrameView;
+    return new views::DialogFrameView;
   }
   // Use translucent-style window frames for dialogs.
   CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;

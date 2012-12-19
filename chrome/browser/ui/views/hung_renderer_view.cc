@@ -320,10 +320,6 @@ bool HungRendererDialogView::Accept(bool window_closing) {
   return true;
 }
 
-views::View* HungRendererDialogView::GetContentsView() {
-  return this;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, views::ButtonListener implementation:
 

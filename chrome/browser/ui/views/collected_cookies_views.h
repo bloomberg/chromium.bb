@@ -50,7 +50,6 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::ButtonListener:

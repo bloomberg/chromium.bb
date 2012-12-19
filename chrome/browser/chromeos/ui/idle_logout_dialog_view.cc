@@ -93,10 +93,6 @@ string16 IdleLogoutDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_IDLE_LOGOUT_TITLE);
 }
 
-views::View* IdleLogoutDialogView::GetContentsView() {
-  return this;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // IdleLogoutDialog private methods
 IdleLogoutDialogView::IdleLogoutDialogView()

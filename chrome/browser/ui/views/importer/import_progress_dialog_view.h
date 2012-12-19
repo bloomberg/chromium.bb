@@ -47,7 +47,6 @@ class ImportProgressDialogView : public views::DialogDelegateView,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
  private:
   // Set up the control layout within this dialog.

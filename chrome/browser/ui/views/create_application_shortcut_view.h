@@ -58,7 +58,6 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

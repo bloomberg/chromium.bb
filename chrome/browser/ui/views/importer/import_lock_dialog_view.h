@@ -36,7 +36,6 @@ class ImportLockDialogView : public views::DialogDelegateView {
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
  private:
   views::Label* description_label_;

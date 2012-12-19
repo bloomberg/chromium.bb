@@ -44,7 +44,6 @@ class EditSearchEngineDialog : public views::TextfieldController,
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::TextfieldController:
   // Updates whether the user can accept the dialog as well as updating image

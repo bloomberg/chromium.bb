@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/dialog_frame_view.h"
+#include "ui/views/window/dialog_frame_view.h"
 
 #include "grit/ui_resources.h"
 #include "ui/base/hit_test.h"
@@ -49,30 +49,28 @@ const int kCloseButtonSize = 44;
 
 }  // namespace
 
-namespace ash {
-namespace internal {
+namespace views {
 
 // static
-const char DialogFrameView::kViewClassName[] = "ash/wm/DialogFrameView";
+const char DialogFrameView::kViewClassName[] = "ui/views/DialogFrameView";
 
 ////////////////////////////////////////////////////////////////////////////////
 // DialogFrameView, public:
 
 DialogFrameView::DialogFrameView() {
-  set_background(views::Background::CreateSolidBackground(
-      kDialogBackgroundColor));
+  set_background(Background::CreateSolidBackground(kDialogBackgroundColor));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_font_.reset(new gfx::Font(rb.GetFont(ui::ResourceBundle::MediumFont)));
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
       rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
-  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+  close_button_->SetImage(CustomButton::STATE_HOVERED,
       rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
-  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+  close_button_->SetImage(CustomButton::STATE_PRESSED,
       rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
-  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
+  close_button_->SetImageAlignment(ImageButton::ALIGN_CENTER,
+                                   ImageButton::ALIGN_MIDDLE);
   AddChildView(close_button_);
 }
 
@@ -80,7 +78,7 @@ DialogFrameView::~DialogFrameView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DialogFrameView, views::NonClientFrameView:
+// DialogFrameView, NonClientFrameView:
 
 gfx::Rect DialogFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetLocalBounds();
@@ -119,7 +117,7 @@ void DialogFrameView::UpdateWindowTitle() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DialogFrameView, views::View overrides:
+// DialogFrameView, View overrides:
 
 std::string DialogFrameView::GetClassName() const {
   return kViewClassName;
@@ -138,8 +136,8 @@ void DialogFrameView::Layout() {
 }
 
 void DialogFrameView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-  views::WidgetDelegate* delegate = GetWidget()->widget_delegate();
+  View::OnPaint(canvas);
+  WidgetDelegate* delegate = GetWidget()->widget_delegate();
   if (!delegate)
     return;
   canvas->DrawStringInt(delegate->GetWindowTitle(), *title_font_.get(),
@@ -147,10 +145,9 @@ void DialogFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DialogFrameView, views::ButtonListener overrides:
+// DialogFrameView, ButtonListener overrides:
 
-void DialogFrameView::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
+void DialogFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_button_)
     GetWidget()->Close();
 }
@@ -189,5 +186,4 @@ gfx::Insets DialogFrameView::GetClientInsets() const {
   return insets;
 }
 
-}  // namespace internal
 }  // namespace views

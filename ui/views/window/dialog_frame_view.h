@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DIALOG_FRAME_VIEW_H_
-#define ASH_WM_DIALOG_FRAME_VIEW_H_
+#ifndef UI_VIEWS_WINDOW_DIALOG_FRAME_VIEW_H_
+#define UI_VIEWS_WINDOW_DIALOG_FRAME_VIEW_H_
 
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
@@ -13,15 +13,12 @@ class Font;
 }
 
 namespace views {
+
 class ImageButton;
-}
 
-namespace ash {
-namespace internal {
-
-// A NonClientFrameView that implements a Google-style for dialogs.
-class DialogFrameView : public views::NonClientFrameView,
-                        public views::ButtonListener {
+// A NonClientFrameView that implements a new-style for dialogs.
+class VIEWS_EXPORT DialogFrameView : public NonClientFrameView,
+                                     public ButtonListener {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -29,7 +26,7 @@ class DialogFrameView : public views::NonClientFrameView,
   DialogFrameView();
   virtual ~DialogFrameView();
 
-  // Overridden from views::NonClientFrameView:
+  // Overridden from NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
@@ -45,9 +42,8 @@ class DialogFrameView : public views::NonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
   gfx::Insets GetPaddingInsets() const;
@@ -56,12 +52,11 @@ class DialogFrameView : public views::NonClientFrameView,
   scoped_ptr<gfx::Font> title_font_;
   gfx::Rect title_display_rect_;
 
-  views::ImageButton* close_button_;
+  ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogFrameView);
 };
 
-}  // namespace internal
 }  // namespace views
 
-#endif  // ASH_WM_DIALOG_FRAME_VIEW_H_
+#endif  // UI_VIEWS_WINDOW_DIALOG_FRAME_VIEW_H_

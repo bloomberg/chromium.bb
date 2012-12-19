@@ -138,10 +138,6 @@ bool BookmarkEditorView::AreAcceleratorsEnabled(ui::DialogButton button) {
   return !show_tree_ || !tree_view_->GetEditingNode();
 }
 
-views::View* BookmarkEditorView::GetContentsView() {
-  return this;
-}
-
 void BookmarkEditorView::Layout() {
   // Let the grid layout manager lay out most of the dialog...
   GetLayoutManager()->Layout(this);

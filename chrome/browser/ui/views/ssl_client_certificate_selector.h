@@ -62,7 +62,6 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
 

@@ -54,7 +54,6 @@ class PasswordChangedView : public views::DialogDelegateView,
   // views::WidgetDelegate:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::View:
   virtual string16 GetWindowTitle() const OVERRIDE;
