@@ -32,6 +32,11 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
 }
 
 PP_Resource PluginResourceTracker::AddResource(Resource* object) {
+  // If there's a HostResource, it must not be added twice.
+  DCHECK(!object->host_resource().host_resource() ||
+         (host_resource_map_.find(object->host_resource()) ==
+          host_resource_map_.end()));
+
   PP_Resource ret = ResourceTracker::AddResource(object);
 
   // Some resources are plugin-only, so they don't have a host resource.
