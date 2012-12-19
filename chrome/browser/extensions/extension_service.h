@@ -170,6 +170,10 @@ class ExtensionService
   // extension state resides.
   static const char kStateStoreName[];
 
+  // The name of the database inside the profile where declarative extension
+  // rules are stored.
+  static const char kRulesStoreName[];
+
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const extensions::Extension* GetInstalledApp(const GURL& url) const;
 

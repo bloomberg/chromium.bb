@@ -48,6 +48,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
+  virtual StateStore* rules_store() OVERRIDE;
   virtual ShellWindowGeometryCache* shell_window_geometry_cache() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;

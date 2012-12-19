@@ -132,7 +132,7 @@ void RulesRegistryStorageDelegate::InitOnUIThread(
     RulesRegistryWithCache* rules_registry,
     const std::string& storage_key) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  extensions::StateStore* store = ExtensionSystem::Get(profile)->state_store();
+  extensions::StateStore* store = ExtensionSystem::Get(profile)->rules_store();
   if (store)
     store->RegisterKey(storage_key);
   inner_ = new Inner(profile, rules_registry, storage_key);
@@ -233,11 +233,22 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
   if (!profile_)
     return;
 
-  extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
     store->GetExtensionValue(extension_id, storage_key_,
         base::Bind(&Inner::ReadFromStorageCallback, this, extension_id));
+  }
+
+  // TODO(mpcomplete): Migration code. Remove when declarativeWebRequest goes
+  // to stable.
+  // http://crbug.com/166474
+  store = ExtensionSystem::Get(profile_)->state_store();
+  if (store) {
+    waiting_for_extensions_.insert(extension_id);
+    store->GetExtensionValue(extension_id, storage_key_,
+        base::Bind(&Inner::ReadFromStorageCallback, this, extension_id));
+    store->RemoveExtensionValue(extension_id, storage_key_);
   }
 }
 
@@ -259,7 +270,7 @@ void RulesRegistryStorageDelegate::Inner::WriteToStorage(
   if (!profile_)
     return;
 
-  StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store)
     store->SetExtensionValue(extension_id, storage_key_, value.Pass());
 }

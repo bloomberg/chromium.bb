@@ -96,9 +96,17 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   event_router_.reset(new EventRouter(profile_, extension_prefs_.get()));
 
+  // Two state stores. The latter, which contains declarative rules, must be
+  // loaded immediately so that the rules are ready before we issue network
+  // requests.
   state_store_.reset(new StateStore(
       profile_,
-      profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName)));
+      profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName),
+      true));
+  rules_store_.reset(new StateStore(
+      profile_,
+      profile_->GetPath().AppendASCII(ExtensionService::kRulesStoreName),
+      false));
 
   shell_window_geometry_cache_.reset(new ShellWindowGeometryCache(
       profile_, extension_prefs_.get()));
@@ -235,6 +243,10 @@ StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }
 
+StateStore* ExtensionSystemImpl::Shared::rules_store() {
+  return rules_store_.get();
+}
+
 ShellWindowGeometryCache* ExtensionSystemImpl::Shared::
     shell_window_geometry_cache() {
   return shell_window_geometry_cache_.get();
@@ -360,6 +372,10 @@ AlarmManager* ExtensionSystemImpl::alarm_manager() {
 
 StateStore* ExtensionSystemImpl::state_store() {
   return shared_->state_store();
+}
+
+StateStore* ExtensionSystemImpl::rules_store() {
+  return shared_->rules_store();
 }
 
 ShellWindowGeometryCache* ExtensionSystemImpl::shell_window_geometry_cache() {

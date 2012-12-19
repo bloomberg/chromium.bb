@@ -126,6 +126,10 @@ StateStore* TestExtensionSystem::state_store() {
   return state_store_.get();
 }
 
+StateStore* TestExtensionSystem::rules_store() {
+  return state_store_.get();
+}
+
 ShellWindowGeometryCache* TestExtensionSystem::shell_window_geometry_cache() {
   return shell_window_geometry_cache_.get();
 }

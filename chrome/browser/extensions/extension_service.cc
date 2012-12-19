@@ -200,6 +200,7 @@ const char ExtensionService::kSyncExtensionSettingsDirectoryName[] =
 const char ExtensionService::kManagedSettingsDirectoryName[] =
     "Managed Extension Settings";
 const char ExtensionService::kStateStoreName[] = "Extension State";
+const char ExtensionService::kRulesStoreName[] = "Extension Rules";
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

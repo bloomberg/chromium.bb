@@ -60,21 +60,26 @@ void StateStore::DelayedTaskQueue::SetReady() {
   pending_tasks_.clear();
 }
 
-StateStore::StateStore(Profile* profile, const FilePath& db_path)
+StateStore::StateStore(Profile* profile,
+                       const FilePath& db_path,
+                       bool deferred_load)
     : task_queue_(new DelayedTaskQueue()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile));
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&StateStore::Init, AsWeakPtr(), db_path),
-      base::TimeDelta::FromSeconds(kInitDelaySeconds));
+  if (deferred_load) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&StateStore::Init, AsWeakPtr(), db_path),
+        base::TimeDelta::FromSeconds(kInitDelaySeconds));
+  } else {
+    Init(db_path);
+  }
 }
 
 StateStore::StateStore(Profile* profile, ValueStore* value_store)
-    : store_(value_store),
-      task_queue_(new DelayedTaskQueue()) {
+    : store_(value_store), task_queue_(new DelayedTaskQueue()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -108,21 +113,29 @@ void StateStore::SetExtensionValue(
                  GetFullKey(extension_id, key), base::Passed(value.Pass())));
 }
 
+void StateStore::RemoveExtensionValue(const std::string& extension_id,
+                                      const std::string& key) {
+  task_queue_->InvokeWhenReady(
+      base::Bind(&ValueStoreFrontend::Remove, base::Unretained(&store_),
+                 GetFullKey(extension_id, key)));
+}
+
 void StateStore::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  std::string extension_id;
-
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
-      extension_id = content::Details<const Extension>(details).ptr()->id();
+      RemoveKeysForExtension(
+          content::Details<const Extension>(details).ptr()->id());
       break;
     default:
       NOTREACHED();
       return;
   }
+}
 
+void StateStore::RemoveKeysForExtension(const std::string& extension_id) {
   for (std::set<std::string>::iterator key = registered_keys_.begin();
        key != registered_keys_.end(); ++key) {
     task_queue_->InvokeWhenReady(

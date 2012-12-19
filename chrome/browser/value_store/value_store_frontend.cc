@@ -22,6 +22,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     DCHECK(!storage_);
     TRACE_EVENT1("ValueStoreFrontend::Backend", "Init",
                  "db_path", db_path.value().c_str());
+    db_path_ = db_path;
     storage_ = new LeveldbValueStore(db_path);
   }
 
@@ -42,6 +43,9 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     base::Value* value = NULL;
     if (!result->HasError())
       result->settings()->RemoveWithoutPathExpansion(key, &value);
+    else
+      LOG(INFO) << "Reading " << key << " from " << db_path_.value()
+          << " failed: " << result->error();
 
     scoped_ptr<base::Value> passed_value(value);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -81,6 +85,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   // The actual ValueStore that handles persisting the data to disk. Used
   // exclusively on the FILE thread.
   ValueStore* storage_;
+
+  FilePath db_path_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
