@@ -290,6 +290,9 @@ cr.define('ntp', function() {
       this.pageList.addEventListener('cardSlider:card_removed',
          this.onCardRemoved_.bind(this));
 
+      $('bottom-panel').addEventListener('webkitTransitionEnd',
+          this.onBottomPanelTransitionEnd_.bind(this));
+
       // Update apps when online state changes.
       window.addEventListener('online',
           this.updateOfflineEnabledApps_.bind(this));
@@ -788,7 +791,28 @@ cr.define('ntp', function() {
      * @param {boolean} show Whether or not to show the Bottom Panel.
      */
     showBottomPanel_: function(show) {
-      $('bottom-panel').classList.toggle('hide-bottom-panel', !show);
+      var bottomPanel = $('bottom-panel');
+
+      if (show) {
+        bottomPanel.hidden = false;
+        // Forces the reflow.
+        bottomPanel.offsetHeight;
+      }
+
+      bottomPanel.classList.toggle('hide-bottom-panel', !show);
+    },
+
+    /**
+     * Handles the end of the bottom panel transition.
+     * @param {Event} e The bottom panel webkitTransitionEnd event.
+     * @private
+     */
+    onBottomPanelTransitionEnd_: function(e) {
+      var bottomPanel = $('bottom-panel');
+      if (e.target == bottomPanel && e.propertyName == 'opacity' &&
+          bottomPanel.classList.contains('hide-bottom-panel')) {
+        bottomPanel.hidden = true;
+      }
     },
   };
 
