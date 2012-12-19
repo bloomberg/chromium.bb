@@ -53,6 +53,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/chrome_pref_service_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -374,32 +375,26 @@ ProfileImpl::ProfileImpl(
   policy_service_.reset(new policy::PolicyServiceStub());
 #endif
 
-  if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
-    prefs_.reset(PrefService::CreatePrefService(
-        GetPrefFilePath(),
-        sequenced_task_runner,
-        policy_service_.get(),
-        new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForProfile(this), false),
-        true));
+  DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
+         create_mode == CREATE_MODE_SYNCHRONOUS);
+  bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
+  prefs_.reset(ChromePrefServiceBuilder().CreateChromePrefs(
+      GetPrefFilePath(),
+      sequenced_task_runner,
+      policy_service_.get(),
+      new ExtensionPrefStore(
+          ExtensionPrefValueMapFactory::GetForProfile(this), false),
+      async_prefs));
+  if (async_prefs) {
     // Wait for the notification that prefs has been loaded
     // (successfully or not).  Note that we can use base::Unretained
     // because the PrefService is owned by this class and lives on
     // the same thread.
     prefs_->AddPrefInitObserver(base::Bind(&ProfileImpl::OnPrefsLoaded,
                                            base::Unretained(this)));
-  } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
-    // Load prefs synchronously.
-    prefs_.reset(PrefService::CreatePrefService(
-        GetPrefFilePath(),
-        sequenced_task_runner,
-        policy_service_.get(),
-        new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForProfile(this), false),
-        false));
-    OnPrefsLoaded(true);
   } else {
-    NOTREACHED();
+    // Prefs were loaded synchronously so we can continue directly.
+    OnPrefsLoaded(true);
   }
 }
 

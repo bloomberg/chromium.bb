@@ -66,6 +66,7 @@
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/prefs/chrome_pref_service_builder.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -281,9 +282,11 @@ PrefService* InitializeLocalState(
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
     scoped_ptr<PrefService> parent_local_state(
-        PrefService::CreatePrefService(parent_profile, local_state_task_runner,
-                                       g_browser_process->policy_service(),
-                                       NULL, false));
+        ChromePrefServiceBuilder().CreateChromePrefs(
+            parent_profile,
+            local_state_task_runner,
+            g_browser_process->policy_service(),
+            NULL, false));
     parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
                                            std::string());
     // Right now, we only inherit the locale setting from the parent profile.

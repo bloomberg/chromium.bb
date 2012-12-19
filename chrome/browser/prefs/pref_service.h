@@ -19,12 +19,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/hash_tables.h"
 #include "base/observer_list.h"
+#include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
 
 class CommandLine;
 class DefaultPrefStore;
-class PersistentPrefStore;
 class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
@@ -33,16 +33,8 @@ class PrefServiceObserver;
 class PrefStore;
 class PrefValueStore;
 
-namespace base {
-  class SequencedTaskRunner;
-}
-
 namespace syncer {
 class SyncableService;
-}
-
-namespace policy {
-class PolicyService;
 }
 
 namespace subtle {
@@ -100,26 +92,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
     const PrefService* pref_service_;
 
   };
-
-  // Factory method that creates a new instance of a PrefService with the
-  // applicable PrefStores. The |pref_filename| points to the user preference
-  // file. This is the usual way to create a new PrefService.
-  // |extension_pref_store| is used as the source for extension-controlled
-  // preferences and may be NULL.
-  // |policy_service| is used as the source for mandatory or recommended
-  // policies.
-  // The PrefService takes ownership of |extension_pref_store|.
-  // If |async| is true, asynchronous version is used.
-  // Notifies using PREF_INITIALIZATION_COMPLETED in the end. Details is set to
-  // the created PrefService or NULL if creation has failed. Note, it is
-  // guaranteed that in asynchronous version initialization happens after this
-  // function returned.
-  static PrefService* CreatePrefService(
-      const FilePath& pref_filename,
-      base::SequencedTaskRunner* pref_io_task_runner,
-      policy::PolicyService* policy_service,
-      PrefStore* extension_pref_store,
-      bool async);
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an
@@ -292,6 +264,8 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
               PersistentPrefStore* user_prefs,
               DefaultPrefStore* default_store,
               PrefModelAssociator* pref_sync_associator,
+              base::Callback<void(PersistentPrefStore::PrefReadError)>
+                  read_error_callback,
               bool async);
 
   // The PrefNotifier handles registering and notifying preference observers.
@@ -306,7 +280,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // vs. std::map, and by roughly 180ms vs. std::set of Preference pointers.
   typedef base::hash_map<std::string, Preference> PreferenceMap;
 
-  friend class PrefServiceMockBuilder;
+  friend class PrefServiceBuilder;
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
@@ -370,8 +344,10 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // The model associator that maintains the links with the sync db.
   scoped_ptr<PrefModelAssociator> pref_sync_associator_;
 
-  // Whether CreateIncognitoPrefService() or
-  // CreatePrefServiceWithPerTabPrefStore() have been called to create a
+  // Callback to call when a read error occurs.
+  base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
+
+  // Whether CreateIncognitoPrefService() has been called to create a
   // "forked" PrefService.
   bool pref_service_forked_;
 

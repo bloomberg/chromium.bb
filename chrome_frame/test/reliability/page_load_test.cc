@@ -54,6 +54,7 @@
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/reliability/page_load_test.h"
 #include "chrome_frame/utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -430,7 +431,10 @@ class PageLoadTest : public testing::Test {
   PrefService* GetLocalState() {
     FilePath path;
     chrome::GetChromeFrameUserDataDirectory(&path);
-    return PrefServiceMockBuilder().WithUserFilePrefs(path).Create();
+    return PrefServiceMockBuilder().WithUserFilePrefs(
+        path,
+        JsonPrefStore::GetTaskRunnerForFile(
+            path, content::BrowserThread::GetBlockingPool())).Create();
   }
 
   void GetStabilityMetrics(NavigationMetrics* metrics) {

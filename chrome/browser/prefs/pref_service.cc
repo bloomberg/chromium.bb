@@ -9,12 +9,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
-#include "base/prefs/json_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -22,24 +20,15 @@
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_service_observer.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
 
 namespace {
 
@@ -83,102 +72,24 @@ Value* CreateLocaleDefaultValue(base::Value::Type type, int message_id) {
   return Value::CreateNullValue();
 }
 
-// Forwards a notification after a PostMessage so that we can wait for the
-// MessageLoop to run.
-void NotifyReadError(int message_id) {
-  ShowProfileErrorDialog(message_id);
-}
-
-// Shows notifications which correspond to PersistentPrefStore's reading errors.
+// TODO(joi): Change the interface on PersistentPrefStore to just take
+// a callback of this type.  Then we can also typedef the callback in
+// PersistentPrefStore and use that as the type of the callback used
+// to initialize PrefService.
 class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
  public:
-  virtual void OnError(PersistentPrefStore::PrefReadError error) {
-    if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
-      // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
-      // an example problem that this can cause.
-      // Do some diagnosis and try to avoid losing data.
-      int message_id = 0;
-      if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
-        message_id = IDS_PREFERENCES_CORRUPT_ERROR;
-      } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
-        message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
-      }
+  ReadErrorHandler(base::Callback<void(PersistentPrefStore::PrefReadError)> cb)
+      : callback_(cb) {}
 
-      if (message_id) {
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            base::Bind(&NotifyReadError, message_id));
-      }
-      UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
-                                PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
-    }
+  virtual void OnError(PersistentPrefStore::PrefReadError error) {
+    callback_.Run(error);
   }
+
+ private:
+  base::Callback<void(PersistentPrefStore::PrefReadError)> callback_;
 };
 
 }  // namespace
-
-PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
-  return static_cast<Profile*>(context)->GetPrefs();
-}
-
-// static
-PrefService* PrefService::CreatePrefService(
-    const FilePath& pref_filename,
-    base::SequencedTaskRunner* pref_io_task_runner,
-    policy::PolicyService* policy_service,
-    PrefStore* extension_prefs,
-    bool async) {
-  using policy::ConfigurationPolicyPrefStore;
-
-#if defined(OS_LINUX)
-  // We'd like to see what fraction of our users have the preferences
-  // stored on a network file system, as we've had no end of troubles
-  // with NFS/AFS.
-  // TODO(evanm): remove this once we've collected state.
-  file_util::FileSystemType fstype;
-  if (file_util::GetFileSystemType(pref_filename.DirName(), &fstype)) {
-    UMA_HISTOGRAM_ENUMERATION("PrefService.FileSystemType",
-                              static_cast<int>(fstype),
-                              file_util::FILE_SYSTEM_TYPE_COUNT);
-  }
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  ConfigurationPolicyPrefStore* managed =
-      ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore(
-          policy_service);
-  ConfigurationPolicyPrefStore* recommended =
-      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
-          policy_service);
-#else
-  ConfigurationPolicyPrefStore* managed = NULL;
-  ConfigurationPolicyPrefStore* recommended = NULL;
-#endif  // ENABLE_CONFIGURATION_POLICY
-
-  CommandLinePrefStore* command_line =
-      new CommandLinePrefStore(CommandLine::ForCurrentProcess());
-  JsonPrefStore* user = new JsonPrefStore(
-      pref_filename, pref_io_task_runner);
-  DefaultPrefStore* default_pref_store = new DefaultPrefStore();
-
-  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  PrefModelAssociator* pref_sync_associator = new PrefModelAssociator();
-
-  return new PrefService(
-      pref_notifier,
-      new PrefValueStore(
-          managed,
-          extension_prefs,
-          command_line,
-          user,
-          recommended,
-          default_pref_store,
-          pref_sync_associator,
-          pref_notifier),
-      user,
-      default_pref_store,
-      pref_sync_associator,
-      async);
-}
 
 PrefService* PrefService::CreateIncognitoPrefService(
     PrefStore* incognito_extension_prefs) {
@@ -201,20 +112,25 @@ PrefService* PrefService::CreateIncognitoPrefService(
       incognito_pref_store,
       default_store_.get(),
       NULL,
+      read_error_callback_,
       false);
 }
 
-PrefService::PrefService(PrefNotifierImpl* pref_notifier,
-                         PrefValueStore* pref_value_store,
-                         PersistentPrefStore* user_prefs,
-                         DefaultPrefStore* default_store,
-                         PrefModelAssociator* pref_sync_associator,
-                         bool async)
+PrefService::PrefService(
+    PrefNotifierImpl* pref_notifier,
+    PrefValueStore* pref_value_store,
+    PersistentPrefStore* user_prefs,
+    DefaultPrefStore* default_store,
+    PrefModelAssociator* pref_sync_associator,
+    base::Callback<void(PersistentPrefStore::PrefReadError)>
+        read_error_callback,
+    bool async)
     : pref_notifier_(pref_notifier),
       pref_value_store_(pref_value_store),
       user_pref_store_(user_prefs),
       default_store_(default_store),
       pref_sync_associator_(pref_sync_associator),
+      read_error_callback_(read_error_callback),
       pref_service_forked_(false) {
   pref_notifier_->SetPrefService(this);
   if (pref_sync_associator_.get())
@@ -235,15 +151,14 @@ PrefService::~PrefService() {
 
 void PrefService::InitFromStorage(bool async) {
   if (!async) {
-    ReadErrorHandler error_handler;
-    error_handler.OnError(user_pref_store_->ReadPrefs());
+    read_error_callback_.Run(user_pref_store_->ReadPrefs());
   } else {
     // Guarantee that initialization happens after this function returned.
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&PersistentPrefStore::ReadPrefsAsync,
                    user_pref_store_.get(),
-                   new ReadErrorHandler()));
+                   new ReadErrorHandler(read_error_callback_)));
   }
 }
 
@@ -292,7 +207,6 @@ bool IsProfilePrefService(PrefService* prefs) {
 }
 
 }  // namespace
-
 
 // Local State prefs.
 void PrefService::RegisterBooleanPref(const char* path,

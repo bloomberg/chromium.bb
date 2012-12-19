@@ -3,8 +3,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "pref_service.*|browser_prefs.*": [
+  "(chrome_)?pref_service.*|browser_prefs.*": [
     "+content/public/browser/browser_thread.h",
+    "+content/public/browser/browser_context.h",
     "+content/public/browser/render_process_host.h",
     "+content/public/test",
   ],

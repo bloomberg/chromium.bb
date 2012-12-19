@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/testing_pref_service.h"
 
+#include "base/bind.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -14,6 +15,15 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+// Do-nothing implementation for PrefService.
+void HandleReadError(PersistentPrefStore::PrefReadError error) {
+}
+
+}  // namespace
 
 TestingPrefServiceBase::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
@@ -35,6 +45,7 @@ TestingPrefServiceBase::TestingPrefServiceBase(
                   user_prefs,
                   default_store,
                   pref_sync_associator,
+                  base::Bind(&HandleReadError),
                   false),
       managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),

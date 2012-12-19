@@ -49,6 +49,7 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/chrome_pref_service_builder.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -734,8 +735,10 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   local_state_.reset(
-      PrefService::CreatePrefService(local_state_path, local_state_task_runner_,
-                                     policy_service(), NULL, false));
+      ChromePrefServiceBuilder().CreateChromePrefs(local_state_path,
+                                                   local_state_task_runner_,
+                                                   policy_service(),
+                                                   NULL, false));
 
   // Initialize the prefs of the local state.
   chrome::RegisterLocalState(local_state_.get());

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_store.h"
+#include "chrome/browser/prefs/pref_service_builder.h"
 
 class CommandLine;
 class FilePath;
@@ -23,18 +24,10 @@ class PolicyService;
 }
 
 // A helper that allows convenient building of custom PrefServices in tests.
-class PrefServiceMockBuilder {
+class PrefServiceMockBuilder : public PrefServiceBuilder {
  public:
   PrefServiceMockBuilder();
-  ~PrefServiceMockBuilder();
-
-  // Functions for setting the various parameters of the PrefService to build.
-  // These take ownership of the |store| parameter.
-  PrefServiceMockBuilder& WithManagedPrefs(PrefStore* store);
-  PrefServiceMockBuilder& WithExtensionPrefs(PrefStore* store);
-  PrefServiceMockBuilder& WithCommandLinePrefs(PrefStore* store);
-  PrefServiceMockBuilder& WithUserPrefs(PersistentPrefStore* store);
-  PrefServiceMockBuilder& WithRecommendedPrefs(PrefStore* store);
+  virtual ~PrefServiceMockBuilder();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // Set up policy pref stores using the given policy service.
@@ -47,22 +40,12 @@ class PrefServiceMockBuilder {
   // Specifies to use an actual command-line backed command-line pref store.
   PrefServiceMockBuilder& WithCommandLine(CommandLine* command_line);
 
-  // Specifies to use an actual file-backed user pref store.
-  // TODO(zelidrag): Remove the first overloaded method below.
-  PrefServiceMockBuilder& WithUserFilePrefs(const FilePath& prefs_file);
-  PrefServiceMockBuilder& WithUserFilePrefs(
-      const FilePath& prefs_file,
-      base::SequencedTaskRunner* task_runner);
-
-  // Creates the PrefService, invalidating the entire builder configuration.
-  PrefService* Create();
+  // Creates a PrefService for testing, invalidating the entire
+  // builder configuration.
+  virtual PrefService* Create() OVERRIDE;
 
  private:
-  scoped_refptr<PrefStore> managed_prefs_;
-  scoped_refptr<PrefStore> extension_prefs_;
-  scoped_refptr<PrefStore> command_line_prefs_;
-  scoped_refptr<PersistentPrefStore> user_prefs_;
-  scoped_refptr<PrefStore> recommended_prefs_;
+  void ResetTestingState();
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceMockBuilder);
 };
