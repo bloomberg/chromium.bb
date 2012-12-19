@@ -315,9 +315,6 @@ void ThreadedTest::setupTree()
         scoped_refptr<Layer> rootLayer = Layer::create();
         rootLayer->setBounds(gfx::Size(1, 1));
         m_layerTreeHost->setRootLayer(rootLayer);
-
-        // TODO(danakj): Remove this when all the animation tests are moved.
-        m_layerTreeHost->rootLayer()->setLayerAnimationDelegate(this);
     }
 
     gfx::Size rootBounds = m_layerTreeHost->rootLayer()->bounds();
