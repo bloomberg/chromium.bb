@@ -65,7 +65,8 @@ Status ChromeImpl::Init() {
   }
   if (debugger_urls.empty())
     return Status(kUnknownError, "unable to discover open pages");
-  client_.reset(new DevToolsClientImpl(socket_factory_, debugger_urls.front()));
+  client_.reset(new DevToolsClientImpl(
+      socket_factory_, debugger_urls.front(), NULL));
   return Status(kOk);
 }
 

@@ -711,6 +711,7 @@
         'test/chromedriver/devtools_client.h',
         'test/chromedriver/devtools_client_impl.cc',
         'test/chromedriver/devtools_client_impl.h',
+        'test/chromedriver/devtools_event_listener.h',
         'test/chromedriver/net/net_util.cc',
         'test/chromedriver/net/net_util.h',
         'test/chromedriver/net/sync_websocket.h',
