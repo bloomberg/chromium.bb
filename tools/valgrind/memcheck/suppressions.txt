@@ -6035,7 +6035,7 @@
   bug_156829
   Memcheck:Leak
   fun:_Znw*
-  fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
+  fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThread*
 }
 {
    bug_158510
