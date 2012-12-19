@@ -61,6 +61,28 @@ struct CoordinateTransformation {
   float y_offset;
 };
 
+struct CrtcConfig {
+  CrtcConfig()
+    : crtc(None),
+      x(0),
+      y(0),
+      mode(None),
+      output(None) {}
+
+  CrtcConfig(RRCrtc crtc, int x, int y, RRMode mode, RROutput output)
+    : crtc(crtc),
+      x(x),
+      y(y),
+      mode(mode),
+      output(output) {}
+
+  RRCrtc crtc;
+  int x;
+  int y;
+  RRMode mode;
+  RROutput output;
+};
+
 enum MirrorModeType {
   MIRROR_MODE_NONE,
   MIRROR_MODE_ASPECT_PRESERVING,
@@ -112,36 +134,84 @@ static XRRModeInfo* ModeInfoForID(XRRScreenResources* screen, RRMode modeID) {
 // default output count and rotation arguments.
 static void ConfigureCrtc(Display* display,
                           XRRScreenResources* screen,
-                          RRCrtc crtc,
-                          int x,
-                          int y,
-                          RRMode mode,
-                          RROutput output) {
-  VLOG(1) << "ConfigureCrtc crtc: " << crtc
-          << ", mode " << mode
-          << ", output " << output
-          << ", x " << x
-          << ", y " << y;
+                          CrtcConfig* config) {
+  VLOG(1) << "ConfigureCrtc crtc: " << config->crtc
+          << ", mode " << config->mode
+          << ", output " << config->output
+          << ", x " << config->x
+          << ", y " << config->y;
+
   const Rotation kRotate = RR_Rotate_0;
   RROutput* outputs = NULL;
   int num_outputs = 0;
 
   // Check the output and mode argument - if either are None, we should disable.
-  if ((output != None) && (mode != None)) {
-    outputs = &output;
+  if ((config->output != None) && (config->mode != None)) {
+    outputs = &config->output;
     num_outputs = 1;
   }
 
   XRRSetCrtcConfig(display,
                    screen,
-                   crtc,
+                   config->crtc,
                    CurrentTime,
-                   x,
-                   y,
-                   mode,
+                   config->x,
+                   config->y,
+                   config->mode,
                    kRotate,
                    outputs,
                    num_outputs);
+}
+
+// Destroys unused Crtcs, and parks used Crtcs in a way which allows a
+// framebuffer resize. This is faster than turning them off, resizing,
+// then turning them back on.
+void DestroyUnusedCrtcs(Display* display,
+                        XRRScreenResources* screen,
+                        Window window,
+                        CrtcConfig* config1,
+                        CrtcConfig* config2,
+                        int width,
+                        int height) {
+  // Setting the screen size will fail if any CRTC doesn't fit afterwards.
+  // At the same time, turning CRTCs off and back on uses up a lot of time.
+  // This function tries to be smart to avoid too many off/on cycles:
+  // - We disable all the CRTCs we won't need after the FB resize.
+  // - We set the new modes on CRTCs, if they fit in both the old and new
+  //   FBs, and park them at (0,0)
+  // - We disable the CRTCs we will need but don't fit in the old FB. Those
+  //   will be reenabled after the resize.
+  // We don't worry about the cached state of the outputs here since we are
+  // not interested in the state we are setting - we just try to get the CRTCs
+  // out of the way so we can rebuild the frame buffer.
+  for (int i = 0; i < screen->ncrtc; ++i) {
+    // Default config is to disable the crtcs.
+    CrtcConfig config(screen->crtcs[i], 0, 0, None, None);
+
+    // If we are going to use that CRTC later, prepare it now.
+    if (config1 && screen->crtcs[i] == config1->crtc) {
+      config = *config1;
+      config.x = 0;
+      config.y = 0;
+    } else if (config2 && screen->crtcs[i] == config2->crtc) {
+      config = *config2;
+      config.x = 0;
+      config.y = 0;
+    }
+
+    if (config.mode != None) {
+      // In case our CRTC doesn't fit in our current framebuffer, disable it.
+      // It'll get reenabled after we resize the framebuffer.
+      XRRModeInfo* mode_info = ModeInfoForID(screen, config.mode);
+      if (static_cast<int>(mode_info->width) > width ||
+          static_cast<int>(mode_info->height) > height) {
+        config.mode = None;
+        config.output = None;
+      }
+    }
+
+    ConfigureCrtc(display, screen, &config);
+  }
 }
 
 // Called to set the frame buffer (underling XRR "screen") size.  Has a
@@ -150,34 +220,13 @@ static void CreateFrameBuffer(Display* display,
                               XRRScreenResources* screen,
                               Window window,
                               int width,
-                              int height) {
+                              int height,
+                              CrtcConfig* config1,
+                              CrtcConfig* config2) {
   VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
 
-  // Don't do anything if the framebuffer is already the right size.
-  // This speeds up modesetting and suspend/resume.
-  if (width == DisplayWidth(display, DefaultScreen (display)) &&
-      height == DisplayHeight(display, DefaultScreen (display)))
-    return;
+  DestroyUnusedCrtcs(display, screen, window, config1, config2, width, height);
 
-  // Note that setting the screen size fails if any CRTCs are currently
-  // pointing into it so disable them all.
-  for (int i = 0; i < screen->ncrtc; ++i) {
-    const int x = 0;
-    const int y = 0;
-    const RRMode kMode = None;
-    const RROutput kOutput = None;
-
-    // We don't worry about the cached state of the outputs here since we are
-    // not interested in the state we are setting - it is just to get the CRTCs
-    // off the screen so we can rebuild the frame buffer.
-    ConfigureCrtc(display,
-                  screen,
-                  screen->crtcs[i],
-                  x,
-                  y,
-                  kMode,
-                  kOutput);
-  }
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
@@ -606,34 +655,30 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
     }
   }
 
-  RRCrtc crtc = None;
+  CrtcConfig config;
+  config.crtc = None;
   // Set the CRTCs based on whether we want to turn the power on or off and
   // select the outputs to operate on by name or all_displays.
   for (int i = 0; i < connected_output_count_; ++i) {
     if (all_displays || outputs[i].is_internal || power_on) {
-      const int x = 0;
-      const int y = outputs[i].y;
-      RROutput output = outputs[i].output;
-      RRMode mode = None;
+      config.x = 0;
+      config.y = outputs[i].y;
+      config.output = outputs[i].output;
+      config.mode = None;
       if (power_on) {
-        mode = (STATE_DUAL_MIRROR == output_state_) ?
+        config.mode = (STATE_DUAL_MIRROR == output_state_) ?
             outputs[i].mirror_mode : outputs[i].native_mode;
       } else if (connected_output_count_ > 1 && !all_displays &&
                  outputs[i].is_internal) {
         // Workaround for crbug.com/148365: leave internal display in native
         // mode so user can move cursor (and hence windows) onto internal
         // display even when dimmed
-        mode = outputs[i].native_mode;
+        config.mode = outputs[i].native_mode;
       }
-      crtc = GetNextCrtcAfter(display, screen, output, crtc);
+      config.crtc = GetNextCrtcAfter(display, screen, config.output,
+                                     config.crtc);
 
-      ConfigureCrtc(display,
-                    screen,
-                    crtc,
-                    x,
-                    y,
-                    mode,
-                    output);
+      ConfigureCrtc(display, screen, &config);
       success = true;
     }
   }
@@ -1087,21 +1132,16 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
+      CrtcConfig config(
+          GetNextCrtcAfter(display, screen, outputs[0].output, None),
+          0, 0, outputs[0].native_mode, outputs[0].output);
+
       int width = mode_info->width;
       int height = mode_info->height;
-      CreateFrameBuffer(display, screen, window, width, height);
+      CreateFrameBuffer(display, screen, window, width, height, &config, NULL);
 
       // Re-attach native mode for the CRTC.
-      const int x = 0;
-      const int y = 0;
-      RRCrtc crtc = GetNextCrtcAfter(display, screen, outputs[0].output, None);
-      ConfigureCrtc(display,
-                    screen,
-                    crtc,
-                    x,
-                    y,
-                    outputs[0].native_mode,
-                    outputs[0].output);
+      ConfigureCrtc(display, screen, &config);
       // Restore identity transformation for single monitor in native mode.
       if (outputs[0].touch_device_id != None) {
         CoordinateTransformation ctm;  // Defaults to identity
@@ -1122,26 +1162,18 @@ bool OutputConfigurator::EnterState(
           return false;
         }
 
+        CrtcConfig config1(primary_crtc, 0, 0, outputs[0].mirror_mode,
+                           outputs[0].output);
+        CrtcConfig config2(secondary_crtc, 0, 0, outputs[1].mirror_mode,
+                           outputs[1].output);
+
         int width = mode_info->width;
         int height = mode_info->height;
-        CreateFrameBuffer(display, screen, window, width, height);
+        CreateFrameBuffer(display, screen, window, width, height,
+                          &config1, &config2);
 
-        const int x = 0;
-        const int y = 0;
-        ConfigureCrtc(display,
-                      screen,
-                      primary_crtc,
-                      x,
-                      y,
-                      outputs[0].mirror_mode,
-                      outputs[0].output);
-        ConfigureCrtc(display,
-                      screen,
-                      secondary_crtc,
-                      x,
-                      y,
-                      outputs[1].mirror_mode,
-                      outputs[1].output);
+        ConfigureCrtc(display, screen, &config1);
+        ConfigureCrtc(display, screen, &config2);
         for (size_t i = 0; i < outputs.size(); i++) {
           if (outputs[i].touch_device_id == None)
             continue;
@@ -1165,55 +1197,43 @@ bool OutputConfigurator::EnterState(
           return false;
         }
 
-        int width =
-            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
         int primary_height = primary_mode_info->height;
         int secondary_height = secondary_mode_info->height;
-        int height = primary_height + secondary_height + kVerticalGap;
-        CreateFrameBuffer(display, screen, window, width, height);
+        CrtcConfig config1(primary_crtc, 0, 0, outputs[0].native_mode,
+                           outputs[0].output);
+        CrtcConfig config2(secondary_crtc, 0, 0, outputs[1].native_mode,
+                           outputs[1].output);
 
-        const int x = 0;
-        int primary_y = 0;
-        int secondary_y = 0;
-        if (STATE_DUAL_PRIMARY_ONLY == new_state)
-          secondary_y = primary_height + kVerticalGap;
+        if (new_state == STATE_DUAL_PRIMARY_ONLY)
+          config2.y = primary_height + kVerticalGap;
         else
-          primary_y = secondary_height + kVerticalGap;
+          config1.y = secondary_height + kVerticalGap;
 
-        ConfigureCrtc(display,
-                      screen,
-                      primary_crtc,
-                      x,
-                      primary_y,
-                      outputs[0].native_mode,
-                      outputs[0].output);
-        ConfigureCrtc(display,
-                      screen,
-                      secondary_crtc,
-                      x,
-                      secondary_y,
-                      outputs[1].native_mode,
-                      outputs[1].output);
+
+        int width =
+            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
+        int height = primary_height + secondary_height + kVerticalGap;
+
+        CreateFrameBuffer(display, screen, window, width, height, &config1,
+                          &config2);
+
+        ConfigureCrtc(display, screen, &config1);
+        ConfigureCrtc(display, screen, &config2);
+
         if (outputs[0].touch_device_id != None) {
           CoordinateTransformation ctm;
-          ctm.x_scale = static_cast<float>(primary_mode_info->width) /
-              static_cast<float>(width);
-          ctm.x_offset = static_cast<float>(x) / static_cast<float>(width);
-          ctm.y_scale = static_cast<float>(primary_height) /
-              static_cast<float>(height);
-          ctm.y_offset = static_cast<float>(primary_y) /
-              static_cast<float>(height);
+          ctm.x_scale = static_cast<float>(primary_mode_info->width) / width;
+          ctm.x_offset = static_cast<float>(config1.x) / width;
+          ctm.y_scale = static_cast<float>(primary_height) / height;
+          ctm.y_offset = static_cast<float>(config1.y) / height;
           ConfigureCTM(display, outputs[0].touch_device_id, ctm);
         }
         if (outputs[1].touch_device_id != None) {
           CoordinateTransformation ctm;
-          ctm.x_scale = static_cast<float>(secondary_mode_info->width) /
-              static_cast<float>(width);
-          ctm.x_offset = static_cast<float>(x) / static_cast<float>(width);
-          ctm.y_scale = static_cast<float>(secondary_height) /
-              static_cast<float>(height);
-          ctm.y_offset = static_cast<float>(secondary_y) /
-              static_cast<float>(height);
+          ctm.x_scale = static_cast<float>(secondary_mode_info->width) / width;
+          ctm.x_offset = static_cast<float>(config2.x) / width;
+          ctm.y_scale = static_cast<float>(secondary_height) / height;
+          ctm.y_offset = static_cast<float>(config2.y) / height;
           ConfigureCTM(display, outputs[1].touch_device_id, ctm);
         }
       }
