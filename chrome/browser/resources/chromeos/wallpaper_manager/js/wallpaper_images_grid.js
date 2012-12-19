@@ -54,7 +54,6 @@ cr.define('wallpapers', function() {
           xhr.send(null);
           xhr.addEventListener('load', function(e) {
             if (xhr.status === 200) {
-              self.textContent = '';
               chrome.wallpaperPrivate.saveThumbnail(self.dataItem.baseURL,
                                                     xhr.response);
               var blob = new Blob([new Int8Array(xhr.response)],
