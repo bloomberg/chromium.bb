@@ -73,7 +73,7 @@ class CONTENT_EXPORT MediaStreamProvider
   virtual void Unregister() = 0;
 
   // Enumerates existing capture devices and calls |DevicesEnumerated|.
-  virtual void EnumerateDevices() = 0;
+  virtual void EnumerateDevices(MediaStreamType stream_type) = 0;
 
   // Opens the specified device. The device is not started and it is still
   // possible for other applications to open the device before the device is

@@ -22,6 +22,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::InSequence;
+using testing::SaveArg;
 using ::testing::Return;
 
 namespace content {
@@ -29,30 +30,15 @@ namespace content {
 // Listener class used to track progress of VideoCaptureManager test.
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
  public:
-  MockMediaStreamProviderListener()
-      : devices_() {
-  }
+  MockMediaStreamProviderListener() {}
   ~MockMediaStreamProviderListener() {}
 
   MOCK_METHOD2(Opened, void(MediaStreamType, int));
   MOCK_METHOD2(Closed, void(MediaStreamType, int));
-  MOCK_METHOD1(DevicesEnumerated, void(const StreamDeviceInfoArray&));
+  MOCK_METHOD2(DevicesEnumerated, void(MediaStreamType,
+                                       const StreamDeviceInfoArray&));
   MOCK_METHOD3(Error, void(MediaStreamType, int,
                            MediaStreamProviderError));
-
-  virtual void DevicesEnumerated(
-      MediaStreamType stream_type,
-      const StreamDeviceInfoArray& devices) OVERRIDE {
-    devices_.clear();
-    for (StreamDeviceInfoArray::const_iterator it = devices.begin();
-        it != devices.end();
-        ++it) {
-      devices_.push_back(*it);
-    }
-    DevicesEnumerated(devices);
-  }
-
-  StreamDeviceInfoArray devices_;
 };  // class MockMediaStreamProviderListener
 
 // Needed as an input argument to Start().
@@ -98,17 +84,20 @@ class VideoCaptureManagerTest : public testing::Test {
 
 // Try to open, start, stop and close a device.
 TEST_F(VideoCaptureManagerTest, CreateAndClose) {
+  StreamDeviceInfoArray devices;
+
   InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(_)).Times(1);
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
 
-  vcm_->EnumerateDevices();
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Wait to get device callback.
   message_loop_->RunUntilIdle();
 
-  int video_session_id = vcm_->Open(listener_->devices_.front());
+  int video_session_id = vcm_->Open(devices.front());
 
   media::VideoCaptureParams capture_params;
   capture_params.session_id = video_session_id;
@@ -127,21 +116,24 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
 
 // Open the same device twice.
 TEST_F(VideoCaptureManagerTest, OpenTwice) {
+  StreamDeviceInfoArray devices;
+
   InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(_)).Times(1);
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
-  vcm_->EnumerateDevices();
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Wait to get device callback.
   message_loop_->RunUntilIdle();
 
-  int video_session_id_first = vcm_->Open(listener_->devices_.front());
+  int video_session_id_first = vcm_->Open(devices.front());
 
   // This should trigger an error callback with error code
   // 'kDeviceAlreadyInUse'.
-  int video_session_id_second = vcm_->Open(listener_->devices_.front());
+  int video_session_id_second = vcm_->Open(devices.front());
   EXPECT_NE(video_session_id_first, video_session_id_second);
 
   vcm_->Close(video_session_id_first);
@@ -154,17 +146,20 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
 
 // Open two different devices.
 TEST_F(VideoCaptureManagerTest, OpenTwo) {
+  StreamDeviceInfoArray devices;
+
   InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(_)).Times(1);
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
-  vcm_->EnumerateDevices();
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Wait to get device callback.
   message_loop_->RunUntilIdle();
 
-  StreamDeviceInfoArray::iterator it = listener_->devices_.begin();
+  StreamDeviceInfoArray::iterator it = devices.begin();
 
   int video_session_id_first = vcm_->Open(*it);
   ++it;
@@ -180,14 +175,16 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
 
 // Try open a non-existing device.
 TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
+  StreamDeviceInfoArray devices;
+
   InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(_))
-      .Times(1);
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Error(MEDIA_DEVICE_VIDEO_CAPTURE,
                                 _, kDeviceNotAvailable))
       .Times(1);
 
-  vcm_->EnumerateDevices();
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Wait to get device callback.
   message_loop_->RunUntilIdle();
@@ -230,17 +227,20 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
 
 // Open and start a device, close it before calling Stop.
 TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
+  StreamDeviceInfoArray devices;
+
   InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(_)).Times(1);
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
 
-  vcm_->EnumerateDevices();
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Wait to get device callback.
   message_loop_->RunUntilIdle();
 
-  int video_session_id = vcm_->Open(listener_->devices_.front());
+  int video_session_id = vcm_->Open(devices.front());
 
   media::VideoCaptureParams capture_params;
   capture_params.session_id = video_session_id;

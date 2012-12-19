@@ -43,7 +43,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   virtual void Register(MediaStreamProviderListener* listener,
                         base::MessageLoopProxy* device_thread_loop) OVERRIDE;
   virtual void Unregister() OVERRIDE;
-  virtual void EnumerateDevices() OVERRIDE;
+  virtual void EnumerateDevices(MediaStreamType stream_type) OVERRIDE;
   virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
   virtual void Close(int session_id) OVERRIDE;
 
@@ -62,7 +62,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   virtual ~AudioInputDeviceManager();
 
   // Enumerates audio input devices on media stream device thread.
-  void EnumerateOnDeviceThread();
+  void EnumerateOnDeviceThread(MediaStreamType stream_type);
   // Opens the device on media stream device thread.
   void OpenOnDeviceThread(int session_id, const StreamDeviceInfo& device);
   // Closes the deivce on the media stream device thread.
@@ -70,7 +70,8 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
 
   // Callback used by EnumerateOnDeviceThread(), called with a list of
   // enumerated devices on IO thread.
-  void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
+  void DevicesEnumeratedOnIOThread(MediaStreamType stream_type,
+                                   StreamDeviceInfoArray* devices);
   // Callback used by OpenOnDeviceThread(), called with the session_id
   // referencing the opened device on IO thread.
   void OpenedOnIOThread(MediaStreamType type, int session_id);

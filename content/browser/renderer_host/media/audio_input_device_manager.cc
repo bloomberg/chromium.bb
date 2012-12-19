@@ -48,13 +48,14 @@ void AudioInputDeviceManager::Unregister() {
   listener_ = NULL;
 }
 
-void AudioInputDeviceManager::EnumerateDevices() {
+void AudioInputDeviceManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
 
   device_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioInputDeviceManager::EnumerateOnDeviceThread, this));
+      base::Bind(&AudioInputDeviceManager::EnumerateOnDeviceThread,
+                 this, stream_type));
 }
 
 int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
@@ -132,21 +133,29 @@ bool AudioInputDeviceManager::ShouldUseFakeDevice() const {
   return use_fake_device_;
 }
 
-void AudioInputDeviceManager::EnumerateOnDeviceThread() {
+void AudioInputDeviceManager::EnumerateOnDeviceThread(
+    MediaStreamType stream_type) {
   DCHECK(IsOnDeviceThread());
-  // AudioManager is guaranteed to outlive MediaStreamManager in
-  // BrowserMainloop.
+
   media::AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+
+  switch (stream_type) {
+    case MEDIA_DEVICE_AUDIO_CAPTURE:
+      // AudioManager is guaranteed to outlive MediaStreamManager in
+      // BrowserMainloop.
+      audio_manager_->GetAudioInputDeviceNames(&device_names);
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
 
   StreamDeviceInfoArray* devices = new StreamDeviceInfoArray;
   for (media::AudioDeviceNames::iterator it = device_names.begin();
-       it != device_names.end();
-       ++it) {
-    // NOTE: Only support enumeration of the MEDIA_DEVICE_AUDIO_CAPTURE type.
+       it != device_names.end(); ++it) {
     devices->push_back(StreamDeviceInfo(
-        MEDIA_DEVICE_AUDIO_CAPTURE, it->device_name,
-        it->unique_id, false));
+        stream_type, it->device_name, it->unique_id, false));
   }
 
   // Return the device list through the listener by posting a task on
@@ -155,8 +164,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
-                 this,
-                 devices));
+                 this, stream_type, devices));
 }
 
 void AudioInputDeviceManager::OpenOnDeviceThread(
@@ -174,8 +182,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::OpenedOnIOThread,
-                                     this,
-                                     device.device.type, session_id));
+                                     this, device.device.type, session_id));
 }
 
 void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
@@ -192,19 +199,17 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::ClosedOnIOThread,
-                                     this,
-                                     stream_type, session_id));
+                                     this, stream_type, session_id));
 }
 
 void AudioInputDeviceManager::DevicesEnumeratedOnIOThread(
+    MediaStreamType stream_type,
     StreamDeviceInfoArray* devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ensure that |devices| gets deleted on exit.
   scoped_ptr<StreamDeviceInfoArray> devices_array(devices);
-  if (listener_) {
-    // NOTE: Only support enumeration of the MEDIA_DEVICE_AUDIO_CAPTURE type.
-    listener_->DevicesEnumerated(MEDIA_DEVICE_AUDIO_CAPTURE, *devices_array);
-  }
+  if (listener_)
+    listener_->DevicesEnumerated(stream_type, *devices_array);
 }
 
 void AudioInputDeviceManager::OpenedOnIOThread(MediaStreamType stream_type,

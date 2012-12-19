@@ -302,9 +302,11 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
       // changed notification to UI before deleting the request?
       scoped_ptr<DeviceRequest> request(it->second);
       requests_.erase(it);
-      for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES;
-           ++i) {
+      for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES; ++i) {
         const MediaStreamType stream_type = static_cast<MediaStreamType>(i);
+        MediaStreamProvider* device_manager = GetDeviceManager(stream_type);
+        if (!device_manager)
+          continue;
         if (request->state(stream_type) != MEDIA_REQUEST_STATE_OPENING) {
           continue;
         }
@@ -312,7 +314,7 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
                  request->devices.begin();
              device_it != request->devices.end(); ++device_it) {
           if (device_it->device.type == stream_type) {
-            GetDeviceManager(stream_type)->Close(device_it->session_id);
+            device_manager->Close(device_it->session_id);
           }
         }
       }
@@ -509,9 +511,9 @@ void MediaStreamManager::StartMonitoring() {
     // Enumerate both the audio and video devices to cache the device lists
     // and send them to media observer.
     ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_CAPTURE];
-    audio_input_device_manager_->EnumerateDevices();
+    audio_input_device_manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
     ++active_enumeration_ref_count_[MEDIA_DEVICE_VIDEO_CAPTURE];
-    video_capture_manager_->EnumerateDevices();
+    video_capture_manager_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   }
 }
 
@@ -553,7 +555,7 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request) {
         DCHECK_GE(active_enumeration_ref_count_[stream_type], 0);
         if (active_enumeration_ref_count_[stream_type] == 0) {
           ++active_enumeration_ref_count_[stream_type];
-          GetDeviceManager(stream_type)->EnumerateDevices();
+          GetDeviceManager(stream_type)->EnumerateDevices(stream_type);
         }
       }
     }
@@ -1094,7 +1096,7 @@ void MediaStreamManager::OnDevicesChanged(
   // because those enumeration commands could be sent before these devices
   // change.
   ++active_enumeration_ref_count_[stream_type];
-  GetDeviceManager(stream_type)->EnumerateDevices();
+  GetDeviceManager(stream_type)->EnumerateDevices(stream_type);
 }
 
 }  // namespace content

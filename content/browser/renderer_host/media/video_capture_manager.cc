@@ -64,12 +64,12 @@ void VideoCaptureManager::Unregister() {
   listener_ = NULL;
 }
 
-void VideoCaptureManager::EnumerateDevices() {
+void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
   device_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureManager::OnEnumerateDevices, this));
+      base::Bind(&VideoCaptureManager::OnEnumerateDevices, this, stream_type));
 }
 
 int VideoCaptureManager::Open(const StreamDeviceInfo& device) {
@@ -119,22 +119,21 @@ void VideoCaptureManager::UseFakeDevice() {
   use_fake_device_ = true;
 }
 
-void VideoCaptureManager::OnEnumerateDevices() {
+void VideoCaptureManager::OnEnumerateDevices(MediaStreamType stream_type) {
   DCHECK(IsOnDeviceThread());
 
   media::VideoCaptureDevice::Names device_names;
-  GetAvailableDevices(&device_names);
+  GetAvailableDevices(stream_type, &device_names);
 
   StreamDeviceInfoArray devices;
   for (media::VideoCaptureDevice::Names::iterator it =
            device_names.begin(); it != device_names.end(); ++it) {
     bool opened = DeviceOpened(*it);
-    // NOTE: Only support enumeration of the MEDIA_DEVICE_VIDEO_CAPTURE type.
     devices.push_back(StreamDeviceInfo(
-        MEDIA_DEVICE_VIDEO_CAPTURE, it->device_name, it->unique_id, opened));
+        stream_type, it->device_name, it->unique_id, opened));
   }
 
-  PostOnDevicesEnumerated(devices);
+  PostOnDevicesEnumerated(stream_type, devices);
 }
 
 void VideoCaptureManager::OnOpen(int capture_session_id,
@@ -307,14 +306,14 @@ void VideoCaptureManager::OnClosed(MediaStreamType stream_type,
 }
 
 void VideoCaptureManager::OnDevicesEnumerated(
+    MediaStreamType stream_type,
     const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!listener_) {
     // Listener has been removed.
     return;
   }
-  // NOTE: Only support enumeration of the MEDIA_DEVICE_VIDEO_CAPTURE type.
-  listener_->DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, devices);
+  listener_->DevicesEnumerated(stream_type, devices);
 }
 
 void VideoCaptureManager::OnError(MediaStreamType stream_type,
@@ -347,12 +346,13 @@ void VideoCaptureManager::PostOnClosed(
 }
 
 void VideoCaptureManager::PostOnDevicesEnumerated(
+    MediaStreamType stream_type,
     const StreamDeviceInfoArray& devices) {
   DCHECK(IsOnDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&VideoCaptureManager::OnDevicesEnumerated,
-                                     this, devices));
+                                     this, stream_type, devices));
 }
 
 void VideoCaptureManager::PostOnError(int capture_session_id,
@@ -373,13 +373,22 @@ bool VideoCaptureManager::IsOnDeviceThread() const {
 }
 
 void VideoCaptureManager::GetAvailableDevices(
+    MediaStreamType stream_type,
     media::VideoCaptureDevice::Names* device_names) {
   DCHECK(IsOnDeviceThread());
 
-  if (!use_fake_device_) {
-    media::VideoCaptureDevice::GetDeviceNames(device_names);
-  } else {
-    media::FakeVideoCaptureDevice::GetDeviceNames(device_names);
+  switch (stream_type) {
+    case MEDIA_DEVICE_VIDEO_CAPTURE:
+      if (!use_fake_device_) {
+        media::VideoCaptureDevice::GetDeviceNames(device_names);
+      } else {
+        media::FakeVideoCaptureDevice::GetDeviceNames(device_names);
+      }
+      break;
+
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -506,12 +515,11 @@ media::VideoCaptureDevice* VideoCaptureManager::GetDeviceInternal(
   // This session id won't be returned by Open().
   if (capture_session_id == kStartOpenSessionId) {
     media::VideoCaptureDevice::Names device_names;
-    GetAvailableDevices(&device_names);
+    GetAvailableDevices(MEDIA_DEVICE_VIDEO_CAPTURE, &device_names);
     if (device_names.empty()) {
       // No devices available.
       return NULL;
     }
-    // NOTE: Only support enumeration of the MEDIA_DEVICE_VIDEO_CAPTURE type.
     StreamDeviceInfo device(MEDIA_DEVICE_VIDEO_CAPTURE,
                             device_names.front().device_name,
                             device_names.front().unique_id, false);
