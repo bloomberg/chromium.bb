@@ -936,8 +936,6 @@
         'browser/policy/policy_service_impl_unittest.cc',
         'browser/policy/policy_statistics_collector_unittest.cc',
         'browser/policy/proxy_policy_provider_unittest.cc',
-        'browser/policy/test_task_runner.cc',
-        'browser/policy/test_task_runner.h',
         'browser/policy/testing_cloud_policy_subsystem.cc',
         'browser/policy/testing_cloud_policy_subsystem.h',
         'browser/policy/testing_policy_url_fetcher_factory.cc',

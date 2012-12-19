@@ -37,4 +37,4 @@ class BASE_EXPORT SingleThreadTaskRunner : public SequencedTaskRunner {
 
 }  // namespace base
 
-#endif  // BASE_SERIAL_TASK_RUNNER_H_
+#endif  // BASE_SINGLE_THREAD_TASK_RUNNER_H_

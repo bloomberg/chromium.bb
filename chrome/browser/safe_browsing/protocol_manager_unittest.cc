@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 //
 
-#include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
@@ -67,50 +66,50 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
-  pm->next_update_interval_ = base::TimeDelta::FromSeconds(1800);
+  pm->next_update_interval_ = TimeDelta::FromSeconds(1800);
   ASSERT_TRUE(pm->back_off_fuzz_ >= 0.0 && pm->back_off_fuzz_ <= 1.0);
 
-  base::TimeDelta next;
+  TimeDelta next;
 
   // No errors received so far.
   next = pm->GetNextUpdateInterval(false);
-  EXPECT_EQ(next, base::TimeDelta::FromSeconds(1800));
+  EXPECT_EQ(next, TimeDelta::FromSeconds(1800));
 
   // 1 error.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_EQ(next, base::TimeDelta::FromSeconds(60));
+  EXPECT_EQ(next, TimeDelta::FromSeconds(60));
 
   // 2 errors.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(30) &&
-              next <= base::TimeDelta::FromMinutes(60));
+  EXPECT_TRUE(next >= TimeDelta::FromMinutes(30) &&
+              next <= TimeDelta::FromMinutes(60));
 
   // 3 errors.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(60) &&
-              next <= base::TimeDelta::FromMinutes(120));
+  EXPECT_TRUE(next >= TimeDelta::FromMinutes(60) &&
+              next <= TimeDelta::FromMinutes(120));
 
   // 4 errors.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(120) &&
-              next <= base::TimeDelta::FromMinutes(240));
+  EXPECT_TRUE(next >= TimeDelta::FromMinutes(120) &&
+              next <= TimeDelta::FromMinutes(240));
 
   // 5 errors.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(240) &&
-              next <= base::TimeDelta::FromMinutes(480));
+  EXPECT_TRUE(next >= TimeDelta::FromMinutes(240) &&
+              next <= TimeDelta::FromMinutes(480));
 
   // 6 errors, reached max backoff.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_EQ(next, base::TimeDelta::FromMinutes(480));
+  EXPECT_EQ(next, TimeDelta::FromMinutes(480));
 
   // 7 errors.
   next = pm->GetNextUpdateInterval(true);
-  EXPECT_EQ(next, base::TimeDelta::FromMinutes(480));
+  EXPECT_EQ(next, TimeDelta::FromMinutes(480));
 
   // Received a successful response.
   next = pm->GetNextUpdateInterval(false);
-  EXPECT_EQ(next, base::TimeDelta::FromSeconds(1800));
+  EXPECT_EQ(next, TimeDelta::FromSeconds(1800));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
@@ -257,51 +256,6 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD1(DeleteChunks, void(std::vector<SBChunkDelete>*));
 };
 
-// ImmediateSingleThreadTaskRunner will ignore delayed times for tasks.
-// This is primarily used to run the timer tasks immediately, and prevent
-// the need for constructing a MessageLoop.
-class ImmediateSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
- public:
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE {
-    return true;
-  }
-
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE {
-    task_list_.push_back(task);
-    return true;
-  }
-
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
-  void RunTasks() {
-    // Pop stuff off and run them. All on same thread so no locking need.
-    TaskList task_list;
-    task_list.swap(task_list_);
-    for (TaskList::iterator it = task_list.begin();
-         it != task_list.end();
-         ++it) {
-      it->Run();
-    }
-  }
-
-  size_t NumTasks() const {
-    return task_list_.size();
-  }
-
- private:
-  typedef std::deque<base::Closure> TaskList;
-  virtual ~ImmediateSingleThreadTaskRunner() {}
-  TaskList task_list_;
-};
-
 // |InvokeGetChunksCallback| is required because GMock's InvokeArgument action
 // expects to use operator(), and a Callback only provides Run().
 // TODO(cbentzel): Use ACTION or ACTION_TEMPLATE instead?
@@ -317,8 +271,8 @@ void InvokeGetChunksCallback(
 // Tests that the Update protocol will be skipped if there are problems
 // accessing the database.
 TEST_F(SafeBrowsingProtocolManagerTest, ProblemAccessingDatabase) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
 
   testing::StrictMock<MockProtocolDelegate> test_delegate;
@@ -332,16 +286,16 @@ TEST_F(SafeBrowsingProtocolManagerTest, ProblemAccessingDatabase) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 }
 
 // Tests the contents of the POST body when there are contents in the
 // local database. This is not exhaustive, as the actual list formatting
 // is covered by SafeBrowsingProtocolManagerTest.TestChunkStrings.
 TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -367,8 +321,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -385,8 +339,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
 
 // Tests what happens when there is a response with no chunks.
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseEmptyBody) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -402,8 +356,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseEmptyBody) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -417,8 +371,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseEmptyBody) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -434,8 +388,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -450,8 +404,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
 
 // Tests what happens when there is an error in the update response.
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -467,8 +421,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -483,8 +437,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
 
 // Tests what happens when there is an error with the connection.
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -500,8 +454,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -515,8 +469,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
 
 // Tests what happens when there is a timeout before an update response.
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -532,8 +486,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
@@ -541,13 +495,13 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
 
   // The first time RunTasks is called above, the update timeout timer is not
   // handled. This call of RunTasks will handle the update.
-  runner->RunTasks();
+  runner->RunPendingTasks();
 }
 
 // Tests what happens when there is a reset command in the response.
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseReset) {
-  scoped_refptr<ImmediateSingleThreadTaskRunner> runner(
-      new ImmediateSingleThreadTaskRunner());
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory url_fetcher_factory;
 
@@ -564,8 +518,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseReset) {
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(base::TimeDelta());
-  runner->RunTasks();
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
 
   // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);

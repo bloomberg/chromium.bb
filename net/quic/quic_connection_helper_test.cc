@@ -242,9 +242,9 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   Initialize();
 
   // Verify that a single task was posted.
-  EXPECT_EQ(1u, runner_->tasks()->size());
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(kDefaultTimeoutUs),
-            runner_->GetTask(0).delta);
+            runner_->GetPostedTasks().front().delay);
 
   EXPECT_CALL(*scheduler_, SentPacket(1, _, false));
   // After we run the next task, we should close the connection.

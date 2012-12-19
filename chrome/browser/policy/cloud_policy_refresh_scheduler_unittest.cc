@@ -7,10 +7,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
-#include "chrome/browser/policy/test_task_runner.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +32,7 @@ const int64 kPolicyRefreshRate = 4 * 60 * 60 * 1000;
 class CloudPolicyRefreshSchedulerTest : public testing::Test {
  protected:
   CloudPolicyRefreshSchedulerTest()
-      : task_runner_(new TestTaskRunner()),
+      : task_runner_(new base::TestSimpleTaskRunner()),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {}
 
   virtual void SetUp() OVERRIDE {
@@ -48,12 +48,6 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     last_refresh_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_.policy_->timestamp());
-
-    // Keep track of when the last task was posted.
-    EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _))
-        .WillRepeatedly(DoAll(SaveArg<1>(&last_callback_),
-                              SaveArg<2>(&last_delay_),
-                              Return(true)));
   }
 
   CloudPolicyRefreshScheduler* CreateRefreshScheduler() {
@@ -68,51 +62,55 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     loop_.RunUntilIdle();
   }
 
-  void CheckTiming(int64 expected_delay_ms) {
+  base::TimeDelta GetLastDelay() const {
+    const std::deque<base::TestPendingTask>& pending_tasks =
+        task_runner_->GetPendingTasks();
+    return
+        pending_tasks.empty() ? base::TimeDelta() : pending_tasks.back().delay;
+  }
+
+  void CheckTiming(int64 expected_delay_ms) const {
+    EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
     base::Time now(base::Time::NowFromSystemTime());
     base::TimeDelta expected_delay(
         base::TimeDelta::FromMilliseconds(expected_delay_ms));
-    EXPECT_GE(last_delay_, expected_delay - (now - last_refresh_));
-    EXPECT_LE(last_delay_, expected_delay);
+    EXPECT_GE(GetLastDelay(), expected_delay - (now - last_refresh_));
+    EXPECT_LE(GetLastDelay(), expected_delay);
   }
 
   MessageLoop loop_;
   MockCloudPolicyClient client_;
   MockCloudPolicyStore store_;
-  scoped_refptr<TestTaskRunner> task_runner_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   // Base time for the refresh that the scheduler should be using.
   base::Time last_refresh_;
-
-  base::Closure last_callback_;
-  base::TimeDelta last_delay_;
 };
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshNoPolicy) {
   store_.policy_.reset();
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
-  EXPECT_EQ(last_delay_, base::TimeDelta());
-  ASSERT_FALSE(last_callback_.is_null());
+  EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
+  EXPECT_EQ(GetLastDelay(), base::TimeDelta());
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
-  last_callback_.Run();
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshUnmanaged) {
   store_.policy_->set_state(em::PolicyData::UNMANAGED);
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   CheckTiming(CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs);
-  ASSERT_FALSE(last_callback_.is_null());
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
-  last_callback_.Run();
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedNotYetFetched) {
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
-  EXPECT_EQ(last_delay_, base::TimeDelta());
-  ASSERT_FALSE(last_callback_.is_null());
+  EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
+  EXPECT_EQ(GetLastDelay(), base::TimeDelta());
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
-  last_callback_.Run();
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
@@ -120,14 +118,12 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
   client_.SetPolicy(em::PolicyFetchResponse());
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   CheckTiming(kPolicyRefreshRate);
-  ASSERT_FALSE(last_callback_.is_null());
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
-  last_callback_.Run();
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
   client_.SetDMToken("");
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _)).Times(0);
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   client_.NotifyPolicyFetched();
   client_.NotifyRegistrationStateChanged();
@@ -135,6 +131,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
   scheduler->SetRefreshDelay(12 * 60 * 60 * 1000);
   store_.NotifyStoreLoaded();
   store_.NotifyStoreError();
+  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 }
 
 class CloudPolicyRefreshSchedulerSteadyStateTest
@@ -162,11 +159,12 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnPolicyFetched) {
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnRegistrationStateChanged) {
   client_.SetDMToken("new_token");
   client_.NotifyRegistrationStateChanged();
-  EXPECT_EQ(last_delay_, base::TimeDelta());
+  EXPECT_EQ(GetLastDelay(), base::TimeDelta());
 
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _)).Times(0);
+  task_runner_->ClearPendingTasks();
   client_.SetDMToken("");
   client_.NotifyRegistrationStateChanged();
+  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 }
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnStoreLoaded) {
@@ -175,8 +173,9 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnStoreLoaded) {
 }
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnStoreError) {
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _)).Times(0);
+  task_runner_->ClearPendingTasks();
   store_.NotifyStoreError();
+  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 }
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, RefreshDelayChange) {
@@ -199,7 +198,7 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnIPAddressChanged) {
 
   client_.SetStatus(DM_STATUS_REQUEST_FAILED);
   NotifyIPAddressChanged();
-  EXPECT_EQ(last_delay_, base::TimeDelta());
+  EXPECT_EQ(GetLastDelay(), base::TimeDelta());
 }
 
 struct ClientErrorTestParam {
@@ -244,8 +243,7 @@ class CloudPolicyRefreshSchedulerClientErrorTest
 
 TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
   client_.SetStatus(GetParam().client_error);
-  last_delay_ = base::TimeDelta();
-  last_callback_.Reset();
+  task_runner_->ClearPendingTasks();
 
   // See whether the error triggers the right refresh delay.
   int64 expected_delay_ms = GetParam().expected_delay_ms;
@@ -264,8 +262,8 @@ TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
     } while (GetParam().backoff_factor > 1 &&
              expected_delay_ms <= kPolicyRefreshRate);
   } else {
-    EXPECT_EQ(base::TimeDelta(), last_delay_);
-    EXPECT_TRUE(last_callback_.is_null());
+    EXPECT_EQ(base::TimeDelta(), GetLastDelay());
+    EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
   }
 }
 

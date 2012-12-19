@@ -8,13 +8,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "chrome/browser/policy/test_task_runner.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -56,7 +56,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
             PolicyStatisticsCollector::kStatisticsUpdateRate)),
         test_policy_id1_(-1),
         test_policy_id2_(-1),
-        task_runner_(new TestTaskRunner) {
+        task_runner_(new base::TestSimpleTaskRunner()) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -94,6 +94,14 @@ class PolicyStatisticsCollectorTest : public testing::Test {
                     base::Value::CreateBooleanValue(true));
   }
 
+  base::TimeDelta GetFirstDelay() const {
+    if (task_runner_->GetPendingTasks().empty()) {
+      ADD_FAILURE();
+      return base::TimeDelta();
+    }
+    return task_runner_->GetPendingTasks().front().delay;
+  }
+
   const base::TimeDelta update_delay_;
 
   int test_policy_id1_;
@@ -105,7 +113,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   MockPolicyService policy_service_;
   PolicyMap policy_map_;
 
-  scoped_refptr<TestTaskRunner> task_runner_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<TestPolicyStatisticsCollector> policy_statistics_collector_;
 };
 
@@ -117,10 +125,10 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPending) {
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
               RecordPolicyUse(test_policy_id1_));
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, update_delay_)).
-      WillOnce(Return(true));
 
   policy_statistics_collector_->Initialize();
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(update_delay_, GetFirstDelay());
 }
 
 TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
@@ -132,10 +140,10 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
               RecordPolicyUse(test_policy_id1_));
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, update_delay_)).
-      WillOnce(Return(true));
 
   policy_statistics_collector_->Initialize();
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(update_delay_, GetFirstDelay());
 }
 
 TEST_F(PolicyStatisticsCollectorTest, CollectLater) {
@@ -144,10 +152,9 @@ TEST_F(PolicyStatisticsCollectorTest, CollectLater) {
   prefs_.SetInt64(prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_ / 2).ToInternalValue());
 
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, Lt(update_delay_))).
-      WillOnce(Return(true));
-
   policy_statistics_collector_->Initialize();
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_LT(GetFirstDelay(), update_delay_);
 }
 
 TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
@@ -161,10 +168,9 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
               RecordPolicyUse(test_policy_id1_));
   EXPECT_CALL(*policy_statistics_collector_.get(),
               RecordPolicyUse(test_policy_id2_));
-  EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _)).
-      WillOnce(Return(true));
 
   policy_statistics_collector_->Initialize();
+  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
 }
 
 }  // namespace policy
