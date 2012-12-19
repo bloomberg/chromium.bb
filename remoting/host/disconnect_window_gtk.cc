@@ -22,7 +22,7 @@ class DisconnectWindowGtk : public DisconnectWindow {
   virtual ~DisconnectWindowGtk();
 
   virtual bool Show(const UiStrings& ui_strings,
-                    const DisconnectCallback& disconnect_callback,
+                    const base::Closure& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
@@ -36,7 +36,7 @@ class DisconnectWindowGtk : public DisconnectWindow {
 
   void CreateWindow(const UiStrings& ui_strings);
 
-  DisconnectCallback disconnect_callback_;
+  base::Closure disconnect_callback_;
   GtkWidget* disconnect_window_;
   GtkWidget* message_;
   GtkWidget* button_;
@@ -56,6 +56,7 @@ DisconnectWindowGtk::DisconnectWindowGtk()
 }
 
 DisconnectWindowGtk::~DisconnectWindowGtk() {
+  Hide();
 }
 
 void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
@@ -129,7 +130,7 @@ void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
 }
 
 bool DisconnectWindowGtk::Show(const UiStrings& ui_strings,
-                               const DisconnectCallback& disconnect_callback,
+                               const base::Closure& disconnect_callback,
                                const std::string& username) {
   DCHECK(disconnect_callback_.is_null());
   DCHECK(!disconnect_callback.is_null());

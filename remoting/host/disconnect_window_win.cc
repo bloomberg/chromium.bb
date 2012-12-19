@@ -41,8 +41,9 @@ class DisconnectWindowWin : public DisconnectWindow {
   DisconnectWindowWin();
   virtual ~DisconnectWindowWin();
 
+  // DisconnectWindow interface.
   virtual bool Show(const UiStrings& ui_strings,
-                    const DisconnectCallback& disconnect_callback,
+                    const base::Closure& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
@@ -56,11 +57,9 @@ private:
   bool BeginDialog(const UiStrings& ui_strings,
                    const std::string& username);
 
-  // Unregisters the disconnect hot key and closed the dialog.
+  // Closes the dialog, unregisters the hot key and invokes the disconnect
+  // callback, if set.
   void EndDialog();
-
-  // Invokes the disconnect callback passed to Show().
-  void InvokeDiconnectCallback();
 
   // Trys to position the dialog window above the taskbar.
   void SetDialogPosition();
@@ -68,7 +67,7 @@ private:
   // Applies localization string and resizes the dialog.
   bool SetStrings(const UiStrings& strings, const string16& username);
 
-  DisconnectCallback disconnect_callback_;
+  base::Closure disconnect_callback_;
   HWND hwnd_;
   bool has_hotkey_;
   base::win::ScopedGDIObject<HPEN> border_pen_;
@@ -97,11 +96,11 @@ DisconnectWindowWin::DisconnectWindowWin()
 }
 
 DisconnectWindowWin::~DisconnectWindowWin() {
-  EndDialog();
+  Hide();
 }
 
 bool DisconnectWindowWin::Show(const UiStrings& ui_strings,
-                               const DisconnectCallback& disconnect_callback,
+                               const base::Closure& disconnect_callback,
                                const std::string& username) {
   DCHECK(disconnect_callback_.is_null());
   DCHECK(!disconnect_callback.is_null());
@@ -111,12 +110,14 @@ bool DisconnectWindowWin::Show(const UiStrings& ui_strings,
   if (BeginDialog(ui_strings, username)) {
     return true;
   } else {
-    EndDialog();
+    Hide();
     return false;
   }
 }
 
 void DisconnectWindowWin::Hide() {
+  // Clear the |disconnect_callback_| so it won't be invoked by EndDialog().
+  disconnect_callback_.Reset();
   EndDialog();
 }
 
@@ -154,7 +155,6 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
       switch (LOWORD(wparam)) {
         case IDC_DISCONNECT:
           EndDialog();
-          InvokeDiconnectCallback();
           return TRUE;
       }
       return FALSE;
@@ -162,6 +162,11 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
     // Ensure we don't try to use the HWND anymore.
     case WM_DESTROY:
       hwnd_ = NULL;
+
+      // Ensure that the disconnect callback is invoked even if somehow our
+      // window gets destroyed.
+      EndDialog();
+
       return TRUE;
 
     // Ensure the dialog stays visible if the work area dimensions change.
@@ -178,7 +183,6 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
     // Handle the disconnect hot-key.
     case WM_HOTKEY:
       EndDialog();
-      InvokeDiconnectCallback();
       return TRUE;
 
     // Let the window be draggable by its client area by responding
@@ -266,14 +270,13 @@ void DisconnectWindowWin::EndDialog() {
 
   if (hwnd_) {
     ::DestroyWindow(hwnd_);
-    hwnd_ = NULL;
+    DCHECK(hwnd_ == NULL);
   }
 
-  disconnect_callback_.Reset();
-}
-
-void DisconnectWindowWin::InvokeDiconnectCallback() {
-  disconnect_callback_.Run();
+  if (!disconnect_callback_.is_null()) {
+    disconnect_callback_.Run();
+    disconnect_callback_.Reset();
+  }
 }
 
 void DisconnectWindowWin::SetDialogPosition() {

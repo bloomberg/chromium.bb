@@ -40,7 +40,7 @@ DisconnectWindowMac::DisconnectWindowMac()
 }
 
 DisconnectWindowMac::~DisconnectWindowMac() {
-  [window_controller_ close];
+  Hide();
 }
 
 bool DisconnectWindowMac::Show(const UiStrings& ui_strings,
