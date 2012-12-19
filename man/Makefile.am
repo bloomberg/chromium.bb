@@ -1,6 +1,12 @@
 # Only build man pages if configure found the HELP2MAN tool
 if HAVE_HELP2MAN
-man_MANS = lou_allround.1 lou_checkhyphens.1 lou_checktable.1 lou_debug.1 lou_translate.1
+man_MANS =					\
+	lou_allround.1				\
+	lou_checkhyphens.1			\
+	lou_checktable.1			\
+	lou_debug.1				\
+	lou_translate.1				\
+	lou_trace.1
 endif
 
 CLEANFILES = $(man_MANS)
@@ -42,4 +48,9 @@ lou_debug.1: $(top_srcdir)/tools/lou_debug.c $(common_mandeps)
 lou_translate.1: $(top_srcdir)/tools/lou_translate.c $(common_mandeps)
 	$(HELP2MAN) ../tools/lou_translate$(EXEEXT) --info-page=$(PACKAGE) \
 	--name="A Braille translator for large scale testing of liblouis Braille translation tables" \
+	--output=$@
+
+lou_trace.1: $(top_srcdir)/tools/lou_trace.c $(common_mandeps)
+	$(HELP2MAN) ../tools/lou_trace$(EXEEXT) --info-page=$(PACKAGE) \
+	--name="A tool to list all the rules that were used for a Braille translation" \
 	--output=$@
