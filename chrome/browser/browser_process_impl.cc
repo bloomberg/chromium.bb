@@ -53,7 +53,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -526,13 +526,13 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   return print_job_manager_.get();
 }
 
-printing::PrintPreviewTabController*
-    BrowserProcessImpl::print_preview_tab_controller() {
+printing::PrintPreviewDialogController*
+    BrowserProcessImpl::print_preview_dialog_controller() {
 #if defined(ENABLE_PRINTING)
   DCHECK(CalledOnValidThread());
-  if (!print_preview_tab_controller_.get())
-    CreatePrintPreviewTabController();
-  return print_preview_tab_controller_.get();
+  if (!print_preview_dialog_controller_.get())
+    CreatePrintPreviewDialogController();
+  return print_preview_dialog_controller_.get();
 #else
   NOTIMPLEMENTED();
   return NULL;
@@ -869,10 +869,11 @@ void BrowserProcessImpl::CreateStatusTray() {
   status_tray_.reset(StatusTray::Create());
 }
 
-void BrowserProcessImpl::CreatePrintPreviewTabController() {
+void BrowserProcessImpl::CreatePrintPreviewDialogController() {
 #if defined(ENABLE_PRINTING)
-  DCHECK(print_preview_tab_controller_.get() == NULL);
-  print_preview_tab_controller_ = new printing::PrintPreviewTabController();
+  DCHECK(print_preview_dialog_controller_.get() == NULL);
+  print_preview_dialog_controller_ =
+      new printing::PrintPreviewDialogController();
 #else
   NOTIMPLEMENTED();
 #endif

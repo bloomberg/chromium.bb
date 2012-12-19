@@ -98,8 +98,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual unsigned int ReleaseModule() OVERRIDE;
   virtual bool IsShuttingDown() OVERRIDE;
   virtual printing::PrintJobManager* print_job_manager() OVERRIDE;
-  virtual printing::PrintPreviewTabController*
-      print_preview_tab_controller() OVERRIDE;
+  virtual printing::PrintPreviewDialogController*
+      print_preview_dialog_controller() OVERRIDE;
   virtual printing::BackgroundPrintingManager*
       background_printing_manager() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
@@ -140,7 +140,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
-  void CreatePrintPreviewTabController();
+  void CreatePrintPreviewDialogController();
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
   void CreateSafeBrowsingDetectionService();
@@ -193,8 +193,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      print_preview_tab_controller_;
+  scoped_refptr<printing::PrintPreviewDialogController>
+      print_preview_dialog_controller_;
 
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
 

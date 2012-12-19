@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -19,10 +19,10 @@
 
 using content::WebContents;
 
-class PrintPreviewTabControllerBrowserTest : public InProcessBrowserTest {
+class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
-  PrintPreviewTabControllerBrowserTest() {}
-  virtual ~PrintPreviewTabControllerBrowserTest() {}
+  PrintPreviewDialogControllerBrowserTest() {}
+  virtual ~PrintPreviewDialogControllerBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
 #if !defined(GOOGLE_CHROME_BUILD)
@@ -51,7 +51,7 @@ class TabDestroyedObserver : public content::WebContentsObserver {
 
 // Test to verify that when a initiator tab navigates, we can create a new
 // preview tab for the new tab contents.
-IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        NavigateFromInitiatorTab) {
   // Lets start with one tab.
   EXPECT_EQ(1, browser()->tab_count());
@@ -61,8 +61,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
 // Test to verify that after reloading the initiator tab, it creates a new
 // print preview tab.
-IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        ReloadInitiatorTab) {
   // Lets start with one tab.
   EXPECT_EQ(1, browser()->tab_count());
@@ -106,8 +106,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.

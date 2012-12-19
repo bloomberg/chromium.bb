@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TAB_CONTROLLER_H_
-#define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TAB_CONTROLLER_H_
+#ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DIALOG_CONTROLLER_H_
+#define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DIALOG_CONTROLLER_H_
 
 #include <map>
 
@@ -35,13 +35,13 @@ namespace printing {
 // be reevaluated as to whether they're useful. The comments, both here and in
 // the tests, need to be fixed so that they don't lie.
 // http://crbug.com/163671
-class PrintPreviewTabController
-    : public base::RefCounted<PrintPreviewTabController>,
+class PrintPreviewDialogController
+    : public base::RefCounted<PrintPreviewDialogController>,
       public content::NotificationObserver {
  public:
-  PrintPreviewTabController();
+  PrintPreviewDialogController();
 
-  static PrintPreviewTabController* GetInstance();
+  static PrintPreviewDialogController* GetInstance();
 
   // Initiate print preview for |initiator_tab|.
   // Call this instead of GetOrCreatePreviewTab().
@@ -78,7 +78,7 @@ class PrintPreviewTabController
   bool is_creating_print_preview_tab() const;
 
  private:
-  friend class base::RefCounted<PrintPreviewTabController>;
+  friend class base::RefCounted<PrintPreviewDialogController>;
 
   // 1:1 relationship between initiator tab and print preview tab.
   // Key: Preview tab.
@@ -86,7 +86,7 @@ class PrintPreviewTabController
   typedef std::map<content::WebContents*, content::WebContents*>
       PrintPreviewTabMap;
 
-  virtual ~PrintPreviewTabController();
+  virtual ~PrintPreviewDialogController();
 
   // Handler for the RENDERER_PROCESS_CLOSED notification. This is observed when
   // the initiator renderer crashed.
@@ -127,13 +127,13 @@ class PrintPreviewTabController
   // content::NAVIGATION_TYPE_NEW_PAGE.
   bool waiting_for_new_preview_page_;
 
-  // Whether the PrintPreviewTabController is in the middle of creating a
+  // Whether the PrintPreviewDialogController is in the middle of creating a
   // print preview tab.
   bool is_creating_print_preview_tab_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewTabController);
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogController);
 };
 
 }  // namespace printing
 
-#endif  // CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TAB_CONTROLLER_H_
+#endif  // CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DIALOG_CONTROLLER_H_

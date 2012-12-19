@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -70,8 +70,8 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
@@ -124,8 +124,8 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
@@ -185,8 +185,8 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =
@@ -247,8 +247,8 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(controller);
 
   printing::PrintViewManager* print_view_manager =

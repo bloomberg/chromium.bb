@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -35,8 +35,8 @@ void TestTabStripModelObserver::TabBlockedStateChanged(
 
 void TestTabStripModelObserver::ObservePrintPreviewTabContents(
     content::WebContents* contents) {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   if (tab_controller) {
     content::WebContents* preview_tab =
         tab_controller->GetPrintPreviewForTab(contents);

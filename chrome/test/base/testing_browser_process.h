@@ -81,8 +81,8 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual unsigned int ReleaseModule() OVERRIDE;
   virtual bool IsShuttingDown() OVERRIDE;
   virtual printing::PrintJobManager* print_job_manager() OVERRIDE;
-  virtual printing::PrintPreviewTabController*
-      print_preview_tab_controller() OVERRIDE;
+  virtual printing::PrintPreviewDialogController*
+      print_preview_dialog_controller() OVERRIDE;
   virtual printing::BackgroundPrintingManager*
       background_printing_manager() OVERRIDE;
   virtual const std::string& GetApplicationLocale() OVERRIDE;
@@ -129,8 +129,8 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
-  scoped_refptr<printing::PrintPreviewTabController>
-      print_preview_tab_controller_;
+  scoped_refptr<printing::PrintPreviewDialogController>
+      print_preview_dialog_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   scoped_refptr<SafeBrowsingService> sb_service_;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
+
 #include <algorithm>
 #include <set>
 #include <utility>
-
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -32,7 +32,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_context_menu_observer.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -1141,7 +1141,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return (params_.media_flags & WebContextMenuData::MediaCanSave) &&
           url.is_valid() && ProfileIOData::IsHandledProtocol(url.scheme()) &&
           // Do not save the preview PDF on the print preview page.
-          !(printing::PrintPreviewTabController::IsPrintPreviewURL(url));
+          !(printing::PrintPreviewDialogController::IsPrintPreviewURL(url));
     }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:

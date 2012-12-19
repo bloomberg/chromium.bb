@@ -18,7 +18,7 @@
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,8 +102,8 @@ bool PrintViewManager::PrintForSystemDialogNow() {
 }
 
 bool PrintViewManager::AdvancedPrintNow() {
-  PrintPreviewTabController* tab_controller =
-      PrintPreviewTabController::GetInstance();
+  PrintPreviewDialogController* tab_controller =
+      PrintPreviewDialogController::GetInstance();
   if (!tab_controller)
     return false;
   WebContents* print_preview_tab =
@@ -327,8 +327,8 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
     return;
   }
 
-  PrintPreviewTabController* tab_controller =
-      PrintPreviewTabController::GetInstance();
+  PrintPreviewDialogController* tab_controller =
+      PrintPreviewDialogController::GetInstance();
   if (!tab_controller) {
     Send(reply_msg);
     return;

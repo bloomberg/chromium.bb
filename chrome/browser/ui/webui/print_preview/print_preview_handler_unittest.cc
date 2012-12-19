@@ -7,7 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -67,8 +67,8 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(initiator_tab);
 
-    printing::PrintPreviewTabController* controller =
-        printing::PrintPreviewTabController::GetInstance();
+    printing::PrintPreviewDialogController* controller =
+        printing::PrintPreviewDialogController::GetInstance();
     ASSERT_TRUE(controller);
 
     printing::PrintViewManager* print_view_manager =
@@ -137,6 +137,5 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
   PrintPreviewUI* preview_ui_;
 
  private:
-
   WebContents* preview_tab_;
 };

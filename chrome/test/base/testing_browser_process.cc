@@ -18,7 +18,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #endif
@@ -214,12 +214,13 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
   return NULL;
 }
 
-printing::PrintPreviewTabController*
-TestingBrowserProcess::print_preview_tab_controller() {
+printing::PrintPreviewDialogController*
+TestingBrowserProcess::print_preview_dialog_controller() {
 #if defined(ENABLE_PRINTING)
-  if (!print_preview_tab_controller_.get())
-    print_preview_tab_controller_ = new printing::PrintPreviewTabController();
-  return print_preview_tab_controller_.get();
+  if (!print_preview_dialog_controller_.get())
+    print_preview_dialog_controller_ =
+        new printing::PrintPreviewDialogController();
+  return print_preview_dialog_controller_.get();
 #else
   NOTIMPLEMENTED();
   return NULL;

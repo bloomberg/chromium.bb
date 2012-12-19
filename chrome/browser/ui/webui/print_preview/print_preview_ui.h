@@ -151,7 +151,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
                            GetLastUsedMarginSettingsCustom);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
                            GetLastUsedMarginSettingsDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
 
   // Returns the Singleton instance of the PrintPreviewDataService.

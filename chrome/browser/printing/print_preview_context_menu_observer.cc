@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 
 PrintPreviewContextMenuObserver::PrintPreviewContextMenuObserver(
     content::WebContents* tab) : tab_(tab) {
@@ -16,8 +16,8 @@ PrintPreviewContextMenuObserver::~PrintPreviewContextMenuObserver() {
 }
 
 bool PrintPreviewContextMenuObserver::IsPrintPreviewTab() {
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* controller =
+      printing::PrintPreviewDialogController::GetInstance();
   if (!controller)
     return false;
   return !!controller->GetPrintPreviewForTab(tab_);

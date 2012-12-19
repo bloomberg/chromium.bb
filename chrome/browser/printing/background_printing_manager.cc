@@ -5,7 +5,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 
 #include "chrome/browser/printing/print_job.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -35,7 +35,7 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
 
 void BackgroundPrintingManager::OwnPrintPreviewTab(WebContents* preview_tab) {
   DCHECK(CalledOnValidThread());
-  DCHECK(PrintPreviewTabController::IsPrintPreviewTab(preview_tab));
+  DCHECK(PrintPreviewDialogController::IsPrintPreviewTab(preview_tab));
   CHECK(!HasPrintPreviewTab(preview_tab));
 
   printing_tabs_.insert(preview_tab);
@@ -64,8 +64,8 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(WebContents* preview_tab) {
   }
 
   // Activate the initiator tab.
-  PrintPreviewTabController* tab_controller =
-      PrintPreviewTabController::GetInstance();
+  PrintPreviewDialogController* tab_controller =
+      PrintPreviewDialogController::GetInstance();
   if (!tab_controller)
     return;
   WebContents* initiator_tab = tab_controller->GetInitiatorTab(preview_tab);

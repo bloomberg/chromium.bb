@@ -71,7 +71,7 @@ class PrerenderTracker;
 namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
-class PrintPreviewTabController;
+class PrintPreviewDialogController;
 }
 
 namespace safe_browsing {
@@ -152,8 +152,8 @@ class BrowserProcess {
   virtual bool IsShuttingDown() = 0;
 
   virtual printing::PrintJobManager* print_job_manager() = 0;
-  virtual printing::PrintPreviewTabController*
-      print_preview_tab_controller() = 0;
+  virtual printing::PrintPreviewDialogController*
+      print_preview_dialog_controller() = 0;
   virtual printing::BackgroundPrintingManager*
       background_printing_manager() = 0;
 

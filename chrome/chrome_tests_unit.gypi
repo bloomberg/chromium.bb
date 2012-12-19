@@ -977,7 +977,7 @@
         'browser/printing/cloud_print/cloud_print_setup_source_unittest.cc',
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
-        'browser/printing/print_preview_tab_controller_unittest.cc',
+        'browser/printing/print_preview_dialog_controller_unittest.cc',
         'browser/printing/print_preview_test.cc',
         'browser/printing/print_preview_test.h',
         'browser/process_info_snapshot_mac_unittest.cc',

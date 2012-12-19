@@ -30,7 +30,7 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_system_task_proxy.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
@@ -816,8 +816,8 @@ void PrintPreviewHandler::SendCloudPrintJob() {
 }
 
 WebContents* PrintPreviewHandler::GetInitiatorTab() const {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   if (!tab_controller)
     return NULL;
   return tab_controller->GetInitiatorTab(preview_web_contents());
@@ -937,8 +937,8 @@ void PrintPreviewHandler::ClearInitiatorTabDetails() {
   // We no longer require the initiator tab details. Remove those details
   // associated with the preview tab to allow the initiator tab to create
   // another preview tab.
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   if (tab_controller)
     tab_controller->EraseInitiatorTabInfo(preview_web_contents());
 }

@@ -12,7 +12,7 @@
 #include "base/shared_memory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -75,8 +75,8 @@ PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
 WebContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
-  PrintPreviewTabController* tab_controller =
-      PrintPreviewTabController::GetInstance();
+  PrintPreviewDialogController* tab_controller =
+      PrintPreviewDialogController::GetInstance();
   if (!tab_controller)
     return NULL;
 
@@ -96,7 +96,7 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
     printing::PrintViewManager::FromWebContents(web_contents())->
         PrintPreviewForWebNode();
   }
-  PrintPreviewTabController::PrintPreview(web_contents());
+  PrintPreviewDialogController::PrintPreview(web_contents());
   PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
                                         source_is_modifiable);
 }

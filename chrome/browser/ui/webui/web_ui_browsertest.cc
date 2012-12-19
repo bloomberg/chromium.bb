@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -221,8 +221,8 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  printing::PrintPreviewDialogController* tab_controller =
+      printing::PrintPreviewDialogController::GetInstance();
   ASSERT_TRUE(tab_controller);
   WebContents* preview_tab = tab_controller->GetPrintPreviewForTab(
       browser()->tab_strip_model()->GetActiveWebContents());
