@@ -2385,12 +2385,31 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'security_tests',
+          'type': 'shared_library',
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/security_tests/ipc_security_tests.cc',
+            'test/security_tests/ipc_security_tests.h',
+            'test/security_tests/security_tests.cc',
+            '../sandbox/win/tests/validation_tests/commands.cc',
+            '../sandbox/win/tests/validation_tests/commands.h',
+          ],
+        },
+      ]},  # 'targets'
+    ],  # OS=="win"
+    ['OS=="linux" or OS=="win"', {
+      'targets': [
+        {
           'target_name': 'generate_profile',
           'type': 'executable',
           'dependencies': [
             'test_support_common',
             'browser',
             'renderer',
+	    'chrome_resources.gyp:packed_resources',
             '../base/base.gyp:base',
             '../net/net.gyp:net_test_support',
             '../skia/skia.gyp:skia',
@@ -2424,22 +2443,8 @@
             }],
           ],
         },
-        {
-          'target_name': 'security_tests',
-          'type': 'shared_library',
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/security_tests/ipc_security_tests.cc',
-            'test/security_tests/ipc_security_tests.h',
-            'test/security_tests/security_tests.cc',
-            '../sandbox/win/tests/validation_tests/commands.cc',
-            '../sandbox/win/tests/validation_tests/commands.h',
-          ],
-        },
       ]},  # 'targets'
-    ],  # OS=="win"
+    ],
     # If you change this condition, make sure you also change it in all.gyp
     # for the chromium_builder_qa target.
     ['enable_automation==1 and (OS=="mac" or OS=="win" or (os_posix==1 and target_arch==python_arch))', {
