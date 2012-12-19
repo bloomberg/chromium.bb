@@ -1055,6 +1055,7 @@ private:
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
             ResourceProvider::ResourceId resource = resourceProvider->createResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+            resourceProvider->allocateForTesting(resource);
             pushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
@@ -1680,6 +1681,7 @@ private:
         , m_quadVisibleRect(5, 5, 5, 5)
         , m_resourceId(resourceProvider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
     {
+        resourceProvider->allocateForTesting(m_resourceId);
         setAnchorPoint(gfx::PointF(0, 0));
         setBounds(gfx::Size(10, 10));
         setContentBounds(gfx::Size(10, 10));
@@ -2754,9 +2756,15 @@ public:
         ResourceProvider::TextureUsageHint hint = ResourceProvider::TextureUsageAny;
         setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometryNonEmpty::create()));
 
-        setBackTrackResourceId(provider->createResource(size, format, hint));
-        setForeTrackResourceId(provider->createResource(size, format, hint));
-        setThumbResourceId(provider->createResource(size, format, hint));
+        ResourceProvider::ResourceId backId  = provider->createResource(size, format, hint);
+        ResourceProvider::ResourceId foreId  = provider->createResource(size, format, hint);
+        ResourceProvider::ResourceId thumbId = provider->createResource(size, format, hint);
+        provider->allocateForTesting(backId);
+        provider->allocateForTesting(foreId);
+        provider->allocateForTesting(thumbId);
+        setBackTrackResourceId(backId);
+        setForeTrackResourceId(foreId);
+        setThumbResourceId(thumbId);
     }
 
 protected:
@@ -2769,6 +2777,7 @@ protected:
 static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvider* provider)
 {
     ResourceProvider::ResourceId resourceId = provider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
+    provider->allocateForTesting(resourceId);
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
     pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Transform());

@@ -230,6 +230,10 @@ public:
     void beginSetPixels(ResourceId id);
     bool didSetPixelsComplete(ResourceId id);
 
+    // For tests only! This prevents detecting uninitialized reads.
+    // Use setPixels or lockForWrite to allocate implicitly.
+    void allocateForTesting(ResourceId id);
+
 private:
     struct Resource {
         Resource();
@@ -250,6 +254,7 @@ private:
         bool exported;
         bool markedForDeletion;
         bool pendingSetPixels;
+        bool allocated;
         gfx::Size size;
         GLenum format;
         // TODO(skyostil): Use a separate sampler object for filter state.
@@ -277,6 +282,7 @@ private:
 
     bool transferResource(WebKit::WebGraphicsContext3D*, ResourceId, TransferableResource*);
     void deleteResourceInternal(ResourceMap::iterator it);
+    void lazyAllocate(Resource*);
 
     OutputSurface* m_outputSurface;
     ResourceId m_nextId;
