@@ -17,9 +17,9 @@ scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
     if (m_useDelegatingRenderer)
-        return FakeOutputSurface::CreateDelegating3d(FakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateDelegating3d(FakeWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 
-    return FakeOutputSurface::Create3d(FakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(FakeWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 }
 
 scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()

@@ -17,17 +17,18 @@ using WebKit::WebGraphicsContext3D;
 namespace cc {
 
 FakeWebGraphicsContext3D::FakeWebGraphicsContext3D()
-    : m_nextTextureId(1)
-    , m_contextLost(false)
-    , m_contextLostCallback(NULL)
+    : next_texture_id_(1)
+    , context_lost_(false)
+    , context_lost_callback_(NULL)
 {
 }
 
-FakeWebGraphicsContext3D::FakeWebGraphicsContext3D(const WebGraphicsContext3D::Attributes& attributes)
-    : m_nextTextureId(1)
-    , m_attrs(attributes)
-    , m_contextLost(false)
-    , m_contextLostCallback(NULL)
+FakeWebGraphicsContext3D::FakeWebGraphicsContext3D(
+    const WebGraphicsContext3D::Attributes& attributes)
+    : next_texture_id_(1)
+    , attributes_(attributes)
+    , context_lost_(false)
+    , context_lost_callback_(NULL)
 {
 }
 
@@ -36,7 +37,7 @@ FakeWebGraphicsContext3D::~FakeWebGraphicsContext3D()
 }
 
 bool FakeWebGraphicsContext3D::makeContextCurrent() {
-  return !m_contextLost;
+  return !context_lost_;
 }
 
 int FakeWebGraphicsContext3D::width() {
@@ -65,11 +66,11 @@ WebGLId FakeWebGraphicsContext3D::getPlatformTextureId() {
 }
 
 bool FakeWebGraphicsContext3D::isContextLost() {
-  return m_contextLost;
+  return context_lost_;
 }
 
 WGC3Denum FakeWebGraphicsContext3D::getGraphicsResetStatusARB() {
-  return m_contextLost ? GL_UNKNOWN_CONTEXT_RESET_ARB : GL_NO_ERROR;
+  return context_lost_ ? GL_UNKNOWN_CONTEXT_RESET_ARB : GL_NO_ERROR;
 }
 
 void* FakeWebGraphicsContext3D::mapBufferSubDataCHROMIUM(
@@ -99,7 +100,7 @@ WebKit::WebString FakeWebGraphicsContext3D::getRequestableExtensionsCHROMIUM() {
 
 WGC3Denum FakeWebGraphicsContext3D::checkFramebufferStatus(
     WGC3Denum target) {
-  if (m_contextLost)
+  if (context_lost_)
     return GL_FRAMEBUFFER_UNDEFINED_OES;
   return GL_FRAMEBUFFER_COMPLETE;
 }
@@ -126,7 +127,7 @@ WebKit::WGC3Dint FakeWebGraphicsContext3D::getAttribLocation(
 
 WebGraphicsContext3D::Attributes
     FakeWebGraphicsContext3D::getContextAttributes() {
-  return m_attrs;
+  return attributes_;
 }
 
 WGC3Denum FakeWebGraphicsContext3D::getError() {
@@ -243,39 +244,41 @@ WebGLId FakeWebGraphicsContext3D::createShader(WGC3Denum) {
 }
 
 WebGLId FakeWebGraphicsContext3D::createTexture() {
-  WebGLId textureId = m_nextTextureId++;
-  m_textures.push_back(textureId);
-  return textureId;
+  WebGLId texture_id = next_texture_id_++;
+  textures_.push_back(texture_id);
+  return texture_id;
 }
 
-void FakeWebGraphicsContext3D::deleteTexture(WebGLId textureId) {
-  m_textures.erase(std::find(m_textures.begin(), m_textures.end(), textureId));
+void FakeWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
+  textures_.erase(std::find(textures_.begin(), textures_.end(), texture_id));
 }
 
-void FakeWebGraphicsContext3D::bindTexture(WGC3Denum target, WebGLId textureId) {
-  if (!textureId)
+void FakeWebGraphicsContext3D::bindTexture(
+    WGC3Denum target, WebGLId texture_id) {
+  if (!texture_id)
     return;
-  DCHECK(std::find(m_textures.begin(), m_textures.end(), textureId) != m_textures.end());
-  m_usedTextures.insert(textureId);
+  DCHECK(std::find(textures_.begin(), textures_.end(), texture_id) !=
+         textures_.end());
+  used_textures_.insert(texture_id);
 }
 
 WebGLId FakeWebGraphicsContext3D::createQueryEXT() {
   return 1;
 }
 
-WGC3Dboolean FakeWebGraphicsContext3D::isQueryEXT(WebGLId) {
+WGC3Dboolean FakeWebGraphicsContext3D::isQueryEXT(WebGLId query) {
   return true;
 }
 
-void FakeWebGraphicsContext3D::setContextLostCallback(
+void FakeWebGraphicsContext3D::SetContextLostCallback(
     WebGraphicsContextLostCallback* callback) {
-  m_contextLostCallback = callback;
+  context_lost_callback_ = callback;
 }
 
 void FakeWebGraphicsContext3D::loseContextCHROMIUM() {
-  m_contextLost = true;
-  if (m_contextLostCallback)
-    m_contextLostCallback->onContextLost();
+  context_lost_ = true;
+  if (context_lost_callback_)
+    context_lost_callback_->onContextLost();
 }
 
 }  // namespace cc

@@ -251,7 +251,7 @@ public:
     virtual WGC3Dint getAttribLocation(WebGLId program, const WGC3Dchar* name) { ADD_FAILURE(); return 0; }
     virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) { ADD_FAILURE(); }
     virtual void getBufferParameteriv(WGC3Denum target, WGC3Denum pname, WGC3Dint* value) { ADD_FAILURE(); }
-    virtual Attributes getContextAttributes() { ADD_FAILURE(); return m_attrs; }
+    virtual Attributes getContextAttributes() { ADD_FAILURE(); return attributes_; }
     virtual WGC3Denum getError() { ADD_FAILURE(); return 0; }
     virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) { ADD_FAILURE(); }
     virtual void getFramebufferAttachmentParameteriv(WGC3Denum target, WGC3Denum attachment, WGC3Denum pname, WGC3Dint* value) { ADD_FAILURE(); }

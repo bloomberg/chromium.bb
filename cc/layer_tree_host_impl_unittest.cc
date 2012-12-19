@@ -2560,7 +2560,7 @@ public:
     StrictWebGraphicsContext3D()
         : FakeWebGraphicsContext3D()
     {
-        m_nextTextureId = 8; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
+        next_texture_id_ = 8; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
     }
 
     virtual WebKit::WebGLId createBuffer() { return 2; }
@@ -4811,7 +4811,7 @@ protected:
     {
         // Creates an output surface with a parent to use a delegating renderer.
         WebKit::WebGraphicsContext3D::Attributes attrs;
-        return FakeOutputSurface::CreateDelegating3d(FakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateDelegating3d(FakeWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
     }
 
     void drawFrameAndTestDamage(const gfx::RectF& expectedDamage) {

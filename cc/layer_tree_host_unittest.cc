@@ -1393,27 +1393,27 @@ public:
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Number of textures should be one.
-            ASSERT_EQ(1, context->numTextures());
+            ASSERT_EQ(1, context->NumTextures());
             // Number of textures used for commit should be one.
-            EXPECT_EQ(1, context->numUsedTextures());
+            EXPECT_EQ(1, context->NumUsedTextures());
             // Verify that used texture is correct.
-            EXPECT_TRUE(context->usedTexture(context->texture(0)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Number of textures should be two as the first texture
             // is used by impl thread and cannot by used for update.
-            ASSERT_EQ(2, context->numTextures());
+            ASSERT_EQ(2, context->NumTextures());
             // Number of textures used for commit should still be one.
-            EXPECT_EQ(1, context->numUsedTextures());
+            EXPECT_EQ(1, context->NumUsedTextures());
             // First texture should not have been used.
-            EXPECT_FALSE(context->usedTexture(context->texture(0)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
             // New texture should have been used.
-            EXPECT_TRUE(context->usedTexture(context->texture(1)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 2:
@@ -1430,8 +1430,8 @@ public:
         FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for draw should always be one.
-        EXPECT_EQ(1, context->numUsedTextures());
-        context->resetUsedTextures();
+        EXPECT_EQ(1, context->NumUsedTextures());
+        context->ResetUsedTextures();
     }
 
     virtual void layout() OVERRIDE
@@ -1498,48 +1498,48 @@ public:
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Number of textures should be two.
-            ASSERT_EQ(2, context->numTextures());
+            ASSERT_EQ(2, context->NumTextures());
             // Number of textures used for commit should be two.
-            EXPECT_EQ(2, context->numUsedTextures());
+            EXPECT_EQ(2, context->NumUsedTextures());
             // Verify that used textures are correct.
-            EXPECT_TRUE(context->usedTexture(context->texture(0)));
-            EXPECT_TRUE(context->usedTexture(context->texture(1)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Number of textures used for commit should still be two.
-            EXPECT_EQ(2, context->numUsedTextures());
+            EXPECT_EQ(2, context->NumUsedTextures());
             // First two textures should not have been used.
-            EXPECT_FALSE(context->usedTexture(context->texture(0)));
-            EXPECT_FALSE(context->usedTexture(context->texture(1)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
             // New textures should have been used.
-            EXPECT_TRUE(context->usedTexture(context->texture(2)));
-            EXPECT_TRUE(context->usedTexture(context->texture(3)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 2:
             // Number of textures used for commit should still be two.
-            EXPECT_EQ(2, context->numUsedTextures());
+            EXPECT_EQ(2, context->NumUsedTextures());
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 3:
             // No textures should be used for commit.
-            EXPECT_EQ(0, context->numUsedTextures());
+            EXPECT_EQ(0, context->NumUsedTextures());
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 4:
             // Number of textures used for commit should be one.
-            EXPECT_EQ(1, context->numUsedTextures());
+            EXPECT_EQ(1, context->NumUsedTextures());
 
-            context->resetUsedTextures();
+            context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 5:
@@ -1558,11 +1558,11 @@ public:
         // Number of textures used for drawing should two except for frame 4
         // where the viewport only contains one layer.
         if (impl->activeTree()->source_frame_number() == 3)
-            EXPECT_EQ(1, context->numUsedTextures());
+            EXPECT_EQ(1, context->NumUsedTextures());
         else
-            EXPECT_EQ(2, context->numUsedTextures());
+            EXPECT_EQ(2, context->NumUsedTextures());
 
-        context->resetUsedTextures();
+        context->ResetUsedTextures();
     }
 
     virtual void layout() OVERRIDE

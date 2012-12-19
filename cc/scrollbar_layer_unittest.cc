@@ -154,7 +154,7 @@ private:
 };
 
 TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
-    scoped_ptr<FakeWebGraphicsContext3D> context = FakeWebGraphicsContext3D::create();
+    scoped_ptr<FakeWebGraphicsContext3D> context = FakeWebGraphicsContext3D::Create();
     int max_size = 0;
     context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     setScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
