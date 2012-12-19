@@ -36,6 +36,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
         callback_factory_(this),
         fullscreen_(this),
         is_context_bound_(false),
+        was_fullscreen_(false),
         background_scanline_(NULL) {
   }
   virtual ~MouseLockInstance();
@@ -80,11 +81,8 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   // Fill the image with the backgroud color.
   void ClearToBackground(pp::ImageData* image);
 
-  // Draw a spot in |spot_color| in the center of the image.  The radius of the
-  // spot is defined by a constant value in mouselock.cc
   void DrawCenterSpot(pp::ImageData* image, uint32_t spot_color);
 
-  // Draw the needle when the mouse is outside of the central spot.
   void DrawNeedle(pp::ImageData* image, uint32_t needle_color);
 
   // Print the printf-style format to the "console" via PostMessage.
@@ -100,6 +98,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   pp::Fullscreen fullscreen_;
   pp::Graphics2D device_context_;
   bool is_context_bound_;
+  bool was_fullscreen_;
   uint32_t* background_scanline_;
 };
 

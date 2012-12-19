@@ -21,39 +21,36 @@ found in the LICENSE file.
         "browser fullscreen".
       <ul>
         <li>Tab fullscreen refers to when a tab enters fullscreen mode via the
-            JS or Pepper fullscreen API.</li>
+            JS or Pepper fullscreen API.  The NaCl Module will enter or
+            exit fullscreen when it has focus and the enter key is pressed.</li>
         <li>Browser fullscreen refers to the user putting the browser itself
             into fullscreen mode from the UI (e.g., pressing F11).</li>
       </ul>
-      <span style="font-weight:bold">
-        NOTE: Mouse lock is only allowed in "tab fullscreen" mode.
-      </span>
     </li>
     <li>Lock mouse:
       <ul>
-        <li>left click in the grey box; or</li>
-        <li>right click in the box to ensure that it is focused and
-            then press Enter key. (You could verify that the tooltip window is
-            dismissed properly by this second approach.)</li>
+        <li>Mouse Lock refers to removing the standard mouse cursor, and
+            sending mouse messages to the module even when the cursor is outside
+            of the module's bounding box.  The NaCl module will enter or exit
+            mouse lock by clicking on the grey box representing the bounding
+            area of the module.
       </ul>
     </li>
-    <li>Unlock mouse voluntarily (i.e., NaCl module unlocks mouse):
+    <li>Involuntary fullscreen or mouselock loss.
       <ul>
-        <li>press Enter.</li>
-      </ul>
-    </li>
-    <li>Unlock mouse involuntarily (i.e. Chrome unlocks mouse):
-      <ul>
-        <li>lose focus; or</li>
-        <li>press Esc key; or</li>
-        <li>exit from the "tab fullscreen" mode.</li>
+        <li>Pressing the Esc key will cause the browser to revoke mouselock
+            or tab fullscreen priviledge.</li>
+        <li>When in browser fullscreen, pressing F11 will also revoke mouselock
+            or tab fullscreen priviledge.</li>
       </ul>
     </li>
   </ul>
-  <p>Clicking the mouse inside the grey square takes the NaCl module to/from
-  combined fullscreen and mouselock mode.</p>
-  <p>While in fullscreen, pressing Enter will exit/enter mouse lock mode.</p>
-
+  <p> Move the mouse cursor over the grey box to watch the captured mouse
+      movement.   Notice that messages are normally not captured when the cursor
+      is outside of the grey box.</p>
+  <p> By clicking on the grey box, we set focus and turn on mouse lock.  Now all
+      mouse messages are sent to the module.</p>
+  <p> This behavoir is maintianed even in tab and/or browser fullscreen.</p>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>

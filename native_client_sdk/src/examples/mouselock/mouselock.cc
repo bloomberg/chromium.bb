@@ -32,8 +32,7 @@ namespace {
 const int kCentralSpotRadius = 5;
 const uint32_t kReturnKeyCode = 13;
 const uint32_t kBackgroundColor = 0xff606060;
-const uint32_t kLockedForegroundColor = 0xfff08080;
-const uint32_t kUnlockedForegroundColor = 0xff80f080;
+const uint32_t kForegroundColor = 0xfff08080;
 }  // namespace
 
 namespace mouselock {
@@ -54,25 +53,11 @@ bool MouseLockInstance::Init(uint32_t argc,
 bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
   switch (event.GetType()) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-      is_context_bound_ = false;
-      if (fullscreen_.IsFullscreen()) {
-        // Leaving fullscreen mode also unlocks the mouse if it was locked.
-        // In this case, the browser will call MouseLockLost() on this
-        // instance.
-        if (!fullscreen_.SetFullscreen(false)) {
-          Log("Could not leave fullscreen mode\n");
-        }
+      if (mouse_locked_) {
+        UnlockMouse();
       } else {
-        if (!fullscreen_.SetFullscreen(true)) {
-          Log("Could not set fullscreen mode\n");
-        } else {
-          pp::MouseInputEvent mouse_event(event);
-          if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
-              !mouse_locked_) {
-            LockMouse(callback_factory_.NewCallback(
-                &MouseLockInstance::DidLockMouse));
-          }
-        }
+        LockMouse(callback_factory_.NewCallback(
+            &MouseLockInstance::DidLockMouse));
       }
       return true;
     }
@@ -86,13 +71,25 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_KEYDOWN: {
       pp::KeyboardInputEvent key_event(event);
-      // Lock the mouse when the Enter key is pressed.
+
+      // Switch in and out of fullscreen when 'Enter' is hit
       if (key_event.GetKeyCode() == kReturnKeyCode) {
-        if (mouse_locked_) {
-          UnlockMouse();
+        // Ignore switch if in transition
+        if (!is_context_bound_)
+          return true;
+
+        if (fullscreen_.IsFullscreen()) {
+          if (!fullscreen_.SetFullscreen(false)) {
+            Log("Could not leave fullscreen mode\n");
+          } else {
+            is_context_bound_ = false;
+          }
         } else {
-          LockMouse(callback_factory_.NewCallback(
-              &MouseLockInstance::DidLockMouse));
+          if (!fullscreen_.SetFullscreen(true)) {
+            Log("Could not enter fullscreen mode\n");
+          } else {
+            is_context_bound_ = false;
+          }
         }
       }
       return true;
@@ -121,88 +118,118 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
 }
 
 void MouseLockInstance::DidChangeView(const pp::View& view) {
-  // When entering into full-screen mode, DidChangeView() gets called twice.
-  // The first time, any 2D context will fail to bind to this pp::Instacne.
-  if (view.GetRect().size() == size_ && is_context_bound_) {
+  // DidChangeView can get called for many reasons, so we only want to
+  // rebuild the device context if we really need to.
+
+  if ((size_ == view.GetRect().size()) &&
+      (was_fullscreen_ == view.IsFullscreen()) && is_context_bound_) {
+      Log("DidChangeView SKIP %d,%d FULL=%s CTX Bound=%s",
+          view.GetRect().width(), view.GetRect().height(),
+          view.IsFullscreen() ? "true" : "false",
+          is_context_bound_ ? "true" : "false");
     return;
   }
-  size_ = view.GetRect().size();
 
+  Log("DidChangeView DO %d,%d FULL=%s CTX Bound=%s",
+      view.GetRect().width(), view.GetRect().height(),
+      view.IsFullscreen() ? "true" : "false",
+      is_context_bound_ ? "true" : "false");
+
+  size_ = view.GetRect().size();
   device_context_ = pp::Graphics2D(this, size_, false);
   waiting_for_flush_completion_ = false;
-  free(background_scanline_);
-  background_scanline_ = NULL;
+
   is_context_bound_ = BindGraphics(device_context_);
   if (!is_context_bound_) {
-    Log("Could not bind to 2D context\n");
+    Log("Could not bind to 2D context\n.");
     return;
+  } else {
+    Log("Bound to 2D context size %d,%d.\n", size_.width(), size_.height());
   }
-  background_scanline_ = static_cast<uint32_t*>(
-      malloc(size_.width() * sizeof(*background_scanline_)));
+
+  // Create a scanline for fill.
+  delete[] background_scanline_;
+  background_scanline_ = new uint32_t[size_.width()];
   uint32_t* bg_pixel = background_scanline_;
   for (int x = 0; x < size_.width(); ++x) {
     *bg_pixel++ = kBackgroundColor;
   }
+
+  // Remember if we are fullscreen or not
+  was_fullscreen_ = view.IsFullscreen();
+
+  // Paint this context
   Paint();
 }
 
 void MouseLockInstance::MouseLockLost() {
   if (mouse_locked_) {
+    Log("Mouselock unlocked.\n");
     mouse_locked_ = false;
     Paint();
-  } else {
-    PP_NOTREACHED();
   }
 }
 
 void MouseLockInstance::DidLockMouse(int32_t result) {
   mouse_locked_ = result == PP_OK;
+  if (result != PP_OK) {
+    Log("Mouselock failed with failed with error number %d.\n", result);
+  }
   mouse_movement_.set_x(0);
   mouse_movement_.set_y(0);
   Paint();
 }
 
 void MouseLockInstance::DidFlush(int32_t result) {
+  if (result != 0) Log("Flushed failed with error number %d.\n", result);
   waiting_for_flush_completion_ = false;
 }
 
 void MouseLockInstance::Paint() {
+  // If we are already waiting to paint...
   if (waiting_for_flush_completion_) {
     return;
   }
+
   pp::ImageData image = PaintImage(size_);
   if (image.is_null()) {
     Log("Could not create image data\n");
     return;
   }
+
   device_context_.ReplaceContents(&image);
   waiting_for_flush_completion_ = true;
   device_context_.Flush(
       callback_factory_.NewCallback(&MouseLockInstance::DidFlush));
 }
 
+
 pp::ImageData MouseLockInstance::PaintImage(const pp::Size& size) {
   pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, false);
-  if (image.is_null() || image.data() == NULL)
+  if (image.is_null() || image.data() == NULL) {
+    Log("Skipping image.\n");
     return image;
+  }
 
   ClearToBackground(&image);
-  uint32_t foreground_color = mouse_locked_ ? kLockedForegroundColor :
-                                              kUnlockedForegroundColor;
-  DrawCenterSpot(&image, foreground_color);
-  DrawNeedle(&image, foreground_color);
+
+  DrawCenterSpot(&image, kForegroundColor);
+  DrawNeedle(&image, kForegroundColor);
   return image;
 }
 
 void MouseLockInstance::ClearToBackground(pp::ImageData* image) {
   if (image == NULL) {
-    Log("ClearToBackground with NULL image");
+    Log("ClearToBackground with NULL image.");
     return;
   }
-  if (background_scanline_ == NULL)
+  if (background_scanline_ == NULL) {
+    Log("ClearToBackground with no scanline.");
     return;
+  }
   int image_height = image->size().height();
   int image_width = image->size().width();
+
   for (int y = 0; y < image_height; ++y) {
     uint32_t* scanline = image->GetAddr32(pp::Point(0, y));
     memcpy(scanline,
@@ -306,6 +333,10 @@ void MouseLockInstance::DrawNeedle(pp::ImageData* image,
 
 
 void MouseLockInstance::Log(const char* format, ...) {
+  static PPB_Console* console = (PPB_Console*)
+      pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE);
+
+  if (NULL == console) return;
   va_list args;
   va_start(args, format);
   char buf[512];
@@ -314,7 +345,7 @@ void MouseLockInstance::Log(const char* format, ...) {
   va_end(args);
 
   pp::Var value(buf);
-  PostMessage(value);
+  console->Log(pp_instance(), PP_LOGLEVEL_ERROR, value.pp_var());
 }
 
 }  // namespace mouselock
