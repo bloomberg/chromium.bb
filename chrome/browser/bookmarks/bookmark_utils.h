@@ -186,13 +186,6 @@ void AddIfNotBookmarked(BookmarkModel* model,
 // Removes all bookmarks for the given |url|.
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
-// Number of bookmarks we'll open before prompting the user to see if they
-// really want to open all.
-//
-// NOTE: treat this as a const. It is not const as various tests change the
-// value.
-extern int num_urls_before_prompting;
-
 // This enum is used for the Bookmarks.EntryPoint histogram.
 enum BookmarkEntryPoint {
   ENTRY_POINT_ACCELERATOR,

@@ -24,6 +24,8 @@
 
 namespace chrome {
 
+int num_bookmark_urls_before_prompting = 15;
+
 namespace {
 
 // Returns the number of children of |node| that are of type url.
@@ -43,7 +45,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   for (size_t i = 0; i < nodes.size(); ++i)
     child_count += ChildURLCount(nodes[i]);
 
-  if (child_count < bookmark_utils::num_urls_before_prompting)
+  if (child_count < num_bookmark_urls_before_prompting)
     return true;
 
   return ShowMessageBox(parent,

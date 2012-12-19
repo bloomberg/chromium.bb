@@ -114,8 +114,6 @@ bool g_bookmark_bar_view_animations_disabled = false;
 
 namespace bookmark_utils {
 
-int num_urls_before_prompting = 15;
-
 int PreferredDropOperation(int source_operations, int operations) {
   int common_ops = (source_operations & operations);
   if (!common_ops)

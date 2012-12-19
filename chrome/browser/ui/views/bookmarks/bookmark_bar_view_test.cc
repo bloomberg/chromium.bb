@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1068,11 +1069,11 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest12::Step2));
-    bookmark_utils::num_urls_before_prompting = 1;
+    chrome::num_bookmark_urls_before_prompting = 1;
   }
 
   ~BookmarkBarViewTest12() {
-    bookmark_utils::num_urls_before_prompting = 15;
+    chrome::num_bookmark_urls_before_prompting = 15;
   }
 
  private:

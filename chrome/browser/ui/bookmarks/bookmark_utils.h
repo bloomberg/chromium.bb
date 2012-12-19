@@ -23,6 +23,13 @@ class WebContents;
 
 namespace chrome {
 
+// Number of bookmarks we'll open before prompting the user to see if they
+// really want to open all.
+//
+// NOTE: treat this as a const. It is not const so unit tests can change the
+// value.
+extern int num_bookmark_urls_before_prompting;
+
 // Opens all the bookmarks in |nodes| that are of type url and all the child
 // bookmarks that are of type url for folders in |nodes|. |initial_disposition|
 // dictates how the first URL is opened, all subsequent URLs are opened as
