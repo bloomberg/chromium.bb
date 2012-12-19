@@ -47,7 +47,7 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            '../content/browser/debugger/devtools_resources.gyp:devtools_resources',
+            '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
           ],
           'actions': [
             {
@@ -75,7 +75,7 @@
               'action_name': 'devtools_discovery_page_resources',
               'variables': {
                 'grit_grd_file':
-                   'browser/debugger/frontend/devtools_discovery_page_resources.grd',
+                   'browser/devtools/frontend/devtools_discovery_page_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ]
             },

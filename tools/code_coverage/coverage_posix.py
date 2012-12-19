@@ -332,7 +332,7 @@ gTestInclusions = {
          'GeolocationBrowserTest.*',
          # 'src/chrome/browser/nacl_host'
          'NaClGdbTest.*',
-         # 'src/chrome/browser/debugger'
+         # 'src/chrome/browser/devtools'
          'DevToolsSanityTest.*',
          'DevToolsExtensionTest.*',
          'DevToolsExperimentalExtensionTest.*',

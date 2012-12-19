@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/debugger/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

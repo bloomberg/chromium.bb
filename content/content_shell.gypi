@@ -246,7 +246,7 @@
       'target_name': 'content_shell_pak',
       'type': 'none',
       'dependencies': [
-        'browser/debugger/devtools_resources.gyp:devtools_resources',
+        'browser/devtools/devtools_resources.gyp:devtools_resources',
         'content_shell_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],

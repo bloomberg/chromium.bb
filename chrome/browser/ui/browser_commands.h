@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/common/page_zoom.h"
 #include "webkit/glue/window_open_disposition.h"

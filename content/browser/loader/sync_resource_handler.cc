@@ -5,7 +5,7 @@
 #include "content/browser/loader/sync_resource_handler.h"
 
 #include "base/logging.h"
-#include "content/browser/debugger/devtools_netlog_observer.h"
+#include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/common/resource_messages.h"

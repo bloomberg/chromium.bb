@@ -13,7 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"

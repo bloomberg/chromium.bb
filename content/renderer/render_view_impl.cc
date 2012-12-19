@@ -68,7 +68,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 #include "content/renderer/device_orientation_dispatcher.h"
-#include "content/renderer/devtools_agent.h"
+#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
