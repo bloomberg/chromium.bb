@@ -17,4 +17,8 @@ QuicTime QuicClock::Now() const {
   return QuicTime(base::TimeTicks::Now());
 }
 
+QuicTime::Delta QuicClock::NowAsDeltaSinceUnixEpoch() const {
+  return QuicTime::Delta(base::Time::Now() - base::Time::UnixEpoch());
+}
+
 }  // namespace net

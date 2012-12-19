@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 //
 // QuicTime represents one point in time, stored in microsecond resolution.
-// This class wrapps the classes DateTimeO and DateTimeOffset.
+// QuicTime is monotonically increasing, even across system clock adjustments.
+// The epoch (time 0) of QuicTime is unspecified.
+//
+// This implementation wraps the classes base::TimeTicks and base::TimeDelta.
 
 #ifndef NET_QUIC_QUIC_TIME_H_
 #define NET_QUIC_QUIC_TIME_H_
@@ -20,7 +23,7 @@ class NET_EXPORT_PRIVATE QuicTime {
   // time, stored in microsecond resolution.
   class NET_EXPORT_PRIVATE Delta {
    public:
-    // Default constructor initiates to 0.
+    // Default constructor initializes to 0.
     Delta();
 
     explicit Delta(base::TimeDelta delta);
@@ -33,6 +36,9 @@ class NET_EXPORT_PRIVATE QuicTime {
 
     // Converts a number of microseconds to a time offset.
     static Delta FromMicroseconds(int64 us);
+
+    // Converts the time offset to a rounded number of seconds.
+    int64 ToSeconds() const;
 
     // Converts the time offset to a rounded number of milliseconds.
     int64 ToMilliseconds() const;
@@ -54,7 +60,7 @@ class NET_EXPORT_PRIVATE QuicTime {
     friend class QuicTime;
   };
 
-  // Default constructor initiates to 0.
+  // Default constructor initializes to time 0.
   QuicTime();
 
   explicit QuicTime(base::TimeTicks ticks);

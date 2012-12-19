@@ -20,5 +20,16 @@ TEST(QuicClockTest, Now) {
   EXPECT_LE(now, end);
 }
 
+TEST(QuicClockTest, NowAsDeltaSinceUnixEpoch) {
+  QuicClock clock;
+
+  QuicTime::Delta start(base::Time::Now() - base::Time::UnixEpoch());
+  QuicTime::Delta now = clock.NowAsDeltaSinceUnixEpoch();
+  QuicTime::Delta end(base::Time::Now() - base::Time::UnixEpoch());
+
+  EXPECT_LE(start, now);
+  EXPECT_LE(now, end);
+}
+
 }  // namespace test
 }  // namespace net

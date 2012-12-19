@@ -39,6 +39,10 @@ QuicTime::Delta QuicTime::Delta::FromMicroseconds(int64 us) {
   return QuicTime::Delta(base::TimeDelta::FromMicroseconds(us));
 }
 
+int64 QuicTime::Delta::ToSeconds() const {
+  return delta_.InSeconds();
+}
+
 int64 QuicTime::Delta::ToMilliseconds() const {
   return delta_.InMilliseconds();
 }
