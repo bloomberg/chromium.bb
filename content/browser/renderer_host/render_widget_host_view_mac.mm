@@ -84,7 +84,18 @@ using WebKit::WebGestureEvent;
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+enum {
+  NSEventPhaseNone        = 0, // event not associated with a phase.
+  NSEventPhaseBegan       = 0x1 << 0,
+  NSEventPhaseStationary  = 0x1 << 1,
+  NSEventPhaseChanged     = 0x1 << 2,
+  NSEventPhaseEnded       = 0x1 << 3,
+  NSEventPhaseCancelled   = 0x1 << 4,
+};
+typedef NSUInteger NSEventPhase;
+
 @interface NSEvent (LionAPI)
+- (NSEventPhase)phase;
 + (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
                                    handler:(NSEvent* (^)(NSEvent*))block;
 + (void)removeMonitor:(id)eventMonitor;
@@ -2087,21 +2098,56 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     [NSCursor setHiddenUntilMouseMoves:YES];
 }
 
-- (void)scrollWheel:(NSEvent*)theEvent {
+- (void)shortCircuitScrollWheelEvent:(NSEvent*)event {
+  DCHECK(base::mac::IsOSLionOrLater());
+
+  if ([event phase] != NSEventPhaseEnded &&
+      [event phase] != NSEventPhaseCancelled) {
+    return;
+  }
+
+  if (renderWidgetHostView_->render_widget_host_) {
+    const WebMouseWheelEvent& webEvent =
+        WebInputEventFactory::mouseWheelEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+  }
+
+  if (endWheelMonitor_) {
+    [NSEvent removeMonitor:endWheelMonitor_];
+    endWheelMonitor_ = nil;
+  }
+}
+
+- (void)scrollWheel:(NSEvent*)event {
   // Cancel popups before calling the delegate because even if the delegate eats
   // the event, it's still an explicit user action outside the popup.
   [self cancelChildPopups];
 
   if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
-    BOOL handled = [delegate_ handleEvent:theEvent];
+    BOOL handled = [delegate_ handleEvent:event];
     if (handled)
       return;
   }
 
-  const WebMouseWheelEvent& event =
-      WebInputEventFactory::mouseWheelEvent(theEvent, self);
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(event);
+  // Use an NSEvent monitor to listen for the wheel-end end. This ensures that
+  // the event is received even when the mouse cursor is no longer over the view
+  // when the scrolling ends (e.g. if the tab was switched). This is necessary
+  // for ending rubber-banding in such cases.
+  if (base::mac::IsOSLionOrLater() && [event phase] == NSEventPhaseBegan &&
+      !endWheelMonitor_) {
+    endWheelMonitor_ =
+        [NSEvent addLocalMonitorForEventsMatchingMask:NSScrollWheelMask
+            handler:^(NSEvent* blockEvent) {
+              [self shortCircuitScrollWheelEvent:blockEvent];
+              return blockEvent;
+            }];
+  }
+
+  if (renderWidgetHostView_->render_widget_host_) {
+    const WebMouseWheelEvent& webEvent =
+        WebInputEventFactory::mouseWheelEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+  }
 }
 
 // See the comment in RenderWidgetHostViewMac::Destroy() about cancellation

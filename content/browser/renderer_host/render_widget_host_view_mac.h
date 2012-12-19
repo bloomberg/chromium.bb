@@ -132,8 +132,9 @@ class RenderWidgetHostViewMacEditCommandHelper;
   // Whether the previous mouse event was ignored due to hitTest check.
   BOOL mouseEventWasIgnored_;
 
-  // Event monitor for gesture-end events.
+  // Event monitors for gesture-end and scroll wheel end events.
   id endGestureMonitor_;
+  id endWheelMonitor_;
 
   // OpenGL Support:
 
