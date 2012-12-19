@@ -145,10 +145,7 @@ class ZoomManager {
         // TODO: Need to deal with multi-touch transition
         mMultiTouchListener.setTemporarilyIgnoreDetectorEvents(false);
         try {
-            boolean inGesture = isScaleGestureDetectionInProgress();
-            boolean retVal = mMultiTouchDetector.onTouchEvent(event);
-            if (event.getActionMasked() == MotionEvent.ACTION_UP && !inGesture) return false;
-            return retVal;
+            return mMultiTouchDetector.onTouchEvent(event);
         } catch (Exception e) {
             Log.e(TAG, "ScaleGestureDetector got into a bad state!", e);
             assert(false);

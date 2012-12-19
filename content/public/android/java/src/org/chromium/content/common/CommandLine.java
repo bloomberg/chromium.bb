@@ -64,12 +64,6 @@ public abstract class CommandLine {
     public static final String DEFAULT_TILE_WIDTH = "default-tile-width";
     public static final String DEFAULT_TILE_HEIGHT = "default-tile-height";
 
-    // Whether fullscreen should be disabled.
-    public static final String DISABLE_FULLSCREEN = "disable-fullscreen";
-
-    // The height of the movable top controls.
-    public static final String TOP_CONTROLS_HEIGHT = "top-controls-height";
-
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
