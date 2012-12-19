@@ -832,6 +832,8 @@ bool SfiValidator::validate_branches(const vector<CodeSegment>& segments,
   return complete_success;
 }
 
+// TODO(jfb) Combine this with each instruction's safety(), exposed as a new API
+//           function. It'll make testing easier, e.g. TP use in the huge tests.
 bool SfiValidator::apply_patterns(const DecodedInstruction& inst,
     ProblemSink* out) {
   // Single-instruction patterns. Should return PATTERN_SAFE if the

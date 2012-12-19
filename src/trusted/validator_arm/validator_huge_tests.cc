@@ -65,7 +65,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
 
   const uint32_t data_address_mask = _validator->data_address_mask();
   EXPECT_NE(data_address_mask, 0u);  // There should be some mask.
-  EXPECT_EQ(nacl::PopCount(~data_address_mask + 1) , 1);  // Power of 2.
+  EXPECT_EQ(nacl::PopCount(~data_address_mask + 1), 1);  // Power of 2.
 
   const nacl_arm_dec::Arm32DecoderState decode_state;
   uint32_t i = 0;
@@ -73,13 +73,13 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
   do {
     const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&i);
     CodeSegment segment(bytes, kDefaultBaseAddr, sizeof(arm_inst));
-    nacl_arm_val::DecodedInstruction inst(kDefaultBaseAddr,
-                                          segment[kDefaultBaseAddr],
-                                          decode_state.decode(
-                                              segment[kDefaultBaseAddr]));
+    nacl_arm_val::DecodedInstruction inst(
+        kDefaultBaseAddr, segment[kDefaultBaseAddr],
+        decode_state.decode(segment[kDefaultBaseAddr]));
 
     // Information obtained from the decoder itself.
     bool defs_pc = inst.defs().Contains(nacl_arm_dec::Register::Pc());
+    bool uses_tp = inst.uses(nacl_arm_dec::Register::Tp());
     bool is_may_be_safe = inst.safety() == nacl_arm_dec::MAY_BE_SAFE;
     bool is_relative_branch = inst.is_relative_branch();
     bool is_indirect_branch = !inst.branch_target_register()
@@ -103,6 +103,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
       sets_Z_if_data_bits_clear_register_bitmask |=
           ((int)inst.sets_Z_if_bits_clear(r, data_address_mask)) << reg;
     }
+    bool is_load_thread_address_pointer = inst.is_load_thread_address_pointer();
 
     // Information obtained independently of the decoder.
     bool expect_unconditional = ((i & 0xF0000000) == 0xF0000000);
@@ -236,12 +237,18 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
         // All variants of VLD{1,2,3,4} and VST{1,2,3,4} [Rn]!.
         // 1111 0100 SdL0 nnnn dddd xxxx xxxx 1101
         ((i & 0xFF10000F) == 0xF400000D);
+    bool expect_is_load_thread_address_pointer =
+        !expect_unconditional &&
+        // LDR Rt, [Tp, #imm] with Tp=9, imm=0 or 4, P=1, U=1, W=0.
+        // cccc 010P U0W1 nnnn tttt iiii iiii iiii
+        ((i & 0x0FFF0FFB) == 0x05990000);
 
     // Validate that every single method in DecodedInstruction returns the
     // expected value.
 
     // TODO(jfb) Validate safety.
     // TODO(jfb) Validate defs.
+    // TODO(jfb) Validate dynamic code replacement.
 
     // B and BL are relative branches, others aren't.
     EXPECT_EQ(is_relative_branch, expect_b_or_bl);
@@ -281,6 +288,12 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
 
     EXPECT_EQ(sets_Z_if_data_bits_clear_register_bitmask,
               expect_sets_Z_if_data_bits_clear_register_bitmask);
+    EXPECT_EQ(uses_tp && is_load_thread_address_pointer,
+              expect_is_load_thread_address_pointer);
+    // TODO(jfb) We can't check the following for now: an instruction using
+    //           TP isn't currently marked as unsafe. The check is instead
+    //           done when validating the full bundle.
+    // EXPECT_EQ(uses_tp && !is_load_thread_address_pointer, !is_may_be_safe);
 
     // TODO(jfb) Validate defines.
     // TODO(jfb) Validate defines_any.
