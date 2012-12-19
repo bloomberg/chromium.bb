@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/multi_channel_resampler.h"
-#include "third_party/opus/opus.h"
+#include "third_party/opus/src/include/opus.h"
 
 namespace remoting {
 

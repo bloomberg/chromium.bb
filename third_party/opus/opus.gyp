@@ -321,10 +321,20 @@
             'cflags': [
               '<!@(pkg-config --cflags opus)',
             ],
-            'defines': [
-              'USE_SYSTEM_OPUS',
+          },
+          'variables': {
+            'headers_root_path': 'src/include',
+            'header_filenames': [
+              'opus_custom.h',
+              'opus_defines.h',
+              'opus_multistream.h',
+              'opus_types.h',
+              'opus.h',
             ],
           },
+          'includes': [
+            '../../build/shim_headers.gypi',
+          ],
           'link_settings': {
             'ldflags': [
               '<!@(pkg-config --libs-only-L --libs-only-other opus)',

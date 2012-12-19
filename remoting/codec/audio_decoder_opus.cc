@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "remoting/proto/audio.pb.h"
-#include "third_party/opus/opus.h"
+#include "third_party/opus/src/include/opus.h"
 
 namespace remoting {
 
