@@ -39,6 +39,7 @@ class DriveScheduler
     TYPE_ADD_RESOURCE_TO_DIRECTORY,
     TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
     TYPE_ADD_NEW_DIRECTORY,
+    TYPE_DOWNLOAD_FILE,
   };
 
   // Current state of the job.
@@ -139,6 +140,14 @@ class DriveScheduler
                        const FilePath::StringType& directory_name,
                        const google_apis::GetResourceEntryCallback& callback);
 
+  // Adds a DownloadFile operation to the queue.
+  void DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback);
+
  private:
   friend class DriveSchedulerTest;
 
@@ -161,6 +170,14 @@ class DriveScheduler
     //  TYPE_ADD_NEW_DIRECTORY
     GURL edit_url;
 
+    // URL to access the contents of the operation's target.
+    // Used by:
+    //   TYPE_DOWNLOAD_FILE
+    GURL content_url;
+
+    // Online and cache path of the operation's target.
+    // Used by:
+    //   TYPE_DOWNLOAD_FILE
     FilePath virtual_path;
     FilePath local_cache_path;
 
@@ -216,6 +233,16 @@ class DriveScheduler
     //   TYPE_ADD_RESOURCE_TO_DIRECTORY,
     //   TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
     google_apis::EntryActionCallback entry_action_callback;
+
+    // Callback for operations that take a DownloadActionCallback
+    // Used by:
+    //   TYPE_DOWNLOAD_FILE
+    google_apis::DownloadActionCallback download_action_callback;
+
+    // Callback for result of GetContent.
+    // Used by:
+    //   TYPE_DOWNLOAD_FILE
+    google_apis::GetContentCallback get_content_callback;
   };
 
   // Adds the specified job to the queue.  Takes ownership of |job|
@@ -269,6 +296,11 @@ class DriveScheduler
 
   // Callback for job finishing with a EntryActionCallback.
   void OnEntryActionJobDone(int job_id, google_apis::GDataErrorCode error);
+
+  // Callback for job finishing with a DownloadActionCallback.
+  void OnDownloadActionJobDone(int job_id,
+                               google_apis::GDataErrorCode error,
+                               const FilePath& temp_file);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(

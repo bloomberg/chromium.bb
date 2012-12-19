@@ -238,6 +238,26 @@ void DriveScheduler::AddNewDirectory(
   StartJobLoop();
 }
 
+void DriveScheduler::DownloadFile(
+    const FilePath& virtual_path,
+    const FilePath& local_cache_path,
+    const GURL& content_url,
+    const google_apis::DownloadActionCallback& download_action_callback,
+    const google_apis::GetContentCallback& get_content_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_DOWNLOAD_FILE));
+  new_job->virtual_path = virtual_path;
+  new_job->local_cache_path = local_cache_path;
+  new_job->content_url = content_url;
+  new_job->download_action_callback = download_action_callback;
+  new_job->get_content_callback = get_content_callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
 int DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -377,6 +397,18 @@ void DriveScheduler::DoJobLoop() {
           base::Bind(&DriveScheduler::OnGetResourceEntryJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
+    }
+    break;
+
+    case TYPE_DOWNLOAD_FILE: {
+      drive_service_->DownloadFile(
+          queue_entry->virtual_path,
+          queue_entry->local_cache_path,
+          queue_entry->content_url,
+          base::Bind(&DriveScheduler::OnDownloadActionJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id),
+          queue_entry->get_content_callback);
     }
     break;
 
@@ -556,6 +588,21 @@ void DriveScheduler::OnEntryActionJobDone(int job_id,
   // Handle the callback.
   DCHECK(!job_info->entry_action_callback.is_null());
   job_info->entry_action_callback.Run(error);
+}
+
+void DriveScheduler::OnDownloadActionJobDone(int job_id,
+                                             google_apis::GDataErrorCode error,
+                                             const FilePath& temp_file) {
+  DriveFileError drive_error(util::GDataToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  DCHECK(!job_info->download_action_callback.is_null());
+  job_info->download_action_callback.Run(error, temp_file);
 }
 
 void DriveScheduler::OnConnectionTypeChanged(

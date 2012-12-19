@@ -1042,7 +1042,7 @@ void DriveFileSystem::StartDownloadFileIfEnoughSpace(
   }
 
   // We have enough disk space. Start downloading the file.
-  drive_service_->DownloadFile(
+  scheduler_->DownloadFile(
       params.virtual_file_path,
       params.local_tmp_path,
       content_url,
