@@ -5,25 +5,13 @@
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
-#include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-
-using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -69,6 +57,6 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 // static
 base::RefCountedMemory* BookmarksUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
-  return ResourceBundle::GetSharedInstance().
+  return ui::ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_BOOKMARKS_FAVICON, scale_factor);
 }
