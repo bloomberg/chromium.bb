@@ -360,7 +360,7 @@ class Texture {
   void Create();
 
   // Set the initial size and format of a render texture or resize it.
-  bool AllocateStorage(const gfx::Size& size, GLenum format);
+  bool AllocateStorage(const gfx::Size& size, GLenum format, bool zero);
 
   // Copy the contents of the currently bound frame buffer.
   void Copy(const gfx::Size& size, GLenum format);
@@ -1774,7 +1774,8 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
 
       DCHECK(decoder_->offscreen_saved_color_format_);
       decoder_->offscreen_resolved_color_texture_->AllocateStorage(
-          decoder_->offscreen_size_, decoder_->offscreen_saved_color_format_);
+          decoder_->offscreen_size_, decoder_->offscreen_saved_color_format_,
+          false);
       decoder_->offscreen_resolved_frame_buffer_->AttachRenderTexture(
           decoder_->offscreen_resolved_color_texture_.get());
       if (decoder_->offscreen_resolved_frame_buffer_->CheckStatus() !=
@@ -1862,10 +1863,21 @@ void Texture::Create() {
   memory_tracker_.TrackMemAlloc(bytes_allocated_);
 }
 
-bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
+bool Texture::AllocateStorage(const gfx::Size& size, GLenum format,
+                              bool zero) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedTexture2DBinder binder(decoder_, id_);
+  uint32 image_size = 0;
+  GLES2Util::ComputeImageDataSizes(
+      size.width(), size.height(), format, GL_UNSIGNED_BYTE, 8, &image_size,
+      NULL, NULL);
+
+  scoped_array<char> zero_data;
+  if (zero) {
+    zero_data.reset(new char[image_size]);
+    memset(zero_data.get(), 0, image_size);
+  }
 
   WrappedTexImage2D(GL_TEXTURE_2D,
                     0,  // mip level
@@ -1875,16 +1887,12 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
                     0,  // border
                     format,
                     GL_UNSIGNED_BYTE,
-                    NULL);
+                    zero_data.get());
 
   size_ = size;
 
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
-    uint32 image_size = 0;
-    GLES2Util::ComputeImageDataSizes(
-        size.width(), size.height(), format, GL_UNSIGNED_BYTE, 4, &image_size,
-        NULL, NULL);
     memory_tracker_.TrackMemFree(bytes_allocated_);
     bytes_allocated_ = image_size;
     memory_tracker_.TrackMemAlloc(bytes_allocated_);
@@ -2352,6 +2360,20 @@ bool GLES2DecoderImpl::Initialize(
     // of the frame buffers is okay.
     if (!ResizeOffscreenFrameBuffer(size)) {
       LOG(ERROR) << "Could not allocate offscreen buffer storage.";
+      Destroy(true);
+      return false;
+    }
+
+    // Allocate the offscreen saved color texture.
+    DCHECK(offscreen_saved_color_format_);
+    offscreen_saved_color_texture_->AllocateStorage(
+        gfx::Size(1, 1), offscreen_saved_color_format_, true);
+
+    offscreen_saved_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
+    if (offscreen_saved_frame_buffer_->CheckStatus() !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "Offscreen saved FBO was incomplete.";
       Destroy(true);
       return false;
     }
@@ -3218,7 +3240,7 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     }
   } else {
     if (!offscreen_target_color_texture_->AllocateStorage(
-        offscreen_size_, offscreen_target_color_format_)) {
+        offscreen_size_, offscreen_target_color_format_, false)) {
       LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                  << "to allocate storage for offscreen target color texture.";
       return false;
@@ -8591,7 +8613,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // Allocate the offscreen saved color texture.
       DCHECK(offscreen_saved_color_format_);
       offscreen_saved_color_texture_->AllocateStorage(
-          offscreen_size_, offscreen_saved_color_format_);
+          offscreen_size_, offscreen_saved_color_format_, false);
 
       offscreen_saved_frame_buffer_->AttachRenderTexture(
           offscreen_saved_color_texture_.get());
