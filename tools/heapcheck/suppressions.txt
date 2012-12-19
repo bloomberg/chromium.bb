@@ -1022,7 +1022,7 @@
    fun:v8::internal::Isolate::Init
    fun:v8::internal::V8::Initialize
    fun:v8::internal::Snapshot::Initialize
-   fun:InitializeHelper
+   fun:v8::InitializeHelper
 }
 {
    bug_100146
