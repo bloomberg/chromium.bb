@@ -5,6 +5,7 @@
   'TOOLS': ['newlib', 'glibc', 'win'],
   'SEARCH': [
     '.',
+    'pepper',
     '../utils'
   ],
   'TARGETS': [
@@ -57,6 +58,14 @@
         "real_pepper_interface.h",
       ],
       'DEST': 'include/nacl_mounts',
+    },
+    {
+      'FILES': [
+        "all_interfaces.h",
+        "define_empty_macros.h",
+        "undef_macros.h",
+      ],
+      'DEST': 'include/nacl_mounts/pepper',
     },
     {
       'FILES': [

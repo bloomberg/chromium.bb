@@ -7,19 +7,16 @@
 
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/ppb_core.h>
-#include <ppapi/c/ppb_console.h>
 #include <ppapi/c/ppb_message_loop.h>
-#include <ppapi/c/ppb_messaging.h>
-#include <ppapi/c/ppb_var.h>
 #include "pepper_interface.h"
 
-class RealConsoleInterface;
-class RealDirectoryReaderInterface;
-class RealFileIoInterface;
-class RealFileRefInterface;
-class RealFileSystemInterface;
-class RealMessagingInterface;
-class RealVarInterface;
+// Forward declare interface classes.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    class Real##BaseClass;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 
 class RealPepperInterface : public PepperInterface {
  public:
@@ -29,13 +26,14 @@ class RealPepperInterface : public PepperInterface {
   virtual PP_Instance GetInstance();
   virtual void AddRefResource(PP_Resource);
   virtual void ReleaseResource(PP_Resource);
-  virtual ConsoleInterface* GetConsoleInterface();
-  virtual FileSystemInterface* GetFileSystemInterface();
-  virtual FileRefInterface* GetFileRefInterface();
-  virtual FileIoInterface* GetFileIoInterface();
-  virtual DirectoryReaderInterface* GetDirectoryReaderInterface();
-  virtual MessagingInterface* GetMessagingInterface();
-  virtual VarInterface* GetVarInterface();
+
+// Interface getters.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    virtual BaseClass* Get##BaseClass();
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 
   int32_t InitializeMessageLoop();
 
@@ -43,13 +41,14 @@ class RealPepperInterface : public PepperInterface {
   PP_Instance instance_;
   const PPB_Core* core_interface_;
   const PPB_MessageLoop* message_loop_interface_;
-  RealConsoleInterface* console_interface_;
-  RealDirectoryReaderInterface* directory_reader_interface_;
-  RealFileIoInterface* fileio_interface_;
-  RealFileRefInterface* fileref_interface_;
-  RealFileSystemInterface* filesystem_interface_;
-  RealMessagingInterface* messaging_interface_;
-  RealVarInterface* var_interface_;
+
+// Interface pointers.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    Real##BaseClass* BaseClass##interface_;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_REAL_PEPPER_INTERFACE_H_

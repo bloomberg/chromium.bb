@@ -7,96 +7,45 @@
 
 PepperInterfaceMock::PepperInterfaceMock(PP_Instance instance)
     : instance_(instance),
-      console_interface_(new ConsoleInterfaceMock),
-      filesystem_interface_(new FileSystemInterfaceMock),
-      fileref_interface_(new FileRefInterfaceMock),
-      fileio_interface_(new FileIoInterfaceMock),
-      directory_reader_interface_(new DirectoryReaderInterfaceMock),
-      messaging_interface_(new MessagingInterfaceMock),
-      var_interface_(new VarInterfaceMock) {
+
+    // Initialize interfaces.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    BaseClass##interface_(new BaseClass##Mock),
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
+
+    // Dummy value so we can ensure that no interface ends the initializer list.
+    dummy_(0) {
 }
 
 PepperInterfaceMock::~PepperInterfaceMock() {
-  delete console_interface_;
-  delete filesystem_interface_;
-  delete fileref_interface_;
-  delete fileio_interface_;
-  delete directory_reader_interface_;
-  delete messaging_interface_;
-  delete var_interface_;
+
+  // Delete interfaces.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    delete BaseClass##interface_;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
+
 }
 
 PP_Instance PepperInterfaceMock::GetInstance() {
   return instance_;
 }
 
-ConsoleInterfaceMock* PepperInterfaceMock::GetConsoleInterface() {
-  return console_interface_;
-}
-
-FileSystemInterfaceMock* PepperInterfaceMock::GetFileSystemInterface() {
-  return filesystem_interface_;
-}
-
-FileRefInterfaceMock* PepperInterfaceMock::GetFileRefInterface() {
-  return fileref_interface_;
-}
-
-FileIoInterfaceMock* PepperInterfaceMock::GetFileIoInterface() {
-  return fileio_interface_;
-}
-
-DirectoryReaderInterfaceMock*
-PepperInterfaceMock::GetDirectoryReaderInterface() {
-  return directory_reader_interface_;
-}
-
-MessagingInterfaceMock* PepperInterfaceMock::GetMessagingInterface() {
-  return messaging_interface_;
-}
-
-VarInterfaceMock* PepperInterfaceMock::GetVarInterface() {
-  return var_interface_;
-}
-
-ConsoleInterfaceMock::ConsoleInterfaceMock() {
-}
-
-ConsoleInterfaceMock::~ConsoleInterfaceMock() {
-}
-
-FileSystemInterfaceMock::FileSystemInterfaceMock() {
-}
-
-FileSystemInterfaceMock::~FileSystemInterfaceMock() {
-}
-
-FileRefInterfaceMock::FileRefInterfaceMock() {
-}
-
-FileRefInterfaceMock::~FileRefInterfaceMock() {
-}
-
-FileIoInterfaceMock::FileIoInterfaceMock() {
-}
-
-FileIoInterfaceMock::~FileIoInterfaceMock() {
-}
-
-DirectoryReaderInterfaceMock::DirectoryReaderInterfaceMock() {
-}
-
-DirectoryReaderInterfaceMock::~DirectoryReaderInterfaceMock() {
-}
-
-MessagingInterfaceMock::MessagingInterfaceMock() {
-}
-
-MessagingInterfaceMock::~MessagingInterfaceMock() {
-}
-
-VarInterfaceMock::VarInterfaceMock() {
-}
-
-VarInterfaceMock::~VarInterfaceMock() {
-}
+// Define Getter functions, constructors, destructors.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    BaseClass##Mock* PepperInterfaceMock::Get##BaseClass() { \
+      return BaseClass##interface_; \
+    } \
+    BaseClass##Mock::BaseClass##Mock() { \
+    } \
+    BaseClass##Mock::~BaseClass##Mock() { \
+    }
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"

@@ -12,17 +12,30 @@
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/pp_var.h>
 #include <ppapi/c/ppb_console.h>
+#include <ppapi/c/ppb_file_io.h>
+#include <ppapi/c/ppb_file_ref.h>
+#include <ppapi/c/ppb_file_system.h>
 #include <ppapi/c/ppb_messaging.h>
+#include <ppapi/c/ppb_messaging.h>
+#include <ppapi/c/ppb_var.h>
 
 #include <utils/macros.h>
 
-class ConsoleInterface;
-class DirectoryReaderInterface;
-class FileIoInterface;
-class FileRefInterface;
-class FileSystemInterface;
-class MessagingInterface;
-class VarInterface;
+// Note: To add a new interface:
+//
+// 1. Using one of the other interfaces as a template, add your interface to
+//    all_interfaces.h.
+// 2. Add the necessary pepper header to the top of this file.
+// 3. Compile and cross your fingers!
+
+
+// Forward declare interface classes.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    class BaseClass;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 
 int PPErrorToErrno(int32_t err);
 
@@ -32,76 +45,36 @@ class PepperInterface {
   virtual PP_Instance GetInstance() = 0;
   virtual void AddRefResource(PP_Resource) = 0;
   virtual void ReleaseResource(PP_Resource) = 0;
-  virtual ConsoleInterface* GetConsoleInterface() = 0;
-  virtual FileSystemInterface* GetFileSystemInterface() = 0;
-  virtual FileRefInterface* GetFileRefInterface() = 0;
-  virtual FileIoInterface* GetFileIoInterface() = 0;
-  virtual DirectoryReaderInterface* GetDirectoryReaderInterface() = 0;
-  virtual MessagingInterface* GetMessagingInterface() = 0;
-  virtual VarInterface* GetVarInterface() = 0;
+
+// Interface getters.
+#include "nacl_mounts/pepper/define_empty_macros.h"
+#undef BEGIN_INTERFACE
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    virtual BaseClass* Get##BaseClass() = 0;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 };
 
-class ConsoleInterface {
- public:
-  virtual ~ConsoleInterface() {}
-  virtual void Log(PP_Instance, PP_LogLevel, struct PP_Var) = 0;
-};
-
-class FileSystemInterface {
- public:
-  virtual ~FileSystemInterface() {}
-  virtual PP_Resource Create(PP_Instance, PP_FileSystemType) = 0;
-  virtual int32_t Open(PP_Resource, int64_t, PP_CompletionCallback) = 0;
-};
-
-class FileRefInterface {
- public:
-  virtual ~FileRefInterface() {}
-  virtual PP_Resource Create(PP_Resource, const char*) = 0;
-  virtual int32_t Delete(PP_Resource, PP_CompletionCallback) = 0;
-  virtual PP_Var GetName(PP_Resource) = 0;
-  virtual int32_t MakeDirectory(PP_Resource, PP_Bool,
-      PP_CompletionCallback) = 0;
-};
-
-class FileIoInterface {
- public:
-  virtual ~FileIoInterface() {}
-  virtual void Close(PP_Resource) = 0;
-  virtual PP_Resource Create(PP_Instance) = 0;
-  virtual int32_t Flush(PP_Resource, PP_CompletionCallback) = 0;
-  virtual int32_t Open(PP_Resource, PP_Resource, int32_t,
-      PP_CompletionCallback) = 0;
-  virtual int32_t Query(PP_Resource, PP_FileInfo*,
-      PP_CompletionCallback) = 0;
-  virtual int32_t Read(PP_Resource, int64_t, char*, int32_t,
-      PP_CompletionCallback) = 0;
-  virtual int32_t SetLength(PP_Resource, int64_t,
-      PP_CompletionCallback) = 0;
-  virtual int32_t Write(PP_Resource, int64_t, const char*, int32_t,
-      PP_CompletionCallback) = 0;
-};
-
-class DirectoryReaderInterface {
- public:
-  virtual ~DirectoryReaderInterface() {}
-  virtual PP_Resource Create(PP_Resource) = 0;
-  virtual int32_t GetNextEntry(PP_Resource, PP_DirectoryEntry_Dev*,
-      PP_CompletionCallback) = 0;
-};
-
-class MessagingInterface {
- public:
-  virtual ~MessagingInterface() {}
-  virtual void PostMessage(PP_Instance, struct PP_Var ) = 0;
-};
-
-class VarInterface {
- public:
-  virtual ~VarInterface() {}
-  virtual struct PP_Var VarFromUtf8(const char*, uint32_t) = 0;
-  virtual const char* VarToUtf8(PP_Var, uint32_t*) = 0;
-};
+// Interface class definitions.
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
+    class BaseClass { \
+     public: \
+      virtual ~BaseClass() {}
+#define END_INTERFACE(BaseClass, PPInterface) \
+    };
+#define METHOD1(Class, ReturnType, MethodName, Type0) \
+    virtual ReturnType MethodName(Type0) = 0;
+#define METHOD2(Class, ReturnType, MethodName, Type0, Type1) \
+    virtual ReturnType MethodName(Type0, Type1) = 0;
+#define METHOD3(Class, ReturnType, MethodName, Type0, Type1, Type2) \
+    virtual ReturnType MethodName(Type0, Type1, Type2) = 0;
+#define METHOD4(Class, ReturnType, MethodName, Type0, Type1, Type2, Type3) \
+    virtual ReturnType MethodName(Type0, Type1, Type2, Type3) = 0;
+#define METHOD5(Class, ReturnType, MethodName, Type0, Type1, Type2, Type3, \
+                Type4) \
+    virtual ReturnType MethodName(Type0, Type1, Type2, Type3, Type4) = 0;
+#include "nacl_mounts/pepper/all_interfaces.h"
+#include "nacl_mounts/pepper/undef_macros.h"
 
 
 class ScopedResource {
