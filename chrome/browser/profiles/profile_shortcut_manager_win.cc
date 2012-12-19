@@ -305,7 +305,7 @@ string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
-  return false;
+  return true;
 }
 
 // static
