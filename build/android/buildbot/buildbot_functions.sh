@@ -93,6 +93,16 @@ function bb_baseline_setup {
   fi
 }
 
+# Used internally to buildbot_functions.sh.
+function _bb_android_run_tests () {
+  local FLAGS
+  FLAGS="--xvfb --verbose"
+  if [[ ${BUILDTYPE} == Release ]]; then
+    FLAGS="${FLAGS} --release"
+  fi
+  build/android/run_tests.py ${FLAGS} "$@"
+}
+
 function bb_compile_setup {
   bb_setup_goma_internal
   # Should be called only after envsetup is done.
@@ -203,7 +213,7 @@ function bb_compile_experimental {
 # Run tests on an emulator.
 function bb_run_tests_emulator {
   echo "@@@BUILD_STEP Run Tests on an Emulator@@@"
-  build/android/run_tests.py -e --xvfb --verbose
+  _bb_android_run_tests -e
 }
 
 function bb_spawn_logcat_monitor_and_status {
@@ -220,19 +230,15 @@ function bb_print_logcat {
 
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_unit_tests {
-  echo "@@@BUILD_STEP Run unit tests on device@@@"
-  build/android/run_tests.py --xvfb --verbose
+  echo "@@@BUILD_STEP Run unit tests@@@"
+  _bb_android_run_tests
 }
 
 # Run WebKit's test suites: webkit_unit_tests and TestWebKitAPI
 function bb_run_webkit_unit_tests {
-  if [[ $BUILDTYPE = Release ]]; then
-    local BUILDFLAG="--release"
-  fi
-  bb_run_step build/android/run_tests.py --xvfb --verbose $BUILDFLAG \
-      -s webkit_unit_tests
-  bb_run_step build/android/run_tests.py --xvfb --verbose $BUILDFLAG \
-      -s TestWebKitAPI
+  echo "@@@BUILD_STEP Run webkit unit tests@@@"
+  _bb_android_run_tests -s webkit_unit_tests
+  _bb_android_run_tests -s TestWebKitAPI
 }
 
 # Lint WebKit's TestExpectation files.
@@ -272,7 +278,8 @@ function bb_run_webkit_layout_tests {
 
 # Run experimental unittest bundles.
 function bb_run_experimental_unit_tests {
-  build/android/run_tests.py --xvfb --verbose -s android_webview_unittests
+  echo "@@@BUILD_STEP run experimental unit tests@@@"
+  _bb_android_run_tests -s android_webview_unittests
 }
 
 # Run findbugs.
@@ -324,14 +331,19 @@ function bb_run_all_instrumentation_tests_for_apk {
   local APK_PACKAGE=${2}
   local TEST_APK=${3}
   local TEST_DATA=${4}
+  local FLAGS
 
   # Install application APK.
   bb_install_apk ${APK} ${APK_PACKAGE}
 
   # Run instrumentation tests. Using -I to install the test apk.
   echo "@@@BUILD_STEP Run instrumentation tests ${TEST_APK}@@@"
+  FLAGS="-vvv"
+  if [[ "${BUILDTYPE}" == Release ]]; then
+    FLAGS="${FLAGS} --release"
+  fi
   bb_run_step python build/android/run_instrumentation_tests.py \
-      -vvv --test-apk ${TEST_APK} -I --test_data ${TEST_DATA}
+      ${FLAGS} --test-apk ${TEST_APK} -I --test_data ${TEST_DATA}
 }
 
 # Run instrumentation tests for all relevant APKs on device.
