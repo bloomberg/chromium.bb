@@ -76,10 +76,16 @@ def main(argv):
       driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
       if env.getbool('DO_WRAP'):
         driver_tools.WrapBitcode(f_output)
-    elif driver_tools.IsELF(f):
+    elif driver_tools.IsELF(f) or driver_tools.IsNativeArchive(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)
+    elif driver_tools.IsBitcodeArchive(f):
+      # The strip tool supports native archives, but it does not support the
+      # LLVM gold plugin so cannot handle bitcode.  There is also no bitcode
+      # tool like opt that support archives.
+      Log.Fatal('%s: strip does not support bitcode archives',
+                pathtools.touser(f))
     else:
-      Log.Fatal('%s: File is neither ELF nor bitcode', pathtools.touser(f))
+      Log.Fatal('%s: File is neither ELF, nor bitcode', pathtools.touser(f))
   return 0
 
 
