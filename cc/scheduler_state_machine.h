@@ -31,7 +31,8 @@ public:
         COMMIT_STATE_FRAME_IN_PROGRESS,
         COMMIT_STATE_READY_TO_COMMIT,
         COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
-    };
+        COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
+   };
 
     enum TextureState {
         LAYER_TEXTURE_STATE_UNLOCKED,
@@ -47,7 +48,8 @@ public:
 
     bool commitPending() const
     {
-        return m_commitState != COMMIT_STATE_IDLE;
+        return m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS ||
+            m_commitState == COMMIT_STATE_READY_TO_COMMIT;
     }
 
     bool redrawPending() const { return m_needsRedraw; }

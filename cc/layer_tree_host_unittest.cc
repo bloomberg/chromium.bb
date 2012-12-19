@@ -278,6 +278,88 @@ TEST_F(LayerTreeHostTestSetNeedsRedraw, runMultiThread)
     runTest(true);
 }
 
+class LayerTreeHostTestCompositeAndReadback : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestCompositeAndReadback()
+        : m_numCommits(0)
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        m_numCommits++;
+        if (m_numCommits == 1) {
+            char pixels[4];
+            m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
+        } else if (m_numCommits == 2) {
+            // This is inside the readback. We should get another commit after it.
+        } else if (m_numCommits == 3) {
+            endTest();
+        } else {
+          NOTREACHED();
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    int m_numCommits;
+};
+
+TEST_F(LayerTreeHostTestCompositeAndReadback, runMultiThread)
+{
+    runTest(true);
+}
+
+class LayerTreeHostTestCompositeAndReadbackBeforePreviousCommitDraws : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestCompositeAndReadbackBeforePreviousCommitDraws()
+        : m_numCommits(0)
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        m_numCommits++;
+        if (m_numCommits == 1) {
+            m_layerTreeHost->setNeedsCommit();
+        } else if (m_numCommits == 2) {
+            char pixels[4];
+            m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
+        } else if (m_numCommits == 3) {
+            // This is inside the readback. We should get another commit after it.
+        } else if (m_numCommits == 4) {
+            endTest();
+        } else {
+          NOTREACHED();
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    int m_numCommits;
+};
+
+TEST_F(LayerTreeHostTestCompositeAndReadbackBeforePreviousCommitDraws, runMultiThread)
+{
+    runTest(true);
+}
+
 // If the layerTreeHost says it can't draw, then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
 public:
@@ -321,9 +403,6 @@ public:
             char pixels[4];
             m_layerTreeHost->compositeAndReadback(static_cast<void*>(&pixels), gfx::Rect(0, 0, 1, 1));
         } else if (m_numCommits == 3) {
-            postSetNeedsRedrawToMainThread();
-            postSetNeedsCommitToMainThread();
-        } else if (m_numCommits == 4) {
             // Let it draw so we go idle and end the test.
             m_layerTreeHost->setViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
             m_done = true;

@@ -142,7 +142,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
     case COMMIT_STATE_READY_TO_COMMIT:
         return ACTION_COMMIT;
 
-    case COMMIT_STATE_WAITING_FOR_FIRST_DRAW:
+    case COMMIT_STATE_WAITING_FOR_FIRST_DRAW: {
         if (shouldDraw() || m_outputSurfaceState == OUTPUT_SURFACE_LOST)
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         // COMMIT_STATE_WAITING_FOR_FIRST_DRAW wants to enforce a draw. If m_canDraw is false
@@ -150,6 +150,12 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         bool canCommit = m_visible || m_needsForcedCommit;
         if (m_needsCommit && canCommit && drawSuspendedUntilCommit())
             return ACTION_BEGIN_FRAME;
+        return ACTION_NONE;
+    }
+
+    case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
+        if (m_needsForcedRedraw)
+            return ACTION_DRAW_FORCED;
         return ACTION_NONE;
     }
     NOTREACHED();
@@ -170,7 +176,10 @@ void SchedulerStateMachine::updateState(Action action)
         return;
 
     case ACTION_COMMIT:
-        m_commitState = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
+        if (m_expectImmediateBeginFrame)
+            m_commitState = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
+        else
+            m_commitState = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
         m_needsRedraw = true;
         if (m_drawIfPossibleFailed)
             m_lastFrameNumberWhereDrawWasCalled = -1;
@@ -190,13 +199,12 @@ void SchedulerStateMachine::updateState(Action action)
         m_drawIfPossibleFailed = false;
         if (m_insideVSync)
             m_lastFrameNumberWhereDrawWasCalled = m_currentFrameNumber;
-        if (m_commitState == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
-            if (m_expectImmediateBeginFrame) {
-                m_commitState = COMMIT_STATE_FRAME_IN_PROGRESS;
-                m_expectImmediateBeginFrame = false;
-            } else
-                m_commitState = COMMIT_STATE_IDLE;
-        }
+        if (m_commitState == COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW) {
+            DCHECK(m_expectImmediateBeginFrame);
+            m_commitState = COMMIT_STATE_FRAME_IN_PROGRESS;
+            m_expectImmediateBeginFrame = false;
+        } else if (m_commitState == COMMIT_STATE_WAITING_FOR_FIRST_DRAW)
+            m_commitState = COMMIT_STATE_IDLE;
         if (m_textureState == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD)
             m_textureState = LAYER_TEXTURE_STATE_UNLOCKED;
         return;
