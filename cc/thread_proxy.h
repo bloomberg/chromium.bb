@@ -6,6 +6,7 @@
 #define CC_THREAD_PROXY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/completion_event.h"
@@ -146,6 +147,10 @@ private:
     bool m_texturesAcquired;
     bool m_inCompositeAndReadback;
     bool m_manageTilesPending;
+    // Weak pointer to use when posting tasks to the impl thread.
+    base::WeakPtr<ThreadProxy> m_implThreadWeakPtr;
+
+    base::WeakPtrFactory<ThreadProxy> m_weakFactoryOnImplThread;
 
     scoped_ptr<LayerTreeHostImpl> m_layerTreeHostImpl;
 

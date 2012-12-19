@@ -44,6 +44,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_texturesAcquired(true)
     , m_inCompositeAndReadback(false)
     , m_manageTilesPending(false)
+    , m_weakFactoryOnImplThread(ALLOW_THIS_IN_INITIALIZER_LIST(this))
     , m_mainThreadProxy(ScopedThreadProxy::create(Proxy::mainThread()))
     , m_beginFrameCompletionEventOnImplThread(0)
     , m_readbackRequestOnImplThread(0)
@@ -82,7 +83,7 @@ bool ThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
         CompletionEvent beginFrameCompletion;
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceBeginFrameOnImplThread, base::Unretained(this), &beginFrameCompletion));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceBeginFrameOnImplThread, m_implThreadWeakPtr, &beginFrameCompletion));
         beginFrameCompletion.wait();
     }
     m_inCompositeAndReadback = true;
@@ -95,7 +96,7 @@ bool ThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
     request.pixels = pixels;
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::requestReadbackOnImplThread, base::Unretained(this), &request));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::requestReadbackOnImplThread, m_implThreadWeakPtr, &request));
         request.completion.wait();
     }
     return request.success;
@@ -119,7 +120,7 @@ void ThreadProxy::requestReadbackOnImplThread(ReadbackRequest* request)
 void ThreadProxy::startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
 {
     DCHECK(Proxy::isMainThread());
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::requestStartPageScaleAnimationOnImplThread, base::Unretained(this), targetOffset, useAnchor, scale, duration));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::requestStartPageScaleAnimationOnImplThread, m_implThreadWeakPtr, targetOffset, useAnchor, scale, duration));
 }
 
 void ThreadProxy::requestStartPageScaleAnimationOnImplThread(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
@@ -137,7 +138,7 @@ void ThreadProxy::finishAllRendering()
     // Make sure all GL drawing is finished on the impl thread.
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::finishAllRenderingOnImplThread, base::Unretained(this), &completion));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::finishAllRenderingOnImplThread, m_implThreadWeakPtr, &completion));
     completion.wait();
 }
 
@@ -154,14 +155,14 @@ bool ThreadProxy::initializeOutputSurface()
     if (!context.get())
         return false;
 
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeOutputSurfaceOnImplThread, base::Unretained(this), base::Passed(context.Pass())));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeOutputSurfaceOnImplThread, m_implThreadWeakPtr, base::Passed(context.Pass())));
     return true;
 }
 
 void ThreadProxy::setSurfaceReady()
 {
     TRACE_EVENT0("cc", "ThreadProxy::setSurfaceReady");
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setSurfaceReadyOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setSurfaceReadyOnImplThread, m_implThreadWeakPtr));
 }
 
 void ThreadProxy::setSurfaceReadyOnImplThread()
@@ -175,7 +176,7 @@ void ThreadProxy::setVisible(bool visible)
     TRACE_EVENT0("cc", "ThreadProxy::setVisible");
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setVisibleOnImplThread, base::Unretained(this), &completion, visible));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setVisibleOnImplThread, m_implThreadWeakPtr, &completion, visible));
     completion.wait();
 }
 
@@ -197,7 +198,7 @@ bool ThreadProxy::initializeRenderer()
     RendererCapabilities capabilities;
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeRendererOnImplThread,
-                                             base::Unretained(this),
+                                             m_implThreadWeakPtr,
                                              &completion,
                                              &initializeSucceeded,
                                              &capabilities));
@@ -231,7 +232,7 @@ bool ThreadProxy::recreateOutputSurface()
     RendererCapabilities capabilities;
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateOutputSurfaceOnImplThread,
-                                             base::Unretained(this),
+                                             m_implThreadWeakPtr,
                                              &completion,
                                              base::Passed(outputSurface.Pass()),
                                              &recreateSucceeded,
@@ -250,7 +251,7 @@ void ThreadProxy::renderingStats(RenderingStats* stats)
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::renderingStatsOnImplThread,
-                                             base::Unretained(this),  &completion, stats));
+                                             m_implThreadWeakPtr,  &completion, stats));
     stats->totalCommitTimeInSeconds = m_totalCommitTime.InSecondsF();
     stats->totalCommitCount = m_totalCommitCount;
 
@@ -265,7 +266,7 @@ const RendererCapabilities& ThreadProxy::rendererCapabilities() const
 
 void ThreadProxy::loseOutputSurface()
 {
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::didLoseOutputSurfaceOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::didLoseOutputSurfaceOnImplThread, m_implThreadWeakPtr));
 }
 
 void ThreadProxy::setNeedsAnimate()
@@ -280,7 +281,7 @@ void ThreadProxy::setNeedsAnimate()
     if (m_commitRequestSentToImplThread)
         return;
     m_commitRequestSentToImplThread = true;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsCommitOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsCommitOnImplThread, m_implThreadWeakPtr));
 }
 
 void ThreadProxy::setNeedsCommit()
@@ -294,7 +295,7 @@ void ThreadProxy::setNeedsCommit()
     if (m_commitRequestSentToImplThread)
         return;
     m_commitRequestSentToImplThread = true;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsCommitOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsCommitOnImplThread, m_implThreadWeakPtr));
 }
 
 void ThreadProxy::didLoseOutputSurfaceOnImplThread()
@@ -337,7 +338,7 @@ void ThreadProxy::setNeedsManageTilesOnImplThread()
 {
     if (m_manageTilesPending)
       return;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::manageTilesOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::manageTilesOnImplThread, m_implThreadWeakPtr));
     m_manageTilesPending = true;
 }
 
@@ -399,8 +400,8 @@ void ThreadProxy::setNeedsRedraw()
 {
     DCHECK(isMainThread());
     TRACE_EVENT0("cc", "ThreadProxy::setNeedsRedraw");
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setFullRootLayerDamageOnImplThread, base::Unretained(this)));
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsRedrawOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setFullRootLayerDamageOnImplThread, m_implThreadWeakPtr));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsRedrawOnImplThread, m_implThreadWeakPtr));
 }
 
 void ThreadProxy::setDeferCommits(bool deferCommits)
@@ -462,7 +463,7 @@ void ThreadProxy::stop()
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
 
         CompletionEvent completion;
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::layerTreeHostClosedOnImplThread, base::Unretained(this), &completion));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::layerTreeHostClosedOnImplThread, m_implThreadWeakPtr, &completion));
         completion.wait();
     }
 
@@ -477,7 +478,7 @@ void ThreadProxy::forceSerializeOnSwapBuffers()
 {
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceSerializeOnSwapBuffersOnImplThread, base::Unretained(this), &completion));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceSerializeOnSwapBuffersOnImplThread, m_implThreadWeakPtr, &completion));
     completion.wait();
 }
 
@@ -568,7 +569,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         m_commitRequestSentToImplThread = false;
 
         TRACE_EVENT0("cc", "EarlyOut_NotVisible");
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameAbortedOnImplThread, base::Unretained(this)));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameAbortedOnImplThread, m_implThreadWeakPtr));
         return;
     }
 
@@ -625,7 +626,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
 
         base::TimeTicks startTime = base::TimeTicks::HighResNow();
         CompletionEvent completion;
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameCompleteOnImplThread, base::Unretained(this), &completion, queue.release()));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameCompleteOnImplThread, m_implThreadWeakPtr, &completion, queue.release()));
         completion.wait();
         base::TimeTicks endTime = base::TimeTicks::HighResNow();
 
@@ -798,7 +799,7 @@ void ThreadProxy::acquireLayerTextures()
     TRACE_EVENT0("cc", "ThreadProxy::acquireLayerTextures");
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::acquireLayerTexturesForMainThreadOnImplThread, base::Unretained(this), &completion));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::acquireLayerTexturesForMainThreadOnImplThread, m_implThreadWeakPtr, &completion));
     completion.wait(); // Block until it is safe to write to layer textures from the main thread.
 
     m_texturesAcquired = true;
@@ -907,6 +908,7 @@ void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputH
     if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->bindToClient(m_layerTreeHostImpl.get());
 
+    m_implThreadWeakPtr = m_weakFactoryOnImplThread.GetWeakPtr();
     completion->signal();
 }
 
@@ -940,6 +942,7 @@ void ThreadProxy::layerTreeHostClosedOnImplThread(CompletionEvent* completion)
     m_inputHandlerOnImplThread.reset();
     m_layerTreeHostImpl.reset();
     m_schedulerOnImplThread.reset();
+    m_weakFactoryOnImplThread.InvalidateWeakPtrs();
     completion->signal();
 }
 
@@ -989,7 +992,7 @@ bool ThreadProxy::commitPendingForTesting()
     CommitPendingRequest commitPendingRequest;
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::commitPendingOnImplThreadForTesting, base::Unretained(this), &commitPendingRequest));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::commitPendingOnImplThreadForTesting, m_implThreadWeakPtr, &commitPendingRequest));
         commitPendingRequest.completion.wait();
     }
     return commitPendingRequest.commitPending;
