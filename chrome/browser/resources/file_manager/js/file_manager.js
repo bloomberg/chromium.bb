@@ -473,6 +473,9 @@ DialogType.isModal = function(type) {
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
     cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
         this.fileContextMenu_);
+    cr.ui.contextMenuHandler.setContextMenu(
+        this.document_.querySelector('.gdrive-welcome.page'),
+        this.fileContextMenu_);
 
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('#roots-context-menu');
