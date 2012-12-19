@@ -18,11 +18,7 @@
 #include "base/observer_list.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/time.h"
-#if defined(USE_SYSTEM_LIBEVENT)
-#include <event.h>
-#else
 #include "third_party/libevent/event.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"

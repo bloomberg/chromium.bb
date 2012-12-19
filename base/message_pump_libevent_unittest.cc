@@ -10,12 +10,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_SYSTEM_LIBEVENT)
-#include <event.h>
-#else
 #include "third_party/libevent/event.h"
-#endif
 
 namespace base {
 

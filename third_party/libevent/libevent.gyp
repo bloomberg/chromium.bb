@@ -71,11 +71,15 @@
           'target_name': 'libevent',
           'type': 'none',
           'toolsets': ['host', 'target'],
-          'direct_dependent_settings': {
-            'defines': [
-              'USE_SYSTEM_LIBEVENT',
+          'variables': {
+            'headers_root_path': '.',
+            'header_filenames': [
+              'event.h',
             ],
           },
+          'includes': [
+            '../../build/shim_headers.gypi',
+          ],
           'link_settings': {
             'libraries': [
               '-levent',
