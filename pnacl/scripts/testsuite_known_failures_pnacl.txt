@@ -14,7 +14,6 @@ sphereflake
 
 # crash, works on ARM
 aha x86-64
-spirit arm
 # has stderr ordering problem, but also extraneous "<<" in output
 lambda
 # FP nan/inf handling
