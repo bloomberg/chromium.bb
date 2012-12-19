@@ -24,14 +24,11 @@ namespace {
 
 const char* kCurveName = "TouchFlingGestureCurve";
 
-const int kMaxSearchIterations = 20;
-
 // The touchscreen-specific parameters listed below are a matched set,
 // and should not be changed independently of one another.
 const float kDefaultAlpha = -5.70762e+03f;
 const float kDefaultBeta= 1.72e+02f;
 const float kDefaultGamma= 3.7e+00f;
-const float kMaxCurveDuration = 1.3f;
 
 inline double position(double t, float* p) {
   return p[0] * exp(-p[2] * t) - p[1] * t - p[0];
@@ -39,6 +36,12 @@ inline double position(double t, float* p) {
 
 inline double velocity(double t, float* p) {
   return -p[0] * p[2] * exp(-p[2] * t) - p[1];
+}
+
+inline double timeAtVelocity(double v, float* p) {
+    DCHECK(p[0]);
+    DCHECK(p[2]);
+    return -log((v + p[1]) / (-p[0] * p[2])) / p[2];
 }
 
 } // namespace
@@ -75,7 +78,7 @@ WebGestureCurve* TouchFlingGestureCurve::CreateForTouchPad(
   // The default parameters listed below are a matched set,
   // and should not be changed independently of one another.
   return Create(velocity, kDefaultAlpha, kDefaultBeta, kDefaultGamma,
-                kMaxCurveDuration, cumulative_scroll);
+                cumulative_scroll);
 }
 
 WebGestureCurve* TouchFlingGestureCurve::CreateForTouchScreen(
@@ -84,7 +87,7 @@ WebGestureCurve* TouchFlingGestureCurve::CreateForTouchScreen(
   // The touchscreen-specific parameters listed below are a matched set,
   // and should not be changed independently of one another.
   return Create(velocity, kDefaultAlpha, kDefaultBeta, kDefaultGamma,
-                kMaxCurveDuration, cumulative_scroll);
+                cumulative_scroll);
 }
 
 WebGestureCurve* TouchFlingGestureCurve::Create(
@@ -92,10 +95,9 @@ WebGestureCurve* TouchFlingGestureCurve::Create(
     float p0,
     float p1,
     float p2,
-    float curve_duration,
     const WebSize& cumulative_scroll) {
   return new TouchFlingGestureCurve(initial_velocity, p0, p1, p2,
-                                    curve_duration, cumulative_scroll);
+                                    cumulative_scroll);
 }
 
 TouchFlingGestureCurve::TouchFlingGestureCurve(
@@ -103,15 +105,17 @@ TouchFlingGestureCurve::TouchFlingGestureCurve(
     float alpha,
     float beta,
     float gamma,
-    float curve_duration,
     const WebSize& cumulative_scroll)
-    : cumulative_scroll_(cumulative_scroll),
-      curve_duration_(curve_duration) {
+    : cumulative_scroll_(cumulative_scroll) {
   DCHECK(initial_velocity != WebFloatPoint());
 
   coefficients_[0] = alpha;
   coefficients_[1] = beta;
   coefficients_[2] = gamma;
+
+  // Curve ends when velocity reaches zero.
+  curve_duration_ = timeAtVelocity(0, coefficients_);
+  DCHECK(curve_duration_ > 0);
 
   float max_start_velocity = std::max(fabs(initial_velocity.x),
                                       fabs(initial_velocity.y));
@@ -122,33 +126,16 @@ TouchFlingGestureCurve::TouchFlingGestureCurve(
   if (max_start_velocity > velocity(0, coefficients_))
     max_start_velocity = velocity(0, coefficients_);
 
-  if (max_start_velocity < velocity(curve_duration_, coefficients_))
-    max_start_velocity = velocity(curve_duration_, coefficients_);
+  if (max_start_velocity < 0)
+    max_start_velocity = 0;
 
   // We keep track of relative magnitudes and directions of the
   // velocity/displacement components here.
   displacement_ratio_ = WebFloatPoint(initial_velocity.x / max_start_velocity,
                                       initial_velocity.y / max_start_velocity);
 
-  // Use basic bisection to estimate where we should start on the curve.
-  // TODO(wjmaclean): Would Newton's method be better?
-  // It is probably good enough to get the start point to within 1 pixel/sec.
-  const double epsilon = 1;
-  double t0 = 0;
-  double t1 = curve_duration;
-  int num_iterations = 0;
-  while (t0 < t1 && num_iterations < kMaxSearchIterations) {
-    num_iterations++;
-    time_offset_ = (t0 + t1) * 0.5;
-    double vOffset = velocity(time_offset_, coefficients_);
-    if (fabs(max_start_velocity - vOffset) < epsilon)
-      break;
-
-    if (vOffset > max_start_velocity)
-      t0 = time_offset_;
-    else
-      t1 = time_offset_;
-  }
+  // Compute time-offset for start velocity.
+  time_offset_ = timeAtVelocity(max_start_velocity, coefficients_);
 
   // Compute curve position at offset time
   position_offset_ = position(time_offset_, coefficients_);

@@ -45,7 +45,7 @@ TEST(TouchFlingGestureCurve, flingCurveTouch)
 
   scoped_ptr<WebGestureCurve> curve(webkit_glue::TouchFlingGestureCurve::Create(
       WebFloatPoint(initialVelocity, 0),
-      -5.70762e+03f, 1.72e+02f, 3.7e+00f, 1.3f, WebSize()));
+      -5.70762e+03f, 1.72e+02f, 3.7e+00f, WebSize()));
 
   // Note: the expectations below are dependent on the curve parameters hard
   // coded into the create call above.

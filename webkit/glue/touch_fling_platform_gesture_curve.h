@@ -31,7 +31,6 @@ class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
   WEBKIT_GLUE_EXPORT static WebGestureCurve* Create(
       const WebKit::WebFloatPoint& initial_velocity,
       float p0, float p1, float p2,
-      float curveDuration,
       const WebKit::WebSize& cumulativeScroll);
 
  virtual bool apply(double monotonicTime,
@@ -42,7 +41,6 @@ class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
                          float p0,
                          float p1,
                          float p2,
-                         float curve_duration,
                          const WebKit::WebSize& cumulativeScroll);
   virtual ~TouchFlingGestureCurve();
 
