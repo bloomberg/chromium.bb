@@ -300,8 +300,12 @@ void PPB_URLLoader_Impl::Close() {
     loader_->cancel();
   else if (main_document_loader_)
     GetFrameForResource(this)->stopLoading();
-  // TODO(viettrungluu): Check what happens to the callback (probably the
-  // wrong thing). May need to post abort here. crbug.com/69457
+
+  // We must not access the buffer provided by the caller from this point on.
+  user_buffer_ = NULL;
+  user_buffer_size_ = 0;
+  if (TrackedCallback::IsPending(pending_callback_))
+    pending_callback_->PostAbort();
 }
 
 void PPB_URLLoader_Impl::GrantUniversalAccess() {

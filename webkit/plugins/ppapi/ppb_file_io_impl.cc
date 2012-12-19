@@ -290,6 +290,8 @@ void PPB_FileIO_Impl::Close() {
     file_ = base::kInvalidPlatformFileValue;
     quota_file_io_.reset();
   }
+  // TODO(viettrungluu): Check what happens to the callback (probably the
+  // wrong thing). May need to post abort here. crbug.com/69457
 }
 
 int32_t PPB_FileIO_Impl::GetOSFileDescriptor() {
