@@ -30,6 +30,9 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     // copy from that canvas to this one here, but this appears to work (i.e. we
     // only call this before we draw our first frame) and it saves us an extra
     // copy.
+    // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
+    // to create a zero-copy texture (when possible):
+    // https://codereview.chromium.org/10543125
     root_window_->CopyAreaToSkCanvas(
         gfx::Rect(root_window_->GetHostOrigin(), root_window_->GetHostSize()),
         gfx::Point(), canvas->sk_canvas());

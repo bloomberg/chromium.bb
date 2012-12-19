@@ -24,6 +24,7 @@
 #include "base/stringprintf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPostConfig.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -714,6 +715,13 @@ bool RootWindowHostLinux::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
   DCHECK(image);
 
   if (image->bits_per_pixel == 32) {
+    if ((0xff << SK_R32_SHIFT) != image->red_mask ||
+        (0xff << SK_G32_SHIFT) != image->green_mask ||
+        (0xff << SK_B32_SHIFT) != image->blue_mask) {
+      LOG(WARNING) << "XImage and Skia byte orders differ";
+      return false;
+    }
+
     // Set the alpha channel before copying to the canvas.  Otherwise, areas of
     // the framebuffer that were cleared by ply-image rather than being obscured
     // by an image during boot may end up transparent.
@@ -728,12 +736,8 @@ bool RootWindowHostLinux::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
                      image->width, image->height,
                      image->bytes_per_line);
     bitmap.setPixels(image->data);
-    SkCanvas::Config8888 config =
-        (image->byte_order == LSBFirst) ?
-        SkCanvas::kBGRA_Unpremul_Config8888 :
-        SkCanvas::kRGBA_Unpremul_Config8888;
-    canvas->writePixels(bitmap, dest_offset.x(), dest_offset.y(), config);
-  } else if (image->bits_per_pixel == 24) {
+    canvas->drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), NULL);
+  } else {
     NOTIMPLEMENTED() << "Unsupported bits-per-pixel " << image->bits_per_pixel;
     return false;
   }
