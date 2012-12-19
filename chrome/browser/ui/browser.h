@@ -18,7 +18,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/string16.h"
-#include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"

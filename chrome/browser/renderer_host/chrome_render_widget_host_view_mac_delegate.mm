@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"

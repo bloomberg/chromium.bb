@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
-#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/app_restore_service.h"

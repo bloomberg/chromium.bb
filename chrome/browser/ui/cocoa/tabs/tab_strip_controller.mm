@@ -19,7 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/net/url_fixer_upper.h"

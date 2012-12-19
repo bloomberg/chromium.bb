@@ -7,7 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"

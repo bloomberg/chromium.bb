@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/threading/thread.h"
-#include "content/browser/debugger/worker_devtools_manager.h"
+#include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/view_messages.h"

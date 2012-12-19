@@ -37,7 +37,7 @@
       'target_name': 'android_webview_pak',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/content/browser/debugger/devtools_resources.gyp:devtools_resources',
+        '<(DEPTH)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
         '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
