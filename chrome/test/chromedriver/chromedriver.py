@@ -37,7 +37,7 @@ class ChromeDriver(object):
     else:
       params = {
         'desiredCapabilities': {
-          'chrome': {
+          'chromeOptions': {
             'binary': chrome_binary
           }
         }

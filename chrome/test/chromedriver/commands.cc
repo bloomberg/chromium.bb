@@ -26,7 +26,7 @@ Status ExecuteNewSession(
   scoped_ptr<Chrome> chrome;
   FilePath::StringType path_str;
   FilePath chrome_exe;
-  if (params.GetString("desiredCapabilities.chrome.binary", &path_str)) {
+  if (params.GetString("desiredCapabilities.chromeOptions.binary", &path_str)) {
     chrome_exe = FilePath(path_str);
     if (!file_util::PathExists(chrome_exe)) {
       std::string message = base::StringPrintf(
