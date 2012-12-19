@@ -316,3 +316,5 @@ CloudPrintPolicyTest.*
 TranslateManagerTest.*
 # DrM-i#1052-c#43
 SyncFileSystemApiTest.*
+# DrM-i#1052-c#44
+SafeBrowsingServiceShutdownTest.*
