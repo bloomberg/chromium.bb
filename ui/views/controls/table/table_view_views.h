@@ -127,6 +127,9 @@ class VIEWS_EXPORT TableView
     return visible_columns_;
   }
 
+  // Sets the width of the column. |index| is in terms of |visible_columns_|.
+  void SetVisibleColumnWidth(int index, int width);
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;

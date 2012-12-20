@@ -164,9 +164,25 @@ bool TableView::IsColumnVisible(int id) const {
   return false;
 }
 
+void TableView::SetVisibleColumnWidth(int index, int width) {
+  DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
+  if (visible_columns_[index].width == width)
+    return;
+  visible_columns_[index].width = width;
+  for (size_t i = index + 1; i < visible_columns_.size(); ++i) {
+    visible_columns_[i].x =
+        visible_columns_[i - 1].x + visible_columns_[i - 1].width;
+  }
+  PreferredSizeChanged();
+  SchedulePaint();
+}
+
 void TableView::Layout() {
-  if (parent() && parent()->width() != last_parent_width_) {
-    last_parent_width_ = parent()->width();
+  // parent()->parent() is the scrollview. When its width changes we force
+  // recalculating column sizes.
+  View* scroll_view = parent() ? parent()->parent() : NULL;
+  if (scroll_view && scroll_view->width() != last_parent_width_) {
+    last_parent_width_ = scroll_view->width();
     UpdateVisibleColumnSizes();
   }
   // We have to override Layout like this since we're contained in a ScrollView.

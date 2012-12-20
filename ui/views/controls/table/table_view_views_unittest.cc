@@ -8,6 +8,7 @@
 
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/test_table_model.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
@@ -29,6 +30,8 @@ class TableViewTestHelper {
   size_t visible_col_count() {
     return table_->visible_columns().size();
   }
+
+  TableHeader* header() { return table_->header_; }
 
  private:
   TableView* table_;
@@ -107,6 +110,23 @@ TEST_F(TableViewTest, ColumnVisibility) {
   EXPECT_EQ(1, table_->visible_columns()[0].column.id);
   EXPECT_EQ(0, table_->visible_columns()[1].column.id);
   EXPECT_EQ("rows=0 4 cols=0 2", helper_->GetPaintRegion(table_->bounds()));
+}
+
+// Verifies resizing a column works.
+TEST_F(TableViewTest, Resize) {
+  const int x = table_->visible_columns()[0].width;
+  EXPECT_NE(0, x);
+  // Drag the mouse 1 pixel to the left.
+  const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
+                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON);
+  helper_->header()->OnMousePressed(pressed);
+  const ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, gfx::Point(x - 1, 0),
+                               gfx::Point(x - 1, 0), ui::EF_LEFT_MOUSE_BUTTON);
+  helper_->header()->OnMouseDragged(dragged);
+
+  // This should shrink the first column and pull the second column in.
+  EXPECT_EQ(x - 1, table_->visible_columns()[0].width);
+  EXPECT_EQ(x - 1, table_->visible_columns()[1].x);
 }
 
 }  // namespace views
