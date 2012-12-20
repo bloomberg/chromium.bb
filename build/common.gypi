@@ -354,19 +354,11 @@
 
       # Use of precompiled headers on Windows.
       #
-      # This is on by default in VS 2010, but off by default for VS
-      # 2008 because of complications that it can cause with our
-      # trybots etc.
-      #
       # This variable may be explicitly set to 1 (enabled) or 0
       # (disabled) in ~/.gyp/include.gypi or via the GYP command line.
       # This setting will override the default.
       #
-      # Note that a setting of 1 is probably suitable for most or all
-      # Windows developers using VS 2008, since precompiled headers
-      # provide a build speedup of 20-25%.  There are a couple of
-      # small workarounds you may need to use when using VS 2008 (but
-      # not 2010), see
+      # See
       # http://code.google.com/p/chromium/wiki/WindowsPrecompiledHeaders
       # for details.
       'chromium_win_pch%': 0,
@@ -519,8 +511,8 @@
           'ui_compositor_image_transport%': 0,
         }],
 
-        # Turn precompiled headers on by default for VS 2010.
-        ['OS=="win" and MSVS_VERSION=="2010" and buildtype!="Official"', {
+        # Turn precompiled headers on by default.
+        ['OS=="win" and buildtype!="Official"', {
           'chromium_win_pch%': 1
         }],
 
