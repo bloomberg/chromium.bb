@@ -51,14 +51,19 @@ body.loaded {
 }
 
 #butter-bar {
+  -webkit-border-radius: 2px;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-transition: opacity 300ms;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-transition: opacity 130ms;
   background-color: #e3e3e3;
+  border: 1px solid #d4d4d4;
+  border-top-width: 0;
   color: #222;
   display: -webkit-box;
+  margin-top: 2px;
   max-width: 340px;
-  min-width: 40px;
+  min-width: 200px;
   padding: 0 1em;
   pointer-events: auto;
   top: 1px;
@@ -72,10 +77,12 @@ body.loaded {
 }
 
 #butter-bar .content {
-  -webkit-box-flex: 1;
+  -webkit-box-flex: 1.0;
+  -webkit-box-orient: block-axis;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 35px;
   overflow: hidden;
-  padding-bottom: 4px;
-  padding-top: 4px;
 }
 
 #butter-bar .actions {
@@ -88,8 +95,8 @@ body.loaded {
 }
 
 #butter-bar .actions a {
+  color: rgb(17, 85, 204);
   cursor: pointer;
-  text-decoration: underline;
 }
 
 #butter-bar .actions a.x {
@@ -113,13 +120,15 @@ body.loaded {
 
 #butter-bar.error {
   background-color: rgba(221, 75, 57, 0.2);
-  border: 1px solid rgba(221, 75, 57, 0.5);
-  border-radius: 2px;
-  padding: 2px 1em;
+}
+
+#butter-bar .content-message {
+  -webkit-box-align: begin;
+  -webkit-box-flex: 1.0;
+  -webkit-box-orient: vertical;
 }
 
 .progress-bar {
-  -webkit-box-flex: 1;
   border: 1px solid #999;
   margin-bottom: 2px;
   margin-top: 3px;
@@ -337,6 +346,7 @@ div.root-eject:hover {
 }
 
 .dialog-footer .progress-bar {
+  -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
 }
