@@ -54,9 +54,6 @@ class FormCache {
   // The cached initial values for <select> elements.
   std::map<const WebKit::WebSelectElement, string16> initial_select_values_;
 
-  // The cached initial values for checkable <input> elements.
-  std::map<const WebKit::WebInputElement, bool> initial_checked_state_;
-
   DISALLOW_COPY_AND_ASSIGN(FormCache);
 };
 

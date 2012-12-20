@@ -1,4 +1,3 @@
 NAME_FIRST | fname | * First Name | 
 NAME_LAST | lname | * Last Name | 
 EMAIL_ADDRESS | emLogin | * E-mail address | 
-UNKNOWN_TYPE | wantMsg |  | on

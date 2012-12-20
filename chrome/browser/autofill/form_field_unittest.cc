@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -114,33 +113,4 @@ TEST(FormFieldTest, Match) {
   field.label = UTF8ToUTF16("cr" "\xC3\xAA" "pe");
   EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("\\bcr\\b"),
                                 FormField::MATCH_LABEL));
-}
-
-// Test that we ignore checkable elements.
-TEST(FormFieldTest, ParseFormFields) {
-  ScopedVector<AutofillField> fields;
-  FormFieldData field_data;
-  field_data.form_control_type = "text";
-
-  field_data.label = ASCIIToUTF16("Address line1");
-  fields.push_back(new AutofillField(field_data, field_data.label));
-
-  field_data.is_checkable = true;
-  field_data.label = ASCIIToUTF16("Is PO Box");
-  fields.push_back(new AutofillField(field_data, field_data.label));
-
-  // reset is_checkable to false.
-  field_data.is_checkable = false;
-  field_data.label = ASCIIToUTF16("Address line2");
-  fields.push_back(new AutofillField(field_data, field_data.label));
-
-  FieldTypeMap field_type_map;
-  FormField::ParseFormFields(fields.get(), &field_type_map);
-  // Checkable element shouldn't interfere with inference of Address line2.
-  EXPECT_EQ(2U, field_type_map.size());
-
-  EXPECT_EQ(ADDRESS_HOME_LINE1,
-            field_type_map.find(ASCIIToUTF16("Address line1"))->second);
-  EXPECT_EQ(ADDRESS_HOME_LINE2,
-            field_type_map.find(ASCIIToUTF16("Address line2"))->second);
 }

@@ -9,9 +9,6 @@ UNKNOWN_TYPE | BillStateOther | State/Province* |
 ADDRESS_BILLING_ZIP | BillZip | Zip/Postal Code* | 
 PHONE_HOME_WHOLE_NUMBER | BillPhone | Phone Number* | 
 EMAIL_ADDRESS | BillEmail | Email Address* | 
-UNKNOWN_TYPE | cbStoreSpecial |  | on
-UNKNOWN_TYPE | ShipDestination |  | billaddress
-UNKNOWN_TYPE | ShipDestination | Ship to my billing address | shipaddress
 NAME_FULL | ShipName | Recipient Name* | 
 ADDRESS_HOME_COUNTRY | ShipCountry | Country* | UNITED STATES
 ADDRESS_HOME_LINE1 | ShipStreet1 | Address* | 
@@ -20,16 +17,8 @@ ADDRESS_HOME_CITY | ShipCity | Town/City* |
 ADDRESS_HOME_STATE | ShipState | State/Province* | 
 UNKNOWN_TYPE | ShipStateOther | State/Province* | 
 ADDRESS_HOME_ZIP | ShipZip | Zip/Postal Code* | 
-UNKNOWN_TYPE | ShowGiftMsg | 2 Shipping Address | on
 UNKNOWN_TYPE | countdown | You have | 300
-UNKNOWN_TYPE | ApplyGiftWrap | 2 Shipping Address | on
 UNKNOWN_TYPE | txtCoupon | Apply Promo Code | 
-UNKNOWN_TYPE | PaymentMethod |  | PayByCafeCash
-UNKNOWN_TYPE | PaymentMethod |  | PayByGC
-UNKNOWN_TYPE | PaymentMethod |  | PayByCCGC
-UNKNOWN_TYPE | PaymentMethod |  | PayByCC
 CREDIT_CARD_NUMBER | txtCCAccount | Credit Card No.* | 
 CREDIT_CARD_EXP_MONTH | ccExp$MonthDrop | Expiration Date* | 06 (June)
 CREDIT_CARD_EXP_4_DIGIT_YEAR | ccExp$YearDrop | Expiration Date* | 2011
-UNKNOWN_TYPE | PaymentMethod | Expiration Date* | PayByCheck
-UNKNOWN_TYPE | PaymentMethod |  | PayByPayPal

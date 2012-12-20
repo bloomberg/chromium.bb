@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "chrome/browser/autofill/autofill_server_field_info.h"
 #include "third_party/libjingle/source/talk/xmllite/qname.h"
 
 AutofillXmlParser::AutofillXmlParser()
@@ -29,10 +28,10 @@ void AutofillXmlParser::Error(buzz::XmlParseContext* context,
 }
 
 AutofillQueryXmlParser::AutofillQueryXmlParser(
-    std::vector<AutofillServerFieldInfo>* field_infos,
+    std::vector<AutofillFieldType>* field_types,
     UploadRequired* upload_required,
     std::string* experiment_id)
-    : field_infos_(field_infos),
+    : field_types_(field_types),
       upload_required_(upload_required),
       experiment_id_(experiment_id) {
   DCHECK(upload_required_);
@@ -53,21 +52,22 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
 
     // |attrs| is a NULL-terminated list of (attribute, value) pairs.
     while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
+      buzz::QName attribute_qname = context->ResolveQName(attrs[0], true);
       const std::string& attribute_name = attribute_qname.LocalPart();
       if (attribute_name.compare("uploadrequired") == 0) {
-        if (strcmp(*attrs, "true") == 0)
+        if (strcmp(attrs[1], "true") == 0)
           *upload_required_ = UPLOAD_REQUIRED;
-        else if (strcmp(*attrs, "false") == 0)
+        else if (strcmp(attrs[1], "false") == 0)
           *upload_required_ = UPLOAD_NOT_REQUIRED;
       } else if (attribute_name.compare("experimentid") == 0) {
-        *experiment_id_ = *attrs;
+        *experiment_id_ = attrs[1];
       }
-      ++attrs;
+
+      // Advance to the next (attribute, value) pair.
+      attrs += 2;
     }
   } else if (element.compare("field") == 0) {
-    if (!*attrs) {
+    if (!attrs[0]) {
       // Missing the "autofilltype" attribute, abort.
       context->RaiseError(XML_ERROR_ABORTED);
       return;
@@ -75,29 +75,20 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
 
     // Determine the field type from the attribute value.  There should be one
     // attribute (autofilltype) with an integer value.
-    AutofillServerFieldInfo field_info;
-    field_info.field_type = UNKNOWN_TYPE;
+    AutofillFieldType field_type = UNKNOWN_TYPE;
+    buzz::QName attribute_qname = context->ResolveQName(attrs[0], true);
+    const std::string& attribute_name = attribute_qname.LocalPart();
 
-    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
-    while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
-      const std::string& attribute_name = attribute_qname.LocalPart();
-      if (attribute_name.compare("autofilltype") == 0) {
-        int value = GetIntValue(context, *attrs);
-        if (value >= 0 && value < MAX_VALID_FIELD_TYPE)
-          field_info.field_type = static_cast<AutofillFieldType>(value);
-        else
-          field_info.field_type = NO_SERVER_DATA;
-      } else if (field_info.field_type == FIELD_WITH_DEFAULT_VALUE &&
-                 attribute_name.compare("defaultvalue") == 0) {
-        field_info.default_value = *attrs;
+    if (attribute_name.compare("autofilltype") == 0) {
+      int value = GetIntValue(context, attrs[1]);
+      field_type = static_cast<AutofillFieldType>(value);
+      if (field_type < 0 || field_type > MAX_VALID_FIELD_TYPE) {
+        field_type = NO_SERVER_DATA;
       }
-      ++attrs;
     }
 
-    // Record this field type, default value pair.
-    field_infos_->push_back(field_info);
+    // Record this field type.
+    field_types_->push_back(field_type);
   }
 }
 

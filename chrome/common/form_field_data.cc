@@ -10,8 +10,6 @@
 FormFieldData::FormFieldData()
     : max_length(0),
       is_autofilled(false),
-      is_checked(false),
-      is_checkable(false),
       is_focusable(false),
       should_autocomplete(false) {
 }
@@ -55,10 +53,6 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
       << field.max_length
       << " "
       << (field.is_autofilled ? "true" : "false")
-      << " "
-      << (field.is_checked ? "true" : "false")
-      << " "
-      << (field.is_checkable ? "true" : "false")
       << " "
       << (field.is_focusable ? "true" : "false")
       << " "
