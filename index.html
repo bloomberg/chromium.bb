@@ -128,13 +128,18 @@ contenteditable.  However, a proper fix would be to make the last line scroll
 completely, taking the padding into account.  We haven't gotten around to this
 yet.</p>
 
-<h3> <a name="bugfix-dontRespondIfNoFocus"> bugfix/dontRespondIfNoFocus</a> (Shezan Baig; D32819389)</h3>
+<h3><a name="bugfix-dontRespondIfNoFocus"> bugfix/dontRespondIfNoFocus</a> (Shezan Baig; D32819389)</h3>
 <p>TODO</p>
 
-<h3> <a name="bugfix-doubleindent">bugfix/doubleindent</a> (Shezan Baig; D32165963)</h3>
+<h3><a name="bugfix-doubleindent">bugfix/doubleindent</a> (Shezan Baig; D32165963)</h3>
 <p>Open <a href="repros/doubleindent.html">this link</a> in Chrome, and
 position the cursor before the logo.  Indent the image twice, then outdent the
 image twice.  There will be one level of indentation still left.</p>
+
+<h3><a name="bugfix-emptycellcaret">bugfix/emptycellcaret</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85385">85385</a>)</h3>
+<p>Open <a href="repros/emptycellcaret.html">this link</a> in Chrome, and put
+the caret inside an empty table cell.  The caret's <code>y-position</code> is
+outside the <code>table-cell</code>.</p>
 
 <hr/>
 <h6>Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.</h6>
