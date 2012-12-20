@@ -1447,9 +1447,10 @@
       Identity of user. For tunneling outer protocols
       (<span class="value">PEAP</span>, <span class="value">EAP-TTLS</span>, and
       <span class="value">EAP-FAST</span>), this is used to authenticate inside
-      the tunnel, and AnonymousIdentity is used for the EAP identity outside the
-      tunnel. For non-tunneling outer protocols, this is used for the EAP
-      identity. This string may include string expansions. See below.
+      the tunnel, and <span class="field">AnonymousIdentity</span> is used for
+      the EAP identity outside the tunnel. For non-tunneling outer protocols,
+      this is used for the EAP identity. This string may include string
+      expansions. See below.
     </dd>
 
     <dt class="field">Inner</dt>
@@ -1893,11 +1894,27 @@
   <h1>Simple format example: PEAP/MSCHAPv2 network (per device)</h1>
 
   <pre>
-{ "Type": "UnencryptedConfiguration", "NetworkConfigurations": [ { "GUID":
-  "{f2c17903-b0e1-8593-b3ca74f977236bd7}", "Name": "MySSID", "Type": "WiFi",
-  "WiFi": { "AutoConnect": true, "HiddenSSID": false, "Security": "WPA-EAP",
-  "SSID": "MySSID", "EAP": { "Outer": "PEAP", "UseSystemCAs": true } } } ],
-  "Certificates": [] }
+{
+  "Type": "UnencryptedConfiguration",
+  "NetworkConfigurations": [
+    {
+      "GUID": "{f2c17903-b0e1-8593-b3ca74f977236bd7}",
+      "Name": "MySSID",
+      "Type": "WiFi",
+      "WiFi": {
+        "AutoConnect": true,
+        "EAP": {
+          "Outer": "PEAP",
+          "UseSystemCAs": true
+        },
+        "HiddenSSID": false,
+        "SSID": "MySSID",
+        "Security": "WPA-EAP"
+      }
+    }
+  ],
+  "Certificates": []
+}
   </pre>
 
   <p>
@@ -1912,18 +1929,44 @@
   <h1>Complex format example: TLS network with client certs (per device)</h1>
 
   <pre>
-{ "Type": "UnencryptedConfiguration", "NetworkConfigurations": [ { "GUID":
-  "{00f79111-51e0-e6e0-76b3b55450d80a1b}", "Name": "MyTTLSNetwork", "Type":
-  "WiFi", "WiFi": { "AutoConnect": false, "HiddenSSID": false, "Security":
-  "WPA-EAP", "SSID": "MyTTLSNetwork", "EAP": { "Outer": "EAP-TLS",
-  "UseSystemCAs": true, "ServerCARef": "{6ed8dce9-64c8-d568-d225d7e467e37828}",
-  "ClientCertType": "Pattern", "ClientCertPattern": { "IssuerCARef": [
-  "{6ed8dce9-64c8-d568-d225d7e467e37828}" ], "EnrollmentURI": [
-  "http://fetch-my-certificate.com" ] } } } } ], "Certificates": [ { "Trust":
-  [], "GUID": "{6ed8dce9-64c8-d568-d225d7e467e37828}", "Type": "Authority",
-  "X509":
-  "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw=="
-  } ] }
+{
+  "Type": "UnencryptedConfiguration",
+  "NetworkConfigurations": [
+    {
+      "GUID": "{00f79111-51e0-e6e0-76b3b55450d80a1b}",
+      "Name": "MyTTLSNetwork",
+      "Type": "WiFi",
+      "WiFi": {
+        "AutoConnect": false,
+        "EAP": {
+          "ClientCertPattern": {
+            "EnrollmentURI": [
+              "http://fetch-my-certificate.com"
+            ],
+            "IssuerCARef": [
+              "{6ed8dce9-64c8-d568-d225d7e467e37828}"
+            ]
+          },
+          "ClientCertType": "Pattern",
+          "Outer": "EAP-TLS",
+          "ServerCARef": "{6ed8dce9-64c8-d568-d225d7e467e37828}",
+          "UseSystemCAs": true
+        },
+        "HiddenSSID": false,
+        "SSID": "MyTTLSNetwork",
+        "Security": "WPA-EAP"
+      }
+    }
+  ],
+  "Certificates": [
+    {
+      "GUID": "{6ed8dce9-64c8-d568-d225d7e467e37828}",
+      "Trust": [],
+      "Type": "Authority",
+      "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw=="
+    }
+  ]
+}
   </pre>
 
   <p>
@@ -1943,11 +1986,18 @@
   </p>
 
   <pre>
-{ "Type": "UnencryptedConfiguration", "NetworkConfigurations": [],
-  "Certificates": [ { "Trust": [ "Web" ], "GUID":
-  "{f31f2110-9f5f-61a7-a8bd7c00b94237af}", "Type": "Authority", "X509":
-  "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw=="
-  } ] }
+{
+  "Type": "UnencryptedConfiguration",
+  "NetworkConfigurations": [],
+  "Certificates": [
+    {
+      "GUID": "{f31f2110-9f5f-61a7-a8bd7c00b94237af}",
+      "Trust": [ "Web" ],
+      "Type": "Authority",
+      "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw==" 
+    }
+  ]
+}
   </pre>
 </section>
 
@@ -1960,11 +2010,17 @@ with the passphrase "test0000".
   </p>
 
   <pre>
-{ "Cipher": "AES256", "Ciphertext":
-  "eQ9/r6v29/83M745aa0JllEj4lklt3Nfy4kPPvXgjBt1eTByxXB+FnsdvL6Uca5JBU5aROxfiol2+ZZOkxPmUNNIFZj70pkdqOGVe09ncf0aVBDsAa27veGIG8rG/VQTTbAo7d8QaxdNNbZvwQVkdsAXawzPCu7zSh4NF/hDnDbYjbN/JEm1NzvWgEjeOfqnnw3PnGUYCArIaRsKq9uD0a1NccU+16ZSzyDhX724JNrJjsuxohotk5YXsCK0lP7ZXuXj+nSR0aRIETSQ+eqGhrew2octLXq8cXK05s6ZuVAc0mFKPkntSI/fzBACuPi4ZaGd3YEYiKzNOgKJ+qEwgoE39xp0EXMZOZyjMOAtA6e1ZZDQGWG7vKdTLmLKNztHGrXvlZkyEf1RDs10YgkwwLgUhm0yBJ+eqbxO/RiBXz7O2/UVOkkkVcmeI6yh3BdL6HIYsMMygnZa5WRkd/2/EudoqEnjcqUyGsL+YUqV6KRTC0PH+z7zSwvFs2KygrSM7SIAZM2yiQHTQACkA/YCJDwACkkQOBFnRWTWiX0xmN55WMbgrs/wqJ4zGC9LgdAInOBlc3P+76+i7QLaNjMovQ==",
-  "HMAC": "3ylRy5InlhVzFGakJ/9lvGSyVH0=", "HMACMethod": "SHA1", "IV":
-  "hcm6OENfqG6C/TVO6p5a8g==", "Iterations": 20000, "Salt": "/3O73QadCzA=",
-  "Stretch": "PBKDF2", "Type": "EncryptedConfiguration" }
+{
+  "Cipher": "AES256",
+  "Ciphertext": "eQ9/r6v29/83M745aa0JllEj4lklt3Nfy4kPPvXgjBt1eTByxXB+FnsdvL6Uca5JBU5aROxfiol2+ZZOkxPmUNNIFZj70pkdqOGVe09ncf0aVBDsAa27veGIG8rG/VQTTbAo7d8QaxdNNbZvwQVkdsAXawzPCu7zSh4NF/hDnDbYjbN/JEm1NzvWgEjeOfqnnw3PnGUYCArIaRsKq9uD0a1NccU+16ZSzyDhX724JNrJjsuxohotk5YXsCK0lP7ZXuXj+nSR0aRIETSQ+eqGhrew2octLXq8cXK05s6ZuVAc0mFKPkntSI/fzBACuPi4ZaGd3YEYiKzNOgKJ+qEwgoE39xp0EXMZOZyjMOAtA6e1ZZDQGWG7vKdTLmLKNztHGrXvlZkyEf1RDs10YgkwwLgUhm0yBJ+eqbxO/RiBXz7O2/UVOkkkVcmeI6yh3BdL6HIYsMMygnZa5WRkd/2/EudoqEnjcqUyGsL+YUqV6KRTC0PH+z7zSwvFs2KygrSM7SIAZM2yiQHTQACkA/YCJDwACkkQOBFnRWTWiX0xmN55WMbgrs/wqJ4zGC9LgdAInOBlc3P+76+i7QLaNjMovQ==",
+  "HMAC": "3ylRy5InlhVzFGakJ/9lvGSyVH0=",
+  "HMACMethod": "SHA1",
+  "Iterations": 20000,
+  "IV": "hcm6OENfqG6C/TVO6p5a8g==",
+  "Salt": "/3O73QadCzA=",
+  "Stretch": "PBKDF2",
+  "Type": "EncryptedConfiguration"
+}
   </pre>
 </section>
 
