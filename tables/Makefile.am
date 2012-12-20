@@ -187,7 +187,6 @@ table_files = \
 	pt-pt-g2.ctb \
 	ro.ctb \
 	ru.ctb \
-	ru-ru-comp8 \
 	ru-ru.dis \
 	ru-ru-g1.utb \
 	sa.ctb \

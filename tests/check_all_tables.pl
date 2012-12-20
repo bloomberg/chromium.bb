@@ -33,7 +33,7 @@ my @tables = glob("$tablesdir/*");
 # exclude other oddballs
 @tables = grep(!/lang2table/, @tables);
 # exclude known bad tables
-@tables = grep(!/eo-g1.ctb|ru-ru-comp8/, @tables);
+@tables = grep(!/eo-g1.ctb/, @tables);
 
 
 foreach my $table (@tables) {
