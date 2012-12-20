@@ -17,7 +17,18 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+@interface NSWindow (LionAPI)
+- (CGFloat)backingScaleFactor;
+@end
+#endif
+
 namespace {
+
+const int kMaskHeight = 29;  // Height of the mask bitmap.
+const int kFillHeight = 25;  // Height of the "mask on" part of the mask bitmap.
+
 
 // Constants for inset and control points for tab shape.
 const CGFloat kInsetMultiplier = 2.0/3.0;
@@ -48,7 +59,7 @@ const CGFloat kRapidCloseDist = 2.5;
 - (void)resetLastGlowUpdateTime;
 - (NSTimeInterval)timeElapsedSinceLastGlowUpdate;
 - (void)adjustGlowValue;
-- (NSBezierPath*)bezierPathForRect:(NSRect)rect;
+- (CGImageRef)tabClippingMask;
 
 @end  // TabView(Private)
 
@@ -140,12 +151,36 @@ const CGFloat kRapidCloseDist = 2.5;
 // view or our child close button.
 - (NSView*)hitTest:(NSPoint)aPoint {
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
-  NSRect rect = [self bounds];
-  NSBezierPath* path = [self bezierPathForRect:rect];
-
   if (![closeButton_ isHidden])
     if (NSPointInRect(viewPoint, [closeButton_ frame])) return closeButton_;
-  if ([path containsPoint:viewPoint]) return self;
+
+  NSRect pointRect = NSMakeRect(viewPoint.x, viewPoint.y, 1, 1);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* left = rb.GetNativeImageNamed(IDR_TAB_ALPHA_LEFT).ToNSImage();
+  if (viewPoint.x < [left size].width) {
+    NSRect imageRect = NSMakeRect(0, 0, [left size].width, [left size].height);
+    if ([left hitTestRect:pointRect withImageDestinationRect:imageRect
+          context:nil hints:nil flipped:NO]) {
+      return self;
+    }
+    return nil;
+  }
+
+  NSImage* right = rb.GetNativeImageNamed(IDR_TAB_ALPHA_RIGHT).ToNSImage();
+  CGFloat rightX = NSWidth([self bounds]) - [right size].width;
+  if (viewPoint.x > rightX) {
+    NSRect imageRect = NSMakeRect(
+        rightX, 0, [right size].width, [right size].height);
+    if ([right hitTestRect:pointRect withImageDestinationRect:imageRect
+          context:nil hints:nil flipped:NO]) {
+      return self;
+    }
+    return nil;
+  }
+
+  if (viewPoint.y < kFillHeight)
+    return self;
   return nil;
 }
 
@@ -246,16 +281,22 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
+// Draws the tab background.
+- (void)drawFill:(NSRect)dirtyRect {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);
   [context setPatternPhase:[[self window] themePatternPhase]];
 
+
+  CGImageRef mask([self tabClippingMask]);
+  CGRect maskBounds = CGRectMake(0, 0, maskCacheWidth_, kMaskHeight);
+  CGContextClipToMask(cgContext, maskBounds, mask);
+
   NSRect rect = [self bounds];
-  NSBezierPath* path = [self bezierPathForRect:rect];
 
   int bitmapResources[2][2] = {
     // Background window.
@@ -272,12 +313,13 @@ const CGFloat kRapidCloseDist = 2.5;
 
   bool selected = [self state];
 
+  bool usingDefaultTheme = themeProvider && themeProvider->UsingDefaultTheme();
   NSColor* backgroundImageColor;
   if (themeProvider) {
     // Themes don't have an inactive image so only look for one if there's no
     // theme.
     bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
-                  !themeProvider->UsingDefaultTheme();
+                  !usingDefaultTheme;
     backgroundImageColor = themeProvider->GetNSImageColorNamed(
         bitmapResources[active][selected], true);
   } else {
@@ -288,7 +330,12 @@ const CGFloat kRapidCloseDist = 2.5;
   // background overlay drawn over it (see below) will be fully opaque.
   if (!selected) {
     [backgroundImageColor set];
-    [path fill];
+    // Themes can have partially transparent images. NSRectFill() is measurably
+    // faster though, so call it for the known-safe default theme.
+    if (usingDefaultTheme)
+      NSRectFill(dirtyRect);
+    else
+      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
   }
 
   // Use the same overlay for the selected state and for hover and alert
@@ -297,12 +344,8 @@ const CGFloat kRapidCloseDist = 2.5;
   CGFloat alertAlpha = [self alertAlpha];
   if (selected || hoverAlpha > 0 || alertAlpha > 0) {
     gfx::ScopedNSGraphicsContextSaveGState contextSave;
-    [path addClip];
 
     // Draw the selected background / glow overlay.
-    NSGraphicsContext* context = [NSGraphicsContext currentContext];
-    CGContextRef cgContext =
-        static_cast<CGContextRef>([context graphicsPort]);
     CGContextBeginTransparencyLayer(cgContext, 0);
     if (!selected) {
       // The alert glow overlay is like the selected state but at most at most
@@ -314,7 +357,12 @@ const CGFloat kRapidCloseDist = 2.5;
     }
 
     [backgroundImageColor set];
-    NSRectFill(dirtyRect);
+    // Themes can have partially transparent images. NSRectFill() is measurably
+    // faster though, so call it for the known-safe default theme.
+    if (usingDefaultTheme)
+      NSRectFill(dirtyRect);
+    else
+      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 
     // ui::ThemeProvider::HasCustomImage is true only if the theme provides the
     // image. However, even if the theme doesn't provide a tab background, the
@@ -339,18 +387,20 @@ const CGFloat kRapidCloseDist = 2.5;
                     toCenter:point
                       radius:NSWidth(rect) / 3.0
                      options:NSGradientDrawsBeforeStartingLocation];
-
-        [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
       }
     }
 
     CGContextEndTransparencyLayer(cgContext);
   }
+}
+
+// Draws the tab outline.
+- (void)drawStroke:(NSRect)dirtyRect {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   float height =
       [rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage() size].height;
   if ([controller_ active]) {
-    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth(self.bounds), height),
+    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth([self bounds]), height),
         rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage(),
         rb.GetNativeImageNamed(IDR_TAB_ACTIVE_CENTER).ToNSImage(),
         rb.GetNativeImageNamed(IDR_TAB_ACTIVE_RIGHT).ToNSImage(),
@@ -359,7 +409,7 @@ const CGFloat kRapidCloseDist = 2.5;
         1.0,
         /*flipped=*/NO);
   } else {
-    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth(self.bounds), height),
+    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth([self bounds]), height),
         rb.GetNativeImageNamed(IDR_TAB_INACTIVE_LEFT).ToNSImage(),
         rb.GetNativeImageNamed(IDR_TAB_INACTIVE_CENTER).ToNSImage(),
         rb.GetNativeImageNamed(IDR_TAB_INACTIVE_RIGHT).ToNSImage(),
@@ -368,6 +418,12 @@ const CGFloat kRapidCloseDist = 2.5;
         1.0,
         /*flipped=*/NO);
   }
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  // Text, close button, and image are drawn by subviews.
+  [self drawFill:dirtyRect];
+  [self drawStroke:dirtyRect];
 }
 
 // Override this to catch the text so that we can choose when to display it.
@@ -631,6 +687,59 @@ const CGFloat kRapidCloseDist = 2.5;
   [path lineToPoint:NSMakePoint(right, bottomRight.y)];
   [path lineToPoint:NSMakePoint(right, bottomRight.y - (2 * lineWidth))];
   return path;
+}
+
+- (CGImageRef)tabClippingMask {
+  // NOTE: NSHeight([self bounds]) doesn't match the height of the bitmaps.
+  CGFloat scale = 1;
+  if ([[self window] respondsToSelector:@selector(backingScaleFactor)])
+    scale = [[self window] backingScaleFactor];
+
+  NSRect bounds = [self bounds];
+  CGFloat tabWidth = NSWidth(bounds);
+  if (tabWidth == maskCacheWidth_ && scale == maskCacheScale_)
+    return maskCache_.get();
+
+  maskCacheWidth_ = tabWidth;
+  maskCacheScale_ = scale;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* leftMask = rb.GetNativeImageNamed(IDR_TAB_ALPHA_LEFT).ToNSImage();
+  NSImage* rightMask = rb.GetNativeImageNamed(IDR_TAB_ALPHA_RIGHT).ToNSImage();
+
+  CGFloat leftWidth = leftMask.size.width;
+  CGFloat rightWidth = rightMask.size.width;
+
+  // Image masks must be in the DeviceGray colorspace. Create a context and
+  // draw the mask into it.
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> colorspace(
+      CGColorSpaceCreateDeviceGray());
+  CGContextRef maskContext =
+      CGBitmapContextCreate(NULL, tabWidth * scale, kMaskHeight * scale,
+                            8, tabWidth * scale, colorspace, 0);
+  CGContextScaleCTM(maskContext, scale, scale);
+  NSGraphicsContext* maskGraphicsContext =
+      [NSGraphicsContext graphicsContextWithGraphicsPort:maskContext
+                                                 flipped:NO];
+
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  [NSGraphicsContext setCurrentContext:maskGraphicsContext];
+
+  // Draw mask image.
+  [[NSColor blackColor] setFill];
+  CGContextFillRect(maskContext, CGRectMake(0, 0, tabWidth, kMaskHeight));
+
+  NSDrawThreePartImage(NSMakeRect(0, 0, tabWidth, kMaskHeight),
+      leftMask, nil, rightMask, /*vertical=*/NO, NSCompositeSourceOver, 1.0,
+      /*flipped=*/NO);
+
+  CGFloat middleWidth = tabWidth - leftWidth - rightWidth;
+  NSRect middleRect = NSMakeRect(leftWidth, 0, middleWidth, kFillHeight);
+  [[NSColor whiteColor] setFill];
+  NSRectFill(middleRect);
+
+  maskCache_.reset(CGBitmapContextCreateImage(maskContext));
+  return maskCache_;
 }
 
 @end  // @implementation TabView(Private)

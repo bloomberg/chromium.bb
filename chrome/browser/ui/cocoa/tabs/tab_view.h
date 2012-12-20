@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <ApplicationServices/ApplicationServices.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
@@ -66,6 +67,12 @@ enum AlertState {
 
   // The tool tip text for this tab view.
   scoped_nsobject<NSString> toolTipText_;
+
+  // A one-element mask image cache.  This cache makes drawing roughly 16%
+  // faster.
+  base::mac::ScopedCFTypeRef<CGImageRef> maskCache_;
+  CGFloat maskCacheWidth_;
+  CGFloat maskCacheScale_;
 }
 
 @property(assign, nonatomic) NSCellStateValue state;
