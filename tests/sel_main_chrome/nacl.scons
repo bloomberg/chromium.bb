@@ -34,15 +34,10 @@ if env.IsRunningUnderValgrind():
 test_command_args = [env.GetIrtNexe(),
                      env.File('${STAGING_DIR}/hello_world.nexe')]
 
-# TODO(mcgrathr): IRT built with broken layout in arm-nacl-gcc for now:
-#     http://code.google.com/p/nativeclient/issues/detail?id=3212
-is_broken = (not env.Bit('nacl_static_link') or
-             env.Bit('target_arm') and not env.Bit('bitcode'))
-
 node = env.CommandTest(
     'sel_main_chrome_test.out',
     env.AddBootstrap(sel_main_chrome_test, test_command_args), osenv=env_vars,
     stdout_golden=env.File('../hello_world/hello_world.stdout'))
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_sel_main_chrome_test',
-                       is_broken=is_broken)
+                       is_broken=not env.Bit('nacl_static_link'))

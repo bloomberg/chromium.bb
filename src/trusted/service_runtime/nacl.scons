@@ -23,10 +23,6 @@ if env.Bit('nacl_glibc'):
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
-# TODO(mcgrathr): halt sled tests are broken in arm-nacl-gcc for now:
-#     http://code.google.com/p/nativeclient/issues/detail?id=3212
-is_broken = env.Bit('target_arm') and not env.Bit('bitcode')
-
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
@@ -81,7 +77,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
 
   asm_env['TEXT_START'] = '--section-start .text=0x%x' % 0x20000
   if rodata_address:
-    asm_env['RO_START'] = '--section-start .rodata=0x%x' % rodata_address
+    asm_env['RO_START'] = asm_env.RodataSwitch('0x%x' % rodata_address, False)
   if rwdata_address:
     asm_env['RW_START'] = '--section-start .data=0x%x' % rwdata_address
 
@@ -173,5 +169,4 @@ for text_end, variant in test_specs:
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests',
                             'nonpexe_tests'],
-                           'run_' + base_name,
-                           is_broken=is_broken)
+                           'run_' + base_name)

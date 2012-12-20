@@ -22,10 +22,7 @@ if env.Bit('bitcode') and not env.Bit('target_arm'):
 # TODO(mseaborn): To fix this, ld.so will need an interface, like
 # mmap() or brk(), for reserving space in the dynamic code area.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1112
-# TODO(mcgrathr): broken in arm-nacl-gcc for now:
-#     http://code.google.com/p/nativeclient/issues/detail?id=3212
-is_broken = (not env.Bit('nacl_static_link') or
-             env.Bit('target_arm') and not env.Bit('bitcode'))
+is_broken = not env.Bit('nacl_static_link')
 
 # there is fair amount of assembly code in these tests
 asm_env = env.Clone()
@@ -46,7 +43,7 @@ code_segment_end = '${IRT_DATA_REGION_START}'
 # dynamic linking, the dynamic linker is responsible for reserving
 # this space rather than the executable.
 if env.Bit('nacl_static_link'):
-  env.Append(LINKFLAGS='-Wl,--section-start,.rodata=%s' % code_segment_end)
+  env.Append(LINKFLAGS=env.RodataSwitch(code_segment_end))
 env.Append(CPPDEFINES=[['DYNAMIC_CODE_SEGMENT_END', code_segment_end]])
 
 def GetTemplate(env):

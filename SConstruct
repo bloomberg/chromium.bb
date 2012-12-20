@@ -2578,6 +2578,29 @@ nacl_env = MakeArchSpecificEnv().Clone(
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
 
+def IsNewLinker(env):
+  """Return True if using a new-style linker with the new-style layout.
+That means the linker supports the -Trodata-segment switch."""
+  return env.Bit('target_arm') and not env.Bit('bitcode')
+
+nacl_env.AddMethod(IsNewLinker)
+
+def RodataSwitch(env, value, via_compiler=True):
+  """Return string of arguments to place the rodata segment at |value|.
+If |via_compiler| is False, this is going directly to the linker, rather
+than via the compiler driver."""
+  if env.IsNewLinker():
+    args = ['-Trodata-segment=' + value]
+  else:
+    args = ['--section-start', '.rodata=' + value]
+  if via_compiler:
+    args = ','.join(['-Wl'] + args)
+  else:
+    args = ' '.join(args)
+  return args
+
+nacl_env.AddMethod(RodataSwitch)
+
 # TODO(mseaborn): Enable this unconditionally once the C code on the
 # Chromium side compiles successfully with this warning.
 if not enable_chrome:
@@ -3278,10 +3301,6 @@ def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
     if node_name is not None:
       node_name += '_irt'
     suite_name = [name + '_irt' for name in suite_name]
-  # TODO(mcgrathr): IRT image built by arm-nacl-gcc is currently broken.
-  #     http://code.google.com/p/nativeclient/issues/detail?id=3212
-  if env.Bit('target_arm') and not env.Bit('bitcode'):
-    is_broken = True
   # NOTE: This needs to be called directly to as we're overriding the
   #       prior version.
   return AddNodeToTestSuite(env, node, suite_name, node_name,

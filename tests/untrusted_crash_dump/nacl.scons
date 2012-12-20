@@ -40,13 +40,14 @@ if env.Bit('tests_use_irt'):
       untrusted_crash_dump_test,
       declares_exit_status=True,
       sel_ldr_flags=['-a', '-E', 'NACLCOREFILE=' + dump_file.abspath])
-  env.AlwaysBuild(run_test)
-  env.SideEffect(dump_file, run_test)
-  node = env.Command('untrusted_crash_dump_test.out',
-                     ['untrusted_crash_dump_test.py',
-                      dump_file, untrusted_crash_dump_test],
-                     '${PYTHON} ${SOURCES} - ${ADDR2LINE} '
-                     '${LIB_DIR} ${NACL_SDK_LIB} ${TARGET_FULLARCH}')
-  env.AddNodeToTestSuite(
-      node, ['small_tests'],
-      'run_untrusted_crash_dump_test', is_broken=is_broken)
+  if run_test:
+    env.AlwaysBuild(run_test)
+    env.SideEffect(dump_file, run_test)
+    node = env.Command('untrusted_crash_dump_test.out',
+                       ['untrusted_crash_dump_test.py',
+                        dump_file, untrusted_crash_dump_test],
+                       '${PYTHON} ${SOURCES} - ${ADDR2LINE} '
+                       '${LIB_DIR} ${NACL_SDK_LIB} ${TARGET_FULLARCH}')
+    env.AddNodeToTestSuite(
+        node, ['small_tests'],
+        'run_untrusted_crash_dump_test', is_broken=is_broken)
