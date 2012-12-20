@@ -66,8 +66,13 @@ void LauncherContextMenu::Init() {
   if (is_valid_item()) {
     if (item_.type == ash::TYPE_APP_SHORTCUT) {
       DCHECK(controller_->IsPinned(item_.id));
-      AddItem(MENU_OPEN_NEW, string16());
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      // Everything can be started as many times as needed through the menu,
+      // except for V2 apps - there should be only one instance of it.
+      if  (!controller_->IsPlatformApp(item_.id) ||
+           !controller_->IsOpen(item_.id)) {
+        AddItem(MENU_OPEN_NEW, string16());
+        AddSeparator(ui::NORMAL_SEPARATOR);
+      }
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));

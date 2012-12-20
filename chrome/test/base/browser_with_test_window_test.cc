@@ -146,6 +146,16 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
                     url);
 }
 
+void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
+    Browser* navigating_browser,
+    const GURL& url,
+    const string16& title) {
+  NavigationController* controller =
+      &chrome::GetActiveWebContents(navigating_browser)->GetController();
+  NavigateAndCommit(controller, url);
+  controller->GetActiveEntry()->SetTitle(title);
+}
+
 void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
   if (browser_.get()) {
     // Make sure we close all tabs, otherwise Browser isn't happy in its

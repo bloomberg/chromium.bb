@@ -10,11 +10,14 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf_types.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class Profile;
+class ChromeLauncherAppMenuItem;
+class ChromeLauncherControllerPerApp;
 
 namespace ash {
 class LauncherModel;
@@ -28,6 +31,9 @@ class RootWindow;
 namespace content {
 class WebContents;
 }
+
+// A list of the elements which makes up a simple menu description.
+typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
@@ -89,6 +95,11 @@ class ChromeLauncherController
 
   // Initializes this ChromeLauncherController.
   virtual void Init() = 0;
+
+  // Returns the new per application interface of the given launcher. If it is
+  // a per browser (old) controller, it will return NULL;
+  // TODO(skuhne): Remove when we rip out the old launcher.
+  virtual ChromeLauncherControllerPerApp* GetPerAppInterface() = 0;
 
   // Creates an instance.
   static ChromeLauncherController* CreateInstance(Profile* profile,
@@ -242,7 +253,8 @@ class ChromeLauncherController
                               AppState app_state) = 0;
 
   // Limits application refocusing to urls that match |url| for |id|.
-  virtual void SetRefocusURLPattern(ash::LauncherID id, const GURL& url) = 0;
+  virtual void SetRefocusURLPatternForTest(ash::LauncherID id,
+                                           const GURL& url) = 0;
 
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
@@ -256,6 +268,8 @@ class ChromeLauncherController
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE = 0;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE = 0;
+  virtual ui::MenuModel* CreateApplicationMenu(
+      const ash::LauncherItem& item) OVERRIDE = 0;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;
 

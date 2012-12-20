@@ -97,6 +97,12 @@ class BrowserWithTestWindowTest : public testing::Test {
   // Navigates the current tab. This is a wrapper around NavigateAndCommit.
   void NavigateAndCommitActiveTab(const GURL& url);
 
+  // Set the |title| of the current tab.
+  void NavigateAndCommitActiveTabWithTitle(
+      Browser* browser,
+      const GURL& url,
+      const string16& title);
+
  protected:
   // Destroys the browser, window, and profile created by this class. This is
   // invoked from the destructor.

@@ -71,6 +71,11 @@ class ChromeLauncherControllerPerBrowser
   // Initializes this ChromeLauncherControllerPerBrowser.
   virtual void Init() OVERRIDE;
 
+  // Returns the new per application interface of the given launcher. If it is
+  // a per browser (old) controller, it will return NULL;
+  // TODO(skuhne): Remove when we rip out the old launcher.
+  virtual ChromeLauncherControllerPerApp* GetPerAppInterface() OVERRIDE;
+
   // Creates a new tabbed item on the launcher for |controller|.
   virtual ash::LauncherID CreateTabbedLauncherItem(
       LauncherItemController* controller,
@@ -218,8 +223,8 @@ class ChromeLauncherControllerPerBrowser
                               AppState app_state) OVERRIDE;
 
   // Limits application refocusing to urls that match |url| for |id|.
-  virtual void SetRefocusURLPattern(ash::LauncherID id,
-                                    const GURL& url) OVERRIDE;
+  virtual void SetRefocusURLPatternForTest(ash::LauncherID id,
+                                           const GURL& url) OVERRIDE;
 
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
@@ -233,6 +238,8 @@ class ChromeLauncherControllerPerBrowser
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
+  virtual ui::MenuModel* CreateApplicationMenu(
+      const ash::LauncherItem& item) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 

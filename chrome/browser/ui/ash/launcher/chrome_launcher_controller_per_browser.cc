@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/extension_utils.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -110,6 +111,10 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual void LauncherItemChanged(
       int model_index,
       const ash::LauncherItem& old_item) OVERRIDE {
+  }
+
+  virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE {
+    return new ChromeLauncherAppMenuItems;
   }
 
   // Stores the optional refocus url pattern for this item.
@@ -285,6 +290,11 @@ void ChromeLauncherControllerPerBrowser::Init() {
     }
     ash::Shell::GetInstance()->AddShellObserver(this);
   }
+}
+
+ChromeLauncherControllerPerApp*
+ChromeLauncherControllerPerBrowser::GetPerAppInterface() {
+  return NULL;
 }
 
 ash::LauncherID ChromeLauncherControllerPerBrowser::CreateTabbedLauncherItem(
@@ -724,7 +734,7 @@ void ChromeLauncherControllerPerBrowser::UpdateAppState(
   }
 }
 
-void ChromeLauncherControllerPerBrowser::SetRefocusURLPattern(
+void ChromeLauncherControllerPerBrowser::SetRefocusURLPatternForTest(
     ash::LauncherID id,
     const GURL& url) {
   DCHECK(HasItemController(id));
@@ -792,6 +802,12 @@ ui::MenuModel* ChromeLauncherControllerPerBrowser::CreateContextMenu(
     const ash::LauncherItem& item,
     aura::RootWindow* root_window) {
   return new LauncherContextMenu(this, &item, root_window);
+}
+
+ui::MenuModel* ChromeLauncherControllerPerBrowser::CreateApplicationMenu(
+    const ash::LauncherItem& item) {
+  // Not used by this launcher type.
+  return NULL;
 }
 
 ash::LauncherID ChromeLauncherControllerPerBrowser::GetIDByWindow(

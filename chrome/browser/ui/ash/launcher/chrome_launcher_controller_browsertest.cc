@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilter) {
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
   WebContents* first_tab = tab_strip->GetActiveWebContents();
 
-  controller->SetRefocusURLPattern(
+  controller->SetRefocusURLPatternForTest(
       shortcut_id, GURL("http://www.example.com/path1/*"));
   // Create new tab owned by app.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::LauncherID shortcut_id = CreateShortcut("app1");
-  controller->SetRefocusURLPattern(
+  controller->SetRefocusURLPatternForTest(
       shortcut_id, GURL("http://www.example.com/path1/*"));
 
   // Create new tab owned by app.

@@ -211,4 +211,32 @@ TEST(LauncherModel, AddIndices) {
   EXPECT_EQ(TYPE_APP_LIST, model.items()[model.FirstPanelIndex() - 1].type);
 }
 
+// Assertions around id generation and usage.
+TEST(LauncherModel, LauncherIDTests) {
+  TestLauncherModelObserver observer;
+  LauncherModel model;
+
+  EXPECT_EQ(2, model.item_count());
+
+  // Get the next to use ID counter.
+  LauncherID id = model.next_id();
+
+  // Calling this function multiple times does not change the returned ID.
+  EXPECT_EQ(model.next_id(), id);
+
+  // Check that when we reserve a value it will be the previously retrieved ID,
+  // but it will not change the item count and retrieving the next ID should
+  // produce something new.
+  EXPECT_EQ(model.reserve_external_id(), id);
+  EXPECT_EQ(2, model.item_count());
+  LauncherID id2 = model.next_id();
+  EXPECT_NE(id2, id);
+
+  // Adding another item to the list should also produce a new ID.
+  LauncherItem item;
+  item.type = TYPE_TABBED;
+  model.Add(item);
+  EXPECT_NE(model.next_id(), id2);
+}
+
 }  // namespace ash

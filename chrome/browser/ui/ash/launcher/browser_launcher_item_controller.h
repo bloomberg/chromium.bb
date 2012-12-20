@@ -80,6 +80,7 @@ class BrowserLauncherItemController : public LauncherItemController,
   virtual void OnRemoved() OVERRIDE;
   virtual void LauncherItemChanged(int index,
                                    const ash::LauncherItem& old_item) OVERRIDE;
+  virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE;
 
   // TabStripModel overrides:
   virtual void ActiveTabChanged(content::WebContents* old_contents,

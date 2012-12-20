@@ -47,6 +47,16 @@ class ASH_EXPORT LauncherDelegate {
   virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item,
                                            aura::RootWindow* root_window) = 0;
 
+  // Returns the application menu model for the specified item. There are three
+  // possible return values:
+  //  - A return of NULL indicates that no menu is wanted for this item.
+  //  - A return of a menu with one item means that only the name of the
+  //    application/item was added and there are no active applications.
+  //    Note: This is useful for hover menus which also show context help.
+  //  - A list containing the title and the active list of items.
+  // The caller takes ownership of the returned model.
+  virtual ui::MenuModel* CreateApplicationMenu(const LauncherItem& item) = 0;
+
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.
   virtual LauncherID GetIDByWindow(aura::Window* window) = 0;

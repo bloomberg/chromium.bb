@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/ash_constants.h"
+#include "ash/ash_switches.h"
 #include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
@@ -19,6 +20,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_strings.h"
 #include "grit/ash_resources.h"
@@ -950,13 +952,21 @@ void LauncherView::LauncherItemChanged(int model_index,
       ReflectItemStatus(item, button);
       break;
     }
-
+    case TYPE_BROWSER_SHORTCUT:
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(
+              ash::switches::kAshEnablePerAppLauncher))
+        break;
+      // Fallthrough for the new Launcher since it needs to show the activation
+      // change as well.
     case TYPE_APP_SHORTCUT:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
       LauncherButton* button = static_cast<LauncherButton*>(view);
       ReflectItemStatus(item, button);
-      button->SetImage(item.image);
+      // The browser shortcut is currently not a "real" item and as such the
+      // the image is bogous as well. We therefore keep the image as is for it.
+      if (item.type != TYPE_BROWSER_SHORTCUT)
+        button->SetImage(item.image);
       button->SchedulePaint();
       break;
     }
@@ -1100,38 +1110,89 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (view_index == -1)
     return;
 
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(true);
   tooltip_->Close();
-  switch (model_->items()[view_index].type) {
-    case TYPE_TABBED:
-    case TYPE_APP_PANEL:
-      delegate_->ItemClicked(model_->items()[view_index], event.flags());
-      break;
 
+  // Collect usage statistics before we decide what to do with the click.
+  switch (model_->items()[view_index].type) {
     case TYPE_APP_SHORTCUT:
     case TYPE_PLATFORM_APP:
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
-      delegate_->ItemClicked(model_->items()[view_index], event.flags());
       break;
 
     case TYPE_APP_LIST:
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
       break;
 
     case TYPE_BROWSER_SHORTCUT:
       // Click on browser icon is counted in app clicks.
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
+      break;
 
-      delegate_->OnBrowserShortcutClicked(event.flags());
+    case TYPE_TABBED:
+    case TYPE_APP_PANEL:
       break;
   }
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(false);
+
+  // If the item is already active we show a menu - otherwise we activate
+  // the item dependent on its type.
+  // Note that the old launcher has no menu and falls back automatically to
+  // the click action.
+  bool call_object_handler = model_->items()[view_index].type == TYPE_APP_LIST;
+  if (!call_object_handler) {
+    call_object_handler =
+        model_->items()[view_index].status != ash::STATUS_ACTIVE;
+    if (!call_object_handler) {
+      // ShowListMenuForView only returns true if the menu was shown.
+      if (ShowListMenuForView(model_->items()[view_index],
+                              sender,
+                              sender->GetBoundsInScreen().CenterPoint())) {
+        // When the menu was shown it is possible that this got deleted.
+        return;
+      }
+      call_object_handler = true;
+    }
+  }
+
+  if (call_object_handler) {
+    if (event.IsShiftDown())
+      ui::LayerAnimator::set_slow_animation_mode(true);
+    // The menu was not shown and the objects click handler should be called.
+    switch (model_->items()[view_index].type) {
+      case TYPE_TABBED:
+      case TYPE_APP_PANEL:
+      case TYPE_APP_SHORTCUT:
+      case TYPE_PLATFORM_APP:
+        delegate_->ItemClicked(model_->items()[view_index], event.flags());
+        break;
+      case TYPE_APP_LIST:
+        Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
+        break;
+      case TYPE_BROWSER_SHORTCUT:
+        delegate_->OnBrowserShortcutClicked(event.flags());
+        break;
+    }
+    if (event.IsShiftDown())
+      ui::LayerAnimator::set_slow_animation_mode(false);
+  }
+
+}
+
+bool LauncherView::ShowListMenuForView(const LauncherItem& item,
+                                       views::View* source,
+                                       const gfx::Point& point) {
+  scoped_ptr<ui::MenuModel> menu_model;
+  menu_model.reset(delegate_->CreateApplicationMenu(item));
+
+  // Make sure we have a menu and it has at least one item in addition to the
+  // application title.
+  if (!menu_model.get() || menu_model->GetItemCount() <= 1)
+    return false;
+
+  ShowMenu(menu_model.get(), source, point);
+  return true;
 }
 
 void LauncherView::ShowContextMenuForView(views::View* source,
@@ -1141,7 +1202,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
       model_->items()[view_index].type == TYPE_APP_LIST) {
     view_index = -1;
   }
-#if !defined(OS_MACOSX)
+
   if (view_index == -1) {
     Shell::GetInstance()->ShowContextMenu(point);
     return;
@@ -1154,7 +1215,14 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   base::AutoReset<LauncherID> reseter(
       &context_menu_id_,
       view_index == -1 ? 0 : model_->items()[view_index].id);
-  views::MenuModelAdapter menu_model_adapter(menu_model.get());
+
+  ShowMenu(menu_model.get(), source, point);
+}
+
+void LauncherView::ShowMenu(ui::MenuModel* menu_model,
+                            views::View* source,
+                            const gfx::Point& point) {
+  views::MenuModelAdapter menu_model_adapter(menu_model);
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter.CreateMenu()));
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
@@ -1166,7 +1234,6 @@ void LauncherView::ShowContextMenuForView(views::View* source,
     return;
 
   Shell::GetInstance()->UpdateShelfVisibility();
-#endif
 }
 
 void LauncherView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {

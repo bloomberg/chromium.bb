@@ -235,6 +235,10 @@ class BrowserView : public BrowserWindow,
 
 #if defined(USE_ASH)
   // Test support.
+  // Note: This is only needed to be BrowserLauncherItemController instead of
+  // LauncherItemController because of the "favicon_loader" member - to be more
+  // exact that member function is the only one being called.
+  // TODO(skuhne): Remove once per-app is default.
   BrowserLauncherItemController* launcher_item_controller() const {
     return launcher_item_controller_.get();
   }
@@ -701,6 +705,9 @@ class BrowserView : public BrowserWindow,
 #endif
 
 #if defined(USE_ASH)
+  // Needs to be BrowserLauncerItemController for
+  // "BrowserActivationStateChanged" and "favicon_loader".
+  // TODO(skuhne): Remove once per-app is default.
   scoped_ptr<BrowserLauncherItemController> launcher_item_controller_;
 #endif
 

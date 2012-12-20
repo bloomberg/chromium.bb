@@ -21,9 +21,9 @@ ChromeLauncherController* ChromeLauncherController::CreateInstance(
   // can be re-created.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshEnablePerAppLauncher))
-    instance_ = new ChromeLauncherControllerPerBrowser(profile, model);
-  else
     instance_ = new ChromeLauncherControllerPerApp(profile, model);
+  else
+    instance_ = new ChromeLauncherControllerPerBrowser(profile, model);
   return instance_;
 }
 

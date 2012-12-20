@@ -100,6 +100,11 @@ class ShellWindow : public content::NotificationObserver,
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
+  // This will return a slightly smaller icon then the app_icon to be used in
+  // application lists. It is the responsibility of the caller to delete the
+  // returned image after use.
+  gfx::Image* GetAppListIcon();
+
   // NativeAppWindows should call this to determine what the window's title
   // is on startup and from within UpdateWindowTitle().
   virtual string16 GetTitle() const;

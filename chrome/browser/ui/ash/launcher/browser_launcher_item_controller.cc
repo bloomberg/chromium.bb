@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -160,10 +161,17 @@ void BrowserLauncherItemController::OnRemoved() {
 void BrowserLauncherItemController::LauncherItemChanged(
     int index,
     const ash::LauncherItem& old_item) {
-  if (launcher_model()->items()[index].status == ash::STATUS_ACTIVE &&
+  if (!launcher_controller()->GetPerAppInterface() &&
+      launcher_model()->items()[index].status == ash::STATUS_ACTIVE &&
       old_item.status == ash::STATUS_RUNNING) {
     Activate();
   }
+}
+
+ChromeLauncherAppMenuItems*
+BrowserLauncherItemController::GetApplicationList() {
+  // This will never be called and the entire class will go away.
+  return new ChromeLauncherAppMenuItems;
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(
@@ -230,6 +238,9 @@ void BrowserLauncherItemController::OnWindowPropertyChanged(
 }
 
 void BrowserLauncherItemController::UpdateItemStatus() {
+  if (launcher_controller()->GetPerAppInterface())
+    return;
+
   ash::LauncherItemStatus status;
   if (ash::wm::IsActiveWindow(window_)) {
     // Clear attention state if active.
@@ -245,6 +256,9 @@ void BrowserLauncherItemController::UpdateItemStatus() {
 }
 
 void BrowserLauncherItemController::UpdateLauncher(content::WebContents* tab) {
+  if (launcher_controller()->GetPerAppInterface())
+    return;
+
   if (type() == TYPE_APP_PANEL)
     return;  // Maintained entirely by ChromeLauncherController.
 
@@ -292,7 +306,8 @@ void BrowserLauncherItemController::UpdateLauncher(content::WebContents* tab) {
 void BrowserLauncherItemController::UpdateAppState(content::WebContents* tab) {
   ChromeLauncherController::AppState app_state;
 
-  if (tab_model_->GetIndexOfWebContents(tab) == TabStripModel::kNoTab) {
+  if (!launcher_controller()->GetPerAppInterface() &&
+      tab_model_->GetIndexOfWebContents(tab) == TabStripModel::kNoTab) {
     app_state = ChromeLauncherController::APP_STATE_REMOVED;
   } else if (tab_model_->GetActiveWebContents() == tab) {
     if (ash::wm::IsActiveWindow(window_))

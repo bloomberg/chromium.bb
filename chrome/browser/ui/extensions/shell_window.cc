@@ -48,6 +48,7 @@
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/renderer_preferences.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 #if defined(USE_ASH)
@@ -374,6 +375,21 @@ void ShellWindow::OnNativeWindowChanged() {
                                            args,
                                            GURL(),
                                            false));
+}
+
+gfx::Image* ShellWindow::GetAppListIcon() {
+  // TODO(skuhne): We might want to use LoadImages in UpdateExtensionAppIcon
+  // instead to let the extension give us pre-defined icons in the launcher
+  // and the launcher list sizes. Since there is no mock yet, doing this now
+  // seems a bit premature and we scale for the time being.
+  if (app_icon_.IsEmpty())
+    return new gfx::Image();
+
+  SkBitmap bmp = skia::ImageOperations::Resize(
+        *app_icon_.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
+        extension_misc::EXTENSION_ICON_SMALLISH,
+        extension_misc::EXTENSION_ICON_SMALLISH);
+  return new gfx::Image(bmp);
 }
 
 NativeAppWindow* ShellWindow::GetBaseWindow() {

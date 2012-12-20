@@ -83,6 +83,11 @@ ui::MenuModel* TestLauncherDelegate::CreateContextMenu(
   return NULL;
 }
 
+ui::MenuModel* TestLauncherDelegate::CreateApplicationMenu(
+    const ash::LauncherItem& item) {
+  return NULL;
+}
+
 ash::LauncherID TestLauncherDelegate::GetIDByWindow(aura::Window* window) {
   WindowToID::const_iterator found = window_to_id_.find(window);
   if (found == window_to_id_.end())

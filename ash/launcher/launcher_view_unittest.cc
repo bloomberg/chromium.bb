@@ -159,6 +159,10 @@ class MockLauncherDelegate : public ash::LauncherDelegate {
       aura::RootWindow* root_window) OVERRIDE {
     return NULL;
   }
+  virtual ui::MenuModel* CreateApplicationMenu(
+      const ash::LauncherItem&) OVERRIDE {
+    return NULL;
+  }
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE {
     NOTREACHED();
     return -1;
