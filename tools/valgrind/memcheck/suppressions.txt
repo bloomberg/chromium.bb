@@ -6503,3 +6503,40 @@
    fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
    fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
 }
+{
+   bug_166976a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
+   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
+   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
+   fun:_ZN4base12SimpleThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_166976b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIPN4base13WaitableEvent6WaiterEEE8allocateEmPKv
+   fun:_ZNSt10_List_baseIPN4base13WaitableEvent6WaiterESaIS3_EE11_M_get_nodeEv
+   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE14_M_create_nodeERKS3_
+   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE9_M_insertESt14_List_iteratorIS3_ERKS3_
+   fun:_ZNSt4listIPN4base13WaitableEvent6WaiterESaIS3_EE9push_backERKS3_
+   fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
+   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
+   fun:_ZN4base13WaitableEvent4WaitEv
+   fun:_ZN4base12SimpleThread5StartEv
+   fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
+   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
+   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
+   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
+   fun:_ZN4base12SimpleThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_166977
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24ChromePrefServiceBuilder17ResetDefaultStateEv
+   fun:_ZN24ChromePrefServiceBuilder17CreateChromePrefsERK8FilePathPN4base19SequencedTaskRunnerEPN6policy13PolicyServiceEP9PrefStoreb
+}
