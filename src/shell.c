@@ -124,7 +124,6 @@ struct desktop_shell {
 		char *path;
 		int duration;
 		struct wl_resource *binding;
-		struct wl_list surfaces;
 		struct weston_process process;
 	} screensaver;
 
@@ -2257,11 +2256,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 static void
 resume_desktop(struct desktop_shell *shell)
 {
-	struct weston_surface *surface;
 	struct workspace *ws = get_current_workspace(shell);
-
-	wl_list_for_each(surface, &shell->screensaver.surfaces, link)
-		weston_surface_unmap(surface);
 
 	terminate_screensaver(shell);
 
@@ -3155,6 +3150,7 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct desktop_shell *shell = surface->private;
 
+	/* XXX: starting weston-screensaver beforehand does not work */
 	if (!shell->locked)
 		return;
 
@@ -3846,7 +3842,6 @@ module_init(struct weston_compositor *ec)
 	ec->shell_interface.move = surface_move;
 	ec->shell_interface.resize = surface_resize;
 
-	wl_list_init(&shell->screensaver.surfaces);
 	wl_list_init(&shell->input_panel.surfaces);
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
