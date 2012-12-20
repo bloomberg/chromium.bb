@@ -425,9 +425,20 @@ void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
 bool IBusControllerImpl::SetInputMethodConfigInternal(
     const ConfigKeyType& key,
     const InputMethodConfigValue& value) {
-  IBusConfigClient* client = DBusThreadManager::Get()->GetIBusConfigClient();
-  if (!client)
+  if (value.type != InputMethodConfigValue::kValueTypeString &&
+      value.type != InputMethodConfigValue::kValueTypeInt &&
+      value.type != InputMethodConfigValue::kValueTypeBool &&
+      value.type != InputMethodConfigValue::kValueTypeStringList) {
+    DVLOG(1) << "SendInputMethodConfig: unknown value.type";
     return false;
+  }
+
+  IBusConfigClient* client = DBusThreadManager::Get()->GetIBusConfigClient();
+  if (!client) {
+    // Should return true if the ibus-memconf is not ready to use, otherwise IME
+    // configuration will not be initialized.
+    return true;
+  }
 
   switch (value.type) {
     case InputMethodConfigValue::kValueTypeString:
@@ -455,7 +466,7 @@ bool IBusControllerImpl::SetInputMethodConfigInternal(
                                  base::Bind(&ConfigSetValueErrorCallback));
       return true;
     default:
-      DVLOG(1) << "SendInputMethodConfig: unknown value.type";
+      NOTREACHED() << "SendInputMethodConfig: unknown value.type";
       return false;
   }
 }
