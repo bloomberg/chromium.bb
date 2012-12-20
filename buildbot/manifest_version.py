@@ -441,14 +441,15 @@ class BuildSpecsManager(object):
       version_info: Info class for version information of cros.
     """
     working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
+    dir_pfx = version_info.chrome_branch
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
     specs_for_build = self.specs_for_builder % {'builder': self.build_name}
-    self.all_specs_dir = os.path.join(working_dir, 'buildspecs')
+    self.all_specs_dir = os.path.join(working_dir, 'buildspecs', dir_pfx)
     self.pass_dir = os.path.join(specs_for_build,
-                                 BuilderStatus.STATUS_PASSED)
+                                 BuilderStatus.STATUS_PASSED, dir_pfx)
     self.fail_dir = os.path.join(specs_for_build,
-                                 BuilderStatus.STATUS_FAILED)
+                                 BuilderStatus.STATUS_FAILED, dir_pfx)
 
     # Calculate the status of the latest build, and whether the build was
     # processed. We consider a spec unprocessed if we have not started a build

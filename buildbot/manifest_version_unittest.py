@@ -178,7 +178,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     """Tests whether we can load specs correctly."""
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
-    mpath = os.path.join(self.manager.manifest_dir, 'buildspecs')
+    mpath = os.path.join(self.manager.manifest_dir, 'buildspecs', CHROME_BRANCH)
     m1, m2, m3, m4 = [os.path.join(mpath, '1.2.%d.xml' % x)
                       for x in [2,3,4,5]]
     for_build = os.path.join(self.manager.manifest_dir, 'build-name',

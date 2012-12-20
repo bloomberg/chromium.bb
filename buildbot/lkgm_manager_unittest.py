@@ -328,6 +328,16 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
 
+  def _CreateManifest(self):
+    """Returns a created test manifest in tmpdir with its dir_pfx."""
+    self.manager.current_version = '1.2.4-rc21'
+    dir_pfx = CHROME_BRANCH
+    manifest = os.path.join(self.manager.manifest_dir,
+                            self.manager.rel_working_dir, 'buildspecs',
+                            dir_pfx, '1.2.4-rc21.xml')
+    osutils.Touch(manifest)
+    return manifest, dir_pfx
+
   def _GetBuildersStatus(self, builders, status_runs):
     """Test a call to LKGMManager.GetBuildersStatus.
 
