@@ -240,12 +240,28 @@ div.sidebar-splitter {
   background-color: rgb(204, 204, 204);
 }
 
+#roots-list:focus > .accepts,
+#roots-list:focus > [lead][selected],
+#roots-list:focus > [lead],
+#roots-list:focus > [selected],
+#roots-list:focus > [anchor] {
+  background-color: rgb(193, 209, 232);
+}
+
 #roots-list > .accepts:hover,
 #roots-list > [lead]:hover,
 #roots-list > [lead][selected]:hover,
 #roots-list > [selected]:hover,
 #roots-list > [anchor]:hover {
   background-color: rgb(192, 192, 192);
+}
+
+#roots-list:hover > .accepts:hover,
+#roots-list:hover > [lead]:hover,
+#roots-list:hover > [lead][selected]:hover,
+#roots-list:hover > [selected]:hover,
+#roots-list:hover > [anchor]:hover {
+  background-color: rgb(177, 193, 216);
 }
 
 #roots-list li.root-item {
@@ -824,11 +840,22 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container list > [selected],
 #list-container grid > [selected],
 #default-actions-list > [selected] {
-  background-color: rgb(203, 219, 241);
+  background-color: #dedede;
 }
 
 #list-container list > li.table-row[selected],
 #default-actions-list > li[selected] {
+  border-top: 1px solid #dedede;
+}
+
+#list-container list:focus > [selected],
+#list-container grid:focus > [selected],
+#default-actions-list:focus > [selected] {
+  background-color: rgb(203, 219, 241);
+}
+
+#list-container list:focus > li.table-row[selected],
+#default-actions-list:focus > li[selected] {
   border-top: 1px solid rgb(224, 233, 247);
 }
 

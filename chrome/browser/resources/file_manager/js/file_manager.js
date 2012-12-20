@@ -769,6 +769,12 @@ DialogType.isModal = function(type) {
 
     this.initList_(this.grid_);
     this.initList_(this.table_.list);
+
+    var fileListFocusBound = this.onFileListFocus_.bind(this);
+
+    this.table_.list.addEventListener('focus', fileListFocusBound);
+    this.grid_.addEventListener('focus', fileListFocusBound);
+
     this.initRootsList_();
 
     this.setListType(prefs.listType || FileManager.ListType.DETAIL);
@@ -834,6 +840,17 @@ DialogType.isModal = function(type) {
       this.filenameInput_.focus();
     else
       this.currentList_.focus();
+  };
+
+  /*
+   * File list focus handler.
+   */
+  FileManager.prototype.onFileListFocus_ = function() {
+    var selection = this.getSelection();
+    if (!selection || selection.totalCount != 0)
+      return;
+
+    this.directoryModel_.selectIndex(0);
   };
 
   /**

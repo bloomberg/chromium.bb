@@ -71,7 +71,7 @@
 /* Header welcome banner. */
 .gdrive-welcome.header {
   -webkit-box-flex: 0;
-  -webkit-transition: height 180ms ease;
+  -webkit-transition: height 180ms ease, visibility 0 linear 180ms;
   height: 100px;
   overflow: hidden;
   position: relative;
@@ -79,6 +79,7 @@
 
 .dialog-container:not([gdrive-welcome='header']) .gdrive-welcome.header {
   height: 0;
+  visibility: hidden;
 }
 
 .gdrive-welcome.header .gdrive-welcome-wrapper {

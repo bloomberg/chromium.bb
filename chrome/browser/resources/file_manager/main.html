@@ -205,31 +205,31 @@
     <div class=dialog-title invisibleif="full-page">[TITLE]</div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
-        <list id="roots-list"></list>
+        <list id="roots-list" tabindex="8"></list>
       </div>
       <div class=sidebar-splitter></div>
       <div class=dialog-main>
         <div class=dialog-header>
           <div id="dir-breadcrumbs" class="breadcrumbs"></div>
-          <input id="search-box" type="search" tabindex="4"
+          <input id="search-box" type="search" tabindex="9"
               i18n-values="aria-label:SEARCH_TEXT_LABEL">
 
           <div class="right buttonbar">
             <div>
-              <button class="left small" id="detail-view" tabindex="5"
+              <button class="left small" id="detail-view" tabindex="10"
                       i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
               </button>
               <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP
                    >[DETAIL VIEW]</div>
             </div>
             <div>
-              <button class="right small" id="thumbnail-view" tabindex="6"
+              <button class="right small" id="thumbnail-view" tabindex="11"
                       i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
               </button>
               <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
                    >[THUMBNAIL VIEW]</div>
             </div>
-            <button class="menubutton" id="gdata-settings" tabindex="7"
+            <button class="menubutton" id="gdata-settings" tabindex="12"
                     menu="#docs-settings" visibleif="full-page">
               <span class="disclosureindicator"></span>
             </button>
@@ -241,8 +241,8 @@
         <div class=dialog-body>
           <div class=filelist-panel>
             <div id="list-container">
-              <div class=detail-table id="detail-table" tabindex=0></div>
-              <grid class=thumbnail-grid tabindex=0></grid>
+              <div class=detail-table id="detail-table" tabindex=1></div>
+              <grid class=thumbnail-grid tabindex=1></grid>
               <div id="spinner-container">
                 <div id="spinner-with-text"></div>
               </div>
@@ -263,9 +263,9 @@
               <div id="search-breadcrumbs" class="breadcrumbs"></div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="tasks" class="combobutton" menu="#tasks-menu">
+              <button id="tasks" class="combobutton" menu="#tasks-menu" tabindex="2">
               </button>
-              <button id="delete-button" command="#delete"></button>
+              <button id="delete-button" command="#delete" tabindex="3"></button>
             </div>
           </div>
           <div id="unmounted-panel"></div>
@@ -278,19 +278,19 @@
     </div>
     <div class=dialog-footer invisibleif="full-page">
       <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
-              visibleif="saveas-file folder" command="#newfolder">[NEW FOLDER]</button>
+              visibleif="saveas-file folder" command="#newfolder" tabindex="4">[NEW FOLDER]</button>
       <div id="filename-input-box">
         <div class=filename-label i18n-content=FILENAME_LABEL>[FILENAME]</div>
-        <input type=text spellcheck=false>
+        <input type=text spellcheck=false tabindex="5">
       </div>
       <div class=horizontal-spacer></div>
       <select id="file-type"></select>
-      <button class=ok disabled>[OK]</button>
+      <button class=ok disabled tabindex="6">[OK]</button>
       <div class=preparing-label i18n-content=PREPARING_LABEL>[PREPARING]</div>
       <div class=progress-bar>
         <div class=progress-track></div>
       </div>
-      <button class=cancel i18n-content=CANCEL_LABEL>[CANCEL]</button>
+      <button class=cancel i18n-content=CANCEL_LABEL tabindex="7">[CANCEL]</button>
     </div>
     <div id="butter-bar-container">
       <div id="butter-bar">
