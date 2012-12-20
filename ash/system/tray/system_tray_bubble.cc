@@ -154,7 +154,9 @@ void SystemTrayBubble::UpdateView(
   const int kSwipeDelayMS = 150;
   base::TimeDelta swipe_duration =
       base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
-  ui::Layer* layer = bubble_view_->RecreateLayer();
+  scoped_ptr<ui::Layer> scoped_layer(bubble_view_->RecreateLayer());
+  // Keep the reference to layer as we need it after releasing it.
+  ui::Layer* layer = scoped_layer.get();
   DCHECK(layer);
   layer->SuppressPaint();
 
@@ -165,7 +167,8 @@ void SystemTrayBubble::UpdateView(
     // animation.
     layer->parent()->StackAbove(layer, bubble_view_->layer());
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.AddObserver(new AnimationObserverDeleteLayer(layer));
+    settings.AddObserver(
+        new AnimationObserverDeleteLayer(scoped_layer.release()));
     settings.SetTransitionDuration(swipe_duration);
     settings.SetTweenType(ui::Tween::EASE_OUT);
     gfx::Transform transform;
@@ -227,7 +230,8 @@ void SystemTrayBubble::UpdateView(
     new_layer->SetTransform(transform);
     {
       ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
-      settings.AddObserver(new AnimationObserverDeleteLayer(layer));
+      settings.AddObserver(
+          new AnimationObserverDeleteLayer(scoped_layer.release()));
       settings.SetTransitionDuration(swipe_duration);
       settings.SetTweenType(ui::Tween::EASE_OUT);
       new_layer->SetTransform(gfx::Transform());

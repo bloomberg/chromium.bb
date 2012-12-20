@@ -6290,29 +6290,6 @@
    fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
 }
 {
-   bug_164676_h
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2cc24LayerAnimationController6createEPNS_30LayerAnimationControllerClientE
-   fun:_ZN2cc5LayerC2Ev
-   fun:_ZN2cc20ContentsScalingLayerC2Ev
-   fun:_ZN2cc10TiledLayerC2Ev
-   fun:_ZN2cc12ContentLayerC1EPNS_18ContentLayerClientE
-   fun:_ZN2cc12ContentLayer6createEPNS_18ContentLayerClientE
-   fun:_ZN2ui5Layer14CreateWebLayerEv
-   fun:_ZN2ui5LayerC1Ev
-   fun:_ZN5views4View11CreateLayerEv
-   fun:_ZN5views4View15SetPaintToLayerEb
-   fun:_ZN5views14TrayBubbleViewC1EPN4aura6WindowEPNS_4ViewEPNS0_8DelegateERKNS0_10InitParamsE
-   fun:_ZN5views14TrayBubbleView6CreateEPN4aura6WindowEPNS_4ViewEPNS0_8DelegateEPNS0_10InitParamsE
-   fun:_ZN3ash8internal16SystemTrayBubble8InitViewEPN5views4ViewENS_4user11LoginStatusEPNS2_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash8internal19SystemBubbleWrapper8InitViewEPNS0_18TrayBackgroundViewEPN5views4ViewEPNS4_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash10SystemTray9ShowItemsERKSt6vectorIPNS_14SystemTrayItemESaIS3_EEbbNS_18BubbleCreationTypeEi
-   fun:_ZN3ash10SystemTray25ShowDefaultViewWithOffsetENS_18BubbleCreationTypeEi
-   fun:_ZN3ash10SystemTray15ShowDefaultViewENS_18BubbleCreationTypeE
-   fun:_ZN3ash4test41SystemTrayTest_SystemTrayNoViewItems_Test8TestBodyEv
-}
-{
    bug_164676_m
    Memcheck:Uninitialized
    fun:_ZN4skia12_GLOBAL__N_18ClampTo8Ei
@@ -6343,50 +6320,6 @@
    fun:_ZN2ui18AcceleratorManager7ProcessERKNS_11AcceleratorE
    fun:_ZN3ash21AcceleratorController7ProcessERKN2ui11AcceleratorE
    fun:_ZN3ash25AcceleratorControllerTest18ProcessWithContextERKN2ui11AcceleratorE
-}
-{
-   bug_164676_s
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2ui13LayerAnimator21CreateDefaultAnimatorEv
-   fun:_ZN2ui5Layer11GetAnimatorEv
-   fun:_ZN2ui5Layer9SetBoundsERKN3gfx4RectE
-   fun:_ZN5views4View13ReparentLayerERKN3gfx8Vector2dEPN2ui5LayerE
-   fun:_ZN5views4View17UpdateParentLayerEv
-   fun:_ZN5views4View18UpdateParentLayersEv
-   fun:_ZN5views4View11CreateLayerEv
-   fun:_ZN5views4View15SetPaintToLayerEb
-   fun:_ZN5views14TrayBubbleViewC1EPN4aura6WindowEPNS_4ViewEPNS0_8DelegateERKNS0_10InitParamsE
-   fun:_ZN5views14TrayBubbleView6CreateEPN4aura6WindowEPNS_4ViewEPNS0_8DelegateEPNS0_10InitParamsE
-   fun:_ZN3ash8internal16SystemTrayBubble8InitViewEPN5views4ViewENS_4user11LoginStatusEPNS2_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash8internal19SystemBubbleWrapper8InitViewEPNS0_18TrayBackgroundViewEPN5views4ViewEPNS4_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash10SystemTray9ShowItemsERKSt6vectorIPNS_14SystemTrayItemESaIS3_EEbbNS_18BubbleCreationTypeEi
-   fun:_ZN3ash10SystemTray*ShowDefault*
-}
-{
-   bug_164676_t
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5views4View11CreateLayerEv
-   fun:_ZN5views4View15SetPaintToLayerEb
-   fun:_ZN5views14TrayBubbleViewC1EPN4aura6WindowEPNS_4ViewEPNS0_8DelegateERKNS0_10InitParamsE
-   fun:_ZN5views14TrayBubbleView6CreateEPN4aura6WindowEPNS_4ViewEPNS0_8DelegateEPNS0_10InitParamsE
-   fun:_ZN3ash8internal16SystemTrayBubble8InitViewEPN5views4ViewENS_4user11LoginStatusEPNS2_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash8internal19SystemBubbleWrapper8InitViewEPNS0_18TrayBackgroundViewEPN5views4ViewEPNS4_14TrayBubbleView10InitParamsE
-   fun:_ZN3ash10SystemTray9ShowItemsERKSt6vectorIPNS_14SystemTrayItemESaIS3_EEbbNS_18BubbleCreationTypeEi
-   fun:_ZN3ash10SystemTray25ShowDefaultViewWithOffsetENS_18BubbleCreationTypeEi
-   fun:_ZN3ash10SystemTray15ShowDefaultViewENS_18BubbleCreationTypeE
-   fun:_ZN3ash4test41SystemTrayTest_SystemTrayNoViewItems_Test8TestBodyEv
-}
-{
-   bug_164676_u
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2cc12ContentLayer6createEPNS_18ContentLayerClientE
-   fun:_ZN2ui5Layer14CreateWebLayerEv
-   fun:_ZN2ui5LayerC1Ev
-   ...
-   fun:_ZN3ash8internal16SystemTrayBubble8InitViewEPN5views4ViewENS_4user11LoginStatusEPNS2_14TrayBubbleView10InitParamsE
 }
 {
    bug_164676_v
