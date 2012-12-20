@@ -421,8 +421,10 @@ void SessionStateControllerImpl2::StartImmediatePreLockAnimation() {
   base::Closure next_animation_starter =
       base::Bind(&SessionStateControllerImpl2::PreLockAnimationFinished,
       base::Unretained(this));
-  ui::LayerAnimationObserver* observer =
+  AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
+
+  observer->Pause();
 
   animator_->StartAnimationWithObserver(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -442,6 +444,8 @@ void SessionStateControllerImpl2::StartImmediatePreLockAnimation() {
   AnimateBackgroundAppearanceIfNecessary(
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
       observer);
+
+  observer->Unpause();
 
   FOR_EACH_OBSERVER(SessionStateObserver, observers_,
       OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
@@ -506,6 +510,7 @@ void SessionStateControllerImpl2::CancelPreLockAnimation() {
   AnimateBackgroundHidingIfNecessary(
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
       observer);
+
   observer->Unpause();
 }
 
@@ -514,14 +519,16 @@ void SessionStateControllerImpl2::StartPostLockAnimation() {
       base::Bind(&SessionStateControllerImpl2::PostLockAnimationFinished,
       base::Unretained(this));
 
-  ui::LayerAnimationObserver* observer =
+  AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
 
+  observer->Pause();
   animator_->StartAnimationWithObserver(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
       observer);
+  observer->Unpause();
 }
 
 void SessionStateControllerImpl2::StartUnlockAnimationBeforeUIDestroyed(
