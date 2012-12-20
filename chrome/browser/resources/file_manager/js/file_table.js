@@ -35,17 +35,17 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
 
   var columns = [
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                    fullPage ? 470 : 324),
+                                    fullPage ? 386 : 324),
         new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                    fullPage ? 110 : 92, true),
+                                    fullPage ? 100 : 92, true),
         new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                    fullPage ? 200 : 160),
+                                    fullPage ? 160 : 160),
         new cr.ui.table.TableColumn('modificationTime',
                                     str('DATE_COLUMN_LABEL'),
                                     fullPage ? 150 : 210),
         new cr.ui.table.TableColumn('offline',
                                     str('OFFLINE_COLUMN_LABEL'),
-                                    150)
+                                    130)
     ];
 
   columns[0].renderFunction = self.renderName_.bind(self);
