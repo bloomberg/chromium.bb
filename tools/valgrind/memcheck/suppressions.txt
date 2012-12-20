@@ -744,6 +744,16 @@
    fun:_ZN2cc18ProgramBindingBase10loadShaderEPN6WebKit20WebGraphicsContext3DEjRKSs
    fun:_ZN2cc18ProgramBindingBase4initEPN6WebKit20WebGraphicsContext3DERKSsS5_
 }
+{
+   bug_148477_link
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3gfx9GLApiBase15glLinkProgramFnEj
+   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl11linkProgramEj
+   fun:_ZN2cc18ProgramBindingBase4linkEPN6WebKit20WebGraphicsContext3DE
+   fun:_ZN2cc14ProgramBindingINS_15VertexShaderPosENS_19FragmentShaderColorEE10initializeEPN6WebKit20WebGraphicsContext3DEb
+}
 # bug_todo_getdelim, bug_todo_getdelim2 and bug_todo_grep used to happen on
 # Google Lucid workstations only.
 {

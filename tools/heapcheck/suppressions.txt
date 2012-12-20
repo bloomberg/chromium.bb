@@ -1667,3 +1667,9 @@
    fun:ash::SessionStateControllerImpl2::StartImmediatePreLockAnimation
    fun:ash::SessionStateControllerImpl2::OnStartingLock
 }
+{
+   bug_167165
+   Heapcheck:Leak
+   ...
+   fun:ash::KeyboardOverlayViewTest_OpenAcceleratorsClose_Test::TestBody
+}
