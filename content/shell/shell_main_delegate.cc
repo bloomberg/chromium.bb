@@ -94,16 +94,17 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
   InitLogging();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAllowFileAccessFromFiles);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDumpRenderTree)) {
+    command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
+    command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kIgnoreGpuBlacklist);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebKitFeatures);
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableCssShaders);
+    command_line.AppendSwitch(switches::kIgnoreGpuBlacklist);
+    command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
+    command_line.AppendSwitch(switches::kEnableCssShaders);
+    if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
+      command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
+
     net::CookieMonster::EnableFileScheme();
     if (!WebKitTestPlatformInitialize()) {
       if (exit_code)

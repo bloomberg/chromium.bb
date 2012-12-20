@@ -21,6 +21,9 @@ const char kContentShellDataPath[] = "data-path";
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
+// Alias for kEnableSoftwareCompositingGLAdapter.
+const char kEnableSoftwareCompositing[] = "enable-software-compositing";
+
 // Disables the timeout for layout tests.
 const char kNoTimeout[] = "no-timeout";
 
