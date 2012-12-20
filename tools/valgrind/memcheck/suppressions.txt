@@ -4148,8 +4148,6 @@
    fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
    fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   ...
-   fun:_ZN7WebCore15GraphicsContext*
 }
 {
    bug_106183a
@@ -6290,27 +6288,6 @@
    fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
 }
 {
-   bug_164676_m
-   Memcheck:Uninitialized
-   fun:_ZN4skia12_GLOBAL__N_18ClampTo8Ei
-   fun:_ZN4skia12_GLOBAL__N_*Convolve*
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
-   fun:_ZN3ash8internal13DragImageView7OnPaintEPN3gfx6CanvasE
-}
-{
-   bug_164676_q
-   Memcheck:Uninitialized
-   fun:_ZN4skia12_GLOBAL__N_118ConvolveVerticallyILb1EEEvPKsiPKPhiS4_
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
-   fun:_ZN3ash8internal13DragImageView7OnPaintEPN3gfx6CanvasE
-}
-{
    bug_166995
    Memcheck:Leak
    fun:_Znw*
@@ -6320,17 +6297,6 @@
    fun:_ZN2ui18AcceleratorManager7ProcessERKNS_11AcceleratorE
    fun:_ZN3ash21AcceleratorController7ProcessERKN2ui11AcceleratorE
    fun:_ZN3ash25AcceleratorControllerTest18ProcessWithContextERKN2ui11AcceleratorE
-}
-{
-   bug_164676_v
-   Memcheck:Uninitialized
-   fun:_ZSt3maxIhERKT_S2_S2_
-   fun:_ZN4skia12_GLOBAL__N_*Convolve*
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
-   fun:_ZN3ash8internal13DragImageView7OnPaintEPN3gfx6CanvasE
 }
 {
    bug_166470
