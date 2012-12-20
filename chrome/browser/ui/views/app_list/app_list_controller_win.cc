@@ -488,6 +488,10 @@ void CheckAppListTaskbarShortcutOnFileThread(const FilePath& user_data_dir,
   }
 }
 
+void CreateAppList() {
+  g_app_list_controller.Get().CreateAppList();
+}
+
 }  // namespace
 
 namespace app_list_controller {
@@ -498,11 +502,24 @@ void InitAppList() {
   // file in the user data directory.
   // TODO(benwells): Remove this and the flag once the app list installation
   // is implemented.
-  FilePath user_data_dir(g_browser_process->profile_manager()->user_data_dir());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CheckAppListTaskbarShortcutOnFileThread, user_data_dir,
-                 GetAppModelId()));
+  static bool checked_shortcut = false;
+  if (!checked_shortcut) {
+    checked_shortcut = true;
+    FilePath user_data_dir(
+        g_browser_process->profile_manager()->user_data_dir());
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CheckAppListTaskbarShortcutOnFileThread, user_data_dir,
+                   GetAppModelId()));
+  }
+
+  // Post a task to create the app list. This is posted to not impact startup
+  // time.
+  const int kInitWindowDelay = 5;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CreateAppList),
+      base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 
 void ShowAppList() {
