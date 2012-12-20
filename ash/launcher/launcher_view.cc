@@ -54,6 +54,11 @@ const int kMinimumDragDistance = 8;
 // Size between the buttons.
 const int kButtonSpacing = 4;
 
+// The proportion of the launcher space reserved for non-panel icons. Panels
+// may flow into this space but will be put into the overflow bubble if there
+// is contention for the space.
+const float kReservedNonPanelIconProportion = 0.67f;
+
 namespace {
 
 // Custom FocusSearch used to navigate the launcher in the order items are in
@@ -283,7 +288,8 @@ LauncherView::LauncherView(LauncherModel* model,
       start_drag_index_(-1),
       context_menu_id_(0),
       leading_inset_(kDefaultLeadingInset),
-      cancelling_drag_model_changed_(false) {
+      cancelling_drag_model_changed_(false),
+      last_hidden_index_(0) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -395,10 +401,12 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
   int available_size = shelf->PrimaryAxisValue(width(), height());
-  int first_panel_index = model_->FirstPanelIndex();
   DCHECK(model_->item_count() == view_model_->view_size());
   if (!available_size)
     return;
+
+  int first_panel_index = model_->FirstPanelIndex();
+  int app_list_index = first_panel_index - 1;
 
   // Initial x,y values account both leading_inset in primary
   // coordinate and secondary coordinate based on the dynamic edge of the
@@ -411,31 +419,30 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   int y = shelf->PrimaryAxisValue(0, leading_inset());
   int w = shelf->PrimaryAxisValue(kLauncherPreferredSize, width());
   int h = shelf->PrimaryAxisValue(height(), kLauncherPreferredSize);
-  for (int i = 0; i < first_panel_index; ++i) {
+  for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
-    y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
+    if (i != app_list_index) {
+      x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
+      y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
+    }
   }
 
-  int app_list_index = first_panel_index - 1;
   if (is_overflow_mode()) {
-    last_visible_index_ = app_list_index - 1;
     for (int i = 0; i < view_model_->view_size(); ++i) {
       view_model_->view_at(i)->SetVisible(
-          i >= first_visible_index_ && i <= last_visible_index_);
+          i >= first_visible_index_ &&
+          i != app_list_index &&
+          i <= last_visible_index_);
     }
     return;
   }
 
   // Right aligned icons.
-  // TODO(flackr): The right aligned icons may not fit in the launcher in which
-  // case they should be moved to an overflow bubble. See
-  // http://crbug.com/162558 for panel overflow details.
   int end_position = available_size - kButtonSpacing;
   x = shelf->PrimaryAxisValue(end_position, leading_inset());
   y = shelf->PrimaryAxisValue(0, end_position);
@@ -447,16 +454,32 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     end_position = shelf->PrimaryAxisValue(x, y);
   }
 
+  // Icons on the left / top are guaranteed up to kLeftIconProportion of
+  // the available space.
+  int last_icon_position = shelf->PrimaryAxisValue(
+      view_model_->ideal_bounds(first_panel_index - 1).right(),
+      view_model_->ideal_bounds(first_panel_index - 1).bottom()) +
+      2 * kLauncherPreferredSize + leading_inset();
+  int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
+  if (last_icon_position < reserved_icon_space)
+    end_position = last_icon_position;
+  else
+    end_position = std::max(end_position, reserved_icon_space);
+
   bounds->overflow_bounds.set_size(gfx::Size(
       shelf->PrimaryAxisValue(kLauncherPreferredSize, width()),
       shelf->PrimaryAxisValue(height(), kLauncherPreferredSize)));
   last_visible_index_ = DetermineLastVisibleIndex(
       end_position - leading_inset() - 2 * kLauncherPreferredSize);
-  bool show_overflow = (last_visible_index_ + 1 < app_list_index);
+  last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
+  bool show_overflow = (last_visible_index_ + 1 < app_list_index ||
+                        last_hidden_index_ >= first_panel_index);
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     view_model_->view_at(i)->SetVisible(
-        i <= last_visible_index_ || i >= app_list_index);
+        i <= last_visible_index_ ||
+        i == app_list_index ||
+        i > last_hidden_index_);
   }
 
   overflow_button_->SetVisible(show_overflow);
@@ -469,6 +492,9 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
           std::max(width() - kLauncherPreferredSize,
                    ShelfLayoutManager::kAutoHideSize + 1));
       y = shelf->PrimaryAxisValue(0, leading_inset());
+    } else if (last_visible_index_ == app_list_index) {
+      x = view_model_->ideal_bounds(last_visible_index_).x();
+      y = view_model_->ideal_bounds(last_visible_index_).y();
     } else {
       x = shelf->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).right(),
@@ -480,6 +506,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
+
+    // Set all hidden panel icon positions to be on the overflow button.
+    for (int i = first_panel_index; i <= last_hidden_index_; ++i)
+      view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
+
     x = shelf->PrimaryAxisValue(x + kLauncherPreferredSize + kButtonSpacing, x);
     y = shelf->PrimaryAxisValue(y, y + kLauncherPreferredSize + kButtonSpacing);
     app_list_bounds.set_x(x);
@@ -491,15 +522,28 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 }
 
-int LauncherView::DetermineLastVisibleIndex(int max_value) {
+int LauncherView::DetermineLastVisibleIndex(int max_value) const {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
-  int index = view_model_->view_size() - 1;
+  int index = model_->FirstPanelIndex() - 1;
   while (index >= 0 &&
          shelf->PrimaryAxisValue(
              view_model_->ideal_bounds(index).right(),
              view_model_->ideal_bounds(index).bottom()) > max_value) {
     index--;
+  }
+  return index;
+}
+
+int LauncherView::DetermineFirstVisiblePanelIndex(int min_value) const {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
+  int index = model_->FirstPanelIndex();
+  while (index < view_model_->view_size() &&
+         shelf->PrimaryAxisValue(
+             view_model_->ideal_bounds(index).right(),
+             view_model_->ideal_bounds(index).bottom()) < min_value) {
+    ++index;
   }
   return index;
 }
@@ -709,7 +753,8 @@ void LauncherView::ConfigureChildView(views::View* view) {
 
 void LauncherView::ShowOverflowBubble() {
   int first_overflow_index = last_visible_index_ + 1;
-  DCHECK_LT(first_overflow_index, view_model_->view_size() - 1);
+  DCHECK_LE(first_overflow_index, last_hidden_index_);
+  DCHECK_LT(last_hidden_index_, view_model_->view_size());
 
   if (!overflow_bubble_.get())
     overflow_bubble_.reset(new OverflowBubble());
@@ -717,7 +762,8 @@ void LauncherView::ShowOverflowBubble() {
   overflow_bubble_->Show(delegate_,
                          model_,
                          overflow_button_,
-                         first_overflow_index);
+                         first_overflow_index,
+                         last_hidden_index_ + 1);
 
   Shell::GetInstance()->UpdateShelfVisibility();
 }

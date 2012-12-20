@@ -90,6 +90,10 @@ class ASH_EXPORT LauncherView : public views::View,
     first_visible_index_ = first_visible_index;
   }
 
+  void set_last_visible_index(int last_visible_index) {
+    last_visible_index_ = last_visible_index;
+  }
+
   int leading_inset() const { return leading_inset_; }
   void set_leading_inset(int leading_inset) { leading_inset_ = leading_inset; }
 
@@ -125,7 +129,11 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.
-  int DetermineLastVisibleIndex(int max_value);
+  int DetermineLastVisibleIndex(int max_value) const;
+
+  // Returns the index of the first panel whose min primary axis coordinate is
+  // at least |min_value|. Returns the index past the last panel if none fit.
+  int DetermineFirstVisiblePanelIndex(int min_value) const;
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
@@ -271,6 +279,10 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_;
+
+  // Index of the last hidden launcher item. If there are no hidden items this
+  // will be equal to last_visible_index_ + 1.
+  int last_hidden_index_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

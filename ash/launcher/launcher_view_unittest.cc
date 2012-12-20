@@ -423,7 +423,9 @@ TEST_F(LauncherViewTest, AddPanelHidesTabbedBrowser) {
   EXPECT_TRUE(GetButtonByID(last_visible)->visible());
 }
 
-TEST_F(LauncherViewTest, PanelsHideLast) {
+// When there are more panels then browsers we should hide panels rather
+// than browsers.
+TEST_F(LauncherViewTest, BrowserHidesExcessPanels) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -434,6 +436,7 @@ TEST_F(LauncherViewTest, PanelsHideLast) {
   EXPECT_TRUE(GetButtonByID(browser)->visible());
   EXPECT_TRUE(GetButtonByID(first_panel)->visible());
 
+  // Add panels until there is an overflow.
   LauncherID last_panel = first_panel;
   int items_added = 0;
   while (!test_api_->IsOverflowButtonVisible()) {
@@ -442,8 +445,21 @@ TEST_F(LauncherViewTest, PanelsHideLast) {
     ASSERT_LT(items_added, 10000);
   }
 
+  // The first panel should now be hidden by the new browsers needing space.
+  EXPECT_FALSE(GetButtonByID(first_panel)->visible());
   EXPECT_TRUE(GetButtonByID(last_panel)->visible());
-  EXPECT_TRUE(GetButtonByID(first_panel)->visible());
+  EXPECT_TRUE(GetButtonByID(browser)->visible());
+
+  // Adding browsers should eventually begin to hide browsers. We will add
+  // browsers until either the last panel or browser is hidden.
+  items_added = 0;
+  while (GetButtonByID(browser)->visible() &&
+         GetButtonByID(last_panel)->visible()) {
+    browser = AddTabbedBrowser();
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+  EXPECT_TRUE(GetButtonByID(last_panel)->visible());
   EXPECT_FALSE(GetButtonByID(browser)->visible());
 }
 

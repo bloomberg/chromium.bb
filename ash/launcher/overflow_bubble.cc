@@ -45,7 +45,8 @@ class OverflowBubbleView : public views::BubbleDelegateView {
   void InitOverflowBubble(LauncherDelegate* delegate,
                           LauncherModel* model,
                           views::View* anchor,
-                          int overflow_start_index);
+                          int overflow_start_index,
+                          int overflow_end_index);
 
  private:
   bool IsHorizontalAlignment() const {
@@ -100,7 +101,8 @@ OverflowBubbleView::~OverflowBubbleView() {
 void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
                                             LauncherModel* model,
                                             views::View* anchor,
-                                            int overflow_start_index) {
+                                            int overflow_start_index,
+                                            int overflow_end_index) {
   // set_anchor_view needs to be called before GetShelfLayoutManagerForLauncher
   // can be called.
   set_anchor_view(anchor);
@@ -119,6 +121,7 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
                                     delegate,
                                     GetShelfLayoutManagerForLauncher());
   launcher_view_->set_first_visible_index(overflow_start_index);
+  launcher_view_->set_last_visible_index(overflow_end_index - 1);
   launcher_view_->set_leading_inset(kLauncherViewLeadingInset);
   launcher_view_->Init();
   launcher_view_->OnShelfAlignmentChanged();
@@ -256,14 +259,16 @@ OverflowBubble::~OverflowBubble() {
 void OverflowBubble::Show(LauncherDelegate* delegate,
                           LauncherModel* model,
                           views::View* anchor,
-                          int overflow_start_index) {
+                          int overflow_start_index,
+                          int overflow_end_index) {
   Hide();
 
   OverflowBubbleView* bubble_view = new OverflowBubbleView();
   bubble_view->InitOverflowBubble(delegate,
                                   model,
                                   anchor,
-                                  overflow_start_index);
+                                  overflow_start_index,
+                                  overflow_end_index);
 
   bubble_ = bubble_view;
   RootWindowController::ForWindow(anchor->GetWidget()->GetNativeView())->

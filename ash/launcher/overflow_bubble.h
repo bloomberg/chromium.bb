@@ -31,7 +31,8 @@ class OverflowBubble : public views::WidgetObserver {
   void Show(LauncherDelegate* delegate,
             LauncherModel* model,
             views::View* anchor,
-            int overflow_start_index);
+            int overflow_start_index,
+            int overflow_end_index);
 
   void Hide();
 
