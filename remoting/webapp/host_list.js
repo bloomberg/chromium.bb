@@ -76,18 +76,30 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
   this.errorButton_.addEventListener('click',
                                      this.onErrorClick_.bind(this),
                                      false);
+};
 
+/**
+ * Load the host-list asynchronously from local storage.
+ *
+ * @param {function():void} onDone Completion callback.
+ */
+remoting.HostList.prototype.load = function(onDone) {
   // Load the cache of the last host-list, if present.
-  var cachedStr = /** @type {string} */
-      (window.localStorage.getItem(remoting.HostList.HOSTS_KEY));
-  if (cachedStr) {
-    var cached = jsonParseSafe(cachedStr);
-    if (cached) {
-      this.hosts_ = /** @type {Array} */ cached;
-    } else {
-      console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
+  /** @type {remoting.HostList} */
+  var that = this;
+  /** @param {Object.<string>} items */
+  var storeHostList = function(items) {
+    if (items[remoting.HostList.HOSTS_KEY]) {
+      var cached = jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
+      if (cached) {
+        that.hosts_ = /** @type {Array} */ cached;
+      } else {
+        console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
+      }
     }
-  }
+    onDone();
+  };
+  chrome.storage.local.get(remoting.HostList.HOSTS_KEY, storeHostList);
 };
 
 /**
@@ -189,8 +201,7 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
     console.error('Error processing response: ', xhr, typed_er);
     this.lastError_ = remoting.Error.UNEXPECTED;
   }
-  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
-                              JSON.stringify(this.hosts_));
+  this.save_();
   onDone(this.lastError_ == '');
 };
 
@@ -277,8 +288,7 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
       break;
     }
   }
-  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
-                              JSON.stringify(this.hosts_));
+  this.save_();
 
   /** @param {string?} token */
   var renameHost = function(token) {
@@ -412,8 +422,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   localHost.publicKey = publicKey;
   localHost.status = 'ONLINE';
   this.hosts_.push(localHost);
-  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
-                              JSON.stringify(this.hosts_));
+  this.save_();
   this.setLocalHost_(localHost);
 };
 
@@ -431,7 +440,16 @@ remoting.HostList.prototype.onErrorClick_ = function() {
     this.display();
     this.refresh(remoting.updateLocalHostState);
   }
-}
+};
+
+/**
+ * Save the host list to local storage.
+ */
+remoting.HostList.prototype.save_ = function() {
+  var items = {};
+  items[remoting.HostList.HOSTS_KEY] = JSON.stringify(this.hosts_);
+  chrome.storage.local.set(items);
+};
 
 /**
  * Key name under which Me2Me hosts are cached.

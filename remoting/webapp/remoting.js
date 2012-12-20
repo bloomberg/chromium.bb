@@ -32,6 +32,9 @@ remoting.Error = {
  * Entry point for app initialization.
  */
 remoting.init = function() {
+  // TODO(jamiewalch): Remove this when we migrate to apps v2.
+  remoting.initMockStorage();
+
   remoting.logExtensionInfoAsync_();
   l10n.localize();
   // Create global objects.
@@ -75,18 +78,20 @@ remoting.init = function() {
     button.disabled = true;
   }
 
-  // Parse URL parameters.
-  var urlParams = getUrlParameters_();
-  if ('mode' in urlParams) {
-    if (urlParams['mode'] == 'me2me') {
-      var hostId = urlParams['hostId'];
-      remoting.connectMe2Me(hostId, true);
-      return;
+  var onLoad = function() {
+    // Parse URL parameters.
+    var urlParams = getUrlParameters_();
+    if ('mode' in urlParams) {
+      if (urlParams['mode'] == 'me2me') {
+        var hostId = urlParams['hostId'];
+        remoting.connectMe2Me(hostId, true);
+        return;
+      }
     }
+    // No valid URL parameters, start up normally.
+    remoting.initDaemonUi();
   }
-
-  // No valid URL parameters, start up normally.
-  remoting.initDaemonUi();
+  remoting.hostList.load(onLoad);
 };
 
 /**
@@ -127,7 +132,7 @@ remoting.updateLocalHostState = function() {
     remoting.hostList.display();
   };
   remoting.hostController.getLocalHostStateAndId(onHostState);
-}
+};
 
 /**
  * Log information about the current extension.
@@ -175,13 +180,14 @@ remoting.promptClose = function() {
 };
 
 /**
- * Sign the user out of Chromoting by clearing the OAuth refresh token.
+ * Sign the user out of Chromoting by clearing (and revoking, if possible) the
+ * OAuth refresh token.
  *
- * Also clear all localStorage, to avoid leaking information.
+ * Also clear all local storage, to avoid leaking information.
  */
 remoting.signOut = function() {
   remoting.oauth2.clear();
-  window.localStorage.clear();
+  chrome.storage.local.clear();
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 };
 
