@@ -29,6 +29,7 @@
           'instance.cc',
           'instance_handle.cc',
           'lock.cc',
+          'message_loop.cc',
           'module.cc',
           'mouse_cursor.cc',
           'mouse_lock.cc',
