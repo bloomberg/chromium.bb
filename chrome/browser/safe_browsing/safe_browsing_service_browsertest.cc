@@ -823,14 +823,8 @@ class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
   Profile* profile2_;
 };
 
-// Fails on Chrome OS, see http://crbug.com/158285.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DontStartAfterShutdown DISABLED_DontStartAfterShutdown
-#else
-#define MAYBE_DontStartAfterShutdown DontStartAfterShutdown
-#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
-                       MAYBE_DontStartAfterShutdown) {
+                       DontStartAfterShutdown) {
   CreateCSDService();
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   safe_browsing::ClientSideDetectionService* csd_service =

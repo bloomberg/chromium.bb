@@ -281,7 +281,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetDefaultStoragePartition(profile_)->
           GetFileSystemContext()->external_provider();
-  if (provider && provider->HasMountPoint(mount_point)) {
+  if (provider) {
     provider->RemoveMountPoint(mount_point);
     event_logger_->Log("RemoveDriveMountPoint");
   }
