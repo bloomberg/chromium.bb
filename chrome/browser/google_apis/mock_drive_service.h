@@ -97,18 +97,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_CONST_METHOD0(HasAccessToken, bool());
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
 
-  void set_account_metadata(base::Value* account_metadata_data) {
-    account_metadata_data_.reset(account_metadata_data);
-  }
-
-  void set_feed_data(base::Value* feed_data) {
-    feed_data_.reset(feed_data);
-  }
-
-  void set_directory_data(base::Value* directory_data) {
-    directory_data_.reset(directory_data);
-  }
-
   void set_file_data(std::string* file_data) {
     file_data_.reset(file_data);
   }

@@ -1226,9 +1226,6 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   // Since the file system has verified that it holds the latest snapshot,
   // it should change its state to INITIALIZED, which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
-  mock_drive_service_->set_account_metadata(
-      google_apis::test_util::LoadJSONFile(
-          "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
 
   file_system_->CheckForUpdates();
@@ -1252,9 +1249,6 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   // Since the file system has at least succeeded to load cached snapshot,
   // the file system should be able to start periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
-  mock_drive_service_->set_account_metadata(
-      google_apis::test_util::LoadJSONFile(
-          "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(_, _, _, _, _, _)).Times(1);
 
