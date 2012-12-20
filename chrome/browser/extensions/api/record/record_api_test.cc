@@ -297,7 +297,8 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, CheckCapture) {
 // Times out under ASan, see http://crbug.com/130267.
 #define MAYBE_CheckPlayback DISABLED_CheckPlayback
 #else
-#define MAYBE_CheckPlayback CheckPlayback
+// Flaky on all platforms, see http://crbug.com/167143
+#define MAYBE_CheckPlayback DISABLED_CheckPlayback
 #endif
 IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   base::ScopedTempDir user_data_dir;
