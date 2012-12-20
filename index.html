@@ -38,12 +38,13 @@ h6 {
     font-size: 14px;
 }
 
+#retiredblock {
+    opacity: 0.4;
+}
+
 </style>
 </head>
 <body>
-
-<h3><a name="bugfix-autoCorrectionRange">bugfix/autoCorrectionRange</a> (Edward Christie)</h3>
-<p>TODO</p>
 
 <h3><a name="bugfix-autocorrectcaret2">bugfix/autocorrectcaret2</a> (Calum Robinson)</h3>
 <p>TODO</p>
@@ -140,6 +141,67 @@ image twice.  There will be one level of indentation still left.</p>
 <p>Open <a href="repros/emptycellcaret.html">this link</a> in Chrome, and put
 the caret inside an empty table cell.  The caret's <code>y-position</code> is
 outside the <code>table-cell</code>.</p>
+
+
+<div id="retiredblock">
+<h1>Retired Branches</h1>
+
+<h3><a name="bugfix-autoCorrectionRange">bugfix/autoCorrectionRange</a> (Edward Christie; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=89526">89526</a>)</h3>
+<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-fixFlexRounding">bugfix/fixFlexRounding</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92163">92163</a>)</h3>
+<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-flexReplaced">bugfix/flexReplaced</a> (Shezan Baig; D34372405; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94237">94237</a>)</h3>
+<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-flexboxOverrideHeight">bugfix/flexboxOverrideHeight</a> (Shezan Baig; D33177416)</h3>
+<p>Retired as of the <code>20.0.1132.47</code> snapshot because the new flexbox
+implementation no longer reproduces the issue.</p>
+
+<h3><a name="bugfix-indentLink">bugfix/indentLink</a> (Shezan Baig; D32418391; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87428">87428</a>)</h3>
+<p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
+<p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-rowOutlines">bugfix/rowOutlines</a> (Shezan Baig; D34115441; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94007">94007</a>)</h3>
+<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-spellCheckOnLoad">bugfix/spellCheckOnLoad</a> (Shezan Baig; D32468818)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-checkSpellingCommand">feature/checkSpellingCommand</a></code></p>
+
+<h3><a name="bugfix-tablecellpaste">bugfix/tablecellpaste</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=53933">53933</a>)</h3>
+<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="bugfix-typingStyleAfterDelete">bugfix/typingStyleAfterDelete</a> (Shezan Baig; D32879084; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=82401">82401</a>)</h3>
+<p>Retired as of the <code>20.0.1132.47</code> snapshot because the fix is
+available upstream.</p>
+
+<h3><a name="feature-betterVirtualAllocStats">feature/betterVirtualAllocStats</a> (Lilit Darbinyan)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
+
+<h3><a name="feature-disableV8SetAccessCheckCallbacks">feature/disableV8SetAccessCheckCallbacks</a> (Tianyin Zhang)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-nonWindowContexts">bugfix/nonWindowContexts</a></code></p>
+
+<h3><a name="feature-instrumentRandomVirtualAlloc">feature/instrumentRandomVirtualAlloc</a> (Tianyin Zhang)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
+
+<h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
+<p>This branch adds a print menu to <code>test_shell</code>, but was never
+really required, so it is retired.</p>
+</div>
 
 <hr/>
 <h6>Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.</h6>
