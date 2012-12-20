@@ -1,0 +1,30 @@
+<style>
+#editor {
+    background: yellow;
+    min-height: 20px;
+    width: 200px;
+}
+</style>
+
+<div contenteditable="true" id="editor">
+</div>
+<div>Result: <span id="result"></span></div>
+
+<script>
+var editor = document.getElementById("editor");
+var result = document.getElementById("result");
+editor.onkeydown = function(e) {
+    switch (e.which) {
+        case 37:
+        case 38:
+        case 39:
+        case 40: {
+            var cmdValue = document.queryCommandValue('bold');
+            result.innerHTML = cmdValue;
+        } break;
+        default:
+            break;
+    }
+};
+</script>
+
