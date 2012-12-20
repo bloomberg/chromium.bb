@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,12 +31,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
-using ::testing::_;
-using ::testing::Return;
 using content::BrowserContext;
 
 namespace {
@@ -137,24 +134,6 @@ bool AddNextFeedURLToFeedValue(const std::string& url, base::Value* feed) {
   return true;
 }
 
-// Action used to set mock expectations for CreateDirectory().
-ACTION_P2(MockCreateDirectoryCallback, status, value) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg2, status, base::Passed(value)));
-}
-
-// Action used to set mock expectations for GetResourceList.
-ACTION_P2(MockGetResourceListCallback, status, value) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg5, status, base::Passed(value)));
-}
-
-// Action used to mock expectations for GetResourceEntry.
-ACTION_P2(MockGetResourceEntryCallback, status, value) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg1, status, base::Passed(value)));
-}
-
 // Creates a cache representation of the test file with predetermined content.
 void CreateFileWithContent(const FilePath& path, const std::string& content) {
   int content_size = static_cast<int>(content.length());
@@ -162,14 +141,95 @@ void CreateFileWithContent(const FilePath& path, const std::string& content) {
             file_util::WriteFile(path, content.c_str(), content_size));
 }
 
-// Action used to set mock expectations for DownloadFile().
-ACTION_P(MockDownloadFileCallback, status) {
-  ASSERT_TRUE(content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateFileWithContent, arg1, kTestFileContent),
-      base::Bind(arg3, status, arg1)));
-}
+// Fake google_apis::DriveServiceInterface implementation used by
+// RemoteFileSystemExtensionApiTest.
+class FakeDriveService : public google_apis::DummyDriveService {
+ public:
+  // google_apis::DriveServiceInterface overrides:
+  virtual void GetResourceList(
+      const GURL& feed_url,
+      int64 start_changestamp,
+      const std::string& search_string,
+      bool shared_with_me,
+      const std::string& directory_resource_id,
+      const google_apis::GetResourceListCallback& callback) OVERRIDE {
+    scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
+    if (!search_string.empty()) {
+      // Search results will be returned in two parts:
+      // 1. Search will be given empty initial feed url. The returned feed will
+      //    have next feed URL set to mock the situation when server returns
+      //    partial result feed.
+      // 2. Search will be given next feed URL from the first call as the
+      //    initial feed url. Result feed will not have next feed url set.
+      // In both cases search will return all files and directories in test root
+      // feed.
+      if (feed_url.is_empty()) {
+        ASSERT_TRUE(
+            AddNextFeedURLToFeedValue("https://next_feed", value.get()));
+      } else {
+        EXPECT_EQ(GURL("https://next_feed"), feed_url);
+      }
+    }
+    scoped_ptr<google_apis::ResourceList> result(
+        google_apis::ResourceList::ExtractAndParse(*value));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_SUCCESS, base::Passed(&result)));
+  }
+
+  virtual void GetResourceEntry(
+      const std::string& resource_id,
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
+    EXPECT_EQ("file:1_file_resource_id", resource_id);
+
+    scoped_ptr<base::Value> file_to_download_value(
+        LoadJSONFile(kTestDocumentToDownloadEntry));
+    scoped_ptr<google_apis::ResourceEntry> file_to_download(
+        google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_SUCCESS,
+                   base::Passed(&file_to_download)));
+  }
+
+  virtual void GetAccountMetadata(
+      const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+        new google_apis::AccountMetadataFeed);
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_SUCCESS,
+                   base::Passed(&account_metadata)));
+  }
+
+  virtual void AddNewDirectory(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
+    scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
+    scoped_ptr<google_apis::ResourceEntry> dir_resource_entry(
+        google_apis::ResourceEntry::ExtractAndParse(*dir_value));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_SUCCESS,
+                   base::Passed(&dir_resource_entry)));
+  }
+
+  virtual void DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback) OVERRIDE {
+    EXPECT_EQ(GURL("https://file_content_url_changed"), content_url);
+    ASSERT_TRUE(content::BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&CreateFileWithContent, local_cache_path, kTestFileContent),
+        base::Bind(download_action_callback, google_apis::HTTP_SUCCESS,
+                   local_cache_path)));
+  }
+};
 
 }  // namespace
 
@@ -261,7 +321,7 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
 
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
-  RemoteFileSystemExtensionApiTest() : mock_drive_service_(NULL) {}
+  RemoteFileSystemExtensionApiTest() {}
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
@@ -284,17 +344,13 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  protected:
   // DriveSystemService factory function for this test.
   drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
-    EXPECT_FALSE(mock_drive_service_);
-    // |mock_drive_service_| is owned by the DriveSystemService.
-    mock_drive_service_ = new google_apis::MockDriveService();
     return new drive::DriveSystemService(profile,
-                                         mock_drive_service_,
+                                         new FakeDriveService(),
                                          test_cache_root_.path(),
                                          NULL);
   }
 
   base::ScopedTempDir test_cache_root_;
-  google_apis::MockDriveService* mock_drive_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
@@ -376,121 +432,13 @@ IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest, Basic) {
       "filebrowser_component", "restricted.html", kComponentFlags)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
-                       RemoteMountPoint) {
-  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-
-  // First, file browser will try to create new directory.
-  scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
-  scoped_ptr<google_apis::ResourceEntry> dir_resource_entry =
-      google_apis::ResourceEntry::ExtractAndParse(*dir_value);
-  EXPECT_CALL(*mock_drive_service_, AddNewDirectory(_, _, _))
-      .WillOnce(MockCreateDirectoryCallback(
-          google_apis::HTTP_SUCCESS, &dir_resource_entry));
-
-  // Then the test will try to read an existing file file.
-  // Remote filesystem should first request root feed from gdata server.
-  scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
-  scoped_ptr<google_apis::ResourceList> resource_list =
-      google_apis::ResourceList::ExtractAndParse(*value);
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceList(_, _, _, _, _, _))
-      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &resource_list));
-
-  // When file browser tries to read the file, remote filesystem should detect
-  // that the cached file is not present on the disk and download it. Mocked
-  // download file will create file with the cached name and predetermined
-  // content. This is the file file browser will read content from.
-  // Later in the test, file handler will try to open the same file on gdata
-  // mount point. This time, DownloadFile should not be called because local
-  // copy is already present in the cache.
-  scoped_ptr<base::Value> file_to_download_value(
-      LoadJSONFile(kTestDocumentToDownloadEntry));
-  scoped_ptr<google_apis::ResourceEntry> file_to_download(
-      google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceEntry("file:1_file_resource_id", _))
-      .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
-                                             &file_to_download));
-
-  // We expect to download url defined in document entry returned by
-  // GetResourceEntry mock implementation.
-  EXPECT_CALL(*mock_drive_service_,
-              DownloadFile(_, _, GURL("https://file_content_url_changed"),
-                           _, _))
-      .WillOnce(MockDownloadFileCallback(google_apis::HTTP_SUCCESS));
-
-  // On exit, all operations in progress should be cancelled.
-  EXPECT_CALL(*mock_drive_service_, CancelAll());
-
-  // All is set... RUN THE TEST.
+IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
   EXPECT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
   EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote.html",
       kComponentFlags)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
-  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-
-  // First, test will get drive root directory, to init file system.
-  scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
-  scoped_ptr<google_apis::ResourceList> resource_list =
-      google_apis::ResourceList::ExtractAndParse(*value);
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceList(_, _, "", _, _, _))
-      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &resource_list));
-
-  // Search results will be returned in two parts:
-  // 1. Search will be given empty initial feed url. The returned feed will
-  //    have next feed URL set to mock the situation when server returns
-  //    partial result feed.
-  // 2. Search will be given next feed URL from the first call as the initial
-  //    feed url. Result feed will not have next feed url set.
-  // In both cases search will return all files and directories in test root
-  // feed.
-  scoped_ptr<base::Value> first_search_value(LoadJSONFile(kTestRootFeed));
-  ASSERT_TRUE(
-      AddNextFeedURLToFeedValue("https://next_feed", first_search_value.get()));
-  scoped_ptr<google_apis::ResourceList> first_search_list =
-      google_apis::ResourceList::ExtractAndParse(*first_search_value);
-
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceList(GURL(), _, "foo", _, _, _))
-      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &first_search_list));
-
-  scoped_ptr<base::Value> second_search_value(LoadJSONFile(kTestRootFeed));
-  scoped_ptr<google_apis::ResourceList> second_search_list =
-      google_apis::ResourceList::ExtractAndParse(*second_search_value);
-
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceList(GURL("https://next_feed"), _, "foo", _, _, _))
-      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &second_search_list));
-
-  // Test will try to create a snapshot of the returned file.
-  scoped_ptr<base::Value> file_to_download_value(
-      LoadJSONFile(kTestDocumentToDownloadEntry));
-  scoped_ptr<google_apis::ResourceEntry> file_to_download(
-      google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
-  EXPECT_CALL(*mock_drive_service_,
-              GetResourceEntry("file:1_file_resource_id", _))
-      .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
-                                             &file_to_download));
-
-  // We expect to download url defined in document entry returned by
-  // GetResourceEntry mock implementation.
-  EXPECT_CALL(*mock_drive_service_,
-              DownloadFile(_, _, GURL("https://file_content_url_changed"),
-                           _, _))
-      .WillOnce(MockDownloadFileCallback(google_apis::HTTP_SUCCESS));
-
-  // On exit, all operations in progress should be cancelled.
-  EXPECT_CALL(*mock_drive_service_, CancelAll());
-
-  // All is set... RUN THE TEST.
   EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote_search.html",
       kComponentFlags)) << message_;
 }
