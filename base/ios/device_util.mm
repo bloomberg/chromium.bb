@@ -26,6 +26,9 @@ namespace {
 // Client ID key in the user preferences.
 NSString* const kLegacyClientIdPreferenceKey = @"ChromiumClientID";
 NSString* const kClientIdPreferenceKey = @"ChromeClientID";
+// Current hardware type. This is used to detect that a device has been backed
+// up and restored to another device, and allows regenerating a new device id.
+NSString* const kHardwareTypePreferenceKey = @"ClientIDGenerationHardwareType";
 // Default salt for device ids.
 const char kDefaultSalt[] = "Salt";
 // Zero UUID returned on buggy iOS devices.
@@ -125,11 +128,22 @@ std::string GetRandomId() {
 
 std::string GetDeviceIdentifier(const char* salt) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
+  NSString* last_seen_hardware =
+      [defaults stringForKey:kHardwareTypePreferenceKey];
+  NSString* current_hardware = base::SysUTF8ToNSString(GetPlatform());
+  if (!last_seen_hardware) {
+    last_seen_hardware = current_hardware;
+    [defaults setObject:current_hardware forKey:kHardwareTypePreferenceKey];
+    [defaults synchronize];
+  }
+
   NSString* client_id = [defaults stringForKey:kClientIdPreferenceKey];
 
-  if (!client_id) {
+  if (!client_id || ![last_seen_hardware isEqualToString:current_hardware]) {
     client_id = GenerateClientId();
     [defaults setObject:client_id forKey:kClientIdPreferenceKey];
+    [defaults setObject:current_hardware forKey:kHardwareTypePreferenceKey];
     [defaults synchronize];
   }
 
