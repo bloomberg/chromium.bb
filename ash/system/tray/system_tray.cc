@@ -52,7 +52,6 @@
 #include "ui/views/view.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
@@ -133,9 +132,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TraySessionLengthLimit(this));
   AddTrayItem(new internal::TrayLogoutButton(this));
   AddTrayItem(new internal::TrayUser(this));
-#if defined(OS_CHROMEOS)
-  AddTrayItem(new internal::TrayEnterprise(this));
-#endif
   AddTrayItem(new internal::TrayIME(this));
   tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);

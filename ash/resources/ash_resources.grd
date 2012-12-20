@@ -160,30 +160,28 @@
 
       <!-- ChromeOS specific icons -->
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_LIGHT" file="cros/status_managed_tray.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_DARK" file="cros/status_managed_p.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_DARK" file="cros/network/statusbar_network_3g_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT" file="cros/network/statusbar_network_3g_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_DARK" file="cros/network/statusbar_network_4g_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT" file="cros/network/statusbar_network_4g_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK" file="cros/network/statusbar_network_arcs_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT" file="cros/network/statusbar_network_arcs_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK" file="cros/network/statusbar_network_bars_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT" file="cros/network/statusbar_network_bars_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK" file="cros/network/statusbar_network_edge_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT" file="cros/network/statusbar_network_edge_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_GPRS" file="cros/network/statusbar_network_gprs.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_HSPA" file="cros/network/statusbar_network_hspa.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS" file="cros/network/statusbar_network_hspa_plus.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE" file="cros/network/statusbar_network_lte.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED" file="cros/network/statusbar_network_lte_advanced.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK" file="cros/network/statusbar_network_roaming_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT" file="cros/network/statusbar_network_roaming_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK" file="cros/network/statusbar_network_secure_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="cros/network/statusbar_network_vpn_badge.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="cros/network/statusbar_wired.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_DARK" file="cros/network/statusbar_network_3g_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT" file="cros/network/statusbar_network_3g_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_DARK" file="cros/network/statusbar_network_4g_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT" file="cros/network/statusbar_network_4g_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK" file="cros/network/statusbar_network_arcs_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT" file="cros/network/statusbar_network_arcs_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK" file="cros/network/statusbar_network_bars_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT" file="cros/network/statusbar_network_bars_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK" file="cros/network/statusbar_network_edge_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT" file="cros/network/statusbar_network_edge_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_GPRS" file="cros/network/statusbar_network_gprs.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_HSPA" file="cros/network/statusbar_network_hspa.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS" file="cros/network/statusbar_network_hspa_plus.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE" file="cros/network/statusbar_network_lte.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED" file="cros/network/statusbar_network_lte_advanced.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK" file="cros/network/statusbar_network_roaming_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT" file="cros/network/statusbar_network_roaming_light.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK" file="cros/network/statusbar_network_secure_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="cros/network/statusbar_network_vpn_badge.png" />
+	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="cros/network/statusbar_wired.png" />
       </if>
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="common/status_update.png" />

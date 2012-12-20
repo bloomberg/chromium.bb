@@ -62,7 +62,7 @@ HelpAppLauncher::~HelpAppLauncher() {}
 void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LoginWebDialog* dialog = new LoginWebDialog(
-      NULL,
+      this,
       parent_window_,
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
       topic_url,

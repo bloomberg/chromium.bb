@@ -76,6 +76,10 @@ const char kLearnMoreIncognitoUrl[] =
 const char kLearnMoreGuestSessionUrl[] =
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
+// The URL for the Learn More page about enterprise enrolled devices
+const char kLearnMoreEnterpriseUrl[] =
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=2535613";
+
 // The URL for bookmark sync service help.
 const char kSyncServiceHelpUrl[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=165139";
@@ -280,7 +284,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       localized_strings.SetString("learnMore",
           l10n_util::GetStringUTF16(IDS_LEARN_MORE));
       localized_strings.SetString("enterpriseInfoHintLink",
-          GetUrlWithLang(GURL(chrome::kLearnMoreEnterpriseURL)));
+          GetUrlWithLang(GURL(kLearnMoreEnterpriseUrl)));
     } else {
       localized_strings.SetString("enterpriseInfoVisible", "false");
     }

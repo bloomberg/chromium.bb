@@ -121,9 +121,6 @@ class SystemTrayDelegate {
   // Returns the domain that manages the device, if it is enterprise-enrolled.
   virtual const std::string GetEnterpriseDomain() const = 0;
 
-  // Returns notification for enterprise enrolled devices.
-  virtual const string16 GetEnterpriseMessage() const = 0;
-
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
 
@@ -165,9 +162,6 @@ class SystemTrayDelegate {
 
   // Shows more information about public account mode.
   virtual void ShowPublicAccountInfo() = 0;
-
-  // Shows information about enterprise enrolled devices.
-  virtual void ShowEnterpriseInfo() = 0;
 
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;
