@@ -1052,7 +1052,7 @@ static bool pointIsClippedBySurfaceOrClipRect(const gfx::PointF& screenSpacePoin
     return false;
 }
 
-LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
+LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     LayerImpl* foundLayer = 0;
 
@@ -1084,7 +1084,7 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& scr
     return foundLayer;
 }
 
-LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
+LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     LayerImpl* foundLayer = 0;
 

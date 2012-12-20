@@ -141,7 +141,7 @@ public:
         std::vector<gfx::Rect> nonOccludingScreenSpaceRects;
         RenderPassList renderPasses;
         RenderPassIdHashMap renderPassesById;
-        LayerList* renderSurfaceLayerList;
+        const LayerList* renderSurfaceLayerList;
         LayerList willDrawLayers;
 
         // RenderPassSink implementation.
@@ -388,10 +388,6 @@ private:
 
     // This is used for ticking animations slowly when hidden.
     scoped_ptr<LayerTreeHostImplTimeSourceAdapter> m_timeSourceClientAdapter;
-
-    // List of visible layers for the most recently prepared frame. Used for
-    // rendering and input event hit testing.
-    LayerList m_renderSurfaceLayerList;
 
     PinchZoomViewport m_pinchZoomViewport;
 

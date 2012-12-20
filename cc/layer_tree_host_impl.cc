@@ -373,7 +373,7 @@ bool LayerTreeHostImpl::haveTouchEventHandlersAt(const gfx::Point& viewportPoint
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
-    LayerImpl* layerImpl = LayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, m_renderSurfaceLayerList);
+    LayerImpl* layerImpl = LayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, activeTree()->RenderSurfaceLayerList());
 
     // Walk up the hierarchy and look for a layer with a touch event handler region that the given point hits.
     for (; layerImpl; layerImpl = layerImpl->parent()) {
@@ -403,33 +403,17 @@ void LayerTreeHostImpl::updateDrawProperties()
     if (!needsUpdateDrawProperties())
         return;
 
-    m_renderSurfaceLayerList.clear();
-    m_needsUpdateDrawProperties = false;
-
-    if (!rootLayer())
-        return;
-
-    if (!m_renderer) // For maxTextureSize.
+    if (!m_renderer) { // For maxTextureSize.
+      // This will get set if renderer gets initialized.
+      m_needsUpdateDrawProperties = false;
       return;
-
-    if (rootScrollLayer())
-      rootScrollLayer()->setImplTransform(implTransform());
-
-    {
-        TRACE_EVENT0("cc", "LayerTreeHostImpl::calcDrawEtc");
-        float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, m_renderSurfaceLayerList);
     }
 
-    // TODO(nduca): Move this to LayerTreeImpl
-    // Note: pending tree calcDrawProperties must follow the active tree one,
-    // as some properties are synced from active -> pending.
-    if (pendingTree() && pendingTree()->RootLayer())
-    {
-        float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        LayerList dummyList;
-        LayerTreeHostCommon::calculateDrawProperties(pendingTree()->RootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, dummyList);
-    }
+    activeTree()->UpdateDrawProperties();
+    if (pendingTree())
+      pendingTree()->UpdateDrawProperties();
+
+    m_needsUpdateDrawProperties = false;
 }
 
 void LayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<RenderPass> renderPass)
@@ -528,7 +512,6 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
     DCHECK(frame.renderPasses.empty());
 
-    updateDrawProperties();
     if (!canDraw() || !rootLayer())
       return false;
 
@@ -766,8 +749,9 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
         m_tileManager->CheckForCompletedSetPixels();
 
     activatePendingTreeIfNeeded();
+    updateDrawProperties();
 
-    frame.renderSurfaceLayerList = &m_renderSurfaceLayerList;
+    frame.renderSurfaceLayerList = &activeTree()->RenderSurfaceLayerList();
     frame.renderPasses.clear();
     frame.renderPassesById.clear();
     frame.willDrawLayers.clear();
@@ -1053,18 +1037,11 @@ void LayerTreeHostImpl::activatePendingTree()
     m_pendingTree.reset();
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
-
-    // TODO(nduca): Once render surface layer list moves to the tree so
-    // that updateDrawProperties() affects both trees, this will be
-    // unnecessary.
-    setNeedsUpdateDrawProperties();
 }
 
 scoped_ptr<LayerImpl> LayerTreeHostImpl::detachLayerTree()
 {
     scoped_ptr<LayerImpl> layer = m_activeTree->DetachLayerTree();
-    m_renderSurfaceLayerList.clear();
-    setNeedsUpdateDrawProperties();
     return layer.Pass();
 }
 
@@ -1120,6 +1097,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (!m_renderer)
         return false;
 
+    setNeedsUpdateDrawProperties();
     m_resourceProvider = resourceProvider.Pass();
     m_outputSurface = outputSurface.Pass();
 
@@ -1230,7 +1208,7 @@ void LayerTreeHostImpl::setNeedsRedraw()
 bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
 {
     updateDrawProperties();
-    return m_renderSurfaceLayerList.size();
+    return activeTree()->RenderSurfaceLayerList().size();
 }
 
 InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewportPoint, InputHandlerClient::ScrollInputType type)
@@ -1247,7 +1225,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
-    LayerImpl* layerImpl = LayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, m_renderSurfaceLayerList);
+    LayerImpl* layerImpl = LayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, activeTree()->RenderSurfaceLayerList());
 
     // Walk up the hierarchy and look for a scrollable layer.
     LayerImpl* potentiallyScrollingLayerImpl = 0;
@@ -1636,19 +1614,11 @@ void LayerTreeHostImpl::sendDidLoseOutputSurfaceRecursive(LayerImpl* current)
         sendDidLoseOutputSurfaceRecursive(current->children()[i]);
 }
 
-static void clearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
-{
-    DCHECK(current);
-    for (size_t i = 0; i < current->children().size(); ++i)
-        clearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
-    current->clearRenderSurface();
-}
-
 void LayerTreeHostImpl::clearRenderSurfaces()
 {
-    clearRenderSurfacesOnLayerImplRecursive(rootLayer());
-    m_renderSurfaceLayerList.clear();
-    setNeedsUpdateDrawProperties();
+    activeTree()->ClearRenderSurfaces();
+    if (pendingTree())
+        pendingTree()->ClearRenderSurfaces();
 }
 
 std::string LayerTreeHostImpl::layerTreeAsText() const

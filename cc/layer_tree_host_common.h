@@ -25,9 +25,9 @@ public:
     static void calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList);
 
-    static LayerImpl* findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static LayerImpl* findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     static bool layerHasTouchEventHandlersAt(const gfx::PointF& screenSpacePoint, LayerImpl* layerImpl);
 

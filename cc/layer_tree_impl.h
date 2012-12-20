@@ -35,6 +35,8 @@ class TileManager;
 
 class CC_EXPORT LayerTreeImpl {
  public:
+  typedef std::vector<LayerImpl*> LayerList;
+
   static scoped_ptr<LayerTreeImpl> create(LayerTreeHostImpl* layer_tree_host_impl)
   {
     return make_scoped_ptr(new LayerTreeImpl(layer_tree_host_impl));
@@ -91,6 +93,13 @@ class CC_EXPORT LayerTreeImpl {
 
   void UpdateMaxScrollOffset();
 
+  // Updates draw properties and render surface layer list
+  void UpdateDrawProperties();
+
+  void ClearRenderSurfaces();
+
+  const LayerList& RenderSurfaceLayerList() const;
+
   gfx::Size ContentSize() const;
 
   LayerImpl* LayerById(int id);
@@ -116,6 +125,10 @@ protected:
 
   // Persisted state
   int scrolling_layer_id_from_previous_tree_;
+
+  // List of visible layers for the most recently prepared frame. Used for
+  // rendering and input event hit testing.
+  LayerList render_surface_layer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };

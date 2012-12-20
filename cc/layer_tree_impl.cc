@@ -4,6 +4,7 @@
 
 #include "cc/layer_tree_impl.h"
 
+#include "base/debug/trace_event.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -64,6 +65,8 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
     currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
   currently_scrolling_layer_ = NULL;
 
+  render_surface_layer_list_.clear();
+  SetNeedsUpdateDrawProperties();
   return root_layer_.Pass();
 }
 
@@ -104,6 +107,49 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   max_scroll.ClampToMin(gfx::Vector2dF());
 
   root_scroll_layer()->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
+}
+
+void LayerTreeImpl::UpdateDrawProperties() {
+  render_surface_layer_list_.clear();
+  if (!RootLayer())
+    return;
+
+  if (root_scroll_layer()) {
+    root_scroll_layer()->setImplTransform(
+        layer_tree_host_impl_->implTransform());
+  }
+
+  {
+    TRACE_EVENT0("cc", "LayerTreeImpl::UpdateDrawProperties");
+    LayerTreeHostCommon::calculateDrawProperties(
+        RootLayer(),
+        device_viewport_size(),
+        device_scale_factor(),
+        pinch_zoom_viewport().pageScaleFactor(),
+        layer_tree_host_impl_->rendererCapabilities().maxTextureSize,
+        settings().canUseLCDText,
+        render_surface_layer_list_);
+  }
+}
+
+static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
+{
+    DCHECK(current);
+    for (size_t i = 0; i < current->children().size(); ++i)
+        ClearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
+    current->clearRenderSurface();
+}
+
+void LayerTreeImpl::ClearRenderSurfaces() {
+  ClearRenderSurfacesOnLayerImplRecursive(RootLayer());
+  render_surface_layer_list_.clear();
+  SetNeedsUpdateDrawProperties();
+}
+
+const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
+  // If this assert triggers, then the list is dirty.
+  DCHECK(!layer_tree_host_impl_->needsUpdateDrawProperties());
+  return render_surface_layer_list_;
 }
 
 gfx::Size LayerTreeImpl::ContentSize() const {
