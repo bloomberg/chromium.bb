@@ -84,6 +84,13 @@ const char kOnFileSynced[] = "syncFileSystem.onFileSynced";
 const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
 const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
 
+const char kOnNotificationDisplayed[] = "experimental.notification.onDisplayed";
+const char kOnNotificationError[] = "experimental.notification.onError";
+const char kOnNotificationClosed[] = "experimental.notification.onClosed";
+const char kOnNotificationClicked[] = "experimental.notification.onClicked";
+const char kOnNotificationButtonClicked[] =
+    "experimental.notification.onButtonClicked";
+
 }  // namespace event_names
 
 }  // namespace extensions

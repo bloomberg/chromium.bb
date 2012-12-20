@@ -97,6 +97,13 @@ extern const char kOnFileSynced[];
 extern const char kOnAttachEventName[];
 extern const char kOnDetachEventName[];
 
+// Notifications.
+extern const char kOnNotificationDisplayed[];
+extern const char kOnNotificationError[];
+extern const char kOnNotificationClosed[];
+extern const char kOnNotificationClicked[];
+extern const char kOnNotificationButtonClicked[];
+
 }  // namespace event_names
 
 }  // namespace extensions

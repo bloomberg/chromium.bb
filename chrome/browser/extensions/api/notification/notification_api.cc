@@ -8,7 +8,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
+#include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -16,39 +17,51 @@
 #include "googleurl/src/gurl.h"
 #include "ui/notifications/notification_types.h"
 
-const char kResultKey[] = "result";
+namespace extensions {
 
 namespace {
+
+const char kResultKey[] = "result";
 
 const char kNotificationPrefix[] = "extension.api.";
 
 class NotificationApiDelegate : public NotificationDelegate {
  public:
-  NotificationApiDelegate(extensions::ApiFunction* api_function,
-                          extensions::ApiResourceEventNotifier* event_notifier)
+  NotificationApiDelegate(ApiFunction* api_function,
+                          Profile* profile,
+                          const std::string& extension_id)
       : api_function_(api_function),
+        profile_(profile),
+        extension_id_(extension_id),
         id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
     DCHECK(api_function_);
   }
 
   virtual void Display() OVERRIDE {
-    // TODO(miket): propagate to JS
+    scoped_ptr<ListValue> args(new ListValue());
+    SendEvent(event_names::kOnNotificationDisplayed, args.Pass());
   }
 
   virtual void Error() OVERRIDE {
-    // TODO(miket): propagate to JS
+    scoped_ptr<ListValue> args(new ListValue());
+    SendEvent(event_names::kOnNotificationError, args.Pass());
   }
 
   virtual void Close(bool by_user) OVERRIDE {
-    // TODO(miket): propagate to JS
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(Value::CreateBooleanValue(by_user));
+    SendEvent(event_names::kOnNotificationClosed, args.Pass());
   }
 
   virtual void Click() OVERRIDE {
-    // TODO(miket): propagate to JS
+    scoped_ptr<ListValue> args(new ListValue());
+    SendEvent(event_names::kOnNotificationClicked, args.Pass());
   }
 
   virtual void ButtonClick(int index) OVERRIDE {
-    // TODO(miket): propagate to JS
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(Value::CreateIntegerValue(index));
+    SendEvent(event_names::kOnNotificationButtonClicked, args.Pass());
   }
 
   virtual std::string id() const OVERRIDE {
@@ -66,7 +79,15 @@ class NotificationApiDelegate : public NotificationDelegate {
  private:
   virtual ~NotificationApiDelegate() {}
 
-  scoped_refptr<extensions::ApiFunction> api_function_;
+  void SendEvent(const std::string& name, scoped_ptr<ListValue> args) {
+    scoped_ptr<Event> event(new Event(name, args.Pass()));
+    ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+        extension_id_, event.Pass());
+  }
+
+  scoped_refptr<ApiFunction> api_function_;
+  Profile* profile_;
+  const std::string extension_id_;
   std::string id_;
 
   static uint64 next_id_;
@@ -77,8 +98,6 @@ class NotificationApiDelegate : public NotificationDelegate {
 uint64 NotificationApiDelegate::next_id_ = 0;
 
 }  // namespace
-
-namespace extensions {
 
 NotificationShowFunction::NotificationShowFunction() {
 }
@@ -92,8 +111,6 @@ bool NotificationShowFunction::RunImpl() {
 
   api::experimental_notification::ShowOptions* options = &params_->options;
   scoped_ptr<DictionaryValue> options_dict(options->ToValue());
-  src_id_ = ExtractSrcId(options_dict.get());
-  event_notifier_ = CreateEventNotifier(src_id_);
 
   ui::notifications::NotificationType type =
       ui::notifications::StringToNotificationType(options->type);
@@ -139,8 +156,8 @@ bool NotificationShowFunction::RunImpl() {
   if (options->items.get()) {
     base::ListValue* items = new base::ListValue();
     std::vector<
-        linked_ptr<
-            api::experimental_notification::NotificationItem> >::iterator i;
+      linked_ptr<
+        api::experimental_notification::NotificationItem> >::iterator i;
     for (i = options->items->begin(); i != options->items->end(); ++i) {
       base::DictionaryValue* item = new base::DictionaryValue();
       item->SetString(ui::notifications::kItemTitleKey,
@@ -159,7 +176,8 @@ bool NotificationShowFunction::RunImpl() {
                             string16(), replace_id,
                             optional_fields.get(),
                             new NotificationApiDelegate(this,
-                                                        event_notifier_));
+                                                        profile(),
+                                                        extension_->id()));
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 
   // TODO(miket): why return a result if it's always true?

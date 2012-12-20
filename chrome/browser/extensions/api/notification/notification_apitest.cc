@@ -64,16 +64,13 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
       "common/images/chrome_logo_2x.png\","
       "\"title\": \"Attention!\","
       "\"message\": \"Check out Cirque du Soleil\","
-      "\"messageIntent\": \"[pending]\","
       "\"priority\": 1,"
       "\"timestamp\": \"Tue, 15 Nov 1994 12:45:26 GMT\","
       "\"secondIconUrl\": \"http://www.google.com/logos/2012/"
       "Day-Of-The-Dead-12-hp.jpg\","
       "\"unreadCount\": 42,"
       "\"buttonOneTitle\": \"Up\","
-      "\"buttonOneIntent\": \"[pending]\","
       "\"buttonTwoTitle\": \"Down\","
-      "\"buttonTwoIntent\": \"[pending]\","
       "\"expandedMessage\": \"This is a longer expanded message.\","
       "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\","
       "\"replaceId\": \"12345678\""
@@ -122,4 +119,8 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
 
   // TODO(dharcourt): confirm that the show succeeded.
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestEvents) {
+  ASSERT_TRUE(RunExtensionTest("notification/api/events")) << message_;
 }
