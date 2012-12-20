@@ -157,6 +157,17 @@ void SystemTrayNotifier::AddSmsObserver(SmsObserver* observer) {
 void SystemTrayNotifier::RemoveSmsObserver(SmsObserver* observer) {
   sms_observers_.RemoveObserver(observer);
 }
+
+void SystemTrayNotifier::AddEnterpriseDomainObserver(
+    EnterpriseDomainObserver* observer) {
+  enterprise_domain_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveEnterpriseDomainObserver(
+    EnterpriseDomainObserver* observer) {
+  enterprise_domain_observers_.RemoveObserver(observer);
+}
+
 #endif
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
@@ -328,6 +339,11 @@ void SystemTrayNotifier::NotifyWillToggleWifi() {
 void SystemTrayNotifier::NotifyAddSmsMessage(
     const base::DictionaryValue& message) {
   FOR_EACH_OBSERVER(SmsObserver, sms_observers_, AddMessage(message));
+}
+
+void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
+  FOR_EACH_OBSERVER(EnterpriseDomainObserver, enterprise_domain_observers_,
+      OnEnterpriseDomainChanged());
 }
 
 #endif  // OS_CHROMEOS

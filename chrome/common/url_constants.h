@@ -405,6 +405,11 @@ extern const char kSideloadWipeoutHelpURL[];
 extern const char kNaturalScrollHelpURL[];
 #endif
 
+#if defined(OS_CHROMEOS)
+// The URL for the Learn More page about enterprise enrolled devices.
+extern const char kLearnMoreEnterpriseURL[];
+#endif
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern const int kNumberOfChromeDebugURLs;

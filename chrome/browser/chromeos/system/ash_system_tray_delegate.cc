@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -59,9 +60,12 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_store.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -128,6 +132,17 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->third_party = ime.third_party();
 }
 
+gfx::NativeWindow GetNativeWindowByStatus(
+    ash::user::LoginStatus login_status) {
+  int container_id =
+      (login_status == ash::user::LOGGED_IN_NONE ||
+       login_status == ash::user::LOGGED_IN_LOCKED) ?
+           ash::internal::kShellWindowId_LockSystemModalContainer :
+           ash::internal::kShellWindowId_SystemModalContainer;
+  return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                  container_id);
+}
+
 ash::DriveOperationStatusList GetDriveStatusList(
     const google_apis::OperationProgressStatusList& list) {
   ash::DriveOperationStatusList results;
@@ -180,7 +195,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public system::TimezoneSettings::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
-                           public ash::NetworkTrayDelegate {
+                           public ash::NetworkTrayDelegate,
+                           public policy::CloudPolicyStore::Observer {
  public:
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -266,6 +282,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         prefs::kSessionLengthLimit,
         base::Bind(&SystemTrayDelegate::UpdateSessionLengthLimit,
                    base::Unretained(this)));
+
+    policy::BrowserPolicyConnector* policy_connector =
+        g_browser_process->browser_policy_connector();
+    policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+        policy_connector->GetDeviceCloudPolicyManager();
+    if (policy_manager)
+      policy_manager->core()->store()->AddObserver(this);
+    enterprise_domain_ =
+        policy_connector->GetEnterpriseDomain();
   }
 
   virtual ~SystemTrayDelegate() {
@@ -289,6 +314,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (system_service) {
       system_service->drive_service()->RemoveObserver(this);
     }
+
+    policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+        g_browser_process->browser_policy_connector()->
+           GetDeviceCloudPolicyManager();
+    if (policy_manager)
+      policy_manager->core()->store()->RemoveObserver(this);
   }
 
   // Overridden from ash::SystemTrayDelegate:
@@ -329,7 +360,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual const std::string GetEnterpriseDomain() const OVERRIDE {
-    return g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+    return enterprise_domain_;
+  }
+
+  virtual const string16 GetEnterpriseMessage() const OVERRIDE {
+    if (GetEnterpriseDomain().empty())
+        return string16();
+    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
+                                      UTF8ToUTF16(GetEnterpriseDomain()));
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {
@@ -401,6 +439,21 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowPublicAccountInfo() OVERRIDE {
     chrome::ShowPolicy(GetAppropriateBrowser());
+  }
+
+  virtual void ShowEnterpriseInfo() OVERRIDE {
+    ash::user::LoginStatus status = GetUserLoginStatus();
+    if (status == ash::user::LOGGED_IN_NONE ||
+        status == ash::user::LOGGED_IN_LOCKED) {
+      scoped_refptr<chromeos::HelpAppLauncher> help_app(
+         new chromeos::HelpAppLauncher(
+            GetNativeWindowByStatus(GetUserLoginStatus())));
+      help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
+    } else {
+      GURL url(google_util::StringAppendGoogleLocaleParam(
+          chrome::kLearnMoreEnterpriseURL));
+      chrome::ShowSingletonTab(GetAppropriateBrowser(), url);
+    }
   }
 
   virtual void ShutDown() OVERRIDE {
@@ -1043,11 +1096,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from NetworkMenu::Delegate.
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
-    return ash::Shell::GetContainer(
-        ash::Shell::GetPrimaryRootWindow(),
-        GetUserLoginStatus() == ash::user::LOGGED_IN_NONE ?
-            ash::internal::kShellWindowId_LockSystemModalContainer :
-            ash::internal::kShellWindowId_SystemModalContainer);
+    return GetNativeWindowByStatus(GetUserLoginStatus());
   }
 
   virtual void OpenButtonOptions() OVERRIDE {
@@ -1297,6 +1346,24 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
+  virtual void UpdateEnterpriseDomain() {
+    std::string enterprise_domain =
+        g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+    if (enterprise_domain_ != enterprise_domain) {
+       enterprise_domain_ = enterprise_domain;
+       GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
+    }
+  }
+
+  // Oberridden from CloudPolicyStore::Observer
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE {
+    UpdateEnterpriseDomain();
+  }
+
+  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE {
+    UpdateEnterpriseDomain();
+  }
+
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
   scoped_ptr<NetworkMenuIcon> network_icon_dark_;
@@ -1312,6 +1379,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   bool screen_locked_;
   base::Time session_start_time_;
   base::TimeDelta session_length_limit_;
+  std::string enterprise_domain_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 

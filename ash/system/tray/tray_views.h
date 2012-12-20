@@ -129,6 +129,10 @@ class HoverHighlightView : public ActionableView {
   void set_text_default_color(SkColor color) { text_default_color_ = color; }
   void set_fixed_height(int height) { fixed_height_ = height; }
 
+  views::Label* text_label() {
+    return text_label_;
+  }
+
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
