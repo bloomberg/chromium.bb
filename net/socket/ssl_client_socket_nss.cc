@@ -2101,6 +2101,17 @@ int SSLClientSocketNSS::Core::BufferRecv() {
   if (transport_recv_busy_)
     return ERR_IO_PENDING;
 
+  // If NSS is blocked on reading from |nss_bufs_|, because it is empty,
+  // determine how much data NSS wants to read. If NSS was not blocked,
+  // this will return 0.
+  int requested = memio_GetReadRequest(nss_bufs_);
+  if (requested == 0) {
+    // This is not a perfect match of error codes, as no operation is
+    // actually pending. However, returning 0 would be interpreted as a
+    // possible sign of EOF, which is also an inappropriate match.
+    return ERR_IO_PENDING;
+  }
+
   char* buf;
   int nb = memio_GetReadParams(nss_bufs_, &buf);
   int rv;

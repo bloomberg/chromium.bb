@@ -55,6 +55,10 @@ struct PRFilePrivate {
 
     /* if set, empty I/O returns EOF instead of EWOULDBLOCK */
     int eof;
+
+    /* if set, the number of bytes requested from readbuf that were not
+     * fulfilled (due to readbuf being empty) */
+    int read_requested;
 };
 
 /*--------------- private memio_buffer functions ---------------------*/
@@ -223,6 +227,7 @@ static int PR_CALLBACK memio_Recv(PRFileDesc *fd, void *buf, PRInt32 len,
     PR_ASSERT(mb->bufsize);
     rv = memio_buffer_get(mb, buf, len);
     if (rv == 0 && !secret->eof) {
+        secret->read_requested = len;
         if (mb->last_err)
             PR_SetError(mb->last_err, 0);
         else
@@ -230,6 +235,7 @@ static int PR_CALLBACK memio_Recv(PRFileDesc *fd, void *buf, PRInt32 len,
         return -1;
     }
 
+    secret->read_requested = 0;
     return rv;
 }
 
@@ -380,6 +386,11 @@ memio_Private *memio_GetSecret(PRFileDesc *fd)
     PRFileDesc *memiofd = PR_GetIdentitiesLayer(fd, memio_identity);
     struct PRFilePrivate *secret =  memiofd->secret;
     return (memio_Private *)secret;
+}
+
+int memio_GetReadRequest(memio_Private *secret)
+{
+    return ((PRFilePrivate *)secret)->read_requested;
 }
 
 int memio_GetReadParams(memio_Private *secret, char **buf)
