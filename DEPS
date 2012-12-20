@@ -268,7 +268,7 @@ deps = {
     "/trunk/deps/third_party/libjpeg_turbo@149334",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@160844",
+    "/trunk/deps/third_party/flac@174038",
 
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
