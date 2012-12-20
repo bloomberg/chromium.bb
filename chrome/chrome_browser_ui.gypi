@@ -2232,6 +2232,11 @@
           'dependencies': [
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
           ],
+        }, {  # enable_plugins == 0
+          'sources!': [
+            'browser/ui/hung_plugin_tab_helper.cc',
+            'browser/ui/hung_plugin_tab_helper.h',
+          ], 
         }],
         ['safe_browsing==1', {
           'defines': [

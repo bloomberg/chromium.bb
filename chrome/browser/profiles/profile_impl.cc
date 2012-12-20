@@ -509,9 +509,11 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
                 restore_old_session_cookies,
                 GetSpecialStoragePolicy());
 
+#if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this),
       io_data_.GetResourceContextNoInit());
+#endif
 
   // Delay README creation to not impact startup performance.
   BrowserThread::PostDelayedTask(
@@ -588,8 +590,10 @@ ProfileImpl::~ProfileImpl() {
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
 
+#if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
       io_data_.GetResourceContextNoInit());
+#endif
 
   // Destroy OTR profile and its profile services first.
   if (off_the_record_profile_.get()) {

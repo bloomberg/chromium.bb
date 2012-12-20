@@ -1868,6 +1868,7 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
 
 RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
+#if defined(ENABLE_PLUGINS)
   GURL active_url;
   if (webview() && webview()->mainFrame())
     active_url = GURL(webview()->mainFrame()->document().url());
@@ -1875,6 +1876,10 @@ RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
       routing_id_, plugin, active_url, screen_info_);
   widget->show(WebKit::WebNavigationPolicyIgnore);
   return widget;
+#else  // defined(ENABLE_PLUGINS)
+  NOTREACHED() << "CreatePepperFullscreenContainer: plugins disabled";
+  return NULL;
+#endif
 }
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
@@ -2500,6 +2505,7 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 
 WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                         const WebPluginParams& params) {
+#if defined(ENABLE_PLUGINS)
   WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
@@ -2520,6 +2526,9 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
   return CreatePlugin(frame, info, params_to_use);
+#else
+  return NULL;
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 WebSharedWorker* RenderViewImpl::createSharedWorker(

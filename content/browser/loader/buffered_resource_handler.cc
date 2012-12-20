@@ -320,6 +320,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (net::IsSupportedMimeType(mime_type))
       return true;
 
+#if defined(ENABLE_PLUGINS)
     bool stale;
     bool has_plugin = HasSupportingPlugin(&stale);
     if (stale) {
@@ -332,6 +333,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     }
     if (has_plugin)
       return true;
+#endif
   }
 
   // Install download handler

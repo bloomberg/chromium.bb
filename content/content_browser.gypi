@@ -1127,9 +1127,18 @@
       ],
     }, {  # enable_plugins==0
       'sources!': [
+        'browser/pepper_flash_settings_helper_impl.cc',
+        'browser/pepper_flash_settings_helper_impl.h',
         'browser/plugin_data_remover_impl.cc',
         'browser/plugin_data_remover_impl.h',
+        'browser/plugin_loader_posix.cc',
+        'browser/plugin_loader_posix.h',
+        'browser/plugin_process_host.cc',
+        'browser/plugin_process_host.h',
+        'browser/plugin_service_impl.cc',
+        'browser/plugin_service_impl.h',
         'browser/ppapi_plugin_process_host.cc',
+        'public/browser/plugin_service.h',
       ],
       'sources/': [
         ['exclude', '^browser/renderer_host/pepper/'],

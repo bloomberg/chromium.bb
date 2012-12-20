@@ -352,13 +352,15 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   online_state_observer_.reset(new BrowserOnlineStateObserver);
+#endif  // !defined(OS_IOS)
 
+#if defined(ENABLE_PLUGINS)
   // Prior to any processing happening on the io thread, we create the
   // plugin service as it is predominantly used from the io thread,
   // but must be created on the main thread. The service ctor is
   // inexpensive and does not invoke the io_thread() accessor.
   PluginService::GetInstance()->Init();
-#endif  // !defined(OS_IOS)
+#endif
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);

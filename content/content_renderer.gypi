@@ -390,6 +390,10 @@
       'sources/': [
         ['exclude', '^renderer/pepper/'],
       ],
+      'sources!': [
+        'renderer/render_widget_fullscreen_pepper.cc',
+        'renderer/render_widget_fullscreen_pepper.h',
+      ],
     }],
     ['java_bridge==1', {
       'defines': [

@@ -340,7 +340,6 @@ void MetricsLog::RecordIncrementalStabilityElements(
     OPEN_ELEMENT_FOR_SCOPE("stability");  // Minimal set of stability elements.
     WriteRequiredStabilityAttributes(pref);
     WriteRealtimeStabilityAttributes(pref);
-
     WritePluginStabilityElements(plugin_list, pref);
   }
 }
@@ -433,6 +432,8 @@ void MetricsLog::WritePluginStabilityElements(
     return;
 
   OPEN_ELEMENT_FOR_SCOPE("plugins");
+
+#if defined(ENABLE_PLUGINS)
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
   PluginPrefs* plugin_prefs = GetPluginPrefs();
@@ -505,6 +506,7 @@ void MetricsLog::WritePluginStabilityElements(
     plugin_stability->set_crash_count(crashes);
     plugin_stability->set_loading_error_count(loading_errors);
   }
+#endif  // defined(ENABLE_PLUGINS)
 
   pref->ClearPref(prefs::kStabilityPluginStats);
 }
@@ -604,9 +606,10 @@ void MetricsLog::WritePluginList(
     bool write_as_xml) {
   DCHECK(!locked());
 
-  PluginPrefs* plugin_prefs = GetPluginPrefs();
-
   OPEN_ELEMENT_FOR_SCOPE("plugins");
+
+#if defined(ENABLE_PLUGINS)
+  PluginPrefs* plugin_prefs = GetPluginPrefs();
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
            plugin_list.begin();
@@ -638,6 +641,7 @@ void MetricsLog::WritePluginList(
       SetPluginInfo(*iter, plugin_prefs, plugin);
     }
   }
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 void MetricsLog::WriteInstallElement() {

@@ -280,7 +280,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
 #endif
+#if defined(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
+#endif
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
   // Not used on chromeos because signin happens before the profile is loaded.
   policy::UserPolicySigninServiceFactory::GetInstance();

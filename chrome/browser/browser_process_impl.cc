@@ -787,6 +787,7 @@ void BrowserProcessImpl::PreCreateThreads() {
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {
+#if defined(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
   plugin_service->StartWatchingPlugins();
@@ -818,6 +819,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
   }
 #endif
+
+#endif  // defined(ENABLE_PLUGINS)
 
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();

@@ -160,8 +160,10 @@ int RendererMain(const MainFunctionParams& parameters) {
     DCHECK(ret);
   }
 
+#if defined(ENABLE_PLUGINS)
   // Load pepper plugins before engaging the sandbox.
   PepperPluginRegistry::GetInstance();
+#endif
 
   {
 #if defined(OS_WIN) || defined(OS_MACOSX)

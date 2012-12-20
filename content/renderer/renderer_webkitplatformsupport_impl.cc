@@ -670,10 +670,12 @@ WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
 
 void RendererWebKitPlatformSupportImpl::GetPlugins(
     bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
+#if defined(ENABLE_PLUGINS)
   if (!plugin_refresh_allowed_)
     refresh = false;
   RenderThread::Get()->Send(
       new ViewHostMsg_GetPlugins(refresh, plugins));
+#endif
 }
 
 //------------------------------------------------------------------------------

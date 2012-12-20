@@ -986,10 +986,15 @@ void MetricsService::OnInitTaskGotHardwareClass(
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   hardware_class_ = hardware_class;
 
+#if defined(ENABLE_PLUGINS)
   // Start the next part of the init task: loading plugin information.
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
           self_ptr_factory_.GetWeakPtr()));
+#else
+  std::vector<webkit::WebPluginInfo> plugin_list_empty;
+  OnInitTaskGotPluginInfo(plugin_list_empty);
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 void MetricsService::OnInitTaskGotPluginInfo(

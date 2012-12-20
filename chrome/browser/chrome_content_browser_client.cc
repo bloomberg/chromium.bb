@@ -595,7 +595,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->GetChannel()->AddFilter(new ChromeRenderMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
+#if defined(ENABLE_PLUGINS)
   host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
+#endif
 #if defined(ENABLE_PRINTING)
   host->GetChannel()->AddFilter(new PrintingMessageFilter(id, profile));
 #endif

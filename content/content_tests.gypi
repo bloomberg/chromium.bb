@@ -517,6 +517,9 @@
             ['exclude', '^renderer/pepper/'],
             ['exclude', '^browser/renderer_host/pepper/'],
           ],
+          'sources!': [
+            'browser/plugin_loader_posix_unittest.cc',
+          ],
         }],
         ['enable_webrtc==1', {
           'sources': [

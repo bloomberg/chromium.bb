@@ -1016,6 +1016,12 @@ class ExtensionServiceTest
     SetPref(extension_id, pref_path, list_value, msg);
   }
 
+  void InitPluginService() {
+#if defined(ENABLE_PLUGINS)
+    PluginService::GetInstance()->Init();
+#endif
+  }
+
  protected:
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
@@ -1075,7 +1081,7 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
 
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
-  PluginService::GetInstance()->Init();
+  InitPluginService();
 
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir = data_dir_
@@ -1217,7 +1223,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
 // Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, CleanupOnStartup) {
-  PluginService::GetInstance()->Init();
+  InitPluginService();
 
   FilePath source_install_dir = data_dir_
       .AppendASCII("good")
@@ -1258,7 +1264,7 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
 // Test that GarbageCollectExtensions deletes the right versions of an
 // extension.
 TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
-  PluginService::GetInstance()->Init();
+  InitPluginService();
 
   FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
@@ -1292,7 +1298,7 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
 
 // Test that pending updates are properly handled on startup.
 TEST_F(ExtensionServiceTest, UpdateOnStartup) {
-  PluginService::GetInstance()->Init();
+  InitPluginService();
 
   FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
@@ -1696,7 +1702,7 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
 // an extension contains an NPAPI plugin. Don't run this test on Chrome OS
 // since they don't support plugins.
 TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
-  PluginService::GetInstance()->Init();
+  InitPluginService();
 
   InitializeEmptyExtensionService();
 
@@ -2635,7 +2641,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
       .AppendASCII(good2)
       .AppendASCII("1.0");
 
-  PluginService::GetInstance()->Init();
+  InitPluginService();
   InitializeEmptyExtensionService();
   InitializeExtensionProcessManager();
   service_->set_show_extensions_prompts(true);
@@ -4511,8 +4517,10 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
 
+#if defined(ENABLE_PLUGINS)
   webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
+#endif
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
@@ -4577,10 +4585,12 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   // Execute any pending deletion tasks.
   loop.RunUntilIdle();
 
+#if defined(ENABLE_PLUGINS)
   // Ensure that even if the PluginService is re-used for a later test, it
   // won't still hold a reference to the stack position of our MockPluginList.
   // See crbug.com/159754.
   PluginService::GetInstance()->SetPluginListForTesting(NULL);
+#endif
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.

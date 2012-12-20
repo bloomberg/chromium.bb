@@ -475,6 +475,11 @@
       'dependencies': [
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
       ],
+    }, {  # enable_plugins == 0
+      'sources!': [
+        'common/pepper_plugin_registry.cc',
+        'common/pepper_plugin_registry.h',
+      ],
     }],
     ['enable_gpu==1', {
       'dependencies': [

@@ -9,7 +9,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/user_agent/user_agent.h"
 
-#if !defined(OS_IOS)
+#if defined(ENABLE_PLUGINS)
 #include "webkit/plugins/ppapi/host_globals.h"
 #endif
 
@@ -38,10 +38,10 @@ const std::string& GetUserAgent(const GURL& url) {
 }
 
 webkit::ppapi::HostGlobals* GetHostGlobals() {
-#if defined(OS_IOS)
-  return NULL;
-#else
+#if defined(ENABLE_PLUGINS)
   return webkit::ppapi::HostGlobals::Get();
+#else
+  return NULL;
 #endif
 }
 

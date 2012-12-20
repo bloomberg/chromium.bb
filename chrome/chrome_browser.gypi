@@ -2388,6 +2388,18 @@
             ['exclude', '^browser/pepper_'],
             ['exclude', '^browser/renderer_host/pepper/'],
           ],
+          'sources!': [
+            'browser/chrome_plugin_service_filter.cc',
+            'browser/chrome_plugin_service_filter.h',
+            'browser/plugins/plugin_observer.cc',
+            'browser/plugins/plugin_observer.h',
+            'browser/plugins/plugin_prefs.cc',
+            'browser/plugins/plugin_prefs.h',
+            'browser/plugins/plugin_prefs_factory.cc',
+            'browser/plugins/plugin_prefs_factory.h',
+            'browser/renderer_host/plugin_info_message_filter.cc',
+            'browser/renderer_host/plugin_info_message_filter.h',
+          ],
         }],
         ['safe_browsing==1', {
           'defines': [

@@ -1830,6 +1830,12 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
+        ['enable_plugins==0', {
+          'sources!': [
+            'browser/renderer_host/plugin_info_message_filter_unittest.cc',
+            'browser/plugins/plugin_prefs_unittest.cc',
+          ],
+        }],
         ['enable_printing!=1', {
           'sources/': [
             ['exclude', '^browser/printing/'],

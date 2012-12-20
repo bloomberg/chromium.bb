@@ -116,8 +116,10 @@ void OffTheRecordProfileImpl::Init() {
   ExtensionIconSource* icon_source = new ExtensionIconSource(profile_);
   ChromeURLDataManager::AddDataSource(this, icon_source);
 
+#if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this), io_data_.GetResourceContextNoInit());
+#endif
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -127,8 +129,10 @@ void OffTheRecordProfileImpl::Init() {
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   MaybeSendDestroyedNotification();
 
+#if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
+#endif
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(this)->extension_service();

@@ -1106,6 +1106,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
         AddDataSource(thumbnail_source);
   }
 
+#if defined(ENABLE_PLUGINS)
   // TODO(mpcomplete): This ends up affecting all profiles. See crbug.com/80757.
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
@@ -1136,6 +1137,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 void ExtensionService::NotifyExtensionUnloaded(
@@ -1187,6 +1189,7 @@ void ExtensionService::NotifyExtensionUnloaded(
 
   UpdateActiveExtensionsInCrashReporter();
 
+#if defined(ENABLE_PLUGINS)
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
@@ -1209,6 +1212,7 @@ void ExtensionService::NotifyExtensionUnloaded(
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 Profile* ExtensionService::profile() {
