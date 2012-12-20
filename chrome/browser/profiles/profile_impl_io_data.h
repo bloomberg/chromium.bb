@@ -172,13 +172,6 @@ class ProfileImplIOData : public ProfileIOData {
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
 
-  void SetUpJobFactory(net::URLRequestJobFactoryImpl* job_factory,
-                       scoped_ptr<net::URLRequestJobFactory::Interceptor>
-                           protocol_handler_interceptor,
-                       net::NetworkDelegate* network_delegate,
-                       net::FtpTransactionFactory* ftp_transaction_factory,
-                       net::FtpAuthCache* ftp_auth_cache) const;
-
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and also deletes HttpServerProperties data.
   // Works asynchronously, however if the |completion| callback is non-null,

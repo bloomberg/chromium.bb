@@ -8,15 +8,19 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -29,68 +33,89 @@ namespace policy {
 // Dummy service URL for testing with request interception enabled.
 const char kServiceUrl[] = "http://example.com/device_management";
 
-// Interceptor implementation that returns test data back to the service.
-class CannedResponseInterceptor : public net::URLRequest::Interceptor {
+// During construction and destruction of CannedResponseInterceptor tasks are
+// posted to the IO thread to add and remove an interceptor for URLRequest's of
+// |service_url|. The interceptor returns test data back to the service.
+class CannedResponseInterceptor {
  public:
   explicit CannedResponseInterceptor(const GURL& service_url)
-      : service_url_(service_url) {
-    net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
+      : delegate_(new Delegate(service_url)) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&Delegate::Register,
+                                       base::Unretained(delegate_)));
   }
 
   virtual ~CannedResponseInterceptor() {
-    net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
-  }
-
-  // net::URLRequest::Interceptor overrides.
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) OVERRIDE {
-    em::DeviceManagementRequest dm_request;
-    const net::UploadDataStream* upload = request->get_upload();
-    if (request->url().GetOrigin() == service_url_.GetOrigin() &&
-        request->url().path() == service_url_.path() &&
-        upload != NULL &&
-        upload->element_readers().size() == 1 &&
-        upload->element_readers()[0]->AsBytesReader()) {
-      std::string response_data;
-      const net::UploadBytesElementReader* bytes_reader =
-          upload->element_readers()[0]->AsBytesReader();
-      ConstructResponse(bytes_reader->bytes(),
-                        bytes_reader->length(),
-                        &response_data);
-      return new net::URLRequestTestJob(request,
-                                        network_delegate,
-                                        net::URLRequestTestJob::test_headers(),
-                                        response_data,
-                                        true);
-    }
-
-    return NULL;
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, delegate_);
   }
 
  private:
-  void ConstructResponse(const char* request_data,
-                         uint64 request_data_length,
-                         std::string* response_data) {
-    em::DeviceManagementRequest request;
-    ASSERT_TRUE(request.ParseFromArray(request_data, request_data_length));
-    em::DeviceManagementResponse response;
-    if (request.has_register_request()) {
-      response.mutable_register_response()->set_device_management_token(
-          "fake_token");
-    } else if (request.has_unregister_request()) {
-      response.mutable_unregister_response();
-    } else if (request.has_policy_request()) {
-      response.mutable_policy_response()->add_response();
-    } else if (request.has_auto_enrollment_request()) {
-      response.mutable_auto_enrollment_response();
-    } else {
-      FAIL() << "Failed to parse request.";
+  class Delegate : public net::URLRequestJobFactory::ProtocolHandler {
+   public:
+    explicit Delegate(const GURL& service_url) : service_url_(service_url) {}
+    ~Delegate() {
+      net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(
+          "http", "example.com");
     }
-    ASSERT_TRUE(response.SerializeToString(response_data));
-  }
 
-  const GURL service_url_;
+    void Register() {
+      net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+          "http", "example.com", this);
+    }
+
+    // net::URLRequestJobFactory::ProtocolHandler overrides.
+    virtual net::URLRequestJob* MaybeCreateJob(
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const OVERRIDE {
+      const net::UploadDataStream* upload = request->get_upload();
+      if (request->url().GetOrigin() == service_url_.GetOrigin() &&
+          request->url().path() == service_url_.path() &&
+          upload != NULL &&
+          upload->element_readers().size() == 1 &&
+          upload->element_readers()[0]->AsBytesReader()) {
+        std::string response_data;
+        const net::UploadBytesElementReader* bytes_reader =
+            upload->element_readers()[0]->AsBytesReader();
+        ConstructResponse(bytes_reader->bytes(),
+                          bytes_reader->length(),
+                          &response_data);
+        return new net::URLRequestTestJob(
+            request,
+            network_delegate,
+            net::URLRequestTestJob::test_headers(),
+            response_data,
+            true);
+      }
+
+      return NULL;
+    }
+
+   private:
+    void ConstructResponse(const char* request_data,
+                           uint64 request_data_length,
+                           std::string* response_data) const {
+      em::DeviceManagementRequest request;
+      ASSERT_TRUE(request.ParseFromArray(request_data, request_data_length));
+      em::DeviceManagementResponse response;
+      if (request.has_register_request()) {
+        response.mutable_register_response()->set_device_management_token(
+            "fake_token");
+      } else if (request.has_unregister_request()) {
+        response.mutable_unregister_response();
+      } else if (request.has_policy_request()) {
+        response.mutable_policy_response()->add_response();
+      } else if (request.has_auto_enrollment_request()) {
+        response.mutable_auto_enrollment_response();
+      } else {
+        FAIL() << "Failed to parse request.";
+      }
+      ASSERT_TRUE(response.SerializeToString(response_data));
+    }
+
+    const GURL service_url_;
+  };
+
+  Delegate* delegate_;
 };
 
 class DeviceManagementServiceIntegrationTest

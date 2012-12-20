@@ -855,6 +855,8 @@
         'url_request/ftp_protocol_handler.cc',
         'url_request/ftp_protocol_handler.h',
         'url_request/http_user_agent_settings.h',
+        'url_request/protocol_intercept_job_factory.cc',
+        'url_request/protocol_intercept_job_factory.h',
         'url_request/static_http_user_agent_settings.cc',
         'url_request/static_http_user_agent_settings.h',
         'url_request/url_fetcher.cc',

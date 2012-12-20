@@ -613,8 +613,6 @@
         'browser/chromeos/version_loader_unittest.cc',
         'browser/chromeos/web_socket_proxy_helper_unittest.cc',
         'browser/command_updater_unittest.cc',
-        'browser/component_updater/component_updater_interceptor.cc',
-        'browser/component_updater/component_updater_interceptor.h',
         'browser/component_updater/test/component_installers_unittest.cc',
         'browser/component_updater/test/component_updater_service_unittest.cc',
         'browser/content_settings/content_settings_default_provider_unittest.cc',

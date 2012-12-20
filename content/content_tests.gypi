@@ -116,6 +116,8 @@
         'test/net/url_request_failed_job.h',
         'test/net/url_request_mock_http_job.cc',
         'test/net/url_request_mock_http_job.h',
+        'test/net/url_request_prepackaged_interceptor.cc',
+        'test/net/url_request_prepackaged_interceptor.h',
         'test/net/url_request_slow_download_job.cc',
         'test/net/url_request_slow_download_job.h',
         'test/net/url_request_slow_http_job.cc',

@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
@@ -313,6 +314,8 @@ void ProfileImplIOData::LazyInitializeInternal(
                       command_line.HasSwitch(switches::kVisitURLs));
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
 
+  network_delegate()->set_predictor(predictor_.get());
+
   // Initialize context members.
 
   ApplyProfileParamsToContext(main_context);
@@ -419,11 +422,11 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
-  SetUpJobFactory(main_job_factory.get(),
-                  profile_params->protocol_handler_interceptor.Pass(),
-                  network_delegate(),
-                  main_context->ftp_transaction_factory(),
-                  main_context->ftp_auth_cache());
+  SetUpJobFactoryDefaults(main_job_factory.get(),
+                          profile_params->protocol_handler_interceptor.Pass(),
+                          network_delegate(),
+                          main_context->ftp_transaction_factory(),
+                          main_context->ftp_auth_cache());
   main_job_factory_ = main_job_factory.Pass();
   main_context->set_job_factory(main_job_factory_.get());
 
@@ -478,11 +481,12 @@ void ProfileImplIOData::
   // job_factory::IsHandledProtocol return true, which prevents attempts to
   // handle the protocol externally. We pass NULL in to
   // SetUpJobFactory() to get this effect.
-  SetUpJobFactory(extensions_job_factory.get(),
-                  scoped_ptr<net::URLRequestJobFactoryImpl::Interceptor>(NULL),
-                  NULL,
-                  extensions_context->ftp_transaction_factory(),
-                  extensions_context->ftp_auth_cache());
+  SetUpJobFactoryDefaults(
+      extensions_job_factory.get(),
+      scoped_ptr<net::URLRequestJobFactoryImpl::Interceptor>(NULL),
+      NULL,
+      extensions_context->ftp_transaction_factory(),
+      extensions_context->ftp_auth_cache());
   extensions_job_factory_ = extensions_job_factory.Pass();
   extensions_context->set_job_factory(extensions_job_factory_.get());
 }
@@ -556,16 +560,17 @@ ProfileImplIOData::InitializeAppRequestContext(
       scoped_ptr<net::HttpTransactionFactory>(app_http_cache));
 
   // Overwrite the job factory that we inherit from the main context so
-  // that we can later provide our own handles for storage related protocols.
+  // that we can later provide our own handlers for storage related protocols.
   // Install all the usual protocol handlers unless we are in a browser plugin
   // guest process, in which case only web-safe schemes are allowed.
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   if (!partition_descriptor.in_memory) {
-    SetUpJobFactory(job_factory.get(), protocol_handler_interceptor.Pass(),
-                    network_delegate(),
-                    context->ftp_transaction_factory(),
-                    context->ftp_auth_cache());
+    SetUpJobFactoryDefaults(
+        job_factory.get(), protocol_handler_interceptor.Pass(),
+        network_delegate(),
+        context->ftp_transaction_factory(),
+        context->ftp_auth_cache());
   }
   context->SetJobFactory(job_factory.PassAs<net::URLRequestJobFactory>());
 
@@ -654,21 +659,6 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
 chrome_browser_net::LoadTimeStats* ProfileImplIOData::GetLoadTimeStats(
     IOThread::Globals* io_thread_globals) const {
   return io_thread_globals->load_time_stats.get();
-}
-
-void ProfileImplIOData::SetUpJobFactory(
-    net::URLRequestJobFactoryImpl* job_factory,
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
-        protocol_handler_interceptor,
-    net::NetworkDelegate* network_delegate,
-    net::FtpTransactionFactory* ftp_transaction_factory,
-    net::FtpAuthCache* ftp_auth_cache) const {
-  SetUpJobFactoryDefaults(job_factory, protocol_handler_interceptor.Pass(),
-                          network_delegate, ftp_transaction_factory,
-                          ftp_auth_cache);
-
-  job_factory->AddInterceptor(
-      new chrome_browser_net::ConnectInterceptor(predictor_.get()));
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(

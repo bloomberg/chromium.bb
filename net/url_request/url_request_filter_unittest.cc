@@ -35,6 +35,19 @@ URLRequestJob* FactoryB(URLRequest* request,
   return job_b;
 }
 
+URLRequestTestJob* job_c;
+
+class TestProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual ~TestProtocolHandler() {}
+
+  virtual URLRequestJob* MaybeCreateJob(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+    job_c = new URLRequestTestJob(request, network_delegate);
+    return job_c;
+  }
+};
+
 TEST(URLRequestFilter, BasicMatching) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
@@ -67,23 +80,11 @@ TEST(URLRequestFilter, BasicMatching) {
       &request_2, request_context.network_delegate(), url_2.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
-  // Check we can overwrite URL handler.
-  EXPECT_TRUE(URLRequestFilter::GetInstance()->AddUrlHandler(url_1,
-                                                             &FactoryB));
-  {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, request_context.network_delegate(), url_1.scheme());
-    EXPECT_EQ(job_b, found);
-    EXPECT_TRUE(job_b != NULL);
-    job_b = NULL;
-  }
-  EXPECT_EQ(2, URLRequestFilter::GetInstance()->hit_count());
-
   // Check we can remove URL matching.
   URLRequestFilter::GetInstance()->RemoveUrlHandler(url_1);
   EXPECT_TRUE(URLRequestFilter::Factory(
       &request_1, request_context.network_delegate(), url_1.scheme()) == NULL);
-  EXPECT_EQ(URLRequestFilter::GetInstance()->hit_count(), 2);
+  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check hostname matching.
   URLRequestFilter::GetInstance()->ClearHandlers();
@@ -103,27 +104,30 @@ TEST(URLRequestFilter, BasicMatching) {
   // Check we don't match other hostnames.
   EXPECT_TRUE(URLRequestFilter::Factory(
       &request_2, request_context.network_delegate(), url_2.scheme()) == NULL);
-  EXPECT_EQ(URLRequestFilter::GetInstance()->hit_count(), 1);
-
-  // Check we can overwrite hostname handler.
-  URLRequestFilter::GetInstance()->AddHostnameHandler(url_1.scheme(),
-                                                      url_1.host(),
-                                                      &FactoryA);
-  {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, request_context.network_delegate(), url_1.scheme());
-    EXPECT_EQ(job_a, found);
-    EXPECT_TRUE(job_a != NULL);
-    job_a = NULL;
-  }
-  EXPECT_EQ(2, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check we can remove hostname matching.
   URLRequestFilter::GetInstance()->RemoveHostnameHandler(url_1.scheme(),
                                                          url_1.host());
   EXPECT_TRUE(URLRequestFilter::Factory(
       &request_1, request_context.network_delegate(), url_1.scheme()) == NULL);
-  EXPECT_EQ(2, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+
+  // Check ProtocolHandler matching.
+  URLRequestFilter::GetInstance()->ClearHandlers();
+  EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
+  TestProtocolHandler test_protocol_handler;
+  URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+      url_1.scheme(), url_1.host(), &test_protocol_handler);
+  {
+    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
+        &request_1, request_context.network_delegate(), url_1.scheme());
+    EXPECT_EQ(job_c, found);
+    EXPECT_TRUE(job_c != NULL);
+    job_c = NULL;
+  }
+  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  URLRequestFilter::GetInstance()->ClearHandlers();
 }
 
 }  // namespace

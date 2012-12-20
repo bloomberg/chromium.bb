@@ -148,8 +148,18 @@ void RedirectHostsToTestData(const char* const urls[], size_t size) {
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
-    filter->AddHostnameHandler(url.scheme(), url.host(),
-                               URLRequestMockHTTPJob::Factory);
+    filter->AddUrlHandler(url, URLRequestMockHTTPJob::Factory);
+  }
+}
+
+// Remove filters for requests to the hosts in |urls|.
+void UndoRedirectHostsToTestData(const char* const urls[], size_t size) {
+  // Map the given hosts to the test data dir.
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  for (size_t i = 0; i < size; ++i) {
+    const GURL url(urls[i]);
+    EXPECT_TRUE(url.is_valid());
+    filter->RemoveUrlHandler(url);
   }
 }
 
@@ -162,21 +172,42 @@ net::URLRequestJob* FailedJobFactory(
       request, network_delegate, net::ERR_CONNECTION_RESET);
 }
 
-// Filters requests to the |host| such that they fail. Run on IO thread.
-void MakeRequestFailOnIO(const std::string& host) {
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameHandler("http", host, &FailedJobFactory);
-  filter->AddHostnameHandler("https", host, &FailedJobFactory);
-}
+// While |MakeRequestFail| is in scope URLRequests to |host| will fail.
+class MakeRequestFail {
+ public:
+  // Sets up the filter on IO thread such that requests to |host| fail.
+  explicit MakeRequestFail(const std::string& host) : host_(host) {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(MakeRequestFailOnIO, host_),
+        MessageLoop::QuitClosure());
+    content::RunMessageLoop();
+  }
+  ~MakeRequestFail() {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(UndoMakeRequestFailOnIO, host_),
+        MessageLoop::QuitClosure());
+    content::RunMessageLoop();
+  }
 
-// Sets up the filter on IO thread such that requests to |host| fail.
-void MakeRequestFail(const std::string& host) {
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(MakeRequestFailOnIO, host),
-      MessageLoop::QuitClosure());
-  content::RunMessageLoop();
-}
+ private:
+  // Filters requests to the |host| such that they fail. Run on IO thread.
+  static void MakeRequestFailOnIO(const std::string& host) {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->AddHostnameHandler("http", host, &FailedJobFactory);
+    filter->AddHostnameHandler("https", host, &FailedJobFactory);
+  }
+
+  // Remove filters for requests to the |host|. Run on IO thread.
+  static void UndoMakeRequestFailOnIO(const std::string& host) {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->RemoveHostnameHandler("http", host);
+    filter->RemoveHostnameHandler("https", host);
+  }
+
+  const std::string host_;
+};
 
 // Verifies that the given url |spec| can be opened. This assumes that |spec|
 // points at empty.html in the test data dir.
@@ -615,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
-  MakeRequestFail("search.example");
+  MakeRequestFail make_request_fail("search.example");
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
@@ -685,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   // Makes the requests fail since all we want to check is that the redirection
   // is done properly.
-  MakeRequestFail("google.com");
+  MakeRequestFail make_request_fail("google.com");
 
   // Verifies that requests to Google Search engine with the SafeSearch
   // enabled set the safe=active&ssui=on parameters at the end of the query.
@@ -738,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
-  MakeRequestFail("search.example");
+  MakeRequestFail make_request_fail("search.example");
 
   chrome::search::EnableInstantExtendedAPIForTesting();
 
@@ -1416,6 +1447,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   CheckURLIsBlocked(browser(), kURLS[1]);
   CheckCanOpenURL(browser(), kURLS[2]);
   CheckCanOpenURL(browser(), kURLS[3]);
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(UndoRedirectHostsToTestData, kURLS, arraysize(kURLS)),
+      MessageLoop::QuitClosure());
+  content::RunMessageLoop();
 }
 
 // Flaky on Linux. http://crbug.com/155459

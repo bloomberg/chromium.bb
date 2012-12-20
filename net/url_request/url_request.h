@@ -187,9 +187,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   class NET_EXPORT Deprecated {
    private:
     // TODO(willchan): Kill off these friend declarations.
-    friend class extensions::AutoUpdateInterceptor;
     friend class ::ChildProcessSecurityPolicyTest;
-    friend class ::ComponentUpdateInterceptor;
     friend class ::TestAutomationProvider;
     friend class ::URLRequestAutomationJob;
     friend class TestInterceptor;
@@ -198,11 +196,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     friend class appcache::AppCacheRequestHandlerTest;
     friend class appcache::AppCacheURLRequestJobTest;
     friend class content::ResourceDispatcherHostTest;
-    friend class extensions::UserScriptListenerTest;
     friend class fileapi::FileSystemDirURLRequestJobTest;
     friend class fileapi::FileSystemURLRequestJobTest;
     friend class fileapi::FileWriterDelegateTest;
-    friend class policy::CannedResponseInterceptor;
     friend class webkit_blob::BlobURLRequestJobTest;
 
     // Use URLRequestJobFactory::ProtocolHandler instead.

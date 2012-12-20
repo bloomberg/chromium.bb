@@ -10,6 +10,18 @@
 
 namespace net {
 
+namespace {
+
+URLRequestJob* ProtocolHandlerFactory(
+    URLRequestJobFactory::ProtocolHandler* protocol_handler,
+    URLRequest* request,
+    NetworkDelegate* network_delegate,
+    const std::string& scheme) {
+  return protocol_handler->MaybeCreateJob(request, network_delegate);
+}
+
+}  // namespace
+
 URLRequestFilter* URLRequestFilter::shared_instance_ = NULL;
 
 URLRequestFilter::~URLRequestFilter() {}
@@ -31,7 +43,23 @@ URLRequestFilter* URLRequestFilter::GetInstance() {
 
 void URLRequestFilter::AddHostnameHandler(const std::string& scheme,
     const std::string& hostname, URLRequest::ProtocolFactory* factory) {
-  hostname_handler_map_[make_pair(scheme, hostname)] = factory;
+  AddHostnameCallback(scheme, hostname, base::Bind(factory));
+}
+
+void URLRequestFilter::AddHostnameProtocolHandler(
+    const std::string& scheme,
+    const std::string& hostname,
+    URLRequestJobFactory::ProtocolHandler* protocol_handler) {
+  AddHostnameCallback(scheme, hostname, base::Bind(ProtocolHandlerFactory,
+                                                   protocol_handler));
+}
+
+void URLRequestFilter::AddHostnameCallback(
+    const std::string& scheme,
+    const std::string& hostname,
+    base::Callback<URLRequest::ProtocolFactory> callback) {
+  DCHECK_EQ(0u, hostname_handler_map_.count(make_pair(scheme, hostname)));
+  hostname_handler_map_[make_pair(scheme, hostname)] = callback;
 
   // Register with the ProtocolFactory.
   URLRequest::Deprecated::RegisterProtocolFactory(
@@ -68,6 +96,7 @@ bool URLRequestFilter::AddUrlHandler(
     URLRequest::ProtocolFactory* factory) {
   if (!url.is_valid())
     return false;
+  DCHECK_EQ(0u, url_handler_map_.count(url.spec()));
   url_handler_map_[url.spec()] = factory;
 
   // Register with the ProtocolFactory.
@@ -130,7 +159,7 @@ URLRequestJob* URLRequestFilter::FindRequestHandler(
     HostnameHandlerMap::iterator i =
         hostname_handler_map_.find(make_pair(scheme, hostname));
     if (i != hostname_handler_map_.end())
-      job = i->second(request, network_delegate, scheme);
+      job = i->second.Run(request, network_delegate, scheme);
 
     if (!job) {
       // Not in the hostname map, check the url map.

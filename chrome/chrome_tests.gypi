@@ -1030,8 +1030,6 @@
         'browser/extensions/app_background_page_apitest.cc',
         'browser/extensions/app_notification_browsertest.cc',
         'browser/extensions/app_process_apitest.cc',
-        'browser/extensions/autoupdate_interceptor.cc',
-        'browser/extensions/autoupdate_interceptor.h',
         'browser/extensions/background_page_apitest.cc',
         'browser/extensions/background_scripts_apitest.cc',
         'browser/extensions/chrome_app_api_browsertest.cc',

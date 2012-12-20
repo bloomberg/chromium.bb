@@ -544,25 +544,12 @@ const std::string& ScopedCustomUrlRequestTestHttpHost::value() {
 TestJobInterceptor::TestJobInterceptor() : main_intercept_job_(NULL) {
 }
 
-URLRequestJob* TestJobInterceptor::MaybeIntercept(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const {
+URLRequestJob* TestJobInterceptor::MaybeCreateJob(
+    URLRequest* request,
+    NetworkDelegate* network_delegate) const {
   URLRequestJob* job = main_intercept_job_;
   main_intercept_job_ = NULL;
   return job;
-}
-
-URLRequestJob* TestJobInterceptor::MaybeInterceptRedirect(
-      const GURL& location,
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const {
-  return NULL;
-}
-
-URLRequestJob* TestJobInterceptor::MaybeInterceptResponse(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const {
-  return NULL;
 }
 
 void TestJobInterceptor::set_main_intercept_job(URLRequestJob* job) {

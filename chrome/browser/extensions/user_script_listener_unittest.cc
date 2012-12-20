@@ -17,6 +17,7 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,17 +102,23 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
 
 class UserScriptListenerTest
     : public ExtensionServiceTestBase,
-      public net::URLRequest::Interceptor {
+      public net::URLRequestJobFactory::ProtocolHandler {
  public:
   UserScriptListenerTest() {
-    net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
+    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+        "http", "google.com", this);
+    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+        "http", "example.com", this);
   }
 
   ~UserScriptListenerTest() {
-    net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                                "google.com");
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                                "example.com");
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ExtensionServiceTestBase::SetUp();
 
     InitializeEmptyExtensionService();
@@ -121,14 +128,15 @@ class UserScriptListenerTest
     listener_ = new UserScriptListener();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     listener_ = NULL;
     MessageLoop::current()->RunUntilIdle();
   }
 
-  // net::URLRequest::Interceptor
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+  // net::URLRequestJobFactory::ProtocolHandler
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     return new SimpleTestJob(request, network_delegate);
   }
 

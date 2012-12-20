@@ -466,18 +466,20 @@ class URLRequestTest : public PlatformTest {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.Init();
   }
+  virtual ~URLRequestTest() {}
 
   // Adds the TestJobInterceptor to the default context.
   TestJobInterceptor* AddTestInterceptor() {
-    TestJobInterceptor* interceptor = new TestJobInterceptor();
-    default_context_.set_job_factory(&job_factory_);
-    job_factory_.AddInterceptor(interceptor);
-    return interceptor;
+    TestJobInterceptor* protocol_handler_ = new TestJobInterceptor();
+    job_factory_.reset(new URLRequestJobFactoryImpl);
+    job_factory_->SetProtocolHandler("http", protocol_handler_);
+    default_context_.set_job_factory(job_factory_.get());
+    return protocol_handler_;
   }
 
  protected:
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
-  URLRequestJobFactoryImpl job_factory_;
+  scoped_ptr<URLRequestJobFactoryImpl> job_factory_;
   TestURLRequestContext default_context_;
 };
 

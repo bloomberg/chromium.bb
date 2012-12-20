@@ -44,30 +44,6 @@ struct FetchResult {
   string16 text;
 };
 
-// CheckNoRevocationFlagSetInterceptor causes a test failure if a request is
-// seen that doesn't set a load flag to bypass revocation checking.
-class CheckNoRevocationFlagSetInterceptor :
-    public URLRequestJobFactory::Interceptor {
- public:
-  virtual URLRequestJob* MaybeIntercept(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
-    EXPECT_TRUE(request->load_flags() & LOAD_DISABLE_CERT_REVOCATION_CHECKING);
-    return NULL;
-  }
-
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-};
-
 // A non-mock URL request which can access http:// and file:// urls.
 class RequestContext : public URLRequestContext {
  public:
@@ -90,10 +66,7 @@ class RequestContext : public URLRequestContext {
     storage_.set_http_transaction_factory(new HttpCache(
         network_session,
         HttpCache::DefaultBackend::InMemory(0)));
-    scoped_ptr<URLRequestJobFactoryImpl> factory(new URLRequestJobFactoryImpl);
-    factory->AddInterceptor(new CheckNoRevocationFlagSetInterceptor);
-    url_request_job_factory_ = factory.Pass();
-    set_job_factory(url_request_job_factory_.get());
+    set_job_factory(new URLRequestJobFactoryImpl());
   }
 
   virtual ~RequestContext() {
@@ -116,7 +89,9 @@ GURL GetTestFileUrl(const std::string& relpath) {
 }
 
 // Really simple NetworkDelegate so we can allow local file access on ChromeOS
-// without introducing layering violations.
+// without introducing layering violations.  Also causes a test failure if a
+// request is seen that doesn't set a load flag to bypass revocation checking.
+
 class BasicNetworkDelegate : public NetworkDelegate {
  public:
   BasicNetworkDelegate() {}
@@ -126,6 +101,7 @@ class BasicNetworkDelegate : public NetworkDelegate {
   virtual int OnBeforeURLRequest(URLRequest* request,
                                  const CompletionCallback& callback,
                                  GURL* new_url) OVERRIDE {
+    EXPECT_TRUE(request->load_flags() & LOAD_DISABLE_CERT_REVOCATION_CHECKING);
     return OK;
   }
 

@@ -22,9 +22,11 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory.h"
 
 class GURL;
 
@@ -35,7 +37,7 @@ class NET_EXPORT URLRequestFilter {
  public:
   // scheme,hostname -> ProtocolFactory
   typedef std::map<std::pair<std::string, std::string>,
-      URLRequest::ProtocolFactory*> HostnameHandlerMap;
+      base::Callback<URLRequest::ProtocolFactory> > HostnameHandlerMap;
   typedef base::hash_map<std::string, URLRequest::ProtocolFactory*>
       UrlHandlerMap;
 
@@ -49,6 +51,10 @@ class NET_EXPORT URLRequestFilter {
   void AddHostnameHandler(const std::string& scheme,
                           const std::string& hostname,
                           URLRequest::ProtocolFactory* factory);
+  void AddHostnameProtocolHandler(
+      const std::string& scheme,
+      const std::string& hostname,
+      URLRequestJobFactory::ProtocolHandler* protocol_handler);
   void RemoveHostnameHandler(const std::string& scheme,
                              const std::string& hostname);
 
@@ -83,6 +89,11 @@ class NET_EXPORT URLRequestFilter {
   int hit_count_;
 
  private:
+  void AddHostnameCallback(
+      const std::string& scheme,
+      const std::string& hostname,
+      base::Callback<URLRequest::ProtocolFactory> callback);
+
   // Singleton instance.
   static URLRequestFilter* shared_instance_;
 

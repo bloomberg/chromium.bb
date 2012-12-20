@@ -25,7 +25,9 @@ class Value;
 }
 
 namespace chrome_browser_net {
+class ConnectInterceptor;
 class LoadTimeStats;
+class Predictor;
 }
 
 namespace extensions {
@@ -71,6 +73,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Not inlined because we assign a scoped_refptr, which requires us to include
   // the header file. Here we just forward-declare it.
   void set_cookie_settings(CookieSettings* cookie_settings);
+
+  // Causes requested URLs to be fed to |predictor| via ConnectInterceptor.
+  void set_predictor(chrome_browser_net::Predictor* predictor);
 
   void set_load_time_stats(chrome_browser_net::LoadTimeStats* load_time_stats) {
     load_time_stats_ = load_time_stats;
@@ -166,6 +171,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   scoped_refptr<CookieSettings> cookie_settings_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+
+  scoped_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;

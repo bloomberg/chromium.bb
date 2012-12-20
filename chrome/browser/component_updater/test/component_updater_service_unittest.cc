@@ -11,13 +11,13 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/component_updater_interceptor.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/globals.h"
 #include "net/url_request/url_fetcher.h"
@@ -119,11 +119,6 @@ const uint8 abag_hash[] = {0x01,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
                            0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
                            0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
                            0x06,0x01};
-
-const char header_ok_reply[] =
-    "HTTP/1.1 200 OK\0"
-    "Content-type: text/html\0"
-    "\0";
 
 const char expected_crx_url[] =
     "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
@@ -245,19 +240,17 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  scoped_refptr<ComponentUpdateInterceptor>
-      interceptor(new ComponentUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com;
   RegisterComponent(&com, kTestComponent_abag, Version("1.1"));
 
-  const char expected_update_url[] =
+  const GURL expected_update_url(
       "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D1.1%26uc";
+      "abagagagagagagagagagagagagagagag%26v%3D1.1%26uc");
 
-  interceptor->SetResponse(expected_update_url,
-                           header_ok_reply,
-                           test_file("updatecheck_reply_1.xml"));
+  interceptor.SetResponse(expected_update_url,
+                          test_file("updatecheck_reply_1.xml"));
 
   // We loop twice, but there are no updates so we expect two sleep messages.
   test_configurator()->SetLoopCount(2);
@@ -274,7 +267,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
   TestNotificationTracker::Event ev3 = notification_tracker().at(2);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
-  EXPECT_EQ(2, interceptor->hit_count());
+  EXPECT_EQ(2, interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -284,9 +277,8 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   // Loop twice again but this case we simulate a server error by returning
   // an empty file.
 
-  interceptor->SetResponse(expected_update_url,
-                           header_ok_reply,
-                           test_file("updatecheck_reply_empty"));
+  interceptor.SetResponse(expected_update_url,
+                          test_file("updatecheck_reply_empty"));
 
   notification_tracker().Reset();
   test_configurator()->SetLoopCount(2);
@@ -301,7 +293,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
   ev3 = notification_tracker().at(2);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
-  EXPECT_EQ(4, interceptor->hit_count());
+  EXPECT_EQ(4, interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -326,30 +318,29 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  scoped_refptr<ComponentUpdateInterceptor>
-      interceptor(new ComponentUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
   CrxComponent com2;
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
 
-  const char expected_update_url_1[] =
+  const GURL expected_update_url_1(
       "http://localhost/upd?extra=foo&x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc";
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
 
-  const char expected_update_url_2[] =
+  const GURL expected_update_url_2(
       "http://localhost/upd?extra=foo&x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc";
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc");
 
-  interceptor->SetResponse(expected_update_url_1, header_ok_reply,
-                           test_file("updatecheck_reply_1.xml"));
-  interceptor->SetResponse(expected_update_url_2, header_ok_reply,
-                           test_file("updatecheck_reply_1.xml"));
-  interceptor->SetResponse(expected_crx_url, header_ok_reply,
-                           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+  interceptor.SetResponse(expected_update_url_1,
+                          test_file("updatecheck_reply_1.xml"));
+  interceptor.SetResponse(expected_update_url_2,
+                          test_file("updatecheck_reply_1.xml"));
+  interceptor.SetResponse(GURL(expected_crx_url),
+                          test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
   test_configurator()->SetLoopCount(2);
 
@@ -358,7 +349,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(3, interceptor->hit_count());
+  EXPECT_EQ(3, interceptor.GetHitCount());
 
   ASSERT_EQ(5ul, notification_tracker().size());
 
@@ -389,27 +380,25 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  scoped_refptr<ComponentUpdateInterceptor>
-      interceptor(new ComponentUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com;
   RegisterComponent(&com, kTestComponent_jebg, Version("0.9"));
 
-  const char expected_update_url[] =
+  const GURL expected_update_url(
       "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc";
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
 
-  interceptor->SetResponse(expected_update_url,
-                           header_ok_reply,
-                           test_file("updatecheck_reply_2.xml"));
-  interceptor->SetResponse(expected_crx_url, header_ok_reply,
-                           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+  interceptor.SetResponse(expected_update_url,
+                          test_file("updatecheck_reply_2.xml"));
+  interceptor.SetResponse(GURL(expected_crx_url),
+                          test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   message_loop.Run();
 
-  EXPECT_EQ(1, interceptor->hit_count());
+  EXPECT_EQ(1, interceptor.GetHitCount());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
 

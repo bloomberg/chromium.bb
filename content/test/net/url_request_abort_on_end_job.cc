@@ -19,26 +19,33 @@
 
 namespace content {
 namespace {
+
 const char kPageContent[] = "some data\r\n";
+
+net::URLRequestJob* JobFactory(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const std::string& scheme) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return new URLRequestAbortOnEndJob(request, network_delegate);
 }
+
+void AddUrlHandlerOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->AddUrlHandler(GURL(URLRequestAbortOnEndJob::k400AbortOnEndUrl),
+                        &JobFactory);
+}
+
+}  // anonymous namespace
 
 const char URLRequestAbortOnEndJob::k400AbortOnEndUrl[] =
     "http://url.handled.by.abort.on.end/400";
 
 // static
 void URLRequestAbortOnEndJob::AddUrlHandler() {
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddUrlHandler(GURL(k400AbortOnEndUrl),
-                        &URLRequestAbortOnEndJob::Factory);
-}
-
-// static
-net::URLRequestJob* URLRequestAbortOnEndJob::Factory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return new URLRequestAbortOnEndJob(request, network_delegate);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(AddUrlHandlerOnIOThread));
 }
 
 // Private const version.

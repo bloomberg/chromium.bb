@@ -103,7 +103,6 @@ void AwURLRequestContextGetter::Init() {
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
   job_factory->AddInterceptor(new AwRequestInterceptor());
-  url_request_context_->set_job_factory(job_factory.get());
 
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
@@ -118,9 +117,9 @@ void AwURLRequestContextGetter::Init() {
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
 
-  OnNetworkStackInitialized(url_request_context_.get(),
-                            job_factory.get());
-  job_factory_ = job_factory.Pass();
+  job_factory_ = CreateAndroidJobFactoryAndCookieMonster(
+      url_request_context_.get(), job_factory.Pass());
+  url_request_context_->set_job_factory(job_factory_.get());
 }
 
 void AwURLRequestContextGetter::PopulateNetworkSessionParams(

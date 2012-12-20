@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
+#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request.h"
 
 using android_webview::InputStream;
@@ -66,22 +67,18 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
 };
 
 class AssetFileProtocolInterceptor :
-      public net::URLRequestJobFactory::Interceptor {
+      public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  AssetFileProtocolInterceptor();
   virtual ~AssetFileProtocolInterceptor() OVERRIDE;
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptResponse(
+  static scoped_ptr<net::URLRequestJobFactory> CreateURLRequestJobFactory(
+      scoped_ptr<net::URLRequestJobFactory> base_job_factory);
+  virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
+  AssetFileProtocolInterceptor();
+
   // file:///android_asset/
   const std::string asset_prefix_;
   // file:///android_res/
@@ -196,7 +193,19 @@ AssetFileProtocolInterceptor::AssetFileProtocolInterceptor()
 AssetFileProtocolInterceptor::~AssetFileProtocolInterceptor() {
 }
 
-net::URLRequestJob* AssetFileProtocolInterceptor::MaybeIntercept(
+// static
+scoped_ptr<net::URLRequestJobFactory>
+AssetFileProtocolInterceptor::CreateURLRequestJobFactory(
+    scoped_ptr<net::URLRequestJobFactory> base_job_factory) {
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory(
+      new net::ProtocolInterceptJobFactory(
+          base_job_factory.Pass(),
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+              new AssetFileProtocolInterceptor())));
+  return top_job_factory.Pass();
+}
+
+net::URLRequestJob* AssetFileProtocolInterceptor::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   if (!request->url().SchemeIsFile()) return NULL;
 
@@ -213,19 +222,6 @@ net::URLRequestJob* AssetFileProtocolInterceptor::MaybeIntercept(
           new AndroidStreamReaderURLRequestJobDelegateImpl()));
 }
 
-net::URLRequestJob* AssetFileProtocolInterceptor::MaybeInterceptRedirect(
-    const GURL& location,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return NULL;
-}
-
-net::URLRequestJob* AssetFileProtocolInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return NULL;
-}
-
 }  // namespace
 
 namespace android_webview {
@@ -235,18 +231,18 @@ bool RegisterAndroidProtocolHandler(JNIEnv* env) {
 }
 
 // static
-void RegisterAndroidProtocolsOnIOThread(
-    net::URLRequestContext* context,
-    AwURLRequestJobFactory* job_factory) {
+scoped_ptr<net::URLRequestJobFactory> CreateAndroidRequestJobFactory(
+    scoped_ptr<AwURLRequestJobFactory> job_factory) {
   // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is
   // granted via ChildProcessSecurityPolicy::GrantScheme(). This is done in
   // AwContentBrowserClient.
   // The job factory takes ownership of the handler.
-  job_factory->SetProtocolHandler(android_webview::kContentScheme,
-                                  new ContentSchemeProtocolHandler());
-  // The job factory takes ownership of the interceptor.
-  job_factory->AddInterceptor(new AssetFileProtocolInterceptor());
+  bool set_protocol = job_factory->SetProtocolHandler(
+      android_webview::kContentScheme, new ContentSchemeProtocolHandler());
+  DCHECK(set_protocol);
+  return AssetFileProtocolInterceptor::CreateURLRequestJobFactory(
+      job_factory.PassAs<net::URLRequestJobFactory>());
 }
 
 // Set a context object to be used for resolving resource queries. This can

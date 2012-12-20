@@ -7,8 +7,14 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "net/url_request/url_request_job_factory.h"
+
+class GURL;
+
+namespace net {
+class URLRequest;
+}
 
 namespace chrome_browser_net {
 
@@ -17,26 +23,15 @@ class Predictor;
 //------------------------------------------------------------------------------
 // An interceptor to monitor URLRequests so that we can do speculative DNS
 // resolution and/or speculative TCP preconnections.
-class ConnectInterceptor : public net::URLRequestJobFactory::Interceptor {
+class ConnectInterceptor {
  public:
   // Construction includes registration as an URL.
   explicit ConnectInterceptor(Predictor* predictor);
   // Destruction includes unregistering.
   virtual ~ConnectInterceptor();
 
- protected:
-  // Overridden from net::URLRequest::Interceptor:
   // Learn about referrers, and optionally preconnect based on history.
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+  void WitnessURLRequest(net::URLRequest* request) const;
 
  private:
   // Provide access to local class TimedCache for testing.

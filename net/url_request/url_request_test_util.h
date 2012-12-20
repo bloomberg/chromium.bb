@@ -300,19 +300,12 @@ class ScopedCustomUrlRequestTestHttpHost {
 
 //-----------------------------------------------------------------------------
 
-// A simple Interceptor that returns a pre-built URLRequestJob only once.
-class TestJobInterceptor : public URLRequestJobFactory::Interceptor {
+// A simple ProtocolHandler that returns a pre-built URLRequestJob only once.
+class TestJobInterceptor : public URLRequestJobFactory::ProtocolHandler {
  public:
   TestJobInterceptor();
 
-  virtual URLRequestJob* MaybeIntercept(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptResponse(
+  virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request,
       NetworkDelegate* network_delegate) const OVERRIDE;
   void set_main_intercept_job(URLRequestJob* job);

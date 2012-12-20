@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -292,6 +293,12 @@ void ChromeNetworkDelegate::set_cookie_settings(
   cookie_settings_ = cookie_settings;
 }
 
+void ChromeNetworkDelegate::set_predictor(
+    chrome_browser_net::Predictor* predictor) {
+  connect_interceptor_.reset(
+      new chrome_browser_net::ConnectInterceptor(predictor));
+}
+
 // static
 void ChromeNetworkDelegate::NeverThrottleRequests() {
   g_never_throttle_requests_ = true;
@@ -393,6 +400,9 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
   if (force_safe_search && rv == net::OK && new_url->is_empty())
     ForceGoogleSafeSearch(request, new_url);
+
+  if (connect_interceptor_)
+    connect_interceptor_->WitnessURLRequest(request);
 
   return rv;
 }

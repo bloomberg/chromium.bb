@@ -166,15 +166,16 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
     }
   };
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     TestController::GetInstance()->set_result(false);
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     if (handler_added_) {
-      net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-      filter->RemoveHostnameHandler(scheme_, host_name_);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(UnregisterTestHandlers, scheme_, host_name_));
       handler_added_ = false;
       TestController::GetInstance()->set_delegate(NULL);
     }
@@ -187,14 +188,14 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   // individual test functions seems to fix that.
   void AddTestHandlers() {
     if (!handler_added_) {
-      net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
       GURL cloud_print_service_url =
           CloudPrintURL(browser()->profile()).
           GetCloudPrintServiceURL();
       scheme_ = cloud_print_service_url.scheme();
       host_name_ = cloud_print_service_url.host();
-      filter->AddHostnameHandler(scheme_, host_name_,
-                                 &PrintDialogCloudTest::Factory);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(RegisterTestHandlers, scheme_, host_name_));
       handler_added_ = true;
 
       GURL cloud_print_dialog_url =
@@ -216,6 +217,18 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
                    browser()->profile(), browser()->window()->GetNativeWindow(),
                    path_to_pdf, string16(), string16(),
                    std::string("application/pdf"), false));
+  }
+
+ private:
+  static void RegisterTestHandlers(const std::string& scheme,
+                       const std::string& host_name) {
+    net::URLRequestFilter::GetInstance()->AddHostnameHandler(
+        scheme, host_name, &PrintDialogCloudTest::Factory);
+  }
+  static void UnregisterTestHandlers(const std::string& scheme,
+                         const std::string& host_name) {
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(scheme,
+                                                                host_name);
   }
 
   bool handler_added_;

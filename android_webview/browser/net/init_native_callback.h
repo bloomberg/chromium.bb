@@ -5,8 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_INIT_NATIVE_CALLBACK_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_INIT_NATIVE_CALLBACK_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace net {
 class URLRequestContext;
+class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
@@ -15,8 +18,9 @@ class AwURLRequestJobFactory;
 // This is called on the IO thread when the network URLRequestContext has been
 // initialized but not used. Note that the UI thread is blocked during this
 // call.
-void OnNetworkStackInitialized(net::URLRequestContext* context,
-                               AwURLRequestJobFactory* job_factory);
+scoped_ptr<net::URLRequestJobFactory> CreateAndroidJobFactoryAndCookieMonster(
+    net::URLRequestContext* context,
+    scoped_ptr<AwURLRequestJobFactory> job_factory);
 
 }  // namespace android_webview
 

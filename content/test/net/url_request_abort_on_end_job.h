@@ -22,6 +22,9 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
  public:
   static const char k400AbortOnEndUrl[];
 
+  URLRequestAbortOnEndJob(net::URLRequest* request,
+                          net::NetworkDelegate* network_delegate);
+
   // net::URLRequestJob
   virtual void Start() OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
@@ -30,15 +33,9 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
                            int buf_size,
                            int* bytes_read) OVERRIDE;
 
-  static net::URLRequestJob* Factory(net::URLRequest* request,
-                                     net::NetworkDelegate* network_delegate,
-                                     const std::string& scheme);
-
   static void AddUrlHandler();
 
  private:
-  URLRequestAbortOnEndJob(net::URLRequest* request,
-                          net::NetworkDelegate* network_delegate);
   virtual ~URLRequestAbortOnEndJob();
 
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;

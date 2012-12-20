@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeHttpUserAgentSettings;
+class ChromeNetworkDelegate;
 class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
@@ -269,7 +270,7 @@ class ProfileIOData {
   void set_server_bound_cert_service(
       net::ServerBoundCertService* server_bound_cert_service) const;
 
-  net::NetworkDelegate* network_delegate() const {
+  ChromeNetworkDelegate* network_delegate() const {
     return network_delegate_.get();
   }
 
@@ -433,7 +434,7 @@ class ProfileIOData {
   mutable scoped_ptr<ChromeURLDataManagerBackend>
       chrome_url_data_manager_backend_;
   mutable scoped_ptr<net::ServerBoundCertService> server_bound_cert_service_;
-  mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
+  mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>
       fraudulent_certificate_reporter_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;

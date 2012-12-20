@@ -1,12 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_HTTP_INTERCEPT_JOB_FACTORY_H_
-#define CHROME_BROWSER_NET_HTTP_INTERCEPT_JOB_FACTORY_H_
+#ifndef NET_URL_REQUEST_PROTOCOL_INTERCEPT_JOB_FACTORY_H_
+#define NET_URL_REQUEST_PROTOCOL_INTERCEPT_JOB_FACTORY_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "net/base/net_export.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class GURL;
@@ -16,14 +18,15 @@ namespace net {
 class URLRequest;
 class URLRequestJob;
 
-// This class acts as a wrapper for URLRequestJobFactory. It handles HTTP and
-// HTTPS jobs using |protocol_handler_|, but forwards all other schemes to the
-// old job factory to be handled there.
-class HttpInterceptJobFactory : public URLRequestJobFactory {
+// This class acts as a wrapper for URLRequestJobFactory. |protocol_handler_| is
+// given the option of creating a URLRequestJob for each potential URLRequest.
+// If |protocol_handler_| does not create a job (i.e. MaybeCreateJob() returns
+// NULL) the URLRequest is forwarded to the |job_factory_| to be handled there.
+class NET_EXPORT ProtocolInterceptJobFactory : public URLRequestJobFactory {
  public:
-  HttpInterceptJobFactory(const URLRequestJobFactory* job_factory,
-                          ProtocolHandler* protocol_handler);
-  virtual ~HttpInterceptJobFactory();
+  ProtocolInterceptJobFactory(scoped_ptr<URLRequestJobFactory> job_factory,
+                              scoped_ptr<ProtocolHandler> protocol_handler);
+  virtual ~ProtocolInterceptJobFactory();
 
   // URLRequestJobFactory implementation
   virtual bool SetProtocolHandler(const std::string& scheme,
@@ -45,12 +48,12 @@ class HttpInterceptJobFactory : public URLRequestJobFactory {
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
 
  private:
-  const URLRequestJobFactory* job_factory_;
-  ProtocolHandler* protocol_handler_;
+  scoped_ptr<URLRequestJobFactory> job_factory_;
+  scoped_ptr<ProtocolHandler> protocol_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(HttpInterceptJobFactory);
+  DISALLOW_COPY_AND_ASSIGN(ProtocolInterceptJobFactory);
 };
 
 }  // namespace net
 
-#endif  // CHROME_BROWSER_NET_HTTP_INTERCEPT_JOB_FACTORY_H_
+#endif  // NET_URL_REQUEST_PROTOCOL_INTERCEPT_JOB_FACTORY_H_

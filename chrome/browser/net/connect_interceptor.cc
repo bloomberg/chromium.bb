@@ -27,11 +27,10 @@ ConnectInterceptor::ConnectInterceptor(Predictor* predictor)
 ConnectInterceptor::~ConnectInterceptor() {
 }
 
-net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) const {
   GURL request_scheme_host(Predictor::CanonicalizeUrl(request->url()));
   if (request_scheme_host == GURL::EmptyGURL())
-    return NULL;
+    return;
 
   // Learn what URLs are likely to be needed during next startup.
   predictor_->LearnAboutInitialNavigation(request_scheme_host);
@@ -74,7 +73,7 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
       // We don't update the RecentlySeen() time because any preconnections
       // need to be made at the first navigation (i.e., when referer was loaded)
       // and wouldn't have waited for this current request navigation.
-      return NULL;
+      return;
     }
   }
   timed_cache_.SetRecentlySeen(request_scheme_host);
@@ -84,19 +83,7 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
   // predictions now for subresources or for redirected hosts.
   if ((request->load_flags() & net::LOAD_SUB_FRAME) || redirected_host)
     predictor_->PredictFrameSubresources(request_scheme_host);
-  return NULL;
-}
-
-net::URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return NULL;
-}
-
-net::URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
-    const GURL& location,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return NULL;
+  return;
 }
 
 ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)

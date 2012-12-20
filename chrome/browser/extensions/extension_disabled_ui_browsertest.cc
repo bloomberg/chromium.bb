@@ -5,7 +5,6 @@
 #include "base/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
@@ -189,15 +189,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   InstallIncreasingPermissionExtensionV1();
 
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
-  interceptor->SetResponseOnIOThread(
-      "http://localhost/autoupdate/updates.xml",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/updates.xml"),
       test_data_dir_.AppendASCII("permissions_increase")
                     .AppendASCII("updates.xml"));
-  interceptor->SetResponseOnIOThread(
-      "http://localhost/autoupdate/v2.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/v2.crx"),
       scoped_temp_dir_.path().AppendASCII("permissions2.crx"));
 
   extensions::ExtensionUpdater::CheckParams params;

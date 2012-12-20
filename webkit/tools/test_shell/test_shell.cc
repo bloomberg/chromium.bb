@@ -169,6 +169,9 @@ TestShell::~TestShell() {
     LoadURL(GURL("about:blank"));
   }
 
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->RemoveHostnameHandler("test-shell-resource", "inspector");
+
   // Call GC twice to clean up garbage.
   CallJSGC();
   CallJSGC();

@@ -6,7 +6,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
@@ -250,14 +250,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   NotificationListener notification_listener;
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v2.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
-                                     basedir.AppendASCII("v2.crx"));
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v2.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
+                                          basedir.AppendASCII("v2.crx"));
 
   // Install version 1 of the extension.
   ExtensionTestMessageListener listener1("v1 installed", false);
@@ -298,9 +298,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 
   // Now try doing an update to version 3, which has been incorrectly
   // signed. This should fail.
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v3.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v3.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v3.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v3.crx"),
                                      basedir.AppendASCII("v3.crx"));
 
   service->updater()->CheckNow(params);
@@ -335,13 +336,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   NotificationListener notification_listener;
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v2.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v2.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
   // Install version 1 of the extension.
@@ -411,13 +412,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v2.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v2.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
   const size_t size_before = service->extensions()->size();
@@ -497,13 +498,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v2.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v2.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
   const size_t size_before = service->extensions()->size();
@@ -572,13 +573,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_TRUE(service->disabled_extensions()->is_empty());
 
   // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
+  content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
-                                     basedir.AppendASCII("manifest_v2.xml"));
-  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/manifest"),
+      basedir.AppendASCII("manifest_v2.xml"));
+  interceptor.SetResponseIgnoreQuery(GURL("http://localhost/autoupdate/v2.crx"),
                                      basedir.AppendASCII("v2.crx"));
 
   // Check that the policy is initially empty.
