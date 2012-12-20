@@ -246,12 +246,22 @@ class SearchProvider : public AutocompleteProvider,
   // Returns whether the appropriate result list members were updated.
   bool ParseSuggestResults(base::Value* root_val, bool is_keyword);
 
-  // Converts the parsed results to a set of AutocompleteMatches and adds them
-  // to |matches_|.  This also sets |done_| correctly.
-  void ConvertResultsToAutocompleteMatches(int depth);
+  // Converts the parsed results to a set of AutocompleteMatches, |matches_|.
+  void ConvertResultsToAutocompleteMatches();
 
-  // Converts the first navigation result in |navigation_results| to an
-  // AutocompleteMatch and adds it to |matches_|.
+  // Checks if suggested relevances violate certain expected constraints.
+  // See UpdateMatches() for the use and explanation of these constraints.
+  bool IsTopMatchScoreTooLow() const;
+  bool IsTopMatchHighRankSearchForURL() const;
+  bool IsTopMatchNotInlinable() const;
+
+  // Updates |matches_| from the latest results; applies calculated relevances
+  // if suggested relevances cause undesriable behavior. Updates |done_|.
+  void UpdateMatches();
+
+  // Converts the top navigation result in |navigation_results| to an
+  // AutocompleteMatch and adds it to |matches_|. |is_keyword| must be true if
+  // the results come from the keyword provider.
   void AddNavigationResultsToMatches(
       const NavigationResults& navigation_results,
       bool is_keyword);

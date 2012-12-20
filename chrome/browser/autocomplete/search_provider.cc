@@ -282,7 +282,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }
-  ConvertResultsToAutocompleteMatches(0);
+  UpdateMatches();
 }
 
 SearchProvider::Result::Result(int relevance) : relevance_(relevance) {}
@@ -419,7 +419,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
   }
 
-  ConvertResultsToAutocompleteMatches(0);
+  UpdateMatches();
   if (done_ || results_updated)
     listener_->OnProviderUpdate(results_updated);
 }
@@ -758,7 +758,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   return true;
 }
 
-void SearchProvider::ConvertResultsToAutocompleteMatches(int depth) {
+void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // Convert all the results to matches and add them to a map, so we can keep
   // the most relevant match for each result.
   MatchMap map;
@@ -832,52 +832,64 @@ void SearchProvider::ConvertResultsToAutocompleteMatches(int depth) {
   }
 
   if (matches_.size() > max_total_matches)
-    matches_.erase(matches_.begin() + max_total_matches, matches_.end());
+    matches_.resize(max_total_matches);
+}
+
+bool SearchProvider::IsTopMatchScoreTooLow() const {
+  return matches_.front().relevance < CalculateRelevanceForVerbatim();
+}
+
+bool SearchProvider::IsTopMatchHighRankSearchForURL() const {
+  return input_.type() == AutocompleteInput::URL &&
+         matches_.front().relevance > CalculateRelevanceForVerbatim() &&
+         (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
+          matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED);
+}
+
+bool SearchProvider::IsTopMatchNotInlinable() const {
+  return matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
+         matches_.front().type != AutocompleteMatch::URL_WHAT_YOU_TYPED &&
+         matches_.front().inline_autocomplete_offset == string16::npos &&
+         matches_.front().fill_into_edit != input_.text();
+}
+
+void SearchProvider::UpdateMatches() {
+  ConvertResultsToAutocompleteMatches();
 
   // Check constraints that may be violated by suggested relevances.
-  // TODO(jered|msw): Find the root cause of http://crbug.com/166172 and remove
-  // this depth check. This is here to prevent a crash when this code recurses
-  // forever due to an unknown issue.
-  DCHECK(depth < 10) << "QoD:" << input_.text();
-  if (!matches_.empty() && depth < 10 &&
+  if (!matches_.empty() &&
       (has_suggested_relevance_ || verbatim_relevance_ >= 0)) {
-    bool reconstruct_matches = false;
-    if (matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
-        matches_.front().type != AutocompleteMatch::URL_WHAT_YOU_TYPED &&
-        matches_.front().inline_autocomplete_offset == string16::npos &&
-        matches_.front().fill_into_edit != input_.text()) {
-      // Disregard suggested relevances if the top match is not SWYT, inlinable,
-      // or URL_WHAT_YOU_TYPED (which may be top match regardless of inlining).
-      // For example, input "foo" should not invoke a search for "bar", which
-      // would happen if the "bar" search match outranked all other matches.
-      ApplyCalculatedRelevance();
-      reconstruct_matches = true;
-    } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
+    // These two blocks attempt to repair undesriable behavior by suggested
+    // relevances with minimal impact, preserving other suggested relevances.
+    if (IsTopMatchScoreTooLow()) {
       // Disregard the suggested verbatim relevance if the top score is below
       // the usual verbatim value. For example, a BarProvider may rely on
       // SearchProvider's verbatim or inlineable matches for input "foo" to
       // always outrank its own lowly-ranked non-inlineable "bar" match.
       verbatim_relevance_ = -1;
-      reconstruct_matches = true;
+      ConvertResultsToAutocompleteMatches();
     }
-    if (input_.type() == AutocompleteInput::URL &&
-        matches_.front().relevance > CalculateRelevanceForVerbatim() &&
-        (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-         matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED)) {
+    if (IsTopMatchHighRankSearchForURL()) {
       // Disregard the suggested search and verbatim relevances if the input
       // type is URL and the top match is a highly-ranked search suggestion.
       // For example, prevent a search for "foo.com" from outranking another
       // provider's navigation for "foo.com" or "foo.com/url_from_history".
-      // Reconstruction will also ensure that the new top match is inlineable.
       ApplyCalculatedSuggestRelevance(&keyword_suggest_results_, true);
       ApplyCalculatedSuggestRelevance(&default_suggest_results_, false);
       verbatim_relevance_ = -1;
-      reconstruct_matches = true;
+      ConvertResultsToAutocompleteMatches();
     }
-    if (reconstruct_matches) {
-      ConvertResultsToAutocompleteMatches(depth + 1);
-      return;
+    if (IsTopMatchNotInlinable()) {
+      // Disregard suggested relevances if the top match is not SWYT, inlinable,
+      // or URL_WHAT_YOU_TYPED (which may be top match regardless of inlining).
+      // For example, input "foo" should not invoke a search for "bar", which
+      // would happen if the "bar" search match outranked all other matches.
+      ApplyCalculatedRelevance();
+      ConvertResultsToAutocompleteMatches();
     }
+    DCHECK(!IsTopMatchScoreTooLow());
+    DCHECK(!IsTopMatchHighRankSearchForURL());
+    DCHECK(!IsTopMatchNotInlinable());
   }
 
   UpdateStarredStateOfMatches();
