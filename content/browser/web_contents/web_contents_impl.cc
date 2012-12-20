@@ -404,8 +404,6 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
         params));
 
   new_contents->Init(WebContents::CreateParams(browser_context, site_instance));
-  new_contents->browser_plugin_guest_->InstallHelper(
-      new_contents->GetRenderViewHost());
 
   return new_contents;
 }
@@ -2358,9 +2356,9 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
   CHECK(!browser_plugin_embedder_.get());
   browser_plugin_embedder_.reset(
       BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
-  browser_plugin_embedder_->CreateGuest(GetRenderViewHost(),
-                                        instance_id,
-                                        params);
+  BrowserPluginHostMsg_CreateGuest create_guest_msg(
+      GetRenderViewHost()->GetRoutingID(), instance_id, params);
+  browser_plugin_embedder_->OnMessageReceived(create_guest_msg);
 }
 
 void WebContentsImpl::OnDidDownloadFavicon(

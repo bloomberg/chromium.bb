@@ -27,6 +27,7 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "webkit/glue/webdropdata.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;

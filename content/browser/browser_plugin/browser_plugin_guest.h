@@ -79,7 +79,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
     content::BrowserPluginGuest::factory_ = factory;
   }
 
-  void InstallHelper(content::RenderViewHost* render_view_host);
+  bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
+
+  void Initialize(const BrowserPluginHostMsg_CreateGuest_Params& params,
+                  content::RenderViewHost* render_view_host);
 
   void set_guest_hang_timeout_for_testing(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -94,6 +97,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   bool focused() const { return focused_; }
   bool visible() const { return visible_; }
+
+  void UpdateVisibility();
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -139,69 +144,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                               const FileChooserParams& params) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
 
-  void UpdateRectACK(
-      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-
-  // The guest WebContents is visible if both its embedder is visible and
-  // the browser plugin element is visible. If either one is not then the
-  // WebContents is marked as hidden. A hidden WebContents will consume
-  // fewer GPU and CPU resources.
-  //
-  // When the every WebContents in a RenderProcessHost is hidden, it will lower
-  // the priority of the process (see RenderProcessHostImpl::WidgetHidden).
-  //
-  // It will also send a message to the guest renderer process to cleanup
-  // resources such as dropping back buffers and adjusting memory limits (if in
-  // compositing mode, see CCLayerTreeHost::setVisible).
-  //
-  // Additionally it will slow down Javascript execution and garbage collection.
-  // See RenderThreadImpl::IdleHandler (executed when hidden) and
-  // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
-  void SetVisibility(bool embedder_visible, bool visible);
-
-  // Handles drag events from the embedder.
-  // When dragging, the drag events go to the embedder first, and if the drag
-  // happens on the browser plugin, then the plugin sends a corresponding
-  // drag-message to the guest. This routes the drag-message to the guest
-  // renderer.
-  void DragStatusUpdate(WebKit::WebDragStatus drag_status,
-                        const WebDropData& drop_data,
-                        WebKit::WebDragOperationsMask drag_mask,
-                        const gfx::Point& location);
-
-  // Updates the size state of the guest.
-  void SetSize(
-      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
 
   // Kill the guest process.
   void Terminate();
 
-  // Grab the new damage buffer from the embedder, and resize the guest's
-  // web contents.
-  void Resize(RenderViewHost* embedder_rvh,
-              const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
-  // Overridden in tests.
-  // Handles input event routed through the embedder (which is initiated in the
-  // browser plugin (renderer side of the embedder)).
-  virtual void HandleInputEvent(RenderViewHost* render_view_host,
-                                const gfx::Rect& guest_window_rect,
-                                const gfx::Rect& guest_screen_rect,
-                                const WebKit::WebInputEvent& event);
-  // If possible, navigate the guest to |relative_index| entries away from the
-  // current navigation entry.
-  virtual void Go(int relative_index);
-  // Overridden in tests.
-  virtual void SetFocus(bool focused);
-  // Reload the guest.
-  virtual void Reload();
-  // Stop loading the guest.
-  virtual void Stop();
   // Overridden in tests.
   virtual void SetDamageBuffer(TransportDIB* damage_buffer,
 #if defined(OS_WIN)
@@ -237,7 +185,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   }
   // Returns the transport DIB associated with the dib in resize |params|.
   TransportDIB* GetDamageBufferFromEmbedder(
-      RenderViewHost* embedder_rvh,
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
   // Called when a redirect notification occurs.
@@ -247,7 +194,64 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
-  // Message handlers.
+  // Message handlers for messsages from embedder.
+
+  // If possible, navigate the guest to |relative_index| entries away from the
+  // current navigation entry.
+  virtual void OnGo(int instance_id, int relative_index);
+  // Handles drag events from the embedder.
+  // When dragging, the drag events go to the embedder first, and if the drag
+  // happens on the browser plugin, then the plugin sends a corresponding
+  // drag-message to the guest. This routes the drag-message to the guest
+  // renderer.
+  void OnDragStatusUpdate(int instance_id,
+                          WebKit::WebDragStatus drag_status,
+                          const WebDropData& drop_data,
+                          WebKit::WebDragOperationsMask drag_mask,
+                          const gfx::Point& location);
+  // Overriden in tests.
+  virtual void OnHandleInputEvent(int instance_id,
+                                  const gfx::Rect& guest_window_rect,
+                                  const WebKit::WebInputEvent* event);
+  // Reload the guest. Overriden in tests.
+  virtual void OnReload(int instance_id);
+  // Grab the new damage buffer from the embedder, and resize the guest's
+  // web contents.
+  void OnResizeGuest(int instance_id,
+                     const BrowserPluginHostMsg_ResizeGuest_Params& params);
+  // Updates the size state of the guest.
+  void OnSetSize(
+      int instance_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
+  // Overriden in tests.
+  virtual void OnSetFocus(int instance_id, bool focused);
+  // The guest WebContents is visible if both its embedder is visible and
+  // the browser plugin element is visible. If either one is not then the
+  // WebContents is marked as hidden. A hidden WebContents will consume
+  // fewer GPU and CPU resources.
+  //
+  // When every WebContents in a RenderProcessHost is hidden, it will lower
+  // the priority of the process (see RenderProcessHostImpl::WidgetHidden).
+  //
+  // It will also send a message to the guest renderer process to cleanup
+  // resources such as dropping back buffers and adjusting memory limits (if in
+  // compositing mode, see CCLayerTreeHost::setVisible).
+  //
+  // Additionally, it will slow down Javascript execution and garbage
+  // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
+  // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
+  void OnSetVisibility(int instance_id, bool visible);
+  // Stop loading the guest. Overriden in tests.
+  virtual void OnStop(int instance_id);
+  void OnTerminateGuest(int instance_id);
+  void OnUpdateRectACK(
+      int instance_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
+
+
+  // Message handlers for messages from guest.
 
   void OnHandleInputEventAck(
       WebKit::WebInputEvent::Type event_type,
@@ -260,7 +264,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
-  // Overriden in tests
+  // Overriden in tests.
   virtual void OnTakeFocus(bool reverse);
   void OnUpdateDragCursor(WebKit::WebDragOperation operation);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);

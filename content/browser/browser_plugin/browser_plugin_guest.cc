@@ -64,7 +64,30 @@ BrowserPluginGuest::BrowserPluginGuest(
   DCHECK(web_contents);
 }
 
-void BrowserPluginGuest::InstallHelper(
+bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
+                        OnDragStatusUpdate)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
+                        OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void BrowserPluginGuest::Initialize(
+    const BrowserPluginHostMsg_CreateGuest_Params& params,
     content::RenderViewHost* render_view_host) {
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
@@ -72,6 +95,8 @@ void BrowserPluginGuest::InstallHelper(
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<content::WebContents>(web_contents()));
+
+  OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -89,6 +114,10 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
                                               params);
   }
   return new BrowserPluginGuest(instance_id, web_contents,params);
+}
+
+void BrowserPluginGuest::UpdateVisibility() {
+  OnSetVisibility(instance_id_, visible());
 }
 
 void BrowserPluginGuest::Observe(int type,
@@ -110,10 +139,6 @@ void BrowserPluginGuest::Observe(int type,
       NOTREACHED() << "Unexpected notification sent.";
       break;
   }
-}
-
-void BrowserPluginGuest::Go(int relative_index) {
-  web_contents()->GetController().GoToOffset(relative_index);
 }
 
 bool BrowserPluginGuest::CanDownload(RenderViewHost* render_view_host,
@@ -165,114 +190,17 @@ bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-void BrowserPluginGuest::SetVisibility(bool embedder_visible, bool visible) {
-  visible_ = visible;
-  if (embedder_visible && visible)
-    web_contents()->WasShown();
-  else
-    web_contents()->WasHidden();
-}
-
-void BrowserPluginGuest::DragStatusUpdate(WebKit::WebDragStatus drag_status,
-                                          const WebDropData& drop_data,
-                                          WebKit::WebDragOperationsMask mask,
-                                          const gfx::Point& location) {
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
-  switch (drag_status) {
-    case WebKit::WebDragStatusEnter:
-      host->DragTargetDragEnter(drop_data, location, location, mask, 0);
-      break;
-    case WebKit::WebDragStatusOver:
-      host->DragTargetDragOver(location, location, mask, 0);
-      break;
-    case WebKit::WebDragStatusLeave:
-      host->DragTargetDragLeave();
-      break;
-    case WebKit::WebDragStatusDrop:
-      host->DragTargetDrop(location, location, 0);
-      break;
-    case WebKit::WebDragStatusUnknown:
-      NOTREACHED();
-  }
-}
-
-void BrowserPluginGuest::SetSize(
-    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
-  bool old_auto_size_enabled = auto_size_enabled_;
-  gfx::Size old_max_size = max_auto_size_;
-  gfx::Size old_min_size = min_auto_size_;
-  auto_size_enabled_ = auto_size_params.enable;
-  max_auto_size_ = auto_size_params.max_size;
-  min_auto_size_ = auto_size_params.min_size;
-  if (auto_size_enabled_ && (!old_auto_size_enabled ||
-                             (old_max_size != max_auto_size_) ||
-                             (old_min_size != min_auto_size_))) {
-    web_contents()->GetRenderViewHost()->EnableAutoResize(
-        min_auto_size_, max_auto_size_);
-    // TODO(fsamuel): If we're changing autosize parameters, then we force
-    // the guest to completely repaint itself, because BrowserPlugin has
-    // allocated a new damage buffer and expects a full frame of pixels.
-    // Ideally, we shouldn't need to do this because we shouldn't need to
-    // allocate a new damage buffer unless |max_auto_size_| has changed.
-    // However, even in that case, layout may not change and so we may
-    // not get a full frame worth of pixels.
-    web_contents()->GetRenderViewHost()->Send(new ViewMsg_Repaint(
-        web_contents()->GetRenderViewHost()->GetRoutingID(),
-        max_auto_size_));
-  } else if (!auto_size_enabled_ && old_auto_size_enabled) {
-    web_contents()->GetRenderViewHost()->DisableAutoResize(
-        resize_guest_params.view_size);
-  }
-  Resize(embedder_web_contents_->GetRenderViewHost(), resize_guest_params);
-}
-
 WebContents* BrowserPluginGuest::GetWebContents() {
   return web_contents();
 }
 
-void BrowserPluginGuest::Terminate() {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Terminate"));
-  base::ProcessHandle process_handle =
-      web_contents()->GetRenderProcessHost()->GetHandle();
-  base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
-}
-
-void BrowserPluginGuest::Resize(
-    RenderViewHost* embedder_rvh,
-    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  // BrowserPlugin manages resize flow control itself and does not depend
-  // on RenderWidgetHost's mechanisms for flow control, so we reset those flags
-  // here.
-  RenderWidgetHostImpl* render_widget_host =
-      RenderWidgetHostImpl::From(web_contents()->GetRenderViewHost());
-  render_widget_host->ResetSizeAndRepaintPendingFlags();
-  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
-    // Invalid transport dib, so just resize the WebContents.
-    if (!params.view_size.IsEmpty())
-      web_contents()->GetView()->SizeContents(params.view_size);
-    return;
-  }
-  TransportDIB* damage_buffer =
-      GetDamageBufferFromEmbedder(embedder_rvh, params);
-  SetDamageBuffer(damage_buffer,
-#if defined(OS_WIN)
-                  params.damage_buffer_size,
-                  params.damage_buffer_id.handle,
-#endif
-                  params.view_size,
-                  params.scale_factor);
-  web_contents()->GetView()->SizeContents(params.view_size);
-}
-
 TransportDIB* BrowserPluginGuest::GetDamageBufferFromEmbedder(
-    RenderViewHost* embedder_rvh,
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   TransportDIB* damage_buffer = NULL;
 #if defined(OS_WIN)
   // On Windows we need to duplicate the handle from the remote process.
   HANDLE section;
-  DuplicateHandle(embedder_rvh->GetProcess()->GetHandle(),
+  DuplicateHandle(embedder_web_contents_->GetRenderProcessHost()->GetHandle(),
                   params.damage_buffer_id.handle,
                   GetCurrentProcess(),
                   &section,
@@ -326,59 +254,6 @@ int BrowserPluginGuest::embedder_routing_id() const {
 bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
   return size.width() <= max_auto_size_.width() &&
       size.height() <= max_auto_size_.height();
-}
-
-void BrowserPluginGuest::UpdateRectACK(
-    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
-  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
-  render_view_host->Send(
-      new ViewMsg_UpdateRect_ACK(render_view_host->GetRoutingID()));
-  SetSize(auto_size_params, resize_guest_params);
-}
-
-void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
-                                          const gfx::Rect& guest_window_rect,
-                                          const gfx::Rect& guest_screen_rect,
-                                          const WebKit::WebInputEvent& event) {
-  guest_window_rect_ = guest_window_rect;
-  guest_screen_rect_ = guest_screen_rect;
-  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-      web_contents()->GetRenderViewHost());
-
-  IPC::Message* message = NULL;
-
-  // TODO(fsamuel): What should we do for keyboard_shortcut field?
-  if (event.type == WebKit::WebInputEvent::KeyDown) {
-    CHECK_EQ(sizeof(WebKit::WebKeyboardEvent), event.size);
-    WebKit::WebKeyboardEvent key_event;
-    memcpy(&key_event, &event, event.size);
-    key_event.type = WebKit::WebInputEvent::RawKeyDown;
-    message = new ViewMsg_HandleInputEvent(routing_id(), &key_event, false);
-  } else {
-    message = new ViewMsg_HandleInputEvent(routing_id(), &event, false);
-  }
-
-  guest_rvh->Send(message);
-  guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
-}
-
-void BrowserPluginGuest::Stop() {
-  web_contents()->Stop();
-}
-
-void BrowserPluginGuest::Reload() {
-  // TODO(fsamuel): Don't check for repost because we don't want to show
-  // Chromium's repost warning. We might want to implement a separate API
-  // for registering a callback if a repost is about to happen.
-  web_contents()->GetController().Reload(false);
-}
-
-void BrowserPluginGuest::SetFocus(bool focused) {
-  if (focused_ == focused)
-      return;
-  focused_ = focused;
-  Send(new ViewMsg_SetFocus(routing_id(), focused));
 }
 
 void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
@@ -462,9 +337,7 @@ void BrowserPluginGuest::RenderViewReady() {
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://crbug.com/158151).
   Send(new ViewMsg_SetFocus(routing_id(), focused_));
-  bool embedder_visible =
-      embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
-  SetVisibility(embedder_visible, visible());
+  UpdateVisibility();
   if (auto_size_enabled_) {
     web_contents()->GetRenderViewHost()->EnableAutoResize(
         min_auto_size_, max_auto_size_);
@@ -514,6 +387,169 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void BrowserPluginGuest::OnGo(int instance_id, int relative_index) {
+  web_contents()->GetController().GoToOffset(relative_index);
+}
+
+void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
+                                            WebKit::WebDragStatus drag_status,
+                                            const WebDropData& drop_data,
+                                            WebKit::WebDragOperationsMask mask,
+                                            const gfx::Point& location) {
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  switch (drag_status) {
+    case WebKit::WebDragStatusEnter:
+      host->DragTargetDragEnter(drop_data, location, location, mask, 0);
+      break;
+    case WebKit::WebDragStatusOver:
+      host->DragTargetDragOver(location, location, mask, 0);
+      break;
+    case WebKit::WebDragStatusLeave:
+      host->DragTargetDragLeave();
+      break;
+    case WebKit::WebDragStatusDrop:
+      host->DragTargetDrop(location, location, 0);
+      break;
+    case WebKit::WebDragStatusUnknown:
+      NOTREACHED();
+  }
+}
+
+void BrowserPluginGuest::OnHandleInputEvent(
+    int instance_id,
+    const gfx::Rect& guest_window_rect,
+    const WebKit::WebInputEvent* event) {
+  guest_window_rect_ = guest_window_rect;
+  guest_screen_rect_ = guest_window_rect;
+  guest_screen_rect_.Offset(
+      embedder_web_contents_->GetRenderViewHost()->GetView()->
+          GetViewBounds().OffsetFromOrigin());
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      web_contents()->GetRenderViewHost());
+
+  IPC::Message* message = NULL;
+
+  // TODO(fsamuel): What should we do for keyboard_shortcut field?
+  if (event->type == WebKit::WebInputEvent::KeyDown) {
+    CHECK_EQ(sizeof(WebKit::WebKeyboardEvent), event->size);
+    WebKit::WebKeyboardEvent key_event;
+    memcpy(&key_event, event, event->size);
+    key_event.type = WebKit::WebInputEvent::RawKeyDown;
+    message = new ViewMsg_HandleInputEvent(routing_id(), &key_event, false);
+  } else {
+    message = new ViewMsg_HandleInputEvent(routing_id(), event, false);
+  }
+
+  guest_rvh->Send(message);
+  guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
+}
+
+void BrowserPluginGuest::OnReload(int instance_id) {
+  // TODO(fsamuel): Don't check for repost because we don't want to show
+  // Chromium's repost warning. We might want to implement a separate API
+  // for registering a callback if a repost is about to happen.
+  web_contents()->GetController().Reload(false);
+}
+
+void BrowserPluginGuest::OnResizeGuest(
+    int instance_id,
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  // BrowserPlugin manages resize flow control itself and does not depend
+  // on RenderWidgetHost's mechanisms for flow control, so we reset those flags
+  // here. If we are setting the size for the first time before navigating then
+  // BrowserPluginGuest does not yet have a RenderViewHost.
+  if (web_contents()->GetRenderViewHost()) {
+    RenderWidgetHostImpl* render_widget_host =
+        RenderWidgetHostImpl::From(web_contents()->GetRenderViewHost());
+    render_widget_host->ResetSizeAndRepaintPendingFlags();
+  }
+  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
+    // Invalid transport dib, so just resize the WebContents.
+    if (!params.view_size.IsEmpty())
+      web_contents()->GetView()->SizeContents(params.view_size);
+    return;
+  }
+  TransportDIB* damage_buffer = GetDamageBufferFromEmbedder(params);
+  SetDamageBuffer(damage_buffer,
+#if defined(OS_WIN)
+                  params.damage_buffer_size,
+                  params.damage_buffer_id.handle,
+#endif
+                  params.view_size,
+                  params.scale_factor);
+  web_contents()->GetView()->SizeContents(params.view_size);
+}
+
+void BrowserPluginGuest::OnSetSize(
+    int instance_id,
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  bool old_auto_size_enabled = auto_size_enabled_;
+  gfx::Size old_max_size = max_auto_size_;
+  gfx::Size old_min_size = min_auto_size_;
+  auto_size_enabled_ = auto_size_params.enable;
+  max_auto_size_ = auto_size_params.max_size;
+  min_auto_size_ = auto_size_params.min_size;
+  if (auto_size_enabled_ && (!old_auto_size_enabled ||
+                             (old_max_size != max_auto_size_) ||
+                             (old_min_size != min_auto_size_))) {
+    web_contents()->GetRenderViewHost()->EnableAutoResize(
+        min_auto_size_, max_auto_size_);
+    // TODO(fsamuel): If we're changing autosize parameters, then we force
+    // the guest to completely repaint itself, because BrowserPlugin has
+    // allocated a new damage buffer and expects a full frame of pixels.
+    // Ideally, we shouldn't need to do this because we shouldn't need to
+    // allocate a new damage buffer unless |max_auto_size_| has changed.
+    // However, even in that case, layout may not change and so we may
+    // not get a full frame worth of pixels.
+    web_contents()->GetRenderViewHost()->Send(new ViewMsg_Repaint(
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        max_auto_size_));
+  } else if (!auto_size_enabled_ && old_auto_size_enabled) {
+    web_contents()->GetRenderViewHost()->DisableAutoResize(
+        resize_guest_params.view_size);
+  }
+  OnResizeGuest(instance_id_, resize_guest_params);
+}
+
+void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
+  if (focused_ == focused)
+      return;
+  focused_ = focused;
+  Send(new ViewMsg_SetFocus(routing_id(), focused));
+}
+
+void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
+  visible_ = visible;
+  BrowserPluginEmbedder* embedder =
+      embedder_web_contents_->GetBrowserPluginEmbedder();
+  if (embedder->visible() && visible)
+    web_contents()->WasShown();
+  else
+    web_contents()->WasHidden();
+}
+
+void BrowserPluginGuest::OnStop(int instance_id) {
+  web_contents()->Stop();
+}
+
+void BrowserPluginGuest::OnTerminateGuest(int instance_id) {
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Terminate"));
+  base::ProcessHandle process_handle =
+      web_contents()->GetRenderProcessHost()->GetHandle();
+  base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+}
+
+void BrowserPluginGuest::OnUpdateRectACK(
+    int instance_id,
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
+  render_view_host->Send(
+      new ViewMsg_UpdateRect_ACK(render_view_host->GetRoutingID()));
+  OnSetSize(instance_id_, auto_size_params, resize_guest_params);
 }
 
 void BrowserPluginGuest::OnHandleInputEventAck(

@@ -246,8 +246,6 @@
     'browser/browser_main_runner.cc',
     'browser/browser_plugin/browser_plugin_embedder.cc',
     'browser/browser_plugin/browser_plugin_embedder.h',
-    'browser/browser_plugin/browser_plugin_embedder_helper.cc',
-    'browser/browser_plugin/browser_plugin_embedder_helper.h',
     'browser/browser_plugin/browser_plugin_guest.cc',
     'browser/browser_plugin/browser_plugin_guest.h',
     'browser/browser_plugin/browser_plugin_guest_helper.cc',

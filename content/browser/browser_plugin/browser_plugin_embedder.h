@@ -22,28 +22,16 @@
 
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
-#include "ui/surface/transport_dib.h"
-#include "webkit/glue/webdropdata.h"
 
-struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 
-namespace WebKit {
-class WebInputEvent;
-}
-
 namespace gfx {
 class Point;
-class Rect;
-class Size;
 }
 
 namespace content {
@@ -69,73 +57,13 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host);
 
-  // Creates a new guest.
-  void CreateGuest(RenderViewHost* render_view_host,
-                   int instance_id,
-                   const BrowserPluginHostMsg_CreateGuest_Params& params);
-
-  // Navigates in a guest (new or existing).
-  void NavigateGuest(
-      RenderViewHost* render_view_host,
-      int instance_id,
-      const std::string& src);
-
-  void ResizeGuest(RenderViewHost* render_view_host,
-                   int instance_id,
-                   const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
-  void Go(int instance_id, int relative_index);
-  void Stop(int instance_id);
-  void Reload(int instance_id);
-  void TerminateGuest(int instance_id);
-
-  // WebContentsObserver implementation.
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-
-  // NotificationObserver method override.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  // Message handlers (direct/indirect via BrowserPluginEmbedderHelper).
-  // Routes update rect ack message to the appropriate guest.
-  void UpdateRectACK(
-      int instance_id,
-      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-  void SetFocus(int instance_id, bool focused);
-  // Handles input events sent from the BrowserPlugin (embedder's renderer
-  // process) by passing them to appropriate guest's input handler. The
-  // BrowserPlugin behaves like a black hole for events, so the embedder does
-  // not see them in the capture or bubble phase.
-  // Currently scroll events do not propagate back to the embedder process
-  // and so even if the guest discards a scroll event, it won't make its
-  // way back to the embedder. This may change in the future.
-  void HandleInputEvent(int instance_id,
-                        RenderViewHost* render_view_host,
-                        const gfx::Rect& guest_window_rect,
-                        const WebKit::WebInputEvent& event);
-  void PluginDestroyed(int instance_id);
-  void SetGuestVisibility(int instance_id,
-                          bool guest_visible);
-  void DragStatusUpdate(int instance_id,
-                        WebKit::WebDragStatus drag_status,
-                        const WebDropData& drop_data,
-                        WebKit::WebDragOperationsMask drag_mask,
-                        const gfx::Point& location);
-  void SetAutoSize(
-      int instance_id,
-      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-
-  bool visible() const { return visible_; }
-
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
     factory_ = factory;
   }
+
+  bool visible() const { return visible_; }
 
   // Returns the RenderViewHost at a point (|x|, |y|) asynchronously via
   // |callback|. We need a roundtrip to renderer process to get this
@@ -144,9 +72,16 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
       int x,
       int y,
       const WebContents::GetRenderViewHostCallback& callback);
-  void PluginAtPositionResponse(int instance_id,
-                                int request_id,
-                                const gfx::Point& position);
+
+  // WebContentsObserver implementation.
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // NotificationObserver method override.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   friend class TestBrowserPluginEmbedder;
@@ -165,6 +100,22 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Called when visiblity of web_contents changes, so the embedder will
   // show/hide its guest.
   void WebContentsVisibilityChanged(bool visible);
+
+  static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
+
+  // Message handlers.
+
+  void OnCreateGuest(int instance_id,
+                     const BrowserPluginHostMsg_CreateGuest_Params& params);
+  void OnNavigateGuest(int instance_id, const std::string& src);
+  void OnPluginAtPositionResponse(int instance_id,
+                                  int request_id,
+                                  const gfx::Point& position);
+  void OnPluginDestroyed(int instance_id);
+  void OnSwapBuffersACK(int route_id,
+                        int gpu_host_id,
+                        uint64 surface_handle,
+                        uint32 sync_point);
 
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;
