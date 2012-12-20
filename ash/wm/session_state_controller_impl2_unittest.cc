@@ -976,7 +976,7 @@ TEST_F(SessionStateControllerImpl2Test, IgnorePowerButtonIfScreenIsOff) {
 // Test that hidden background appears and revers correctly on lock/cancel.
 // TODO(antrim): Reenable this: http://crbug.com/167048
 TEST_F(SessionStateControllerImpl2Test,
-    ODDISABLED_TestHiddenBackgroundLockCancel) {
+    DISABLED_TestHiddenBackgroundLockCancel) {
   Initialize(false, user::LOGGED_IN_USER);
   HideBackground();
 
