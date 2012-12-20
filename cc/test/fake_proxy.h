@@ -30,7 +30,6 @@ public:
     virtual void setNeedsCommit() OVERRIDE { }
     virtual void setNeedsRedraw() OVERRIDE { }
     virtual void setDeferCommits(bool) OVERRIDE { }
-    virtual void didAddAnimation() OVERRIDE { }
     virtual void mainThreadHasStoppedFlinging() OVERRIDE { }
     virtual bool commitRequested() const OVERRIDE;
     virtual void start() OVERRIDE { }

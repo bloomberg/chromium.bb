@@ -7,11 +7,15 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
-#include "cc/layer_animation_observer.h"
+#include "cc/layer_animation_event_observer.h"
 #include "cc/scoped_ptr_vector.h"
+#include "ui/gfx/transform.h"
 
 namespace gfx {
 class Transform;
@@ -20,24 +24,17 @@ class Transform;
 namespace cc {
 
 class Animation;
+class AnimationRegistrar;
 class KeyframeValueList;
+class LayerAnimationValueObserver;
 
-class CC_EXPORT LayerAnimationControllerClient {
+class CC_EXPORT LayerAnimationController
+    : public base::RefCounted<LayerAnimationController>,
+      public LayerAnimationEventObserver {
 public:
-    virtual ~LayerAnimationControllerClient() { }
+    static scoped_refptr<LayerAnimationController> create(int id);
 
-    virtual int id() const = 0;
-    virtual void setOpacityFromAnimation(float) = 0;
-    virtual float opacity() const = 0;
-    virtual void setTransformFromAnimation(const gfx::Transform&) = 0;
-    virtual const gfx::Transform& transform() const = 0;
-};
-
-class CC_EXPORT LayerAnimationController : public LayerAnimationObserver {
-public:
-    static scoped_ptr<LayerAnimationController> create(LayerAnimationControllerClient*);
-
-    virtual ~LayerAnimationController();
+    int id() const { return m_id; }
 
     // These methods are virtual for testing.
     virtual void addAnimation(scoped_ptr<ActiveAnimation>);
@@ -64,6 +61,9 @@ public:
     // Returns true if there are any animations that have neither finished nor aborted.
     bool hasActiveAnimation() const;
 
+    // Returns true if there are any animations at all to process.
+    bool hasAnyAnimation() const { return !m_activeAnimations.isEmpty(); }
+
     // Returns true if there is an animation currently animating the given property, or
     // if there is an animation scheduled to animate this property in the future.
     bool isAnimatingProperty(ActiveAnimation::TargetProperty) const;
@@ -76,10 +76,16 @@ public:
     // thread, all animations will be transferred.
     void setForceSync() { m_forceSync = true; }
 
-    void setClient(LayerAnimationControllerClient*);
+    void setAnimationRegistrar(AnimationRegistrar*);
+
+    void addObserver(LayerAnimationValueObserver*);
+    void removeObserver(LayerAnimationValueObserver*);
 
 protected:
-    explicit LayerAnimationController(LayerAnimationControllerClient*);
+    friend class base::RefCounted<LayerAnimationController>;
+
+    LayerAnimationController(int id);
+    virtual ~LayerAnimationController();
 
 private:
     typedef base::hash_set<int> TargetProperties;
@@ -98,11 +104,22 @@ private:
 
     void tickAnimations(double monotonicTime);
 
+    void updateActivation(bool force = false);
+
+    void notifyObserversOpacityAnimated(float opacity);
+    void notifyObserversTransformAnimated(const gfx::Transform& transform);
+
     // If this is true, we force a sync to the impl thread.
     bool m_forceSync;
 
-    LayerAnimationControllerClient* m_client;
+    AnimationRegistrar* m_registrar;
+    int m_id;
     ScopedPtrVector<ActiveAnimation> m_activeAnimations;
+
+    // This is used to ensure that we don't spam the registrar.
+    bool m_isActive;
+
+    ObserverList<LayerAnimationValueObserver> m_observers;
 
     DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);
 };

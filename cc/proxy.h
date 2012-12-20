@@ -80,8 +80,6 @@ public:
     // like compositeAndReadback while commits are deferred.
     virtual void setDeferCommits(bool) = 0;
 
-    virtual void didAddAnimation() = 0;
-
     virtual void mainThreadHasStoppedFlinging() = 0;
 
     virtual bool commitRequested() const = 0;

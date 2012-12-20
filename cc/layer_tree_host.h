@@ -41,6 +41,7 @@ struct hash<WebKit::WebGraphicsContext3D*> {
 
 namespace cc {
 
+class AnimationRegistrar;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
@@ -146,7 +147,6 @@ public:
     bool commitRequested() const;
 
     void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
-    virtual void didAddAnimation();
 
     Layer* rootLayer() { return m_rootLayer.get(); }
     const Layer* rootLayer() const { return m_rootLayer.get(); }
@@ -199,6 +199,8 @@ public:
 
     Proxy* proxy() const { return m_proxy.get(); }
 
+    AnimationRegistrar* animationRegistrar() const { return m_animationRegistrar.get(); }
+
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
     bool initialize(scoped_ptr<Thread> implThread);
@@ -227,7 +229,6 @@ private:
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
 
     bool m_animating;
-    bool m_needsAnimateLayers;
     bool m_needsFullTreeSync;
 
     base::CancelableClosure m_prepaintCallback;
@@ -271,6 +272,8 @@ private:
 
     typedef ScopedPtrVector<PrioritizedResource> TextureList;
     size_t m_partialTextureUpdateRequests;
+
+    scoped_ptr<AnimationRegistrar> m_animationRegistrar;
 
     static bool s_needsFilterContext;
 

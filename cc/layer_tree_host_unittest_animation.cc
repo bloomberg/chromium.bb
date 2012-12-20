@@ -124,11 +124,12 @@ class LayerTreeHostAnimationTestAddAnimation :
 
   virtual void animateLayers(
       LayerTreeHostImpl* impl_host,
-      base::TimeTicks monotonic_time) OVERRIDE {
+      base::TimeTicks monotonic_time,
+      bool hasUnfinishedAnimation) OVERRIDE {
     if (!num_animates_) {
       // The animation had zero duration so layerTreeHostImpl should no
       // longer need to animate its layers.
-      EXPECT_FALSE(impl_host->needsAnimateLayers());
+      EXPECT_FALSE(hasUnfinishedAnimation);
       num_animates_++;
       first_monotonic_time_ = monotonic_time;
       return;
@@ -169,7 +170,8 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws :
 
   virtual void animateLayers(
       LayerTreeHostImpl* host_impl,
-      base::TimeTicks monotonicTime) OVERRIDE {
+      base::TimeTicks monotonicTime,
+      bool hasUnfinishedAnimation) OVERRIDE {
     started_animating_ = true;
   }
 
@@ -242,7 +244,8 @@ public:
 
   virtual void animateLayers(
       LayerTreeHostImpl* host_impl,
-      base::TimeTicks monotonicTime) OVERRIDE {
+      base::TimeTicks monotonicTime,
+      bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
     ActiveAnimation* animation =
@@ -306,7 +309,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
 
   virtual void animateLayers(
       LayerTreeHostImpl* impl_host,
-      base::TimeTicks monotonicTime) OVERRIDE {
+      base::TimeTicks monotonicTime,
+      bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
         impl_host->rootLayer()->layerAnimationController();
     ActiveAnimation* animation =
@@ -402,37 +406,37 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestLayerAddedWithAnimation :
     public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestLayerAddedWithAnimation()
-      : added_animation_(false) {
-  }
+  LayerTreeHostAnimationTestLayerAddedWithAnimation() { }
 
   virtual void beginTest() OVERRIDE {
-    EXPECT_FALSE(added_animation_);
+    postSetNeedsCommitToMainThread();
+  }
 
-    scoped_refptr<Layer> layer = Layer::create();
-    layer->setLayerAnimationDelegate(this);
+  virtual void didCommit() OVERRIDE {
+    if (m_layerTreeHost->commitNumber() == 1) {
+      scoped_refptr<Layer> layer = Layer::create();
+      layer->setLayerAnimationDelegate(this);
 
-    // Any valid AnimationCurve will do here.
-    scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
-    scoped_ptr<ActiveAnimation> animation(
-        ActiveAnimation::create(curve.Pass(), 1, 1, ActiveAnimation::Opacity));
-    layer->layerAnimationController()->addAnimation(animation.Pass());
+      // Any valid AnimationCurve will do here.
+      scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
+      scoped_ptr<ActiveAnimation> animation(
+          ActiveAnimation::create(curve.Pass(), 1, 1,
+                                  ActiveAnimation::Opacity));
+      layer->layerAnimationController()->addAnimation(animation.Pass());
 
-    // We add the animation *before* attaching the layer to the tree.
-    m_layerTreeHost->rootLayer()->addChild(layer);
-    EXPECT_TRUE(added_animation_);
+      // We add the animation *before* attaching the layer to the tree.
+      m_layerTreeHost->rootLayer()->addChild(layer);
+    }
+  }
 
+  virtual void animateLayers(
+      LayerTreeHostImpl* impl_host,
+      base::TimeTicks monotonic_time,
+      bool hasUnfinishedAnimation) OVERRIDE {
     endTest();
   }
 
-  virtual void didAddAnimation() OVERRIDE {
-    added_animation_ = true;
-  }
-
   virtual void afterTest() OVERRIDE {}
-
-private:
-  bool added_animation_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(

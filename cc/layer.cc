@@ -32,7 +32,6 @@ Layer::Layer()
     , m_layerId(s_nextLayerId++)
     , m_parent(0)
     , m_layerTreeHost(0)
-    , m_layerAnimationController(LayerAnimationController::create(this))
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
@@ -64,7 +63,9 @@ Layer::Layer()
         m_layerId = s_nextLayerId++;
     }
 
-    addLayerAnimationObserver(m_layerAnimationController.get());
+    m_layerAnimationController = LayerAnimationController::create(m_layerId);
+    m_layerAnimationController->addObserver(this);
+    addLayerAnimationEventObserver(m_layerAnimationController.get());
 }
 
 Layer::~Layer()
@@ -72,6 +73,8 @@ Layer::~Layer()
     // Our parent should be holding a reference to us so there should be no
     // way for us to be destroyed while we still have a parent.
     DCHECK(!parent());
+
+    m_layerAnimationController->removeObserver(this);
 
     // Remove the parent reference from all children.
     removeAllChildren();
@@ -92,9 +95,10 @@ void Layer::setLayerTreeHost(LayerTreeHost* host)
     if (m_replicaLayer)
         m_replicaLayer->setLayerTreeHost(host);
 
-    // If this layer already has active animations, the host needs to be notified.
-    if (host && m_layerAnimationController->hasActiveAnimation())
-        host->didAddAnimation();
+    m_layerAnimationController->setAnimationRegistrar(host ? host->animationRegistrar() : 0);
+
+    if (host && m_layerAnimationController->hasAnyAnimation())
+        host->setNeedsCommit();
 }
 
 void Layer::setNeedsCommit()
@@ -373,6 +377,11 @@ void Layer::setOpacity(float opacity)
     setNeedsCommit();
 }
 
+float Layer::opacity() const
+{
+    return m_opacity;
+}
+
 bool Layer::opacityIsAnimating() const
 {
     return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
@@ -408,6 +417,11 @@ void Layer::setTransform(const gfx::Transform& transform)
         return;
     m_transform = transform;
     setNeedsCommit();
+}
+
+const gfx::Transform& Layer::transform() const
+{
+    return m_transform;
 }
 
 bool Layer::transformIsAnimating() const
@@ -703,12 +717,7 @@ int Layer::id() const
     return m_layerId;
 }
 
-float Layer::opacity() const
-{
-    return m_opacity;
-}
-
-void Layer::setOpacityFromAnimation(float opacity)
+void Layer::OnOpacityAnimated(float opacity)
 {
     // This is called due to an ongoing accelerated animation. Since this animation is
     // also being run on the impl thread, there is no need to request a commit to push
@@ -716,12 +725,7 @@ void Layer::setOpacityFromAnimation(float opacity)
     m_opacity = opacity;
 }
 
-const gfx::Transform& Layer::transform() const
-{
-    return m_transform;
-}
-
-void Layer::setTransformFromAnimation(const gfx::Transform& transform)
+void Layer::OnTransformAnimated(const gfx::Transform& transform)
 {
     // This is called due to an ongoing accelerated animation. Since this animation is
     // also being run on the impl thread, there is no need to request a commit to push
@@ -748,10 +752,7 @@ bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
 #endif
 
     m_layerAnimationController->addAnimation(animation.Pass());
-    if (m_layerTreeHost) {
-        m_layerTreeHost->didAddAnimation();
-        setNeedsCommit();
-    }
+    setNeedsCommit();
     return true;
 }
 
@@ -779,25 +780,24 @@ void Layer::resumeAnimations(double monotonicTime)
     setNeedsCommit();
 }
 
-void Layer::setLayerAnimationController(scoped_ptr<LayerAnimationController> layerAnimationController)
+void Layer::setLayerAnimationController(scoped_refptr<LayerAnimationController> layerAnimationController)
 {
-    if (m_layerAnimationController)
-        removeLayerAnimationObserver(m_layerAnimationController.get());
-
-    m_layerAnimationController = layerAnimationController.Pass();
-    if (m_layerAnimationController) {
-        m_layerAnimationController->setClient(this);
-        m_layerAnimationController->setForceSync();
-        addLayerAnimationObserver(m_layerAnimationController.get());
-    }
+    removeLayerAnimationEventObserver(m_layerAnimationController.get());
+    m_layerAnimationController->removeObserver(this);
+    m_layerAnimationController = layerAnimationController;
+    m_layerAnimationController->setForceSync();
+    m_layerAnimationController->addObserver(this);
+    addLayerAnimationEventObserver(m_layerAnimationController.get());
     setNeedsCommit();
 }
 
-scoped_ptr<LayerAnimationController> Layer::releaseLayerAnimationController()
+scoped_refptr<LayerAnimationController> Layer::releaseLayerAnimationController()
 {
-    scoped_ptr<LayerAnimationController> toReturn = m_layerAnimationController.Pass();
-    m_layerAnimationController = LayerAnimationController::create(this);
-    return toReturn.Pass();
+    m_layerAnimationController->removeObserver(this);
+    scoped_refptr<LayerAnimationController> toReturn = m_layerAnimationController;
+    m_layerAnimationController = LayerAnimationController::create(id());
+    m_layerAnimationController->addObserver(this);
+    return toReturn;
 }
 
 bool Layer::hasActiveAnimation() const
@@ -807,7 +807,7 @@ bool Layer::hasActiveAnimation() const
 
 void Layer::notifyAnimationStarted(const AnimationEvent& event, double wallClockTime)
 {
-    FOR_EACH_OBSERVER(LayerAnimationObserver, m_layerAnimationObservers,
+    FOR_EACH_OBSERVER(LayerAnimationEventObserver, m_layerAnimationObservers,
                       OnAnimationStarted(event));
     if (m_layerAnimationDelegate)
         m_layerAnimationDelegate->notifyAnimationStarted(wallClockTime);
@@ -819,13 +819,13 @@ void Layer::notifyAnimationFinished(double wallClockTime)
         m_layerAnimationDelegate->notifyAnimationFinished(wallClockTime);
 }
 
-void Layer::addLayerAnimationObserver(LayerAnimationObserver* animationObserver)
+void Layer::addLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver)
 {
     if (!m_layerAnimationObservers.HasObserver(animationObserver))
         m_layerAnimationObservers.AddObserver(animationObserver);
 }
 
-void Layer::removeLayerAnimationObserver(LayerAnimationObserver* animationObserver)
+void Layer::removeLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver)
 {
     m_layerAnimationObservers.RemoveObserver(animationObserver);
 }

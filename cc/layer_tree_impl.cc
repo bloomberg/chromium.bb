@@ -160,5 +160,8 @@ DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
   return layer_tree_host_impl_->debugRectHistory();
 }
 
+AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
+  return layer_tree_host_impl_->animationRegistrar();
+}
 
 } // namespace cc

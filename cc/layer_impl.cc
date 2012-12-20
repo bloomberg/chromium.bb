@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "cc/animation_registrar.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
 #include "cc/layer_tree_debug_state.h"
@@ -50,11 +51,13 @@ LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
-    , m_layerAnimationController(LayerAnimationController::create(this))
 {
     DCHECK(m_layerId > 0);
     DCHECK(m_layerTreeImpl);
     m_layerTreeImpl->RegisterLayer(this);
+    AnimationRegistrar* registrar = m_layerTreeImpl->animationRegistrar();
+    m_layerAnimationController = registrar->GetAnimationControllerForId(m_layerId);
+    m_layerAnimationController->addObserver(this);
 }
 
 LayerImpl::~LayerImpl()
@@ -63,6 +66,7 @@ LayerImpl::~LayerImpl()
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
     m_layerTreeImpl->UnregisterLayer(this);
+    m_layerAnimationController->removeObserver(this);
 }
 
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
@@ -459,22 +463,12 @@ int LayerImpl::id() const
      return m_layerId;
 }
 
-float LayerImpl::opacity() const
-{
-     return m_opacity;
-}
-
-void LayerImpl::setOpacityFromAnimation(float opacity)
+void LayerImpl::OnOpacityAnimated(float opacity)
 {
     setOpacity(opacity);
 }
 
-const gfx::Transform& LayerImpl::transform() const
-{
-     return m_transform;
-}
-
-void LayerImpl::setTransformFromAnimation(const gfx::Transform& transform)
+void LayerImpl::OnTransformAnimated(const gfx::Transform& transform)
 {
     setTransform(transform);
 }
@@ -626,6 +620,11 @@ void LayerImpl::setOpacity(float opacity)
     noteLayerSurfacePropertyChanged();
 }
 
+float LayerImpl::opacity() const
+{
+    return m_opacity;
+}
+
 bool LayerImpl::opacityIsAnimating() const
 {
     return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
@@ -666,6 +665,11 @@ void LayerImpl::setTransform(const gfx::Transform& transform)
 
     m_transform = transform;
     noteLayerSurfacePropertyChanged();
+}
+
+const gfx::Transform& LayerImpl::transform() const
+{
+    return m_transform;
 }
 
 bool LayerImpl::transformIsAnimating() const

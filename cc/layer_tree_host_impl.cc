@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
+#include "base/stl_util.h"
 #include "cc/append_quads_data.h"
 #include "cc/compositor_frame_metadata.h"
 #include "cc/damage_tracker.h"
@@ -220,7 +221,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
                             PriorityCalculator::allowNothingCutoff())
     , m_backgroundColor(0)
     , m_hasTransparentBackground(false)
-    , m_needsAnimateLayers(false)
     , m_needsUpdateDrawProperties(false)
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
@@ -232,6 +232,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_lastSentMemoryVisibleBytes(0)
     , m_lastSentMemoryVisibleAndNearbyBytes(0)
     , m_lastSentMemoryUseBytes(0)
+    , m_animationRegistrar(AnimationRegistrar::create())
 {
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
@@ -246,8 +247,14 @@ LayerTreeHostImpl::~LayerTreeHostImpl()
     DCHECK(m_proxy->isImplThread());
     TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
 
-    if (rootLayer())
+    if (rootLayer()) {
         clearRenderSurfaces();
+        // The layer trees must be destroyed before the layer tree host. We've
+        // made a contract with our animation controllers that the registrar
+        // will outlive them, and we must make good.
+        m_activeTree.reset();
+        m_pendingTree.reset();
+    }
 }
 
 void LayerTreeHostImpl::beginCommit()
@@ -610,35 +617,6 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     removeRenderPasses(CullRenderPassesWithCachedTextures(*m_renderer), frame);
 
     return drawFrame;
-}
-
-void LayerTreeHostImpl::animateLayersRecursive(LayerImpl* current, base::TimeTicks monotonicTime, base::Time wallClockTime, AnimationEventsVector* events, bool& didAnimate, bool& needsAnimateLayers)
-{
-    bool subtreeNeedsAnimateLayers = false;
-
-    LayerAnimationController* currentController = current->layerAnimationController();
-
-    bool hadActiveAnimation = currentController->hasActiveAnimation();
-    double monotonicTimeSeconds = (monotonicTime - base::TimeTicks()).InSecondsF();
-    currentController->animate(monotonicTimeSeconds, events);
-    bool startedAnimation = events->size() > 0;
-
-    // We animated if we either ticked a running animation, or started a new animation.
-    if (hadActiveAnimation || startedAnimation)
-        didAnimate = true;
-
-    // If the current controller still has an active animation, we must continue animating layers.
-    if (currentController->hasActiveAnimation())
-         subtreeNeedsAnimateLayers = true;
-
-    for (size_t i = 0; i < current->children().size(); ++i) {
-        bool childNeedsAnimateLayers = false;
-        animateLayersRecursive(current->children()[i], monotonicTime, wallClockTime, events, didAnimate, childNeedsAnimateLayers);
-        if (childNeedsAnimateLayers)
-            subtreeNeedsAnimateLayers = true;
-    }
-
-    needsAnimateLayers = subtreeNeedsAnimateLayers;
 }
 
 void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
@@ -1045,7 +1023,7 @@ void LayerTreeHostImpl::setVisible(bool visible)
 
     m_renderer->setVisible(visible);
 
-    setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
+    setBackgroundTickingEnabled(!m_visible && !m_animationRegistrar->active_animation_controllers().empty());
 }
 
 bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurface)
@@ -1587,25 +1565,24 @@ void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
 
 void LayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
-    if (!m_settings.acceleratedAnimationEnabled || !m_needsAnimateLayers || !rootLayer())
+    if (!m_settings.acceleratedAnimationEnabled || m_animationRegistrar->active_animation_controllers().empty() || !rootLayer())
         return;
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");
 
-    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
+    double monotonicSeconds = (monotonicTime - base::TimeTicks()).InSecondsF();
 
-    bool didAnimate = false;
-    animateLayersRecursive(rootLayer(), monotonicTime, wallClockTime, events.get(), didAnimate, m_needsAnimateLayers);
+    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
+    AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
+    for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).second->animate(monotonicSeconds, events.get());
 
     if (!events->empty())
         m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), wallClockTime);
 
-    if (didAnimate) {
-        m_client->setNeedsRedrawOnImplThread();
-        setNeedsUpdateDrawProperties();
-    }
-
-    setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
+    m_client->setNeedsRedrawOnImplThread();
+    setNeedsUpdateDrawProperties();
+    setBackgroundTickingEnabled(!m_visible && !m_animationRegistrar->active_animation_controllers().empty());
 }
 
 base::TimeDelta LayerTreeHostImpl::lowFrequencyAnimationInterval() const

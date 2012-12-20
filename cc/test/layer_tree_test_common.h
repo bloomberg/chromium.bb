@@ -28,7 +28,7 @@ public:
     virtual void commitCompleteOnThread(LayerTreeHostImpl*) { }
     virtual bool prepareToDrawOnThread(LayerTreeHostImpl*);
     virtual void drawLayersOnThread(LayerTreeHostImpl*) { }
-    virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
+    virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime, bool hasUnfinishedAnimation) { }
     virtual void willAnimateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
     virtual void applyScrollAndScale(gfx::Vector2d, float) { }
     virtual void animate(base::TimeTicks monotonicTime) { }
@@ -81,7 +81,6 @@ public:
     void postAcquireLayerTextures();
     void postSetNeedsRedrawToMainThread();
     void postSetVisibleToMainThread(bool visible);
-    void postDidAddAnimationToMainThread();
 
     void doBeginTest();
     void timeout();

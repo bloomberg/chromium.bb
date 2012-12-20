@@ -5,24 +5,30 @@
 #include "cc/layer_animation_controller.h"
 
 #include "cc/active_animation.h"
+#include "cc/animation_registrar.h"
 #include "cc/keyframed_animation_curve.h"
+#include "cc/layer_animation_value_observer.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 
-LayerAnimationController::LayerAnimationController(LayerAnimationControllerClient* client)
+LayerAnimationController::LayerAnimationController(int id)
     : m_forceSync(false)
-    , m_client(client)
+    , m_id(id)
+    , m_registrar(0)
+    , m_isActive(false)
 {
 }
 
 LayerAnimationController::~LayerAnimationController()
 {
+    if (m_registrar)
+        m_registrar->UnregisterAnimationController(this);
 }
 
-scoped_ptr<LayerAnimationController> LayerAnimationController::create(LayerAnimationControllerClient* client)
+scoped_refptr<LayerAnimationController> LayerAnimationController::create(int id)
 {
-    return make_scoped_ptr(new LayerAnimationController(client));
+    return make_scoped_refptr(new LayerAnimationController(id));
 }
 
 void LayerAnimationController::pauseAnimation(int animationId, double timeOffset)
@@ -41,6 +47,7 @@ void LayerAnimationController::removeAnimation(int animationId)
         else
             i++;
     }
+    updateActivation();
 }
 
 void LayerAnimationController::removeAnimation(int animationId, ActiveAnimation::TargetProperty targetProperty)
@@ -51,6 +58,7 @@ void LayerAnimationController::removeAnimation(int animationId, ActiveAnimation:
         else
             i++;
     }
+    updateActivation();
 }
 
 // According to render layer backing, these are for testing only.
@@ -89,6 +97,8 @@ void LayerAnimationController::pushAnimationUpdatesTo(LayerAnimationController* 
 
         pushPropertiesToImplThread(controllerImpl);
     }
+    controllerImpl->updateActivation();
+    updateActivation();
 }
 
 void LayerAnimationController::animate(double monotonicTime, AnimationEventsVector* events)
@@ -100,11 +110,14 @@ void LayerAnimationController::animate(double monotonicTime, AnimationEventsVect
     tickAnimations(monotonicTime);
     markAnimationsForDeletion(monotonicTime, events);
     startAnimationsWaitingForTargetAvailability(monotonicTime, events);
+
+    updateActivation();
 }
 
 void LayerAnimationController::addAnimation(scoped_ptr<ActiveAnimation> animation)
 {
     m_activeAnimations.append(animation.Pass());
+    updateActivation();
 }
 
 ActiveAnimation* LayerAnimationController::getActiveAnimation(int groupId, ActiveAnimation::TargetProperty targetProperty) const
@@ -154,9 +167,31 @@ void LayerAnimationController::OnAnimationStarted(const AnimationEvent& event)
     }
 }
 
-void LayerAnimationController::setClient(LayerAnimationControllerClient* client)
+void LayerAnimationController::setAnimationRegistrar(AnimationRegistrar* registrar)
 {
-    m_client = client;
+    if (m_registrar == registrar)
+        return;
+
+    if (m_registrar)
+        m_registrar->UnregisterAnimationController(this);
+
+    m_registrar = registrar;
+    if (m_registrar)
+        m_registrar->RegisterAnimationController(this);
+
+    bool force = true;
+    updateActivation(force);
+}
+
+void LayerAnimationController::addObserver(LayerAnimationValueObserver* observer)
+{
+    if (!m_observers.HasObserver(observer))
+        m_observers.AddObserver(observer);
+}
+
+void LayerAnimationController::removeObserver(LayerAnimationValueObserver* observer)
+{
+    m_observers.RemoveObserver(observer);
 }
 
 void LayerAnimationController::pushNewAnimationsToImplThread(LayerAnimationController* controllerImpl) const
@@ -214,7 +249,7 @@ void LayerAnimationController::startAnimationsWaitingForNextTick(double monotoni
             if (!m_activeAnimations[i]->hasSetStartTime())
                 m_activeAnimations[i]->setStartTime(monotonicTime);
             if (events)
-                events->push_back(AnimationEvent(AnimationEvent::Started, m_client->id(), m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
+                events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
         }
     }
 }
@@ -225,7 +260,7 @@ void LayerAnimationController::startAnimationsWaitingForStartTime(double monoton
         if (m_activeAnimations[i]->runState() == ActiveAnimation::WaitingForStartTime && m_activeAnimations[i]->startTime() <= monotonicTime) {
             m_activeAnimations[i]->setRunState(ActiveAnimation::Running, monotonicTime);
             if (events)
-                events->push_back(AnimationEvent(AnimationEvent::Started, m_client->id(), m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
+                events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
         }
     }
 }
@@ -264,7 +299,7 @@ void LayerAnimationController::startAnimationsWaitingForTargetAvailability(doubl
                 if (!m_activeAnimations[i]->hasSetStartTime())
                     m_activeAnimations[i]->setStartTime(monotonicTime);
                 if (events)
-                    events->push_back(AnimationEvent(AnimationEvent::Started, m_client->id(), m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
+                    events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
                 for (size_t j = i + 1; j < m_activeAnimations.size(); ++j) {
                     if (m_activeAnimations[i]->group() == m_activeAnimations[j]->group()) {
                         m_activeAnimations[j]->setRunState(ActiveAnimation::Running, monotonicTime);
@@ -320,7 +355,7 @@ void LayerAnimationController::markAnimationsForDeletion(double monotonicTime, A
             for (size_t j = i; j < m_activeAnimations.size(); j++) {
                 if (groupId == m_activeAnimations[j]->group()) {
                     if (events)
-                        events->push_back(AnimationEvent(AnimationEvent::Finished, m_client->id(), m_activeAnimations[j]->group(), m_activeAnimations[j]->targetProperty(), monotonicTime));
+                        events->push_back(AnimationEvent(AnimationEvent::Finished, m_id, m_activeAnimations[j]->group(), m_activeAnimations[j]->targetProperty(), monotonicTime));
                     m_activeAnimations[j]->setRunState(ActiveAnimation::WaitingForDeletion, monotonicTime);
                 }
             }
@@ -371,11 +406,11 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
 
             case ActiveAnimation::Transform: {
                 const TransformAnimationCurve* transformAnimationCurve = m_activeAnimations[i]->curve()->toTransformAnimationCurve();
-                const gfx::Transform matrix = transformAnimationCurve->getValue(trimmed).toTransform();
+                const gfx::Transform transform = transformAnimationCurve->getValue(trimmed).toTransform();
                 if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
                     m_activeAnimations[i]->setRunState(ActiveAnimation::Finished, monotonicTime);
 
-                m_client->setTransformFromAnimation(matrix);
+                notifyObserversTransformAnimated(transform);
                 break;
             }
 
@@ -385,7 +420,7 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
                 if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
                     m_activeAnimations[i]->setRunState(ActiveAnimation::Finished, monotonicTime);
 
-                m_client->setOpacityFromAnimation(opacity);
+                notifyObserversOpacityAnimated(opacity);
                 break;
             }
 
@@ -395,6 +430,31 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
             }
         }
     }
+}
+
+void LayerAnimationController::updateActivation(bool force)
+{
+    if (m_registrar) {
+        if (!m_activeAnimations.isEmpty() && (!m_isActive || force))
+            m_registrar->DidActivateAnimationController(this);
+        else if (m_activeAnimations.isEmpty() && (m_isActive || force))
+            m_registrar->DidDeactivateAnimationController(this);
+        m_isActive = !m_activeAnimations.isEmpty();
+    }
+}
+
+void LayerAnimationController::notifyObserversOpacityAnimated(float opacity)
+{
+    FOR_EACH_OBSERVER(LayerAnimationValueObserver,
+                      m_observers,
+                      OnOpacityAnimated(opacity));
+}
+
+void LayerAnimationController::notifyObserversTransformAnimated(const gfx::Transform& transform)
+{
+    FOR_EACH_OBSERVER(LayerAnimationValueObserver,
+                      m_observers,
+                      OnTransformAnimated(transform));
 }
 
 }  // namespace cc

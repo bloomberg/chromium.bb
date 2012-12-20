@@ -13,6 +13,7 @@
 #include "cc/draw_properties.h"
 #include "cc/input_handler.h"
 #include "cc/layer_animation_controller.h"
+#include "cc/layer_animation_value_observer.h"
 #include "cc/region.h"
 #include "cc/render_pass.h"
 #include "cc/render_surface_impl.h"
@@ -43,7 +44,7 @@ class Layer;
 
 struct AppendQuadsData;
 
-class CC_EXPORT LayerImpl : public LayerAnimationControllerClient {
+class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 public:
     typedef ScopedPtrVector<LayerImpl> LayerList;
 
@@ -54,12 +55,11 @@ public:
 
     virtual ~LayerImpl();
 
-    // LayerAnimationControllerClient implementation.
-    virtual int id() const OVERRIDE;
-    virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
-    virtual const gfx::Transform& transform() const OVERRIDE;
+    int id() const;
+
+    // LayerAnimationValueObserver implementation.
+    virtual void OnOpacityAnimated(float) OVERRIDE;
+    virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
 
     // Tree structure.
     LayerImpl* parent() { return m_parent; }
@@ -131,6 +131,7 @@ public:
     bool contentsOpaque() const { return m_contentsOpaque; }
 
     void setOpacity(float);
+    float opacity() const;
     bool opacityIsAnimating() const;
 
     void setPosition(const gfx::PointF&);
@@ -239,6 +240,7 @@ public:
     void setDoubleSided(bool);
 
     void setTransform(const gfx::Transform&);
+    const gfx::Transform& transform() const;
     bool transformIsAnimating() const;
 
     const gfx::RectF& updateRect() const { return m_updateRect; }
@@ -388,7 +390,7 @@ private:
     gfx::RectF m_updateRect;
 
     // Manages animations for this layer.
-    scoped_ptr<LayerAnimationController> m_layerAnimationController;
+    scoped_refptr<LayerAnimationController> m_layerAnimationController;
 
     // Manages scrollbars for this layer
     scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;

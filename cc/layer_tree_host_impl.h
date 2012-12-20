@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
+#include "cc/animation_registrar.h"
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/output_surface_client.h"
@@ -248,9 +249,7 @@ public:
 
     bool hasTransparentBackground() const { return m_hasTransparentBackground; }
     void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
-
-    bool needsAnimateLayers() const { return m_needsAnimateLayers; }
-    void setNeedsAnimateLayers() { m_needsAnimateLayers = true; }
+    bool needsAnimateLayers() const { return !m_animationRegistrar->active_animation_controllers().empty(); }
 
     bool needsUpdateDrawProperties() const { return m_needsUpdateDrawProperties; }
     void setNeedsUpdateDrawProperties() { m_needsUpdateDrawProperties = true; }
@@ -269,6 +268,8 @@ public:
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
 
     Proxy* proxy() const { return m_proxy; }
+
+    AnimationRegistrar* animationRegistrar() const { return m_animationRegistrar.get(); }
 
     void setDebugState(const LayerTreeDebugState& debugState) { m_debugState = debugState; }
     const LayerTreeDebugState& debugState() const { return m_debugState; }
@@ -313,6 +314,8 @@ protected:
 
     // Virtual for testing.
     virtual base::TimeDelta lowFrequencyAnimationInterval() const;
+
+    const AnimationRegistrar::AnimationControllerMap& activeAnimationControllers() const { return m_animationRegistrar->active_animation_controllers(); }
 
     LayerTreeHostImplClient* m_client;
     Proxy* m_proxy;
@@ -369,8 +372,6 @@ private:
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
-    // If this is true, it is necessary to traverse the layer tree ticking the animators.
-    bool m_needsAnimateLayers;
     bool m_needsUpdateDrawProperties;
     bool m_pinchGestureActive;
     gfx::Point m_previousPinchAnchor;
@@ -399,6 +400,8 @@ private:
     size_t m_lastSentMemoryVisibleBytes;
     size_t m_lastSentMemoryVisibleAndNearbyBytes;
     size_t m_lastSentMemoryUseBytes;
+
+    scoped_ptr<AnimationRegistrar> m_animationRegistrar;
 
     DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

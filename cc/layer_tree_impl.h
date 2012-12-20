@@ -92,6 +92,8 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterLayer(LayerImpl* layer);
   void UnregisterLayer(LayerImpl* layer);
 
+  AnimationRegistrar* animationRegistrar() const;
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 

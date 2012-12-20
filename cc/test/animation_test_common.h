@@ -8,6 +8,7 @@
 #include "cc/active_animation.h"
 #include "cc/animation_curve.h"
 #include "cc/layer_animation_controller.h"
+#include "cc/layer_animation_value_observer.h"
 
 namespace cc {
 class LayerImpl;
@@ -60,17 +61,17 @@ private:
     float m_to;
 };
 
-class FakeLayerAnimationControllerClient : public cc::LayerAnimationControllerClient {
+class FakeLayerAnimationValueObserver : public cc::LayerAnimationValueObserver {
 public:
-    FakeLayerAnimationControllerClient();
-    virtual ~FakeLayerAnimationControllerClient();
+    FakeLayerAnimationValueObserver();
+    virtual ~FakeLayerAnimationValueObserver();
 
-    // LayerAnimationControllerClient implementation
-    virtual int id() const OVERRIDE;
-    virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
-    virtual const gfx::Transform& transform() const OVERRIDE;
+    // LayerAnimationValueObserver implementation
+    virtual void OnOpacityAnimated(float) OVERRIDE;
+    virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
+
+    float opacity() const  { return m_opacity; }
+    const gfx::Transform& transform() const { return m_transform; }
 
 private:
     float m_opacity;

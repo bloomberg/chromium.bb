@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "cc/animation_registrar.h"
 #include "cc/font_atlas.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/heads_up_display_layer_impl.h"
@@ -70,7 +72,6 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, con
 
 LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings)
     : m_animating(false)
-    , m_needsAnimateLayers(false)
     , m_needsFullTreeSync(true)
     , m_client(client)
     , m_commitNumber(0)
@@ -90,6 +91,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_backgroundColor(SK_ColorWHITE)
     , m_hasTransparentBackground(false)
     , m_partialTextureUpdateRequests(0)
+    , m_animationRegistrar(AnimationRegistrar::create())
 {
     numLayerTreeInstances++;
 }
@@ -128,6 +130,13 @@ LayerTreeHost::~LayerTreeHost()
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
         it->second->stop();
+
+    if (m_rootLayer) {
+        // The layer tree must be destroyed before the layer tree host. We've
+        // made a contract with our animation controllers that the registrar
+        // will outlive them, and we must make good.
+        m_rootLayer = NULL;
+    }
 }
 
 void LayerTreeHost::setSurfaceReady()
@@ -285,11 +294,6 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     else
         hostImpl->activeTree()->set_hud_layer(0);
 
-    // We may have added an animation during the tree sync. This will cause both layer tree hosts
-    // to visit their controllers.
-    if (rootLayer() && m_needsAnimateLayers)
-        hostImpl->setNeedsAnimateLayers();
-
     hostImpl->activeTree()->set_source_frame_number(commitNumber());
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
@@ -421,12 +425,6 @@ void LayerTreeHost::setAnimationEvents(scoped_ptr<AnimationEventsVector> events,
 {
     DCHECK(m_proxy->isMainThread());
     setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
-}
-
-void LayerTreeHost::didAddAnimation()
-{
-    m_needsAnimateLayers = true;
-    m_proxy->didAddAnimation();
 }
 
 void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
@@ -831,33 +829,16 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
 
 void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
-    if (!m_settings.acceleratedAnimationEnabled || !m_needsAnimateLayers)
+    if (!m_settings.acceleratedAnimationEnabled || m_animationRegistrar->active_animation_controllers().empty())
         return;
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");
-    m_needsAnimateLayers = animateLayersRecursive(m_rootLayer.get(), time);
-}
 
-bool LayerTreeHost::animateLayersRecursive(Layer* current, base::TimeTicks time)
-{
-    if (!current)
-        return false;
-
-    bool subtreeNeedsAnimateLayers = false;
-    LayerAnimationController* currentController = current->layerAnimationController();
     double monotonicTime = (time - base::TimeTicks()).InSecondsF();
-    currentController->animate(monotonicTime, 0);
 
-    // If the current controller still has an active animation, we must continue animating layers.
-    if (currentController->hasActiveAnimation())
-         subtreeNeedsAnimateLayers = true;
-
-    for (size_t i = 0; i < current->children().size(); ++i) {
-        if (animateLayersRecursive(current->children()[i].get(), time))
-            subtreeNeedsAnimateLayers = true;
-    }
-
-    return subtreeNeedsAnimateLayers;
+    AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
+    for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).second->animate(monotonicTime, 0);
 }
 
 void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& events, Layer* layer, base::Time wallClockTime)

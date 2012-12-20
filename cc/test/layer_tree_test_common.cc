@@ -5,6 +5,7 @@
 #include "cc/test/layer_tree_test_common.h"
 
 #include "cc/active_animation.h"
+#include "cc/animation_registrar.h"
 #include "cc/content_layer.h"
 #include "cc/font_atlas.h"
 #include "cc/input_handler.h"
@@ -73,7 +74,15 @@ void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::T
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
     LayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
-    m_testHooks->animateLayers(this, monotonicTime);
+    bool hasUnfinishedAnimation = false;
+    AnimationRegistrar::AnimationControllerMap::const_iterator iter = activeAnimationControllers().begin();
+    for (; iter != activeAnimationControllers().end(); ++iter) {
+        if (iter->second->hasActiveAnimation()) {
+            hasUnfinishedAnimation = true;
+            break;
+        }
+    }
+    m_testHooks->animateLayers(this, monotonicTime, hasUnfinishedAnimation);
 }
 
 base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
@@ -101,12 +110,6 @@ public:
     virtual scoped_ptr<cc::LayerTreeHostImpl> createLayerTreeHostImpl(cc::LayerTreeHostImplClient* client)
     {
         return MockLayerTreeHostImpl::create(m_testHooks, settings(), client, proxy()).PassAs<cc::LayerTreeHostImpl>();
-    }
-
-    virtual void didAddAnimation() OVERRIDE
-    {
-        LayerTreeHost::didAddAnimation();
-        m_testHooks->didAddAnimation();
     }
 
     virtual void setNeedsCommit() OVERRIDE
@@ -279,11 +282,6 @@ void ThreadedTest::postSetVisibleToMainThread(bool visible)
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetVisible, base::Unretained(this), visible));
 }
 
-void ThreadedTest::postDidAddAnimationToMainThread()
-{
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchDidAddAnimation, base::Unretained(this)));
-}
-
 void ThreadedTest::doBeginTest()
 {
     m_client = ThreadedMockLayerTreeHostClient::create(this);
@@ -406,14 +404,6 @@ void ThreadedTest::dispatchComposite()
     m_scheduled = false;
     if (m_layerTreeHost.get())
         m_layerTreeHost->composite();
-}
-
-void ThreadedTest::dispatchDidAddAnimation()
-{
-    DCHECK(!proxy() || proxy()->isMainThread());
-
-    if (m_layerTreeHost.get())
-        m_layerTreeHost->didAddAnimation();
 }
 
 void ThreadedTest::runTest(bool threaded)
