@@ -233,7 +233,7 @@ class SafeBrowsingDatabaseManager
                                   GetChunksCallback callback);
 
   // Called on the IO thread after the database reports that it added a chunk.
-  void OnChunkInserted();
+  void OnAddChunksComplete(AddChunksCallback callback);
 
   // Notification that the database is done loading its bloom filter.  We may
   // have had to queue checks until the database is ready, and if so, this
@@ -242,8 +242,8 @@ class SafeBrowsingDatabaseManager
 
   // Called on the database thread to add/remove chunks and host keys.
   // Callee will free the data when it's done.
-  void HandleChunkForDatabase(const std::string& list,
-                              SBChunkList* chunks);
+  void AddDatabaseChunks(const std::string& list, SBChunkList* chunks,
+                         AddChunksCallback callback);
 
   void DeleteDatabaseChunks(std::vector<SBChunkDelete>* chunk_deletes);
 
@@ -308,7 +308,8 @@ class SafeBrowsingDatabaseManager
   virtual void UpdateStarted() OVERRIDE;
   virtual void UpdateFinished(bool success) OVERRIDE;
   virtual void GetChunks(GetChunksCallback callback) OVERRIDE;
-  virtual void AddChunks(const std::string& list, SBChunkList* chunks) OVERRIDE;
+  virtual void AddChunks(const std::string& list, SBChunkList* chunks,
+                         AddChunksCallback callback) OVERRIDE;
   virtual void DeleteChunks(
       std::vector<SBChunkDelete>* delete_chunks) OVERRIDE;
 

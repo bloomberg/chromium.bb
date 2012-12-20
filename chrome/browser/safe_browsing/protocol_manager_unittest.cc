@@ -60,6 +60,14 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
                    "&pver=2.2" + key_param_),
               url_fetcher->GetOriginalURL());
   }
+
+  void ValidateRedirectFetcherRequest(const net::TestURLFetcher* url_fetcher,
+                                      const std::string& expected_url) {
+    ASSERT_TRUE(url_fetcher);
+    EXPECT_EQ(net::LOAD_DISABLE_CACHE, url_fetcher->GetLoadFlags());
+    EXPECT_EQ("", url_fetcher->upload_data());
+    EXPECT_EQ(GURL(expected_url), url_fetcher->GetOriginalURL());
+  }
 };
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
@@ -252,7 +260,8 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD1(UpdateFinished, void(bool));
   MOCK_METHOD0(ResetDatabase, void());
   MOCK_METHOD1(GetChunks, void(GetChunksCallback));
-  MOCK_METHOD2(AddChunks, void(const std::string&, SBChunkList*));
+  MOCK_METHOD3(AddChunks, void(const std::string&, SBChunkList*,
+                               AddChunksCallback));
   MOCK_METHOD1(DeleteChunks, void(std::vector<SBChunkDelete>*));
 };
 
@@ -264,6 +273,22 @@ void InvokeGetChunksCallback(
     bool database_error,
     SafeBrowsingProtocolManagerDelegate::GetChunksCallback callback) {
   callback.Run(ranges, database_error);
+}
+
+// |HandleAddChunks| deletes the chunks and asynchronously invokes
+// |callback| since SafeBrowsingProtocolManager is not re-entrant at the time
+// this is called. This guarantee is part of the
+// SafeBrowsingProtocolManagerDelegate contract.
+void HandleAddChunks(
+    const std::string& unused_list,
+    SBChunkList* chunks,
+    SafeBrowsingProtocolManagerDelegate::AddChunksCallback callback) {
+  delete chunks;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+      base::ThreadTaskRunnerHandle::Get());
+  if (!task_runner)
+    return;
+  task_runner->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace
@@ -288,6 +313,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, ProblemAccessingDatabase) {
 
   pm->ForceScheduleNextUpdate(TimeDelta());
   runner->RunPendingTasks();
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 // Tests the contents of the POST body when there are contents in the
@@ -316,6 +343,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     ranges,
                                     false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
   scoped_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
@@ -335,39 +363,13 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
   EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
                  "&pver=2.2" + key_param_),
             url_fetcher->GetOriginalURL());
-}
 
-// Tests what happens when there is a response with no chunks.
-TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseEmptyBody) {
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
-  base::ThreadTaskRunnerHandle runner_handler(runner);
-  net::TestURLFetcherFactory url_fetcher_factory;
-
-  testing::StrictMock<MockProtocolDelegate> test_delegate;
-  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
-  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
-      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
-                                    std::vector<SBListChunkRanges>(),
-                                    false)));
-  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
-
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
-      CreateProtocolManager(&test_delegate));
-
-  // Kick off initialization. This returns chunks from the DB synchronously.
-  pm->ForceScheduleNextUpdate(TimeDelta());
-  runner->RunPendingTasks();
-
-  // We should have an URLFetcher at this point in time.
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
-  ValidateUpdateFetcherRequest(url_fetcher);
-
-  // The update response is successful, but an empty body.
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString("");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
@@ -400,6 +402,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString("THIS_IS_A_BAD_RESPONSE");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 // Tests what happens when there is an error in the update response.
@@ -433,6 +437,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
   url_fetcher->set_response_code(404);
   url_fetcher->SetResponseString("");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 // Tests what happens when there is an error with the connection.
@@ -465,6 +471,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
   url_fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                                 net::ERR_CONNECTION_RESET));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 // Tests what happens when there is a timeout before an update response.
@@ -493,9 +501,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
   ValidateUpdateFetcherRequest(url_fetcher);
 
-  // The first time RunTasks is called above, the update timeout timer is not
-  // handled. This call of RunTasks will handle the update.
+  // The first time RunPendingTasks is called above, the update timeout timer is
+  // not handled. This call of RunPendingTasks will handle the update.
   runner->RunPendingTasks();
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 // Tests what happens when there is a reset command in the response.
@@ -521,7 +531,6 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseReset) {
   pm->ForceScheduleNextUpdate(TimeDelta());
   runner->RunPendingTasks();
 
-  // We should have an URLFetcher at this point in time.
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
   ValidateUpdateFetcherRequest(url_fetcher);
 
@@ -530,4 +539,228 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseReset) {
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString("r:pleasereset\n");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests a single valid update response, followed by a single redirect response
+// that has an valid, but empty body.
+TEST_F(SafeBrowsingProtocolManagerTest, EmptyRedirectResponse) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // The update response contains a single redirect command.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(200);
+  url_fetcher->SetResponseString(
+      "i:goog-phish-shavar\n"
+      "u:redirect-server.example.com/path\n");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // The redirect response contains an empty body.
+  net::TestURLFetcher* chunk_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateRedirectFetcherRequest(
+      chunk_url_fetcher, "https://redirect-server.example.com/path");
+  chunk_url_fetcher->set_status(net::URLRequestStatus());
+  chunk_url_fetcher->set_response_code(200);
+  chunk_url_fetcher->SetResponseString("");
+  chunk_url_fetcher->delegate()->OnURLFetchComplete(chunk_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests a single valid update response, followed by a single redirect response
+// that has an invalid body.
+TEST_F(SafeBrowsingProtocolManagerTest, InvalidRedirectResponse) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // The update response contains a single redirect command.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(200);
+  url_fetcher->SetResponseString(
+      "i:goog-phish-shavar\n"
+      "u:redirect-server.example.com/path\n");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // The redirect response contains an invalid body.
+  net::TestURLFetcher* chunk_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateRedirectFetcherRequest(
+      chunk_url_fetcher, "https://redirect-server.example.com/path");
+  chunk_url_fetcher->set_status(net::URLRequestStatus());
+  chunk_url_fetcher->set_response_code(200);
+  chunk_url_fetcher->SetResponseString("THIS IS AN INVALID RESPONSE");
+  chunk_url_fetcher->delegate()->OnURLFetchComplete(chunk_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests a single valid update response, followed by a single redirect response
+// containing chunks.
+TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, AddChunks("goog-phish-shavar", _, _)).WillOnce(
+      Invoke(HandleAddChunks));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // The update response contains a single redirect command.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(200);
+  url_fetcher->SetResponseString(
+      "i:goog-phish-shavar\n"
+      "u:redirect-server.example.com/path\n");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // The redirect response contains a single chunk.
+  net::TestURLFetcher* chunk_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateRedirectFetcherRequest(
+      chunk_url_fetcher, "https://redirect-server.example.com/path");
+  chunk_url_fetcher->set_status(net::URLRequestStatus());
+  chunk_url_fetcher->set_response_code(200);
+  chunk_url_fetcher->SetResponseString(
+      "a:4:4:9\n"
+      "host\1fdaf");
+  chunk_url_fetcher->delegate()->OnURLFetchComplete(chunk_url_fetcher);
+
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  // The AddChunksCallback needs to be invoked.
+  runner->RunPendingTasks();
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests a single valid update response, followed by multiple redirect responses
+// containing chunks.
+TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, AddChunks("goog-phish-shavar", _, _)).
+      WillRepeatedly(Invoke(HandleAddChunks));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // The update response contains multiple redirect commands.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(200);
+  url_fetcher->SetResponseString(
+      "i:goog-phish-shavar\n"
+      "u:redirect-server.example.com/one\n"
+      "u:redirect-server.example.com/two\n");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // The first redirect response contains a single chunk.
+  net::TestURLFetcher* first_chunk_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateRedirectFetcherRequest(
+      first_chunk_url_fetcher, "https://redirect-server.example.com/one");
+  first_chunk_url_fetcher->set_status(net::URLRequestStatus());
+  first_chunk_url_fetcher->set_response_code(200);
+  first_chunk_url_fetcher->SetResponseString(
+      "a:4:4:9\n"
+      "host\1aaaa");
+  first_chunk_url_fetcher->delegate()->OnURLFetchComplete(
+      first_chunk_url_fetcher);
+
+  // Invoke the AddChunksCallback to trigger the second request.
+  runner->RunPendingTasks();
+
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  // The second redirect response contains a single chunk.
+  net::TestURLFetcher* second_chunk_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(2);
+  ValidateRedirectFetcherRequest(
+      second_chunk_url_fetcher, "https://redirect-server.example.com/two");
+  second_chunk_url_fetcher->set_status(net::URLRequestStatus());
+  second_chunk_url_fetcher->set_response_code(200);
+  second_chunk_url_fetcher->SetResponseString(
+      "a:5:4:9\n"
+      "host\1bbbb");
+  second_chunk_url_fetcher->delegate()->OnURLFetchComplete(
+      second_chunk_url_fetcher);
+
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  // Invoke the AddChunksCallback to finish the update.
+  runner->RunPendingTasks();
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }

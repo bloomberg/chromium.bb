@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_
 
 // A class that implements Chrome's interface with the SafeBrowsing protocol.
+// See https://developers.google.com/safe-browsing/developers_guide_v2 for
+// protocol details.
+//
 // The SafeBrowsingProtocolManager handles formatting and making requests of,
 // and handling responses from, Google's SafeBrowsing servers. This class uses
 // The SafeBrowsingProtocolParser class to do the actual parsing.
@@ -102,9 +105,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   void OnGetChunksComplete(const std::vector<SBListChunkRanges>& list,
                            bool database_error);
 
-  // Called after the chunks that were parsed were inserted in the database.
-  void OnChunkInserted();
-
   // The last time we received an update.
   base::Time last_update() const { return last_update_; }
 
@@ -151,6 +151,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // hash is triggered by download related lookup.
   static void RecordGetHashResult(bool is_download,
                                   ResultType result_type);
+
+  // Returns whether another update is currently scheduled.
+  bool IsUpdateScheduled() const;
 
  protected:
   // Constructs a SafeBrowsingProtocolManager for |delegate| that issues
@@ -232,10 +235,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
 
   // Helper function for update completion.
   void UpdateFinished(bool success);
+  void UpdateFinished(bool success, bool back_off);
 
   // A callback that runs if we timeout waiting for a response to an update
   // request. We use this to properly set our update state.
   void UpdateResponseTimeout();
+
+  // Called after the chunks are added to the database.
+  void OnAddChunksComplete();
 
  private:
   // Map of GetHash requests to parameters which created it.
@@ -282,6 +289,10 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // updates.
   base::TimeDelta next_update_interval_;
   base::OneShotTimer<SafeBrowsingProtocolManager> update_timer_;
+
+  // timeout_timer_ is used to interrupt update requests which are taking
+  // too long.
+  base::OneShotTimer<SafeBrowsingProtocolManager> timeout_timer_;
 
   // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;
@@ -356,6 +367,7 @@ class SafeBrowsingProtocolManagerDelegate {
  public:
   typedef base::Callback<void(const std::vector<SBListChunkRanges>&, bool)>
       GetChunksCallback;
+  typedef base::Callback<void(void)> AddChunksCallback;
 
   virtual ~SafeBrowsingProtocolManagerDelegate();
 
@@ -376,8 +388,10 @@ class SafeBrowsingProtocolManagerDelegate {
   // may be made to GetChunks at a time.
   virtual void GetChunks(GetChunksCallback callback) = 0;
 
-  // Add new chunks to the database.
-  virtual void AddChunks(const std::string& list, SBChunkList* chunks) = 0;
+  // Add new chunks to the database. Invokes |callback| when complete, but must
+  // call at a later time.
+  virtual void AddChunks(const std::string& list, SBChunkList* chunks,
+                         AddChunksCallback callback) = 0;
 
   // Delete chunks from the database.
   virtual void DeleteChunks(

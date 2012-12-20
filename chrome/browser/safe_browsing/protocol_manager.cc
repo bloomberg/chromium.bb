@@ -111,6 +111,10 @@ void SafeBrowsingProtocolManager::RecordGetHashResult(
   }
 }
 
+bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
+  return update_timer_.IsRunning();
+}
+
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
   // Delete in-progress SafeBrowsing requests.
   STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
@@ -170,7 +174,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   DCHECK(CalledOnValidThread());
   scoped_ptr<const net::URLFetcher> fetcher;
   bool parsed_ok = true;
-  bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
 
   HashRequests::iterator it = hash_requests_.find(source);
   if (it != hash_requests_.end()) {
@@ -231,7 +234,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
 
       // Cancel the update response timeout now that we have the response.
-      update_timer_.Stop();
+      timeout_timer_.Stop();
     }
 
     if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
@@ -243,15 +246,17 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       if (!parsed_ok) {
         VLOG(1) << "SafeBrowsing request for: " << source->GetURL()
                 << " failed parse.";
-        must_back_off = true;
         chunk_request_urls_.clear();
         UpdateFinished(false);
       }
 
       switch (request_type_) {
         case CHUNK_REQUEST:
-          if (parsed_ok)
+          if (parsed_ok) {
             chunk_request_urls_.pop_front();
+            if (chunk_request_urls_.empty() && !chunk_pending_to_write_)
+              UpdateFinished(true);
+          }
           break;
         case UPDATE_REQUEST:
           if (chunk_request_urls_.empty() && parsed_ok) {
@@ -266,7 +271,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     } else {
       // The SafeBrowsing service error, or very bad response code: back off.
-      must_back_off = true;
       if (request_type_ == CHUNK_REQUEST)
         chunk_request_urls_.clear();
       UpdateFinished(false);
@@ -279,13 +283,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     }
   }
-
-  // Schedule a new update request if we've finished retrieving all the chunks
-  // from the previous update. We treat the update request and the chunk URLs it
-  // contains as an atomic unit as far as back off is concerned.
-  if (chunk_request_urls_.empty() &&
-      (request_type_ == CHUNK_REQUEST || request_type_ == UPDATE_REQUEST))
-    ScheduleNextUpdate(must_back_off);
 
   // Get the next chunk if available.
   IssueChunkRequest();
@@ -372,7 +369,10 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       // Chunks to add to storage.  Pass ownership of |chunks|.
       if (!chunks->empty()) {
         chunk_pending_to_write_ = true;
-        delegate_->AddChunks(chunk_url.list_name, chunks.release());
+        delegate_->AddChunks(
+            chunk_url.list_name, chunks.release(),
+            base::Bind(&SafeBrowsingProtocolManager::OnAddChunksComplete,
+                       base::Unretained(this)));
       }
 
       break;
@@ -493,8 +493,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   if (database_error) {
-    UpdateFinished(false);
-    ScheduleNextUpdate(false);
+    // The update was not successful, but don't back off.
+    UpdateFinished(false, false);
     return;
   }
 
@@ -530,9 +530,9 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   request_->Start();
 
   // Begin the update request timeout.
-  update_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kSbMaxUpdateWaitSec),
-                      this,
-                      &SafeBrowsingProtocolManager::UpdateResponseTimeout);
+  timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kSbMaxUpdateWaitSec),
+                       this,
+                       &SafeBrowsingProtocolManager::UpdateResponseTimeout);
 }
 
 // If we haven't heard back from the server with an update response, this method
@@ -542,10 +542,9 @@ void SafeBrowsingProtocolManager::UpdateResponseTimeout() {
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   request_.reset();
   UpdateFinished(false);
-  ScheduleNextUpdate(true);
 }
 
-void SafeBrowsingProtocolManager::OnChunkInserted() {
+void SafeBrowsingProtocolManager::OnAddChunksComplete() {
   DCHECK(CalledOnValidThread());
   chunk_pending_to_write_ = false;
 
@@ -584,10 +583,15 @@ void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
 }
 
 void SafeBrowsingProtocolManager::UpdateFinished(bool success) {
+  UpdateFinished(success, !success);
+}
+
+void SafeBrowsingProtocolManager::UpdateFinished(bool success, bool back_off) {
   DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_COUNTS("SB2.UpdateSize", update_size_);
   update_size_ = 0;
   delegate_->UpdateFinished(success);
+  ScheduleNextUpdate(back_off);
 }
 
 GURL SafeBrowsingProtocolManager::UpdateUrl() const {

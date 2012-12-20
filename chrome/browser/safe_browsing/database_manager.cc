@@ -317,12 +317,14 @@ void SafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
 }
 
 void SafeBrowsingDatabaseManager::AddChunks(const std::string& list,
-                                    SBChunkList* chunks) {
+                                            SBChunkList* chunks,
+                                            AddChunksCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
+  DCHECK(!callback.is_null());
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::HandleChunkForDatabase, this, list,
-      chunks));
+      &SafeBrowsingDatabaseManager::AddDatabaseChunks, this, list,
+      chunks, callback));
 }
 
 void SafeBrowsingDatabaseManager::DeleteChunks(
@@ -601,10 +603,11 @@ void SafeBrowsingDatabaseManager::OnGetAllChunksFromDatabase(
     callback.Run(lists, database_error);
 }
 
-void SafeBrowsingDatabaseManager::OnChunkInserted() {
+void SafeBrowsingDatabaseManager::OnAddChunksComplete(
+    AddChunksCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (enabled_)
-    sb_service_->protocol_manager()->OnChunkInserted();
+    callback.Run();
 }
 
 void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
@@ -637,8 +640,9 @@ void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
   }
 }
 
-void SafeBrowsingDatabaseManager::HandleChunkForDatabase(
-    const std::string& list_name, SBChunkList* chunks) {
+void SafeBrowsingDatabaseManager::AddDatabaseChunks(
+    const std::string& list_name, SBChunkList* chunks,
+    AddChunksCallback callback) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (chunks) {
     GetDatabase()->InsertChunks(list_name, *chunks);
@@ -646,7 +650,8 @@ void SafeBrowsingDatabaseManager::HandleChunkForDatabase(
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManager::OnChunkInserted, this));
+      base::Bind(&SafeBrowsingDatabaseManager::OnAddChunksComplete, this,
+                 callback));
 }
 
 void SafeBrowsingDatabaseManager::DeleteDatabaseChunks(
