@@ -16,6 +16,8 @@ class FakeWebScrollbar : public WebKit::WebScrollbar {
     return make_scoped_ptr(new FakeWebScrollbar());
   }
 
+  void setOverlay(bool isOverlay);
+
   // WebScrollbar implementation
   virtual bool isOverlay() const OVERRIDE;
   virtual int value() const OVERRIDE;
@@ -33,6 +35,11 @@ class FakeWebScrollbar : public WebKit::WebScrollbar {
   virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
   virtual bool isCustomScrollbar() const OVERRIDE;
   virtual Orientation orientation() const OVERRIDE;
+
+ private:
+  FakeWebScrollbar();
+
+  bool m_isOverlay;
 };
 
 }  // namespace cc

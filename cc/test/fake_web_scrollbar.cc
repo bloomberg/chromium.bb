@@ -6,8 +6,12 @@
 
 namespace cc {
 
+void FakeWebScrollbar::setOverlay(bool isOverlay) {
+  m_isOverlay = isOverlay;
+}
+
 bool FakeWebScrollbar::isOverlay() const {
-  return false;
+  return m_isOverlay;
 }
 
 int FakeWebScrollbar::value() const {
@@ -64,6 +68,9 @@ bool FakeWebScrollbar::isCustomScrollbar() const {
 
 WebKit::WebScrollbar::Orientation FakeWebScrollbar::orientation() const {
   return WebScrollbar::Horizontal;
+}
+
+FakeWebScrollbar::FakeWebScrollbar() : m_isOverlay(false) {
 }
 
 }  // namespace cc

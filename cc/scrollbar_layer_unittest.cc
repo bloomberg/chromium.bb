@@ -22,6 +22,19 @@
 namespace cc {
 namespace {
 
+scoped_ptr<LayerImpl> layerImplForScrollAreaAndScrollbar(
+    FakeLayerTreeHostImpl* host_impl,
+    scoped_ptr<WebKit::WebScrollbar> scrollbar,
+    bool reverse_order)
+{
+    scoped_refptr<Layer> layerTreeRoot = Layer::create();
+    scoped_refptr<Layer> child1 = Layer::create();
+    scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), child1->id());
+    layerTreeRoot->addChild(child1);
+    layerTreeRoot->insertChild(child2, reverse_order ? 0 : 1);
+    return TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), host_impl->activeTree()).Pass();
+}
+
 TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 {
     FakeImplProxy proxy;
@@ -29,13 +42,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
     {
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        scoped_refptr<Layer> layerTreeRoot = Layer::create();
-        scoped_refptr<Layer> child1 = Layer::create();
-        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), child1->id());
-        layerTreeRoot->addChild(child1);
-        layerTreeRoot->addChild(child2);
-
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
+        scoped_ptr<LayerImpl> layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), false);
 
         LayerImpl* ccChild1 = layerImplTreeRoot->children()[0];
         ScrollbarLayerImpl* ccChild2 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
@@ -46,13 +53,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
     { // another traverse order
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        scoped_refptr<Layer> layerTreeRoot = Layer::create();
-        scoped_refptr<Layer> child2 = Layer::create();
-        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(), child2->id());
-        layerTreeRoot->addChild(child1);
-        layerTreeRoot->addChild(child2);
-
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
+        scoped_ptr<LayerImpl> layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), true);
 
         ScrollbarLayerImpl* ccChild1 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[0]);
         LayerImpl* ccChild2 = layerImplTreeRoot->children()[1];
@@ -60,6 +61,34 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         EXPECT_TRUE(ccChild2->scrollbarAnimationController());
         EXPECT_EQ(ccChild2->horizontalScrollbarLayer(), ccChild1);
     }
+}
+
+TEST(ScrollbarLayerTest, shouldScrollNonOverlayOnMainThread)
+{
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
+    // Create and attach a non-overlay scrollbar.
+    scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
+    static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(false);
+    scoped_ptr<LayerImpl> layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), false);
+    ScrollbarLayerImpl* scrollbarLayerImpl = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
+
+    // When the scrollbar is not an overlay scrollbar, the scroll should be
+    // responded to on the main thread as the compositor does not yet implement
+    // scrollbar scrolling.
+    EXPECT_EQ(InputHandlerClient::ScrollOnMainThread, scrollbarLayerImpl->tryScroll(gfx::Point(0, 0), InputHandlerClient::Gesture));
+
+    // Create and attach an overlay scrollbar.
+    scrollbar = FakeWebScrollbar::create();
+    static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(true);
+
+    layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), false);
+    scrollbarLayerImpl = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
+
+    // The user shouldn't be able to drag an overlay scrollbar and the scroll
+    // may be handled in the compositor.
+    EXPECT_EQ(InputHandlerClient::ScrollIgnored, scrollbarLayerImpl->tryScroll(gfx::Point(0, 0), InputHandlerClient::Gesture));
 }
 
 TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
@@ -132,7 +161,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        const int kMaxTextureSize = m_layerTreeHost->rendererCapabilities().maxTextureSize;
+        const int kMaxTextureSize = impl->rendererCapabilities().maxTextureSize;
 
         // Check first that we're actually testing something.
         EXPECT_GT(m_scrollbarLayer->bounds().width(), kMaxTextureSize);

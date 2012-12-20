@@ -40,6 +40,8 @@ ScrollbarLayer::ScrollbarLayer(
     , m_scrollLayerId(scrollLayerId)
     , m_textureFormat(GL_INVALID_ENUM)
 {
+    if (!m_scrollbar->isOverlay())
+        setShouldScrollOnMainThread(true);
 }
 
 ScrollbarLayer::~ScrollbarLayer()
