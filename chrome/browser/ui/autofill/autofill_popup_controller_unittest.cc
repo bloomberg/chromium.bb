@@ -57,9 +57,13 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   bool RemoveSelectedLine() {
     return AutofillPopupControllerImpl::RemoveSelectedLine();
   }
+  void DoHide() {
+    AutofillPopupControllerImpl::Hide();
+  }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
+  MOCK_METHOD0(Hide, void());
 
  private:
   virtual void ShowView() OVERRIDE {}
@@ -77,7 +81,7 @@ class AutofillPopupControllerUnitTest : public ::testing::Test {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
     if (autofill_popup_controller_)
-      autofill_popup_controller_->Hide();
+      autofill_popup_controller_->DoHide();
   }
 
   AutofillPopupController* popup_controller() {
@@ -208,4 +212,55 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
   // Make sure previous skips the unselectable separator.
   autofill_popup_controller_->SelectPreviousLine();
   EXPECT_EQ(0, autofill_popup_controller_->selected_line());
+}
+
+TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
+  MockAutofillExternalDelegate delegate;
+
+  AutofillPopupControllerImpl* controller =
+      AutofillPopupControllerImpl::GetOrCreate(
+          NULL,
+          &delegate,
+          NULL,
+          gfx::Rect());
+  EXPECT_TRUE(controller);
+
+  // This should not inform |delegate| of its destruction.
+  EXPECT_CALL(delegate, ControllerDestroyed()).Times(0);
+  controller->Hide();
+
+  controller =
+      AutofillPopupControllerImpl::GetOrCreate(
+          NULL,
+          &delegate,
+          NULL,
+          gfx::Rect());
+  EXPECT_TRUE(controller);
+  AutofillPopupControllerImpl* controller2 =
+      AutofillPopupControllerImpl::GetOrCreate(
+          controller,
+          &delegate,
+          NULL,
+          gfx::Rect());
+  EXPECT_EQ(controller, controller2);
+  controller->Hide();
+
+  TestAutofillPopupController* test_controller =
+      new TestAutofillPopupController(&delegate);
+  EXPECT_CALL(*test_controller, Hide());
+
+  gfx::Rect bounds(0, 0, 1, 2);
+  AutofillPopupControllerImpl* controller3 =
+      AutofillPopupControllerImpl::GetOrCreate(
+          test_controller,
+          &delegate,
+          NULL,
+          bounds);
+  EXPECT_EQ(
+      bounds,
+      static_cast<AutofillPopupController*>(controller3)->element_bounds());
+  controller3->Hide();
+
+  EXPECT_CALL(delegate, ControllerDestroyed());
+  delete test_controller;
 }

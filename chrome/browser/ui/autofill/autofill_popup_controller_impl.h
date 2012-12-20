@@ -25,9 +25,14 @@ class KeyEvent;
 class AutofillPopupControllerImpl : public AutofillPopupController,
                                     public content::KeyboardListener {
  public:
-  AutofillPopupControllerImpl(AutofillPopupDelegate* delegate,
-                              gfx::NativeView container_view,
-                              const gfx::Rect& element_bounds);
+  // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
+  // the construction arguments are the same. |previous| may be invalidated by
+  // this call.
+  static AutofillPopupControllerImpl* GetOrCreate(
+      AutofillPopupControllerImpl* previous,
+      AutofillPopupDelegate* delegate,
+      gfx::NativeView container_view,
+      const gfx::Rect& element_bounds);
 
   // Shows the popup, or updates the existing popup with the given values.
   void Show(const std::vector<string16>& autofill_values,
@@ -35,15 +40,17 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
             const std::vector<string16>& autofill_icons,
             const std::vector<int>& autofill_unique_ids);
 
-  // Hides the popup and destroys the controller.
-  void Hide();
-
-  // Called when |delegate_| is no longer valid.
-  void DelegateDestroyed();
+  // Hides the popup and destroys the controller. This also invalidates
+  // |delegate_|. Virtual for testing.
+  virtual void Hide();
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
                            CloseWidgetAndNoLeaking);
+
+  AutofillPopupControllerImpl(AutofillPopupDelegate* delegate,
+                              gfx::NativeView container_view,
+                              const gfx::Rect& element_bounds);
   virtual ~AutofillPopupControllerImpl();
 
   // AutofillPopupController implementation.
@@ -81,6 +88,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // KeyboardListener implementation.
   virtual bool HandleKeyPressEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+
+  // Like Hide(), but doesn't invalidate |delegate_| (the delegate will still
+  // be informed of destruction).
+  void HideInternal();
 
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
@@ -145,6 +156,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // Used to indicate if the delete icon within a row is currently selected.
   bool delete_icon_hovered_;
+
+  // True if |HideInternal| has already been called.
+  bool is_hiding_;
 };
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_

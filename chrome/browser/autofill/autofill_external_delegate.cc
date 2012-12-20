@@ -65,7 +65,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {
   if (controller_)
-    controller_->DelegateDestroyed();
+    controller_->Hide();
 }
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
@@ -172,11 +172,9 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 
 void AutofillExternalDelegate::EnsurePopupForElement(
     const gfx::Rect& element_bounds) {
-  if (controller_)
-    return;
-
   // |controller_| owns itself.
-  controller_ = new AutofillPopupControllerImpl(
+  controller_ = AutofillPopupControllerImpl::GetOrCreate(
+      controller_,
       this,
       // web_contents() may be NULL during testing.
       web_contents() ? web_contents()->GetView()->GetContentNativeView() : NULL,
@@ -281,6 +279,9 @@ void AutofillExternalDelegate::HideAutofillPopup() {
   if (controller_) {
     ClearPreviewedForm();
     controller_->Hide();
+    // Go ahead and invalidate |controller_|. After calling Hide(), it won't
+    // inform |this| of its destruction.
+    ControllerDestroyed();
   }
 }
 

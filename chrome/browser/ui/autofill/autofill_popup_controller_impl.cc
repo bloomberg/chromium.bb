@@ -60,6 +60,27 @@ const DataResource kDataResources[] = {
 
 }  // end namespace
 
+// static
+AutofillPopupControllerImpl* AutofillPopupControllerImpl::GetOrCreate(
+    AutofillPopupControllerImpl* previous,
+    AutofillPopupDelegate* delegate,
+    gfx::NativeView container_view,
+    const gfx::Rect& element_bounds) {
+  DCHECK(!previous || previous->delegate_ == delegate);
+
+  if (previous &&
+      previous->container_view() == container_view &&
+      previous->element_bounds() == element_bounds) {
+    return previous;
+  }
+
+  if (previous)
+    previous->Hide();
+
+  return new AutofillPopupControllerImpl(
+      delegate, container_view, element_bounds);
+}
+
 AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     AutofillPopupDelegate* delegate,
     gfx::NativeView container_view,
@@ -69,7 +90,8 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       container_view_(container_view),
       element_bounds_(element_bounds),
       selected_line_(kNoSelection),
-      delete_icon_hovered_(false) {
+      delete_icon_hovered_(false),
+      is_hiding_(false) {
 #if !defined(OS_ANDROID)
   label_font_ = value_font_.DeriveFont(kLabelFontSizeDelta);
 #endif
@@ -111,15 +133,8 @@ void AutofillPopupControllerImpl::Show(
 }
 
 void AutofillPopupControllerImpl::Hide() {
-  if (view_)
-    view_->Hide();
-  else
-    delete this;
-}
-
-void AutofillPopupControllerImpl::DelegateDestroyed() {
   delegate_ = NULL;
-  Hide();
+  HideInternal();
 }
 
 void AutofillPopupControllerImpl::ViewDestroyed() {
@@ -316,7 +331,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       SetSelectedLine(autofill_values().size() - 1);
       return true;
     case ui::VKEY_ESCAPE:
-      Hide();
+      HideInternal();
       return true;
     case ui::VKEY_DELETE:
       return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
@@ -326,6 +341,17 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     default:
       return false;
   }
+}
+
+void AutofillPopupControllerImpl::HideInternal() {
+  if (is_hiding_)
+    return;
+  is_hiding_ = true;
+
+  if (view_)
+    view_->Hide();
+  else
+    delete this;
 }
 
 void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
@@ -422,7 +448,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
     delegate_->ClearPreviewedForm();
     UpdateBoundsAndRedrawPopup();
   } else {
-    Hide();
+    HideInternal();
   }
 
   return true;
