@@ -226,6 +226,11 @@ void PrintPreviewDialogController::PrintPreview(WebContents* tab) {
     printing::PrintViewManager::FromWebContents(tab)->PrintPreviewDone();
 }
 
+WebContents* PrintPreviewDialogController::GetOrCreatePreviewDialog(
+    WebContents* initiator_tab) {
+  return GetOrCreatePreviewTab(initiator_tab);
+}
+
 WebContents* PrintPreviewDialogController::GetOrCreatePreviewTab(
     WebContents* initiator_tab) {
   DCHECK(initiator_tab);
@@ -334,7 +339,7 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         closed_preview_tabs[i]->GetWebUI()->GetController());
     if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewTabClosed();
+      print_preview_ui->OnPrintPreviewDialogClosed();
   }
 
   for (size_t i = 0; i < closed_initiator_tabs.size(); ++i)
@@ -518,7 +523,7 @@ void PrintPreviewDialogController::RemovePreviewTab(WebContents* preview_tab) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       preview_tab->GetWebUI()->GetController());
   if (print_preview_ui)
-    print_preview_ui->OnTabDestroyed();
+    print_preview_ui->OnPrintPreviewDialogDestroyed();
 
   preview_tab_map_.erase(preview_tab);
   RemoveObservers(preview_tab);

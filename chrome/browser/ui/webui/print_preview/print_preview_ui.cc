@@ -91,7 +91,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       id_(g_print_preview_ui_id_map.Get().Add(this)),
       handler_(NULL),
       source_is_modifiable_(true),
-      tab_closed_(false) {
+      dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, new PrintPreviewDataSource());
@@ -140,12 +140,12 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
 }
 
 // static
-void PrintPreviewUI::SetSourceIsModifiable(WebContents* print_preview_tab,
+void PrintPreviewUI::SetSourceIsModifiable(WebContents* print_preview_dialog,
                                            bool source_is_modifiable) {
-  if (!print_preview_tab || !print_preview_tab->GetWebUI())
+  if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
     return;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->GetWebUI()->GetController());
+      print_preview_dialog->GetWebUI()->GetController());
   print_preview_ui->source_is_modifiable_ = source_is_modifiable;
 }
 
@@ -165,23 +165,23 @@ int32 PrintPreviewUI::GetIDForPrintPreviewUI() const {
   return id_;
 }
 
-void PrintPreviewUI::OnPrintPreviewTabClosed() {
-  WebContents* preview_tab = web_ui()->GetWebContents();
+void PrintPreviewUI::OnPrintPreviewDialogClosed() {
+  WebContents* preview_dialog = web_ui()->GetWebContents();
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
+  if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
     return;
-  OnClosePrintPreviewTab();
+  OnClosePrintPreviewDialog();
 }
 
 void PrintPreviewUI::OnInitiatorTabClosed() {
-  WebContents* preview_tab = web_ui()->GetWebContents();
+  WebContents* preview_dialog = web_ui()->GetWebContents();
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
+  if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
     web_ui()->CallJavascriptFunction("cancelPendingPrintRequest");
   else
-    OnClosePrintPreviewTab();
+    OnClosePrintPreviewDialog();
 }
 
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
@@ -267,8 +267,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                    ui_preview_request_id);
 }
 
-void PrintPreviewUI::OnTabDestroyed() {
-  handler_->OnTabDestroyed();
+void PrintPreviewUI::OnPrintPreviewDialogDestroyed() {
+  handler_->OnPrintPreviewDialogDestroyed();
 }
 
 void PrintPreviewUI::OnFileSelectionCancelled() {
@@ -292,25 +292,25 @@ PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
   return PrintPreviewDataService::GetInstance();
 }
 
-void PrintPreviewUI::OnHidePreviewTab() {
-  WebContents* preview_tab = web_ui()->GetWebContents();
+void PrintPreviewUI::OnHidePreviewDialog() {
+  WebContents* preview_dialog = web_ui()->GetWebContents();
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewTab(preview_tab))
+  if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
     return;
 
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
   delegate->ReleaseWebContentsOnDialogClose();
-  background_printing_manager->OwnPrintPreviewTab(preview_tab);
-  OnClosePrintPreviewTab();
+  background_printing_manager->OwnPrintPreviewDialog(preview_dialog);
+  OnClosePrintPreviewDialog();
 }
 
-void PrintPreviewUI::OnClosePrintPreviewTab() {
-  if (tab_closed_)
+void PrintPreviewUI::OnClosePrintPreviewDialog() {
+  if (dialog_closed_)
     return;
-  tab_closed_ = true;
+  dialog_closed_ = true;
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;

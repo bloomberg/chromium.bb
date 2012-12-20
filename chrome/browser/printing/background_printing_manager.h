@@ -31,16 +31,24 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   BackgroundPrintingManager();
   virtual ~BackgroundPrintingManager();
 
-  // Takes ownership of |preview_tab| and deletes it when |preview_tab| finishes
-  // printing. This removes the WebContents from its TabStrip and hides it from
-  // the user.
+  // Takes ownership of |preview_dialog| and deletes it when |preview_dialog|
+  // finishes printing. This removes |preview_dialog| from its ConstrainedDialog
+  // and hides it from the user.
+  void OwnPrintPreviewDialog(content::WebContents* preview_dialog);
+
+  // DEPRECATED. Use OwnPrintPreviewDialog() instead.
+  // TODO(thestig) Remove.
   void OwnPrintPreviewTab(content::WebContents* preview_tab);
 
   // Let others iterate over the list of background printing tabs.
   WebContentsSet::const_iterator begin();
   WebContentsSet::const_iterator end();
 
-  // Returns true if |printing_tabs_| contains |preview_tab|.
+  // Returns true if |printing_tabs_| contains |preview_dialog|.
+  bool HasPrintPreviewDialog(content::WebContents* preview_dialog);
+
+  // DEPRECATED. Use HasPrintPreviewDialog() instead.
+  // TODO(thestig) Remove.
   bool HasPrintPreviewTab(content::WebContents* preview_tab);
 
   // content::NotificationObserver overrides:

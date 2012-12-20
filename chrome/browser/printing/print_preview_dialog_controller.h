@@ -44,11 +44,16 @@ class PrintPreviewDialogController
   static PrintPreviewDialogController* GetInstance();
 
   // Initiate print preview for |initiator_tab|.
-  // Call this instead of GetOrCreatePreviewTab().
+  // Call this instead of GetOrCreatePreviewDialog().
   static void PrintPreview(content::WebContents* initiator_tab);
 
-  // Get/Create the print preview tab for |initiator_tab|.
+  // Get/Create the print preview dialog for |initiator_tab|.
   // Exposed for unit tests.
+  content::WebContents* GetOrCreatePreviewDialog(
+      content::WebContents* initiator_tab);
+
+  // DEPRECATED. Use GetOrCreatePreviewDialog() instead.
+  // TODO(thestig) Remove.
   content::WebContents* GetOrCreatePreviewTab(
       content::WebContents* initiator_tab);
 

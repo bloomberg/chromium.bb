@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   // Make sure advanced print command (Ctrl+Shift+p) is enabled.
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 
-  // Create print preview tab.
+  // Create the print preview dialog.
   Print();
 
   // Make sure print is disabled.

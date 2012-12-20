@@ -280,7 +280,7 @@ cr.define('print_preview', function() {
 
     /** Closes the print preview dialog. */
     startCloseDialog: function() {
-      chrome.send('closePrintPreviewTab');
+      chrome.send('closePrintPreviewDialog');
       chrome.send('DialogClose');
     },
 

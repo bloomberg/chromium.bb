@@ -250,6 +250,7 @@ void PrintToPdfCallbackWithCheck(Metafile* metafile,
 
 static base::LazyInstance<printing::StickySettings> sticky_settings =
     LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 // static
@@ -297,8 +298,8 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("manageLocalPrinters",
       base::Bind(&PrintPreviewHandler::HandleManagePrinters,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("closePrintPreviewTab",
-      base::Bind(&PrintPreviewHandler::HandleClosePreviewTab,
+  web_ui()->RegisterMessageCallback("closePrintPreviewDialog",
+      base::Bind(&PrintPreviewHandler::HandleClosePreviewDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("hidePreview",
       base::Bind(&PrintPreviewHandler::HandleHidePreview,
@@ -360,7 +361,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   WebContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
     ReportUserActionHistogram(INITIATOR_TAB_CLOSED);
-    print_preview_ui->OnClosePrintPreviewTab();
+    print_preview_ui->OnClosePrintPreviewDialog();
     return;
   }
 
@@ -459,9 +460,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // association with the initiator tab yet.
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         web_ui()->GetController());
-    print_preview_ui->OnHidePreviewTab();
+    print_preview_ui->OnHidePreviewDialog();
 
-    // Do this so the initiator tab can open a new print preview tab.
+    // Do this so the initiator tab can open a new print preview dialog.
     ClearInitiatorTabDetails();
 
     // The PDF being printed contains only the pages that the user selected,
@@ -471,10 +472,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     rvh->Send(
         new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(), *settings));
 
-    // For all other cases above, the tab will stay open until the printing has
-    // finished. Then the tab closes and PrintPreviewDone() gets called. Here,
-    // since we are hiding the tab, and not closing it, we need to make this
-    // call.
+    // For all other cases above, the preview dialog will stay open until the
+    // printing has finished. Then the dialog closes and PrintPreviewDone() gets
+    // called. In the case below, since the preview dialog will be hidden and
+    // not closed, we need to make this call.
     if (initiator_tab) {
       printing::PrintViewManager* print_view_manager =
           printing::PrintViewManager::FromWebContents(initiator_tab);
@@ -520,7 +521,7 @@ void PrintPreviewHandler::HandlePrintToPdf(
 void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
-  print_preview_ui->OnHidePreviewTab();
+  print_preview_ui->OnHidePreviewDialog();
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
@@ -610,7 +611,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
   // printing situation.  Close the print preview.
   // TODO(abodenha@chromium.org) The flow should be changed as described in
   // http://code.google.com/p/chromium/issues/detail?id=44093
-  ActivateInitiatorTabAndClosePreviewTab();
+  ClosePreviewDialogAndActivateInitiatorTab();
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
@@ -650,7 +651,7 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
-void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleClosePreviewDialog(const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
 
@@ -755,13 +756,15 @@ void PrintPreviewHandler::SendInitialSettings(
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
-void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
+void PrintPreviewHandler::ClosePreviewDialogAndActivateInitiatorTab() {
+  // Need to get the initiator tab before closing the print preview dialog.
   WebContents* initiator_tab = GetInitiatorTab();
-  if (initiator_tab)
-    initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
-  print_preview_ui->OnClosePrintPreviewTab();
+
+  print_preview_ui->OnClosePrintPreviewDialog();
+  if (initiator_tab)
+    initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -816,15 +819,15 @@ void PrintPreviewHandler::SendCloudPrintJob() {
 }
 
 WebContents* PrintPreviewHandler::GetInitiatorTab() const {
-  printing::PrintPreviewDialogController* tab_controller =
+  printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  if (!tab_controller)
+  if (!dialog_controller)
     return NULL;
-  return tab_controller->GetInitiatorTab(preview_web_contents());
+  return dialog_controller->GetInitiatorTab(preview_web_contents());
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
-  ActivateInitiatorTabAndClosePreviewTab();
+  ClosePreviewDialogAndActivateInitiatorTab();
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
@@ -860,7 +863,7 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
       NULL);
 }
 
-void PrintPreviewHandler::OnTabDestroyed() {
+void PrintPreviewHandler::OnPrintPreviewDialogDestroyed() {
   WebContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
@@ -920,7 +923,7 @@ void PrintPreviewHandler::PostPrintToPdfTask(base::RefCountedBytes* data) {
 #endif
 
   print_to_pdf_path_.reset();
-  ActivateInitiatorTabAndClosePreviewTab();
+  ClosePreviewDialogAndActivateInitiatorTab();
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
@@ -935,10 +938,10 @@ void PrintPreviewHandler::ClearInitiatorTabDetails() {
     return;
 
   // We no longer require the initiator tab details. Remove those details
-  // associated with the preview tab to allow the initiator tab to create
-  // another preview tab.
-  printing::PrintPreviewDialogController* tab_controller =
+  // associated with the preview dialog to allow the initiator tab to create
+  // another preview dialog.
+  printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  if (tab_controller)
-    tab_controller->EraseInitiatorTabInfo(preview_web_contents());
+  if (dialog_controller)
+    dialog_controller->EraseInitiatorTabInfo(preview_web_contents());
 }

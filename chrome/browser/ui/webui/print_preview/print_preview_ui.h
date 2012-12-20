@@ -59,8 +59,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   bool source_is_modifiable() { return source_is_modifiable_; }
 
-  // Set |source_is_modifiable_| for |print_preview_tab|'s PrintPreviewUI.
-  static void SetSourceIsModifiable(content::WebContents* print_preview_tab,
+  // Set |source_is_modifiable_| for |print_preview_dialog|'s PrintPreviewUI.
+  static void SetSourceIsModifiable(content::WebContents* print_preview_dialog,
                                     bool source_is_modifiable);
 
   // Determines whether to cancel a print preview request based on
@@ -103,16 +103,17 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // |preview_request_id| indicates which request resulted in this response.
   void OnReusePreviewData(int preview_request_id);
 
-  // Notifies the Web UI that preview tab is destroyed. This is the last chance
-  // to communicate with the source tab before the association is erased.
-  void OnTabDestroyed();
+  // Notifies the Web UI that preview dialog has been destroyed. This is the
+  // last chance to communicate with the initiator tab before the association
+  // is erased.
+  void OnPrintPreviewDialogDestroyed();
 
   // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
 
-  // Notified the Web UI that this print preview tab's RenderProcess has been
+  // Notified the Web UI that this print preview dialog's RenderProcess has been
   // closed, which may occur for several reasons, e.g. tab closure or crash.
-  void OnPrintPreviewTabClosed();
+  void OnPrintPreviewDialogClosed();
 
   // Notifies the Web UI that initiator tab is closed, so we can disable all the
   // controls that need the initiator tab for generating the preview data.
@@ -128,11 +129,11 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Notifies the Web UI to cancel the pending preview request.
   void OnCancelPendingPreviewRequest();
 
-  // Hides the print preview tab.
-  void OnHidePreviewTab();
+  // Hides the print preview dialog.
+  void OnHidePreviewDialog();
 
-  // Closes the print preview tab.
-  void OnClosePrintPreviewTab();
+  // Closes the print preview dialog.
+  void OnClosePrintPreviewDialog();
 
   // Reload the printers list.
   void OnReloadPrintersList();
@@ -173,12 +174,12 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_;
 
-  // Store the initiator tab title, used for populating the print preview tab
+  // Store the initiator tab title, used for populating the print preview dialog
   // title.
   string16 initiator_tab_title_;
 
-  // Keeps track of whether OnClosePrintPreviewTab() has been called or not.
-  bool tab_closed_;
+  // Keeps track of whether OnClosePrintPreviewDialog() has been called or not.
+  bool dialog_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

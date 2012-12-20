@@ -59,10 +59,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const FilePath& default_path);
 
-  // Called when the print preview tab is destroyed. This is the last time
+  // Called when the print preview dialog is destroyed. This is the last time
   // this object has access to the PrintViewManager in order to disconnect the
   // observer.
-  void OnTabDestroyed();
+  void OnPrintPreviewDialogDestroyed();
 
   // Called when print preview failed.
   void OnPrintPreviewFailed();
@@ -72,7 +72,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ShowSystemDialog();
 
  private:
-  friend class PrintPreviewHandlerTest;
   // TODO(abodenha@chromium.org) See http://crbug.com/136843
   // PrintSystemTaskProxy should not need to be a friend.
   friend class PrintSystemTaskProxy;
@@ -94,7 +93,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // the print request parameters.
   void HandlePrintToPdf(const base::DictionaryValue& settings);
 
-  // Handles the request to hide the preview tab for printing. |args| is unused.
+  // Handles the request to hide the preview dialog for printing.
+  // |args| is unused.
   void HandleHidePreview(const base::ListValue* args);
 
   // Handles the request to cancel the pending print request. |args| is unused.
@@ -123,9 +123,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // |args| is unused.
   void HandleManageCloudPrint(const base::ListValue* args);
 
-  // Gathers UMA stats when the print preview tab is about to close.
+  // Gathers UMA stats when the print preview dialog is about to close.
   // |args| is unused.
-  void HandleClosePreviewTab(const base::ListValue* args);
+  void HandleClosePreviewDialog(const base::ListValue* args);
 
   // Asks the browser to show the native printer management dialog.
   // |args| is unused.
@@ -163,16 +163,16 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Send the PDF data to the cloud to print.
   void SendCloudPrintJob();
 
-  // Gets the initiator tab for the print preview tab.
+  // Gets the initiator tab for the print preview dialog.
   content::WebContents* GetInitiatorTab() const;
 
-  // Activates the initiator tab and close the preview tab.
-  void ActivateInitiatorTabAndClosePreviewTab();
+  // Closes the preview dialog and activates the initiator tab.
+  void ClosePreviewDialogAndActivateInitiatorTab();
 
   // Adds all the recorded stats taken so far to histogram counts.
   void ReportStats();
 
-  // Clears initiator tab details for this preview tab.
+  // Clears initiator tab details for the print preview dialog.
   void ClearInitiatorTabDetails();
 
   // Posts a task to save |data| to pdf at |print_to_pdf_path_|.

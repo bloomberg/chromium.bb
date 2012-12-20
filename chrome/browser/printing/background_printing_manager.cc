@@ -33,6 +33,11 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
   // TODO(thestig): Handle this case better.
 }
 
+void BackgroundPrintingManager::OwnPrintPreviewDialog(
+    WebContents* preview_dialog) {
+  return OwnPrintPreviewTab(preview_dialog);
+}
+
 void BackgroundPrintingManager::OwnPrintPreviewTab(WebContents* preview_tab) {
   DCHECK(CalledOnValidThread());
   DCHECK(PrintPreviewDialogController::IsPrintPreviewTab(preview_tab));
@@ -173,6 +178,11 @@ BackgroundPrintingManager::WebContentsSet::const_iterator
 BackgroundPrintingManager::WebContentsSet::const_iterator
     BackgroundPrintingManager::end() {
   return printing_tabs_.end();
+}
+
+bool BackgroundPrintingManager::HasPrintPreviewDialog(
+    WebContents* preview_dialog) {
+  return HasPrintPreviewTab(preview_dialog);
 }
 
 bool BackgroundPrintingManager::HasPrintPreviewTab(WebContents* preview_tab) {
