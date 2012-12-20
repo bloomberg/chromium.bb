@@ -934,7 +934,7 @@ void BookmarkBarView::AnimationProgressed(const ui::Animation* animation) {
 void BookmarkBarView::AnimationEnded(const ui::Animation* animation) {
   // |browser_view_| can be NULL during tests.
   if (browser_view_) {
-    browser_view_->ToolbarSizeChanged(true);
+    browser_view_->ToolbarSizeChanged(false);
     SchedulePaint();
   }
 }
