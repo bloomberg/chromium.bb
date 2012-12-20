@@ -663,35 +663,6 @@ void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
   }
 }
 
-void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
-  // TODO(mazda): Consider using WebKit::WebInputEvent::GestureTap event when
-  //              it's implemented. Only sends the message on touch end event
-  //              for now.
-  if (event.type != WebKit::WebInputEvent::TouchEnd)
-    return;
-  // Ignore the case of multiple touches
-  if (event.touchesLength != 1)
-    return;
-  if (render_view()->GetWebView()->textInputType() ==
-      WebKit::WebTextInputTypeNone) {
-    return;
-  }
-  WebKit::WebNode node = render_view()->GetFocusedNode();
-  if (node.isNull())
-    return;
-  WebKit::WebAccessibilityObject accessibility =
-      render_view()->GetWebView()->accessibilityObject();
-  if (accessibility.isNull())
-    return;
-  const WebKit::WebTouchPoint point = event.touches[0];
-  accessibility = accessibility.hitTest(point.position);
-  if (accessibility.isNull())
-    return;
-  if (accessibility.node() == node)
-    render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
-    render_view()->GetRoutingID()));
-}
-
 void ChromeRenderViewObserver::DidHandleGestureEvent(
     const WebGestureEvent& event) {
   if (event.type != WebKit::WebGestureEvent::GestureTap)
