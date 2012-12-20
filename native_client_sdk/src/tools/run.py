@@ -40,12 +40,16 @@ def main(args):
       help='Listen for posts to /ok or /fail and shut down the server with '
           ' errorcodes 0 and 1 respectively.',
       dest='test_mode', action='store_true')
+  parser.add_option('-p', '--port',
+      help='Port to run server on. Default is 5103, ephemeral is 0.',
+      default=5103)
   options, args = parser.parse_args(args)
   if not args:
     parser.error('No executable given.')
 
   # 0 means use an ephemeral port.
-  server = httpd.LocalHTTPServer(options.serve_dir, 0, options.test_mode)
+  server = httpd.LocalHTTPServer(options.serve_dir, options.port,
+                                 options.test_mode)
   print 'Serving %s on %s...' % (options.serve_dir, server.GetURL(''))
 
   env = copy.copy(os.environ)
