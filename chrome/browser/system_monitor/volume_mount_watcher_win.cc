@@ -22,18 +22,19 @@ namespace {
 
 const DWORD kMaxPathBufLen = MAX_PATH + 1;
 
-bool IsRemovable(const char16* mount_point) {
-  if (GetDriveType(mount_point) != DRIVE_REMOVABLE)
+bool IsRemovable(const string16& mount_point) {
+  if (GetDriveType(mount_point.c_str()) != DRIVE_REMOVABLE)
     return false;
 
   // We don't consider floppy disks as removable, so check for that.
   string16 device = mount_point;
-  if (EndsWith(device, L"\\", false))
-    device = device.substr(0, device.length() - 1);
-  char16 device_path[kMaxPathBufLen];
-  if (!QueryDosDevice(device.c_str(), device_path, kMaxPathBufLen))
+  if (EndsWith(mount_point, L"\\", false))
+    device = mount_point.substr(0, device.length() - 1);
+  string16 device_path;
+  if (!QueryDosDevice(device.c_str(), WriteInto(&device_path, kMaxPathBufLen),
+                      kMaxPathBufLen))
     return true;
-  return string16(device_path).find(L"Floppy") == string16::npos;
+  return device_path.find(L"Floppy") == string16::npos;
 }
 
 // Returns 0 if the devicetype is not volume.
@@ -61,36 +62,44 @@ bool IsLogicalVolumeStructure(LPARAM data) {
 }
 
 // Gets mass storage device information given a |device_path|. On success,
-// returns true and fills in |device_location|, |unique_id|, |name| and
+// returns true and fills in |device_location|, |unique_id|, |name|, and
 // |removable|.
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx.
 bool GetDeviceDetails(const FilePath& device_path, string16* device_location,
     std::string* unique_id, string16* name, bool* removable) {
-  char16 mount_point[kMaxPathBufLen];
-  if (!GetVolumePathName(device_path.value().c_str(), mount_point,
+  string16 mount_point;
+  if (!GetVolumePathName(device_path.value().c_str(),
+                         WriteInto(&mount_point, kMaxPathBufLen),
                          kMaxPathBufLen)) {
     return false;
   }
+
+  if (removable)
+    *removable = IsRemovable(mount_point);
+
   if (device_location)
-    *device_location = string16(mount_point);
+    *device_location = mount_point;
 
   if (unique_id) {
-    char16 guid[kMaxPathBufLen];
-    if (!GetVolumeNameForVolumeMountPoint(mount_point, guid, kMaxPathBufLen))
+    string16 guid;
+    if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
+                                          WriteInto(&guid, kMaxPathBufLen),
+                                          kMaxPathBufLen)) {
       return false;
+    }
     // In case it has two GUID's (see above mentioned blog), do it again.
-    if (!GetVolumeNameForVolumeMountPoint(guid, guid, kMaxPathBufLen))
+    if (!GetVolumeNameForVolumeMountPoint(guid.c_str(),
+                                          WriteInto(&guid, kMaxPathBufLen),
+                                          kMaxPathBufLen)) {
       return false;
-    WideToUTF8(guid, wcslen(guid), unique_id);
+    }
+    *unique_id = UTF16ToUTF8(guid);
   }
 
   if (name)
     *name = device_path.LossyDisplayName();
-
-  if (removable)
-    *removable = IsRemovable(mount_point);
 
   return true;
 }
@@ -153,22 +162,25 @@ VolumeMountWatcherWin::~VolumeMountWatcherWin() {
 
 std::vector<FilePath> VolumeMountWatcherWin::GetAttachedDevices() {
   std::vector<FilePath> result;
-  char16 volume_name[kMaxPathBufLen];
-  HANDLE find_handle = FindFirstVolume(volume_name, kMaxPathBufLen);
+  string16 volume_name;
+  HANDLE find_handle = FindFirstVolume(WriteInto(&volume_name, kMaxPathBufLen),
+                                       kMaxPathBufLen);
   if (find_handle == INVALID_HANDLE_VALUE)
     return result;
 
   while (true) {
-    char16 volume_path[kMaxPathBufLen];
+    string16 volume_path;
     DWORD return_count;
-    if (GetVolumePathNamesForVolumeName(volume_name, volume_path,
+    if (GetVolumePathNamesForVolumeName(volume_name.c_str(),
+                                        WriteInto(&volume_path, kMaxPathBufLen),
                                         kMaxPathBufLen, &return_count)) {
       if (IsRemovable(volume_path))
         result.push_back(FilePath(volume_path));
     } else {
       DPLOG(ERROR);
     }
-    if (!FindNextVolume(find_handle, volume_name, kMaxPathBufLen)) {
+    if (!FindNextVolume(find_handle, WriteInto(&volume_name, kMaxPathBufLen),
+                        kMaxPathBufLen)) {
       if (GetLastError() != ERROR_NO_MORE_FILES)
         DPLOG(ERROR);
       break;
@@ -204,46 +216,51 @@ void VolumeMountWatcherWin::AddExistingDevicesOnFileThread() {
 
 void VolumeMountWatcherWin::CheckDeviceTypeOnFileThread(
     const std::string& unique_id, const string16& device_name,
-    const FilePath& device) {
+    const FilePath& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   MediaStorageUtil::Type type =
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-  if (IsMediaDevice(device.value()))
+  if (IsMediaDevice(device_path.value()))
     type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread, this,
-      device_id, device_name, device.value()));
+      device_id, device_name, device_path));
 }
 
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     const std::string& device_id, const string16& device_name,
-    const string16& device_location) {
+    const FilePath& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  device_ids_[device_location] = device_id;
+  // Remember metadata for this device.
+  MountPointInfo info;
+  info.device_id = device_id;
+  device_metadata_[device_path.value()] = info;
+
   SystemMonitor* monitor = SystemMonitor::Get();
   if (monitor) {
-    monitor->ProcessRemovableStorageAttached(device_id, device_name,
-                                             device_location);
+    string16 display_name = GetDisplayNameForDevice(0, device_name);
+    monitor->ProcessRemovableStorageAttached(device_id, display_name,
+                                             device_path.value());
   }
 }
 
 void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
     const string16& device_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MountPointDeviceIdMap::const_iterator device_info =
-      device_ids_.find(device_location);
+  MountPointDeviceMetadataMap::const_iterator device_info =
+      device_metadata_.find(device_location);
   // If the devices isn't type removable (like a CD), it won't be there.
-  if (device_info == device_ids_.end())
+  if (device_info == device_metadata_.end())
     return;
 
   SystemMonitor* monitor = SystemMonitor::Get();
   if (monitor)
-    monitor->ProcessRemovableStorageDetached(device_info->second);
-  device_ids_.erase(device_info);
+    monitor->ProcessRemovableStorageDetached(device_info->second.device_id);
+  device_metadata_.erase(device_info);
 }
 
 }  // namespace chrome

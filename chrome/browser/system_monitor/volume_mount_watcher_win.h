@@ -29,7 +29,7 @@ class VolumeMountWatcherWin
   void Init();
 
   // Gets the information about the device mounted at |device_path|. On success,
-  // returns true and fills in |location|, |unique_id|, |name| and |removable|.
+  // returns true and fills in |location|, |unique_id|, |name|, and |removable|.
   virtual bool GetDeviceInfo(const FilePath& device_path,
                              string16* location,
                              std::string* unique_id,
@@ -51,9 +51,13 @@ class VolumeMountWatcherWin
  private:
   friend class base::RefCountedThreadSafe<VolumeMountWatcherWin>;
 
+  struct MountPointInfo {
+    std::string device_id;
+  };
+
   // Key: Mass storage device mount point.
-  // Value: Mass storage device ID string.
-  typedef std::map<string16, std::string> MountPointDeviceIdMap;
+  // Value: Mass storage device metadata.
+  typedef std::map<string16, MountPointInfo> MountPointDeviceMetadataMap;
 
   // Adds a new mass storage device specified by |device_path|.
   void AddNewDevice(const FilePath& device_path);
@@ -64,19 +68,19 @@ class VolumeMountWatcherWin
   // Identifies the device type and handles the device attach event.
   void CheckDeviceTypeOnFileThread(const std::string& unique_id,
                                    const string16& device_name,
-                                   const FilePath& device);
+                                   const FilePath& device_path);
 
   // Handles mass storage device attach event on UI thread.
   void HandleDeviceAttachEventOnUIThread(const std::string& device_id,
                                          const string16& device_name,
-                                         const string16& device_location);
+                                         const FilePath& device_path);
 
   // Handles mass storage device detach event on UI thread.
   void HandleDeviceDetachEventOnUIThread(const string16& device_location);
 
-  // A map from device mount point to device id. Only accessed on the UI
+  // A map from device mount point to device metadata. Only accessed on the UI
   // thread.
-  MountPointDeviceIdMap device_ids_;
+  MountPointDeviceMetadataMap device_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeMountWatcherWin);
 };

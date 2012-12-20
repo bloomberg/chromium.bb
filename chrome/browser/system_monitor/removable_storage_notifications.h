@@ -21,7 +21,8 @@ class RemovableStorageNotifications {
   static RemovableStorageNotifications* GetInstance();
 
   // Finds the device that contains |path| and populates |device_info|.
-  // Returns false if unable to find the device.
+  // Should be able to handle any path on the local system, not just removable
+  // storage. Returns false if unable to find the device.
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
       base::SystemMonitor::RemovableStorageInfo* device_info) const = 0;
