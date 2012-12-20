@@ -196,6 +196,13 @@ void WebLayerTreeViewImpl::setShowPaintRects(bool show)
     m_layerTreeHost->setDebugState(debugState);
 }
 
+void WebLayerTreeViewImpl::setContinuousPaintingEnabled(bool enabled)
+{
+    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
+    debugState.continuousPainting = enabled;
+    m_layerTreeHost->setDebugState(debugState);
+}
+
 scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
 {
     int fontHeight;
