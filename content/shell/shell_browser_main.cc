@@ -63,13 +63,12 @@ GURL GetURLForLayoutTest(const std::string& test_name,
     test_url = net::FilePathToFileURL(local_file);
   }
   FilePath local_path;
-  {
+  if (current_working_directory) {
     // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    if (net::FileURLToFilePath(test_url, &local_path)) {
-      file_util::SetCurrentDirectory(local_path.DirName());
-    }
-    if (current_working_directory)
+    if (net::FileURLToFilePath(test_url, &local_path))
+      *current_working_directory = local_path.DirName();
+    else
       file_util::GetCurrentDirectory(current_working_directory);
   }
   return test_url;
@@ -135,13 +134,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
     std::cout.flush();
 #endif
 
-    FilePath original_cwd;
-    {
-      // We're outside of the message loop here, and this is a test.
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
-      file_util::GetCurrentDirectory(&original_cwd);
-    }
-
     while (GetNextTest(args, &command_line_position, &test_string)) {
       if (test_string.empty())
         continue;
@@ -160,12 +152,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
       ran_at_least_once = true;
       main_runner_->Run();
-
-      {
-        // We're outside of the message loop here, and this is a test.
-        base::ThreadRestrictions::ScopedAllowIO allow_io;
-        file_util::SetCurrentDirectory(original_cwd);
-      }
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;
