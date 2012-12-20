@@ -23,9 +23,18 @@ my $timeout = 120; # seconds
 my $tablesdir = (split(',', $ENV{LOUIS_TABLEPATH}))[0];
 
 # get all the tables from the tables directory
-my @tables = glob("$tablesdir/*.[cu]tb $tablesdir/*.cti $tablesdir/*.dis");
-# filter tables that only work when included inside others
-@tables = grep(!/countries.cti|compress.ctb|corrections.ctb|eo-g1.ctb|hu-exceptionwords.cti|core.[cu]tb|-translation.ctb/, @tables);
+my @tables = glob("$tablesdir/*");
+# exclude hyphenation dicts
+@tables = grep(!/.dic/, @tables);
+# exclude Makefiles, README and shell scripts
+@tables = grep(!/Makefile|README|maketablelist.sh/, @tables);
+# exclude tables that only work when included inside others
+@tables = grep(!/countries.cti|compress.ctb|corrections.ctb|hu-exceptionwords.cti|core.[cu]tb|-translation.ctb/, @tables);
+# exclude other oddballs
+@tables = grep(!/lang2table/, @tables);
+# exclude known bad tables
+@tables = grep(!/eo-g1.ctb|ru-ru-comp8/, @tables);
+
 
 foreach my $table (@tables) {
     if (my $pid = fork) {
