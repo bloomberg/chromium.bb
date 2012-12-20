@@ -39,7 +39,6 @@ const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
 const SkColor kSelectedColor = SkColorSetARGB(0x0D, 0, 0, 0);
 const SkColor kHighlightedColor = kHoverAndPushedColor;
 
-const int kTitleFontSize = 11;
 const int kLeftRightPaddingChars = 1;
 
 // Scale to transform the icon when a drag starts.
@@ -47,21 +46,6 @@ const float kDraggingIconScale = 1.5f;
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 100;
-
-const gfx::Font& GetTitleFont() {
-  static gfx::Font* font = NULL;
-
-  // Reuses current font.
-  if (font)
-    return *font;
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Font title_font(rb.GetFont(ui::ResourceBundle::BaseFont).GetFontName(),
-                       kTitleFontSize);
-  title_font = title_font.DeriveFont(0, gfx::Font::BOLD);
-  font = new gfx::Font(title_font);
-  return *font;
-}
 
 }  // namespace
 
@@ -79,10 +63,11 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       touch_dragging_(false) {
   icon_->set_interactive(false);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kTitleColor);
-  title_->SetFont(GetTitleFont());
+  title_->SetFont(rb.GetFont(ui::ResourceBundle::SmallBoldFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   const gfx::ShadowValue kIconShadows[] = {

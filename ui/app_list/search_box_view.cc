@@ -21,7 +21,6 @@ const int kPadding = 14;
 const int kIconDimension = 32;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
-const int kFontSize = 14;
 const int kEditHeight = 19;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
@@ -38,9 +37,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate)
 
   search_box_->RemoveBorder();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  search_box_->SetFont(gfx::Font(
-      rb.GetFont(ui::ResourceBundle::BaseFont).GetFontName(),
-      kFontSize));
+  search_box_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->SetController(this);
   AddChildView(search_box_);
