@@ -25,7 +25,7 @@ bool IsMediaTaskRunnerThread() {
   return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
 }
 
-base::SequencedTaskRunner* GetSequencedTaskRunner() {
+scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);

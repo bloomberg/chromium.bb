@@ -91,6 +91,11 @@ class MediaFileSystemRegistry
 
   std::string GetTransientIdForDeviceId(const std::string& device_id) const;
 
+  // Keys used in gallery names, which are JSON strings.
+  static const char kDeviceIdKey[];
+  static const char kGalleryIdKey[];
+  static const char kNameKey[];
+
  private:
   friend class TestMediaFileSystemContext;
   class MediaFileSystemContextImpl;
