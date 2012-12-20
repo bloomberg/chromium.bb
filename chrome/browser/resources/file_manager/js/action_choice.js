@@ -21,7 +21,6 @@ function ActionChoice(dom, filesystem, params) {
   this.volumeManager_ = new VolumeManager();
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
-  this.closeBound_ = this.close_.bind(this);
 
   this.initDom_();
   this.checkDrive_();
@@ -141,6 +140,7 @@ ActionChoice.prototype.loadSource_ = function(source) {
       // If we have no media files, the only choice is view files. So, don't
       // confuse user with a single choice, and just open file manager.
       this.viewFiles_();
+      this.recordAction_('view-files-auto');
       this.close_();
     }
 
@@ -174,7 +174,10 @@ ActionChoice.prototype.loadSource_ = function(source) {
 
   this.sourceEntry_ = null;
   metrics.startInterval('PhotoImport.Scan');
-  util.resolvePath(this.filesystem_.root, source, onEntry, this.closeBound_);
+  util.resolvePath(this.filesystem_.root, source, onEntry, function() {
+    this.recordAction_('error');
+    this.close_();
+  }.bind(this));
 };
 
 /**
@@ -238,6 +241,7 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
       this.onOk_();
       return;
     case '27':
+      this.recordAction_('close');
       this.close_();
       return;
   }
@@ -262,11 +266,14 @@ ActionChoice.prototype.onOk_ = function(event) {
     var left = Math.round((window.screen.availWidth - width) / 2);
     util.platform.createWindow(url,
         {height: height, width: width, left: left, top: top});
+    this.recordAction_('import-photos-to-drive');
   } else if (this.document_.querySelector('#view-files').checked) {
     this.viewFiles_();
+    this.recordAction_('view-files');
   } else if (this.document_.querySelector('#watch-single-video').checked) {
     chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
         function(success) {});
+    this.recordAction_('watch-single-video');
   }
   this.close_();
 };
@@ -296,4 +303,19 @@ ActionChoice.prototype.viewFiles_ = function() {
     var url = util.platform.getURL('main.html') + '#' + path;
     util.platform.createWindow(url);
   }
+};
+
+/**
+ * Records an action chosen.
+ * @param {string} action Action name.
+ * @private
+ */
+ActionChoice.prototype.recordAction_ = function(action) {
+  metrics.recordEnum('PhotoImport.Action', action,
+      ['import-photos-to-drive',
+       'view-files',
+       'view-files-auto',
+       'watch-single-video',
+       'error',
+       'close']);
 };
