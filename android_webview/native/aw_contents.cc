@@ -4,6 +4,8 @@
 
 #include "android_webview/native/aw_contents.h"
 
+#include <sys/system_properties.h>
+
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
@@ -347,58 +349,64 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   // TODO(leandrogracia): remove when crbug.com/164140 is closed.
   // ---------------------------------------------------------------------------
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding);
+  char no_gl_restore_prop[PROP_VALUE_MAX];
+  __system_property_get("webview.chromium_no_gl_restore", no_gl_restore_prop);
+  if (!strcmp(no_gl_restore_prop, "true")) {
+    LOG(WARNING) << "Android GL functor not restoring the previous GL state.";
+  } else {
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding);
 
-  glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+    glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib); ++i) {
-    glVertexAttribPointer(i, vertex_attrib[i].size,
-        vertex_attrib[i].type, vertex_attrib[i].normalized,
-        vertex_attrib[i].stride, vertex_attrib[i].pointer);
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib); ++i) {
+      glVertexAttribPointer(i, vertex_attrib[i].size,
+          vertex_attrib[i].type, vertex_attrib[i].normalized,
+          vertex_attrib[i].stride, vertex_attrib[i].pointer);
 
-    if (vertex_attrib[i].enabled)
-      glEnableVertexAttribArray(i);
+      if (vertex_attrib[i].enabled)
+        glEnableVertexAttribArray(i);
+      else
+        glDisableVertexAttribArray(i);
+    }
+
+    if (depth_test)
+      glEnable(GL_DEPTH_TEST);
     else
-      glDisableVertexAttribArray(i);
+      glDisable(GL_DEPTH_TEST);
+
+    if (cull_face)
+      glEnable(GL_CULL_FACE);
+    else
+      glDisable(GL_CULL_FACE);
+
+    glColorMask(color_mask[0], color_mask[1], color_mask[2],
+                       color_mask[3]);
+
+    if (blend_enabled)
+      glEnable(GL_BLEND);
+    else
+      glDisable(GL_BLEND);
+
+    glBlendFuncSeparate(blend_src_rgb, blend_dest_rgb,
+                               blend_src_alpha, blend_dest_alpha);
+
+    glActiveTexture(active_texture);
+
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+
+    if (scissor_test)
+      glEnable(GL_SCISSOR_TEST);
+    else
+      glDisable(GL_SCISSOR_TEST);
+
+    glScissor(scissor_box[0], scissor_box[1], scissor_box[2],
+                     scissor_box[3]);
+
+    glUseProgram(current_program);
   }
-
-  if (depth_test)
-    glEnable(GL_DEPTH_TEST);
-  else
-    glDisable(GL_DEPTH_TEST);
-
-  if (cull_face)
-    glEnable(GL_CULL_FACE);
-  else
-    glDisable(GL_CULL_FACE);
-
-  glColorMask(color_mask[0], color_mask[1], color_mask[2],
-                     color_mask[3]);
-
-  if (blend_enabled)
-    glEnable(GL_BLEND);
-  else
-    glDisable(GL_BLEND);
-
-  glBlendFuncSeparate(blend_src_rgb, blend_dest_rgb,
-                             blend_src_alpha, blend_dest_alpha);
-
-  glActiveTexture(active_texture);
-
-  glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-  if (scissor_test)
-    glEnable(GL_SCISSOR_TEST);
-  else
-    glDisable(GL_SCISSOR_TEST);
-
-  glScissor(scissor_box[0], scissor_box[1], scissor_box[2],
-                   scissor_box[3]);
-
-  glUseProgram(current_program);
   // ---------------------------------------------------------------------------
 }
 
