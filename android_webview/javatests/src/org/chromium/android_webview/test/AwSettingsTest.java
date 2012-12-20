@@ -16,7 +16,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -2016,9 +2015,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLayoutAlgorithmNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -2026,9 +2024,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLayoutAlgorithmIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2036,9 +2033,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLayoutAlgorithmBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2046,9 +2042,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -2056,9 +2051,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2066,9 +2060,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    //@SmallTest
-    //@Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest // crbug.com/167076
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(

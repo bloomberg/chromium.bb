@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -55,8 +54,7 @@ public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
         super.tearDown();
     }
 
-    //@SmallTest
-    @DisabledTest // crbug.com/167076
+    @SmallTest
     public void testScaleUp() throws Throwable {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
              CommonResources.ABOUT_HTML, "text/html", false);

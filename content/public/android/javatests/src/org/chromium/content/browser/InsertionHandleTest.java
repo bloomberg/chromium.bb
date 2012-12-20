@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -32,9 +31,8 @@ public class InsertionHandleTest extends ContentShellTestBase {
     private static final int HANDLE_POSITION_TOLERANCE = 60;
     private static final String PASTE_TEXT = "**test text to paste**";
 
-    //@MediumTest
-    //@Feature({"TextSelection", "TextInput", "Main"})
-    @DisabledTest  // crbug.com/167073
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandle() throws Throwable {
         startActivityWithTestUrl(FILENAME);
 
