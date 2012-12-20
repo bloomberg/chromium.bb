@@ -92,6 +92,8 @@
       '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarAfterDismiss',
       # crbug.com/124913
       '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
+      # crbug.com/165843
+      '-instant.InstantTest.testInstantWithNonInstantSearchEngine',
       # Mysteriously broken?
       # crbug.com/138857
       '-multiprofile.MultiprofileTest.testMakeSearchEngineDefaultInMultiprofile',
