@@ -1,0 +1,17 @@
+<div contenteditable=true>
+<table border=1>
+<tr>
+    <td>Cell 1</td>
+    <td>Cell 2</td>
+</tr>
+</table>
+Testing
+</div>
+<hr/>
+<p>
+In Chrome, put the cursor between 'T' and 'e' in "Testing", and hit backspace twice. The rest of the text will go into the last cell.
+</p>
+<p>
+It is unclear whether this is a bug that can be upstreamed or not, because the comment in the code specifically mentions that this is the intended behavior, and has been since at least 2007. However, we changed this behavior in our product to match what Firefox does, which is to make the second backspace a no-op.
+</p>
+
