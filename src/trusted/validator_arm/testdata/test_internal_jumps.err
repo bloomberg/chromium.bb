@@ -1,3 +1,0 @@
-ncval: 0002003c Destination branch on lr is not properly masked.
-ncval: 00020008 Instruction branches into middle of 2-instruction pattern at 00020018.
-ncval: 00020028 Instruction branches into middle of 2-instruction pattern at 00020018.

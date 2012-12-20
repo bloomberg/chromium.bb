@@ -588,9 +588,9 @@ void ProblemReporter::ToText(char* buffer,
   assert(buffer_size > 0);
   buffer[0] = '\0';
   assert(problem < kValidatorProblemSize);
-  RenderText("ncval: ", &buffer, &buffer_size);
-  RenderInstAddress(vaddr, &buffer, &buffer_size);
-  RenderText(" ", &buffer, &buffer_size);
+  RenderAdvance(SNPRINTF(buffer, buffer_size, "%8"NACL_PRIx32, vaddr),
+                &buffer, &buffer_size);
+  RenderText(": ", &buffer, &buffer_size);
   Render(&buffer, &buffer_size,
          ValidatorProblemFormatDirective[problem],
          problem, method, user_data);

@@ -210,7 +210,7 @@ validator_tests = {
 
 # The following tests generate ARM nexes from assembly and validate the
 # generate file. They're all expected to fail and produce the golden files'
-# stdout (currently all empty) and stderr.
+# stdout. Stderr is expected to be empty.
 if env.Bit('target_arm'):
   for test, exit_status in validator_tests.iteritems():
     nexe = untrusted_env.ComponentProgram(test, 'testdata/' + test + '.S',
@@ -220,9 +220,8 @@ if env.Bit('target_arm'):
         test + '_actual.out',
         [ncval, untrusted_env.File(nexe)],
         exit_status = str(exit_status),
-        filter_regex = "'^ncval'",
         stdout_golden = untrusted_env.File('testdata/' + test + '.out'),
-        stderr_golden = untrusted_env.File('testdata/' + test + '.err'))
+        stderr_golden = untrusted_env.File('testdata/empty_file'))
     untrusted_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                                      "run_arm_" + test,
                                      # TODO(jfb) Remove this, see issue #3217.

@@ -67,7 +67,7 @@ ReportProblemInternal(uint32_t vaddr,
                       nacl_arm_val::ValidatorProblemUserData user_data) {
   char buffer[kBufferSize];
   ToText(buffer, kBufferSize, vaddr, problem, method, user_data);
-  fprintf(stderr, "%s\n", buffer);
+  printf("%s\n", buffer);
 }
 
 const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;
@@ -162,8 +162,13 @@ int main(int argc, const char *argv[]) {
 
   // TODO(cbiffle): check OS ABI, ABI version, align mask
 
-  if (run_validation)
+  if (run_validation) {
     exit_code = validate(ncf, &cpu_features);
+    if (exit_code == 0)
+      printf("Valid.\n");
+    else
+      printf("Invalid.\n");
+  }
 
   if (ncf)
       nc_freefile(ncf);
