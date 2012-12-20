@@ -72,6 +72,9 @@ class CertificateResourceHandler : public ResourceHandler {
                                    const net::URLRequestStatus& urs,
                                    const std::string& sec_info) OVERRIDE;
 
+  // N/A to cert downloading.
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
+
  private:
   typedef std::vector<std::pair<scoped_refptr<net::IOBuffer>,
                                 size_t> > ContentVector;

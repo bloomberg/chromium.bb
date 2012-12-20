@@ -59,6 +59,9 @@ class SaveFileResourceHandler : public ResourceHandler {
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
 
+  // N/A to this flavor of SaveFileResourceHandler.
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
+
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and
   // is handled correctly by the SaveManager.

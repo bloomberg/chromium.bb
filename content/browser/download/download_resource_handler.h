@@ -76,6 +76,9 @@ class DownloadResourceHandler
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
 
+  // N/A to this flavor of DownloadHandler.
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
+
   void PauseRequest();
   void ResumeRequest();
   void CancelRequest();

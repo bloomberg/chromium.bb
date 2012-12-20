@@ -127,4 +127,11 @@ bool SyncResourceHandler::OnResponseCompleted(
   return true;
 }
 
+void SyncResourceHandler::OnDataDownloaded(
+    int request_id,
+    int bytes_downloaded) {
+  // Sync requests don't involve ResourceMsg_DataDownloaded messages
+  // being sent back to renderers as progress is made.
+}
+
 }  // namespace content

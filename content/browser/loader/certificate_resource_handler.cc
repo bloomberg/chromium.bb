@@ -142,4 +142,10 @@ void CertificateResourceHandler::AssembleResource() {
   DCHECK_EQ(content_length_, bytes_copied);
 }
 
+void CertificateResourceHandler::OnDataDownloaded(
+    int request_id,
+    int bytes_downloaded) {
+  NOTREACHED();
+}
+
 }  // namespace content

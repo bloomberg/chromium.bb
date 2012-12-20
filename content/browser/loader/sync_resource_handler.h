@@ -56,6 +56,7 @@ class SyncResourceHandler : public ResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
 
  private:
   enum { kReadBufSize = 3840 };

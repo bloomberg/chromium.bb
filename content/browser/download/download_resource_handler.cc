@@ -367,6 +367,12 @@ bool DownloadResourceHandler::OnResponseCompleted(
   return true;
 }
 
+void DownloadResourceHandler::OnDataDownloaded(
+    int request_id,
+    int bytes_downloaded) {
+  NOTREACHED();
+}
+
 // If the content-length header is not present (or contains something other
 // than numbers), the incoming content_length is -1 (unknown size).
 // Set the content length to 0 to indicate unknown size to DownloadManager.

@@ -109,6 +109,12 @@ bool SaveFileResourceHandler::OnResponseCompleted(
   return true;
 }
 
+void SaveFileResourceHandler::OnDataDownloaded(
+    int request_id,
+    int bytes_downloaded) {
+  NOTREACHED();
+}
+
 void SaveFileResourceHandler::set_content_length(
     const std::string& content_length) {
   base::StringToInt64(content_length, &content_length_);
