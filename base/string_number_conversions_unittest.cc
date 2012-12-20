@@ -211,16 +211,17 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
     {"-42", -66, true},
     {"+42", 66, true},
     {"7fffffff", INT_MAX, true},
-    {"80000000", INT_MIN, true},
-    {"ffffffff", -1, true},
-    {"DeadBeef", 0xdeadbeef, true},
+    {"-80000000", INT_MIN, true},
+    {"80000000", INT_MAX, false},  // Overflow test.
+    {"-80000001", INT_MIN, false},  // Underflow test.
     {"0x42", 66, true},
     {"-0x42", -66, true},
     {"+0x42", 66, true},
     {"0x7fffffff", INT_MAX, true},
-    {"0x80000000", INT_MIN, true},
-    {"0xffffffff", -1, true},
-    {"0XDeadBeef", 0xdeadbeef, true},
+    {"-0x80000000", INT_MIN, true},
+    {"-80000000", INT_MIN, true},
+    {"80000000", INT_MAX, false},  // Overflow test.
+    {"-80000001", INT_MIN, false},  // Underflow test.
     {"0x0f", 15, true},
     {"0f", 15, true},
     {" 45", 0x45, false},
@@ -231,7 +232,6 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
     {"efgh", 0xef, false},
     {"0xefgh", 0xef, false},
     {"hgfe", 0, false},
-    {"100000000", -1, false},  // don't care about |output|, just |success|
     {"-", 0, false},
     {"", 0, false},
     {"0x", 0, false},
@@ -249,6 +249,63 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
   std::string input_string(input, arraysize(input) - 1);
   int output;
   EXPECT_FALSE(HexStringToInt(input_string, &output));
+  EXPECT_EQ(0xc0ffee, output);
+}
+
+TEST(StringNumberConversionsTest, HexStringToInt64) {
+  static const struct {
+    std::string input;
+    int64 output;
+    bool success;
+  } cases[] = {
+    {"0", 0, true},
+    {"42", 66, true},
+    {"-42", -66, true},
+    {"+42", 66, true},
+    {"40acd88557b", 4444444448123, true},
+    {"7fffffff", INT_MAX, true},
+    {"-80000000", INT_MIN, true},
+    {"ffffffff", 0xffffffff, true},
+    {"DeadBeef", 0xdeadbeef, true},
+    {"0x42", 66, true},
+    {"-0x42", -66, true},
+    {"+0x42", 66, true},
+    {"0x40acd88557b", 4444444448123, true},
+    {"0x7fffffff", INT_MAX, true},
+    {"-0x80000000", INT_MIN, true},
+    {"0xffffffff", 0xffffffff, true},
+    {"0XDeadBeef", 0xdeadbeef, true},
+    {"0x7fffffffffffffff", kint64max, true},
+    {"-0x8000000000000000", kint64min, true},
+    {"0x8000000000000000", kint64max, false},  // Overflow test.
+    {"-0x8000000000000001", kint64min, false},  // Underflow test.
+    {"0x0f", 15, true},
+    {"0f", 15, true},
+    {" 45", 0x45, false},
+    {"\t\n\v\f\r 0x45", 0x45, false},
+    {" 45", 0x45, false},
+    {"45 ", 0x45, false},
+    {"45:", 0x45, false},
+    {"efgh", 0xef, false},
+    {"0xefgh", 0xef, false},
+    {"hgfe", 0, false},
+    {"-", 0, false},
+    {"", 0, false},
+    {"0x", 0, false},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    int64 output = 0;
+    EXPECT_EQ(cases[i].success, HexStringToInt64(cases[i].input, &output));
+    EXPECT_EQ(cases[i].output, output);
+  }
+  // One additional test to verify that conversion of numbers in strings with
+  // embedded NUL characters.  The NUL and extra data after it should be
+  // interpreted as junk after the number.
+  const char input[] = "0xc0ffee\09";
+  std::string input_string(input, arraysize(input) - 1);
+  int64 output;
+  EXPECT_FALSE(HexStringToInt64(input_string, &output));
   EXPECT_EQ(0xc0ffee, output);
 }
 

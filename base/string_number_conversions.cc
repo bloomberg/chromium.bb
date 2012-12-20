@@ -295,15 +295,18 @@ class BaseIteratorRangeToNumberTraits {
 template<typename ITERATOR>
 class BaseHexIteratorRangeToIntTraits
     : public BaseIteratorRangeToNumberTraits<ITERATOR, int, 16> {
- public:
-  // Allow parsing of 0xFFFFFFFF, which is technically an overflow
-  static unsigned int max() {
-    return std::numeric_limits<unsigned int>::max();
-  }
+};
+
+template<typename ITERATOR>
+class BaseHexIteratorRangeToInt64Traits
+    : public BaseIteratorRangeToNumberTraits<ITERATOR, int64, 16> {
 };
 
 typedef BaseHexIteratorRangeToIntTraits<StringPiece::const_iterator>
     HexIteratorRangeToIntTraits;
+
+typedef BaseHexIteratorRangeToInt64Traits<StringPiece::const_iterator>
+    HexIteratorRangeToInt64Traits;
 
 template<typename STR>
 bool HexStringToBytesT(const STR& input, std::vector<uint8>* output) {
@@ -326,7 +329,8 @@ template <typename VALUE, int BASE>
 class StringPieceToNumberTraits
     : public BaseIteratorRangeToNumberTraits<StringPiece::const_iterator,
                                              VALUE,
-                                             BASE> {};
+                                             BASE> {
+};
 
 template <typename VALUE>
 bool StringToIntImpl(const StringPiece& input, VALUE* output) {
@@ -338,7 +342,8 @@ template <typename VALUE, int BASE>
 class StringPiece16ToNumberTraits
     : public BaseIteratorRangeToNumberTraits<StringPiece16::const_iterator,
                                              VALUE,
-                                             BASE> {};
+                                             BASE> {
+};
 
 template <typename VALUE>
 bool String16ToIntImpl(const StringPiece16& input, VALUE* output) {
@@ -478,6 +483,11 @@ std::string HexEncode(const void* bytes, size_t size) {
 
 bool HexStringToInt(const StringPiece& input, int* output) {
   return IteratorRangeToNumber<HexIteratorRangeToIntTraits>::Invoke(
+    input.begin(), input.end(), output);
+}
+
+bool HexStringToInt64(const StringPiece& input, int64* output) {
+  return IteratorRangeToNumber<HexIteratorRangeToInt64Traits>::Invoke(
     input.begin(), input.end(), output);
 }
 

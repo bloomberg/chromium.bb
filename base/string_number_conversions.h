@@ -93,7 +93,14 @@ BASE_EXPORT bool StringToDouble(const std::string& input, double* output);
 BASE_EXPORT std::string HexEncode(const void* bytes, size_t size);
 
 // Best effort conversion, see StringToInt above for restrictions.
+// Will only successful parse hex values that will fit into |output|, i.e.
+// -0x80000000 < |input| < 0x7FFFFFFF.
 BASE_EXPORT bool HexStringToInt(const StringPiece& input, int* output);
+
+// Best effort conversion, see StringToInt above for restrictions.
+// Will only successful parse hex values that will fit into |output|, i.e.
+// -0x8000000000000000 < |input| < 0x7FFFFFFFFFFFFFFF.
+BASE_EXPORT bool HexStringToInt64(const StringPiece& input, int64* output);
 
 // Similar to the previous functions, except that output is a vector of bytes.
 // |*output| will contain as many bytes as were successfully parsed prior to the
