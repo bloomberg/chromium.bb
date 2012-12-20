@@ -23,7 +23,15 @@ class XServerPixelBuffer {
   ~XServerPixelBuffer();
 
   void Release();
-  void Init(Display* display);
+
+  // Allocate (or reallocate) the pixel buffer with the given size, which is
+  // assumed to be the current size of the root window.
+  // |screen_size| should either come from GetRootWindowSize(), or
+  // from a recent ConfigureNotify event on the root window.
+  void Init(Display* display, const SkISize& screen_size);
+
+  // Request the current size of the root window from the X Server.
+  static SkISize GetRootWindowSize(Display* display);
 
   // If shared memory is being used without pixmaps, synchronize this pixel
   // buffer with the root window contents (otherwise, this is a no-op).
@@ -37,6 +45,8 @@ class XServerPixelBuffer {
   // call to CaptureRect.
   // In the case where the full-screen data is captured by Synchronize(), this
   // simply returns the pointer without doing any more work.
+  // The caller must ensure that |rect| is no larger than the screen size
+  // supplied to Init().
   uint8* CaptureRect(const SkIRect& rect);
 
   // Return information about the most recent capture. This is only guaranteed
@@ -54,10 +64,11 @@ class XServerPixelBuffer {
 
  private:
   void InitShm(int screen);
-  bool InitPixmaps(int width, int height, int depth);
+  bool InitPixmaps(int depth);
 
   Display* display_;
   Window root_window_;
+  SkISize root_window_size_;
   XImage* x_image_;
   XShmSegmentInfo* shm_segment_info_;
   Pixmap shm_pixmap_;

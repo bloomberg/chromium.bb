@@ -90,7 +90,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   scoped_refptr<CaptureData> CaptureScreen();
 
   // Called when the screen configuration is changed. |root_window_size|
-  // specifies size the most recent size of the root window.
+  // specifies the most recent size of the root window.
   void ScreenConfigurationChanged(const SkISize& root_window_size);
 
   // Synchronize the current buffer with |last_buffer_|, by copying pixels from
@@ -199,8 +199,6 @@ bool VideoFrameCapturerLinux::Init() {
     return false;
   }
 
-  x_server_pixel_buffer_.Init(display_);
-
   root_window_ = RootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
     LOG(ERROR) << "Unable to get the root window";
@@ -224,22 +222,20 @@ bool VideoFrameCapturerLinux::Init() {
     LOG(INFO) << "X server does not support XFixes.";
   }
 
-  if (ShouldUseXDamage()) {
-    InitXDamage();
-  }
-
   // Register for changes to the dimensions of the root window.
   XSelectInput(display_, root_window_, StructureNotifyMask);
 
-  // Update the root window size.
-  XWindowAttributes root_attributes;
-  XGetWindowAttributes(display_, root_window_, &root_attributes);
-  root_window_size_.set(root_attributes.width, root_attributes.height);
+  root_window_size_ = XServerPixelBuffer::GetRootWindowSize(display_);
+  x_server_pixel_buffer_.Init(display_, root_window_size_);
 
   if (has_xfixes_) {
     // Register for changes to the cursor shape.
     XFixesSelectCursorInput(display_, root_window_,
                             XFixesDisplayCursorNotifyMask);
+  }
+
+  if (ShouldUseXDamage()) {
+    InitXDamage();
   }
 
   return true;
@@ -435,6 +431,12 @@ scoped_refptr<CaptureData> VideoFrameCapturerLinux::CaptureScreen() {
 
     // Capture the damaged portions of the desktop.
     helper_.SwapInvalidRegion(&invalid_region);
+
+    // Clip the damaged portions to the current screen size, just in case some
+    // spurious XDamage notifications were received for a previous (larger)
+    // screen size.
+    invalid_region.op(SkIRect::MakeSize(root_window_size_),
+                      SkRegion::kIntersect_Op);
     for (SkRegion::Iterator it(invalid_region); !it.done(); it.next()) {
       CaptureRect(it.rect(), capture_data);
     }
@@ -472,7 +474,7 @@ void VideoFrameCapturerLinux::ScreenConfigurationChanged(
   queue_.SetAllFramesNeedUpdate();
 
   helper_.ClearInvalidRegion();
-  x_server_pixel_buffer_.Init(display_);
+  x_server_pixel_buffer_.Init(display_, root_window_size_);
 }
 
 void VideoFrameCapturerLinux::SynchronizeFrame() {

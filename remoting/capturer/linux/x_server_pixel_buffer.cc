@@ -59,7 +59,8 @@ int GetLastXServerError() {
 namespace remoting {
 
 XServerPixelBuffer::XServerPixelBuffer()
-    : display_(NULL), root_window_(0), x_image_(NULL),
+    : display_(NULL), root_window_(0),
+      root_window_size_(SkISize::Make(0, 0)), x_image_(NULL),
       shm_segment_info_(NULL), shm_pixmap_(0), shm_gc_(NULL) {
 }
 
@@ -90,18 +91,24 @@ void XServerPixelBuffer::Release() {
   }
 }
 
-void XServerPixelBuffer::Init(Display* display) {
+void XServerPixelBuffer::Init(Display* display,
+                              const SkISize& screen_size) {
   Release();
   display_ = display;
+  root_window_size_ = screen_size;
   int default_screen = DefaultScreen(display_);
   root_window_ = RootWindow(display_, default_screen);
   InitShm(default_screen);
 }
 
-void XServerPixelBuffer::InitShm(int screen) {
+// static
+SkISize XServerPixelBuffer::GetRootWindowSize(Display* display) {
   XWindowAttributes root_attr;
-  XGetWindowAttributes(display_, root_window_, &root_attr);
-  int width = root_attr.width, height = root_attr.height;
+  XGetWindowAttributes(display, DefaultRootWindow(display), &root_attr);
+  return SkISize::Make(root_attr.width, root_attr.height);
+}
+
+void XServerPixelBuffer::InitShm(int screen) {
   Visual* default_visual = DefaultVisual(display_, screen);
   int default_depth = DefaultDepth(display_, screen);
 
@@ -117,7 +124,8 @@ void XServerPixelBuffer::InitShm(int screen) {
   shm_segment_info_->shmaddr = reinterpret_cast<char*>(-1);
   shm_segment_info_->readOnly = False;
   x_image_ = XShmCreateImage(display_, default_visual, default_depth, ZPixmap,
-                             0, shm_segment_info_, width, height);
+                             0, shm_segment_info_, root_window_size_.width(),
+                             root_window_size_.height());
   if (x_image_) {
     shm_segment_info_->shmid = shmget(
         IPC_PRIVATE, x_image_->bytes_per_line * x_image_->height,
@@ -149,7 +157,7 @@ void XServerPixelBuffer::InitShm(int screen) {
   }
 
   if (havePixmaps)
-    havePixmaps = InitPixmaps(width, height, default_depth);
+    havePixmaps = InitPixmaps(default_depth);
 
   shmctl(shm_segment_info_->shmid, IPC_RMID, 0);
   shm_segment_info_->shmid = -1;
@@ -158,7 +166,7 @@ void XServerPixelBuffer::InitShm(int screen) {
           << " with" << (havePixmaps?"":"out") << " pixmaps.";
 }
 
-bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
+bool XServerPixelBuffer::InitPixmaps(int depth) {
   if (XShmPixmapFormat(display_) != ZPixmap)
     return false;
 
@@ -166,7 +174,8 @@ bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
   shm_pixmap_ = XShmCreatePixmap(display_, root_window_,
                                  shm_segment_info_->shmaddr,
                                  shm_segment_info_,
-                                 width, height, depth);
+                                 root_window_size_.width(),
+                                 root_window_size_.height(), depth);
   XSync(display_, False);
   if (GetLastXServerError() != 0) {
     // |shm_pixmap_| is not not valid because the request was not processed
@@ -203,6 +212,7 @@ void XServerPixelBuffer::Synchronize() {
 }
 
 uint8* XServerPixelBuffer::CaptureRect(const SkIRect& rect) {
+  DCHECK(SkIRect::MakeSize(root_window_size_).contains(rect));
   if (shm_segment_info_) {
     if (shm_pixmap_) {
       XCopyArea(display_, root_window_, shm_pixmap_, shm_gc_,
