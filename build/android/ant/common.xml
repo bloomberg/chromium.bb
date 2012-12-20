@@ -87,4 +87,6 @@
     location="${PRODUCT_DIR}/test.lib.java"/>
   <!-- Common directory for apks. -->
   <property-location name="apks.dir" location="${PRODUCT_DIR}/apks"/>
+  <!-- Don't worry about computing deps in ant. They're managed in gyp. -->
+  <property name="dont.do.deps" value="true"/>
 </project>
