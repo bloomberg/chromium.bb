@@ -82,5 +82,18 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanSetupAudioAndVideoCall) {
   ExpectTitle("OK");
 }
 
+// This test will make a complete PeerConnection-based call but remove the
+// MSID and bundle attribute from the initial offer to verify that
+// video is playing for the call even if the initiating client don't support
+// MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
+  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callWithoutMsidAndBundle();"));
+  ExpectTitle("OK");
+}
+
 }  // namespace content
 

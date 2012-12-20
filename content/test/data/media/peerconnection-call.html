@@ -7,9 +7,16 @@
 
   var gFirstConnection = null;
   var gSecondConnection = null;
+  var gTestWithoutMsidAndBundle = false;
 
   function call(constraints) {
     navigator.webkitGetUserMedia(constraints, okCallback, failedCallback);
+  }
+  
+  function callWithoutMsidAndBundle() {
+    gTestWithoutMsidAndBundle = true;
+    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
+        failedCallback);
   }
 
   function failedCallback(error) {
@@ -37,6 +44,9 @@
   }
 
   function receiveCall(offerSdp) {
+    if (gTestWithoutMsidAndBundle) {
+      offerSdp = removeMsidAndBundle(offerSdp);
+    }
     gSecondConnection = new webkitRTCPeerConnection(null, null);
     gSecondConnection.onicecandidate = onIceCandidateToSecond;
     gSecondConnection.onaddstream = onRemoteStream;
@@ -46,6 +56,15 @@
     gSecondConnection.setRemoteDescription(parsedOffer);
 
     gSecondConnection.createAnswer(onAnswerCreated);
+  }
+  
+  function removeMsidAndBundle(offerSdp) {
+    offerSdp = offerSdp.replace(/a=msid-semantics.*\r\n/g, '');
+    offerSdp = offerSdp.replace('a=group:BUNDLE audio video\r\n', '');
+    offerSdp = offerSdp.replace('a=mid:audio\r\n', '');
+    offerSdp = offerSdp.replace('a=mid:video\r\n', '');
+    offerSdp = offerSdp.replace(/a=ssrc.*\r\n/g, '');
+    return offerSdp;
   }
 
   function onAnswerCreated(answer) {
@@ -77,6 +96,12 @@
     var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
     var remoteVideo = $('remote-view');
     remoteVideo.src = remoteStreamUrl;
+    
+    if (gTestWithoutMsidAndBundle && e.stream.label != "default") {
+      document.title = 'a default remote stream was expected but instead ' + 
+          e.stream.label + ' was received.';
+      return;
+    }
 
     waitForVideo(remoteVideo, 320, 240);
   }
