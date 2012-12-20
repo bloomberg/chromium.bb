@@ -41,6 +41,8 @@
         'web_dialogs',
       ],
       'sources': [
+        'test/test_web_contents_handler.cc',
+        'test/test_web_contents_handler.h',
         'test/test_web_dialog_delegate.cc',
         'test/test_web_dialog_delegate.h',
         'test/test_web_dialog_observer.cc',
