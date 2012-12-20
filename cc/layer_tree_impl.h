@@ -29,6 +29,7 @@ class LayerTreeHostImpl;
 class LayerTreeImpl;
 class LayerTreeSettings;
 class OutputSurface;
+class PinchZoomViewport;
 class ResourceProvider;
 class TileManager;
 
@@ -65,6 +66,7 @@ class CC_EXPORT LayerTreeImpl {
   const gfx::Size& layout_viewport_size() const;
   std::string layer_tree_as_text() const;
   DebugRectHistory* debug_rect_history() const;
+  const PinchZoomViewport& pinch_zoom_viewport() const;
 
   // Other public methods
   // ---------------------------------------------------------------------------
@@ -79,12 +81,17 @@ class CC_EXPORT LayerTreeImpl {
   void set_hud_layer(HeadsUpDisplayLayerImpl* layer_impl) { hud_layer_ = layer_impl; }
 
   LayerImpl* root_scroll_layer() { return root_scroll_layer_; }
+  const LayerImpl* root_scroll_layer() const { return root_scroll_layer_; }
   void set_root_scroll_layer(LayerImpl* layer_impl) { root_scroll_layer_ = layer_impl; }
 
   LayerImpl* currently_scrolling_layer() { return currently_scrolling_layer_; }
   void set_currently_scrolling_layer(LayerImpl* layer_impl) { currently_scrolling_layer_ = layer_impl; }
 
   void ClearCurrentlyScrollingLayer();
+
+  void UpdateMaxScrollOffset();
+
+  gfx::Size ContentSize() const;
 
   LayerImpl* LayerById(int id);
 

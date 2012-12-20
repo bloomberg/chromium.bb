@@ -205,6 +205,17 @@ ResourceProvider::ResourceId LayerImpl::contentsResourceId() const
     return 0;
 }
 
+void LayerImpl::setSentScrollDelta(const gfx::Vector2d& sentScrollDelta)
+{
+    m_sentScrollDelta = sentScrollDelta;
+    if (layerTreeImpl()->IsActiveTree())
+    {
+        LayerImpl* pending_twin = layerTreeImpl()->FindPendingTreeLayerById(id());
+        if (pending_twin)
+            pending_twin->setSentScrollDelta(sentScrollDelta);
+    }
+}
+
 gfx::Vector2dF LayerImpl::scrollBy(const gfx::Vector2dF& scroll)
 {
     gfx::Vector2dF minDelta = -m_scrollOffset;
@@ -217,6 +228,17 @@ gfx::Vector2dF LayerImpl::scrollBy(const gfx::Vector2dF& scroll)
 
     if (m_scrollDelta == newDelta)
         return unscrolled;
+
+    if (layerTreeImpl()->IsActiveTree())
+    {
+        LayerImpl* pending_twin = layerTreeImpl()->FindPendingTreeLayerById(id());
+        if (pending_twin) {
+            // Don't send the full scroll to the new layer, as if it is larger
+            // then it may cause a jump during tree activation.  Instead,
+            // scroll it by the clamped amount that this layer scrolled.
+            pending_twin->scrollBy(newDelta - m_scrollDelta);
+        }
+    }
 
     m_scrollDelta = newDelta;
     if (m_scrollbarAnimationController)

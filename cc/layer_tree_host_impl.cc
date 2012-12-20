@@ -647,11 +647,7 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
 
 gfx::Size LayerTreeHostImpl::contentSize() const
 {
-    // TODO(aelias): Hardcoding the first child here is weird. Think of
-    // a cleaner way to get the contentBounds on the Impl side.
-    if (!rootScrollLayer() || rootScrollLayer()->children().isEmpty())
-        return gfx::Size();
-    return rootScrollLayer()->children()[0]->contentBounds();
+    return activeTree()->ContentSize();
 }
 
 static inline RenderPass* findRenderPassById(RenderPass::Id renderPassId, const LayerTreeHostImpl::FrameData& frame)
@@ -1221,36 +1217,9 @@ void LayerTreeHostImpl::setPageScaleDelta(float delta)
 
 void LayerTreeHostImpl::updateMaxScrollOffset()
 {
-    if (!rootScrollLayer() || !rootScrollLayer()->children().size())
-        return;
-
-    gfx::SizeF viewBounds = m_deviceViewportSize;
-    if (LayerImpl* clipLayer = rootScrollLayer()->parent()) {
-        // Compensate for non-overlay scrollbars.
-        if (clipLayer->masksToBounds())
-            viewBounds = gfx::ScaleSize(clipLayer->bounds(), m_deviceScaleFactor);
-    }
-
-    gfx::Size contentBounds = contentSize();
-    if (m_settings.pageScalePinchZoomEnabled) {
-        // Pinch with pageScale scrolls entirely in layout space.  contentSize
-        // returns the bounds including the page scale factor, so calculate the
-        // pre page-scale layout size here.
-        float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        contentBounds.set_width(contentBounds.width() / pageScaleFactor);
-        contentBounds.set_height(contentBounds.height() / pageScaleFactor);
-    } else {
-        viewBounds.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
-    }
-
-    gfx::Vector2dF maxScroll = gfx::Rect(contentBounds).bottom_right() - gfx::RectF(viewBounds).bottom_right();
-    maxScroll.Scale(1 / m_deviceScaleFactor);
-
-    // The viewport may be larger than the contents in some cases, such as
-    // having a vertical scrollbar but no horizontal overflow.
-    maxScroll.ClampToMin(gfx::Vector2dF());
-
-    rootScrollLayer()->setMaxScrollOffset(gfx::ToFlooredVector2d(maxScroll));
+    activeTree()->UpdateMaxScrollOffset();
+    if (pendingTree())
+        pendingTree()->UpdateMaxScrollOffset();
 }
 
 void LayerTreeHostImpl::setNeedsRedraw()
@@ -1352,6 +1321,7 @@ static gfx::Vector2dF scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewp
     // Apply the scroll delta.
     gfx::Vector2dF previousDelta = layerImpl.scrollDelta();
     gfx::Vector2dF unscrolled = layerImpl.scrollBy(localEndPoint - localStartPoint);
+    gfx::Vector2dF scrollAmount = localEndPoint - localStartPoint;
 
     gfx::Vector2dF viewportAppliedPan;
     if (viewport)
@@ -1544,7 +1514,7 @@ void LayerTreeHostImpl::makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, gfx
     scroll.layerId = rootScrollLayer()->id();
     scroll.scrollDelta = scrollOffset - rootScrollLayer()->scrollOffset();
     scrollInfo->scrolls.push_back(scroll);
-    rootScrollLayer()->setSentScrollDelta(scroll.scrollDelta);
+    activeTree()->root_scroll_layer()->setSentScrollDelta(scroll.scrollDelta);
     scrollInfo->pageScaleDelta = pageScale / m_pinchZoomViewport.pageScaleFactor();
     m_pinchZoomViewport.setSentPageScaleDelta(scrollInfo->pageScaleDelta);
 }

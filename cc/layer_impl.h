@@ -211,7 +211,7 @@ public:
     void setImplTransform(const gfx::Transform& transform);
 
     const gfx::Vector2d& sentScrollDelta() const { return m_sentScrollDelta; }
-    void setSentScrollDelta(const gfx::Vector2d& sentScrollDelta) { m_sentScrollDelta = sentScrollDelta; }
+    void setSentScrollDelta(const gfx::Vector2d& sentScrollDelta);
 
     // Returns the delta of the scroll that was outside of the bounds of the initial scroll
     gfx::Vector2dF scrollBy(const gfx::Vector2dF& scroll);

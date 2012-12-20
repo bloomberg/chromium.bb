@@ -6,6 +6,7 @@
 
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
+#include "ui/gfx/vector2d_conversions.h"
 
 namespace cc {
 
@@ -69,6 +70,48 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   currently_scrolling_layer_ = NULL;
   scrolling_layer_id_from_previous_tree_ = 0;
+}
+
+void LayerTreeImpl::UpdateMaxScrollOffset() {
+  if (!root_scroll_layer() || !root_scroll_layer()->children().size())
+    return;
+
+  gfx::SizeF view_bounds = device_viewport_size();
+  if (LayerImpl* clip_layer = root_scroll_layer()->parent()) {
+    // Compensate for non-overlay scrollbars.
+    if (clip_layer->masksToBounds())
+      view_bounds = gfx::ScaleSize(clip_layer->bounds(), device_scale_factor());
+  }
+
+  gfx::Size content_bounds = ContentSize();
+  if (settings().pageScalePinchZoomEnabled) {
+    // Pinch with pageScale scrolls entirely in layout space.  ContentSize
+    // returns the bounds including the page scale factor, so calculate the
+    // pre page-scale layout size here.
+    float page_scale_factor = pinch_zoom_viewport().pageScaleFactor();
+    content_bounds.set_width(content_bounds.width() / page_scale_factor);
+    content_bounds.set_height(content_bounds.height() / page_scale_factor);
+  } else {
+    view_bounds.Scale(1 / pinch_zoom_viewport().pageScaleDelta());
+  }
+
+  gfx::Vector2dF max_scroll = gfx::Rect(content_bounds).bottom_right() -
+      gfx::RectF(view_bounds).bottom_right();
+  max_scroll.Scale(1 / device_scale_factor());
+
+  // The viewport may be larger than the contents in some cases, such as
+  // having a vertical scrollbar but no horizontal overflow.
+  max_scroll.ClampToMin(gfx::Vector2dF());
+
+  root_scroll_layer()->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
+}
+
+gfx::Size LayerTreeImpl::ContentSize() const {
+  // TODO(aelias): Hardcoding the first child here is weird. Think of
+  // a cleaner way to get the contentBounds on the Impl side.
+  if (!root_scroll_layer() || root_scroll_layer()->children().isEmpty())
+    return gfx::Size();
+  return root_scroll_layer()->children()[0]->contentBounds();
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) {
@@ -162,6 +205,10 @@ DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
 
 AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
   return layer_tree_host_impl_->animationRegistrar();
+}
+
+const PinchZoomViewport& LayerTreeImpl::pinch_zoom_viewport() const {
+  return layer_tree_host_impl_->pinchZoomViewport();
 }
 
 } // namespace cc

@@ -208,7 +208,9 @@ public:
     void readback(void* pixels, const gfx::Rect&);
 
     LayerTreeImpl* activeTree() { return m_activeTree.get(); }
+    const LayerTreeImpl* activeTree() const { return m_activeTree.get(); }
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
+    const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
     void createPendingTree();
     void activatePendingTreeIfNeeded();
 
@@ -308,6 +310,8 @@ public:
     static void removeRenderPasses(RenderPassCuller, FrameData&);
 
     float totalPageScaleFactorForTesting() const { return m_pinchZoomViewport.totalPageScaleFactor(); }
+
+    const PinchZoomViewport& pinchZoomViewport() const { return m_pinchZoomViewport; }
 
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
