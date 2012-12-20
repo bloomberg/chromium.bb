@@ -13,7 +13,6 @@ namespace net {
 
 class IOBuffer;
 class UploadBytesElementReader;
-class UploadElement;
 class UploadFileElementReader;
 
 // An interface to read an upload data element.
@@ -36,10 +35,6 @@ class NET_EXPORT UploadElementReader {
   // state.
   virtual int Init(const CompletionCallback& callback) = 0;
 
-  // Initializes the instance always synchronously.
-  // Use this method only if the thread is IO allowed or the data is in-memory.
-  virtual int InitSync();
-
   // Returns the byte-length of the element.  For files that do not exist, 0
   // is returned.  This is done for consistency with Mozilla.
   virtual uint64 GetContentLength() const = 0;
@@ -59,10 +54,6 @@ class NET_EXPORT UploadElementReader {
   virtual int Read(IOBuffer* buf,
                    int buf_length,
                    const CompletionCallback& callback) = 0;
-
-  // Reads the data always synchronously.
-  // Use this method only if the thread is IO allowed or the data is in-memory.
-  virtual int ReadSync(IOBuffer* buf, int buf_length);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UploadElementReader);

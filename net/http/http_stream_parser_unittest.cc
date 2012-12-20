@@ -98,7 +98,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
   ScopedVector<UploadElementReader> element_readers;
   scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
-  ASSERT_EQ(OK, body->InitSync());
+  ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if upload data is empty.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -109,7 +109,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
   scoped_ptr<UploadDataStream> body(
       new UploadDataStream(UploadDataStream::CHUNKED, 0));
   body->AppendChunk(payload.data(), payload.size(), true);
-  ASSERT_EQ(OK, body->InitSync());
+  ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if upload data carries chunked data.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -129,7 +129,9 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
       temp_file_path, 0, 0, base::Time()));
 
   scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
-  ASSERT_EQ(OK, body->InitSync());
+  TestCompletionCallback callback;
+  ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
+  ASSERT_EQ(OK, callback.WaitForResult());
   // Shouldn't be merged if upload data carries a file, as it's not in-memory.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -142,7 +144,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
       payload.data(), payload.size()));
 
   scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
-  ASSERT_EQ(OK, body->InitSync());
+  ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Yes, should be merged if the in-memory body is small here.
   ASSERT_TRUE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -155,7 +157,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
       payload.data(), payload.size()));
 
   scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
-  ASSERT_EQ(OK, body->InitSync());
+  ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if the in-memory body is large here.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -198,7 +200,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
   upload_stream.AppendChunk(kChunk1, arraysize(kChunk1) - 1, false);
-  ASSERT_EQ(OK, upload_stream.InitSync());
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
 
   DeterministicSocketData data(reads, arraysize(reads),
                                writes, arraysize(writes));

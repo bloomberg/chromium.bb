@@ -131,6 +131,7 @@ const UploadFileElementReader* UploadFileElementReader::AsFileReader() const {
 }
 
 int UploadFileElementReader::Init(const CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
   Reset();
 
   ScopedFileStreamPtr* file_stream = new ScopedFileStreamPtr;
@@ -152,18 +153,6 @@ int UploadFileElementReader::Init(const CompletionCallback& callback) {
                  callback));
   DCHECK(posted);
   return ERR_IO_PENDING;
-}
-
-int UploadFileElementReader::InitSync() {
-  Reset();
-
-  ScopedFileStreamPtr file_stream;
-  uint64 content_length = 0;
-  const int result = InitInternal(path_, range_offset_, range_length_,
-                                  expected_modification_time_,
-                                  &file_stream, &content_length);
-  OnInitCompleted(&file_stream, &content_length, CompletionCallback(), result);
-  return result;
 }
 
 uint64 UploadFileElementReader::GetContentLength() const {
@@ -204,13 +193,6 @@ int UploadFileElementReader::Read(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int UploadFileElementReader::ReadSync(IOBuffer* buf, int buf_length) {
-  const int result = ReadInternal(buf, buf_length, BytesRemaining(),
-                                  file_stream_.get());
-  OnReadCompleted(file_stream_.Pass(), CompletionCallback(), result);
-  return result;
-}
-
 void UploadFileElementReader::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   bytes_remaining_ = 0;
@@ -249,6 +231,55 @@ ScopedOverridingContentLengthForTests(uint64 value) {
 UploadFileElementReader::ScopedOverridingContentLengthForTests::
 ~ScopedOverridingContentLengthForTests() {
   overriding_content_length = 0;
+}
+
+UploadFileElementReaderSync::UploadFileElementReaderSync(
+    const FilePath& path,
+    uint64 range_offset,
+    uint64 range_length,
+    const base::Time& expected_modification_time)
+    : path_(path),
+      range_offset_(range_offset),
+      range_length_(range_length),
+      expected_modification_time_(expected_modification_time),
+      content_length_(0),
+      bytes_remaining_(0) {
+}
+
+UploadFileElementReaderSync::~UploadFileElementReaderSync() {
+}
+
+int UploadFileElementReaderSync::Init(const CompletionCallback& callback) {
+  bytes_remaining_ = 0;
+  content_length_ = 0;
+  file_stream_.reset();
+
+  UploadFileElementReader::ScopedFileStreamPtr file_stream;
+
+  const int result = InitInternal(path_, range_offset_, range_length_,
+                                  expected_modification_time_,
+                                  &file_stream, &content_length_);
+  file_stream_.reset(file_stream.release());
+  bytes_remaining_ = GetContentLength();
+  return result;
+}
+
+uint64 UploadFileElementReaderSync::GetContentLength() const {
+  return content_length_;
+}
+
+uint64 UploadFileElementReaderSync::BytesRemaining() const {
+  return bytes_remaining_;
+}
+
+int UploadFileElementReaderSync::Read(IOBuffer* buf,
+                                      int buf_length,
+                                      const CompletionCallback& callback) {
+  const int result = ReadInternal(buf, buf_length, BytesRemaining(),
+                                  file_stream_.get());
+  DCHECK_GE(static_cast<int>(bytes_remaining_), result);
+  bytes_remaining_ -= result;
+  return result;
 }
 
 }  // namespace net

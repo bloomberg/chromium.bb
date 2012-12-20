@@ -41,7 +41,7 @@ net::UploadDataStream* CreateUploadDataStream(net::UploadData* upload_data) {
                                                      element.bytes_length());
           break;
         case net::UploadElement::TYPE_FILE:
-          reader = new net::UploadFileElementReader(
+          reader = new net::UploadFileElementReaderSync(
               element.file_path(),
               element.file_range_offset(),
               element.file_range_length(),
@@ -62,7 +62,7 @@ net::UploadDataStream* CreateUploadDataStream(net::UploadData* upload_data) {
 void UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
   upload_data_ = upload_data;
   request_body_stream_.reset(CreateUploadDataStream(upload_data));
-  const int result = request_body_stream_->InitSync();
+  const int result = request_body_stream_->Init(net::CompletionCallback());
   DCHECK_EQ(net::OK, result);
 }
 
@@ -92,7 +92,9 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
 
     scoped_refptr<net::IOBufferWithSize> buf(
         new net::IOBufferWithSize(bytes_to_copy_now));
-    int bytes_read = request_body_stream_->ReadSync(buf, buf->size());
+    int bytes_read = request_body_stream_->Read(buf, buf->size(),
+                                                net::CompletionCallback());
+    DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
     if (bytes_read == 0)  // Reached the end of the stream.
       break;
 
@@ -121,7 +123,7 @@ STDMETHODIMP UrlmonUploadDataStream::Seek(LARGE_INTEGER move, DWORD origin,
   if (origin == STREAM_SEEK_SET && move.QuadPart == 0) {
     if (request_body_stream_->position() != 0) {
       request_body_stream_.reset(CreateUploadDataStream(upload_data_));
-      const int result = request_body_stream_->InitSync();
+      const int result = request_body_stream_->Init(net::CompletionCallback());
       DCHECK_EQ(net::OK, result);
     }
     if (new_pos) {

@@ -360,7 +360,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   request_.method = "POST";
   request_.url = GURL("http://www.google.com/");
   request_.upload_data_stream = &upload_data_stream;
-  ASSERT_EQ(OK, request_.upload_data_stream->InitSync());
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
 
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
                                           callback_.callback()));

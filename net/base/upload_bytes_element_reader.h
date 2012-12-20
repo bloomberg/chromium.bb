@@ -28,14 +28,12 @@ class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
   // UploadElementReader overrides:
   virtual const UploadBytesElementReader* AsBytesReader() const OVERRIDE;
   virtual int Init(const CompletionCallback& callback) OVERRIDE;
-  virtual int InitSync() OVERRIDE;
   virtual uint64 GetContentLength() const OVERRIDE;
   virtual uint64 BytesRemaining() const OVERRIDE;
   virtual bool IsInMemory() const OVERRIDE;
   virtual int Read(IOBuffer* buf,
                    int buf_length,
                    const CompletionCallback& callback) OVERRIDE;
-  virtual int ReadSync(IOBuffer* buf, int buf_length) OVERRIDE;
 
  private:
   const char* const bytes_;

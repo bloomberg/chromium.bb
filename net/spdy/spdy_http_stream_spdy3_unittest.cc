@@ -160,7 +160,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.InitSync());
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -256,7 +256,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPost) {
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.InitSync());
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
   upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
@@ -386,7 +386,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.InitSync());
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
   upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
 
   BoundNetLog net_log;

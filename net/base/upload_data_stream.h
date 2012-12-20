@@ -53,10 +53,6 @@ class NET_EXPORT UploadDataStream {
   // files) and the target file is changed.
   int Init(const CompletionCallback& callback);
 
-  // Initializes the stream synchronously.
-  // Use this method only if the thread is IO allowed or the data is in-memory.
-  int InitSync();
-
   // When possible, reads up to |buf_len| bytes synchronously from the upload
   // data stream to |buf| and returns the number of bytes read; otherwise,
   // returns ERR_IO_PENDING and calls |callback| with the number of bytes read.
@@ -68,10 +64,6 @@ class NET_EXPORT UploadDataStream {
   // upload data is smaller than size()), zeros are padded to ensure that
   // size() bytes can be read, which can happen for TYPE_FILE payloads.
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
-
-  // Reads data always synchronously.
-  // Use this method only if the thread is IO allowed or the data is in-memory.
-  int ReadSync(IOBuffer* buf, int buf_len);
 
   // Identifies a particular upload instance, which is used by the cache to
   // formulate a cache key.  This value should be unique across browser
@@ -120,10 +112,6 @@ class NET_EXPORT UploadDataStream {
   void ResumePendingInit(int start_index,
                          const CompletionCallback& callback,
                          int previous_result);
-
-  // Finalizes the initialization process.
-  // This method is used to implement Init().
-  void FinalizeInitialization();
 
   // Reads data from the element readers.
   // This method is used to implement Read().

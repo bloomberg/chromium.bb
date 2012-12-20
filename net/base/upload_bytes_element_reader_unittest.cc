@@ -19,7 +19,7 @@ class UploadBytesElementReaderTest : public PlatformTest {
     const char kData[] = "123abc";
     bytes_.assign(kData, kData + arraysize(kData));
     reader_.reset(new UploadBytesElementReader(&bytes_[0], bytes_.size()));
-    ASSERT_EQ(OK, reader_->InitSync());
+    ASSERT_EQ(OK, reader_->Init(CompletionCallback()));
     EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
     EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
     EXPECT_TRUE(reader_->IsInMemory());
@@ -34,7 +34,7 @@ TEST_F(UploadBytesElementReaderTest, ReadPartially) {
   std::vector<char> buf(kHalfSize);
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
   EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->ReadSync(wrapped_buffer, buf.size()));
+            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
   EXPECT_EQ(bytes_.size() - buf.size(), reader_->BytesRemaining());
   bytes_.resize(kHalfSize);  // Resize to compare.
   EXPECT_EQ(bytes_, buf);
@@ -44,11 +44,11 @@ TEST_F(UploadBytesElementReaderTest, ReadAll) {
   std::vector<char> buf(bytes_.size());
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
   EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->ReadSync(wrapped_buffer, buf.size()));
+            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
   // Try to read again.
-  EXPECT_EQ(0, reader_->ReadSync(wrapped_buffer, buf.size()));
+  EXPECT_EQ(0, reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
 }
 
 TEST_F(UploadBytesElementReaderTest, ReadTooMuch) {
@@ -56,7 +56,7 @@ TEST_F(UploadBytesElementReaderTest, ReadTooMuch) {
   std::vector<char> buf(kTooLargeSize);
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
   EXPECT_EQ(static_cast<int>(bytes_.size()),
-            reader_->ReadSync(wrapped_buffer, buf.size()));
+            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   buf.resize(bytes_.size());  // Resize to compare.
   EXPECT_EQ(bytes_, buf);
@@ -68,18 +68,18 @@ TEST_F(UploadBytesElementReaderTest, MultipleInit) {
 
   // Read all.
   EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->ReadSync(wrapped_buffer, buf.size()));
+            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
 
   // Call Init() again to reset the state.
-  ASSERT_EQ(OK, reader_->InitSync());
+  ASSERT_EQ(OK, reader_->Init(CompletionCallback()));
   EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
   EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
 
   // Read again.
   EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->ReadSync(wrapped_buffer, buf.size()));
+            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
 }

@@ -27,10 +27,6 @@ UploadBytesElementReader::AsBytesReader() const {
 }
 
 int UploadBytesElementReader::Init(const CompletionCallback& callback) {
-  return InitSync();
-}
-
-int UploadBytesElementReader::InitSync() {
   offset_ = 0;
   return OK;
 }
@@ -50,11 +46,6 @@ bool UploadBytesElementReader::IsInMemory() const {
 int UploadBytesElementReader::Read(IOBuffer* buf,
                                    int buf_length,
                                    const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-  return ReadSync(buf, buf_length);
-}
-
-int UploadBytesElementReader::ReadSync(IOBuffer* buf, int buf_length) {
   DCHECK_LT(0, buf_length);
 
   const size_t num_bytes_to_read =
