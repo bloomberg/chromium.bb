@@ -15,6 +15,14 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/glib/glib_integers.h"
 
+// Note for Gtk removal: gtkimcontextsimpleseqs.h does not #include any Gtk
+// headers and only contains one big guint16 array |gtk_compose_seqs_compact|
+// which defines the main compose table. The table has internal linkage.
+// The order of header inclusion is out of order because
+// gtkimcontextsimpleseqs.h depends on guint16, which is defined in
+// "ui/base/glib/glib_integers.h".
+#include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
+
 namespace {
 
 typedef std::vector<unsigned int> ComposeBufferType;
@@ -260,17 +268,6 @@ int ComposeCheckerWithCompactTable::CompareSequenceSkipFront::operator()(
   }
   return 0;
 }
-
-
-// Main table.
-
-// This file is included here intentionally, instead of the top of the file,
-// because including this file outside the unnamed namespace will define a
-// global constant and contaminate the global namespace.
-#include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
-
-// Note for Gtk removal: gtkimcontextsimpleseqs.h only contains one big guint16
-// array and does not #include any Gtk headers.
 
 
 // Additional table.
