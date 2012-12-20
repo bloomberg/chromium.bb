@@ -1,6 +1,6 @@
 {"chromium-rel-win7-dual/dhtml/times/t": {"reva": 158193, "revb": 158364, "improve": -1339, "regress": 1295, "sha1": "9c4c56bf"},
  "chromium-rel-win7-dual/dom_perf/Total/score": {"reva": 168485, "revb": 170452, "improve": 298, "regress": 43, "sha1": "85f95688"},
- "chromium-rel-win7-dual/intl1/times/t": {"reva": 167700, "revb": 168105, "improve": 379.366666673, "regress": 537.716666665, "sha1": "7f39f944"},
+ "chromium-rel-win7-dual/intl1/times/t": {"reva": 174106, "revb": 174244, "improve": 443.861111109, "regress": 636.183333335, "sha1": "bb8981a1"},
  "chromium-rel-win7-dual/intl2/times/t": {"reva": 167700, "revb": 168105, "improve": 154.638888891, "regress": 424.666666673, "sha1": "3d4a833d"},
  "chromium-rel-win7-dual/morejs/times/t": {"reva": 167700, "revb": 168105, "improve": -33.2500000003, "regress": -16.2555555564, "sha1": "b7af2562"},
  "chromium-rel-win7-dual/moz/times/t": {"reva": 169782, "revb": 170249, "improve": 40.7444444455, "regress": 118.883333331, "sha1": "f38a5568"},
