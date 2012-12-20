@@ -3,12 +3,39 @@
 <title>chromium.bb</title>
 <style>
 
+body {
+    font: 14px Helvetica, arial, freesans, clean, sans-serif;
+    line-height: 1.6;
+}
+
 code {
     margin: 0 2px;
     padding: 0px 5px;
     border: 1px solid #EAEAEA;
     background-color: #F8F8F8;
     border-radius: 3px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 20px 0 10px;
+    padding: 0;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;
+    cursor: text;
+    position: relative;
+}
+
+p {
+    margin: 15px 0;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+h6 {
+    color: #777;
+    font-size: 14px;
 }
 
 </style>
@@ -25,19 +52,37 @@ code {
 <p>Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
 put the cursor between 'T' and 'e' in "Testing", and hit backspace twice.  The
 rest of the text will go into the last cell.</p>
-<p>It is unclear whether this is a bug that can be upstreamed or not, because the
-comment in the code specifically mentions that this is the intended behavior,
-and has been since at least 2007.  However, we changed this behavior in our
-product to match what Firefox does, which is to make the second backspace a
-no-op.</p>
+<p>It is unclear whether this is a bug that can be upstreamed or not, because
+the comment in the code specifically mentions that this is the intended
+behavior, and has been since at least 2007.  However, we changed this behavior
+in our product to match what Firefox does, which is to make the second
+backspace a no-op.</p>
 
 <h3><a name="bugfix-badquerycommand">bugfix/badquerycommand</a> (Shezan Baig; D32128551)</h3>
-<p>Open <a href="repros/badquerycommand.html">this link</a> in Chrome, click the yellow div and
-hit <code>&lt;enter&gt;</code> a bunch of times. Then
-<code>&lt;shift&gt;</code>+<code>&lt;up&gt;</code> a bunch of times. Each time you
-press <code>&lt;up&gt;</code>, the result of <code>queryCommandValue('bold')</code>
-changes inconsistently.</p>
+<p>Open <a href="repros/badquerycommand.html">this link</a> in Chrome, click
+the yellow div and hit <code>&lt;enter&gt;</code> a bunch of times. Then
+<code>&lt;shift&gt;</code>+<code>&lt;up&gt;</code> a bunch of times. Each time
+you press <code>&lt;up&gt;</code>, the result of
+<code>queryCommandValue('bold')</code> changes inconsistently.<p>
 
+
+<h3><a name="bugfix-cancelErrorNotNull">bugfix/cancelErrorNotNull</a> (Zhen Yin)</h3>
+
+<p>TODO</p>
+
+<h3><a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a> (Shezan Baig; D34079255)</h3>
+
+<p>Open <a href="repros/cellInMulticol.html">this link</a> in Chrome and keep
+resizing the window. You will see that the table cells get split when they
+reach column boundaries.</p>
+
+<p>This is a rather complicated patch and requires a bunch of additional work
+before it can be sent upstream.</p>
+
+<hr/>
+<h6>Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.</h6>
+<h6>Firefox is a registered trademark of Mozilla Corp.</h6>
+<h6>Chrome is a registered trademark of Google Inc.</h6>
 
 </body>
 </html>
