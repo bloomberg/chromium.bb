@@ -1078,6 +1078,97 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
   EXPECT_TRUE(contents_view->HasFocus());
 }
 
+// Desktop native widget Aura tests are for non Chrome OS platforms.
+// TODO(ananta)
+// The Desktop native widget Aura tests fail on linux AURA. Fix them.
+#if !defined(OS_CHROMEOS)
+// This class validates whether paints are received for a visible Widget.
+// To achieve this it overrides the Show and Close methods on the Widget class
+// and sets state whether subsequent paints are expected.
+class DesktopAuraTestValidPaintWidget : public views::Widget {
+ public:
+  DesktopAuraTestValidPaintWidget()
+    : expect_paint_(true),
+      received_paint_while_hidden_(false) {
+  }
+
+  virtual ~DesktopAuraTestValidPaintWidget() {
+  }
+
+  virtual void Show() OVERRIDE {
+    expect_paint_ = true;
+    views::Widget::Show();
+  }
+
+  virtual void Close() OVERRIDE {
+    expect_paint_ = false;
+    views::Widget::Close();
+  }
+
+  void Hide() {
+    expect_paint_ = false;
+    views::Widget::Hide();
+  }
+
+  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE {
+    EXPECT_TRUE(expect_paint_);
+    if (!expect_paint_)
+      received_paint_while_hidden_ = true;
+    views::Widget::OnNativeWidgetPaint(canvas);
+  }
+
+  bool received_paint_while_hidden() const {
+    return received_paint_while_hidden_;
+  }
+
+ private:
+  bool expect_paint_;
+  bool received_paint_while_hidden_;
+};
+
+TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterCloseTest) {
+  View* contents_view = new View;
+  contents_view->set_focusable(true);
+  DesktopAuraTestValidPaintWidget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+  widget.SetContentsView(contents_view);
+  widget.Show();
+  widget.Activate();
+  RunPendingMessages();
+  widget.SchedulePaintInRect(init_params.bounds);
+  widget.Close();
+  RunPendingMessages();
+  EXPECT_FALSE(widget.received_paint_while_hidden());
+}
+
+TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterHideTest) {
+  View* contents_view = new View;
+  contents_view->set_focusable(true);
+  DesktopAuraTestValidPaintWidget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+  widget.SetContentsView(contents_view);
+  widget.Show();
+  widget.Activate();
+  RunPendingMessages();
+  widget.SchedulePaintInRect(init_params.bounds);
+  widget.Hide();
+  RunPendingMessages();
+  EXPECT_FALSE(widget.received_paint_while_hidden());
+  widget.Close();
+}
+
+#endif  // !defined(OS_CHROMEOS)
+
 #endif  // defined(USE_AURA)
 
 }  // namespace

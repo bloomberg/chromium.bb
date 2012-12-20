@@ -322,6 +322,8 @@ void DesktopNativeWidgetAura::SetShape(gfx::NativeRegion shape) {
 
 void DesktopNativeWidgetAura::Close() {
   desktop_root_window_host_->Close();
+  if (window_)
+    window_->SuppressPaint();
 }
 
 void DesktopNativeWidgetAura::CloseNow() {
@@ -330,10 +332,13 @@ void DesktopNativeWidgetAura::CloseNow() {
 
 void DesktopNativeWidgetAura::Show() {
   desktop_root_window_host_->AsRootWindowHost()->Show();
+  window_->Show();
 }
 
 void DesktopNativeWidgetAura::Hide() {
   desktop_root_window_host_->AsRootWindowHost()->Hide();
+  if (window_)
+    window_->Hide();
 }
 
 void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
