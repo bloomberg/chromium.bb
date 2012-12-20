@@ -256,6 +256,22 @@ class SelfEventHandlingWindowDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(SelfEventHandlingWindowDelegate);
 };
 
+// The delegate deletes itself when the window is being destroyed.
+class DestroyWindowDelegate : public TestWindowDelegate {
+ public:
+  DestroyWindowDelegate() {}
+
+ private:
+  virtual ~DestroyWindowDelegate() {}
+
+  // Overridden from WindowDelegate.
+  virtual void OnWindowDestroyed() OVERRIDE {
+    delete this;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyWindowDelegate);
+};
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -2597,6 +2613,16 @@ TEST_F(WindowTest, AddChildNotifications) {
   EXPECT_EQ("0 0", observer.CountStringAndReset());
   // |w2| should still have focus after moving.
   EXPECT_TRUE(w2->HasFocus());
+}
+
+// Tests that a delegate that destroys itself when the window is destroyed does
+// not break.
+TEST_F(WindowTest, DelegateDestroysSelfOnWindowDestroy) {
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
+      new DestroyWindowDelegate(),
+      0,
+      gfx::Rect(10, 20, 30, 40),
+      root_window()));
 }
 
 }  // namespace test

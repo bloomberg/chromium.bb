@@ -1548,6 +1548,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       host_->overscroll_controller()->overscroll_mode() != OVERSCROLL_NONE &&
       event->flags() & ui::EF_IS_SYNTHESIZED &&
       (event->type() == ui::ET_MOUSE_ENTERED ||
+       event->type() == ui::ET_MOUSE_EXITED ||
        event->type() == ui::ET_MOUSE_MOVED)) {
     event->StopPropagation();
     return;

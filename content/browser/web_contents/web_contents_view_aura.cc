@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_observer.h"
@@ -59,6 +60,89 @@ WebContentsView* CreateWebContentsView(
 }
 
 namespace {
+
+// The window delegate for the overscroll window. This redirects trackpad events
+// to the web-contents window. The delegate destroys itself when the window is
+// destroyed.
+class OverscrollWindowDelegate : public aura::WindowDelegate {
+ public:
+  explicit OverscrollWindowDelegate(aura::Window* web_contents_window)
+      : web_contents_window_(web_contents_window) {
+  }
+
+ private:
+  virtual ~OverscrollWindowDelegate() {}
+
+  // aura::WindowDelegate implementation:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {
+  }
+
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return gfx::kNullCursor;
+  }
+
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTNOWHERE;
+  }
+
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return false;
+  }
+
+  virtual bool CanFocus() OVERRIDE {
+    return false;
+  }
+
+  virtual void OnCaptureLost() OVERRIDE {
+  }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  }
+
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+
+  virtual void OnWindowDestroying() OVERRIDE {
+  }
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    delete this;
+  }
+
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  }
+
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return false;
+  }
+
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  }
+
+  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
+    return scoped_refptr<ui::Texture>();
+  }
+
+  // Overridden from ui::EventHandler.
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    web_contents_window_->delegate()->OnScrollEvent(event);
+  }
+
+  aura::Window* web_contents_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverscrollWindowDelegate);
+};
 
 // Listens to all mouse drag events during a drag and drop and sends them to
 // the renderer.
@@ -397,7 +481,8 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
     scoped_ptr<aura::Window> reset_window(overscroll_window_.release());
   }
 
-  overscroll_window_.reset(new aura::Window(NULL));
+  overscroll_window_.reset(new aura::Window(new OverscrollWindowDelegate(
+      GetContentNativeView())));
   overscroll_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   overscroll_window_->SetTransparent(false);
   overscroll_window_->Init(ui::LAYER_SOLID_COLOR);
