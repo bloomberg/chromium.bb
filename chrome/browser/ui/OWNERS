@@ -5,3 +5,5 @@ sky@chromium.org
 # OWNERS file. Prefer these instead as these OWNERS will be more familiar, and
 # to load balance. Only use the above for subdirectories when doing refactorings
 # that touch all the platforms.
+
+per-file browser_tab_contents.*=avi@chromium.org
