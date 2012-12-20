@@ -6334,7 +6334,7 @@
    fun:_ZN3ash8internal13DragImageView7OnPaintEPN3gfx6CanvasE
 }
 {
-   bug_164676_r
+   bug_166995
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3ash21PartialScreenshotView22StartPartialScreenshotEPNS_18ScreenshotDelegateE

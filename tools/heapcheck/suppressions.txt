@@ -1635,3 +1635,11 @@
    fun:ash::CursorManager::SetDeviceScaleFactor
    fun:ash::Shell::Init
 }
+{
+   bug_166995
+   Heapcheck:Leak
+   ...
+   fun:ash::PartialScreenshotView::StartPartialScreenshot
+   fun:ash::AcceleratorController::PerformAction
+   fun:ash::AcceleratorController::AcceleratorPressed
+}
