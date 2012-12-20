@@ -3854,7 +3854,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EE8toStringIN3WTF6StringEEET_v
+   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceMode*
 }
 {
    bug_101145c
