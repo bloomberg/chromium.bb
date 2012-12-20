@@ -23,8 +23,8 @@ class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
 
-// Dispatches events to appropriate targets. The default implementations return
-// ER_UNHANDLED for all events.
+// Dispatches events to appropriate targets.  The default implementations of
+// all of the specific handlers (e.g. OnKeyEvent, OnMouseEvent) do nothing.
 class UI_EXPORT EventHandler {
  public:
   EventHandler();
