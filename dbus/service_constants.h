@@ -874,11 +874,7 @@ const char kDevicesProperty[] = "Devices";
 const char kUUIDsProperty[] = "UUIDs";
 
 // Bluetooth Adapter errors.
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorConnectionAttemptFailed[] =
-    "org.bluez.Error.ConnectionAttemptFailed";
 const char kErrorAuthenticationCanceled[] =
     "org.bluez.Error.AuthenticationCanceled";
 const char kErrorAuthenticationFailed[] =
@@ -887,6 +883,11 @@ const char kErrorAuthenticationRejected[] =
     "org.bluez.Error.AuthenticationRejected";
 const char kErrorAuthenticationTimeout[] =
     "org.bluez.Error.AuthenticationTimeout";
+const char kErrorConnectionAttemptFailed[] =
+    "org.bluez.Error.ConnectionAttemptFailed";
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 const char kErrorRepeatedAttempts[] = "org.bluez.Error.RepeatedAttempts";
 }  // namespace bluetooth_adapter
 
