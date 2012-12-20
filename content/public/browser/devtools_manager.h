@@ -33,11 +33,6 @@ class CONTENT_EXPORT DevToolsManager {
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) = 0;
 
-  // Invoked when contents is replaced by another contents. This is triggered by
-  // TabStripModel::ReplaceTabContentsAt.
-  virtual void ContentsReplaced(WebContents* old_contents,
-                                WebContents* new_contents) = 0;
-
   // Closes all open developer tools windows.
   virtual void CloseAllClientHosts() = 0;
 

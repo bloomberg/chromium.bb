@@ -35,13 +35,6 @@ class CONTENT_EXPORT DevToolsClientHost {
   // is closing.
   virtual void InspectedContentsClosing() = 0;
 
-  // This method is called when the contents inspected by this devtools client
-  // is navigating to |url|.
-  virtual void FrameNavigating(const std::string& url) = 0;
-
-  // Invoked when the contents are replaced by another contents.
-  virtual void ContentsReplaced(WebContents* new_contents) = 0;
-
   // Called to notify client that it has been kicked out by some other client
   // with greater priority.
   virtual void ReplacedWithAnotherClient() = 0;

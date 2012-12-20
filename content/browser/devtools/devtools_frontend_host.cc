@@ -53,14 +53,6 @@ void DevToolsFrontendHost::InspectedContentsClosing() {
   delegate_->InspectedContentsClosing();
 }
 
-void DevToolsFrontendHost::FrameNavigating(const std::string& url) {
-  delegate_->FrameNavigating(url);
-}
-
-void DevToolsFrontendHost::ContentsReplaced(WebContents* new_contents) {
-  delegate_->ContentsReplaced(new_contents);
-}
-
 void DevToolsFrontendHost::ReplacedWithAnotherClient() {
 }
 

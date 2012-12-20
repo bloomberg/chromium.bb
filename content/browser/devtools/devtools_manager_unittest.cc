@@ -46,9 +46,6 @@ class TestDevToolsClientHost : public DevToolsClientHost {
     last_sent_message = &message;
   }
 
-  virtual void ContentsReplaced(WebContents* new_contents) {
-  }
-
   virtual void ReplacedWithAnotherClient() {
   }
 
@@ -62,8 +59,6 @@ class TestDevToolsClientHost : public DevToolsClientHost {
 
  private:
   bool closed_;
-
-  virtual void FrameNavigating(const std::string& url) {}
 
   DISALLOW_COPY_AND_ASSIGN(TestDevToolsClientHost);
 };

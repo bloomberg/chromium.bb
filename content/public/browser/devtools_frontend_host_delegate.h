@@ -45,15 +45,6 @@ class DevToolsFrontendHostDelegate {
   // This method is called when the contents inspected by this devtools frontend
   // is closing.
   virtual void InspectedContentsClosing() = 0;
-
-  // This method is called when the contents inspected by this devtools frontend
-  // is navigating to |url|.
-  virtual void FrameNavigating(const std::string& url) = 0;
-
-  // Invoked when the contents inspected by this devtools frontend is replaced
-  // by another contents. This is triggered by
-  // TabStripModel::ReplaceTabContentsAt.
-  virtual void ContentsReplaced(WebContents* new_contents) = 0;
 };
 
 }  // namespace content

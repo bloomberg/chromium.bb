@@ -108,9 +108,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   // DevToolsClientHost interface
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
-  virtual void ContentsReplaced(WebContents* web_contents) OVERRIDE;
   virtual void ReplacedWithAnotherClient() OVERRIDE;
-  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
  private:
   void SendDetachedEvent();
@@ -236,10 +234,6 @@ bool ExtensionDevToolsClientHost::MatchesContentsAndExtensionId(
 void ExtensionDevToolsClientHost::InspectedContentsClosing() {
   SendDetachedEvent();
   delete this;
-}
-
-void ExtensionDevToolsClientHost::ContentsReplaced(WebContents* web_contents) {
-  web_contents_ = web_contents;
 }
 
 void ExtensionDevToolsClientHost::ReplacedWithAnotherClient() {

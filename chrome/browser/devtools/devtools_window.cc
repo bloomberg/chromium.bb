@@ -271,10 +271,6 @@ void DevToolsWindow::InspectedContentsClosing() {
   }
 }
 
-void DevToolsWindow::ContentsReplaced(WebContents* new_contents) {
-  inspected_web_contents_ = new_contents;
-}
-
 void DevToolsWindow::Show(DevToolsToggleAction action) {
   if (IsDocked()) {
     Browser* inspected_browser;

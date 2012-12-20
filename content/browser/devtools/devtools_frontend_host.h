@@ -33,8 +33,6 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   // DevToolsClientHost implementation.
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
   virtual void InspectedContentsClosing() OVERRIDE;
-  virtual void FrameNavigating(const std::string& url) OVERRIDE;
-  virtual void ContentsReplaced(WebContents* new_contents) OVERRIDE;
   virtual void ReplacedWithAnotherClient() OVERRIDE;
 
   // RenderViewHostObserver overrides.

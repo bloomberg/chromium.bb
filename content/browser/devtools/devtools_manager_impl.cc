@@ -143,45 +143,16 @@ void DevToolsManagerImpl::OnNavigatingToPendingEntry(
               base::TERMINATION_STATUS_STILL_RUNNING)
     return;
   int cookie = DetachClientHost(rvh);
-  if (cookie != -1) {
-    // Navigating to URL in the inspected window.
+  if (cookie != -1)
     AttachClientHost(cookie, dest_rvh);
-
-    DevToolsAgentHost* dest_agent_host =
-        DevToolsAgentHostRegistry::GetDevToolsAgentHost(dest_rvh);
-    DevToolsClientHost* client_host = GetDevToolsClientHostFor(
-        dest_agent_host);
-    client_host->FrameNavigating(gurl.spec());
-  }
 }
 
 void DevToolsManagerImpl::OnCancelPendingNavigation(
     RenderViewHost* pending,
     RenderViewHost* current) {
   int cookie = DetachClientHost(pending);
-  if (cookie != -1) {
-    // Navigating to URL in the inspected window.
+  if (cookie != -1)
     AttachClientHost(cookie, current);
-  }
-}
-
-void DevToolsManagerImpl::ContentsReplaced(WebContents* old_contents,
-                                           WebContents* new_contents) {
-  RenderViewHost* old_rvh = old_contents->GetRenderViewHost();
-  if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(old_rvh))
-    return;
-
-  DevToolsAgentHost* old_agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(old_rvh);
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_agent_host);
-  if (!client_host)
-    return;  // Didn't know about old_contents.
-  int cookie = DetachClientHost(old_rvh);
-  if (cookie == -1)
-    return;  // Didn't know about old_contents.
-
-  client_host->ContentsReplaced(new_contents);
-  AttachClientHost(cookie, new_contents->GetRenderViewHost());
 }
 
 int DevToolsManagerImpl::DetachClientHost(RenderViewHost* from_rvh) {

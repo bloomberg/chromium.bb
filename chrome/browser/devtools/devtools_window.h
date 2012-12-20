@@ -82,7 +82,6 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // Overridden from DevToolsClientHost.
   virtual void InspectedContentsClosing() OVERRIDE;
-  virtual void ContentsReplaced(content::WebContents* new_contents) OVERRIDE;
   content::RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);
@@ -168,8 +167,6 @@ class DevToolsWindow : private content::NotificationObserver,
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
-
-  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
   static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);

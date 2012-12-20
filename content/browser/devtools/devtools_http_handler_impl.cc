@@ -135,15 +135,11 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
                    data));
   }
 
-  virtual void ContentsReplaced(WebContents* new_contents) {
-  }
-
   virtual void ReplacedWithAnotherClient() {
     detach_reason_ = "replaced_with_devtools";
   }
 
  private:
-  virtual void FrameNavigating(const std::string& url) {}
   MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;

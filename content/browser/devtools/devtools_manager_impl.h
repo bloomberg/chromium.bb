@@ -60,8 +60,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
   // DevToolsManager implementation
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) OVERRIDE;
-  virtual void ContentsReplaced(WebContents* old_contents,
-                                WebContents* new_contents) OVERRIDE;
   virtual void CloseAllClientHosts() OVERRIDE;
   virtual void AttachClientHost(int client_host_cookie,
                                 DevToolsAgentHost* to_agent) OVERRIDE;
