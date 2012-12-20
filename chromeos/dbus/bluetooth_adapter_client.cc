@@ -20,6 +20,14 @@
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace {
+
+// The |CreatePairedDevice| DBus call needs a longer timeout than the default
+// in order to allow BlueZ to timeout this call first. See crosbug.com/37387.
+const int kCreatePairedDeviceTimeoutMs = 70 * 1000;
+
+} // namespace
+
 namespace chromeos {
 
 const char BluetoothAdapterClient::kNoResponseError[] =
@@ -225,7 +233,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        kCreatePairedDeviceTimeoutMs,
         base::Bind(&BluetoothAdapterClientImpl::OnCreatePairedDevice,
                    weak_ptr_factory_.GetWeakPtr(), object_path,
                    callback, error_callback),
