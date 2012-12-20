@@ -201,6 +201,8 @@ TestShellRequestContext* g_request_context = NULL;
 TestShellNetworkDelegate* g_network_delegate = NULL;
 base::Thread* g_cache_thread = NULL;
 
+//-----------------------------------------------------------------------------
+
 struct FileOverHTTPParams {
   FileOverHTTPParams(std::string in_file_path_template, GURL in_http_prefix)
       : file_path_template(in_file_path_template),
@@ -210,7 +212,39 @@ struct FileOverHTTPParams {
   GURL http_prefix;
 };
 
-FileOverHTTPParams* g_file_over_http_params = NULL;
+class FileOverHTTPPathMappings {
+ public:
+  FileOverHTTPPathMappings() : redirections_() {}
+  void AddMapping(std::string file_path_template, GURL http_prefix) {
+    redirections_.push_back(FileOverHTTPParams(file_path_template,
+                                               http_prefix));
+  }
+
+  const FileOverHTTPParams* ParamsForRequest(std::string request,
+                                             std::string::size_type& offset) {
+    std::vector<FileOverHTTPParams>::iterator it;
+    for (it = redirections_.begin(); it != redirections_.end(); ++it) {
+      offset = request.find(it->file_path_template);
+      if (offset != std::string::npos)
+        return &*it;
+    }
+    return 0;
+  }
+
+  const FileOverHTTPParams* ParamsForResponse(std::string response_url) {
+    std::vector<FileOverHTTPParams>::iterator it;
+    for (it = redirections_.begin(); it != redirections_.end(); ++it) {
+      if (response_url.find(it->http_prefix.spec()) == 0)
+        return &*it;
+    }
+    return 0;
+  }
+
+ private:
+  std::vector<FileOverHTTPParams> redirections_;
+};
+
+FileOverHTTPPathMappings* g_file_over_http_mappings = NULL;
 
 //-----------------------------------------------------------------------------
 
@@ -669,7 +703,7 @@ class RequestProxy
     file_url_prefix_ .clear();
     failed_file_request_status_.reset();
     // Only do this when enabling file-over-http and request is file scheme.
-    if (!g_file_over_http_params || !params->url.SchemeIsFile())
+    if (!g_file_over_http_mappings || !params->url.SchemeIsFile())
       return;
 
     // For file protocol, method must be GET, POST or NULL.
@@ -680,14 +714,17 @@ class RequestProxy
     if (params->method.empty())
       params->method = "GET";
     std::string original_request = params->url.spec();
-    std::string::size_type found =
-        original_request.find(g_file_over_http_params->file_path_template);
-    if (found == std::string::npos)
+
+    std::string::size_type offset = 0;
+    const FileOverHTTPParams* redirection_params =
+        g_file_over_http_mappings->ParamsForRequest(original_request, offset);
+    if (!redirection_params)
       return;
-    found += g_file_over_http_params->file_path_template.size();
-    file_url_prefix_ = original_request.substr(0, found);
-    original_request.replace(0, found,
-        g_file_over_http_params->http_prefix.spec());
+
+    offset += redirection_params->file_path_template.size();
+    file_url_prefix_ = original_request.substr(0, offset);
+    original_request.replace(0, offset,
+        redirection_params->http_prefix.spec());
     params->url = GURL(original_request);
     params->first_party_for_cookies = params->url;
     // For file protocol, nerver use cache.
@@ -699,12 +736,19 @@ class RequestProxy
       ResourceResponseInfo* info) {
     // Only do this when enabling file-over-http and request url
     // matches the http prefix for file-over-http feature.
-    if (!g_file_over_http_params || file_url_prefix_.empty())
+    if (!g_file_over_http_mappings || file_url_prefix_.empty())
       return false;
+
     std::string original_request = request->url().spec();
-    std::string http_prefix = g_file_over_http_params->http_prefix.spec();
-    DCHECK(!original_request.empty() &&
-           StartsWithASCII(original_request, http_prefix, true));
+    DCHECK(!original_request.empty());
+
+    const FileOverHTTPParams* redirection_params =
+        g_file_over_http_mappings->ParamsForResponse(original_request);
+    DCHECK(redirection_params);
+
+    std::string http_prefix = redirection_params->http_prefix.spec();
+    DCHECK(StartsWithASCII(original_request, http_prefix, true));
+
     // Get the File URL.
     original_request.replace(0, http_prefix.size(), file_url_prefix_);
 
@@ -1012,10 +1056,8 @@ void SimpleResourceLoaderBridge::Shutdown() {
     delete g_request_context_params;
     g_request_context_params = NULL;
 
-    if (g_file_over_http_params) {
-      delete g_file_over_http_params;
-      g_file_over_http_params = NULL;
-    }
+    delete g_file_over_http_mappings;
+    g_file_over_http_mappings = NULL;
   }
 }
 
@@ -1105,8 +1147,9 @@ void SimpleResourceLoaderBridge::AllowFileOverHTTP(
   DCHECK(!file_path_template.empty());
   DCHECK(http_prefix.is_valid() &&
          (http_prefix.SchemeIs("http") || http_prefix.SchemeIs("https")));
-  g_file_over_http_params = new FileOverHTTPParams(file_path_template,
-                                                   http_prefix);
+  if (!g_file_over_http_mappings)
+    g_file_over_http_mappings = new FileOverHTTPPathMappings();
+  g_file_over_http_mappings->AddMapping(file_path_template, http_prefix);
 }
 
 // static
