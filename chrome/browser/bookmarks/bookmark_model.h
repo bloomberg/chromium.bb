@@ -433,13 +433,11 @@ class BookmarkModel : public content::NotificationObserver,
   // type specifies how the node should be removed.
   void RemoveAndDeleteNode(BookmarkNode* delete_me);
 
-  // Adds the node at the specified position and sends notification. If
-  // was_bookmarked is true, it indicates a bookmark already existed for the
-  // URL.
+  // Adds the |node| at |parent| in the specified |index| and notifies its
+  // observers.
   BookmarkNode* AddNode(BookmarkNode* parent,
                         int index,
-                        BookmarkNode* node,
-                        bool was_bookmarked);
+                        BookmarkNode* node);
 
   // Implementation of GetNodeByID.
   const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) const;

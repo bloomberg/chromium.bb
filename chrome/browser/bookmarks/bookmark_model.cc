@@ -550,7 +550,7 @@ const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
   new_node->SetTitle(title);
   new_node->set_type(BookmarkNode::FOLDER);
 
-  return AddNode(AsMutable(parent), index, new_node, false);
+  return AddNode(AsMutable(parent), index, new_node);
 }
 
 const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
@@ -574,8 +574,6 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     return NULL;
   }
 
-  bool was_bookmarked = IsBookmarked(url);
-
   // Syncing may result in dates newer than the last modified date.
   if (creation_time > parent->date_folder_modified())
     SetDateFolderModified(parent, creation_time);
@@ -591,7 +589,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     nodes_ordered_by_url_set_.insert(new_node);
   }
 
-  return AddNode(AsMutable(parent), index, new_node, was_bookmarked);
+  return AddNode(AsMutable(parent), index, new_node);
 }
 
 void BookmarkModel::SortChildren(const BookmarkNode* parent) {
@@ -803,8 +801,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
 
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
                                      int index,
-                                     BookmarkNode* node,
-                                     bool was_bookmarked) {
+                                     BookmarkNode* node) {
   parent->Add(node, index);
 
   if (store_.get())
