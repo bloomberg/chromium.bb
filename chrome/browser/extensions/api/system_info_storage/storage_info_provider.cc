@@ -1,12 +1,16 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// // Use of this source code is governed by a BSD-style license that can be
+// // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 namespace extensions {
 
@@ -22,15 +26,19 @@ const char kStorageTypeRemovable[] = "removable";
 }  // namespace systeminfo
 
 // Default watching interval is 1000 ms.
-const int kDefaultPollingIntervalMs = 1000;
-const char kWatchingTokenName[] = "_storage_info_watching_token_";
+const unsigned int kDefaultPollingIntervalMs = 1000;
 
 StorageInfoProvider::StorageInfoProvider()
-    : observers_(new ObserverListThreadSafe<Observer>()),
+    : watching_timer_(NULL),
+      observers_(new ObserverListThreadSafe<Observer>()),
       watching_interval_(kDefaultPollingIntervalMs) {
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 StorageInfoProvider::~StorageInfoProvider() {
+  DCHECK(watching_timer_ == NULL);
+  registrar_.RemoveAll();
 }
 
 void StorageInfoProvider::AddObserver(Observer* obs) {
@@ -42,24 +50,40 @@ void StorageInfoProvider::RemoveObserver(Observer* obs) {
 }
 
 void StorageInfoProvider::StartWatching(const std::string& id) {
-  BrowserThread::PostBlockingPoolSequencedTask(
-      kWatchingTokenName,
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&StorageInfoProvider::AddWatchedStorageOnBlockingPool,
-                 this, id));
+      base::Bind(&StorageInfoProvider::StartWatchingOnFileThread,
+                 base::Unretained(this), id));
 }
 
 void StorageInfoProvider::StopWatching(const std::string& id) {
-  BrowserThread::PostBlockingPoolSequencedTask(
-      kWatchingTokenName,
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&StorageInfoProvider::RemoveWatchedStorageOnBlockingPool,
-                 this, id));
+      base::Bind(&StorageInfoProvider::StopWatchingOnFileThread,
+                 base::Unretained(this), id));
 }
 
-void StorageInfoProvider::AddWatchedStorageOnBlockingPool(
-    const std::string& id) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+void StorageInfoProvider::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      BrowserThread::PostTask(BrowserThread::FILE,
+          FROM_HERE,
+          base::Bind(&StorageInfoProvider::DestroyWatchingTimer,
+                     base::Unretained(this)));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void StorageInfoProvider::StartWatchingOnFileThread(const std::string& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // If the storage |id| is already being watched.
   if (ContainsKey(storage_id_to_size_map_, id))
     return;
@@ -73,35 +97,29 @@ void StorageInfoProvider::AddWatchedStorageOnBlockingPool(
   // If it is the first storage to be watched, we need to start the watching
   // timer.
   if (storage_id_to_size_map_.size() == 1) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&StorageInfoProvider::StartWatchingTimerOnUIThread, this));
+    watching_timer_ = new base::RepeatingTimer<StorageInfoProvider>();
+    watching_timer_->Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(watching_interval_),
+        this, &StorageInfoProvider::CheckWatchedStorages);
   }
 }
 
-void StorageInfoProvider::RemoveWatchedStorageOnBlockingPool(
-    const std::string& id) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+void StorageInfoProvider::StopWatchingOnFileThread(const std::string& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!ContainsKey(storage_id_to_size_map_, id))
     return;
 
   storage_id_to_size_map_.erase(id);
 
-  // Stop watching timer if there is no storage to be watched.
-  if (storage_id_to_size_map_.empty()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&StorageInfoProvider::StopWatchingTimerOnUIThread, this));
-  }
+  // If there is no storage to be watched, we need to destroy the watching
+  // timer.
+  if (storage_id_to_size_map_.size() == 0)
+    DestroyWatchingTimer();
 }
 
 void StorageInfoProvider::CheckWatchedStorages() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostBlockingPoolSequencedTask(kWatchingTokenName, FROM_HERE,
-      base::Bind(&StorageInfoProvider::CheckWatchedStoragesOnBlockingPool,
-                 this));
-}
-
-void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(storage_id_to_size_map_.size() > 0);
 
   StorageIDToSizeMap::iterator it = storage_id_to_size_map_.begin();
   for (; it != storage_id_to_size_map_.end(); ++it) {
@@ -109,9 +127,7 @@ void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
     if (!QueryUnitInfo(it->first, &info)) {
       storage_id_to_size_map_.erase(it);
       if (storage_id_to_size_map_.size() == 0) {
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            base::Bind(&StorageInfoProvider::StopWatchingTimerOnUIThread,
-                       this));
+        DestroyWatchingTimer();
         return;
       }
     }
@@ -123,23 +139,12 @@ void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
       it->second = info.available_capacity;
     }
   }
-
-  OnCheckWatchedStoragesFinishedForTesting();
 }
 
-void StorageInfoProvider::StartWatchingTimerOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Start the watching timer if it is not running.
-  if (!watching_timer_.IsRunning()) {
-    watching_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(watching_interval_),
-        this, &StorageInfoProvider::CheckWatchedStorages);
-  }
-}
-
-void StorageInfoProvider::StopWatchingTimerOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  watching_timer_.Stop();
+void StorageInfoProvider::DestroyWatchingTimer() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  delete watching_timer_;
+  watching_timer_ = NULL;
 }
 
 }  // namespace extensions

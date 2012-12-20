@@ -23,6 +23,9 @@ class MockStorageInfoProvider : public StorageInfoProvider {
  public:
   MockStorageInfoProvider() : is_watching_(false) {
   }
+  virtual ~MockStorageInfoProvider() {
+    Stop();
+  }
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
     info->clear();
@@ -63,10 +66,6 @@ class MockStorageInfoProvider : public StorageInfoProvider {
   }
 
  private:
-  virtual ~MockStorageInfoProvider() {
-    Stop();
-  }
-
   void OnTimeoutEvent() {
     static int count;
     SystemInfoEventRouter::GetInstance()->

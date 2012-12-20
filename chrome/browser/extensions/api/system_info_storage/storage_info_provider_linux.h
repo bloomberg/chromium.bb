@@ -15,9 +15,9 @@ class StorageInfoProviderLinux : public StorageInfoProvider {
  public:
   StorageInfoProviderLinux();
 
- protected:
   virtual ~StorageInfoProviderLinux();
 
+ protected:
   // For unit test.
   explicit StorageInfoProviderLinux(const FilePath& mtab_path);
 
