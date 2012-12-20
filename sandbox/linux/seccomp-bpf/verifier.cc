@@ -112,7 +112,41 @@ bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
         }
       }
       break;
-    default: // TODO(markus): We can only check for equality so far.
+    case ErrorCode::OP_HAS_ALL_BITS:
+    case ErrorCode::OP_HAS_ANY_BITS:
+      // A comprehensive test of bit values is difficult and potentially rather
+      // time-expensive. We avoid doing so at run-time and instead rely on the
+      // unittest for full testing. The test that we have here covers just the
+      // common cases. We test against the bitmask itself, all zeros and all
+      // ones.
+      {
+        // Testing "any" bits against a zero mask is always false. So, there
+        // are some cases, where we expect tests to take the "failed_" branch
+        // even though this is a test that normally should take "passed_".
+        const ErrorCode& passed =
+          !code.value_ && code.op_ == ErrorCode::OP_HAS_ANY_BITS
+          ? *code.failed_ : *code.passed_;
+        // Similary, testing for "all" bits in a zero mask is always true. So,
+        // some cases pass despite them normally failing.
+        const ErrorCode& failed =
+          !code.value_ && code.op_ == ErrorCode::OP_HAS_ALL_BITS
+          ? *code.passed_ : *code.failed_;
+
+        data->args[code.argno_] = code.value_;
+        if (!VerifyErrorCode(program, data, passed, err)) {
+          return false;
+        }
+        data->args[code.argno_] = -1LL;
+        if (!VerifyErrorCode(program, data, passed, err)) {
+          return false;
+        }
+        data->args[code.argno_] = 0;
+        if (!VerifyErrorCode(program, data, failed, err)) {
+          return false;
+        }
+      }
+      break;
+    default: // TODO(markus): Need to add support for OP_GREATER
       *err = "Unsupported operation in conditional error code";
       return false;
     }
@@ -159,6 +193,9 @@ uint32_t Verifier::EvaluateBPF(const std::vector<struct sock_filter>& program,
         return 0;
       }
       return r; }
+    case BPF_ALU:
+      Alu(&state, insn, err);
+      break;
     default:
       *err = "Unexpected instruction in BPF program";
       break;
@@ -247,5 +284,70 @@ uint32_t Verifier::Ret(State *, const struct sock_filter& insn,
   }
   return insn.k;
 }
+
+void Verifier::Alu(State *state, const struct sock_filter& insn,
+                   const char **err) {
+  if (BPF_OP(insn.code) == BPF_NEG) {
+    state->accumulator = -state->accumulator;
+    return;
+  } else {
+    if (BPF_SRC(insn.code) != BPF_K) {
+      *err = "Unexpected source operand in arithmetic operation";
+      return;
+    }
+    switch (BPF_OP(insn.code)) {
+    case BPF_ADD:
+      state->accumulator += insn.k;
+      break;
+    case BPF_SUB:
+      state->accumulator -= insn.k;
+      break;
+    case BPF_MUL:
+      state->accumulator *= insn.k;
+      break;
+    case BPF_DIV:
+      if (!insn.k) {
+        *err = "Illegal division by zero";
+        break;
+      }
+      state->accumulator /= insn.k;
+      break;
+    case BPF_MOD:
+      if (!insn.k) {
+        *err = "Illegal division by zero";
+        break;
+      }
+      state->accumulator %= insn.k;
+      break;
+    case BPF_OR:
+      state->accumulator |= insn.k;
+      break;
+    case BPF_XOR:
+      state->accumulator ^= insn.k;
+      break;
+    case BPF_AND:
+      state->accumulator &= insn.k;
+      break;
+    case BPF_LSH:
+      if (insn.k > 32) {
+        *err = "Illegal shift operation";
+        break;
+      }
+      state->accumulator <<= insn.k;
+      break;
+    case BPF_RSH:
+      if (insn.k > 32) {
+        *err = "Illegal shift operation";
+        break;
+      }
+      state->accumulator >>= insn.k;
+      break;
+    default:
+      *err = "Invalid operator in arithmetic operation";
+      break;
+    }
+  }
+}
+
 
 }  // namespace
