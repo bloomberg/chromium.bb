@@ -69,8 +69,6 @@ class Verifier {
                       const char **err);
   static uint32_t Ret(State *state, const struct sock_filter& insn,
                       const char **err);
-  static void     Alu(State *state, const struct sock_filter& insn,
-                      const char **err);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Verifier);
 };

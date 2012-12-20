@@ -79,21 +79,6 @@ void CodeGen::PrintProgram(const Sandbox::Program& program) {
     case BPF_RET:
       fprintf(stderr, "RET 0x%x\n", iter->k);
       break;
-    case BPF_ALU:
-      fprintf(stderr, BPF_OP(iter->code) == BPF_NEG
-              ? "A := -A\n" : "A := A %s 0x%x\n",
-              BPF_OP(iter->code) == BPF_ADD ? "+"  :
-              BPF_OP(iter->code) == BPF_SUB ? "-"  :
-              BPF_OP(iter->code) == BPF_MUL ? "*"  :
-              BPF_OP(iter->code) == BPF_DIV ? "/"  :
-              BPF_OP(iter->code) == BPF_MOD ? "%"  :
-              BPF_OP(iter->code) == BPF_OR  ? "|"  :
-              BPF_OP(iter->code) == BPF_XOR ? "^"  :
-              BPF_OP(iter->code) == BPF_AND ? "&"  :
-              BPF_OP(iter->code) == BPF_LSH ? "<<" :
-              BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
-              (int)iter->k);
-      break;
     default:
       fprintf(stderr, "???\n");
       break;

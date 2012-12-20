@@ -20,17 +20,11 @@ struct arch_seccomp_data;
 class ErrorCode {
  public:
   enum {
-    // Allow this system call. The value of ERR_ALLOWED is pretty much
-    // completely arbitrary. But we want to pick it so that is is unlikely
-    // to be passed in accidentally, when the user intended to return an
-    // "errno" (see below) value instead.
-    ERR_ALLOWED   = 0x04000000,
+    // Allow this system call.
+    ERR_ALLOWED   = 0x0000,
 
     // Deny the system call with a particular "errno" value.
-    // N.B.: It is also possible to return "0" here. That would normally
-    //       indicate success, but it won't actually run the system call.
-    //       This is very different from return ERR_ALLOWED.
-    ERR_MIN_ERRNO = 0,
+    ERR_MIN_ERRNO = 1,
     ERR_MAX_ERRNO = 4095,
 
     // This code should never be used directly, it is used internally only.
@@ -48,42 +42,11 @@ class ErrorCode {
   typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
 
   enum ArgType {
-    // A conditional test should operate on the 32bit part of the system call
-    // argument.
-    // On 64bit architectures, this verifies that the caller did not actually
-    // pass in a 64bit value. If they did, that will be  interpreted as an
-    // attempt at breaking the sandbox and results in the program getting
-    // terminated.
-    // In other words, only perform a 32bit test, if you are sure this
-    // particular system call would never legitimately take a 64bit argument.
-    TP_32BIT,
-
-    // A conditional test should operate on 64bit arguments. It is harmless
-    // to perform a 64bit test on a 32bit system, as the top 32 bits of all
-    // arguments will always be zero.
-    TP_64BIT,
+    TP_32BIT, TP_64BIT,
   };
 
   enum Operation {
-    // Test whether the system call argument is equal to the operand.
-    OP_EQUAL,
-
-    // Test whether the system call argument is greater (or equal) to the
-    // operand. Please note that all tests always operate on unsigned
-    // values. You can generally emulate signed tests, if that's what you
-    // need.
-    // TODO(markus): Check whether we should automatically emulate signed
-    //               operations.
-    OP_GREATER_UNSIGNED, OP_GREATER_EQUAL_UNSIGNED,
-
-    // Tests a system call argument against a bit mask.
-    // The "ALL_BITS" variant performs this test: "arg & mask == mask"
-    // This implies that a mask of zero always results in a passing test.
-    // The "ANY_BITS" variant performs this test: "arg & mask != 0"
-    // This implies that a mask of zero always results in a failing test.
-    OP_HAS_ALL_BITS, OP_HAS_ANY_BITS,
-
-    // Total number of operations.
+    OP_EQUAL, OP_GREATER, OP_GREATER_EQUAL, OP_HAS_BITS,
     OP_NUM_OPS,
   };
 

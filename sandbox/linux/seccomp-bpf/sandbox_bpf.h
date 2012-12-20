@@ -97,13 +97,6 @@
 #define IPC_64                   0x0100
 #endif
 
-#ifndef BPF_MOD
-#define BPF_MOD                    0x90
-#endif
-#ifndef BPF_XOR
-#define BPF_XOR                    0xA0
-#endif
-
 // In order to build will older tool chains, we currently have to avoid
 // including <linux/seccomp.h>. Until that can be fixed (if ever). Rely on
 // our own definitions of the seccomp kernel ABI.

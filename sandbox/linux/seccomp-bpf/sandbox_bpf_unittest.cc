@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <errno.h>
-#include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <sys/utsname.h>
 
@@ -18,10 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Workaround for Android's prctl.h file.
-#ifndef PR_GET_ENDIAN
-#define PR_GET_ENDIAN   19
-#endif
-#ifndef PR_CAPBSET_READ
+#if !defined(PR_CAPBSET_READ)
 #define PR_CAPBSET_READ 23
 #define PR_CAPBSET_DROP 24
 #endif
@@ -183,51 +178,6 @@ BPF_TEST(SandboxBpf, BasicBlacklistWithSigsys,
 
   // We expect the signal handler to modify AuxData
   BPF_ASSERT(BPF_AUX == kExpectedReturnValue);
-}
-
-// A simple test that verifies we can return arbitrary errno values.
-
-ErrorCode ErrnoTestPolicy(int sysno, void *) {
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
-    // FIXME: we should really not have to do that in a trivial policy
-    return ErrorCode(ENOSYS);
-  }
-
-  switch (sysno) {
-  case __NR_dup2:
-    // Pretend that dup2() worked, but don't actually do anything.
-    return ErrorCode(0);
-  case __NR_setuid:
-    // Return errno = 1
-    return ErrorCode(1);
-  case __NR_setgid:
-    // Return maximum errno value (typically 4095).
-    return ErrorCode(ErrorCode::ERR_MAX_ERRNO);
-  default:
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-BPF_TEST(SandboxBpf, ErrnoTest, ErrnoTestPolicy) {
-  // Verify that dup2() returns success, but doesn't actually run.
-  int fds[4];
-  BPF_ASSERT(pipe(fds) == 0);
-  BPF_ASSERT(pipe(fds+2) == 0);
-  BPF_ASSERT(dup2(fds[2], fds[0]) == 0);
-  char buf[1] = { };
-  BPF_ASSERT(write(fds[1], "\x55", 1) == 1);
-  BPF_ASSERT(write(fds[3], "\xAA", 1) == 1);
-  BPF_ASSERT(read(fds[0], buf, 1) == 1);
-
-  // If dup2() executed, we will read \xAA, but it dup2() has been turned
-  // into a no-op by our policy, then we will read \x55.
-  BPF_ASSERT(buf[0] == '\x55');
-
-  // Verify that we can return the minimum and maximum errno values.
-  BPF_ASSERT(setuid(0) == -1);
-  BPF_ASSERT(errno == 1);
-  BPF_ASSERT(setgid(0) == -1);
-  BPF_ASSERT(errno == ErrorCode::ERR_MAX_ERRNO);
 }
 
 // A more complex, but synthetic policy. This tests the correctness of the BPF
@@ -640,54 +590,6 @@ BPF_TEST(SandboxBpf, UseOpenBroker, DenyOpenPolicy,
   BPF_ASSERT(read(cpu_info_fd, buf, sizeof(buf)) > 0);
 }
 
-// Simple test demonstrating how to use Sandbox::Cond()
-
-ErrorCode SimpleCondTestPolicy(int sysno, void *) {
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
-    // FIXME: we should really not have to do that in a trivial policy
-    return ErrorCode(ENOSYS);
-  }
-
-  // We deliberately return unusual errno values upon failure, so that we
-  // can uniquely test for these values. In a "real" policy, you would want
-  // to return more traditional values.
-  switch (sysno) {
-    case __NR_open:
-      // Allow opening files for reading, but don't allow writing.
-      COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
-      return Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                           O_ACCMODE /* 0x3 */,
-                           ErrorCode(EROFS),
-                           ErrorCode(ErrorCode::ERR_ALLOWED));
-    case __NR_prctl:
-      // Allow prctl(PR_SET_DUMPABLE) and prctl(PR_GET_DUMPABLE), but
-      // disallow everything else.
-      return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                           PR_SET_DUMPABLE,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-             Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                           PR_GET_DUMPABLE,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-                           ErrorCode(ENOMEM)));
-    default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-BPF_TEST(SandboxBpf, SimpleCondTest, SimpleCondTestPolicy) {
-  int fd;
-  BPF_ASSERT((fd = open("/proc/self/comm", O_RDWR)) == -1);
-  BPF_ASSERT(errno == EROFS);
-  BPF_ASSERT((fd = open("/proc/self/comm", O_RDONLY)) >= 0);
-  close(fd);
-
-  int ret;
-  BPF_ASSERT((ret = prctl(PR_GET_DUMPABLE)) >= 0);
-  BPF_ASSERT(prctl(PR_SET_DUMPABLE, 1-ret) == 0);
-  BPF_ASSERT(prctl(PR_GET_ENDIAN, &ret) == -1);
-  BPF_ASSERT(errno == ENOMEM);
-}
-
 // This test exercises the Sandbox::Cond() method by building a complex
 // tree of conditional equality operations. It then makes system calls and
 // verifies that they return the values that we expected from our BPF
@@ -1006,7 +908,7 @@ ErrorCode EqualityArgumentWidthPolicy(int sysno, void *) {
            Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          0x55555555, ErrorCode(1), ErrorCode(2)),
            Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL,
-                         0x55555555AAAAAAAAULL, ErrorCode(1), ErrorCode(2)));
+                         0x55555555AAAAAAAAull, ErrorCode(1), ErrorCode(2)));
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -1019,10 +921,10 @@ BPF_TEST(SandboxBpf, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
   // On 32bit machines, there is no way to pass a 64bit argument through the
   // syscall interface. So, we have to skip the part of the test that requires
   // 64bit arguments.
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x55555555AAAAAAAAULL) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555500000000ULL) == -2);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555511111111ULL) == -2);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x11111111AAAAAAAAULL) == -2);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x55555555AAAAAAAAull) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555500000000ull) == -2);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555511111111ull) == -2);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x11111111AAAAAAAAull) == -2);
 #endif
 }
 
@@ -1033,7 +935,7 @@ BPF_TEST(SandboxBpf, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
 BPF_DEATH_TEST(SandboxBpf, EqualityArgumentUnallowed64bit,
                DEATH_MESSAGE("Unexpected 64bit argument detected"),
                EqualityArgumentWidthPolicy) {
-  SandboxSyscall(__NR_uname, 0, 0x5555555555555555ULL);
+  SandboxSyscall(__NR_uname, 0, 0x5555555555555555ull);
 }
 #endif
 
@@ -1053,7 +955,7 @@ BPF_TEST(SandboxBpf, EqualityWithNegativeArguments,
          EqualityWithNegativeArgumentsPolicy) {
   BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF) == -1);
   BPF_ASSERT(SandboxSyscall(__NR_uname, -1) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, -1LL) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, -1ll) == -1);
 }
 
 #if __SIZEOF_POINTER__ > 4
@@ -1063,370 +965,8 @@ BPF_DEATH_TEST(SandboxBpf, EqualityWithNegative64bitArguments,
   // When expecting a 32bit system call argument, we look at the MSB of the
   // 64bit value and allow both "0" and "-1". But the latter is allowed only
   // iff the LSB was negative. So, this death test should error out.
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF00000000LL) == -1);
+  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF00000000ll) == -1);
 }
 #endif
-
-ErrorCode AllBitTestPolicy(int sysno, void *) {
-  // Test the OP_HAS_ALL_BITS conditional test operator with a couple of
-  // different bitmasks. We try to find bitmasks that could conceivably
-  // touch corner cases.
-  // For all of these tests, we override the uname(). We can make use with
-  // a single system call number, as we use the first system call argument to
-  // select the different bit masks that we want to test against.
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
-    // FIXME: we should really not have to do that in a trivial policy
-    return ErrorCode(ENOSYS);
-  } else if (sysno == __NR_uname) {
-    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 0,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 1,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 2,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 3,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 4,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 5,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 6,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 7,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 8,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x100000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 9,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x300000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 10,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x100000001ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-                         Sandbox::Kill("Invalid test case number"))))))))))));
-
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-BPF_TEST(SandboxBpf, AllBitTests, AllBitTestPolicy) {
-  // Our uname() system call returns ErrorCode(1) for success and
-  // ErrorCode(0) for failure. SandboxSyscall() turns this into an
-  // exit code of -1 or 0. This is compatible with traditional
-  // C-style boolean test values.
-
-  // 32bit test: all of 0x0 (should always be true)
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 0, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 0, 1));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 0, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 0, 0xFFFFFFFFU));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 0, -1LL));
-
-  // 32bit test: all of 0x1
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 1, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 1, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 1, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 1, 3));
-
-  // 32bit test: all of 0x3
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 2, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 2, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 2, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 7));
-
-  // 32bit test: all of 0x80000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 3, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 3, 0x40000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3, 0x80000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3, 0xC0000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3,-0x80000000LL));
-
-  // 64bit test: all of 0x0 (should always be true)
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 1));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 0xFFFFFFFFU));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 0x300000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, 0x8000000000000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 4, -1LL));
-
-  // 64bit test: all of 0x1
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 3));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0x100000002LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 0x100000003LL));
-
-  // 64bit test: all of 0x3
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 7));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0x100000002LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000003LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000007LL));
-
-  // 64bit test: all of 0x80000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x40000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x80000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0xC0000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7,-0x80000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x140000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x180000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x1C0000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7,-0x180000000LL));
-
-  // 64bit test: all of 0x100000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x000000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x200000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x300000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x000000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x200000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x300000001LL));
-
-  // 64bit test: all of 0x300000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x000000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x200000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x300000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x700000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x000000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x200000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x300000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x700000001LL));
-
-  // 64bit test: all of 0x100000001
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 10, 0x000000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 10, 0x000000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 10, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 10, 0xFFFFFFFFU));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, -1L));
-}
-
-ErrorCode AnyBitTestPolicy(int sysno, void *) {
-  // Test the OP_HAS_ANY_BITS conditional test operator with a couple of
-  // different bitmasks. We try to find bitmasks that could conceivably
-  // touch corner cases.
-  // For all of these tests, we override the uname(). We can make use with
-  // a single system call number, as we use the first system call argument to
-  // select the different bit masks that we want to test against.
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
-    // FIXME: we should really not have to do that in a trivial policy
-    return ErrorCode(ENOSYS);
-  } else if (sysno == __NR_uname) {
-    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 0,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 1,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 2,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 3,
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 4,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 5,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 6,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 7,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 8,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x100000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 9,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x300000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 10,
-           Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x100000001ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-                         Sandbox::Kill("Invalid test case number"))))))))))));
-
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-BPF_TEST(SandboxBpf, AnyBitTests, AnyBitTestPolicy) {
-  // Our uname() system call returns ErrorCode(1) for success and
-  // ErrorCode(0) for failure. SandboxSyscall() turns this into an
-  // exit code of -1 or 0. This is compatible with traditional
-  // C-style boolean test values.
-
-  // 32bit test: any of 0x0 (should always be false)
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 0, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 0, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 0, 3));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 0, 0xFFFFFFFFU));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 0, -1LL));
-
-  // 32bit test: any of 0x1
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 1, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 1, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 1, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 1, 3));
-
-  // 32bit test: any of 0x3
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 2, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 1));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 2, 7));
-
-  // 32bit test: any of 0x80000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 3, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 3, 0x40000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3, 0x80000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3, 0xC0000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 3,-0x80000000LL));
-
-  // 64bit test: any of 0x0 (should always be false)
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 3));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 0xFFFFFFFFU));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 0x300000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, 0x8000000000000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 4, -1LL));
-
-  // 64bit test: any of 0x1
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 1));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 3));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 5, 0x100000002LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 5, 0x100000003LL));
-
-  // 64bit test: any of 0x3
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 1));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 2));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 3));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 7));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 6, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000002LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000003LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 6, 0x100000007LL));
-
-  // 64bit test: any of 0x80000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x40000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x80000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0xC0000000U));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7,-0x80000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 7, 0x140000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x180000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7, 0x1C0000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 7,-0x180000000LL));
-
-  // 64bit test: any of 0x100000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x000000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x100000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x200000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x300000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x000000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x100000001LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 8, 0x200000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 8, 0x300000001LL));
-
-  // 64bit test: any of 0x300000000
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x000000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x200000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x300000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x700000000LL));
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 9, 0x000000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x100000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x200000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x300000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 9, 0x700000001LL));
-
-  // 64bit test: any of 0x100000001
-  BPF_ASSERT(!SandboxSyscall(__NR_uname, 10, 0x000000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, 0x000000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, 0x100000000LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, 0x100000001LL));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, 0xFFFFFFFFU));
-  BPF_ASSERT( SandboxSyscall(__NR_uname, 10, -1L));
-}
 
 } // namespace
