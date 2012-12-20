@@ -1388,7 +1388,9 @@ DialogType.isModal = function(type) {
     for (var i = 0; i < visibleItems.length; i++) {
       var index = this.currentList_.getIndexOfListItem(visibleItems[i]);
       var entry = this.directoryModel_.getFileList().item(index);
-      visibleEntries.push(entry);
+      // The following check is a workaround for the bug in list: sometimes item
+      // does not have listIndex, and therefore is not found in the list.
+      if (entry) visibleEntries.push(entry);
     }
     this.metadataCache_.get(visibleEntries, 'thumbnail', null);
   };
