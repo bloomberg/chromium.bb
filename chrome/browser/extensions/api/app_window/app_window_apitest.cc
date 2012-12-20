@@ -53,7 +53,8 @@ class TestShellWindowRegistryObserver
 
 namespace extensions {
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
+// Flaky, http://crbug.com/164735 .
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApiBounds) {
   ExtensionTestMessageListener background_listener("background_ok", false);
   ExtensionTestMessageListener ready_listener("ready", true /* will_reply */);
   ExtensionTestMessageListener success_listener("success", false);
