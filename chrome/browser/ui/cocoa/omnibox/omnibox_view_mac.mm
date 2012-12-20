@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -140,11 +141,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       delete_was_pressed_(false),
       delete_at_end_pressed_(false),
       line_height_(0) {
-  DCHECK(controller);
-  DCHECK(toolbar_model);
-  DCHECK(profile);
-  DCHECK(command_updater);
-  DCHECK(field);
   [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
@@ -689,9 +685,6 @@ void OmniboxViewMac::OnDidEndEditing() {
 }
 
 bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
-  // We should only arrive here when the field is focussed.
-  DCHECK(IsFirstResponder());
-
   if (cmd != @selector(moveRight:) &&
       cmd != @selector(insertTab:) &&
       cmd != @selector(insertTabIgnoringFieldEditor:)) {
@@ -705,7 +698,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
     delete_was_pressed_ = true;
 
   // Don't intercept up/down-arrow or backtab if the popup isn't open.
-  if (popup_view_->IsOpen()) {
+  if (model()->popup_model()->IsOpen()) {
     if (cmd == @selector(moveDown:)) {
       model()->OnUpOrDownKeyPressed(1);
       return true;
@@ -716,10 +709,26 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
       return true;
     }
 
-    if (cmd == @selector(insertBacktab:) &&
-        model()->popup_model()->selected_line_state() ==
+    // If instant extended is then allow users to press tab to select results
+    // from the omnibox popup.
+    BOOL enableTabAutocomplete =
+        chrome::search::IsInstantExtendedAPIEnabled(model()->profile());
+
+    if (cmd == @selector(insertBacktab:)) {
+      if (model()->popup_model()->selected_line_state() ==
             OmniboxPopupModel::KEYWORD) {
-      model()->ClearKeyword(GetText());
+        model()->ClearKeyword(GetText());
+        return true;
+      } else if (enableTabAutocomplete) {
+        model()->OnUpOrDownKeyPressed(-1);
+        return true;
+      }
+    }
+
+    if ((cmd == @selector(insertTab:) ||
+        cmd == @selector(insertTabIgnoringFieldEditor:)) &&
+        !model()->is_keyword_hint() && enableTabAutocomplete) {
+      model()->OnUpOrDownKeyPressed(1);
       return true;
     }
   }

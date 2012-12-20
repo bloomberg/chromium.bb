@@ -280,7 +280,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
 
   // Called when the user presses up or down.  |count| is a repeat count,
   // negative for moving up, positive for moving down.
-  void OnUpOrDownKeyPressed(int count);
+  virtual void OnUpOrDownKeyPressed(int count);
 
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI

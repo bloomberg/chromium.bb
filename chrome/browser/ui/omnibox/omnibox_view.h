@@ -26,6 +26,7 @@
 class CommandUpdater;
 class GURL;
 class OmniboxEditController;
+class OmniboxViewMacTest;
 class Profile;
 class ToolbarModel;
 
@@ -251,6 +252,8 @@ class OmniboxView {
   OmniboxEditController* controller() { return controller_; }
 
  private:
+  friend class OmniboxViewMacTest;
+
   // |model_| can be NULL in tests.
   scoped_ptr<OmniboxEditModel> model_;
   OmniboxEditController* controller_;
