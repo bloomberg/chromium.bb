@@ -86,6 +86,8 @@ def JavaDataTypeToC(java_type):
   java_pod_type_map = {
       'int': 'jint',
       'byte': 'jbyte',
+      'char': 'jchar',
+      'short': 'jshort',
       'boolean': 'jboolean',
       'long': 'jlong',
       'double': 'jdouble',
@@ -142,6 +144,8 @@ class JniParams(object):
     pod_param_map = {
         'int': 'I',
         'boolean': 'Z',
+        'char': 'C',
+        'short': 'S',
         'long': 'J',
         'double': 'D',
         'float': 'F',
@@ -156,12 +160,10 @@ class JniParams(object):
         'Ljava/lang/String',
         'Ljava/lang/Class',
     ]
-    if param == 'byte[][]':
-      return '[[B'
     prefix = ''
     # Array?
-    if param[-2:] == '[]':
-      prefix = '['
+    while param[-2:] == '[]':
+      prefix += '['
       param = param[:-2]
     # Generic?
     if '<' in param:
@@ -276,9 +278,19 @@ def ExtractNatives(contents):
 
 
 def GetStaticCastForReturnType(return_type):
-  if return_type in ['String', 'java/lang/String']:
-    return 'jstring'
-  elif return_type.endswith('[]'):
+  type_map = { 'String' : 'jstring',
+               'java/lang/String' : 'jstring',
+               'boolean[]': 'jbooleanArray',
+               'byte[]': 'jbyteArray',
+               'char[]': 'jcharArray',
+               'short[]': 'jshortArray',
+               'int[]': 'jintArray',
+               'long[]': 'jlongArray',
+               'double[]': 'jdoubleArray' }
+  ret = type_map.get(return_type, None)
+  if ret:
+    return ret
+  if return_type.endswith('[]'):
     return 'jobjectArray'
   return None
 
@@ -368,7 +380,7 @@ RE_SCOPED_JNI_RETURN_TYPES = re.compile('jobject|jclass|jstring|.*Array')
 RE_CALLED_BY_NATIVE = re.compile(
     '@CalledByNative(?P<Unchecked>(Unchecked)*?)(?:\("(?P<annotation>.*)"\))?'
     '\s+(?P<prefix>[\w ]*?)'
-    '\s*(?P<return_type>\w+)'
+    '\s*(?P<return_type>\w+(\[\])*?)'
     '\s+(?P<name>\w+)'
     '\s*\((?P<params>[^\)]*)\)')
 
