@@ -202,7 +202,8 @@
   ThreadSanitizer:Race
   fun:google_breakpad::CrashGenerationServer::~CrashGenerationServer
   fun:google_breakpad::CrashGenerationServer::`scalar deleting destructor'
-  fun:scoped_ptr::~scoped_ptr
+  fun:base::DefaultDeleter::operator()
+  fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
   fun:remoting::BreakpadWinDeathTest::~BreakpadWinDeathTest
   fun:remoting::BreakpadWinDeathTest_TestAccessViolation_Test::`scalar deleting destructor'
   fun:testing::Test::DeleteSelf_
