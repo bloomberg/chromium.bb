@@ -1079,8 +1079,6 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
 }
 
 // Desktop native widget Aura tests are for non Chrome OS platforms.
-// TODO(ananta)
-// The Desktop native widget Aura tests fail on linux AURA. Fix them.
 #if !defined(OS_CHROMEOS)
 // This class validates whether paints are received for a visible Widget.
 // To achieve this it overrides the Show and Close methods on the Widget class
