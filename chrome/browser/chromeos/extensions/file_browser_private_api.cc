@@ -32,12 +32,15 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -56,7 +59,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/file_browser_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -530,6 +533,65 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemCallbackDispatcher);
 };
 
+FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
+    : event_router_(make_scoped_refptr(new FileBrowserEventRouter(profile))) {
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kFileBrowserHandlers,
+      new FileBrowserHandlerParser);
+
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<CancelFileDialogFunction>();
+  registry->RegisterFunction<ExecuteTasksFileBrowserFunction>();
+  registry->RegisterFunction<SetDefaultTaskFileBrowserFunction>();
+  registry->RegisterFunction<FileDialogStringsFunction>();
+  registry->RegisterFunction<GetFileTasksFileBrowserFunction>();
+  registry->RegisterFunction<GetVolumeMetadataFunction>();
+  registry->RegisterFunction<RequestLocalFileSystemFunction>();
+  registry->RegisterFunction<AddFileWatchBrowserFunction>();
+  registry->RegisterFunction<RemoveFileWatchBrowserFunction>();
+  registry->RegisterFunction<SelectFileFunction>();
+  registry->RegisterFunction<SelectFilesFunction>();
+  registry->RegisterFunction<AddMountFunction>();
+  registry->RegisterFunction<RemoveMountFunction>();
+  registry->RegisterFunction<GetMountPointsFunction>();
+  registry->RegisterFunction<GetSizeStatsFunction>();
+  registry->RegisterFunction<FormatDeviceFunction>();
+  registry->RegisterFunction<ViewFilesFunction>();
+  registry->RegisterFunction<ToggleFullscreenFunction>();
+  registry->RegisterFunction<IsFullscreenFunction>();
+  registry->RegisterFunction<GetDriveFilePropertiesFunction>();
+  registry->RegisterFunction<PinDriveFileFunction>();
+  registry->RegisterFunction<GetFileLocationsFunction>();
+  registry->RegisterFunction<GetDriveFilesFunction>();
+  registry->RegisterFunction<GetFileTransfersFunction>();
+  registry->RegisterFunction<CancelFileTransfersFunction>();
+  registry->RegisterFunction<TransferFileFunction>();
+  registry->RegisterFunction<GetPreferencesFunction>();
+  registry->RegisterFunction<SetPreferencesFunction>();
+  registry->RegisterFunction<SearchDriveFunction>();
+  registry->RegisterFunction<ClearDriveCacheFunction>();
+  registry->RegisterFunction<ReloadDriveFunction>();
+  registry->RegisterFunction<GetNetworkConnectionStateFunction>();
+  registry->RegisterFunction<RequestDirectoryRefreshFunction>();
+  registry->RegisterFunction<SetLastModifiedFunction>();
+  registry->RegisterFunction<ZipSelectionFunction>();
+
+  event_router_->ObserveFileSystemEvents();
+}
+
+FileBrowserPrivateAPI::~FileBrowserPrivateAPI() {
+}
+
+void FileBrowserPrivateAPI::Shutdown() {
+  event_router_->Shutdown();
+}
+
+// static
+FileBrowserPrivateAPI* FileBrowserPrivateAPI::Get(Profile* profile) {
+  return FileBrowserPrivateAPIFactory::GetForProfile(profile);
+}
+
 void RequestLocalFileSystemFunction::RequestOnFileThread(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& source_url,
@@ -608,7 +670,7 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
       base::Bind(
           &FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread,
           this,
-          FileBrowserEventRouterFactory::GetForProfile(profile_),
+          FileBrowserPrivateAPI::Get(profile_)->event_router(),
           file_watch_url,
           extension_id()));
 
@@ -1428,7 +1490,7 @@ bool AddMountFunction::RunImpl() {
       const std::string& drive_path =
           drive::util::GetDriveMountPointPathAsString();
       SetResult(new base::StringValue(drive_path));
-      FileBrowserEventRouterFactory::GetForProfile(profile_)->
+      FileBrowserPrivateAPI::Get(profile_)->event_router()->
           MountDrive(base::Bind(&AddMountFunction::SendResponse,
                                 this,
                                 success));

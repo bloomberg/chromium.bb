@@ -19,8 +19,6 @@
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/operation_registry.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 class FileBrowserNotifications;
@@ -35,14 +33,13 @@ class DriveFileSystemInterface;
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class FileBrowserEventRouter
-    : public RefcountedProfileKeyedService,
+    : public base::RefCountedThreadSafe<FileBrowserEventRouter>,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
-  // RefcountedProfileKeyedService overrides.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  void Shutdown();
 
   // Starts observing file system change events.
   void ObserveFileSystemEvents();
@@ -92,7 +89,8 @@ class FileBrowserEventRouter
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
  private:
-  friend class FileBrowserEventRouterFactory;
+  friend class FileBrowserPrivateAPI;
+  friend class base::RefCountedThreadSafe<FileBrowserEventRouter>;
 
   // Helper class for passing through file watch notification events.
   class FileWatcherDelegate : public base::files::FilePathWatcher::Delegate {
@@ -214,33 +212,6 @@ class FileBrowserEventRouter
   int num_remote_update_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
-};
-
-// Singleton that owns all FileBrowserEventRouter and associates
-// them with Profiles.
-class FileBrowserEventRouterFactory
-    : public RefcountedProfileKeyedServiceFactory {
- public:
-  // Returns the FileBrowserEventRouter for |profile|, creating it if
-  // it is not yet created.
-  static scoped_refptr<FileBrowserEventRouter> GetForProfile(Profile* profile);
-
-  // Returns the FileBrowserEventRouterFactory instance.
-  static FileBrowserEventRouterFactory* GetInstance();
-
- protected:
-  // ProfileKeyedBasedFactory overrides:
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
-
- private:
-  friend struct DefaultSingletonTraits<FileBrowserEventRouterFactory>;
-
-  FileBrowserEventRouterFactory();
-  virtual ~FileBrowserEventRouterFactory();
-
-  // ProfileKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_EVENT_ROUTER_H_

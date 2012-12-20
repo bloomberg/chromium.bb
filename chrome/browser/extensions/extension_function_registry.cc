@@ -60,7 +60,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
-#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/power/power_api.h"
@@ -346,46 +345,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Device Customization.
   RegisterFunction<extensions::GetChromeosInfoFunction>();
 
-  // FileBrowserPrivate functions.
-  // TODO(jamescook): Expose these on non-ChromeOS platforms so we can use
-  // the extension-based file picker on Aura. crbug.com/97424
-  RegisterFunction<CancelFileDialogFunction>();
-  RegisterFunction<ExecuteTasksFileBrowserFunction>();
-  RegisterFunction<SetDefaultTaskFileBrowserFunction>();
-  RegisterFunction<FileDialogStringsFunction>();
-  RegisterFunction<GetFileTasksFileBrowserFunction>();
-  RegisterFunction<GetVolumeMetadataFunction>();
-  RegisterFunction<RequestLocalFileSystemFunction>();
-  RegisterFunction<AddFileWatchBrowserFunction>();
-  RegisterFunction<RemoveFileWatchBrowserFunction>();
-  RegisterFunction<SelectFileFunction>();
-  RegisterFunction<SelectFilesFunction>();
-  RegisterFunction<AddMountFunction>();
-  RegisterFunction<RemoveMountFunction>();
-  RegisterFunction<GetMountPointsFunction>();
-  RegisterFunction<GetSizeStatsFunction>();
-  RegisterFunction<FormatDeviceFunction>();
-  RegisterFunction<ViewFilesFunction>();
-  RegisterFunction<ToggleFullscreenFunction>();
-  RegisterFunction<IsFullscreenFunction>();
-  RegisterFunction<GetDriveFilePropertiesFunction>();
-  RegisterFunction<PinDriveFileFunction>();
-  RegisterFunction<GetFileLocationsFunction>();
-  RegisterFunction<GetDriveFilesFunction>();
-  RegisterFunction<GetFileTransfersFunction>();
-  RegisterFunction<CancelFileTransfersFunction>();
-  RegisterFunction<TransferFileFunction>();
-  RegisterFunction<GetPreferencesFunction>();
-  RegisterFunction<SetPreferencesFunction>();
-  RegisterFunction<SearchDriveFunction>();
-  RegisterFunction<ClearDriveCacheFunction>();
-  RegisterFunction<ReloadDriveFunction>();
-  RegisterFunction<GetNetworkConnectionStateFunction>();
-  RegisterFunction<RequestDirectoryRefreshFunction>();
-  RegisterFunction<SetLastModifiedFunction>();
-  RegisterFunction<ZipSelectionFunction>();
-
-  // FileBrowserHandler.
+  // FileBrowserHandlerInternal.
   RegisterFunction<FileHandlerSelectFileFunction>();
 
   // Mediaplayer

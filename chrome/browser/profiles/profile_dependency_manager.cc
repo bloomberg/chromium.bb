@@ -86,6 +86,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_factory.h"
+#if defined(FILE_MANAGER_EXTENSION)
+#include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
+#endif
 #endif
 
 #if defined(USE_AURA)
@@ -266,6 +269,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ExtensionManagementAPIFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
+#if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)
+  FileBrowserPrivateAPIFactory::GetInstance();
+#endif
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();

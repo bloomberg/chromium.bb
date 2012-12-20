@@ -35,7 +35,6 @@
 
 class ExtensionAction;
 class ExtensionResource;
-class FileBrowserHandler;
 class SkBitmap;
 class Version;
 
@@ -69,7 +68,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   typedef std::map<const std::string, GURL> URLOverrideMap;
   typedef std::vector<std::string> ScriptingWhitelist;
-  typedef std::vector<linked_ptr<FileBrowserHandler> > FileBrowserHandlerList;
   typedef std::vector<InstallWarning> InstallWarningVector;
   typedef std::map<const std::string, linked_ptr<ManifestData> >
       ManifestDataMap;
@@ -699,9 +697,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
   }
-  const FileBrowserHandlerList* file_browser_handlers() const {
-    return file_browser_handlers_.get();
-  }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
@@ -957,13 +952,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadBrowserAction(string16* error);
   bool LoadScriptBadge(string16* error);
   bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
-  bool LoadFileBrowserHandlers(string16* error);
-  // Helper method to load a FileBrowserHandlerList from the manifest.
-  FileBrowserHandlerList* LoadFileBrowserHandlersHelper(
-      const base::ListValue* extension_actions, string16* error);
-  // Helper method to load an FileBrowserHandler from manifest.
-  FileBrowserHandler* LoadFileBrowserHandler(
-      const base::DictionaryValue* file_browser_handlers, string16* error);
   bool LoadChromeURLOverrides(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
@@ -1120,9 +1108,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;
-
-  // The extension's file browser actions, if any.
-  scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
 
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;

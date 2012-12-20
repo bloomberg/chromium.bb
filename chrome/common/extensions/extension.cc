@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -2798,7 +2797,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
       !LoadBrowserAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
       !LoadScriptBadge(error) ||
-      !LoadFileBrowserHandlers(error) ||
       !LoadChromeURLOverrides(error) ||
       !LoadTextToSpeechVoices(error) ||
       !LoadIncognitoMode(error) ||
@@ -3140,180 +3138,6 @@ bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
   return true;
 }
 
-bool Extension::LoadFileBrowserHandlers(string16* error) {
-  if (!manifest_->HasKey(keys::kFileBrowserHandlers))
-    return true;
-  ListValue* file_browser_handlers_value = NULL;
-  if (!manifest_->GetList(keys::kFileBrowserHandlers,
-                         &file_browser_handlers_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
-    return false;
-  }
-  file_browser_handlers_.reset(
-      LoadFileBrowserHandlersHelper(file_browser_handlers_value, error));
-  if (!file_browser_handlers_.get())
-    return false;  // Failed to parse file browser actions definition.
-  return true;
-}
-
-Extension::FileBrowserHandlerList* Extension::LoadFileBrowserHandlersHelper(
-    const ListValue* extension_actions, string16* error) {
-  scoped_ptr<FileBrowserHandlerList> result(
-      new FileBrowserHandlerList());
-  for (ListValue::const_iterator iter = extension_actions->begin();
-       iter != extension_actions->end();
-       ++iter) {
-    if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
-      *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
-      return NULL;
-    }
-    scoped_ptr<FileBrowserHandler> action(
-        LoadFileBrowserHandler(
-            reinterpret_cast<DictionaryValue*>(*iter), error));
-    if (!action.get())
-      return NULL;  // Failed to parse file browser action definition.
-    result->push_back(linked_ptr<FileBrowserHandler>(action.release()));
-  }
-  return result.release();
-}
-
-FileBrowserHandler* Extension::LoadFileBrowserHandler(
-    const DictionaryValue* file_browser_handler, string16* error) {
-  scoped_ptr<FileBrowserHandler> result(new FileBrowserHandler());
-  result->set_extension_id(id());
-
-  std::string handler_id;
-  // Read the file action |id| (mandatory).
-  if (!file_browser_handler->HasKey(keys::kPageActionId) ||
-      !file_browser_handler->GetString(keys::kPageActionId, &handler_id)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionId);
-    return NULL;
-  }
-  result->set_id(handler_id);
-
-  // Read the page action title from |default_title| (mandatory).
-  std::string title;
-  if (!file_browser_handler->HasKey(keys::kPageActionDefaultTitle) ||
-      !file_browser_handler->GetString(keys::kPageActionDefaultTitle, &title)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-    return NULL;
-  }
-  result->set_title(title);
-
-  // Initialize access permissions (optional).
-  const ListValue* access_list_value = NULL;
-  if (file_browser_handler->HasKey(keys::kFileAccessList)) {
-    if (!file_browser_handler->GetList(keys::kFileAccessList,
-                                       &access_list_value) ||
-        access_list_value->empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
-      return NULL;
-    }
-    for (size_t i = 0; i < access_list_value->GetSize(); ++i) {
-      std::string access;
-      if (!access_list_value->GetString(i, &access) ||
-          result->AddFileAccessPermission(access)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidFileAccessValue, base::IntToString(i));
-        return NULL;
-      }
-    }
-  }
-  if (!result->ValidateFileAccessPermissions()) {
-    *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
-    return NULL;
-  }
-
-  // Initialize file filters (mandatory, unless "create" access is specified,
-  // in which case is ignored).
-  if (!result->HasCreateAccessPermission()) {
-    const ListValue* file_filters = NULL;
-    if (!file_browser_handler->HasKey(keys::kFileFilters) ||
-        !file_browser_handler->GetList(keys::kFileFilters, &file_filters) ||
-        file_filters->empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
-      return NULL;
-    }
-    for (size_t i = 0; i < file_filters->GetSize(); ++i) {
-      std::string filter;
-      if (!file_filters->GetString(i, &filter)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidFileFilterValue, base::IntToString(i));
-        return NULL;
-      }
-      StringToLowerASCII(&filter);
-      if (!StartsWithASCII(filter,
-                           std::string(chrome::kFileSystemScheme) + ':',
-                           true)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidURLPatternError, filter);
-        return NULL;
-      }
-      // The user inputs filesystem:*; we don't actually implement scheme
-      // wildcards in URLPattern, so transform to what will match correctly.
-      filter.replace(0, 11, "chrome-extension://*/");
-      URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-      if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidURLPatternError, filter);
-        return NULL;
-      }
-      std::string path = pattern.path();
-      bool allowed = path == "/*" || path == "/*.*" ||
-          (path.compare(0, 3, "/*.") == 0 &&
-           path.find_first_of('*', 3) == std::string::npos);
-      if (!allowed) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidURLPatternError, filter);
-        return NULL;
-      }
-      result->AddPattern(pattern);
-    }
-
-    // Initialize MIME type filters (optional).
-    // NOTE: This is only used by QuickOffice extension to register MIME types
-    // it can handle by directly downloading them. It will *not* be used in File
-    // Manager UI. This is why file filters are mandatory even when MIME type
-    // filters are specified.
-    const ListValue* mime_type_filters = NULL;
-    if (file_browser_handler->HasKey(keys::kMIMETypes)) {
-      if (!FileBrowserHandler::ExtensionWhitelistedForMIMETypes(id())) {
-        *error = ASCIIToUTF16(
-            errors::kNoPermissionForFileBrowserHandlerMIMETypes);
-        return NULL;
-      }
-
-      if (!file_browser_handler->GetList(keys::kMIMETypes,
-                                         &mime_type_filters)) {
-        *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
-        return NULL;
-      }
-
-      for (size_t i = 0; i < mime_type_filters->GetSize(); ++i) {
-        std::string filter;
-        if (!mime_type_filters->GetString(i, &filter)) {
-          *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
-          return NULL;
-        }
-        result->AddMIMEType(filter);
-      }
-    }
-  }
-
-  std::string default_icon;
-  // Read the file browser action |default_icon| (optional).
-  if (file_browser_handler->HasKey(keys::kPageActionDefaultIcon)) {
-    if (!file_browser_handler->GetString(
-            keys::kPageActionDefaultIcon, &default_icon) ||
-        default_icon.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return NULL;
-    }
-    result->set_icon_path(default_icon);
-  }
-
-  return result.release();
-}
 
 bool Extension::LoadChromeURLOverrides(string16* error) {
   if (!manifest_->HasKey(keys::kChromeURLOverrides))

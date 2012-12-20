@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
@@ -18,9 +17,15 @@
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/url_util.h"
 
 class GURL;
+class Profile;
+
+namespace base {
+class Value;
+}
 
 namespace fileapi {
 class FileSystemContext;
@@ -36,6 +41,26 @@ class DriveWebAppsRegistry;
 namespace ui {
 struct SelectedFileInfo;
 }
+
+// Manages and registers the fileBrowserPrivate API with the extension system.
+class FileBrowserPrivateAPI : public ProfileKeyedService {
+ public:
+  explicit FileBrowserPrivateAPI(Profile* profile);
+  virtual ~FileBrowserPrivateAPI();
+
+  // ProfileKeyedService overrides.
+  virtual void Shutdown() OVERRIDE;
+
+  // Convenience function to return the FileBrowserPrivateAPI for a Profile.
+  static FileBrowserPrivateAPI* Get(Profile* profile);
+
+  scoped_refptr<FileBrowserEventRouter> event_router() {
+    return event_router_;
+  }
+
+ private:
+  scoped_refptr<FileBrowserEventRouter> event_router_;
+};
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
 class RequestLocalFileSystemFunction : public AsyncExtensionFunction {

@@ -112,7 +112,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -526,8 +525,6 @@ void ExtensionService::InitEventRouters() {
   extensions::PushMessagingAPIFactory::GetForProfile(profile_);
 
 #if defined(OS_CHROMEOS)
-  FileBrowserEventRouterFactory::GetForProfile(
-      profile_)->ObserveFileSystemEvents();
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
 #endif  // defined(OS_CHROMEOS)

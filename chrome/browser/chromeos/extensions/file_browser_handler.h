@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_HANDLER_H_
 
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
@@ -19,6 +21,8 @@ class URLPattern;
 // FileBrowserHandler encapsulates the state of a file browser action.
 class FileBrowserHandler {
  public:
+  typedef std::vector<linked_ptr<FileBrowserHandler> > List;
+
   // Returns true iff the extension with id |extension_id| is allowed to use
   // MIME type filters.
   static bool ExtensionWhitelistedForMIMETypes(const std::string& extension_id);
@@ -83,6 +87,9 @@ class FileBrowserHandler {
   // Checks if handler has "create" access specified.
   bool HasCreateAccessPermission() const;
 
+  // Returns the file browser handlers associated with the |extension|.
+  static List* GetHandlers(const extensions::Extension* extension);
+
  private:
   // The id of the extension that will be whitelisted to use MIME type filters
   // during tests.
@@ -103,4 +110,15 @@ class FileBrowserHandler {
   std::set<std::string> mime_type_set_;
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_
+// Parses the "file_browser_handlers" extension manifest key.
+class FileBrowserHandlerParser : public extensions::ManifestHandler {
+ public:
+  FileBrowserHandlerParser();
+  virtual ~FileBrowserHandlerParser();
+
+  virtual bool Parse(const base::Value* value,
+                     extensions::Extension* extension,
+                     string16* error) OVERRIDE;
+};
+
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_HANDLER_H_

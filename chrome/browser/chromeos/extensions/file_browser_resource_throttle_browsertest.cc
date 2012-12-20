@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.cc"
-#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.cc"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_item.h"
@@ -194,8 +194,9 @@ class FileBrowserResourceThrottleExtensionApiTest : public ExtensionApiTest {
     if (!extension)
       return NULL;
 
-    if (!extension->file_browser_handlers() ||
-        extension->file_browser_handlers()->size() == 0u) {
+    FileBrowserHandler::List* handlers =
+        FileBrowserHandler::GetHandlers(extension);
+    if (!handlers || handlers->size() == 0u) {
       message_ = "No file browser handlers defined.";
       return NULL;
     }
@@ -209,7 +210,7 @@ class FileBrowserResourceThrottleExtensionApiTest : public ExtensionApiTest {
     // that is not white-listed to handle MIME types with its file browser
     // handlers.
     FileBrowserHandler* file_browser_handler = const_cast<FileBrowserHandler*>(
-        extension->file_browser_handlers()->at(0).get());
+        handlers->at(0).get());
     file_browser_handler->AddMIMEType("application/msword");
     file_browser_handler->AddMIMEType("plain/text");
 

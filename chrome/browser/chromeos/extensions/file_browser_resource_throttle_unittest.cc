@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/file_browser_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/test/test_browser_thread.h"
@@ -65,7 +67,10 @@ class FileBrowserResourceThrottleTest : public testing::Test {
   virtual ~FileBrowserResourceThrottleTest() {}
 
   virtual void SetUp() {
-    // Extension info map must be created before |CreateAndIstallTestExtension|
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kFileBrowserHandlers,
+        new FileBrowserHandlerParser);
+    // Extension info map must be created before |CreateAndInstallTestExtension|
     // is called (the method will add created extension to the info map).
     extension_info_map_ = new ExtensionInfoMap();
     CreateAndInstallTestExtension();

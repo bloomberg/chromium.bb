@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_task_executor.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -121,9 +121,11 @@ bool MatchesAllURLs(const FileBrowserHandler* handler) {
 
 const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
                                                  const std::string& action_id) {
-  for (Extension::FileBrowserHandlerList::const_iterator action_iter =
-           extension->file_browser_handlers()->begin();
-       action_iter != extension->file_browser_handlers()->end();
+  FileBrowserHandler::List* handler_list =
+      FileBrowserHandler::GetHandlers(extension);
+  for (FileBrowserHandler::List::const_iterator action_iter =
+           handler_list->begin();
+       action_iter != handler_list->end();
        ++action_iter) {
     if (action_iter->get()->id() == action_id)
       return action_iter->get();
@@ -174,12 +176,14 @@ bool GetFileBrowserHandlers(Profile* profile,
     if (profile->IsOffTheRecord() &&
         !service->IsIncognitoEnabled(extension->id()))
       continue;
-    if (!extension->file_browser_handlers())
-      continue;
 
-    for (Extension::FileBrowserHandlerList::const_iterator action_iter =
-             extension->file_browser_handlers()->begin();
-         action_iter != extension->file_browser_handlers()->end();
+    FileBrowserHandler::List* handler_list =
+        FileBrowserHandler::GetHandlers(extension);
+    if (!handler_list)
+      continue;
+    for (FileBrowserHandler::List::const_iterator action_iter =
+             handler_list->begin();
+         action_iter != handler_list->end();
          ++action_iter) {
       const FileBrowserHandler* action = action_iter->get();
       if (!action->MatchesURL(lowercase_url))

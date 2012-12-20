@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/file_browser_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -37,12 +37,13 @@ const char* const kOnExecuteContentHandlerEvent =
 // |extension| must not be NULL.
 bool CanHandleMimeType(const Extension* extension,
                        const std::string& mime_type) {
-  if (!extension->file_browser_handlers())
+  FileBrowserHandler::List* handlers =
+      FileBrowserHandler::GetHandlers(extension);
+  if (!handlers)
     return false;
 
-  for (Extension::FileBrowserHandlerList::const_iterator handler =
-           extension->file_browser_handlers()->begin();
-       handler != extension->file_browser_handlers()->end();
+  for (FileBrowserHandler::List::const_iterator handler = handlers->begin();
+       handler != handlers->end();
        ++handler) {
     if ((*handler)->CanHandleMIMEType(mime_type)) {
       return true;

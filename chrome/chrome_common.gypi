@@ -175,8 +175,6 @@
         'common/extensions/features/permission_feature.h',
         'common/extensions/features/simple_feature.cc',
         'common/extensions/features/simple_feature.h',
-        'common/extensions/file_browser_handler.cc',
-        'common/extensions/file_browser_handler.h',
         'common/extensions/manifest.cc',
         'common/extensions/manifest.h',
         'common/extensions/manifest_handler.cc',

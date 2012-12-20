@@ -39,6 +39,8 @@
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -189,8 +191,9 @@ class LoginUtilsTest : public testing::Test,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
-    input_method::InitializeForTesting(
-        &mock_input_method_manager_);
+    input_method::InitializeForTesting(&mock_input_method_manager_);
+    disks::DiskMountManager::InitializeForTesting(&mock_disk_mount_manager_);
+    mock_disk_mount_manager_.SetupDefaultReplies();
 
     // Likewise, SessionManagerClient should also be initialized before
     // io_thread_state_.
@@ -473,6 +476,7 @@ class LoginUtilsTest : public testing::Test,
 
   MockDBusThreadManager mock_dbus_thread_manager_;
   input_method::MockInputMethodManager mock_input_method_manager_;
+  disks::MockDiskMountManager mock_disk_mount_manager_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;

@@ -27,7 +27,6 @@
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
@@ -108,7 +107,7 @@ FileBrowserEventRouter::~FileBrowserEventRouter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FileBrowserEventRouter::ShutdownOnUIThread() {
+void FileBrowserEventRouter::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(file_watchers_.empty());
@@ -117,7 +116,10 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
     NOTREACHED();
     return;
   }
-  DiskMountManager::GetInstance()->RemoveObserver(this);
+
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+  if (disk_mount_manager)
+    disk_mount_manager->RemoveObserver(this);
 
   DriveSystemService* system_service =
       DriveSystemServiceFactory::FindForProfileRegardlessOfStates(profile_);
@@ -126,10 +128,13 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
     system_service->drive_service()->RemoveObserver(this);
   }
 
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (network_library)
-     network_library->RemoveNetworkManagerObserver(this);
+  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
+  if (cros_library) {
+    chromeos::NetworkLibrary* network_library =
+        cros_library->GetNetworkLibrary();
+    if (network_library)
+      network_library->RemoveNetworkManagerObserver(this);
+  }
 
   profile_ = NULL;
 }
@@ -143,9 +148,11 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     return;
 
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  disk_mount_manager->RemoveObserver(this);
-  disk_mount_manager->AddObserver(this);
-  disk_mount_manager->RequestMountInfoRefresh();
+  if (disk_mount_manager) {
+    disk_mount_manager->RemoveObserver(this);
+    disk_mount_manager->AddObserver(this);
+    disk_mount_manager->RequestMountInfoRefresh();
+  }
 
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfileRegardlessOfStates(profile_);
@@ -154,10 +161,13 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     system_service->file_system()->AddObserver(this);
   }
 
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (network_library)
+  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
+  if (cros_library) {
+    chromeos::NetworkLibrary* network_library =
+        cros_library->GetNetworkLibrary();
+    if (network_library)
      network_library->AddNetworkManagerObserver(this);
+  }
 
   pref_change_registrar_->Init(profile_->GetPrefs());
 
@@ -847,39 +857,4 @@ bool FileBrowserEventRouter::FileWatcherExtensions::Watch
     return true;
 
   return file_watcher_->Watch(path, delegate);
-}
-
-// static
-scoped_refptr<FileBrowserEventRouter>
-FileBrowserEventRouterFactory::GetForProfile(Profile* profile) {
-  return static_cast<FileBrowserEventRouter*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
-}
-
-// static
-FileBrowserEventRouterFactory*
-FileBrowserEventRouterFactory::GetInstance() {
-  return Singleton<FileBrowserEventRouterFactory>::get();
-}
-
-FileBrowserEventRouterFactory::FileBrowserEventRouterFactory()
-    : RefcountedProfileKeyedServiceFactory("FileBrowserEventRouter",
-          ProfileDependencyManager::GetInstance()) {
-  DependsOn(DriveSystemServiceFactory::GetInstance());
-}
-
-FileBrowserEventRouterFactory::~FileBrowserEventRouterFactory() {
-}
-
-scoped_refptr<RefcountedProfileKeyedService>
-FileBrowserEventRouterFactory::BuildServiceInstanceFor(Profile* profile) const {
-  return scoped_refptr<RefcountedProfileKeyedService>(
-      new FileBrowserEventRouter(profile));
-}
-
-bool FileBrowserEventRouterFactory::ServiceHasOwnInstanceInIncognito() const {
-  // Explicitly and always allow this router in guest login mode.   see
-  // chrome/browser/profiles/profile_keyed_base_factory.h comment
-  // for the details.
-  return true;
 }
