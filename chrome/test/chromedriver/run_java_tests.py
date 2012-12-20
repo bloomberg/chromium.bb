@@ -183,7 +183,11 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
       test_class, 'results', class_path, junit_props, sys_props))
   ant_file.close()
 
-  code = util.RunCommand(['ant', 'test'], cwd=test_dir)
+  if util.IsWindows():
+    ant_name = 'ant.bat'
+  else:
+    ant_name = 'ant'
+  code = util.RunCommand([ant_name, 'test'], cwd=test_dir)
   if code != 0:
     print 'FAILED to run java tests of %s through ant' % test_class
     return

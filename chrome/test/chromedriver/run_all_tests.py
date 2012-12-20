@@ -25,6 +25,15 @@ def _AppendEnvironmentPath(env_name, path):
     os.environ[env_name] = path
 
 
+def _AddToolsToSystemPathForWindows():
+  path_cfg_file = 'C:\\tools\\bots_path.cfg'
+  if not os.path.exists(path_cfg_file):
+    print 'Failed to find file', path_cfg_file
+  with open(path_cfg_file, 'r') as cfg:
+    paths = cfg.read().split('\n')
+  os.environ['PATH'] = os.pathsep.join(paths) + os.pathsep + os.environ['PATH']
+
+
 def _FindChromeBinary(path):
   if util.IsLinux():
     exes = ['chrome']
@@ -57,6 +66,9 @@ def Main():
     # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
     # when chromedriver2.so is not a static build.
     _AppendEnvironmentPath('LD_LIBRARY_PATH', os.path.join(build_dir, 'lib'))
+  elif util.IsWindows():
+    # For Windows bots: add ant, java(jre) and the like to system path.
+    _AddToolsToSystemPathForWindows()
 
   # Run python test for chromedriver.
   print '@@@BUILD_STEP chromedriver2_python_tests@@@'
