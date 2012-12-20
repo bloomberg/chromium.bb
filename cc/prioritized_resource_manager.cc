@@ -312,7 +312,10 @@ void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider
 void PrioritizedResourceManager::clearAllMemory(ResourceProvider* resourceProvider)
 {
     DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
-    DCHECK(resourceProvider);
+    if (!resourceProvider) {
+        DCHECK(m_backings.empty());
+        return;
+    }
     evictBackingsToReduceMemory(0,
                                 PriorityCalculator::allowEverythingCutoff(),
                                 EvictAnything,

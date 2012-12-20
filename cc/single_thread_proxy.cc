@@ -133,8 +133,7 @@ bool SingleThreadProxy::recreateOutputSurface()
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
         DebugScopedSetImplThread impl(this);
-        if (!m_layerTreeHostImpl->contentsTexturesPurged())
-            m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+        m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
         initialized = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
         if (initialized) {
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
