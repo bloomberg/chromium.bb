@@ -170,11 +170,6 @@ void RecordLaunchModeHistogram(LaunchMode mode) {
   UMA_HISTOGRAM_COUNTS_100("Launch.Modes", bucket);
 }
 
-GURL GetWelcomePageURL() {
-  std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
-  return GURL(welcome_url);
-}
-
 void UrlsToTabs(const std::vector<GURL>& urls, StartupTabs* tabs) {
   for (size_t i = 0; i < urls.size(); ++i) {
     StartupTab tab;
@@ -287,6 +282,15 @@ class WebContentsCloseObserver : public content::NotificationObserver {
 };
 
 }  // namespace
+
+namespace internals {
+
+GURL GetWelcomePageURL() {
+  std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
+  return GURL(welcome_url);
+}
+
+}  // namespace internals
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
     const FilePath& cur_dir,
@@ -892,7 +896,7 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
         if (it->host() == "new_tab_page") {
           startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
         } else if (it->host() == "welcome_page") {
-          startup_urls->push_back(GetWelcomePageURL());
+          startup_urls->push_back(internals::GetWelcomePageURL());
         } else {
           startup_urls->push_back(*it);
         }
@@ -912,7 +916,7 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
         prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
       // Reset the preference so we don't show the welcome page next time.
       prefs->ClearPref(prefs::kShouldShowWelcomePage);
-      startup_urls->push_back(GetWelcomePageURL());
+      startup_urls->push_back(internals::GetWelcomePageURL());
     }
   }
 
@@ -946,14 +950,6 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     // If the old URL is not the NTP then insert it right after the sync promo.
     if (old_url != GURL(chrome::kChromeUINewTabURL))
       startup_urls->insert(startup_urls->begin() + 1, old_url);
-
-    // If we have more than two startup tabs then skip the welcome page.
-    if (startup_urls->size() > 2) {
-      std::vector<GURL>::iterator it = std::find(
-          startup_urls->begin(), startup_urls->end(), GetWelcomePageURL());
-      if (it != startup_urls->end())
-        startup_urls->erase(it);
-    }
   }
 }
 

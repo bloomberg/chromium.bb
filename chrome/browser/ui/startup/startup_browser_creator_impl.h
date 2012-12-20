@@ -28,6 +28,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace internals {
+GURL GetWelcomePageURL();
+}
+
 // Assists launching the application and appending the initial tabs for a
 // browser window.
 class StartupBrowserCreatorImpl {
