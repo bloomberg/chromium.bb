@@ -1,3 +1,19 @@
+=============== BLINK BLINK BLINK ===============
+=============== BLINK BLINK BLINK ===============
+
+Warning: The decision has been made that the new home for components
+that depend on the Content Module and layers below it is
+src/components/. Full details at
+http://www.chromium.org/developers/design-documents/browser-components
+
+The components currently in src/content/components/
+(this directory) will be moving there. Talk to joi@chromium.org for
+coordination if you are creating a new component.
+
+=============== BLINK BLINK BLINK ===============
+=============== BLINK BLINK BLINK ===============
+
+
 This directory is for components that have the Content Module as the
 uppermost layer they depend on.  They may depend only on the Content
 API (content/public) and on lower layers (e.g. base/, net/, ipc/
