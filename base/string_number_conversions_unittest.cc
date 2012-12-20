@@ -262,8 +262,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
     {"42", 66, true},
     {"-42", -66, true},
     {"+42", 66, true},
-    // TODO(dbeam): int64 -> long -> too big for 32-bit systems.
-    // {"40acd88557b", 4444444448123, true},
+    {"40acd88557b", GG_INT64_C(4444444448123), true},
     {"7fffffff", INT_MAX, true},
     {"-80000000", INT_MIN, true},
     {"ffffffff", 0xffffffff, true},
@@ -271,8 +270,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
     {"0x42", 66, true},
     {"-0x42", -66, true},
     {"+0x42", 66, true},
-    // TODO(dbeam): int64 -> long -> too big for 32-bit systems.
-    // {"0x40acd88557b", 4444444448123, true},
+    {"0x40acd88557b", GG_INT64_C(4444444448123), true},
     {"0x7fffffff", INT_MAX, true},
     {"-0x80000000", INT_MIN, true},
     {"0xffffffff", 0xffffffff, true},
