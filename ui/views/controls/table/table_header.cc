@@ -105,7 +105,16 @@ bool TableHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TableHeader::OnMouseReleased(const ui::MouseEvent& event) {
+  const bool was_resizing = resize_details_ != NULL;
   resize_details_.reset();
+  if (!was_resizing && event.IsOnlyLeftMouseButton() &&
+      !table_->visible_columns().empty()) {
+    const int index = GetClosestColumn(event.x());
+    const TableView::VisibleColumn& column(table_->visible_columns()[index]);
+    if (event.x() >= column.x && event.x() < column.x + column.width &&
+        event.y() >= 0 && event.y() < height())
+      table_->ToggleSortOrder(index);
+  }
 }
 
 void TableHeader::OnMouseCaptureLost() {

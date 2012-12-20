@@ -24,6 +24,7 @@ ui::TableColumn TestTableColumn(int id, const std::string& title) {
   column.id = id;
   column.title = ASCIIToUTF16(title.c_str());
   column.width = 100;
+  column.sortable = true;
   return column;
 }
 

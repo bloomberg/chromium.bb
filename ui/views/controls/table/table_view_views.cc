@@ -31,6 +31,26 @@ static const int kImageToTextPadding = 4;
 
 namespace views {
 
+namespace {
+
+// Returns result, unless ascending is false in which case -result is returned.
+int SwapCompareResult(int result, bool ascending) {
+  return ascending ? result : -result;
+}
+
+} // namespace
+
+// Used as the comparator to sort the contents of the table.
+struct TableView::SortHelper {
+  explicit SortHelper(TableView* table) : table(table) {}
+
+  bool operator()(int model_index_1, int model_index_2) {
+    return table->CompareRows(model_index_1, model_index_2) < 0;
+  }
+
+  TableView* table;
+};
+
 TableView::VisibleColumn::VisibleColumn() : x(0), width(0) {}
 
 TableView::VisibleColumn::~VisibleColumn() {}
@@ -110,25 +130,11 @@ void TableView::Select(int model_row) {
   if (!model_)
     return;
 
-  if (model_row == selected_row_)
-    return;
-
-  DCHECK(model_row >= 0 && model_row < RowCount());
-  selected_row_ = model_row;
-  if (selected_row_ != -1) {
-    gfx::Rect vis_rect(GetVisibleBounds());
-    const gfx::Rect row_bounds(GetRowBounds(selected_row_));
-    vis_rect.set_y(row_bounds.y());
-    vis_rect.set_height(row_bounds.height());
-    ScrollRectToVisible(vis_rect);
-  }
-  SchedulePaint();
-  if (table_view_observer_)
-    table_view_observer_->OnSelectionChanged();
+  SelectByViewIndex(model_row == -1 ? -1 : ModelToView(model_row));
 }
 
 int TableView::FirstSelectedRow() {
-  return selected_row_;
+  return selected_row_ == -1 ? -1 : ViewToModel(selected_row_);
 }
 
 void TableView::SetColumnVisibility(int id, bool is_visible) {
@@ -156,6 +162,25 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
   }
 }
 
+void TableView::ToggleSortOrder(int visible_column_index) {
+  DCHECK(visible_column_index >= 0 &&
+         visible_column_index < static_cast<int>(visible_columns_.size()));
+  if (!visible_columns_[visible_column_index].column.sortable)
+    return;
+  const int column_id = visible_columns_[visible_column_index].column.id;
+  SortDescriptors sort(sort_descriptors_);
+  if (!sort.empty() && sort[0].column_id == column_id) {
+    sort[0].ascending = !sort[0].ascending;
+  } else {
+    SortDescriptor descriptor(column_id, true);
+    sort.insert(sort.begin(), descriptor);
+    // Only persist two sort descriptors.
+    if (sort.size() > 2)
+      sort.resize(2);
+  }
+  SetSortDescriptors(sort);
+}
+
 bool TableView::IsColumnVisible(int id) const {
   for (size_t i = 0; i < visible_columns_.size(); ++i) {
     if (visible_columns_[i].column.id == id)
@@ -175,6 +200,24 @@ void TableView::SetVisibleColumnWidth(int index, int width) {
   }
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+int TableView::ModelToView(int model_index) const {
+  if (!is_sorted())
+    return model_index;
+  DCHECK_GE(model_index, 0) << " negative model_index " << model_index;
+  DCHECK_LT(model_index, RowCount()) << " out of bounds model_index " <<
+      model_index;
+  return model_to_view_[model_index];
+}
+
+int TableView::ViewToModel(int view_index) const {
+  if (!is_sorted())
+    return view_index;
+  DCHECK_GE(view_index, 0) << " negative view_index " << view_index;
+  DCHECK_LT(view_index, RowCount()) << " out of bounds view_index " <<
+      view_index;
+  return view_to_model_[view_index];
 }
 
 void TableView::Layout() {
@@ -210,17 +253,17 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_UP:
       if (selected_row_ > 0)
-        Select(selected_row_ - 1);
+        SelectByViewIndex(selected_row_ - 1);
       else if (selected_row_ == -1 && RowCount())
-        Select(RowCount() - 1);
+        SelectByViewIndex(RowCount() - 1);
       return true;
 
     case ui::VKEY_DOWN:
       if (selected_row_ == -1) {
         if (RowCount())
-          Select(0);
+          SelectByViewIndex(0);
       } else if (selected_row_ + 1 < RowCount()) {
-        Select(selected_row_ + 1);
+        SelectByViewIndex(selected_row_ + 1);
       }
       return true;
 
@@ -234,7 +277,7 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
   int row = event.y() / row_height_;
   if (row >= 0 && row < RowCount()) {
-    Select(row);
+    SelectByViewIndex(row);
     if (table_view_observer_ && event.flags() & ui::EF_IS_DOUBLE_CLICK)
       table_view_observer_->OnDoubleClick();
   }
@@ -244,7 +287,7 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
 bool TableView::OnMouseDragged(const ui::MouseEvent& event) {
   int row = event.y() / row_height_;
   if (row >= 0 && row < RowCount())
-    Select(row);
+    SelectByViewIndex(row);
   return true;
 }
 
@@ -257,7 +300,7 @@ void TableView::OnModelChanged() {
 }
 
 void TableView::OnItemsChanged(int start, int length) {
-  SchedulePaint();
+  SortItemsAndUpdateMapping();
 }
 
 void TableView::OnItemsAdded(int start, int length) {
@@ -280,6 +323,7 @@ void TableView::OnItemsRemoved(int start, int length) {
       selected_row_--;
     notify_selection_changed = true;
   }
+  NumRowsChanged();
   if (table_view_observer_ && notify_selection_changed)
     table_view_observer_->OnSelectionChanged();
 }
@@ -321,11 +365,12 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
       if (HasFocus() && !header_)
         canvas->DrawFocusRect(row_bounds);
     }
+    const int model_index = ViewToModel(i);
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = kTextHorizontalPadding + cell_bounds.x();
       if (j == icon_index) {
-        gfx::ImageSkia image = model_->GetIcon(i);
+        gfx::ImageSkia image = model_->GetIcon(model_index);
         if (!image.isNull()) {
           int image_x = GetMirroredXWithWidthInView(text_x, image.width());
           canvas->DrawImageInt(
@@ -337,7 +382,8 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
         text_x += kImageSize + kImageToTextPadding;
       }
       canvas->DrawStringInt(
-          model_->GetText(i, visible_columns_[j].column.id), font_, kTextColor,
+          model_->GetText(model_index, visible_columns_[j].column.id), font_,
+          kTextColor,
           GetMirroredXWithWidthInView(text_x, cell_bounds.right() - text_x),
           cell_bounds.y() + kTextVerticalPadding,
           cell_bounds.right() - text_x,
@@ -359,8 +405,52 @@ void TableView::OnBlur() {
 }
 
 void TableView::NumRowsChanged() {
+  SortItemsAndUpdateMapping();
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
+  sort_descriptors_ = sort_descriptors;
+  SortItemsAndUpdateMapping();
+}
+
+void TableView::SortItemsAndUpdateMapping() {
+  if (!is_sorted()) {
+    view_to_model_.clear();
+    model_to_view_.clear();
+  } else {
+    const int row_count = RowCount();
+    view_to_model_.resize(row_count);
+    model_to_view_.resize(row_count);
+    for (int i = 0; i < row_count; ++i)
+      view_to_model_[i] = i;
+    std::sort(view_to_model_.begin(), view_to_model_.end(), SortHelper(this));
+    for (int i = 0; i < row_count; ++i)
+      model_to_view_[view_to_model_[i]] = i;
+    model_->ClearCollator();
+  }
+  SchedulePaint();
+}
+
+int TableView::CompareRows(int model_row1, int model_row2) {
+  // TODO: I suspect HasGroups() isn't used anymore.
+  if (model_->HasGroups()) {
+    const int g1 = model_->GetGroupID(model_row1);
+    const int g2 = model_->GetGroupID(model_row2);
+    if (g1 != g2)
+      return g1 - g2;
+  }
+  int sort_result = model_->CompareValues(
+      model_row1, model_row2, sort_descriptors_[0].column_id);
+  if (sort_result == 0 && sort_descriptors_.size() > 1) {
+    // Try the secondary sort.
+    return SwapCompareResult(
+        model_->CompareValues(model_row1, model_row2,
+                              sort_descriptors_[1].column_id),
+        sort_descriptors_[1].ascending);
+  }
+  return SwapCompareResult(sort_result, sort_descriptors_[0].ascending);
 }
 
 gfx::Rect TableView::GetRowBounds(int row) {
@@ -463,6 +553,23 @@ ui::TableColumn TableView::FindColumnByID(int id) const {
   }
   NOTREACHED();
   return ui::TableColumn();
+}
+
+void TableView::SelectByViewIndex(int view_index) {
+  if (view_index == selected_row_)
+    return;
+
+  selected_row_ = view_index;
+  if (selected_row_ != -1) {
+    gfx::Rect vis_rect(GetVisibleBounds());
+    const gfx::Rect row_bounds(GetRowBounds(selected_row_));
+    vis_rect.set_y(row_bounds.y());
+    vis_rect.set_height(row_bounds.height());
+    ScrollRectToVisible(vis_rect);
+  }
+  SchedulePaint();
+  if (table_view_observer_)
+    table_view_observer_->OnSelectionChanged();
 }
 
 }  // namespace views

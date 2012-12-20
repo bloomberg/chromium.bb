@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/font.h"
@@ -23,19 +22,12 @@
 // TableView itself has an observer that is notified when the selection
 // changes.
 //
-// Tables may be sorted either by directly invoking SetSortDescriptors or by
-// marking the column as sortable and the user doing a gesture to sort the
-// contents. TableView itself maintains the sort so that the underlying model
-// isn't effected.
-//
 // When a table is sorted the model coordinates do not necessarily match the
 // view coordinates. All table methods are in terms of the model. If you need to
-// convert to view coordinates use model_to_view.
+// convert to view coordinates use ModelToView().
 //
 // Sorting is done by a locale sensitive string sort. You can customize the
-// sort by way of overriding CompareValues.
-//
-// TableView is a wrapper around the window type ListView in report mode.
+// sort by way of overriding TableModel::CompareValues().
 namespace views {
 
 class TableHeader;
@@ -69,6 +61,22 @@ class VIEWS_EXPORT TableView
     // Width of the column.
     int width;
   };
+
+  // Describes a sorted column.
+  struct VIEWS_EXPORT SortDescriptor {
+    SortDescriptor() : column_id(-1), ascending(true) {}
+    SortDescriptor(int column_id, bool ascending)
+        : column_id(column_id),
+          ascending(ascending) {}
+
+    // ID of the sorted column.
+    int column_id;
+
+    // Is the sort ascending?
+    bool ascending;
+  };
+
+  typedef std::vector<SortDescriptor> SortDescriptors;
 
   // Creates a new table using the model and columns specified.
   // The table type applies to the content of the first column (text, icon and
@@ -130,6 +138,18 @@ class VIEWS_EXPORT TableView
   // Sets the width of the column. |index| is in terms of |visible_columns_|.
   void SetVisibleColumnWidth(int index, int width);
 
+  // Toggles the sort order of the specified visible column index.
+  void ToggleSortOrder(int visible_column_index);
+
+  const SortDescriptors& sort_descriptors() const { return sort_descriptors_; }
+  bool is_sorted() const { return !sort_descriptors_.empty(); }
+
+  // Maps from the index in terms of the model to that of the view.
+  int ModelToView(int model_index) const;
+
+  // Maps from the index in terms of the view to that of the model.
+  int ViewToModel(int view_index) const;
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -152,11 +172,12 @@ class VIEWS_EXPORT TableView
 
  private:
   friend class TableViewTestHelper;
+  struct SortHelper;
 
   // Used during painting to determine the range of cells that need to be
   // painted.
-  // NOTE: the indices returned by this are in terms of the view and in
-  // particular |visible_columns_|.
+  // NOTE: the row indices returned by this are in terms of the view and column
+  // indices in terms of |visible_columns_|.
   struct VIEWS_EXPORT PaintRegion {
     PaintRegion();
     ~PaintRegion();
@@ -169,6 +190,18 @@ class VIEWS_EXPORT TableView
 
   // Invoked when the number of rows changes in some way.
   void NumRowsChanged();
+
+  // Resets the sort descriptions.
+  void SetSortDescriptors(const SortDescriptors& sort_descriptors);
+
+  // Does the actual sort and updates the mappings (|view_to_model_| and
+  // |model_to_view_|) appropriately.
+  void SortItemsAndUpdateMapping();
+
+  // Used to sort the two rows. Returns a value < 0, == 0 or > 0 indicating
+  // whether the row2 comes before row1, row2 is the same as row1 or row1 comes
+  // after row2. This invokes CompareValues on the model with the sorted column.
+  int CompareRows(int model_row1, int model_row2);
 
   // Returns the bounds of the specified row.
   gfx::Rect GetRowBounds(int row);
@@ -198,6 +231,9 @@ class VIEWS_EXPORT TableView
   // Returns the TableColumn matching the specified id.
   ui::TableColumn FindColumnByID(int id) const;
 
+  // Sets the selection to the specified index (in terms of the view).
+  void SelectByViewIndex(int view_index);
+
   ui::TableModel* model_;
 
   std::vector<ui::TableColumn> columns_;
@@ -214,15 +250,23 @@ class VIEWS_EXPORT TableView
 
   TableViewObserver* table_view_observer_;
 
+  // The selected row, in terms of the view.
   int selected_row_;
 
   gfx::Font font_;
 
   int row_height_;
 
-  // Width of the |parent()| last time Layout() was invoked. Used to determine
+  // Width of the ScrollView last time Layout() was invoked. Used to determine
   // when we should invoke UpdateVisibleColumnSizes().
   int last_parent_width_;
+
+  // Current sort.
+  SortDescriptors sort_descriptors_;
+
+  // Mappings used when sorted.
+  std::vector<int> view_to_model_;
+  std::vector<int> model_to_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };
