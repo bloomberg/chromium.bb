@@ -94,22 +94,6 @@ void StackedPanelCollection::RestorePanelToSavedPlacement() {
 void StackedPanelCollection::DiscardSavedPanelPlacement() {
 }
 
-void StackedPanelCollection::StartDraggingPanelWithinCollection(Panel* panel) {
-  DCHECK(HasPanel(panel));
-}
-
-void StackedPanelCollection::DragPanelWithinCollection(
-    Panel* panel,
-    const gfx::Point& target_position) {
-}
-
-void StackedPanelCollection::EndDraggingPanelWithinCollection(Panel* panel,
-                                                              bool aborted) {
-}
-
-void StackedPanelCollection::ClearDraggingStateWhenPanelClosed() {
-}
-
 panel::Resizability StackedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return panel::RESIZABLE_ALL_SIDES;

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -57,7 +58,6 @@ DockedPanelCollection::DockedPanelCollection(PanelManager* panel_manager)
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this),
       refresh_action_factory_(this) {
-  dragging_panel_current_iterator_ = panels_.end();
   panel_manager_->display_settings_provider()->AddDesktopBarObserver(this);
 }
 
@@ -156,11 +156,6 @@ void DockedPanelCollection::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->collection());
   panel->set_collection(NULL);
 
-  // Removing an element from the list will invalidate the iterator that refers
-  // to it. We need to update the iterator in that case.
-  DCHECK(dragging_panel_current_iterator_ == panels_.end() ||
-         *dragging_panel_current_iterator_ != panel);
-
   // Optimize for the common case of removing the last panel.
   DCHECK(!panels_.empty());
   if (panels_.back() == panel) {
@@ -242,108 +237,6 @@ void DockedPanelCollection::DiscardSavedPanelPlacement() {
   saved_panel_placement_.left_panel = NULL;
 }
 
-void DockedPanelCollection::StartDraggingPanelWithinCollection(Panel* panel) {
-  dragging_panel_current_iterator_ =
-      find(panels_.begin(), panels_.end(), panel);
-  DCHECK(dragging_panel_current_iterator_ != panels_.end());
-}
-
-void DockedPanelCollection::DragPanelWithinCollection(
-    Panel* panel, const gfx::Point& target_position) {
-  // Moves this panel to the dragging position.
-  // Note that we still allow the panel to be moved vertically until it gets
-  // aligned to the bottom area.
-  gfx::Rect new_bounds(panel->GetBounds());
-  new_bounds.set_x(target_position.x());
-  int delta_x = new_bounds.x() - panel->GetBounds().x();
-  int bottom = GetBottomPositionForExpansionState(panel->expansion_state());
-  if (new_bounds.bottom() != bottom) {
-    new_bounds.set_y(target_position.y());
-    if (new_bounds.bottom() > bottom)
-      new_bounds.set_y(bottom - new_bounds.height());
-  }
-  panel->SetPanelBoundsInstantly(new_bounds);
-
-  if (delta_x) {
-    // Checks and processes other affected panels.
-    if (delta_x > 0)
-      DragRight(panel);
-    else
-      DragLeft(panel);
-
-    // Layout refresh will automatically recompute the bounds of all affected
-    // panels due to their position changes.
-    RefreshLayout();
-  }
-}
-
-void DockedPanelCollection::DragLeft(Panel* dragging_panel) {
-  // This is the left corner of the dragging panel. We use it to check against
-  // all the panels on its left.
-  int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
-
-  // Checks the panels to the left of the dragging panel.
-  Panels::iterator current_panel_iterator = dragging_panel_current_iterator_;
-  ++current_panel_iterator;
-  for (; current_panel_iterator != panels_.end(); ++current_panel_iterator) {
-    Panel* current_panel = *current_panel_iterator;
-
-    // Can we swap dragging panel with its left panel? The criterion is that
-    // the left corner of dragging panel should pass the middle position of
-    // its left panel.
-    if (dragging_panel_left_boundary > current_panel->GetBounds().x() +
-            current_panel->GetBounds().width() / 2)
-      break;
-
-    // Swaps the contents and makes |dragging_panel_current_iterator_| refers
-    // to the new position.
-    *dragging_panel_current_iterator_ = current_panel;
-    *current_panel_iterator = dragging_panel;
-    dragging_panel_current_iterator_ = current_panel_iterator;
-  }
-}
-
-void DockedPanelCollection::DragRight(Panel* dragging_panel) {
-  // This is the right corner of the dragging panel. We use it to check against
-  // all the panels on its right.
-  int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
-      dragging_panel->GetBounds().width() - 1;
-
-  // Checks the panels to the right of the dragging panel.
-  Panels::iterator current_panel_iterator = dragging_panel_current_iterator_;
-  while (current_panel_iterator != panels_.begin()) {
-    current_panel_iterator--;
-    Panel* current_panel = *current_panel_iterator;
-
-    // Can we swap dragging panel with its right panel? The criterion is that
-    // the left corner of dragging panel should pass the middle position of
-    // its right panel.
-    if (dragging_panel_right_boundary < current_panel->GetBounds().x() +
-            current_panel->GetBounds().width() / 2)
-      break;
-
-    // Swaps the contents and makes |dragging_panel_current_iterator_| refers
-    // to the new position.
-    *dragging_panel_current_iterator_ = current_panel;
-    *current_panel_iterator = dragging_panel;
-    dragging_panel_current_iterator_ = current_panel_iterator;
-  }
-}
-
-void DockedPanelCollection::EndDraggingPanelWithinCollection(
-    Panel* panel, bool aborted) {
-  dragging_panel_current_iterator_ = panels_.end();
-
-  // If the drag is aborted, the panel will be removed from this collection
-  // or returned to its original position, causing RefreshLayout()
-  if (!aborted)
-    RefreshLayout();
-}
-
-void DockedPanelCollection::ClearDraggingStateWhenPanelClosed() {
-  dragging_panel_current_iterator_ = panels_.end();
-}
-
 panel::Resizability DockedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return (panel->expansion_state() == Panel::EXPANDED) ?
@@ -416,8 +309,7 @@ void DockedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {
     return;
 
   // Leave titlebar up if panel is being dragged.
-  if (dragging_panel_current_iterator_ != panels_.end() &&
-      *dragging_panel_current_iterator_ == panel)
+  if (panel_manager_->drag_controller()->dragging_panel() == panel)
     return;
 
   // Leave titlebar up if mouse is in/below the panel.
@@ -560,8 +452,10 @@ bool DockedPanelCollection::ShouldBringUpTitlebars(int mouse_x,
     return true;
 
   // Bring up titlebars if any panel needs the titlebar up.
-  Panel* dragging_panel = dragging_panel_current_iterator_ == panels_.end() ?
-      NULL : *dragging_panel_current_iterator_;
+  Panel* dragging_panel = panel_manager_->drag_controller()->dragging_panel();
+  if (dragging_panel &&
+      dragging_panel->collection()->type() != PanelCollection::DOCKED)
+    dragging_panel = NULL;
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;

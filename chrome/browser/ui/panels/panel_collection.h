@@ -114,27 +114,6 @@ class PanelCollection {
   virtual void RestorePanelToSavedPlacement() = 0;
   virtual void DiscardSavedPanelPlacement() = 0;
 
-  // Starts dragging |panel| within this collection. The panel should already be
-  // in this collection.
-  virtual void StartDraggingPanelWithinCollection(Panel* panel) = 0;
-
-  // Drags |panel| within this collection to |target_position|.
-  virtual void DragPanelWithinCollection(Panel* panel,
-                                         const gfx::Point& target_position) = 0;
-
-  // Ends dragging |panel| within this collection. |aborted| means the drag
-  // within this collection is aborted due to one of the following:
-  // 1) the drag leaves this collection and enters other collection
-  // 2) the drag gets cancelled
-  // If |aborted| is true, |panel| will stay as it is; otherwise, it will be
-  // moved to its finalized position.
-  // The drag controller is responsible for restoring the panel back to its
-  // original collection and position when the drag gets cancelled.
-  virtual void EndDraggingPanelWithinCollection(Panel* panel, bool aborted) = 0;
-
-  // Ends dragging and clears dragging state when the dragged panel has closed.
-  virtual void ClearDraggingStateWhenPanelClosed() = 0;
-
   // When a panel is added to this collection, some modifications to its visual
   // style or underlying implementation may be in order. Each collection decides
   // what properties should be applied to a newly-added panel.

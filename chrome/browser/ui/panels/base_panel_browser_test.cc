@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
@@ -376,9 +377,10 @@ Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,
 Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
                                                  const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
-  panel->manager()->MovePanelToCollection(panel,
-                                          PanelCollection::DETACHED,
-                                          PanelCollection::DEFAULT_POSITION);
+  PanelManager* panel_manager = panel->manager();
+  panel_manager->MovePanelToCollection(panel,
+                                       panel_manager->detached_collection(),
+                                       PanelCollection::DEFAULT_POSITION);
   EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   // The panel is first created as docked panel, which ignores the specified
   // origin in |bounds|. We need to reposition the panel after it becomes

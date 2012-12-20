@@ -287,25 +287,13 @@ void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
 
 void PanelManager::MovePanelToCollection(
     Panel* panel,
-    PanelCollection::Type new_layout,
+    PanelCollection* target_collection,
     PanelCollection::PositioningMask positioning_mask) {
   DCHECK(panel);
   PanelCollection* current_collection = panel->collection();
   DCHECK(current_collection);
-  DCHECK_NE(current_collection->type(), new_layout);
+  DCHECK_NE(current_collection, target_collection);
   current_collection->RemovePanel(panel);
-
-  PanelCollection* target_collection = NULL;
-  switch (new_layout) {
-    case PanelCollection::DETACHED:
-      target_collection = detached_collection_.get();
-      break;
-    case PanelCollection::DOCKED:
-      target_collection = docked_collection_.get();
-      break;
-    default:
-      NOTREACHED();
-  }
 
   target_collection->AddPanel(panel, positioning_mask);
   target_collection->UpdatePanelOnCollectionChange(panel);
@@ -320,7 +308,7 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
 }
 
 void PanelManager::CloseAll() {
-  DCHECK(!drag_controller_->IsDragging());
+  DCHECK(!drag_controller_->is_dragging());
 
   detached_collection_->CloseAll();
   docked_collection_->CloseAll();

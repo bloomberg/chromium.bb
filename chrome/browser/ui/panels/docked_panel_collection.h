@@ -64,13 +64,6 @@ class DockedPanelCollection :
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement() OVERRIDE;
-  virtual void StartDraggingPanelWithinCollection(Panel* panel) OVERRIDE;
-  virtual void DragPanelWithinCollection(
-      Panel* panel,
-      const gfx::Point& target_position) OVERRIDE;
-  virtual void EndDraggingPanelWithinCollection(Panel* panel,
-                                                bool aborted) OVERRIDE;
-  virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
@@ -119,6 +112,8 @@ class DockedPanelCollection :
 #endif
 
  private:
+  friend class DockedPanelDragHandler;
+
   enum TitlebarAction {
     NO_ACTION,
     BRING_UP,
@@ -154,10 +149,6 @@ class DockedPanelCollection :
   void AdjustPanelBoundsPerExpansionState(Panel* panel,
       gfx::Rect* panel_bounds);
 
-  // Help functions to drag the given panel.
-  void DragLeft(Panel* dragging_panel);
-  void DragRight(Panel* dragging_panel);
-
   // Does the real job of bringing up or down the titlebars.
   void DoBringUpOrDownTitlebars(bool bring_up);
   // The callback for a delyed task, checks if it still need to perform
@@ -177,10 +168,6 @@ class DockedPanelCollection :
   bool are_titlebars_up_;
 
   bool minimizing_all_;  // True while minimizing all panels.
-
-  // Referring to current position in |panels_| where the dragging panel
-  // resides.
-  Panels::iterator dragging_panel_current_iterator_;
 
   // Delayed transitions support. Sometimes transitions between minimized and
   // title-only states are delayed, for better usability with Taskbars/Docks.

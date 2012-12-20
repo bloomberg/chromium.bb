@@ -84,9 +84,9 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
 
-  // Moves the |panel| to a different type of panel collection.
+  // Moves the |panel| to a different collection.
   void MovePanelToCollection(Panel* panel,
-                             PanelCollection::Type new_layout,
+                             PanelCollection* target_collection,
                              PanelCollection::PositioningMask positioning_mask);
 
   // Returns true if we should bring up the titlebars, given the current mouse

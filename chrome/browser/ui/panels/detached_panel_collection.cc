@@ -181,26 +181,6 @@ void DetachedPanelCollection::DiscardSavedPanelPlacement() {
   saved_panel_placement_.panel = NULL;
 }
 
-void DetachedPanelCollection::StartDraggingPanelWithinCollection(Panel* panel) {
-  DCHECK(HasPanel(panel));
-}
-
-void DetachedPanelCollection::DragPanelWithinCollection(
-    Panel* panel,
-    const gfx::Point& target_position) {
-  gfx::Rect new_bounds(panel->GetBounds());
-  new_bounds.set_origin(target_position);
-  panel->SetPanelBoundsInstantly(new_bounds);
-}
-
-void DetachedPanelCollection::EndDraggingPanelWithinCollection(Panel* panel,
-                                                               bool aborted) {
-}
-
-void DetachedPanelCollection::ClearDraggingStateWhenPanelClosed() {
-}
-
-
 panel::Resizability DetachedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return panel::RESIZABLE_ALL_SIDES;

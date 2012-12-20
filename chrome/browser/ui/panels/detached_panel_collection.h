@@ -48,14 +48,7 @@ class DetachedPanelCollection : public PanelCollection {
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
-  virtual void DiscardSavedPanelPlacement()  OVERRIDE;
-  virtual void StartDraggingPanelWithinCollection(Panel* panel) OVERRIDE;
-  virtual void DragPanelWithinCollection(
-      Panel* panel,
-      const gfx::Point& target_position) OVERRIDE;
-  virtual void EndDraggingPanelWithinCollection(Panel* panel,
-                                                bool aborted) OVERRIDE;
-  virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
+  virtual void DiscardSavedPanelPlacement() OVERRIDE;
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 

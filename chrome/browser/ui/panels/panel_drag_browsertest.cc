@@ -58,13 +58,13 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   static gfx::Vector2d GetDragDeltaToRemainDocked() {
     return gfx::Vector2d(
         -5,
-        -(PanelDragController::GetDetachDockedPanelThreshold() / 2));
+        -(PanelDragController::GetDetachDockedPanelThresholdForTesting() / 2));
   }
 
   static gfx::Vector2d GetDragDeltaToDetach() {
     return gfx::Vector2d(
         -20,
-        -(PanelDragController::GetDetachDockedPanelThreshold() + 20));
+        -(PanelDragController::GetDetachDockedPanelThresholdForTesting() + 20));
   }
 
   static gfx::Vector2d GetDragDeltaToRemainDetached(Panel* panel) {
@@ -73,7 +73,8 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
       panel->GetBounds().bottom();
     return gfx::Vector2d(
         -5,
-        distance - PanelDragController::GetDockDetachedPanelThreshold() * 2);
+        distance -
+            PanelDragController::GetDockDetachedPanelThresholdForTesting() * 2);
   }
 
   static gfx::Vector2d GetDragDeltaToAttach(Panel* panel) {
@@ -82,7 +83,8 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
         panel->GetBounds().bottom();
     return gfx::Vector2d(
         -20,
-        distance - PanelDragController::GetDockDetachedPanelThreshold() / 2);
+        distance -
+            PanelDragController::GetDockDetachedPanelThresholdForTesting() / 2);
   }
 };
 
@@ -526,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
     mouse_location.Offset(-500, -5);
     panel1_testing->DragTitlebar(mouse_location);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(4, docked_collection->num_panels());
@@ -544,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // panel intact.
     // We have:  P1*  P4  P3
     CloseWindowAndWait(panel2);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(3, docked_collection->num_panels());
@@ -559,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // Cancel the drag.
     // We have:  P4  P3  P1
     panel1_testing->CancelDragTitlebar();
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     ASSERT_EQ(3, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
@@ -583,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
     mouse_location.Offset(-500, -5);
     panel1_testing->DragTitlebar(mouse_location);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(3, docked_collection->num_panels());
@@ -599,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // panel intact.
     // We have:  P1*  P4
     CloseWindowAndWait(panel3);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(2, docked_collection->num_panels());
@@ -612,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // Finish the drag.
     // We have:  P1  P4
     panel1_testing->FinishDragTitlebar();
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     ASSERT_EQ(2, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
@@ -634,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
     mouse_location.Offset(-500, -5);
     panel1_testing->DragTitlebar(mouse_location);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
 
@@ -649,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     content::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_PANEL_CLOSED, content::Source<Panel>(panel1));
     panel1->Close();
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     // Continue the drag to ensure the drag controller does not crash.
     panel1_new_position.Offset(20, 30);
@@ -741,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
     panel1_testing->DragTitlebar(panel1_new_position);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(4, detached_collection->num_panels());
@@ -757,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
     CloseWindowAndWait(panel2);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(3, detached_collection->num_panels());
@@ -771,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Cancel the drag.
     panel1_testing->CancelDragTitlebar();
     WaitForBoundsAnimationFinished(panel1);
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     ASSERT_EQ(3, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
@@ -790,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
     panel1_testing->DragTitlebar(panel1_new_position);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(3, detached_collection->num_panels());
@@ -804,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
     CloseWindowAndWait(panel3);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(2, detached_collection->num_panels());
@@ -815,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Finish the drag.
     panel1_testing->FinishDragTitlebar();
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     ASSERT_EQ(2, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
@@ -832,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     // Start dragging a panel again.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
     panel1_testing->DragTitlebar(panel1_new_position);
-    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(2, detached_collection->num_panels());
@@ -845,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     content::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_PANEL_CLOSED, content::Source<Panel>(panel1));
     panel1->Close();
-    EXPECT_FALSE(drag_controller->IsDragging());
+    EXPECT_FALSE(drag_controller->is_dragging());
 
     // Continue the drag to ensure the drag controller does not crash.
     panel1_new_position.Offset(20, 30);

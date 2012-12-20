@@ -12,6 +12,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
+#include "chrome/browser/ui/panels/docked_panel_collection.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/pref_names.h"
@@ -241,16 +243,18 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DetachAndAttachPanel) {
 
   // Detach the panel. Expect that the notification balloon moves down to its
   // original position.
-  panel_manager->MovePanelToCollection(
-      panel, PanelCollection::DETACHED, PanelCollection::DEFAULT_POSITION);
+  panel_manager->MovePanelToCollection(panel,
+                                       panel_manager->detached_collection(),
+                                       PanelCollection::DEFAULT_POSITION);
   MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 
   // Reattach the panel. Expect that the notification balloon moves above the
   // panel.
-  panel_manager->MovePanelToCollection(
-      panel, PanelCollection::DOCKED, PanelCollection::DEFAULT_POSITION);
+  panel_manager->MovePanelToCollection(panel,
+                                       panel_manager->docked_collection(),
+                                       PanelCollection::DEFAULT_POSITION);
   MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   EXPECT_EQ(balloon_bottom_after_panel_created,
