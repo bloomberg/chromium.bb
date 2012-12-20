@@ -244,13 +244,11 @@ const int kImmersiveTabHeight = 3;
 // Height of the colored bar representing the favicon in immersive mode.
 const int kImmersiveBarHeight = 2;
 
-// Distance between the favicon bar and the tab bar in immersive mode.
-const int kImmersiveBarSpacing = 2;
-
 // Color for active and inactive tabs in the immersive mode light strip. These
-// should be similar to the color of the normal art assets for tabs.
-const SkColor kImmersiveActiveTabColor = SkColorSetRGB(230, 230, 230);
-const SkColor kImmersiveInactiveTabColor = SkColorSetRGB(184, 184, 184);
+// should be a little brighter than the color of the normal art assets for tabs,
+// which for active tabs is 230, 230, 230 and for inactive is 184, 184, 184.
+const SkColor kImmersiveActiveTabColor = SkColorSetRGB(235, 235, 235);
+const SkColor kImmersiveInactiveTabColor = SkColorSetRGB(190, 190, 190);
 
 // Scale to resize the current favicon by when projecting.
 const double kProjectingFaviconResizeScale = 0.75;
@@ -1042,29 +1040,17 @@ void Tab::PaintTabImmersive(gfx::Canvas* canvas) {
   // The main bar is as wide as the normal tab's horizontal top line.
   // This top line of the tab extends a few pixels left and right of the
   // center image due to pixels in the rounded corner images.
-  const int kBarPadding = 2;
+  const int kBarPadding = 1;
   int main_bar_left = tab_active_.l_width - kBarPadding;
   int main_bar_right = width() - tab_active_.r_width + kBarPadding;
 
-  bool is_active = IsActive();
-  if (ShouldShowIcon()) {
-    // Use the favicon's horizontal position.
-    gfx::Rect icon_bar_rect(favicon_bounds_.x(), 0,
-                            favicon_bounds_.width(), kImmersiveBarHeight);
-    canvas->FillRect(icon_bar_rect, icon_dominant_color_);
-    // Start the main bar slightly offset from the icon bar.
-    main_bar_left = icon_bar_rect.right() + kImmersiveBarSpacing;
-  }
-
-  // Mini-tabs don't have a main bar.
-  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth) {
-    // Active tab has a brighter bar.
-    SkColor color =
-        is_active ? kImmersiveActiveTabColor : kImmersiveInactiveTabColor;
-    gfx::Rect main_bar_rect(
-        main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
-    canvas->FillRect(main_bar_rect, color);
-  }
+  // Draw a gray rectangle to represent the tab. This works for mini-tabs as
+  // well as regular ones. The active tab has a brigher bar.
+  SkColor color =
+      IsActive() ? kImmersiveActiveTabColor : kImmersiveInactiveTabColor;
+  gfx::Rect main_bar_rect(
+      main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
+  canvas->FillRect(main_bar_rect, color);
 }
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {

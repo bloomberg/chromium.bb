@@ -101,6 +101,8 @@ class Tab : public ui::AnimationDelegate,
   }
 
   // Recomputes the dominant color of the favicon, used in immersive mode.
+  // TODO(jamescook): Remove this if UX agrees that we don't want colors in the
+  // immersive mode light bar. crbug.com/166929
   void UpdateIconDominantColor();
 
   // Returns the minimum possible size of a single unselected Tab.
@@ -342,6 +344,8 @@ class Tab : public ui::AnimationDelegate,
 
   // The dominant color of the favicon. Used in immersive mode. White until the
   // color is known so that tab has something visible to draw during page load.
+  // TODO(jamescook): Remove this if UX agrees that we don't want colors in the
+  // immersive mode light bar. crbug.com/166929
   SkColor icon_dominant_color_;
 
   static gfx::Font* font_;

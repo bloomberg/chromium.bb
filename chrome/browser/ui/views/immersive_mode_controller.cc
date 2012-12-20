@@ -25,7 +25,8 @@ using views::View;
 
 namespace {
 
-// Time after which the edge trigger fires and top-chrome is revealed.
+// Time after which the edge trigger fires and top-chrome is revealed. This is
+// after the mouse stops moving.
 const int kTopEdgeRevealDelayMs = 200;
 
 // Duration for the reveal show/hide slide animation.
@@ -322,12 +323,12 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED)
     return;
   if (event->location().y() == 0) {
-    // Use a timer to detect if the cursor stays at the top past a delay.
-    if (!top_timer_.IsRunning()) {
-      top_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
-                       this, &ImmersiveModeController::StartReveal);
-    }
+    // Start a reveal if the mouse touches the top of the screen and then stops
+    // moving for a little while. This mirrors the Ash launcher behavior.
+    top_timer_.Stop();
+    top_timer_.Start(FROM_HERE,
+                     base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
+                     this, &ImmersiveModeController::StartReveal);
   } else {
     // Cursor left the top edge.
     top_timer_.Stop();
