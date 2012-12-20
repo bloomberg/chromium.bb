@@ -1,0 +1,18 @@
+<html>
+<head><title>chromium.bb</title></head>
+<body>
+<h3><a name="bugfix-backspaceintotable" href="#bugfix-backspaceintotable">bugfix/backspaceIntoTable</a> (Shezan Baig; D32947240)</h3>
+
+<p>Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
+put the cursor between 'T' and 'e' in "Testing", and hit backspace twice.  The
+rest of the text will go into the last cell.</p>
+
+<p>It is unclear whether this is a bug that can be upstreamed or not, because the
+comment in the code specifically mentions that this is the intended behavior,
+and has been since at least 2007.  However, we changed this behavior in our
+product to match what Firefox does, which is to make the second backspace a
+no-op.</p>
+
+</body>
+</html>
+
