@@ -49,6 +49,3 @@ TemplateURLFetcherTest.*
 GAIAInfoUpdateServiceTest.*
 ProfileManagerTest.*
 ProfileInfoCacheTest.*
-
-# Failing on the bot. http://crbug.com/167014
-BrowserCommandControllerTest.AvatarMenuDisabledWhenOnlyOneProfile
