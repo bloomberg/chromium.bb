@@ -66,7 +66,7 @@ class RequestContext : public URLRequestContext {
     storage_.set_http_transaction_factory(new HttpCache(
         network_session,
         HttpCache::DefaultBackend::InMemory(0)));
-    set_job_factory(new URLRequestJobFactoryImpl());
+    storage_.set_job_factory(new URLRequestJobFactoryImpl());
   }
 
   virtual ~RequestContext() {
@@ -74,7 +74,6 @@ class RequestContext : public URLRequestContext {
 
  private:
   URLRequestContextStorage storage_;
-  scoped_ptr<URLRequestJobFactory> url_request_job_factory_;
 };
 
 // Get a file:// url relative to net/data/proxy/proxy_script_fetcher_unittest.
