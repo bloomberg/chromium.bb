@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.webkit.WebView.HitTestResult;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.net.test.util.TestWebServer;
@@ -110,8 +111,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         });
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcAnchorType() throws Throwable {
         String page = fullPageLink(HREF, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
@@ -120,8 +122,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(HREF, ANCHOR_TEXT, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcAnchorTypeRelativeUrl() throws Throwable {
         String relpath = "/foo.html";
         String fullpath = mWebServer.getResponseUrl(relpath);
@@ -133,8 +136,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(relpath, ANCHOR_TEXT, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcEmailType() throws Throwable {
         String email = "foo@bar.com";
         String prefix = "mailto:";
@@ -145,8 +149,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(prefix+ email, ANCHOR_TEXT, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcGeoType() throws Throwable {
         String location = "Jilin";
         String prefix = "geo:0,0?q=";
@@ -157,8 +162,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + location, ANCHOR_TEXT, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcPhoneType() throws Throwable {
         String phone_num = "1234567890";
         String prefix = "tel:";
@@ -169,8 +175,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + phone_num, ANCHOR_TEXT, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testSrcImgeAnchorType() throws Throwable {
         String relImageSrc = "/nonexistent.jpg";
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
@@ -184,8 +191,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(HREF, null, fullImageSrc));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testImgeType() throws Throwable {
         String relImageSrc = "/nonexistent2.jpg";
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
@@ -198,8 +206,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testEditTextType() throws Throwable {
         String page = CommonResources.makeHtmlPageFrom("",
                 "<form><input class=\"full_view\" type=\"text\" name=\"test\"></form>");
@@ -210,8 +219,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testUnknownTypeJavascriptScheme() throws Throwable {
         // Per documentation, javascript urls are special.
         String javascript = "javascript:alert('foo');";
@@ -222,8 +232,9 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         assertTrue(pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "WebKitHitTest"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "WebKitHitTest"})
+    @DisabledTest // crbug.com/167076
     public void testUnknownTypeUnrecognizedNode() throws Throwable {
         // Since UNKNOWN_TYPE is the default, hit test another type first for
         // this test to be valid.

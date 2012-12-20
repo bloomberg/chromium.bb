@@ -14,21 +14,24 @@ import org.chromium.base.test.util.Feature;
  */
 public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindAllFinds() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindAllDouble() throws Throwable {
         findAllAsyncOnUiThread("wood");
         assertEquals(4, findAllAsyncOnUiThread("chuck"));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindAllDoubleNext() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         assertEquals(4, findAllAsyncOnUiThread("wood"));
@@ -53,8 +56,9 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findAllAsyncOnUiThread(""));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindNextForward() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
 
@@ -64,8 +68,9 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindNextBackward() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
 
@@ -75,8 +80,9 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(3, findNextOnUiThread(false));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindNextBig() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
 
@@ -89,8 +95,9 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindAllEmptyNext() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         assertEquals(1, findNextOnUiThread(true));
@@ -101,15 +108,17 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(1, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testClearMatches() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         clearMatchesOnUiThread();
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testClearFindNext() throws Throwable {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         clearMatchesOnUiThread();
@@ -117,16 +126,18 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(2, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindEmptyNext() throws Throwable {
         assertEquals(0, findAllAsyncOnUiThread(""));
         assertEquals(0, findNextOnUiThread(true));
         assertEquals(4, findAllAsyncOnUiThread("wood"));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "FindInPage"})
+    //@SmallTest
+    //@Feature({"AndroidWebView", "FindInPage"})
+    @DisabledTest // crbug.com/167076
     public void testFindNextFirst() throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override

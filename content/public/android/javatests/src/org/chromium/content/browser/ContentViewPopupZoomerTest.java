@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -80,8 +81,9 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
     /**
      * Tests that shows a zoomer popup and makes sure it has valid dimensions.
      */
-    @MediumTest
-    @Feature({"Browser"})
+    //@MediumTest
+    //@Feature({"Browser"})
+    @DisabledTest // crbug.com/167045
     public void testPopupZoomerShowsUp() throws InterruptedException, TimeoutException {
         launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());

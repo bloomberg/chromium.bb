@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.SelectPopupDialog;
@@ -50,8 +51,9 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
      * Tests that the showing select popup does not get closed because an unrelated ContentView
      * gets destroyed.
     */
-    @LargeTest
-    @Feature({"Browser"})
+    //@LargeTest
+    //@Feature({"Browser"})
+    @DisabledTest  // crbug.com/167075
     public void testPopupNotClosedByOtherContentView()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

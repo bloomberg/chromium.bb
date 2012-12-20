@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.browser.autofill.AutofillListAdapter;
@@ -146,8 +147,9 @@ public class AutofillTest extends ChromiumTestShellTestBase {
         assertEquals(5, mAutofillPopup.getListView().getCount());
     }
 
-    @SmallTest
-    @Feature({"autofill"})
+    //@SmallTest
+    //@Feature({"autofill"})
+    @DisabledTest  // crbug.com/167074
     public void testAutofillClickFirstSuggestion() throws Exception {
         AutofillSuggestion[] suggestions = createTwoAutofillSuggestionArray();
         assertTrue(openAutofillPopupAndWaitUntilReady(suggestions));
