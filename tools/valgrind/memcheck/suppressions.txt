@@ -6417,7 +6417,7 @@
    fun:_ZN16ExtensionService18UninstallExtensionESsbPSbItN4base20string16_char_traitsESaItEE
 }
 {
-   bug_166485
+   bug_166470b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN9__gnu_cxx13new_allocatorI8FilePathE8allocateEmPKv
@@ -6426,6 +6426,23 @@
    fun:_ZNSt6vectorI8FilePathSaIS0_EE9push_backERKS0_
    fun:_ZN9file_util15CreateDirectoryERK8FilePath
    fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
+   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
+}
+{
+   bug_166470c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
+   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
+}
+{
+   bug_166470d
+   Memcheck:Leak
+   ...
+   fun:_ZN7fileapi26GetOriginIdentifierFromURLERK4GURL
+   fun:_ZN11dom_storage14DomStorageArea26DatabaseFileNameFromOriginERK4GURL
+   fun:_ZN11dom_storage14DomStorageAreaC1ERK4GURLRK8FilePathPNS_20DomStorageTaskRunnerE
+   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
 {
