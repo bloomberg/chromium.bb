@@ -61,7 +61,6 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
       const FilePath& device_file_path,
       const FilePath& local_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
-  virtual base::SequencedTaskRunner* GetMediaTaskRunner() OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
   // Stores the registered file system device path value. This path does not

@@ -152,10 +152,6 @@ PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
   return base::PLATFORM_FILE_OK;
 }
 
-SequencedTaskRunner* MTPDeviceDelegateImplLinux::GetMediaTaskRunner() {
-  return media_task_runner_.get();
-}
-
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Caution: This function is called on the UI thread. Access only the thread

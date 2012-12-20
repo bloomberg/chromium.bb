@@ -45,9 +45,6 @@ class MTPDeviceDelegate {
       const FilePath& local_path,
       base::PlatformFileInfo* file_info) = 0;
 
-  // Returns TaskRunner on which the operation is performed.
-  virtual base::SequencedTaskRunner* GetMediaTaskRunner() = 0;
-
   // Called when the
   // (1) Browser application is in shutdown mode (or)
   // (2) Last extension using this MTP device is destroyed (or)
