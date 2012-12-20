@@ -83,6 +83,10 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
       break;
     }
   }
+  // TODO(ios): 100p should not be necessary on iOS retina devices. However
+  // the sync service only supports syncing 100p favicons. Until sync supports
+  // other scales 100p is needed in the list of scale factors to retrieve and
+  // store the favicons in both 100p for sync and 200p for display. cr/160503.
   favicon_scale_factors.insert(favicon_scale_factors.begin() + insert_index,
                                ui::SCALE_FACTOR_100P);
   return favicon_scale_factors;

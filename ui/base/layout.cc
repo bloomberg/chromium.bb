@@ -79,10 +79,6 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
 #endif
 
 #if defined(OS_IOS)
-    // TODO(ios): 100p should not be necessary on iOS retina devices. However
-    // the sync service only supports syncing 100p favicons. Until sync supports
-    // other scales 100p is needed in the list of scale factors to retrieve and
-    // store the favicons in both 100p for sync and 200p for display. cr/160503.
     gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
     if (display.device_scale_factor() > 1.0) {
       DCHECK_EQ(2.0, display.device_scale_factor());
