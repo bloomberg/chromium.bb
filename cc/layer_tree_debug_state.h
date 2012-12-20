@@ -17,6 +17,7 @@ class CC_EXPORT LayerTreeDebugState {
   bool showFPSCounter;
   bool showPlatformLayerTree;
   bool showDebugBorders;
+  bool continuousPainting;
 
   bool showPaintRects;
   bool showPropertyChangedRects;

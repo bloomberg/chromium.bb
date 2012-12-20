@@ -12,6 +12,7 @@ LayerTreeDebugState::LayerTreeDebugState()
   : showFPSCounter(false)
   , showPlatformLayerTree(false)
   , showDebugBorders(false)
+  , continuousPainting(false)
   , showPaintRects(false)
   , showPropertyChangedRects(false)
   , showSurfaceDamageRects(false)
@@ -45,6 +46,7 @@ LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, con
     r.showFPSCounter |= b.showFPSCounter;
     r.showPlatformLayerTree |= b.showPlatformLayerTree;
     r.showDebugBorders |= b.showDebugBorders;
+    r.continuousPainting |= b.continuousPainting;
 
     r.showPaintRects |= b.showPaintRects;
     r.showPropertyChangedRects |= b.showPropertyChangedRects;

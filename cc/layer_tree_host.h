@@ -85,7 +85,7 @@ public:
 
     // LayerTreeHost interface to Proxy.
     void willBeginFrame() { m_client->willBeginFrame(); }
-    void didBeginFrame() { m_client->didBeginFrame(); }
+    void didBeginFrame();
     void updateAnimations(base::TimeTicks monotonicFrameBeginTime);
     void didStopFlinging();
     void layout();
@@ -227,6 +227,8 @@ private:
     void animateLayers(base::TimeTicks monotonicTime);
     bool animateLayersRecursive(Layer* current, base::TimeTicks time);
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
+
+    void setNeedsDisplayOnAllLayersRecursive(Layer* layer);
 
     bool m_animating;
     bool m_needsFullTreeSync;
