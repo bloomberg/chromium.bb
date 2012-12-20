@@ -11,7 +11,6 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_state.h"
@@ -149,7 +148,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
                      BookmarkBarToolbarViewController,
                      BookmarkButtonDelegate,
                      BookmarkButtonControllerProtocol,
-                     CrApplicationEventHookProtocol,
                      NSUserInterfaceValidations,
                      NSDraggingDestination> {
  @private
@@ -208,9 +206,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // window closes the controller gets autoreleased).
   BookmarkBarFolderController* folderController_;
 
-  // Are watching for a "click outside" or other event which would
-  // signal us to close the bookmark bar folder menus?
-  BOOL watchingForExitEvent_;
+  // The event tap that allows monitoring of all events, to properly close with
+  // a click outside the bounds of the window.
+  id exitEventTap_;
 
   IBOutlet BookmarkBarView* buttonView_;  // Contains 'no items' text fields.
   IBOutlet BookmarkButton* offTheSideButton_;  // aka the chevron.

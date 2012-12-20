@@ -923,7 +923,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Main menubar observation code, so we can know to close our fake menus if the
 // user clicks on the actual menubar, as multiple unconnected menus sharing
 // the screen looks weird.
-// Needed because the hookForEvent method doesn't see the click on the menubar.
+// Needed because the local event monitor doesn't see the click on the menubar.
 
 // Gets called when the menubar is clicked.
 - (void)begunTracking:(NSNotification *)notification {
@@ -956,20 +956,24 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // "click outside" these windows to detect when they logically lose
 // focus.
 - (void)watchForExitEvent:(BOOL)watch {
-  BrowserCrApplication* app = static_cast<BrowserCrApplication*>(
-      [BrowserCrApplication sharedApplication]);
   if (watch) {
-    if (!watchingForExitEvent_) {
-      [app addEventHook:self];
+    if (!exitEventTap_) {
+      exitEventTap_ = [NSEvent
+          addLocalMonitorForEventsMatchingMask:NSAnyEventMask
+          handler:^NSEvent* (NSEvent* event) {
+              if ([self isEventAnExitEvent:event])
+                [self closeFolderAndStopTrackingMenus];
+              return event;
+          }];
       [self startObservingMenubar];
     }
   } else {
-    if (watchingForExitEvent_) {
-      [app removeEventHook:self];
+    if (exitEventTap_) {
+      [NSEvent removeMonitor:exitEventTap_];
+      exitEventTap_ = nil;
       [self stopObservingMenubar];
     }
   }
-  watchingForExitEvent_ = watch;
 }
 
 // Keep the "no items" label centered in response to a frame size change.
@@ -2828,14 +2832,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (bookmarkModel_->bookmark_bar_node() == node)
     return self;
   return [folderController_ controllerForNode:node];
-}
-
-#pragma mark BookmarkButtonControllerProtocol
-
-// NOT an override of a standard Cocoa call made to NSViewControllers.
-- (void)hookForEvent:(NSEvent*)theEvent {
-  if ([self isEventAnExitEvent:theEvent])
-    [self closeFolderAndStopTrackingMenus];
 }
 
 #pragma mark TestingAPI Only
