@@ -1624,4 +1624,14 @@
    fun:BookmarkModel::AddURL
    fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
 }
-
+{
+   bug_166989
+   Heapcheck:Leak
+   fun:??
+   fun:ui::CreateInvisibleCursor
+   ...
+   fun:ui::CursorLoader::Create
+   fun:ash::ImageCursors::SetDeviceScaleFactor
+   fun:ash::CursorManager::SetDeviceScaleFactor
+   fun:ash::Shell::Init
+}
