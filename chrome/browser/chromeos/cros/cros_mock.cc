@@ -122,6 +122,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, active_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const Network*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, active_nonvirtual_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const Network*)(NULL))));
   EXPECT_CALL(*mock_network_library_, ethernet_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const EthernetNetwork*)(NULL))));

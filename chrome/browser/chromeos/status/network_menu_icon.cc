@@ -736,7 +736,7 @@ void NetworkMenuIcon::SetIconAndText() {
   if (mode_ == DROPDOWN_MODE && cros->connected_network())
     network = cros->connected_network();
   else
-    network = cros->active_network();
+    network = cros->active_nonvirtual_network();
   if (network) {
     SetActiveNetworkIconAndText(network);
     return;

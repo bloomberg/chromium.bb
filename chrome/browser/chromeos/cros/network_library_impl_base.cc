@@ -328,7 +328,7 @@ const VirtualNetworkVector&
 // network to return (i.e. don't assume priority of network types).
 // Note: This does not include any virtual networks.
 namespace {
-Network* highest_priority(Network* a, Network*b) {
+const Network* highest_priority(const Network* a, const Network*b) {
   if (!a)
     return b;
   if (!b)
@@ -340,7 +340,14 @@ Network* highest_priority(Network* a, Network*b) {
 }
 
 const Network* NetworkLibraryImplBase::active_network() const {
-  Network* result = NULL;
+  const Network* result = active_nonvirtual_network();
+  if (active_virtual_ && active_virtual_->is_active())
+    result = highest_priority(result, active_virtual_);
+  return result;
+}
+
+const Network* NetworkLibraryImplBase::active_nonvirtual_network() const {
+  const Network* result = NULL;
   if (ethernet_ && ethernet_->is_active())
     result = ethernet_;
   if (active_wifi_ && active_wifi_->is_active())
@@ -353,7 +360,7 @@ const Network* NetworkLibraryImplBase::active_network() const {
 }
 
 const Network* NetworkLibraryImplBase::connected_network() const {
-  Network* result = NULL;
+  const Network* result = NULL;
   if (ethernet_ && ethernet_->connected())
     result = ethernet_;
   if (active_wifi_ && active_wifi_->connected())

@@ -127,6 +127,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const VirtualNetworkVector&
       remembered_virtual_networks() const OVERRIDE;
   virtual const Network* active_network() const OVERRIDE;
+  virtual const Network* active_nonvirtual_network() const OVERRIDE;
   virtual const Network* connected_network() const OVERRIDE;
   virtual const Network* connecting_network() const OVERRIDE;
   virtual bool ethernet_available() const OVERRIDE;

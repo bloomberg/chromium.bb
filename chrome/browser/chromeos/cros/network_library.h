@@ -1415,6 +1415,7 @@ class NetworkLibrary {
   virtual const VirtualNetworkVector& remembered_virtual_networks() const = 0;
 
   virtual const Network* active_network() const = 0;
+  virtual const Network* active_nonvirtual_network() const = 0;
   virtual const Network* connected_network() const = 0;
   virtual const Network* connecting_network() const = 0;
 
