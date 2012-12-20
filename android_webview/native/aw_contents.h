@@ -99,6 +99,7 @@ class AwContents : public FindHelper::Listener,
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
   void SetScrollForHWFrame(JNIEnv* env, jobject obj,
                            int scroll_x, int scroll_y);
+  void FocusFirstNode(JNIEnv* env, jobject obj);
 
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);

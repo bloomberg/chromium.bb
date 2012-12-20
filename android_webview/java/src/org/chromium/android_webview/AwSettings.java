@@ -25,6 +25,7 @@ public class AwSettings {
     private boolean mAllowContentUrlAccess = true;
     private boolean mAllowFileUrlAccess = true;
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
+    private boolean mShouldFocusFirstNode = true;
 
     public AwSettings(Context context) {
         mContext = context;
@@ -116,6 +117,24 @@ public class AwSettings {
     public int getCacheMode() {
         synchronized (mAwSettingsLock) {
             return mCacheMode;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setNeedInitialFocus}.
+     */
+    public void setShouldFocusFirstNode(boolean flag) {
+        synchronized (mAwSettingsLock) {
+            mShouldFocusFirstNode = flag;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setNeedInitialFocus}.
+     */
+    public boolean shouldFocusFirstNode() {
+        synchronized(mAwSettingsLock) {
+            return mShouldFocusFirstNode;
         }
     }
 }

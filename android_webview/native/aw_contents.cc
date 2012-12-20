@@ -801,6 +801,10 @@ void AwContents::SetPendingWebContentsForPopup(
   pending_contents_ = pending.Pass();
 }
 
+void AwContents::FocusFirstNode(JNIEnv* env, jobject obj) {
+  web_contents_->FocusThroughTabTraversal(false);
+}
+
 jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(pending_contents_.release());
 }

@@ -468,6 +468,12 @@ public class AwContents {
         }
     }
 
+    public void requestFocus() {
+        if (!mContainerView.isInTouchMode() && mSettings.shouldFocusFirstNode()) {
+            nativeFocusFirstNode(mNativeAwContents);
+        }
+    }
+
     //--------------------------------------------------------------------------------------------
     //  WebView[Provider] method implementations (where not provided by ContentViewCore)
     //--------------------------------------------------------------------------------------------
@@ -961,4 +967,5 @@ public class AwContents {
 
     private native int nativeReleasePopupWebContents(int nativeAwContents);
     private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
+    private native void nativeFocusFirstNode(int nativeAwContents);
 }
