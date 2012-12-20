@@ -8,8 +8,8 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,7 +38,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl)
 // forms never end up in an infobar.
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SavePasswordInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  SavePasswordInfoBarDelegate(InfoBarService* infobar_service,
                               PasswordFormManager* form_to_save);
 
  private:
@@ -72,9 +72,9 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PasswordFormManager* form_to_save)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       form_to_save_(form_to_save),
       infobar_response_(NO_RESPONSE) {
 }
@@ -163,10 +163,10 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
   }
 #endif
 
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-  infobar_tab_helper->AddInfoBar(
-      new SavePasswordInfoBarDelegate(infobar_tab_helper, form_to_save));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  infobar_service->AddInfoBar(
+      new SavePasswordInfoBarDelegate(infobar_service, form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfile() {

@@ -8,13 +8,13 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
@@ -60,7 +60,7 @@ const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   NotificationPermissionInfoBarDelegate(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       DesktopNotificationService* notification_service,
       const GURL& origin,
       const string16& display_name,
@@ -102,14 +102,14 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     DesktopNotificationService* notification_service,
     const GURL& origin,
     const string16& display_name,
     int process_id,
     int route_id,
     int callback_context)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       origin_(origin),
       display_name_(display_name),
       notification_service_(notification_service),
@@ -410,14 +410,14 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(contents);
-    // |infobar_tab_helper| may be NULL, e.g., if this request originated in a
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(contents);
+    // |infobar_service| may be NULL, e.g., if this request originated in a
     // browser action popup, extension background page, or any HTML that runs
     // outside of a tab.
-    if (infobar_tab_helper) {
-      infobar_tab_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-          infobar_tab_helper,
+    if (infobar_service) {
+      infobar_service->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+          infobar_service,
           DesktopNotificationServiceFactory::GetForProfile(
               Profile::FromBrowserContext(contents->GetBrowserContext())),
           origin,

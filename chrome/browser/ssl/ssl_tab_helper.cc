@@ -13,17 +13,19 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -46,7 +48,7 @@ gfx::Image* GetCertIcon() {
 
 class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SSLCertAddedInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  SSLCertAddedInfoBarDelegate(InfoBarService* infobar_service,
                               net::X509Certificate* cert);
 
  private:
@@ -64,9 +66,9 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 SSLCertAddedInfoBarDelegate::SSLCertAddedInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     net::X509Certificate* cert)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       cert_(cert) {
 }
 
@@ -130,7 +132,7 @@ class SSLTabHelper::SSLAddCertData
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  InfoBarTabHelper* infobar_helper_;
+  InfoBarService* infobar_service_;
   InfoBarDelegate* infobar_delegate_;
   content::NotificationRegistrar registrar_;
 
@@ -138,9 +140,9 @@ class SSLTabHelper::SSLAddCertData
 };
 
 SSLTabHelper::SSLAddCertData::SSLAddCertData(content::WebContents* contents)
-    : infobar_helper_(InfoBarTabHelper::FromWebContents(contents)),
+    : infobar_service_(InfoBarService::FromWebContents(contents)),
       infobar_delegate_(NULL) {
-  content::Source<InfoBarTabHelper> source(infobar_helper_);
+  content::Source<InfoBarService> source(infobar_service_);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
@@ -152,15 +154,15 @@ SSLTabHelper::SSLAddCertData::~SSLAddCertData() {
 
 void SSLTabHelper::SSLAddCertData::ShowInfoBar(InfoBarDelegate* delegate) {
   if (infobar_delegate_)
-    infobar_helper_->ReplaceInfoBar(infobar_delegate_, delegate);
+    infobar_service_->ReplaceInfoBar(infobar_delegate_, delegate);
   else
-    infobar_helper_->AddInfoBar(delegate);
+    infobar_service_->AddInfoBar(delegate);
   infobar_delegate_ = delegate;
 }
 
 void SSLTabHelper::SSLAddCertData::ShowErrorInfoBar(const string16& message) {
   ShowInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_helper_, GetCertIcon(), message, true));
+      infobar_service_, GetCertIcon(), message, true));
 }
 
 void SSLTabHelper::SSLAddCertData::Observe(
@@ -216,10 +218,10 @@ void SSLTabHelper::OnAddClientCertificateSuccess(
     scoped_refptr<SSLAddCertHandler> handler) {
   SSLAddCertData* add_cert_data = GetAddCertData(handler);
   // Display an infobar to inform the user.
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
   add_cert_data->ShowInfoBar(new SSLCertAddedInfoBarDelegate(
-      infobar_tab_helper, handler->cert()));
+      infobar_service, handler->cert()));
 }
 
 void SSLTabHelper::OnAddClientCertificateError(

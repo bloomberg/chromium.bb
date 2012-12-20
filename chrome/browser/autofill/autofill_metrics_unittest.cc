@@ -16,7 +16,6 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/form_data.h"
@@ -1139,7 +1138,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
 
 // Test that credit card infobar metrics are logged correctly.
 TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
-  InfoBarTabHelper::CreateForWebContents(web_contents());
+  InfoBarService::CreateForWebContents(web_contents());
 
   MockAutofillMetrics metric_logger;
   ::testing::InSequence dummy;

@@ -13,7 +13,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    InfoBarTabHelper* owner,
+    InfoBarService* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate),
       label_1_(NULL),

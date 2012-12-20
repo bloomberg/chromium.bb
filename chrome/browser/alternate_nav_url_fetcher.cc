@@ -5,8 +5,8 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -32,7 +32,7 @@ using content::Referrer;
 
 class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  AlternateNavInfoBarDelegate(InfoBarTabHelper* owner,
+  AlternateNavInfoBarDelegate(InfoBarService* owner,
                               const GURL& alternate_nav_url);
   virtual ~AlternateNavInfoBarDelegate();
 
@@ -50,7 +50,7 @@ class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
 };
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
-    InfoBarTabHelper* owner,
+    InfoBarService* owner,
     const GURL& alternate_nav_url)
     : LinkInfoBarDelegate(owner),
       alternate_nav_url_(alternate_nav_url) {
@@ -219,10 +219,10 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {
   if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
-    InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(controller_->GetWebContents());
-    infobar_helper->AddInfoBar(
-        new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(controller_->GetWebContents());
+    infobar_service->AddInfoBar(
+        new AlternateNavInfoBarDelegate(infobar_service, alternate_nav_url_));
   } else if (state_ != FAILED) {
     return;
   }

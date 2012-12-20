@@ -10,14 +10,14 @@
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
-class InfoBarTabHelper;
+class InfoBarService;
 
 namespace chrome {
 
 // An infobar that is run with a string and a "Learn More" link.
 class ObsoleteOSInfoBar : public LinkInfoBarDelegate {
  public:
-  ObsoleteOSInfoBar(InfoBarTabHelper* infobar_helper,
+  ObsoleteOSInfoBar(InfoBarService* infobar_service,
                     const string16& message,
                     const GURL& url);
   virtual ~ObsoleteOSInfoBar();

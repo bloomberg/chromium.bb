@@ -25,10 +25,10 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1195,7 +1195,7 @@ void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
   // chrome::GetActiveWebContents(browser_.get()) will return NULL or something
   // else.
   if (index == browser_->active_index()) {
-    infobar_container_->ChangeTabContents(NULL);
+    infobar_container_->ChangeInfoBarService(NULL);
     UpdateDevToolsForContents(NULL);
   }
   contents_container_->DetachTab(contents);
@@ -1212,9 +1212,9 @@ void BrowserWindowGtk::ActiveTabChanged(WebContents* old_contents,
   // Update various elements that are interested in knowing the current
   // WebContents.
   UpdateDevToolsForContents(new_contents);
-  InfoBarTabHelper* new_infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(new_contents);
-  infobar_container_->ChangeTabContents(new_infobar_tab_helper);
+  InfoBarService* new_infobar_service =
+      InfoBarService::FromWebContents(new_contents);
+  infobar_container_->ChangeInfoBarService(new_infobar_service);
   contents_container_->SetTab(new_contents);
 
   // TODO(estade): after we manage browser activation, add a check to make sure

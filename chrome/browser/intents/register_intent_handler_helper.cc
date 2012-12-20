@@ -4,9 +4,9 @@
 
 #include <string>
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -34,7 +34,7 @@ void Browser::RegisterIntentHandlerHelper(
       profile, Profile::EXPLICIT_ACCESS);
 
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
-      InfoBarTabHelper::FromWebContents(web_contents),
+      InfoBarService::FromWebContents(web_contents),
       WebIntentsRegistryFactory::GetForProfile(profile),
       data,
       favicon_service,

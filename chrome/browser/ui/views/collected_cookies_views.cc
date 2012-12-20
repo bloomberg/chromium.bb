@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -223,10 +223,10 @@ void CollectedCookiesViews::DeleteDelegate() {
 
 bool CollectedCookiesViews::Cancel() {
   if (status_changed_) {
-    InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(web_contents_);
-    infobar_helper->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_helper));
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_);
+    infobar_service->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(infobar_service));
   }
 
   return true;

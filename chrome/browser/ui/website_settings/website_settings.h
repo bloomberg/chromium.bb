@@ -21,7 +21,7 @@ class CertStore;
 struct SSLStatus;
 }
 
-class InfoBarTabHelper;
+class InfoBarService;
 class HostContentSettingsMap;
 class Profile;
 class WebsiteSettingsUI;
@@ -69,7 +69,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   WebsiteSettings(WebsiteSettingsUI* ui,
                   Profile* profile,
                   TabSpecificContentSettings* tab_specific_content_settings,
-                  InfoBarTabHelper* infobar_tab_helper,
+                  InfoBarService* infobar_service,
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
@@ -140,8 +140,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // information (identity, connection status, etc.).
   WebsiteSettingsUI* ui_;
 
-  // The infobar helper of the active tab.
-  InfoBarTabHelper* infobar_helper_;  // Owned by the active tab contents.
+  // The infobar service of the active tab.
+  InfoBarService* infobar_service_;  // Owned by the active tab contents.
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.

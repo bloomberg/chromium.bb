@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_split.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -175,12 +175,12 @@ void AutoLoginPrompter::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-    // |infobar_helper| is NULL for WebContents hosted in WebDialog.
-    if (infobar_helper) {
-      infobar_helper->AddInfoBar(
-          new AutoLoginInfoBarDelegate(infobar_helper, params_));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+    // |infobar_service| is NULL for WebContents hosted in WebDialog.
+    if (infobar_service) {
+      infobar_service->AddInfoBar(
+          new AutoLoginInfoBarDelegate(infobar_service, params_));
     }
   }
   // Either we couldn't add the infobar, we added the infobar, or the tab

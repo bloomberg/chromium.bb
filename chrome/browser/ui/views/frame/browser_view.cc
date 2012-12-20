@@ -14,12 +14,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -1620,7 +1620,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
     contents_container_->SetWebContents(NULL);
-    infobar_container_->ChangeTabContents(NULL);
+    infobar_container_->ChangeInfoBarService(NULL);
     UpdateDevToolsForContents(NULL);
   }
 }
@@ -1663,9 +1663,8 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   // avoid an unnecessary resize and re-layout of a WebContents.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
-  InfoBarTabHelper* new_infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(new_contents);
-  infobar_container_->ChangeTabContents(new_infobar_tab_helper);
+  infobar_container_->ChangeInfoBarService(
+      InfoBarService::FromWebContents(new_contents));
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),

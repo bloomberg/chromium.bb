@@ -4,9 +4,9 @@
 
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -17,10 +17,10 @@
 
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       google_url_tracker_(google_url_tracker),
       search_url_(search_url),
       pending_id_(0) {

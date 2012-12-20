@@ -35,7 +35,7 @@ class ManagedModeNavigationObserver
   // Owned by ManagedMode (which is a singleton and outlives us).
   const ManagedModeURLFilter* url_filter_;
 
-  // Owned by the InfoBarTabHelper, which has the same lifetime as this object.
+  // Owned by the InfoBarService, which has the same lifetime as this object.
   InfoBarDelegate* warn_infobar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeNavigationObserver);

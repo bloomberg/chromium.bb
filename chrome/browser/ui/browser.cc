@@ -27,6 +27,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
@@ -880,13 +880,13 @@ bool Browser::RunUnloadEventsHelper(WebContents* contents) {
 
 // static
 void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (!infobar_helper)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service)
     return;
 
-  infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_helper,
+  infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      infobar_service,
       NULL,
       l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
       true));
@@ -931,27 +931,27 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
 
   content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
 
   RegisterProtocolHandlerInfoBarDelegate* rph_delegate =
-      new RegisterProtocolHandlerInfoBarDelegate(infobar_helper,
+      new RegisterProtocolHandlerInfoBarDelegate(infobar_service,
                                                  registry,
                                                  handler);
 
-  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); i++) {
-    InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); i++) {
+    InfoBarDelegate* delegate = infobar_service->GetInfoBarDelegateAt(i);
     RegisterProtocolHandlerInfoBarDelegate* cast_delegate =
         delegate->AsRegisterProtocolHandlerInfoBarDelegate();
     if (cast_delegate != NULL && cast_delegate->IsReplacedBy(rph_delegate)) {
-      infobar_helper->ReplaceInfoBar(cast_delegate, rph_delegate);
+      infobar_service->ReplaceInfoBar(cast_delegate, rph_delegate);
       rph_delegate = NULL;
       break;
     }
   }
 
   if (rph_delegate != NULL)
-    infobar_helper->AddInfoBar(rph_delegate);
+    infobar_service->AddInfoBar(rph_delegate);
 }
 
 // static
@@ -985,22 +985,22 @@ void Browser::RequestMediaAccessPermissionHelper(
                                                   request,
                                                   callback));
   if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
     InfoBarDelegate* old_infobar = NULL;
-    for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
-      old_infobar = infobar_helper->GetInfoBarDelegateAt(i)->
+    for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+      old_infobar = infobar_service->GetInfoBarDelegateAt(i)->
           AsMediaStreamInfoBarDelegate();
       if (old_infobar)
         break;
     }
 
     InfoBarDelegate* infobar =
-        new MediaStreamInfoBarDelegate(infobar_helper, controller.release());
+        new MediaStreamInfoBarDelegate(infobar_service, controller.release());
     if (old_infobar)
-      infobar_helper->ReplaceInfoBar(old_infobar, infobar);
+      infobar_service->ReplaceInfoBar(old_infobar, infobar);
     else
-      infobar_helper->AddInfoBar(infobar);
+      infobar_service->AddInfoBar(infobar);
   }
 }
 
@@ -1606,10 +1606,10 @@ void Browser::RendererResponsive(WebContents* source) {
 }
 
 void Browser::WorkerCrashed(WebContents* source) {
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(source);
-  infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_helper,
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(source);
+  infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      infobar_service,
       NULL,
       l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
       true));

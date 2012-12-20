@@ -30,11 +30,11 @@ typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
 class InfoBarContainer;
-class InfoBarTabHelper;
+class InfoBarService;
 
 class InfoBar : public ui::AnimationDelegate {
  public:
-  InfoBar(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
+  InfoBar(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~InfoBar();
 
   // Platforms must define these.
@@ -118,7 +118,7 @@ class InfoBar : public ui::AnimationDelegate {
   // delete us) and closes the delegate.
   void MaybeDelete();
 
-  InfoBarTabHelper* owner_;
+  InfoBarService* owner_;
   InfoBarDelegate* delegate_;
   InfoBarContainer* container_;
   ui::SlideAnimation animation_;

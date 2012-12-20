@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -1028,18 +1028,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
 
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(infobar_helper);
-  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
+  ASSERT_TRUE(infobar_service);
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
 
   FilePath path(FILE_PATH_LITERAL("plugin/quicktime.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
-  ASSERT_EQ(1u, infobar_helper->GetInfoBarCount());
+  ASSERT_EQ(1u, infobar_service->GetInfoBarCount());
   InfoBarDelegate* infobar_delegate =
-      infobar_helper->GetInfoBarDelegateAt(0);
+      infobar_service->GetInfoBarDelegateAt(0);
   EXPECT_TRUE(infobar_delegate->AsConfirmInfoBarDelegate());
   // And the plugin isn't running.
   EXPECT_EQ(0, CountPlugins());
@@ -1051,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   provider_.UpdateChromePolicy(policies);
   // Reloading the page shouldn't trigger the infobar this time.
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
   // And the plugin started automatically.
   EXPECT_EQ(1, CountPlugins());
 }
@@ -1350,13 +1349,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // Verifies that translate can be forced enabled or disabled by policy.
 
-  // Get the |infobar_helper|, and verify that there are no infobars on startup.
+  // Get the InfoBarService, and verify that there are no infobars on startup.
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(infobar_helper);
-  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
+  ASSERT_TRUE(infobar_service);
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
 
   // Force enable the translate feature.
   PolicyMap policies;
@@ -1376,9 +1374,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer1.Wait();
   // Verify that the translate infobar showed up.
-  ASSERT_EQ(1u, infobar_helper->GetInfoBarCount());
+  ASSERT_EQ(1u, infobar_service->GetInfoBarCount());
   InfoBarDelegate* infobar_delegate =
-      infobar_helper->GetInfoBarDelegateAt(0);
+      infobar_service->GetInfoBarDelegateAt(0);
   TranslateInfoBarDelegate* delegate =
       infobar_delegate->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
@@ -1386,8 +1384,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   EXPECT_EQ("fr", delegate->original_language_code());
 
   // Now force disable translate.
-  infobar_helper->RemoveInfoBar(infobar_delegate);
-  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  infobar_service->RemoveInfoBar(infobar_delegate);
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   provider_.UpdateChromePolicy(policies);
@@ -1397,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer2.Wait();
-  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {

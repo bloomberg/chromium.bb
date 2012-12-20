@@ -23,7 +23,7 @@ class TextButton;
 class ConfirmInfoBar : public InfoBarView,
                        public views::LinkListener {
  public:
-  ConfirmInfoBar(InfoBarTabHelper* owner, ConfirmInfoBarDelegate* delegate);
+  ConfirmInfoBar(InfoBarService* owner, ConfirmInfoBarDelegate* delegate);
 
  protected:
   // TODO(rogerta): These only need to be protected due to the

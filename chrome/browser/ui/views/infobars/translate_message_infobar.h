@@ -9,7 +9,7 @@
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  TranslateMessageInfoBar(InfoBarTabHelper* owner,
+  TranslateMessageInfoBar(InfoBarService* owner,
                           TranslateInfoBarDelegate* delegate);
 
  private:

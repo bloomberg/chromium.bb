@@ -7,8 +7,6 @@
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
-class InfoBarTabHelper;
-
 // Base class for delegates that show warnings on HTTPS pages which try to
 // display or run insecure content.
 class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -18,7 +16,7 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
     RUN,      // Shown when "active" content (e.g. script) has been blocked.
   };
 
-  InsecureContentInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  InsecureContentInfoBarDelegate(InfoBarService* infobar_service,
                                  InfoBarType type);
   virtual ~InsecureContentInfoBarDelegate();
 

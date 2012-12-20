@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate_errors.h"
 
-class InfoBarTabHelper;
 class PrefService;
 
 class TranslateInfoBarDelegate : public InfoBarDelegate {
@@ -46,7 +45,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // |originalLanguage| == kUnknownLanguageCode.
   static TranslateInfoBarDelegate* CreateDelegate(
       Type infobar_type,
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       PrefService* prefs,
       const std::string& original_language,
       const std::string& target_language);
@@ -54,7 +53,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Factory method to create an error translate infobar.
   static TranslateInfoBarDelegate* CreateErrorDelegate(
       TranslateErrors::Type error_type,
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       PrefService* prefs,
       const std::string& original_language,
       const std::string& target_language);
@@ -169,7 +168,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // For testing.
   TranslateInfoBarDelegate(Type infobar_type,
                            TranslateErrors::Type error,
-                           InfoBarTabHelper* infobar_helper,
+                           InfoBarService* infobar_service,
                            PrefService* prefs,
                            const std::string& original_language,
                            const std::string& target_language);
@@ -179,7 +178,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   typedef std::pair<std::string, string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarService* infobar_helper) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarService* infobar_service) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;

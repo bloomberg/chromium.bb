@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -29,11 +29,11 @@ bool ChromeSelectFilePolicy::CanOpenSelectFileDialog() {
 void ChromeSelectFilePolicy::SelectFileDenied() {
   // Show the InfoBar saying that file-selection dialogs are disabled.
   if (source_contents_) {
-    InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(source_contents_);
-    DCHECK(infobar_helper);
-    infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
-        infobar_helper,
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(source_contents_);
+    DCHECK(infobar_service);
+    infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
+        infobar_service,
         NULL,
         l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),
         true));

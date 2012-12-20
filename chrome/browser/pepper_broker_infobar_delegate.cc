@@ -4,8 +4,8 @@
 
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -68,13 +68,13 @@ void PepperBrokerInfoBarDelegate::Show(
       content::RecordAction(
           content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
 
-      InfoBarTabHelper* infobar_helper =
-          InfoBarTabHelper::FromWebContents(web_contents);
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(web_contents);
       std::string languages =
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-      infobar_helper->AddInfoBar(
+      infobar_service->AddInfoBar(
           new PepperBrokerInfoBarDelegate(
-              infobar_helper, url, plugin_path, languages, content_settings,
+              infobar_service, url, plugin_path, languages, content_settings,
               callback));
       break;
     }
@@ -84,13 +84,13 @@ void PepperBrokerInfoBarDelegate::Show(
 }
 
 PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
-    InfoBarTabHelper* helper,
+    InfoBarService* infobar_service,
     const GURL& url,
     const FilePath& plugin_path,
     const std::string& languages,
     HostContentSettingsMap* content_settings,
     const base::Callback<void(bool)>& callback)
-    : ConfirmInfoBarDelegate(helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       url_(url),
       plugin_path_(plugin_path),
       languages_(languages),

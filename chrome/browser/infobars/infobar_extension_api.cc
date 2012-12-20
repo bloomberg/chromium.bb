@@ -8,12 +8,12 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -67,10 +67,10 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  infobar_tab_helper->AddInfoBar(
-      new ExtensionInfoBarDelegate(browser, infobar_tab_helper,
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(
+      new ExtensionInfoBarDelegate(browser, infobar_service,
                                    GetExtension(), url, height));
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.

@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -52,10 +52,10 @@ bool disable_failure_ui_for_tests = false;
 // Helper class to put up an infobar when installation fails.
 class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  ErrorInfobarDelegate(InfoBarTabHelper* infobar_helper,
+  ErrorInfobarDelegate(InfoBarService* infobar_service,
                        Browser* browser,
                        const extensions::CrxInstallerError& error)
-      : ConfirmInfoBarDelegate(infobar_helper),
+      : ConfirmInfoBarDelegate(infobar_service),
         browser_(browser),
         error_(error) {
   }
@@ -166,10 +166,10 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents)
     return;
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  infobar_helper->AddInfoBar(
-      new ErrorInfobarDelegate(infobar_helper, browser, error));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(
+      new ErrorInfobarDelegate(infobar_service, browser, error));
 }
 
 void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {
@@ -197,13 +197,13 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
   WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents)
     return;
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
 
   // First find any previous theme preview infobars.
   InfoBarDelegate* old_delegate = NULL;
-  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
-    InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+    InfoBarDelegate* delegate = infobar_service->GetInfoBarDelegateAt(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         delegate->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {
@@ -222,9 +222,9 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
       web_contents, new_theme, previous_theme_id, previous_using_native_theme);
 
   if (old_delegate)
-    infobar_helper->ReplaceInfoBar(old_delegate, new_delegate);
+    infobar_service->ReplaceInfoBar(old_delegate, new_delegate);
   else
-    infobar_helper->AddInfoBar(new_delegate);
+    infobar_service->AddInfoBar(new_delegate);
 }
 
 InfoBarDelegate* ExtensionInstallUIDefault::GetNewThemeInstalledInfoBarDelegate(
@@ -235,7 +235,7 @@ InfoBarDelegate* ExtensionInstallUIDefault::GetNewThemeInstalledInfoBarDelegate(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return new ThemeInstalledInfoBarDelegate(
-      InfoBarTabHelper::FromWebContents(web_contents),
+      InfoBarService::FromWebContents(web_contents),
       profile->GetExtensionService(),
       ThemeServiceFactory::GetForProfile(profile),
       new_theme,

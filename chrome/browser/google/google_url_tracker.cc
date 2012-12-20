@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,14 +29,14 @@
 namespace {
 
 GoogleURLTrackerInfoBarDelegate* CreateInfoBar(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
   GoogleURLTrackerInfoBarDelegate* infobar =
-      new GoogleURLTrackerInfoBarDelegate(infobar_helper, google_url_tracker,
+      new GoogleURLTrackerInfoBarDelegate(infobar_service, google_url_tracker,
                                           search_url);
   // AddInfoBar() takes ownership; it will delete |infobar| if it fails.
-  return infobar_helper->AddInfoBar(infobar) ? infobar : NULL;
+  return infobar_service->AddInfoBar(infobar) ? infobar : NULL;
 }
 
 }  // namespace
@@ -211,15 +211,15 @@ void GoogleURLTracker::Observe(int type,
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
       content::WebContents* web_contents = controller->GetWebContents();
-      InfoBarTabHelper* infobar_tab_helper =
-          InfoBarTabHelper::FromWebContents(web_contents);
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(web_contents);
       // Because we're listening to all sources, there may be no
-      // InfoBarTabHelper for some notifications, e.g. navigations in
+      // InfoBarService for some notifications, e.g. navigations in
       // bubbles/balloons etc.
-      if (infobar_tab_helper) {
+      if (infobar_service) {
         OnNavigationPending(
             source, content::Source<content::WebContents>(web_contents),
-            infobar_tab_helper, controller->GetPendingEntry()->GetUniqueID());
+            infobar_service, controller->GetPendingEntry()->GetUniqueID());
       }
       break;
     }
@@ -228,15 +228,15 @@ void GoogleURLTracker::Observe(int type,
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
       // Here we're only listening to notifications where we already know
-      // there's an associated InfoBarTabHelper.
+      // there's an associated InfoBarService.
       content::WebContents* web_contents = controller->GetWebContents();
-      InfoBarTabHelper* infobar_tab_helper =
-          InfoBarTabHelper::FromWebContents(web_contents);
-      DCHECK(infobar_tab_helper);
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(web_contents);
+      DCHECK(infobar_service);
       const GURL& search_url = controller->GetActiveEntry()->GetURL();
       if (!search_url.is_valid())  // Not clear if this can happen.
         OnTabClosed(content::Source<content::WebContents>(web_contents));
-      OnNavigationCommitted(infobar_tab_helper, search_url);
+      OnNavigationCommitted(infobar_service, search_url);
       break;
     }
 
@@ -253,7 +253,7 @@ void GoogleURLTracker::Observe(int type,
       OnInstantCommitted(
           content::Source<content::NavigationController>(
               &web_contents->GetController()),
-          source, InfoBarTabHelper::FromWebContents(web_contents), search_url);
+          source, InfoBarService::FromWebContents(web_contents), search_url);
       break;
     }
 
@@ -274,11 +274,11 @@ void GoogleURLTracker::Shutdown() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void GoogleURLTracker::DeleteMapEntryForHelper(
-    const InfoBarTabHelper* infobar_helper) {
-  // WARNING: |infobar_helper| may point to a deleted object.  Do not
+void GoogleURLTracker::DeleteMapEntryForService(
+    const InfoBarService* infobar_service) {
+  // WARNING: |infobar_service| may point to a deleted object.  Do not
   // dereference it!  See OnTabClosed().
-  EntryMap::iterator i(entry_map_.find(infobar_helper));
+  EntryMap::iterator i(entry_map_.find(infobar_service));
   DCHECK(i != entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
 
@@ -351,9 +351,9 @@ void GoogleURLTracker::SearchCommitted() {
 void GoogleURLTracker::OnNavigationPending(
     const content::NotificationSource& navigation_controller_source,
     const content::NotificationSource& web_contents_source,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     int pending_id) {
-  EntryMap::iterator i(entry_map_.find(infobar_helper));
+  EntryMap::iterator i(entry_map_.find(infobar_service));
 
   if (search_committed_) {
     search_committed_ = false;
@@ -377,8 +377,8 @@ void GoogleURLTracker::OnNavigationPending(
       registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                      web_contents_source);
       entry_map_.insert(std::make_pair(
-          infobar_helper,
-          new GoogleURLTrackerMapEntry(this, infobar_helper,
+          infobar_service,
+          new GoogleURLTrackerMapEntry(this, infobar_service,
                                        navigation_controller_source,
                                        web_contents_source)));
     } else if (i->second->has_infobar()) {
@@ -410,9 +410,9 @@ void GoogleURLTracker::OnNavigationPending(
   }
 }
 
-void GoogleURLTracker::OnNavigationCommitted(InfoBarTabHelper* infobar_helper,
+void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
                                              const GURL& search_url) {
-  EntryMap::iterator i(entry_map_.find(infobar_helper));
+  EntryMap::iterator i(entry_map_.find(infobar_service));
   DCHECK(i != entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
   DCHECK(search_url.is_valid());
@@ -422,7 +422,7 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarTabHelper* infobar_helper,
     map_entry->infobar()->Update(search_url);
   } else {
     GoogleURLTrackerInfoBarDelegate* infobar_delegate =
-        infobar_creator_.Run(infobar_helper, this, search_url);
+        infobar_creator_.Run(infobar_service, this, search_url);
     if (infobar_delegate)
       map_entry->SetInfoBar(infobar_delegate);
     else
@@ -432,12 +432,12 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarTabHelper* infobar_helper,
 
 void GoogleURLTracker::OnTabClosed(
     const content::NotificationSource& web_contents_source) {
-  // Because InfoBarTabHelper tears itself down in response to
+  // Because InfoBarService tears itself down in response to
   // NOTIFICATION_WEB_CONTENTS_DESTROYED, it may or may not be possible to
-  // get a non-NULL pointer back from InfoBarTabHelper::FromWebContents() here,
+  // get a non-NULL pointer back from InfoBarService::FromWebContents() here,
   // depending on which order notifications fired in.  Likewise, the pointer in
   // |entry_map_| (and in its associated MapEntry) may point to deleted memory.
-  // Therefore, if we were to access to the InfoBarTabHelper* we have for this
+  // Therefore, if we were to access to the InfoBarService* we have for this
   // tab, we'd need to ensure we just looked at the raw pointer value, and never
   // dereferenced it.  This function doesn't need to do even that, but others in
   // the call chain from here might (and have comments pointing back here).
@@ -453,7 +453,7 @@ void GoogleURLTracker::OnTabClosed(
 void GoogleURLTracker::OnInstantCommitted(
     const content::NotificationSource& navigation_controller_source,
     const content::NotificationSource& web_contents_source,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     const GURL& search_url) {
   // If this was the search we were listening for, OnNavigationPending() should
   // ensure we're registered for NAV_ENTRY_COMMITTED, and we should call
@@ -465,14 +465,14 @@ void GoogleURLTracker::OnInstantCommitted(
   // |search_committed_| here because OnNavigationPending() will reset it.
   bool was_search_committed = search_committed_;
   OnNavigationPending(navigation_controller_source, web_contents_source,
-                      infobar_helper, 0);
-  EntryMap::iterator i(entry_map_.find(infobar_helper));
+                      infobar_service, 0);
+  EntryMap::iterator i(entry_map_.find(infobar_service));
   DCHECK_EQ(was_search_committed, (i != entry_map_.end()) &&
       registrar_.IsRegistered(this,
           content::NOTIFICATION_NAV_ENTRY_COMMITTED,
           i->second->navigation_controller_source()));
   if (was_search_committed)
-    OnNavigationCommitted(infobar_helper, search_url);
+    OnNavigationCommitted(infobar_service, search_url);
 }
 
 void GoogleURLTracker::CloseAllEntries(bool redo_searches) {

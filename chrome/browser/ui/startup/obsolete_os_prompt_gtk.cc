@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -33,11 +33,10 @@ void ShowObsoleteOSPrompt(Browser* browser) {
     content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
     if (!web_contents)
       return;
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(web_contents);
-    infobar_tab_helper->AddInfoBar(new ObsoleteOSInfoBar(infobar_tab_helper,
-                                   message,
-                                   GURL(kLearnMoreURL)));
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    infobar_service->AddInfoBar(new ObsoleteOSInfoBar(infobar_service, message,
+                                                      GURL(kLearnMoreURL)));
   }
 }
 

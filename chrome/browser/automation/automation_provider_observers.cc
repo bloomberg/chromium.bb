@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -1208,8 +1208,8 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
       reply_message_(reply_message),
       web_contents_(web_contents),
       target_count_(target_count) {
-  content::Source<InfoBarTabHelper> source(
-      InfoBarTabHelper::FromWebContents(web_contents));
+  content::Source<InfoBarService> source(
+      InfoBarService::FromWebContents(web_contents));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -1229,9 +1229,9 @@ void InfoBarCountObserver::Observe(
 }
 
 void InfoBarCountObserver::CheckCount() {
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-  if (infobar_tab_helper->GetInfoBarCount() != target_count_)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service->GetInfoBarCount() != target_count_)
     return;
 
   if (automation_) {

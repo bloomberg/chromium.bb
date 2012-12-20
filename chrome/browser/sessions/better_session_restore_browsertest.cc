@@ -9,10 +9,10 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -577,13 +577,11 @@ class BetterSessionRestoreCrashTest : public BetterSessionRestoreTest {
         chrome::GetActiveWebContents(browser_after_restore);
     ASSERT_TRUE(web_contents);
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-    InfoBarTabHelper* info_bar_tab_helper =
-        InfoBarTabHelper::FromWebContents(web_contents);
-    EXPECT_EQ(1U, info_bar_tab_helper->GetInfoBarCount());
-    ConfirmInfoBarDelegate* info_bar_delegate =
-        static_cast<ConfirmInfoBarDelegate*>(
-            info_bar_tab_helper->GetInfoBarDelegateAt(0));
-    info_bar_delegate->Accept();
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    EXPECT_EQ(1U, infobar_service->GetInfoBarCount());
+    infobar_service->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate()->
+        Accept();
 
     // Session restore is done ascynhronously.
     base::RunLoop loop;

@@ -14,9 +14,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
@@ -137,15 +137,15 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
     return true;
   }
 
-  InfoBarTabHelper* infobar_tab_helper() {
-    return InfoBarTabHelper::FromWebContents(web_contents());
+  InfoBarService* infobar_service() {
+    return InfoBarService::FromWebContents(web_contents());
   }
 
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    return (infobar_tab_helper()->GetInfoBarCount() == 1) ?
-        infobar_tab_helper()->GetInfoBarDelegateAt(0)->
+    return (infobar_service()->GetInfoBarCount() == 1) ?
+        infobar_service()->GetInfoBarDelegateAt(0)->
             AsTranslateInfoBarDelegate() : NULL;
   }
 
@@ -156,7 +156,7 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
-    infobar_tab_helper()->RemoveInfoBar(infobar);
+    infobar_service()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -189,7 +189,7 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
     if (!infobar)
       return false;
     infobar->TranslationDeclined();
-    infobar_tab_helper()->RemoveInfoBar(infobar);
+    infobar_service()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -234,12 +234,12 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
         set_translate_script_expiration_delay(60 * 60 * 1000);
 
     ChromeRenderViewHostTestHarness::SetUp();
-    InfoBarTabHelper::CreateForWebContents(web_contents());
+    InfoBarService::CreateForWebContents(web_contents());
     TranslateTabHelper::CreateForWebContents(web_contents());
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        content::Source<InfoBarTabHelper>(infobar_tab_helper()));
+        content::Source<InfoBarService>(infobar_service()));
   }
 
   virtual void TearDown() {
@@ -247,7 +247,7 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
 
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        content::Source<InfoBarTabHelper>(infobar_tab_helper()));
+        content::Source<InfoBarService>(infobar_service()));
 
     ChromeRenderViewHostTestHarness::TearDown();
     WebKit::shutdown();
@@ -760,18 +760,18 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
 
   // Simulate clicking 'Nope' (don't translate).
   EXPECT_TRUE(DenyTranslation());
-  EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
 
   // Send a new PageContents, we should not show an infobar.
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
 
   // Do the same steps but simulate closing the infobar this time.
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
   EXPECT_TRUE(CloseTranslateInfoBar());
-  EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
 }
 
 // Test that reloading the page brings back the infobar.

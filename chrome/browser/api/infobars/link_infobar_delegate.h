@@ -10,8 +10,6 @@
 #include "base/string16.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 
-class InfoBarTabHelper;
-
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a LinkInfoBar.
 class LinkInfoBarDelegate : public InfoBarDelegate {

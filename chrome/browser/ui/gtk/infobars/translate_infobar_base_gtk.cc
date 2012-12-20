@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -32,7 +31,7 @@ enum {
 
 }  // namespace
 
-TranslateInfoBarBase::TranslateInfoBarBase(InfoBarTabHelper* owner,
+TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
                                            TranslateInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
       background_error_percent_(0) {
@@ -199,18 +198,17 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 
 // TranslateInfoBarDelegate specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  InfoBarTabHelper* helper = static_cast<InfoBarTabHelper*>(owner);
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(helper, this);
+      infobar = new BeforeTranslateInfoBar(owner, this);
       break;
     case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(helper, this);
+      infobar = new AfterTranslateInfoBar(owner, this);
       break;
     case TRANSLATING:
     case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(helper, this);
+      infobar = new TranslateMessageInfoBar(owner, this);
       break;
     default:
       NOTREACHED();

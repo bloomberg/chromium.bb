@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_tab_contents.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
@@ -130,7 +130,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   FindTabHelper::CreateForWebContents(web_contents);
   HistoryTabHelper::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
-  InfoBarTabHelper::CreateForWebContents(web_contents);
+  InfoBarService::CreateForWebContents(web_contents);
   ManagedModeNavigationObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   if (OmniboxSearchHint::IsEnabled(profile))

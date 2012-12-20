@@ -12,7 +12,7 @@
 
 GeolocationConfirmInfoBarDelegate*
     GeolocationConfirmInfoBarDelegateFactory::Create(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     GeolocationInfoBarQueueController* controller,
     const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame_url,
@@ -22,5 +22,5 @@ GeolocationConfirmInfoBarDelegate*
 #else
   return new GeolocationConfirmInfoBarDelegate(
 #endif
-      infobar_helper, controller, id, requesting_frame_url, display_languages);
+      infobar_service, controller, id, requesting_frame_url, display_languages);
 }

@@ -25,7 +25,6 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
-    "!chrome/browser/infobars/infobar_tab_helper.h",
     "!chrome/browser/password_manager/encryptor.h",
     "!chrome/browser/password_manager/password_manager.h",
     "!chrome/browser/password_manager/password_manager_delegate_impl.h",

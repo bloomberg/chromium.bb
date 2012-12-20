@@ -13,7 +13,7 @@
 // remains the same.
 class OneClickSigninInfoBar : public ConfirmInfoBar {
  public:
-  OneClickSigninInfoBar(InfoBarTabHelper* owner,
+  OneClickSigninInfoBar(InfoBarService* owner,
                         OneClickSigninInfoBarDelegate* delegate);
   ~OneClickSigninInfoBar();
 

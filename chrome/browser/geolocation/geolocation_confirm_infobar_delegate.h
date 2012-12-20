@@ -12,7 +12,7 @@
 #include <string>
 
 class GeolocationInfoBarQueueController;
-class InfoBarTabHelper;
+class InfoBarService;
 
 // GeolocationInfoBarDelegates are created by the
 // GeolocationInfoBarQueueController to control the display
@@ -20,7 +20,7 @@ class InfoBarTabHelper;
 class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   GeolocationConfirmInfoBarDelegate(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       GeolocationInfoBarQueueController* controller,
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame,

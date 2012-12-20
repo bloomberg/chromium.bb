@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -196,12 +196,12 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.
       if (webContents) {
-        InfoBarTabHelper* infobarTabHelper =
-            InfoBarTabHelper::FromWebContents(webContents);
-        if (infobarTabHelper->GetInfoBarCount() == 0) {
-          infobarTabHelper->AddInfoBar(
+        InfoBarService* infobarService =
+            InfoBarService::FromWebContents(webContents);
+        if (infobarService->GetInfoBarCount() == 0) {
+          infobarService->AddInfoBar(
               new KeystonePromotionInfoBarDelegate(
-                  infobarTabHelper,
+                  infobarService,
                   Profile::FromBrowserContext(
                       webContents->GetBrowserContext())->GetPrefs()));
         }

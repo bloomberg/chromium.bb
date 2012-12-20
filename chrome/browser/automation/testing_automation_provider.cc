@@ -26,6 +26,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -64,7 +65,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -2121,10 +2121,10 @@ void TestingAutomationProvider::SetWindowDimensions(
 ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
-  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(wc);
-  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(wc);
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
-    InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
+    InfoBarDelegate* infobar = infobar_service->GetInfoBarDelegateAt(i);
     switch (infobar->GetInfoBarAutomationType()) {
       case InfoBarDelegate::CONFIRM_INFOBAR:
         infobar_item->SetString("type", "confirm_infobar");
@@ -2202,21 +2202,21 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     reply.SendError(StringPrintf("No such tab at index %d", tab_index));
     return;
   }
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
 
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);
-  if (infobar_index >= infobar_helper->GetInfoBarCount()) {
+  if (infobar_index >= infobar_service->GetInfoBarCount()) {
     reply.SendError(StringPrintf("No such infobar at index %" PRIuS,
                                  infobar_index));
     return;
   }
-  infobar = infobar_helper->GetInfoBarDelegateAt(infobar_index);
+  infobar = infobar_service->GetInfoBarDelegateAt(infobar_index);
 
   if ("dismiss" == action) {
     infobar->InfoBarDismissed();
-    infobar_helper->RemoveInfoBar(infobar);
+    infobar_service->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }
@@ -2228,10 +2228,10 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     }
     if ("accept" == action) {
       if (confirm_infobar->Accept())
-        infobar_helper->RemoveInfoBar(infobar);
+        infobar_service->RemoveInfoBar(infobar);
     } else if ("cancel" == action) {
       if (confirm_infobar->Cancel())
-        infobar_helper->RemoveInfoBar(infobar);
+        infobar_service->RemoveInfoBar(infobar);
     }
     reply.SendSuccess(NULL);
     return;

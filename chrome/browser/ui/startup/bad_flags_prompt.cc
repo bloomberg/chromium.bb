@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,11 +43,11 @@ void ShowBadFlagsPrompt(Browser* browser) {
     content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
     if (!web_contents)
       return;
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(web_contents);
-    infobar_tab_helper->AddInfoBar(
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    infobar_service->AddInfoBar(
         new SimpleAlertInfoBarDelegate(
-            infobar_tab_helper, NULL,
+            infobar_service, NULL,
             l10n_util::GetStringFUTF16(
             IDS_BAD_FLAGS_WARNING_MESSAGE,
             UTF8ToUTF16(std::string("--") + bad_flag)),

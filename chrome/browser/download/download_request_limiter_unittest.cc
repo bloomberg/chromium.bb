@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -28,7 +28,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     BlockedContentTabHelper::CreateForWebContents(web_contents());
-    InfoBarTabHelper::CreateForWebContents(web_contents());
+    InfoBarService::CreateForWebContents(web_contents());
 
     allow_download_ = true;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -239,8 +239,8 @@ TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
   // DownloadRequestLimiter won't try to make an infobar if it doesn't have a
-  // InfoBarTabHelper, and we want to test that it will Cancel() instead of
-  // prompting when it doesn't have a InfoBarTabHelper, so unset the delegate.
+  // InfoBarService, and we want to test that it will Cancel() instead of
+  // prompting when it doesn't have a InfoBarService, so unset the delegate.
   UnsetDelegate();
   EXPECT_EQ(0, continue_count_);
   EXPECT_EQ(0, cancel_count_);

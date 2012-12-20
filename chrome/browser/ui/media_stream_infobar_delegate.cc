@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -16,9 +17,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
-    InfoBarTabHelper* tab_helper,
+    InfoBarService* infobar_service,
     MediaStreamDevicesController* controller)
-    : ConfirmInfoBarDelegate(tab_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller) {
   DCHECK(controller_.get());
   DCHECK(controller_->has_audio() || controller_->has_video());

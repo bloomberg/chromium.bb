@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossRaisesInfobar) {
   SimulateGPUCrash(browser());
   infobar_added.Wait();
   EXPECT_EQ(1u,
-            InfoBarTabHelper::FromWebContents(
+            InfoBarService::FromWebContents(
                 chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
 }
 
@@ -145,10 +145,10 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossInfobarReload) {
   SimulateGPUCrash(browser());
   infobar_added.Wait();
   ASSERT_EQ(1u,
-            InfoBarTabHelper::FromWebContents(
+            InfoBarService::FromWebContents(
                 chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
   InfoBarDelegate* delegate =
-      InfoBarTabHelper::FromWebContents(
+      InfoBarService::FromWebContents(
           chrome::GetActiveWebContents(browser()))->GetInfoBarDelegateAt(0);
   ASSERT_TRUE(delegate);
   ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());

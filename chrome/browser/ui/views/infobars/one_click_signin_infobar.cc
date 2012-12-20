@@ -6,7 +6,6 @@
 
 #include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -103,14 +102,14 @@ InfoBarColoredButtonBorder::~InfoBarColoredButtonBorder() {
 // OneClickSigninInfoBarDelegate ----------------------------------------------
 
 InfoBar* OneClickSigninInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new OneClickSigninInfoBar(static_cast<InfoBarTabHelper*>(owner), this);
+  return new OneClickSigninInfoBar(owner, this);
 }
 
 
 // OneClickLoginInfoBar -------------------------------------------------------
 
 OneClickSigninInfoBar::OneClickSigninInfoBar(
-    InfoBarTabHelper* owner,
+    InfoBarService* owner,
     OneClickSigninInfoBarDelegate* delegate)
   : ConfirmInfoBar(owner, delegate),
     one_click_delegate_(delegate) {

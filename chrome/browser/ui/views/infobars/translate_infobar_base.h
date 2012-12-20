@@ -19,7 +19,7 @@ class MenuButton;
 // use.
 class TranslateInfoBarBase : public InfoBarView {
  public:
-  TranslateInfoBarBase(InfoBarTabHelper* owner,
+  TranslateInfoBarBase(InfoBarService* owner,
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 

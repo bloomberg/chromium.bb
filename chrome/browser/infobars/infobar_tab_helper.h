@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INFOBARS_INFOBAR_TAB_HELPER_H_
 #define CHROME_BROWSER_INFOBARS_INFOBAR_TAB_HELPER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -19,12 +21,16 @@ class InfoBarTabHelper : public InfoBarService,
                          public content::WebContentsObserver,
                          public content::NotificationObserver,
                          public content::WebContentsUserData<InfoBarTabHelper> {
- public:
+ private:
+  friend class content::WebContentsUserData<InfoBarTabHelper>;
+
+  typedef std::vector<InfoBarDelegate*> InfoBars;
+
+  explicit InfoBarTabHelper(content::WebContents* web_contents);
   virtual ~InfoBarTabHelper();
 
-  using content::WebContentsUserData<InfoBarTabHelper>::FromWebContents;
-
-  // InfoBarService implementation.
+  // InfoBarService:
+  virtual void SetInfoBarsEnabled(bool enabled) OVERRIDE;
   virtual bool AddInfoBar(InfoBarDelegate* delegate) OVERRIDE;
   virtual void RemoveInfoBar(InfoBarDelegate* delegate) OVERRIDE;
   virtual bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
@@ -33,24 +39,14 @@ class InfoBarTabHelper : public InfoBarService,
   virtual InfoBarDelegate* GetInfoBarDelegateAt(size_t index) OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
-  // Enables or disables infobars for the given tab.
-  void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
-
-  // content::WebContentsObserver overrides:
+  // content::WebContentsObserver:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // content::NotificationObserver overrides:
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  friend class content::WebContentsUserData<InfoBarTabHelper>;
-
-  typedef std::vector<InfoBarDelegate*> InfoBars;
-
-  explicit InfoBarTabHelper(content::WebContents* web_contents);
 
   void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
   void RemoveAllInfoBars(bool animate);

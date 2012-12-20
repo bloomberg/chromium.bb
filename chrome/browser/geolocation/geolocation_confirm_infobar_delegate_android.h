@@ -14,7 +14,7 @@ class GeolocationConfirmInfoBarDelegateAndroid
     : public GeolocationConfirmInfoBarDelegate {
  public:
   GeolocationConfirmInfoBarDelegateAndroid(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       GeolocationInfoBarQueueController* controller,
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame_url,

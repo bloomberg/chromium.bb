@@ -9,7 +9,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class InfoBarTabHelper;
 class PrefService;
 class TokenService;
 
@@ -41,7 +40,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  AutoLoginInfoBarDelegate(InfoBarTabHelper* owner, const Params& params);
+  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
   virtual ~AutoLoginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

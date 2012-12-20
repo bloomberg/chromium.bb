@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,12 +17,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     WebIntentsRegistry* registry,
     const webkit_glue::WebIntentServiceData& service,
     FaviconService* favicon_service,
     const GURL& origin_url)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       registry_(registry),
       service_(service),
       favicon_service_(favicon_service),
@@ -77,15 +77,15 @@ bool RegisterIntentHandlerInfoBarDelegate::LinkClicked(
 namespace {
 
 // Helper continuation for MaybeShowIntentInfoBar.
-void CheckProvider(InfoBarTabHelper* infobar_helper,
+void CheckProvider(InfoBarService* infobar_service,
                    WebIntentsRegistry* registry,
                    const webkit_glue::WebIntentServiceData& service,
                    FaviconService* favicon_service,
                    const GURL& origin_url,
                    bool provider_exists) {
   if (!provider_exists) {
-    infobar_helper->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
-        infobar_helper, registry, service, favicon_service, origin_url));
+    infobar_service->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
+        infobar_service, registry, service, favicon_service, origin_url));
   }
 }
 
@@ -93,16 +93,16 @@ void CheckProvider(InfoBarTabHelper* infobar_helper,
 
 // static
 void RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     WebIntentsRegistry* registry,
     const webkit_glue::WebIntentServiceData& service,
     FaviconService* favicon_service,
     const GURL& origin_url) {
-  DCHECK(infobar_helper);
+  DCHECK(infobar_service);
   DCHECK(registry);
   registry->IntentServiceExists(service,
                                 base::Bind(&CheckProvider,
-                                           base::Unretained(infobar_helper),
+                                           base::Unretained(infobar_service),
                                            registry,
                                            service,
                                            favicon_service,

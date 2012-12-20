@@ -9,11 +9,11 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -99,7 +99,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
                                      expiration_date);
 
     TabSpecificContentSettings::CreateForWebContents(web_contents());
-    InfoBarTabHelper::CreateForWebContents(web_contents());
+    InfoBarService::CreateForWebContents(web_contents());
 
     // Setup the mock cert store.
     EXPECT_CALL(cert_store_, RetrieveCert(cert_id_, _) )
@@ -133,15 +133,15 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   TabSpecificContentSettings* tab_specific_content_settings() {
     return TabSpecificContentSettings::FromWebContents(web_contents());
   }
-  InfoBarTabHelper* infobar_tab_helper() {
-    return InfoBarTabHelper::FromWebContents(web_contents());
+  InfoBarService* infobar_service() {
+    return InfoBarService::FromWebContents(web_contents());
   }
 
   WebsiteSettings* website_settings() {
     if (!website_settings_.get()) {
       website_settings_.reset(new WebsiteSettings(
           mock_ui(), profile(), tab_specific_content_settings(),
-          infobar_tab_helper(), url(), ssl(), cert_store()));
+          infobar_service(), url(), ssl(), cert_store()));
     }
     return website_settings_.get();
   }
@@ -368,9 +368,9 @@ TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
   website_settings()->OnUIClosing();
-  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
 }
 
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
@@ -390,18 +390,18 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
-  EXPECT_EQ(1u, infobar_tab_helper()->GetInfoBarCount());
+  EXPECT_EQ(1u, infobar_service()->GetInfoBarCount());
 
-  // Removing an |InfoBarDelegate| from the |InfoBarTabHelper| does not delete
+  // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
   // it. Hence the |delegate| must be cleaned up after it was removed from the
-  // |infobar_tab_helper|.
+  // |infobar_service|.
   scoped_ptr<InfoBarDelegate> delegate(
-      infobar_tab_helper()->GetInfoBarDelegateAt(0));
-  infobar_tab_helper()->RemoveInfoBar(delegate.get());
+      infobar_service()->GetInfoBarDelegateAt(0));
+  infobar_service()->RemoveInfoBar(delegate.get());
   // Right now InfoBarDelegates delete themselves via
   // InfoBarClosed(); once InfoBars own their delegates, this can become a
   // simple reset() call

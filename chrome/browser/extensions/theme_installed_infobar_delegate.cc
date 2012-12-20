@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -21,13 +21,13 @@
 #include "ui/base/resource/resource_bundle.h"
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     ExtensionService* extension_service,
     ThemeService* theme_service,
     const extensions::Extension* new_theme,
     const std::string& previous_theme_id,
     bool previous_using_native_theme)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       extension_service_(extension_service),
       theme_service_(theme_service),
       name_(new_theme->name()),

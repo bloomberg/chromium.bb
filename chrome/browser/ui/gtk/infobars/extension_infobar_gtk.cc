@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -27,7 +26,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
-ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarTabHelper* owner,
+ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
                                          ExtensionInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
       tracker_(this),
@@ -204,5 +203,5 @@ gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ExtensionInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
+  return new ExtensionInfoBarGtk(owner, this);
 }

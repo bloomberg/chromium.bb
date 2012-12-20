@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -14,10 +14,10 @@ using content::Referrer;
 
 namespace chrome {
 
-ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarTabHelper* infobar_helper,
+ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
                                      const string16& message,
                                      const GURL& url)
-    : LinkInfoBarDelegate(infobar_helper),
+    : LinkInfoBarDelegate(infobar_service),
       message_(message),
       learn_more_url_(url) {
 }

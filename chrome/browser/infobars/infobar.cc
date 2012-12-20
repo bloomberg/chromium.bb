@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar_container.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "ui/base/animation/slide_animation.h"
 
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {
@@ -39,7 +39,7 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
 // TODO(pkasting): Port Mac to use this.
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
-InfoBar::InfoBar(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
+InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
       container_(NULL),

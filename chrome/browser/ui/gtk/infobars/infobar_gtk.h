@@ -29,7 +29,7 @@ class MenuModel;
 class InfoBarGtk : public InfoBar,
                    public content::NotificationObserver {
  public:
-  InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
+  InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarGtk();
 
   // Get the top level native GTK widget for this infobar.

@@ -13,12 +13,12 @@
 
 GeolocationConfirmInfoBarDelegateAndroid::
     GeolocationConfirmInfoBarDelegateAndroid(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     GeolocationInfoBarQueueController* controller,
     const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame_url,
     const std::string& display_languages)
-    : GeolocationConfirmInfoBarDelegate(infobar_helper, controller, id,
+    : GeolocationConfirmInfoBarDelegate(infobar_service, controller, id,
                                         requesting_frame_url,
                                         display_languages),
       google_location_settings_helper_(

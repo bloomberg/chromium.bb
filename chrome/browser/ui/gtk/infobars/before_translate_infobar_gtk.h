@@ -12,7 +12,7 @@ class TranslateInfoBarDelegate;
 
 class BeforeTranslateInfoBar : public TranslateInfoBarBase {
  public:
-  BeforeTranslateInfoBar(InfoBarTabHelper* owner,
+  BeforeTranslateInfoBar(InfoBarService* owner,
                          TranslateInfoBarDelegate* delegate);
   virtual ~BeforeTranslateInfoBar();
 

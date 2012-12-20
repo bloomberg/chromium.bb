@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -54,7 +55,7 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  DefaultBrowserInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  DefaultBrowserInfoBarDelegate(InfoBarService* infobar_service,
                                 PrefService* prefs,
                                 bool interactive_flow_required);
 
@@ -93,10 +94,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PrefService* prefs,
     bool interactive_flow_required)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
@@ -171,17 +172,17 @@ void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (infobar_helper->GetInfoBarCount() > 0)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (infobar_service->GetInfoBarCount() > 0)
     return;
 
   bool interactive_flow = ShellIntegration::CanSetAsDefaultBrowser() ==
       ShellIntegration::SET_DEFAULT_INTERACTIVE;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_helper->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(infobar_helper,
+  infobar_service->AddInfoBar(
+      new DefaultBrowserInfoBarDelegate(infobar_service,
                                         profile->GetPrefs(),
                                         interactive_flow));
 }

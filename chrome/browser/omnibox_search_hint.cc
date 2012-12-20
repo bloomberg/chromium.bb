@@ -10,10 +10,10 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -59,7 +59,7 @@ const char* const kSearchEngineURLs[] = {
 class HintInfoBar : public ConfirmInfoBarDelegate {
  public:
   HintInfoBar(OmniboxSearchHint* omnibox_hint,
-              InfoBarTabHelper* infobar_tab_helper);
+              InfoBarService* infobar_service);
 
  private:
   virtual ~HintInfoBar();
@@ -93,8 +93,8 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 };
 
 HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint,
-                         InfoBarTabHelper* infobar_tab_helper)
-    : ConfirmInfoBarDelegate(infobar_tab_helper),
+                         InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service),
       omnibox_hint_(omnibox_hint),
       action_taken_(false),
       should_expire_(false),
@@ -214,9 +214,9 @@ void OmniboxSearchHint::Observe(int type,
 }
 
 void OmniboxSearchHint::ShowInfoBar() {
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-  infobar_tab_helper->AddInfoBar(new HintInfoBar(this, infobar_tab_helper));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  infobar_service->AddInfoBar(new HintInfoBar(this, infobar_service));
 }
 
 void OmniboxSearchHint::ShowEnteringQuery() {

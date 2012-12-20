@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -15,12 +14,12 @@
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ConfirmInfoBar(static_cast<InfoBarTabHelper*>(owner), this);
+  return new ConfirmInfoBar(owner, this);
 }
 
 // ConfirmInfoBar -------------------------------------------------------------
 
-ConfirmInfoBar::ConfirmInfoBar(InfoBarTabHelper* owner,
+ConfirmInfoBar::ConfirmInfoBar(InfoBarService* owner,
                                ConfirmInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       label_(NULL),

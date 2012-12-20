@@ -10,9 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
@@ -166,7 +166,7 @@ AutoLoginInfoBarDelegate::Params::Params() {}
 AutoLoginInfoBarDelegate::Params::~Params() {}
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
-    InfoBarTabHelper* owner,
+    InfoBarService* owner,
     const Params& params)
     : ConfirmInfoBarDelegate(owner),
       params_(params),
@@ -245,7 +245,7 @@ void AutoLoginInfoBarDelegate::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, type);
-  // owner() can be NULL when InfoBarTabHelper removes us. See
+  // owner() can be NULL when InfoBarService removes us. See
   // |InfoBarDelegate::clear_owner|.
   if (owner())
     owner()->RemoveInfoBar(this);

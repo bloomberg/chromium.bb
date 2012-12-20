@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -28,7 +28,7 @@ const size_t TranslateInfoBarDelegate::kNoIndex = static_cast<size_t>(-1);
 // static
 TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
     Type type,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PrefService* prefs,
     const std::string& original_language,
     const std::string& target_language) {
@@ -44,7 +44,7 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
   TranslateInfoBarDelegate* delegate =
       new TranslateInfoBarDelegate(type,
                                    TranslateErrors::NONE,
-                                   infobar_helper,
+                                   infobar_service,
                                    prefs,
                                    original_language,
                                    target_language);
@@ -54,13 +54,13 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
 
 TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateErrorDelegate(
     TranslateErrors::Type error,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PrefService* prefs,
     const std::string& original_language,
     const std::string& target_language) {
   return new TranslateInfoBarDelegate(TRANSLATION_ERROR,
                                       error,
-                                      infobar_helper,
+                                      infobar_service,
                                       prefs,
                                       original_language,
                                       target_language);
@@ -281,11 +281,11 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     Type type,
     TranslateErrors::Type error,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PrefService* prefs,
     const std::string& original_language,
     const std::string& target_language)
-    : InfoBarDelegate(infobar_helper),
+    : InfoBarDelegate(infobar_service),
       type_(type),
       background_animation_(NONE),
       original_language_index_(kNoIndex),

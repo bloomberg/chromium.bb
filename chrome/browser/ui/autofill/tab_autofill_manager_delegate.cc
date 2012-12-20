@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/password_generator.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +43,7 @@ Profile* TabAutofillManagerDelegate::GetOriginalProfile() const {
 }
 
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
-  return InfoBarTabHelper::FromWebContents(web_contents_);
+  return InfoBarService::FromWebContents(web_contents_);
 }
 
 PrefServiceBase* TabAutofillManagerDelegate::GetPrefs() {

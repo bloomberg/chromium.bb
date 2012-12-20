@@ -10,11 +10,11 @@
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -212,13 +212,11 @@ bool GetAlertsForTabFunction::RunImpl() {
 
   ListValue* alerts_value = new ListValue;
 
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(contents);
-  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
     // TODO(hashimoto): Make other kind of alerts available.  crosbug.com/24281
-    InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(i);
     ConfirmInfoBarDelegate* confirm_infobar_delegate =
-        infobar_delegate->AsConfirmInfoBarDelegate();
+        infobar_service->GetInfoBarDelegateAt(i)->AsConfirmInfoBarDelegate();
     if (confirm_infobar_delegate) {
       DictionaryValue* alert_value = new DictionaryValue;
       const string16 message_text = confirm_infobar_delegate->GetMessageText();

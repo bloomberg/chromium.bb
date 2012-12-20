@@ -93,7 +93,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   const GURL& fetched_google_url() const { return fetched_google_url_; }
 
   // No one but GoogleURLTrackerMapEntry should call this.
-  void DeleteMapEntryForHelper(const InfoBarTabHelper* infobar_helper);
+  void DeleteMapEntryForService(const InfoBarService* infobar_service);
 
   static const char kDefaultGoogleHomepage[];
   static const char kSearchDomainCheckURL[];
@@ -101,8 +101,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
  private:
   friend class GoogleURLTrackerTest;
 
-  typedef std::map<const InfoBarTabHelper*,
-                   GoogleURLTrackerMapEntry*> EntryMap;
+  typedef std::map<const InfoBarService*, GoogleURLTrackerMapEntry*> EntryMap;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -139,9 +138,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // Called by Observe() after SearchCommitted() registers notification
   // listeners, to indicate that we've received the "load now pending"
   // notification.  |navigation_controller_source| and |web_contents_source| are
-  // the NotificationSource pointing to the associated NavigationController and
-  // the WebContents, respectively, for this load; |infobar_helper| is the
-  // InfoBarTabHelper of the associated tab; and |pending_id| is the unique ID
+  // NotificationSources pointing to the associated NavigationController and
+  // WebContents, respectively, for this load; |infobar_service| is the
+  // InfoBarService of the associated tab; and |pending_id| is the unique ID
   // of the newly pending NavigationEntry.  If there is already a visible
   // GoogleURLTracker infobar for this tab, this function resets its associated
   // pending entry ID to the new ID.  Otherwise this function creates a
@@ -149,16 +148,16 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void OnNavigationPending(
       const content::NotificationSource& navigation_controller_source,
       const content::NotificationSource& web_contents_source,
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       int pending_id);
 
-  // Called by Observe() once a load we're watching commits.  |infobar_helper|
+  // Called by Observe() once a load we're watching commits.  |infobar_service|
   // is the same as for OnNavigationPending(); |search_url| is guaranteed to be
   // valid.
-  void OnNavigationCommitted(InfoBarTabHelper* infobar_helper,
+  void OnNavigationCommitted(InfoBarService* infobar_service,
                              const GURL& search_url);
 
-  // Called by Observe() when a tab closes.  Because the InfoBarTabHelper may
+  // Called by Observe() when a tab closes.  Because the InfoBarService may
   // have already been torn down in this case, we look up the appropriate map
   // entry by |web_contents_source| instead.
   void OnTabClosed(const content::NotificationSource& web_contents_source);
@@ -169,7 +168,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void OnInstantCommitted(
     const content::NotificationSource& navigation_controller_source,
     const content::NotificationSource& web_contents_source,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     const GURL& search_url);
 
   // Closes all map entries.  If |redo_searches| is true, this also triggers
@@ -191,11 +190,11 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   Profile* profile_;
   content::NotificationRegistrar registrar_;
 
-  // Creates an infobar delegate and adds it to the provided InfoBarHelper.
+  // Creates an infobar delegate and adds it to the provided InfoBarService.
   // Returns the delegate pointer on success or NULL on failure.  The caller
-  // does not own the returned object, the InfoBarTabHelper does.
+  // does not own the returned object, the InfoBarService does.
   base::Callback<GoogleURLTrackerInfoBarDelegate*(
-      InfoBarTabHelper*,
+      InfoBarService*,
       GoogleURLTracker*,
       const GURL&)> infobar_creator_;
 

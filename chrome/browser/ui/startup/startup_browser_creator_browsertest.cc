@@ -5,12 +5,12 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -656,8 +656,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   content::WebContents* web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             web_contents->GetURL());
-  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
-            GetInfoBarCount());
+  EXPECT_EQ(1U,
+            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last));
@@ -667,8 +667,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             web_contents->GetURL());
-  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
-            GetInfoBarCount());
+  EXPECT_EQ(1U,
+            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             web_contents->GetURL());
-  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
-            GetInfoBarCount());
+  EXPECT_EQ(1U,
+            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
 }
 #endif  // !OS_CHROMEOS

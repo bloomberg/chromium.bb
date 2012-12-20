@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
 #define CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
 
+#include <cstddef>
+
 namespace content {
 class WebContents;
 }
@@ -15,10 +17,17 @@ class InfoBarDelegate;
 // attached to a tab.
 class InfoBarService {
  public:
-  // Retrieves the InfoBarService for a given WebContents.
+  // Passthrough functions to the implementing subclass.  The subclass .cc file
+  // should define these.
+  static void CreateForWebContents(content::WebContents* web_contents);
   static InfoBarService* FromWebContents(content::WebContents* web_contents);
+  static const InfoBarService*
+      FromWebContents(const content::WebContents* web_contents);
 
-  virtual ~InfoBarService() {}
+  virtual ~InfoBarService();
+
+  // Changes whether infobars are enabled.  The default is true.
+  virtual void SetInfoBarsEnabled(bool enabled) = 0;
 
   // Adds an InfoBar for the specified |delegate|.
   //

@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,7 +36,7 @@ const int kMaxInfobarShown = 5;
 // The delegate for the infobar shown when Chrome was auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AutolaunchInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  AutolaunchInfoBarDelegate(InfoBarService* infobar_service,
                             PrefService* prefs,
                             Profile* profile);
   virtual ~AutolaunchInfoBarDelegate();
@@ -72,10 +72,10 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     PrefService* prefs,
     Profile* profile)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
@@ -177,14 +177,14 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
 
   // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (infobar_helper->GetInfoBarCount() > 0)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (infobar_service->GetInfoBarCount() > 0)
     return false;
 
   profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_helper->AddInfoBar(new AutolaunchInfoBarDelegate(
-      infobar_helper, profile->GetPrefs(), profile));
+  infobar_service->AddInfoBar(new AutolaunchInfoBarDelegate(
+      infobar_service, profile->GetPrefs(), profile));
 
   return true;
 }

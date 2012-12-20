@@ -8,13 +8,13 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -524,10 +524,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Reload the extension using the "crashed extension" infobar while the task
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
-  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
       chrome::GetActiveWebContents(browser()));
-  ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
-  ConfirmInfoBarDelegate* delegate = infobar_helper->
+  ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
+  ConfirmInfoBarDelegate* delegate = infobar_service->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
   delegate->Accept();

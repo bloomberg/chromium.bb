@@ -5,18 +5,17 @@
 #include "chrome/browser/ui/gtk/infobars/link_infobar_gtk.h"
 
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
 
 // LinkInfoBarDelegate ---------------------------------------------------------
 
 InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new LinkInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
+  return new LinkInfoBarGtk(owner, this);
 }
 
 // LinkInfoBarGtk --------------------------------------------------------------
 
-LinkInfoBarGtk::LinkInfoBarGtk(InfoBarTabHelper* owner,
+LinkInfoBarGtk::LinkInfoBarGtk(InfoBarService* owner,
                                LinkInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate) {
   size_t link_offset;

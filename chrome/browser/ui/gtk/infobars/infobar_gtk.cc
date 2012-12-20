@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -49,7 +49,7 @@ const int InfoBar::kDefaultBarTargetHeight = 36;
 // static
 const int InfoBarGtk::kEndOfLabelSpacing = 6;
 
-InfoBarGtk::InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
+InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
       theme_service_(GtkThemeService::GetFrom(Profile::FromBrowserContext(
           owner->GetWebContents()->GetBrowserContext()))),

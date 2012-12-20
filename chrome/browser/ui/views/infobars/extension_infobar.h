@@ -22,7 +22,7 @@ class ExtensionInfoBar : public InfoBarView,
                          public views::MenuButtonListener {
  public:
   ExtensionInfoBar(Browser* browser,
-                   InfoBarTabHelper* owner,
+                   InfoBarService* owner,
                    ExtensionInfoBarDelegate* delegate);
 
  private:

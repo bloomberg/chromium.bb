@@ -11,14 +11,14 @@ class GeolocationConfirmInfoBarDelegate;
 class GeolocationInfoBarQueueController;
 class GeolocationPermissionRequestID;
 class GURL;
-class InfoBarTabHelper;
+class InfoBarService;
 
 class GeolocationConfirmInfoBarDelegateFactory {
  public:
   GeolocationConfirmInfoBarDelegateFactory() {}
   ~GeolocationConfirmInfoBarDelegateFactory() {}
   static GeolocationConfirmInfoBarDelegate* Create(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       GeolocationInfoBarQueueController* controller,
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame_url,

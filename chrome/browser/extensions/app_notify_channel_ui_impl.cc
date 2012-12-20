@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -32,7 +32,7 @@ namespace extensions {
 class AppNotifyChannelUIImpl::InfoBar : public ConfirmInfoBarDelegate {
  public:
   InfoBar(AppNotifyChannelUIImpl* creator,
-          InfoBarTabHelper* helper,
+          InfoBarService* infobar_service,
           const std::string& app_name);
   virtual ~InfoBar();
 
@@ -52,9 +52,11 @@ class AppNotifyChannelUIImpl::InfoBar : public ConfirmInfoBarDelegate {
 
 AppNotifyChannelUIImpl::InfoBar::InfoBar(
     AppNotifyChannelUIImpl* creator,
-    InfoBarTabHelper* helper,
+    InfoBarService* infobar_service,
     const std::string& app_name)
-    : ConfirmInfoBarDelegate(helper), creator_(creator), app_name_(app_name) {
+    : ConfirmInfoBarDelegate(infobar_service),
+      creator_(creator),
+      app_name_(app_name) {
 }
 
 AppNotifyChannelUIImpl::InfoBar::~InfoBar() {}
@@ -135,10 +137,10 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
     return;
   }
 
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-  infobar_tab_helper->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
-      this, infobar_tab_helper, app_name_));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  infobar_service->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
+      this, infobar_service, app_name_));
 }
 
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {

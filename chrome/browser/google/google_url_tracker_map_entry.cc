@@ -13,11 +13,11 @@
 
 GoogleURLTrackerMapEntry::GoogleURLTrackerMapEntry(
     GoogleURLTracker* google_url_tracker,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     const content::NotificationSource& navigation_controller_source,
     const content::NotificationSource& web_contents_source)
     : google_url_tracker_(google_url_tracker),
-      infobar_helper_(infobar_helper),
+      infobar_service_(infobar_service),
       infobar_(NULL),
       navigation_controller_source_(navigation_controller_source),
       web_contents_source_(web_contents_source) {
@@ -31,9 +31,9 @@ void GoogleURLTrackerMapEntry::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-  DCHECK_EQ(infobar_helper_, content::Source<InfoBarTabHelper>(source).ptr());
+  DCHECK_EQ(infobar_service_, content::Source<InfoBarService>(source).ptr());
   if (content::Details<InfoBarRemovedDetails>(details)->first == infobar_) {
-    google_url_tracker_->DeleteMapEntryForHelper(infobar_helper_);
+    google_url_tracker_->DeleteMapEntryForService(infobar_service_);
     // WARNING: At this point |this| has been deleted!
   }
 }
@@ -43,16 +43,16 @@ void GoogleURLTrackerMapEntry::SetInfoBar(
   DCHECK(!infobar_);
   infobar_ = infobar;
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                 content::Source<InfoBarTabHelper>(infobar_helper_));
+                 content::Source<InfoBarService>(infobar_service_));
 }
 
 void GoogleURLTrackerMapEntry::Close(bool redo_search) {
   if (infobar_) {
     infobar_->Close(redo_search);
   } else {
-    // WARNING: |infobar_helper_| may point to a deleted object.  Do not
+    // WARNING: |infobar_service_| may point to a deleted object.  Do not
     // dereference it!  See GoogleURLTracker::OnTabClosed().
-    google_url_tracker_->DeleteMapEntryForHelper(infobar_helper_);
+    google_url_tracker_->DeleteMapEntryForService(infobar_service_);
   }
   // WARNING: At this point |this| has been deleted!
 }

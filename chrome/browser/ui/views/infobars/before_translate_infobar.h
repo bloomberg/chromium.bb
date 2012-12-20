@@ -18,7 +18,7 @@ class MenuButton;
 class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                                public views::MenuButtonListener {
  public:
-  BeforeTranslateInfoBar(InfoBarTabHelper* owner,
+  BeforeTranslateInfoBar(InfoBarService* owner,
                          TranslateInfoBarDelegate* delegate);
 
  private:

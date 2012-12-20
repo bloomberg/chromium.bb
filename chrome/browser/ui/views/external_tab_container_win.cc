@@ -18,13 +18,13 @@
 #include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
@@ -223,9 +223,9 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   web_contents_.reset(existing_contents);
 
   if (!infobars_enabled) {
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(existing_contents);
-    infobar_tab_helper->set_infobars_enabled(false);
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(existing_contents);
+    infobar_service->SetInfoBarsEnabled(false);
   }
 
   // Start loading initial URL
@@ -1198,9 +1198,9 @@ void ExternalTabContainerWin::SetupExternalTabView() {
 
   InfoBarContainerView* info_bar_container =
       new InfoBarContainerView(this, NULL);
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_.get());
-  info_bar_container->ChangeTabContents(infobar_tab_helper);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_.get());
+  info_bar_container->ChangeInfoBarService(infobar_service);
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.

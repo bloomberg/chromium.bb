@@ -7,7 +7,7 @@
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
-class InfoBarTabHelper;
+class InfoBarService;
 
 // This class configures an infobar that is shown when the website settings UI
 // is closed and the settings for one or more site permissions have been
@@ -16,7 +16,7 @@ class InfoBarTabHelper;
 // the reload right from the infobar.
 class WebsiteSettingsInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit WebsiteSettingsInfobarDelegate(InfoBarTabHelper* infobar_helper);
+  explicit WebsiteSettingsInfobarDelegate(InfoBarService* infobar_service);
 
  private:
   // Overwridden from ConfirmInfoBarDelegate:

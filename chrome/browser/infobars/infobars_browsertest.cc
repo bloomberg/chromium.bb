@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   infobar_added_2.Wait();
   infobar_removed_1.Wait();
   EXPECT_EQ(0u,
-            InfoBarTabHelper::FromWebContents(
+            InfoBarService::FromWebContents(
                 chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
 
   content::WindowedNotificationObserver infobar_removed_2(
@@ -83,6 +83,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
   infobar_removed_2.Wait();
   EXPECT_EQ(0u,
-            InfoBarTabHelper::FromWebContents(
+            InfoBarService::FromWebContents(
                 chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
 }

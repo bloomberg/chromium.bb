@@ -10,7 +10,6 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "webkit/glue/web_intent_service_data.h"
 
-class InfoBarTabHelper;
 class WebIntentsRegistry;
 class FaviconService;
 class GURL;
@@ -20,7 +19,7 @@ class GURL;
 class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   RegisterIntentHandlerInfoBarDelegate(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       WebIntentsRegistry* registry,
       const webkit_glue::WebIntentServiceData& service,
       FaviconService* favicon_service,
@@ -36,14 +35,14 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Shows the intent registration infobar if |service| has not already been
   // registered.
-  // |infobar_helper| is the infobar controller for the tab in which the infobar
-  // may be shown. Must not be NULL.
+  // |infobar_service| is the infobar controller for the tab in which the
+  // infobar may be shown. Must not be NULL.
   // |registry| is the data source for web intents. Must not be NULL.
   // |service| is the candidate service to show the infobar for.
   // |favicon_service| is the favicon service to use. Must not be NULL.
   // |origin_url| is the URL that the intent is registered from.
   static void MaybeShowIntentInfoBar(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       WebIntentsRegistry* registry,
       const webkit_glue::WebIntentServiceData& service,
       FaviconService* favicon_service,

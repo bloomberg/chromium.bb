@@ -10,6 +10,7 @@
 #import "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -214,10 +214,10 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
-    InfoBarTabHelper* infobarTabHelper =
-        InfoBarTabHelper::FromWebContents(webContents_);
-    infobarTabHelper->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobarTabHelper));
+    InfoBarService* infobarService =
+        InfoBarService::FromWebContents(webContents_);
+    infobarService->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(infobarService));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];

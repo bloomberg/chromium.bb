@@ -4,7 +4,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -44,7 +44,7 @@ class RegisterIntentHandlerInfoBarDelegateTest
 
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
-    InfoBarTabHelper::CreateForWebContents(web_contents());
+    InfoBarService::CreateForWebContents(web_contents());
 
     profile()->CreateWebDataService();
     web_intents_registry_ = BuildForProfile(profile());
@@ -71,7 +71,7 @@ TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
   service.action = ASCIIToUTF16("http://webintents.org/share");
   service.type = ASCIIToUTF16("text/url");
   RegisterIntentHandlerInfoBarDelegate delegate(
-      InfoBarTabHelper::FromWebContents(web_contents()),
+      InfoBarService::FromWebContents(web_contents()),
       WebIntentsRegistryFactory::GetForProfile(profile()),
       service, NULL, GURL());
 

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
@@ -64,14 +64,14 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents());
-  // See PromptUserForDownload(): if there's no InfoBarTabHelper, then
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  // See PromptUserForDownload(): if there's no InfoBarService, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((infobar_helper &&
+  if ((infobar_service &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
        status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
-      (!infobar_helper &&
+      (!infobar_service &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS)) {
     // Revert to default status.
     host_->Remove(this);
@@ -92,10 +92,10 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     return;
   }
 
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (!infobar_helper) {
-    // |web_contents| may not have a InfoBarTabHelper if it's actually a
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service) {
+    // |web_contents| may not have a InfoBarService if it's actually a
     // WebContents like those used for extension popups/bubbles and hosted apps
     // etc.
     // TODO(benjhayden): If this is an automatic download from an extension,
@@ -106,8 +106,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     Cancel();
     return;
   }
-  infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
-  infobar_helper->AddInfoBar(infobar_);
+  infobar_ = new DownloadRequestInfoBarDelegate(infobar_service, this);
+  infobar_service->AddInfoBar(infobar_);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {

@@ -18,8 +18,23 @@ using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarTabHelper)
 
+void InfoBarService::CreateForWebContents(content::WebContents* web_contents) {
+  return content::WebContentsUserData<InfoBarTabHelper>::CreateForWebContents(
+      web_contents);
+}
+
 InfoBarService* InfoBarService::FromWebContents(WebContents* web_contents) {
-  return InfoBarTabHelper::FromWebContents(web_contents);
+  return content::WebContentsUserData<InfoBarTabHelper>::FromWebContents(
+      web_contents);
+}
+
+const InfoBarService* InfoBarService::FromWebContents(
+    const WebContents* web_contents) {
+  return content::WebContentsUserData<InfoBarTabHelper>::FromWebContents(
+      web_contents);
+}
+
+InfoBarService::~InfoBarService() {
 }
 
 InfoBarTabHelper::InfoBarTabHelper(WebContents* web_contents)
@@ -39,6 +54,10 @@ InfoBarTabHelper::~InfoBarTabHelper() {
   // InfoBarDelegates.  This will be fixed once we call CloseSoon() directly on
   // Infobars.
   RemoveAllInfoBars(false);
+}
+
+void InfoBarTabHelper::SetInfoBarsEnabled(bool enabled) {
+  infobars_enabled_ = enabled;
 }
 
 bool InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
@@ -71,7 +90,7 @@ bool InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::Source<InfoBarTabHelper>(this),
+      content::Source<InfoBarService>(this),
       content::Details<InfoBarAddedDetails>(delegate));
   return true;
 }
@@ -98,7 +117,7 @@ bool InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-      content::Source<InfoBarTabHelper>(this),
+      content::Source<InfoBarService>(this),
       content::Details<InfoBarReplacedDetails>(&replaced_details));
   return true;
 }
@@ -140,7 +159,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   InfoBarRemovedDetails removed_details(delegate, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      content::Source<InfoBarTabHelper>(this),
+      content::Source<InfoBarService>(this),
       content::Details<InfoBarRemovedDetails>(&removed_details));
 }
 

@@ -9,13 +9,14 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -38,13 +39,13 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   typedef QuotaPermissionContext::PermissionCallback PermissionCallback;
 
   RequestQuotaInfoBarDelegate(
-      InfoBarTabHelper* infobar_helper,
+      InfoBarService* infobar_service,
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
       int64 requested_quota,
       const std::string& display_languages,
       const PermissionCallback& callback)
-      : ConfirmInfoBarDelegate(infobar_helper),
+      : ConfirmInfoBarDelegate(infobar_service),
         context_(context),
         origin_url_(origin_url),
         display_languages_(display_languages),
@@ -136,10 +137,10 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (!infobar_helper) {
-    // The tab has no infobar helper.
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service) {
+    // The tab has no infobar service.
     LOG(WARNING) << "Attempt to request quota from a background page: "
                  << render_process_id << "," << render_view_id;
     DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
@@ -147,8 +148,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   }
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_helper->AddInfoBar(new RequestQuotaInfoBarDelegate(
-      infobar_helper, this, origin_url, requested_quota,
+  infobar_service->AddInfoBar(new RequestQuotaInfoBarDelegate(
+      infobar_service, this, origin_url, requested_quota,
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
       callback));
 }

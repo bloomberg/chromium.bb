@@ -13,8 +13,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -28,7 +28,7 @@ InfoBarContainer::InfoBarContainer(
     Delegate* delegate,
     chrome::search::SearchModel* search_model)
     : delegate_(delegate),
-      tab_helper_(NULL),
+      infobar_service_(NULL),
       search_model_(search_model),
       top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
   if (search_model_)
@@ -42,27 +42,28 @@ InfoBarContainer::~InfoBarContainer() {
     search_model_->RemoveObserver(this);
 }
 
-void InfoBarContainer::ChangeTabContents(InfoBarTabHelper* tab_helper) {
+void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
   registrar_.RemoveAll();
 
   infobars_shown_time_ = base::TimeTicks();
   HideAllInfoBars();
 
-  tab_helper_ = tab_helper;
-  if (tab_helper_) {
-    content::Source<InfoBarTabHelper> th_source(tab_helper_);
+  infobar_service_ = infobar_service;
+  if (infobar_service_) {
+    content::Source<InfoBarService> source(infobar_service_);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                   th_source);
+                   source);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                   th_source);
+                   source);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-                   th_source);
+                   source);
 
-    for (size_t i = 0; i < tab_helper_->GetInfoBarCount(); ++i) {
+    for (size_t i = 0; i < infobar_service_->GetInfoBarCount(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(
-          tab_helper_->GetInfoBarDelegateAt(i)->CreateInfoBar(tab_helper_),
+          infobar_service_->GetInfoBarDelegateAt(i)->CreateInfoBar(
+              infobar_service_),
           i, false, NO_CALLBACK);
     }
   }
@@ -124,7 +125,7 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   for (size_t i = infobars_.size(); i > 0; --i)
     infobars_[i - 1]->CloseSoon();
 
-  ChangeTabContents(NULL);
+  ChangeInfoBarService(NULL);
 }
 
 void InfoBarContainer::Observe(int type,
@@ -134,7 +135,7 @@ void InfoBarContainer::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
           content::Details<InfoBarAddedDetails>(details)->CreateInfoBar(
-              tab_helper_),
+              infobar_service_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
@@ -148,7 +149,7 @@ void InfoBarContainer::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
       InfoBarReplacedDetails* replaced_details =
           content::Details<InfoBarReplacedDetails>(details).ptr();
-      AddInfoBar(replaced_details->second->CreateInfoBar(tab_helper_),
+      AddInfoBar(replaced_details->second->CreateInfoBar(infobar_service_),
           HideInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
       break;
     }
@@ -166,7 +167,7 @@ void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
     HideAllInfoBars();
     OnInfoBarStateChanged(false);
   } else {
-    ChangeTabContents(tab_helper_);
+    ChangeInfoBarService(infobar_service_);
     infobars_shown_time_ = base::TimeTicks::Now();
   }
 }

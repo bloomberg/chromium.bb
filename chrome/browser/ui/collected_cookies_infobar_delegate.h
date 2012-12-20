@@ -7,7 +7,7 @@
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
-class InfoBarTabHelper;
+class InfoBarService;
 
 // This class configures an infobar shown when the collected cookies dialog
 // is closed and the settings for one or more cookies have been changed.  The
@@ -16,7 +16,7 @@ class InfoBarTabHelper;
 // the reload right from the infobar.
 class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit CollectedCookiesInfoBarDelegate(InfoBarTabHelper* infobar_helper);
+  explicit CollectedCookiesInfoBarDelegate(InfoBarService* infobar_service);
 
  private:
   // ConfirmInfoBarDelegate overrides.

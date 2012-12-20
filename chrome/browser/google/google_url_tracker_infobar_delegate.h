@@ -9,13 +9,12 @@
 #include "googleurl/src/gurl.h"
 
 class GoogleURLTracker;
-class InfoBarTabHelper;
 
 // This infobar is shown by the GoogleURLTracker when the Google base URL has
 // changed.
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  GoogleURLTrackerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  GoogleURLTrackerInfoBarDelegate(InfoBarService* infobar_service,
                                   GoogleURLTracker* google_url_tracker,
                                   const GURL& search_url);
 

@@ -13,9 +13,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
@@ -248,11 +247,11 @@ void NotificationsTest::AllowAllOrigins() {
 }
 
 void NotificationsTest::VerifyInfobar(const Browser* browser, int index) {
-  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser->tab_strip_model()->GetWebContentsAt(index));
 
-  ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
-  InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(0);
+  ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
+  InfoBarDelegate* infobar = infobar_service->GetInfoBarDelegateAt(0);
   ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar);
   int buttons = confirm_infobar->GetButtons();
@@ -294,11 +293,11 @@ std::string NotificationsTest::CreateSimpleNotification(
 }
 
 bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
-  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents());
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::Source<InfoBarTabHelper>(infobar_helper));
+      content::Source<InfoBarService>(infobar_service));
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
@@ -335,28 +334,29 @@ bool NotificationsTest::PerformActionOnInfobar(
     InfobarAction action,
     int infobar_index,
     int tab_index) {
-  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser->tab_strip_model()->GetWebContentsAt(tab_index));
 
-  InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(
-      infobar_index);
+  InfoBarDelegate* infobar =
+      infobar_service->GetInfoBarDelegateAt(infobar_index);
   switch (action) {
-    case DISMISS: {
+    case DISMISS:
       infobar->InfoBarDismissed();
-      infobar_helper->RemoveInfoBar(infobar);
+      infobar_service->RemoveInfoBar(infobar);
       return true;
-    }
+
     case ALLOW: {
       ConfirmInfoBarDelegate* confirm_bar = infobar->AsConfirmInfoBarDelegate();
       if (confirm_bar->Accept()) {
-        infobar_helper->RemoveInfoBar(infobar);
+        infobar_service->RemoveInfoBar(infobar);
         return true;
       }
     }
+
     case DENY: {
       ConfirmInfoBarDelegate* confirm_bar = infobar->AsConfirmInfoBarDelegate();
       if (confirm_bar->Cancel()) {
-        infobar_helper->RemoveInfoBar(infobar);
+        infobar_service->RemoveInfoBar(infobar);
         return true;
       }
     }
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
       &result));
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(
+  EXPECT_EQ(1U, InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
       test_server()->GetURL(
           "files/notifications/notifications_request_inline.html"));
 
-  EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
+  EXPECT_EQ(0U, InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
   EXPECT_NE("-1", result);
 
   ASSERT_EQ(1, GetNotificationCount());
-  EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
+  EXPECT_EQ(0U, InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
   EXPECT_NE("-1", result);
 
   ASSERT_EQ(1, GetNotificationCount());
-  EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
+  EXPECT_EQ(0U, InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 

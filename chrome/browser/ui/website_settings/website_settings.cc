@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
@@ -68,14 +68,14 @@ WebsiteSettings::WebsiteSettings(
     WebsiteSettingsUI* ui,
     Profile* profile,
     TabSpecificContentSettings* tab_specific_content_settings,
-    InfoBarTabHelper* infobar_tab_helper,
+    InfoBarService* infobar_service,
     const GURL& url,
     const content::SSLStatus& ssl,
     content::CertStore* cert_store)
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
       ui_(ui),
-      infobar_helper_(infobar_tab_helper),
+      infobar_service_(infobar_service),
       show_info_bar_(false),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
@@ -221,8 +221,8 @@ void WebsiteSettings::OnSiteDataAccessed() {
 
 void WebsiteSettings::OnUIClosing() {
   if (show_info_bar_) {
-    infobar_helper_->AddInfoBar(
-        new WebsiteSettingsInfobarDelegate(infobar_helper_));
+    infobar_service_->AddInfoBar(
+        new WebsiteSettingsInfobarDelegate(infobar_service_));
   }
 }
 

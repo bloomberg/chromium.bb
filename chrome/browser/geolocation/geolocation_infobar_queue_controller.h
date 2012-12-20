@@ -12,7 +12,7 @@
 class GURL;
 class GeolocationConfirmInfoBarDelegate;
 class GeolocationPermissionRequestID;
-class InfoBarTabHelper;
+class InfoBarService;
 class Profile;
 
 // This class controls the geolocation infobar queue per profile, and it's
@@ -68,15 +68,15 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
   // Shows the next pending infobar for the tab corresponding to |id|, if any.
   // Note that this may not be the pending request whose ID is |id| if other
   // requests are higher in the queue.  If we can't show infobars because there
-  // is no InfoBarTabHelper for this tab, removes all queued requests for this
+  // is no InfoBarService for this tab, removes all queued requests for this
   // tab.
   void ShowQueuedInfoBarForTab(const GeolocationPermissionRequestID& id);
 
   void ClearPendingInfoBarRequestsForTab(
       const GeolocationPermissionRequestID& id);
 
-  void RegisterForInfoBarNotifications(InfoBarTabHelper* helper);
-  void UnregisterForInfoBarNotifications(InfoBarTabHelper* helper);
+  void RegisterForInfoBarNotifications(InfoBarService* infobar_service);
+  void UnregisterForInfoBarNotifications(InfoBarService* infobar_service);
 
   content::NotificationRegistrar registrar_;
 

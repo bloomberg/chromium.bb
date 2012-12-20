@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -379,10 +379,10 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
   if (settings_changed()) {
-    InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(web_contents());
-    infobar_helper->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_helper));
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents());
+    infobar_service->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(infobar_service));
   }
 }
 

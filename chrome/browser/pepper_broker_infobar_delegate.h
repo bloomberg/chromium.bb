@@ -11,7 +11,7 @@
 #include "googleurl/src/gurl.h"
 
 class HostContentSettingsMap;
-class InfoBarTabHelper;
+class InfoBarService;
 
 namespace content {
 class WebContents;
@@ -42,7 +42,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   PepperBrokerInfoBarDelegate(
-      InfoBarTabHelper* helper,
+      InfoBarService* infobar_service,
       const GURL& url,
       const FilePath& plugin_path,
       const std::string& languages,

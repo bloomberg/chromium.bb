@@ -12,10 +12,10 @@
 #include "base/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -184,10 +184,10 @@ const void* const OneClickSigninRequestUserData::kUserDataKey =
 // of this infobar.
 class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
  public:
-  OneClickInfoBarDelegateImpl(InfoBarTabHelper* owner,
-                               const std::string& session_index,
-                               const std::string& email,
-                               const std::string& password);
+  OneClickInfoBarDelegateImpl(InfoBarService* owner,
+                              const std::string& session_index,
+                              const std::string& email,
+                              const std::string& password);
   virtual ~OneClickInfoBarDelegateImpl();
 
  private:
@@ -227,7 +227,7 @@ class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
 };
 
 OneClickInfoBarDelegateImpl::OneClickInfoBarDelegateImpl(
-    InfoBarTabHelper* owner,
+    InfoBarService* owner,
     const std::string& session_index,
     const std::string& email,
     const std::string& password)
@@ -760,8 +760,8 @@ void OneClickSigninHelper::DidStopLoading(
     return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(contents);
 
   switch (auto_accept_) {
     case AUTO_ACCEPT:
@@ -770,8 +770,8 @@ void OneClickSigninHelper::DidStopLoading(
                      email_, password_));
       break;
     case NO_AUTO_ACCEPT:
-      infobar_tab_helper->AddInfoBar(
-          new OneClickInfoBarDelegateImpl(infobar_tab_helper, session_index_,
+      infobar_service->AddInfoBar(
+          new OneClickInfoBarDelegateImpl(infobar_service, session_index_,
                                           email_, password_));
       break;
     case AUTO_ACCEPT_CONFIGURE:

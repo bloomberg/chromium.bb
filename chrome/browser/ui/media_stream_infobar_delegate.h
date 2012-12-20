@@ -11,7 +11,6 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
-class InfoBarTabHelper;
 
 // This class configures an infobar shown when a page requests access to a
 // user's microphone and/or video camera.  The user is shown a message asking
@@ -22,7 +21,7 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // MediaStreamInfoBarDelegate takes the ownership of the |controller|.
   MediaStreamInfoBarDelegate(
-      InfoBarTabHelper* tab_helper,
+      InfoBarService* infobar_service,
       MediaStreamDevicesController* controller);
 
   virtual ~MediaStreamInfoBarDelegate();

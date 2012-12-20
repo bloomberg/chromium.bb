@@ -4,10 +4,10 @@
 
 #include "base/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -28,14 +28,14 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   void VerifyThemeInfoBarAndUndoInstall() {
     WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents);
-    InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(web_contents);
-    ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
-    ConfirmInfoBarDelegate* delegate = infobar_helper->
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
+    ConfirmInfoBarDelegate* delegate = infobar_service->
         GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, infobar_helper->GetInfoBarCount());
+    ASSERT_EQ(0U, infobar_service->GetInfoBarCount());
   }
 
   // Install the given theme from the data dir and verify expected name.

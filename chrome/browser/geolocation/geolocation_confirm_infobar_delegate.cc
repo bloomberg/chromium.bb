@@ -4,11 +4,12 @@
 
 #include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
 
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -18,18 +19,18 @@
 
 
 GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarService* infobar_service,
     GeolocationInfoBarQueueController* controller,
     const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
     const std::string& display_languages)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller),
       id_(id),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
-  const content::NavigationEntry* committed_entry =
-      infobar_helper->GetWebContents()->GetController().GetLastCommittedEntry();
+  const content::NavigationEntry* committed_entry = infobar_service->
+      GetWebContents()->GetController().GetLastCommittedEntry();
   set_contents_unique_id(committed_entry ? committed_entry->GetUniqueID() : 0);
 }
 

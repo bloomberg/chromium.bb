@@ -5732,7 +5732,7 @@
    bug_145747a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP16InfoBarTabHelperP11PrefServiceRKSsS7_
+   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP14InfoBarServiceP11PrefServiceRKSsS7_
    fun:_ZN16TranslateManager14PageTranslatedEPN7content11WebContentsEP21PageTranslatedDetails
    fun:_ZN16TranslateManager7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
    fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
@@ -5742,7 +5742,7 @@
    bug_145747b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP16InfoBarTabHelperP11PrefServiceRKSsS7_
+   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP14InfoBarServiceP11PrefServiceRKSsS7_
    fun:_ZN16TranslateManager18OnURLFetchCompleteEPKN3net10URLFetcherE
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
@@ -6026,8 +6026,8 @@
   bug_156705
   Memcheck:Leak
   fun:_Znw*
-  fun:_ZN33GeolocationInfoBarQueueController21CreateInfoBarDelegateEP16InfoBarTabHelperPS_iiiRK4GURLRKSs
-  fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP16InfoBarTabHelper
+  fun:_ZN33GeolocationInfoBarQueueController21CreateInfoBarDelegateEP14InfoBarServicePS_iiiRK4GURLRKSs
+  fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP14InfoBarService
 }
 {
   bug_156829

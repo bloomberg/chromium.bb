@@ -58,7 +58,6 @@ class BalloonCollection;
 class Browser;
 class ExtensionProcessManager;
 class ExtensionService;
-class InfoBarTabHelper;
 class Notification;
 class Profile;
 class SavePackage;

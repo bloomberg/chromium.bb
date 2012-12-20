@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,7 +30,7 @@ namespace {
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  explicit SessionCrashedInfoBarDelegate(InfoBarTabHelper* infobar_helper);
+  explicit SessionCrashedInfoBarDelegate(InfoBarService* infobar_service);
 
  private:
   virtual ~SessionCrashedInfoBarDelegate();
@@ -56,8 +56,8 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
 };
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service),
       accepted_(false),
       removed_notification_received_(false),
       browser_(chrome::FindBrowserWithWebContents(owner()->GetWebContents())) {
@@ -145,12 +145,12 @@ void ShowSessionCrashedPrompt(Browser* browser) {
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_tab_helper = InfoBarTabHelper::FromWebContents(tab);
-  if (infobar_tab_helper->GetInfoBarCount() > 0)
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(tab);
+  if (infobar_service->GetInfoBarCount() > 0)
     return;
 
-  infobar_tab_helper->AddInfoBar(
-      new SessionCrashedInfoBarDelegate(infobar_tab_helper));
+  infobar_service->AddInfoBar(
+      new SessionCrashedInfoBarDelegate(infobar_service));
 }
 
 }  // namespace chrome

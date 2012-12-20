@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
-class InfoBarTabHelper;
+class InfoBarService;
 class ThemeService;
 
 namespace extensions {
@@ -25,7 +25,7 @@ class Extension;
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  ThemeInstalledInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  ThemeInstalledInfoBarDelegate(InfoBarService* infobar_service,
                                 ExtensionService* extension_service,
                                 ThemeService* theme_service,
                                 const extensions::Extension* new_theme,

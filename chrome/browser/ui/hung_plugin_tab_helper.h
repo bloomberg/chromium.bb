@@ -18,7 +18,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class FilePath;
-class InfoBarTabHelper;
 
 // Manages per-tab state with regard to hung plugins. This only handles
 // Pepper plugins which we know are windowless. Hung NPAPI plugins (which

@@ -8,7 +8,7 @@
 #import "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #import "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
@@ -36,9 +36,9 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
   MockTranslateInfoBarDelegate(TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
-                               InfoBarTabHelper* infobar_helper,
+                               InfoBarService* infobar_service,
                                PrefService* prefs)
-      : TranslateInfoBarDelegate(type, error, infobar_helper, prefs,
+      : TranslateInfoBarDelegate(type, error, infobar_service, prefs,
                                  "en", "es") {
     // Start out in the "Before Translate" state.
     type_ = type;
@@ -66,7 +66,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
-    InfoBarTabHelper::CreateForWebContents(web_contents_.get());
+    InfoBarService::CreateForWebContents(web_contents_.get());
     CreateInfoBar();
   }
 
@@ -78,19 +78,19 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(web_contents_.get());
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_.get());
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
         type,
         error,
-        infobar_tab_helper,
+        infobar_service,
         profile->GetPrefs()));
     [[infobar_controller_ view] removeFromSuperview];
     scoped_ptr<InfoBar> infobar(
         static_cast<InfoBarDelegate*>(infobar_delegate_.get())->
-            CreateInfoBar(infobar_tab_helper));
+            CreateInfoBar(infobar_service));
     infobar_controller_.reset(
         reinterpret_cast<TranslateInfoBarControllerBase*>(
             infobar->controller()));

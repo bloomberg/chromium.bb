@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,8 +26,7 @@
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ExtensionInfoBar(
-      browser_, static_cast<InfoBarTabHelper*>(owner), this);
+  return new ExtensionInfoBar(browser_, owner, this);
 }
 
 // ExtensionInfoBar ------------------------------------------------------------
@@ -76,7 +74,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
 }  // namespace
 
 ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
-                                   InfoBarTabHelper* owner,
+                                   InfoBarService* owner,
                                    ExtensionInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       delegate_(delegate),

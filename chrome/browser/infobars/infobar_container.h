@@ -17,7 +17,7 @@
 
 class InfoBar;
 class InfoBarDelegate;
-class InfoBarTabHelper;
+class InfoBarService;
 
 namespace chrome {
 namespace search {
@@ -67,10 +67,11 @@ class InfoBarContainer : public content::NotificationObserver,
                    chrome::search::SearchModel* search_model);
   virtual ~InfoBarContainer();
 
-  // Changes the InfoBarTabHelper for which this container is showing
+  // Changes the InfoBarService for which this container is showing
   // infobars.  This will remove all current infobars from the container, add
-  // the infobars from |contents|, and show them all.  |contents| may be NULL.
-  void ChangeTabContents(InfoBarTabHelper* tab_helper);
+  // the infobars from |infobar_service|, and show them all.  |infobar_service|
+  // may be NULL.
+  void ChangeInfoBarService(InfoBarService* infobar_service);
 
   // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
@@ -126,7 +127,7 @@ class InfoBarContainer : public content::NotificationObserver,
                            const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Hides an InfoBar for the specified delegate, in response to a notification
-  // from the selected InfoBarTabHelper.  The InfoBar's disappearance will be
+  // from the selected InfoBarService.  The InfoBar's disappearance will be
   // animated if |use_animation| is true and it has been more than 50ms since
   // infobars were reshown due to an Instant Extended mode change. The InfoBar
   // will call back to RemoveInfoBar() to remove itself once it's hidden (which
@@ -153,7 +154,7 @@ class InfoBarContainer : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
   Delegate* delegate_;
-  InfoBarTabHelper* tab_helper_;
+  InfoBarService* infobar_service_;
   InfoBars infobars_;
 
   // Tracks the most recent time infobars were re-shown after being hidden due

@@ -5,7 +5,7 @@
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,8 +22,7 @@ namespace {
 
 class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit ManagedModeWarningInfobarDelegate(
-      InfoBarTabHelper* infobar_tab_helper);
+  explicit ManagedModeWarningInfobarDelegate(InfoBarService* infobar_service);
 
  private:
   virtual ~ManagedModeWarningInfobarDelegate();
@@ -66,8 +65,8 @@ void GoBackToSafety(content::WebContents* web_contents) {
 }
 
 ManagedModeWarningInfobarDelegate::ManagedModeWarningInfobarDelegate(
-    InfoBarTabHelper* infobar_tab_helper)
-    : ConfirmInfoBarDelegate(infobar_tab_helper) {}
+    InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service) {}
 
 ManagedModeWarningInfobarDelegate::~ManagedModeWarningInfobarDelegate() {}
 
@@ -139,17 +138,17 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
 
   if (behavior == ManagedModeURLFilter::WARN) {
     if (!warn_infobar_delegate_) {
-      InfoBarTabHelper* infobar_tab_helper =
-          InfoBarTabHelper::FromWebContents(web_contents());
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(web_contents());
       warn_infobar_delegate_ =
-          new ManagedModeWarningInfobarDelegate(infobar_tab_helper);
-      infobar_tab_helper->AddInfoBar(warn_infobar_delegate_);
+          new ManagedModeWarningInfobarDelegate(infobar_service);
+      infobar_service->AddInfoBar(warn_infobar_delegate_);
     }
   } else {
     if (warn_infobar_delegate_) {
-      InfoBarTabHelper* infobar_tab_helper =
-          InfoBarTabHelper::FromWebContents(web_contents());
-      infobar_tab_helper->RemoveInfoBar(warn_infobar_delegate_);
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(web_contents());
+      infobar_service->RemoveInfoBar(warn_infobar_delegate_);
       warn_infobar_delegate_= NULL;
     }
   }

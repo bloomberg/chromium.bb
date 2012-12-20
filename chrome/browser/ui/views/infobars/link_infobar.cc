@@ -7,19 +7,18 @@
 #include "base/logging.h"
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
 // LinkInfoBarDelegate --------------------------------------------------------
 
 InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new LinkInfoBar(static_cast<InfoBarTabHelper*>(owner), this);
+  return new LinkInfoBar(owner, this);
 }
 
 // LinkInfoBar ----------------------------------------------------------------
 
-LinkInfoBar::LinkInfoBar(InfoBarTabHelper* owner,
+LinkInfoBar::LinkInfoBar(InfoBarService* owner,
                          LinkInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       label_1_(NULL),
