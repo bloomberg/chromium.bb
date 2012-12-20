@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/mac/mac_util.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
@@ -126,8 +128,6 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
     dragOperationMask_ = dragOperationMask;
 
-    fileExtension_ = nil;
-
     [self fillPasteboard];
   }
 
@@ -186,29 +186,10 @@ void PromiseWriterHelper(const WebDropData& drop_data,
               forType:kNSURLTitlePboardType];
 
   // File contents.
-  } else if ([type isEqualToString:NSFileContentsPboardType] ||
-      (fileExtension_ &&
-       [type isEqualToString:NSCreateFileContentsPboardType(fileExtension_)])) {
-    // TODO(viettrungluu: find something which is known to accept
-    // NSFileContentsPboardType to check that this actually works!
-    scoped_nsobject<NSFileWrapper> file_wrapper(
-        [[NSFileWrapper alloc] initRegularFileWithContents:[NSData
-                dataWithBytes:dropData_->file_contents.data()
-                       length:dropData_->file_contents.length()]]);
-    [file_wrapper setPreferredFilename:SysUTF8ToNSString(
-            GetFileNameFromDragData(*dropData_).value())];
-    [pboard writeFileWrapper:file_wrapper];
-
-  // TIFF.
-  } else if ([type isEqualToString:NSTIFFPboardType]) {
-    // TODO(viettrungluu): This is a bit odd since we rely on Cocoa to render
-    // our image into a TIFF. This is also suboptimal since this is all done
-    // synchronously. I'm not sure there's much we can easily do about it.
-    scoped_nsobject<NSImage> image(
-        [[NSImage alloc] initWithData:[NSData
-                dataWithBytes:dropData_->file_contents.data()
-                       length:dropData_->file_contents.length()]]);
-    [pboard setData:[image TIFFRepresentation] forType:NSTIFFPboardType];
+  } else if ([type isEqualToString:base::mac::CFToNSCast(fileUTI_.get())]) {
+    [pboard setData:[NSData dataWithBytes:dropData_->file_contents.data()
+                                   length:dropData_->file_contents.length()]
+            forType:base::mac::CFToNSCast(fileUTI_.get())];
 
   // Plain text.
   } else if ([type isEqualToString:NSStringPboardType]) {
@@ -222,6 +203,12 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     ui::WriteCustomDataToPickle(dropData_->custom_data, &pickle);
     [pboard setData:[NSData dataWithBytes:pickle.data() length:pickle.size()]
             forType:ui::kWebCustomDataPboardType];
+
+  // Dummy type.
+  } else if ([type isEqualToString:ui::kChromeDragDummyPboardType]) {
+    // The dummy type _was_ promised and someone decided to call the bluff.
+    [pboard setData:[NSData data]
+            forType:ui::kChromeDragDummyPboardType];
 
   // Oops!
   } else {
@@ -393,6 +380,10 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                                                     kNSURLTitlePboardType, nil]
                     owner:contentsView_];
 
+  // MIME type.
+  std::string mimeType;
+
+  // File extension.
   std::string fileExtension;
 
   // File.
@@ -400,12 +391,13 @@ void PromiseWriterHelper(const WebDropData& drop_data,
       !dropData_->download_metadata.empty()) {
     if (dropData_->download_metadata.empty()) {
       fileExtension = GetFileNameFromDragData(*dropData_).Extension();
+      net::GetMimeTypeFromExtension(fileExtension, &mimeType);
     } else {
-      string16 mimeType;
+      string16 mimeType16;
       FilePath fileName;
       if (content::ParseDownloadMetadata(
               dropData_->download_metadata,
-              &mimeType,
+              &mimeType16,
               &fileName,
               &downloadURL_)) {
         // Generate the file name based on both mime type and proposed file
@@ -417,32 +409,32 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                                   std::string(),
                                   std::string(),
                                   fileName.value(),
-                                  UTF16ToUTF8(mimeType),
+                                  UTF16ToUTF8(mimeType16),
                                   defaultName);
+        mimeType = UTF16ToUTF8(mimeType16);
         fileExtension = downloadFileName_.Extension();
       }
     }
 
-    if (!fileExtension.empty()) {
-      // Strip the leading dot.
-      fileExtension_ = SysUTF8ToNSString(fileExtension.substr(1));
-      // File contents (with and without specific type), and file (HFS) promise.
-      // TODO(viettrungluu): others?
-      NSArray* types = [NSArray arrayWithObjects:
-          NSFileContentsPboardType,
-          NSCreateFileContentsPboardType(fileExtension_),
-          NSFilesPromisePboardType,
-          nil];
+    if (!mimeType.empty()) {
+      base::mac::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
+          base::SysUTF8ToCFStringRef(mimeType));
+      fileUTI_.reset(UTTypeCreatePreferredIdentifierForTag(
+          kUTTagClassMIMEType, mimeTypeCF.get(), NULL));
+
+      // File (HFS) promise.
+      // TODO(avi): Can we switch to kPasteboardTypeFilePromiseContent?
+      NSArray* types = @[NSFilesPromisePboardType];
       [pasteboard_ addTypes:types owner:contentsView_];
 
-      if (!dropData_->file_contents.empty()) {
-        [pasteboard_ addTypes:[NSArray arrayWithObject:NSTIFFPboardType]
-                        owner:contentsView_];
-      }
-
       // For the file promise, we need to specify the extension.
-      [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension_]
+      [pasteboard_ setPropertyList:@[SysUTF8ToNSString(fileExtension.substr(1))]
                            forType:NSFilesPromisePboardType];
+
+      if (!dropData_->file_contents.empty()) {
+        NSArray* types = @[base::mac::CFToNSCast(fileUTI_.get())];
+        [pasteboard_ addTypes:types owner:contentsView_];
+      }
     }
   }
 
