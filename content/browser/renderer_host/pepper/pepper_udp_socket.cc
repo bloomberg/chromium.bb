@@ -15,6 +15,7 @@
 #include "net/udp/udp_server_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 
 using ppapi::NetAddressPrivateImpl;
 
@@ -76,9 +77,14 @@ void PepperUDPSocket::Bind(const PP_NetAddress_Private& addr) {
 }
 
 void PepperUDPSocket::RecvFrom(int32_t num_bytes) {
-  if (recvfrom_buffer_.get()) {
+  if (recvfrom_buffer_.get() || num_bytes < 0) {
     SendRecvFromACKError();
     return;
+  }
+
+  if (num_bytes > ppapi::UDPSocketPrivateImpl::kMaxReadSize) {
+    NOTREACHED();
+    num_bytes = ppapi::UDPSocketPrivateImpl::kMaxReadSize;
   }
 
   recvfrom_buffer_ = new net::IOBuffer(num_bytes);
@@ -106,6 +112,10 @@ void PepperUDPSocket::SendTo(const std::string& data,
   }
 
   int data_size = data.size();
+  if (data_size > ppapi::UDPSocketPrivateImpl::kMaxWriteSize) {
+    NOTREACHED();
+    data_size = ppapi::UDPSocketPrivateImpl::kMaxWriteSize;
+  }
 
   sendto_buffer_ = new net::IOBuffer(data_size);
   memcpy(sendto_buffer_->data(), data.data(), data_size);
