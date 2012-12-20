@@ -164,10 +164,11 @@ SlideMode.prototype.initDom_ = function() {
 
   util.createChild(this.container_, 'spinner');
 
-  var slideShowButton = util.createChild(this.toolbar_, 'button slideshow');
+  var slideShowButton = util.createChild(this.toolbar_,
+      'button slideshow', 'button');
   slideShowButton.title = this.displayStringFunction_('slideshow');
   slideShowButton.addEventListener('click',
-      this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+      this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
   var slideShowToolbar =
       util.createChild(this.container_, 'tool slideshow-toolbar');
@@ -178,9 +179,9 @@ SlideMode.prototype.initDom_ = function() {
 
   // Editor.
 
-  this.editButton_ = util.createChild(this.toolbar_, 'button edit');
-  this.editButton_.title = this.displayStringFunction_('edit');
-  this.editButton_.addEventListener('click', this.toggleEditor_.bind(this));
+  var editButton_ = util.createChild(this.toolbar_, 'button edit', 'button');
+  editButton_.title = this.displayStringFunction_('edit');
+  editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
   this.editBar_ = util.createChild(this.toolbar_, 'edit-bar');
   this.editBarMain_ = util.createChild(this.editBar_, 'edit-main');
@@ -775,13 +776,13 @@ SlideMode.prototype.onKeyDown = function(event) {
       break;
 
     case 'U+0045':  // 'e' toggles the editor
-      this.toggleEditor_(event);
+      this.toggleEditor(event);
       break;
 
     case 'U+001B':  // Escape
       if (!this.isEditing())
         return false;  // Not handled.
-      this.toggleEditor_(event);
+      this.toggleEditor(event);
       break;
 
     case 'Home':
@@ -980,21 +981,6 @@ SlideMode.prototype.isSlideshowOn_ = function() {
 };
 
 /**
- * Start/stop the slideshow.
- *
- * @param {number} opt_interval First interval in ms.
- * @param {Event} opt_event Event.
- * @private
- */
-SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
-  if (this.isSlideshowOn_()) {
-    this.stopSlideshow_(opt_event);
-  } else {
-    this.startSlideshow(opt_interval);
-  }
-};
-
-/**
  * Start the slideshow.
  * @param {number} opt_interval First interval in ms.
  * @param {Event} opt_event Event.
@@ -1139,20 +1125,19 @@ SlideMode.prototype.isEditing = function() {
  */
 SlideMode.prototype.stopEditing_ = function() {
   if (this.isEditing())
-    this.toggleEditor_();
+    this.toggleEditor();
 };
 
 /**
  * Activate/deactivate editor.
  * @param {Event} opt_event Event.
- * @private
  */
-SlideMode.prototype.toggleEditor_ = function(opt_event) {
+SlideMode.prototype.toggleEditor = function(opt_event) {
   if (opt_event)  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
 
   if (!this.active_) {
-    this.toggleMode_(this.toggleEditor_.bind(this));
+    this.toggleMode_(this.toggleEditor.bind(this));
     return;
   }
 
@@ -1171,8 +1156,6 @@ SlideMode.prototype.toggleEditor_ = function(opt_event) {
     this.editor_.getPrompt().hide();
     this.editor_.leaveModeGently();
   }
-
-  ImageUtil.setAttribute(this.editButton_, 'pressed', this.isEditing());
 };
 
 /**

@@ -1258,4 +1258,3 @@ util.callInheritedSetter = function(object, propertyName, value) {
                                       propertyName);
   d.set.call(object, value);
 };
-

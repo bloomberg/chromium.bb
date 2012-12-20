@@ -216,19 +216,18 @@ Gallery.prototype.initDom_ = function() {
 
   this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
 
-  var nameBox = util.createChild(this.filenameSpacer_, 'namebox');
+  this.filenameEdit_ = util.createChild(this.filenameSpacer_,
+                                        'namebox', 'input');
 
-  this.filenameText_ = util.createChild(nameBox);
-  this.filenameText_.addEventListener('click',
-      this.onFilenameClick_.bind(this));
-
-  this.filenameEdit_ = this.document_.createElement('input');
   this.filenameEdit_.setAttribute('type', 'text');
   this.filenameEdit_.addEventListener('blur',
       this.onFilenameEditBlur_.bind(this));
+
+  this.filenameEdit_.addEventListener('focus',
+      this.onFilenameFocus_.bind(this));
+
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
-  nameBox.appendChild(this.filenameEdit_);
 
   util.createChild(this.toolbar_, 'button-spacer');
 
@@ -253,16 +252,11 @@ Gallery.prototype.initDom_ = function() {
       this.toggleMode_.bind(this), onThumbnailError,
       this.displayStringFunction_);
 
-  var deleteButton = this.document_.createElement('div');
-  deleteButton.className = 'button delete';
-  deleteButton.title = this.displayStringFunction_('delete');
+  var deleteButton = this.createToolbarButton_('delete', 'delete');
   deleteButton.addEventListener('click', this.onDelete_.bind(this));
-  this.toolbar_.insertBefore(
-      deleteButton, this.toolbar_.querySelector('.edit'));
 
-  this.shareButton_ = util.createChild(this.toolbar_, 'button share');
+  this.shareButton_ = this.createToolbarButton_('share', 'share');
   this.shareButton_.setAttribute('disabled', '');
-  this.shareButton_.title = this.displayStringFunction_('share');
   this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
 
   this.shareMenu_ = util.createChild(this.container_, 'share-menu');
@@ -279,6 +273,20 @@ Gallery.prototype.initDom_ = function() {
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
 
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
+};
+
+/**
+ * Creates toolbar button.
+ *
+ * @param {string} clazz Class to add.
+ * @param {string} title Button title.
+ * @return {HTMLElement} Newly created button.
+ * @private
+ */
+Gallery.prototype.createToolbarButton_ = function(clazz, title) {
+  var button = util.createChild(this.toolbar_, clazz, 'button');
+  button.title = this.displayStringFunction_(title);
+  return button;
 };
 
 /**
@@ -652,23 +660,20 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   window.top.util.updateAppState(true /*replace*/, path,
       {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
 
+
+  // We can't rename files in readonly directory.
+  // We can only rename a single file.
+  this.filenameEdit_.disabled = selectedItems.length != 1 ||
+                                this.context_.readonlyDirName;
+
   this.filenameEdit_.value = displayName;
-  this.filenameText_.textContent = displayName;
 };
 
 /**
  * Click event handler on filename edit box
  * @private
  */
-Gallery.prototype.onFilenameClick_ = function() {
-  // We can't rename files in readonly directory.
-  if (this.context_.readonlyDirName)
-    return;
-
-  // We can only rename a single file.
-  if (this.getSelectedItems().length != 1)
-    return;
-
+Gallery.prototype.onFilenameFocus_ = function() {
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
   this.filenameEdit_.originalValue = this.filenameEdit_.value;
   setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
@@ -676,14 +681,19 @@ Gallery.prototype.onFilenameClick_ = function() {
 };
 
 /**
- * Blur event handler on filename edit box
+ * Blur event handler on filename edit box.
+ *
+ * @param {Event} event Blur event.
+ * @return {boolean} if default action should be prevented.
  * @private
  */
-Gallery.prototype.onFilenameEditBlur_ = function() {
+Gallery.prototype.onFilenameEditBlur_ = function(event) {
   if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
     this.prompt_.show('file_hidden_name', 5000);
     this.filenameEdit_.focus();
-    return;
+    event.stopPropagation();
+    event.preventDefault();
+    return false;
   }
 
   var item = this.getSingleSelectedItem();
@@ -692,7 +702,7 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
   var onFileExists = function() {
     this.prompt_.show('file_exists', 3000);
     this.filenameEdit_.value = name;
-    this.onFilenameClick_();
+    this.filenameEdit_.focus();
   }.bind(this);
 
   var onSuccess = function() {

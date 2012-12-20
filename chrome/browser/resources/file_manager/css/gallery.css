@@ -286,7 +286,7 @@ body {
 }
 
 .gallery .filename-spacer > * {
-  -webkit-transition: top linear 180ms;
+  -webkit-transition: visibility 0 linear 180ms, all 180ms linear;
   background-color: transparent;
   left: 10px;
   overflow: hidden;
@@ -296,7 +296,6 @@ body {
 
 .gallery .filename-spacer * {
   color: white;
-  font-family: Open Sans, Droid Sans Fallback, sans-serif;
 }
 
 .gallery .filename-spacer .namebox {
@@ -309,59 +308,51 @@ body {
   top: 5px;
 }
 
+
+.gallery .filename-spacer .namebox {
+  background-color: transparent;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  font-size: 120%;
+  outline: none;
+  overflow: hidden;
+  padding: 0 3px;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery .filename-spacer .namebox[disabled] {
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.gallery .filename-spacer .namebox:not([disabled]):not(:focus):hover {
+  background-color: rgba(48, 48, 48, 1.0);
+}
+
+.gallery .filename-spacer .namebox:focus {
+  background-color: white;
+  color: black;
+  cursor: text;
+}
+
 .gallery .filename-spacer .options {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   display: -webkit-box;
+  opacity: 0;
   top: 50px;
+  visibility: hidden;
 }
 
 .gallery[editing] .filename-spacer .options {
-  top: 28px;
-}
-
-.gallery .filename-spacer[renaming] .namebox div,
-.gallery .filename-spacer .namebox input {
-  opacity: 0;
-  z-index: 0;
-}
-
-.gallery .filename-spacer .namebox div,
-.gallery .filename-spacer[renaming] .namebox input {
   opacity: 1;
-  z-index: 1;
-}
-
-.gallery .filename-spacer .namebox input,
-.gallery .filename-spacer .namebox div {
-  border: none;
-  box-sizing: border-box;
-  font-size: 120%;
-  height: 100%;
-  outline: none;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.gallery .filename-spacer .namebox div,
-.gallery .filename-spacer .namebox input {
-  padding-left: 3px;
-  padding-right: 3px;
-}
-
-.gallery .filename-spacer .namebox div:hover {
-  background-color: rgba(48, 48, 48, 1.0);
-  cursor: pointer;
-}
-
-.gallery .filename-spacer .namebox input:focus,
-.gallery .filename-spacer .namebox input:focus:hover {
-  background-color: white;
-  color: black;
+  top: 28px;
+  visibility: visible;
 }
 
 .gallery .filename-spacer .saved,
@@ -516,7 +507,7 @@ body {
 .gallery .toolbar .edit-bar {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: opacity 180ms linear;
+  -webkit-transition: opacity 180ms linear, visibility 180ms linear 180ms;
   color: white;
   display: -webkit-box;
   height: 55px;
@@ -525,11 +516,13 @@ body {
   pointer-events: none;
   position: absolute;
   right: 0;
+  visibility: hidden;
   width: 100%;
 }
 
 .gallery[editing] .toolbar .edit-bar {
   opacity: 1;
+  visibility: visible;
 }
 
 .gallery .edit-main {
@@ -544,7 +537,7 @@ body {
   pointer-events: auto;
 }
 
-.gallery > .toolbar .button {
+.gallery > .toolbar button {
   -webkit-box-align: center;
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
@@ -560,106 +553,106 @@ body {
   padding: 0 10px 0 35px;
 }
 
-.gallery > .toolbar .button {
+.gallery > .toolbar button {
   background-color: rgba(0, 0, 0, 0);
   color: white;
 }
 
-.gallery > .toolbar .button:hover {
+.gallery > .toolbar button:hover {
   background-color: rgba(31, 31, 31, 1);
   color: white;
 }
 
-.gallery > .toolbar .button:active,
-.gallery > .toolbar .button[pressed],
-.gallery > .toolbar .button[pressed]:hover {
+.gallery > .toolbar button:active,
+.gallery > .toolbar button[pressed],
+.gallery > .toolbar button[pressed]:hover {
   background-color: rgba(240, 240, 240, 1);
   color: black;
 }
 
-.gallery > .toolbar .button.autofix {
+.gallery > .toolbar button.autofix {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_autofix.png') 1x,
     url('../images/gallery/2x/icon_autofix.png') 2x);
 }
 
-.gallery > .toolbar .button.autofix[pressed] {
+.gallery > .toolbar button.autofix[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_autofix_selected.png') 1x,
     url('../images/gallery/2x/icon_autofix_selected.png') 2x);
 }
 
-.gallery > .toolbar .button.crop {
+.gallery > .toolbar button.crop {
   background-image:  -webkit-image-set(
     url('../images/gallery/icon_crop.png') 1x,
     url('../images/gallery/2x/icon_crop.png') 2x);
 }
 
-.gallery > .toolbar .button.crop[pressed] {
+.gallery > .toolbar button.crop[pressed] {
   background-image:  -webkit-image-set(
     url('../images/gallery/icon_crop_selected.png') 1x,
     url('../images/gallery/2x/icon_crop_selected.png') 2x);
 }
 
-.gallery > .toolbar .button.exposure {
+.gallery > .toolbar button.exposure {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_brightness.png') 1x,
     url('../images/gallery/2x/icon_brightness.png') 2x);
 }
 
-.gallery > .toolbar .button.exposure[pressed] {
+.gallery > .toolbar button.exposure[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_brightness_selected.png') 1x,
     url('../images/gallery/2x/icon_brightness_selected.png') 2x);
 }
 
-.gallery > .toolbar .button.rotate_right {
+.gallery > .toolbar button.rotate_right {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate.png') 1x,
     url('../images/gallery/2x/icon_rotate.png') 2x);
 }
 
-.gallery > .toolbar .button.rotate_right[pressed] {
+.gallery > .toolbar button.rotate_right[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate_selected.png') 1x,
     url('../images/gallery/2x/icon_rotate_selected.png') 2x);
 }
 
-.gallery > .toolbar .button.rotate_left {
+.gallery > .toolbar button.rotate_left {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate_left.png') 1x,
     url('../images/gallery/2x/icon_rotate_left.png') 2x);
 }
 
-.gallery > .toolbar .button.rotate_left[pressed] {
+.gallery > .toolbar button.rotate_left[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate_left_selected.png') 1x,
     url('../images/gallery/2x/icon_rotate_left_selected.png') 2x);
 }
 
-.gallery > .toolbar .button.undo {
+.gallery > .toolbar button.undo {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_undo.png') 1x,
     url('../images/gallery/2x/icon_undo.png') 2x);
 }
 
-.gallery > .toolbar .button.redo {
+.gallery > .toolbar button.redo {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_redo.png') 1x,
     url('../images/gallery/2x/icon_redo.png') 2x);
   position: absolute;  /* Exclude from center-packing*/
 }
 
-.gallery > .toolbar .button[disabled] {
+.gallery > .toolbar button[disabled] {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.gallery > .toolbar .button[hidden] {
+.gallery > .toolbar button[hidden] {
   display: none;
 }
 
-.gallery > .toolbar > .button {
+.gallery > .toolbar > button {
   background-position: center;
   padding: 0;
   position: relative;
@@ -667,89 +660,89 @@ body {
   z-index: 10;
 }
 
-.gallery[mode='slide'] > .toolbar > .button.mode {
+.gallery[mode='slide'] > .toolbar > button.mode {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_mosaic.png') 1x,
     url('../images/gallery/2x/icon_mosaic.png') 2x);
 }
 
-.gallery[mode='slide'] > .toolbar > .button.mode:active {
+.gallery[mode='slide'] > .toolbar > button.mode:active {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_mosaic_selected.png') 1x,
     url('../images/gallery/2x/icon_mosaic_selected.png') 2x);
 }
 
-.gallery[mode='mosaic'] > .toolbar > .button.mode {
+.gallery[mode='mosaic'] > .toolbar > button.mode {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_1up.png') 1x,
     url('../images/gallery/2x/icon_1up.png') 2x);
 }
 
-.gallery[mode='mosaic'] > .toolbar > .button.mode:active {
+.gallery[mode='mosaic'] > .toolbar > button.mode:active {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_1up_selected.png') 1x,
     url('../images/gallery/2x/icon_1up_selected.png') 2x);
 }
 
-.gallery > .toolbar > .button.slideshow {
+.gallery > .toolbar > button.slideshow {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_slideshow.png') 1x,
     url('../images/gallery/2x/icon_slideshow.png') 2x);
 }
 
-.gallery > .toolbar > .button.slideshow:active,
-.gallery > .toolbar > .button.slideshow[pressed] {
+.gallery > .toolbar > button.slideshow:active,
+.gallery > .toolbar > button.slideshow[pressed] {
     background-image: -webkit-image-set(
         url('../images/gallery/icon_slideshow_selected.png') 1x,
         url('../images/gallery/2x/icon_slideshow_selected.png') 2x);
 }
 
-.gallery > .toolbar > .button.delete {
+.gallery > .toolbar > button.delete {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_delete.png') 1x,
     url('../images/gallery/2x/icon_delete.png') 2x);
 }
 
-.gallery > .toolbar > .button.delete:active {
+.gallery > .toolbar > button.delete:active {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_delete_selected.png') 1x,
     url('../images/gallery/2x/icon_delete_selected.png') 2x);
 }
 
-.gallery > .toolbar > .button.edit {
+.gallery > .toolbar > button.edit {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_edit.png') 1x,
     url('../images/gallery/2x/icon_edit.png') 2x);
 }
 
-.gallery > .toolbar > .button.edit:active,
-.gallery > .toolbar > .button.edit[pressed] {
+.gallery > .toolbar > button.edit:active,
+.gallery > .toolbar > button.edit[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_edit_selected.png') 1x,
     url('../images/gallery/2x/icon_edit_selected.png') 2x);
 }
 
-.gallery > .toolbar > .button.share {
+.gallery > .toolbar > button.share {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_share.png') 1x,
     url('../images/gallery/2x/icon_share.png') 2x);
 }
 
-.gallery > .toolbar > .button.share:hover {
+.gallery > .toolbar > button.share:hover {
   background-color: rgba(31, 31, 31, 1);
 }
 
-.gallery[error] > .toolbar .button.edit,
-.gallery[error] > .toolbar .button.share {
+.gallery[error] > .toolbar button.edit,
+.gallery[error] > .toolbar button.share {
   opacity: 0.7;
   pointer-events: none;
 }
 
-.gallery > .toolbar > .button.share {
+.gallery > .toolbar > button.share {
   margin-right: 8px;
 }
 
-.gallery > .toolbar > .button.share[disabled] {
+.gallery > .toolbar > button.share[disabled] {
   width: 0;
 }
 
@@ -1062,7 +1055,6 @@ body {
     url('../images/media/2x/error.png') 2x);
   background-position: 25px center;
   background-repeat: no-repeat;
-  color: white;
   display: -webkit-box;
   height: 54px;
   padding-left: 70px;
