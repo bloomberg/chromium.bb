@@ -2600,7 +2600,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Handler invoked on preference setting in gdata context menu.
-   * @param {String} pref  The preference to alter.
+   * @param {string} pref  The preference to alter.
    * @param {boolean} inverted Invert the value if true.
    * @param {Event}  event The click event.
    */

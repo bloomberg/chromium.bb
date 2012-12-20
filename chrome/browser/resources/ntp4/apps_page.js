@@ -89,7 +89,7 @@ cr.define('ntp', function() {
 
     /**
      * Appends a menu item to |this.menu|.
-     * @param {?String} textId If non-null, the ID for the localized string
+     * @param {?string} textId If non-null, the ID for the localized string
      *     that acts as the item's label.
      */
     appendMenuItem_: function(textId) {
@@ -878,7 +878,7 @@ cr.define('ntp', function() {
   /**
    * Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE
    * histogram. This should only be invoked from the AppLauncherHandler.
-   * @param {String} appID The ID of the app.
+   * @param {string} appID The ID of the app.
    */
   function launchAppAfterEnable(appId) {
     chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);

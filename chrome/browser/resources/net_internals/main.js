@@ -169,7 +169,7 @@ var MainView = (function() {
      * without reloading the page.  Must be called before passing loaded data
      * to the individual views.
      *
-     * @param {String} opt_fileName The name of the log file that has been
+     * @param {string} opt_fileName The name of the log file that has been
      *     loaded, if we're loading a log file.
      */
     onLoadLog: function(opt_fileName) {

@@ -179,7 +179,7 @@ cr.define('options', function() {
   /**
    * Sets the title of the page. This is accomplished by calling into the
    * parent page API.
-   * @param {String} title The title string.
+   * @param {string} title The title string.
    * @private
    */
   OptionsPage.setTitle_ = function(title) {

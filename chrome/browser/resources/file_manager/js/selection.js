@@ -5,7 +5,7 @@
 /**
  * The current selection object.
  * @param {FileManager} fileManager FileManager instance.
- * @param {Array.<Number>} indexes Selected indexes.
+ * @param {Array.<number>} indexes Selected indexes.
  */
 function Selection(fileManager, indexes) {
   this.fileManager_ = fileManager;

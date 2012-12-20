@@ -93,7 +93,7 @@ cr.define('extensions', function() {
   /**
    * Wrap up the pack process by showing the success |message| and closing
    * the overlay.
-   * @param {String} message The message to show to the user.
+   * @param {string} message The message to show to the user.
    */
   PackExtensionOverlay.showSuccessMessage = function(message) {
     alertOverlay.setValues(

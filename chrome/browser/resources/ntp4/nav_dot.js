@@ -81,7 +81,7 @@ cr.define('ntp', function() {
 
     /**
      * Sets/gets the display title.
-     * @type {String} title The display name for this nav dot.
+     * @type {string} title The display name for this nav dot.
      */
     get displayTitle() {
       return this.title;

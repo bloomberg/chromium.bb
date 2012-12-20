@@ -157,7 +157,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Creates event with specified name and fills its {changes} property.
-     * @param {String} name Event name.
+     * @param {string} name Event name.
      */
     createChangeEvent: function(eventName) {
       var e = new Event(eventName);

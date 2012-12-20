@@ -44,8 +44,8 @@ function getEnabledColumns() {
 }
 
 /**
- * @return {Boolean} the given column (at |columnId|) is enabled or not.
- * @param {String} columnId The ID of the collumn to be checked.
+ * @return {boolean} the given column (at |columnId|) is enabled or not.
+ * @param {string} columnId The ID of the collumn to be checked.
  */
 function isColumnEnabled(columnId) {
   return (getEnabledColumns())[columnId];
@@ -53,8 +53,8 @@ function isColumnEnabled(columnId) {
 
 /**
  * Sets the given column either enabled or disabled.
- * @param {String} columnId The ID of the collumn to be set.
- * @param {Boolean} newChecked True, to set the column enable. False otherwise.
+ * @param {string} columnId The ID of the collumn to be set.
+ * @param {boolean} newChecked True, to set the column enable. False otherwise.
  */
 function setColumnEnabled(columnId, newChecked) {
   commands.setUpdateColumn(columnId, newChecked);

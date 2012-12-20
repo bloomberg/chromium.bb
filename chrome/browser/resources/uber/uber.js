@@ -240,10 +240,10 @@ cr.define('uber', function() {
 
   /**
    * Selects a subpage. This is called from uber-frame.
-   * @param {String} pageId Should matche an id of one of the iframe containers.
+   * @param {string} pageId Should matche an id of one of the iframe containers.
    * @param {integer} historyOption Indicates whether we should push or replace
    *     browser history.
-   * @param {String} path A sub-page path.
+   * @param {string} path A sub-page path.
    */
   function showPage(pageId, historyOption, path) {
     var container = $(pageId);

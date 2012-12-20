@@ -127,7 +127,7 @@ cr.define('options', function() {
 
     /**
      * A boolean to prevent recursion. Used by setSearchText_().
-     * @type {Boolean}
+     * @type {boolean}
      * @private
      */
     insideSetSearchText_: false,

@@ -12,7 +12,7 @@ var eventLog = [];
 
 /**
  * Logs an event.
- * @param {String} name The name of the event (can be any string).
+ * @param {string} name The name of the event (can be any string).
  * @param {boolean} shouldLogTime If true, the event is used for benchmarking
  *     and the time is logged. Otherwise, just push the event on the event
  *     stack.

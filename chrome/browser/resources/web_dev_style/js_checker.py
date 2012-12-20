@@ -61,6 +61,13 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r"\* (@inheritDoc)",
         "@inheritDoc is deprecated, use @override instead.")
 
+  def WrapperTypeCheck(self, i, line):
+    """Check for wrappers (new String()) instead of builtins (string)."""
+    return self.RegexCheck(i, line,
+        r"(?:/\*)?\*.*?@(?:param|return|type) ?"     # /** @param/@return/@type
+        r"{[^}]*\b(String|Boolean|Number)\b[^}]*}",  # {(Boolean|Number|String)}
+        "Don't use wrapper types (i.e. new String() or @type {String}).")
+
   def error_highlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
        highlight the corresponding part of a string.
@@ -217,6 +224,7 @@ class JSChecker(object):
           'See the JavaScript style guide at '
           'http://www.chromium.org/developers/web-development-style-guide'
           '#TOC-JavaScript and if you have any feedback about the JavaScript '
-          'PRESUBMIT check, contact tbreisacher@chromium.org'))
+          'PRESUBMIT check, contact tbreisacher@chromium.org or '
+          'dbeam@chromium.org'))
 
     return results

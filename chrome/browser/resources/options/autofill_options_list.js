@@ -108,7 +108,7 @@ cr.define('options.autofillOptions', function() {
   /**
    * Creates a new value list item.
    * @param {AutofillValuesList} list The parent list of this item.
-   * @param {String} entry A string value.
+   * @param {string} entry A string value.
    * @constructor
    * @extends {options.InlineEditableItem}
    */

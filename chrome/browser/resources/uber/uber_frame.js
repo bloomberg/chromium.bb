@@ -80,7 +80,7 @@ cr.define('uber_frame', function() {
 
   /**
    * Sets selection on the given nav item.
-   * @param {Boolean} newSelection The item to be selected.
+   * @param {boolean} newSelection The item to be selected.
    */
   function setSelection(newSelection) {
     var lastSelectedNavItem = document.querySelector('li.selected');

@@ -70,7 +70,7 @@ MediaControls.prototype.createControl = function(className, opt_parent) {
  * @param {string} className Class name.
  * @param {function(Event)} handler Click handler.
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
- * @param {Boolean} opt_toggle True if the button has toggle state.
+ * @param {boolean} opt_toggle True if the button has toggle state.
  * @return {HTMLElement} The new button element.
  */
 MediaControls.prototype.createButton = function(

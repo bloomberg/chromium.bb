@@ -25,7 +25,7 @@ var timeutil = (function() {
    * This function converts the tick count to a Javascript "time", which is
    * the UTC time in milliseconds.
    *
-   * @param {String} timeTicks A time represented in "time ticks".
+   * @param {string} timeTicks A time represented in "time ticks".
    * @return {number} The Javascript time that |timeTicks| represents.
    */
   function convertTimeTicksToTime(timeTicks) {
@@ -36,7 +36,7 @@ var timeutil = (function() {
    * The browser gives us times in terms of "time ticks" in milliseconds.
    * This function converts the tick count to a Date() object.
    *
-   * @param {String} timeTicks A time represented in "time ticks".
+   * @param {string} timeTicks A time represented in "time ticks".
    * @return {Date} The time that |timeTicks| represents.
    */
   function convertTimeTicksToDate(timeTicks) {
@@ -69,7 +69,7 @@ var timeutil = (function() {
    * Returns a string representation of |date|.
    *
    * @param {Date} date The date to be represented.
-   * @return {String} A string representation of |date|.
+   * @return {string} A string representation of |date|.
    */
   function dateToString(date) {
     var dateStr = date.getFullYear() + '-' +

@@ -684,7 +684,7 @@ cr.define('options', function() {
 
     /**
      * Checks if languageCode is deletable or not.
-     * @param {String} languageCode the languageCode to check for deletability.
+     * @param {string} languageCode the languageCode to check for deletability.
      */
     languageIsDeletable: function(languageCode) {
       // Don't allow removing the language if it's a UI language.

@@ -22,8 +22,8 @@ function updateResourcePrefetchPredictorDb(database) {
 
 /**
  * Truncates the string to keep the database readable.
- * @param {String} str The string to truncate.
- * @return {String} The truncated string.
+ * @param {string} str The string to truncate.
+ * @return {string} The truncated string.
  */
 function truncateString(str) {
   return str.length < 100 ? str : str.substring(0, 99);

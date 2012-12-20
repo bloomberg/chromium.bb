@@ -49,7 +49,7 @@ var TabSwitcherView = (function() {
     /**
      * Adds a new tab (initially hidden).
      *
-     * @param {String} id The ID for DOM node that will be made clickable to
+     * @param {string} id The ID for DOM node that will be made clickable to
      *                    select this tab. This is also the ID we use to
      *                    identify the "tab".
      * @param {!View} view The tab's actual contents.

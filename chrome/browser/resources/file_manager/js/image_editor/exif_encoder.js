@@ -130,7 +130,7 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
 
 /**
  * Return a range where the metadata is (or should be) located.
- * @param {String} encodedImage Raw image data to look for metadata.
+ * @param {string} encodedImage Raw image data to look for metadata.
  * @return {Object} An object with from and to properties.
  */
 ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
@@ -268,7 +268,7 @@ ExifEncoder.prototype.encode = function() {
  * @param {Object} directory A directory map as created by ExifParser.
  * @param {Array} resolveLater An array of tag ids for which the values will be
  *                resolved later.
- * @param {String} nextDirPointer A forward key for the pointer to the next
+ * @param {string} nextDirPointer A forward key for the pointer to the next
  *                 directory. If omitted the pointer is set to 0.
  */
 ExifEncoder.encodeDirectory = function(
@@ -507,7 +507,7 @@ ByteWriter.prototype.writeScalar = function(value, width, opt_signed) {
 
 /**
  * Writes string.
- * @param {String} str String to write.
+ * @param {string} str String to write.
  */
 ByteWriter.prototype.writeString = function(str) {
   this.validateWrite(str.length);

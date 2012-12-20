@@ -48,7 +48,7 @@ Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel,
 
 /**
  * Max number of thumbnails in the ribbon.
- * @type {Number}
+ * @type {number}
  */
 Ribbon.ITEMS_COUNT = 5;
 

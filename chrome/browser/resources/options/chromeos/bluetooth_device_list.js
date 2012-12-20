@@ -157,7 +157,7 @@ cr.define('options.system.bluetooth', function() {
      * is hidden is not properly rendered when the list becomes visible. In
      * addition, deleting a single item from the list results in a stale cache
      * requiring an invalidation.
-     * @param {String=} opt_selection Optional address of device to select
+     * @param {string=} opt_selection Optional address of device to select
      *     after refreshing the list.
      */
     refresh: function(opt_selection) {
@@ -174,7 +174,7 @@ cr.define('options.system.bluetooth', function() {
     /**
      * Retrieves the address of the selected device, or null if no device is
      * selected.
-     * @return {?String} Address of selected device or null.
+     * @return {?string} Address of selected device or null.
      * @private
      */
     getSelectedDevice_: function() {
@@ -186,7 +186,7 @@ cr.define('options.system.bluetooth', function() {
 
     /**
      * Selects the device with the matching address.
-     * @param {String} address The unique address of the device.
+     * @param {string} address The unique address of the device.
      * @private
      */
     setSelectedDevice_: function(address) {

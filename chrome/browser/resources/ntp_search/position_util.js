@@ -19,7 +19,7 @@ cr.define('cr.ui', function() {
   var AnchorType = cr.ui.AnchorType;
 
   /**
-   * @type {Number}
+   * @type {number}
    * @const
    */
   var BOOKMARK_BAR_HEIGHT = 48;

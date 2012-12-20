@@ -51,7 +51,7 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
  * Return a blob with the encoded image with metadata inserted.
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder Encoder to use.
- * @param {Number} quality (0..1], Encoding quality, defaults to 0.9.
+ * @param {number} quality (0..1], Encoding quality, defaults to 0.9.
  * @return {Blob} encoded data.
  */
 ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
@@ -106,8 +106,8 @@ ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
  * Why return a string? Calling atob and having the rest of the code deal
  * with a string is several times faster than decoding base64 in Javascript.
  *
- * @param {String} dataURL Data URL to decode.
- * @return {String} A binary string (char codes are the actual byte values).
+ * @param {string} dataURL Data URL to decode.
+ * @return {string} A binary string (char codes are the actual byte values).
  */
 ImageEncoder.decodeDataURL = function(dataURL) {
   // Skip the prefix ('data:image/<type>;base64,')
@@ -118,7 +118,7 @@ ImageEncoder.decodeDataURL = function(dataURL) {
 /**
  * Return a thumbnail for an image.
  * @param {HTMLCanvasElement} canvas Original image.
- * @param {Number} opt_shrinkage Thumbnail should be at least this much smaller
+ * @param {number} opt_shrinkage Thumbnail should be at least this much smaller
  *                               than the original image (in each dimension).
  * @return {HTMLCanvasElement} Thumbnail canvas
  */
@@ -192,7 +192,7 @@ ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
 
 /**
  * Return a range where the metadata is (or should be) located.
- * @param {String} encodedImage //TODO(JSDOC)
+ * @param {string} encodedImage //TODO(JSDOC)
  * @return {Object} An object with from and to properties.
  */
 ImageEncoder.MetadataEncoder.prototype.

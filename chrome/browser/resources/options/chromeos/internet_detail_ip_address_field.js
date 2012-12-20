@@ -83,8 +83,8 @@ cr.define('options.internet', function() {
      * whitespace and leading zeros from each of the octets so that they conform
      * to the normal format for IP addresses.
      * @override
-     * @param {String} value Input IP address to be mutated.
-     * @return {String} mutated IP address.
+     * @param {string} value Input IP address to be mutated.
+     * @return {string} mutated IP address.
      */
     mutateInput: function(value) {
       if (!value)

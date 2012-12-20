@@ -29,7 +29,7 @@ cr.define('options', function() {
 
     /**
      * The language code of this language.
-     * @type {String}
+     * @type {string}
      * @private
      */
     languageCode_: null,

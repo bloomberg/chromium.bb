@@ -49,7 +49,7 @@ ImageBuffer.prototype.draw = function() {
  * @param {number} x X coordinate for cursor.
  * @param {number} y Y coordinate for cursor.
  * @param {boolean} mouseDown If mouse button is down.
- * @return {String} A value for style.cursor CSS property.
+ * @return {string} A value for style.cursor CSS property.
  */
 ImageBuffer.prototype.getCursorStyle = function(x, y, mouseDown) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
@@ -63,7 +63,7 @@ ImageBuffer.prototype.getCursorStyle = function(x, y, mouseDown) {
  * Searches for a click handler in the descending Z-order.
  * @param {number} x X coordinate for click event.
  * @param {number} y Y coordinate for click event.
- * @return {Boolean} True if handled.
+ * @return {boolean} True if handled.
  */
 ImageBuffer.prototype.onClick = function(x, y) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {

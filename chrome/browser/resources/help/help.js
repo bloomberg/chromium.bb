@@ -227,7 +227,7 @@ cr.define('help', function() {
 
     /**
      * Sets the value of the "Build Date" field of the "More Info" section.
-     * @param {String} buildDate The date of the build.
+     * @param {string} buildDate The date of the build.
      * @private
      */
     setBuildDate_: function(buildDate) {

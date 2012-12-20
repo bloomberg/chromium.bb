@@ -127,7 +127,7 @@ cr.define('options', function() {
 
     /**
      * Removes the Autofill address or credit card represented by |guid|.
-     * @param {String} guid The GUID of the address to remove.
+     * @param {string} guid The GUID of the address to remove.
      * @private
      */
     removeData_: function(guid) {
@@ -138,7 +138,7 @@ cr.define('options', function() {
      * Requests profile data for the address represented by |guid| from the
      * PersonalDataManager. Once the data is loaded, the AutofillOptionsHandler
      * calls showEditAddressOverlay().
-     * @param {String} guid The GUID of the address to edit.
+     * @param {string} guid The GUID of the address to edit.
      * @private
      */
     loadAddressEditor_: function(guid) {
@@ -149,7 +149,7 @@ cr.define('options', function() {
      * Requests profile data for the credit card represented by |guid| from the
      * PersonalDataManager. Once the data is loaded, the AutofillOptionsHandler
      * calls showEditCreditCardOverlay().
-     * @param {String} guid The GUID of the credit card to edit.
+     * @param {string} guid The GUID of the credit card to edit.
      * @private
      */
     loadCreditCardEditor_: function(guid) {

@@ -42,7 +42,7 @@ cr.define('ntp', function() {
 
   /**
    * true if |loginBubble| should be shown.
-   * @type {Boolean}
+   * @type {boolean}
    */
   var shouldShowLoginBubble = false;
 

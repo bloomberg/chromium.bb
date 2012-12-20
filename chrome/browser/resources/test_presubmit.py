@@ -173,7 +173,7 @@ class JsStyleGuideTest(SuperMoxTestBase):
     """Checks that the '@inheritDoc' checker flags |line| as a style error."""
     error = self.checker.InheritDocCheck(1, line)
     self.assertNotEqual('', error,
-        'Should be flagged as style error: ' + line)
+        msg='Should be flagged as style error: ' + line)
     self.assertEqual(self.GetHighlight(line, error), '@inheritDoc')
 
   def ShouldPassInheritDocCheck(self, line):
@@ -181,12 +181,12 @@ class JsStyleGuideTest(SuperMoxTestBase):
        error.
     """
     self.assertEqual('', self.checker.InheritDocCheck(1, line),
-        'Should not be flagged as style error: ' + line)
+        msg='Should not be flagged as style error: ' + line)
 
   def testInheritDocFails(self):
     lines = [
-        "/** @inheritDoc */",
-        "* @inheritDoc",
+        " /** @inheritDoc */",
+        "   * @inheritDoc",
     ]
     for line in lines:
       self.ShouldFailInheritDocCheck(line)
@@ -194,12 +194,56 @@ class JsStyleGuideTest(SuperMoxTestBase):
   def testInheritDocPasses(self):
     lines = [
         "And then I said, but I won't @inheritDoc! Hahaha!",
-        "If your dad's a doctor, do you inheritDoc?",
-        "What's up, inherit doc?",
-        "this.inheritDoc(someDoc)",
+        " If your dad's a doctor, do you inheritDoc?",
+        "  What's up, inherit doc?",
+        "   this.inheritDoc(someDoc)",
     ]
     for line in lines:
       self.ShouldPassInheritDocCheck(line)
+
+  def ShouldFailWrapperTypeCheck(self, line):
+    """Checks that the use of wrapper types (i.e. new Number(), @type {Number})
+       is a style error.
+    """
+    error = self.checker.WrapperTypeCheck(1, line)
+    self.assertNotEqual('', error,
+        msg='Should be flagged as style error: ' + line)
+    highlight = self.GetHighlight(line, error)
+    self.assertTrue(highlight in ('Boolean', 'Number', 'String'))
+
+  def ShouldPassWrapperTypeCheck(self, line):
+    """Checks that the wrapper type checker doesn't flag |line| as a style
+       error.
+    """
+    self.assertEqual('', self.checker.WrapperTypeCheck(1, line),
+        msg='Should not be flagged as style error: ' + line)
+
+  def testWrapperTypePasses(self):
+    lines = [
+        "/** @param {!ComplexType} */",
+        "  * @type {Object}",
+        "   * @param {Function=} opt_callback",
+        "    * @param {} num Number of things to add to {blah}.",
+        "   *  @return {!print_preview.PageNumberSet}",
+        " /* @returns {Number} */",  # Should be /** @return {Number} */
+        "* @param {!LocalStrings}"
+        " Your type of Boolean is false!",
+        "  Then I parameterized her Number from her friend!",
+        "   A String of Pearls",
+        "    types.params.aBoolean.typeString(someNumber)",
+    ]
+    for line in lines:
+      self.ShouldPassWrapperTypeCheck(line)
+
+  def testWrapperTypeFails(self):
+    lines = [
+        "  /**@type {String}*/(string)",
+        "   * @param{Number=} opt_blah A number",
+        "/** @private @return {!Boolean} */",
+        " * @param {number|String}",
+    ]
+    for line in lines:
+      self.ShouldFailWrapperTypeCheck(line)
 
 
 class CssStyleGuideTest(SuperMoxTestBase):

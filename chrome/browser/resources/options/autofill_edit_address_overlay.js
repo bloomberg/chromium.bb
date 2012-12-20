@@ -90,7 +90,7 @@ cr.define('options', function() {
     /**
      * Updates the data model for the list named |listName| with the values from
      * |entries|.
-     * @param {String} listName The id of the list.
+     * @param {string} listName The id of the list.
      * @param {Array} entries The list of items to be added to the list.
      */
     setMultiValueList_: function(listName, entries) {

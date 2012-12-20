@@ -55,7 +55,7 @@ cr.define('options', function() {
    * button that activates the overlay is also updated to stay in sync. A
    * message is displayed in the main settings page if no pointer devices are
    * available.
-   * @param {String} label i18n key for the overlay title.
+   * @param {string} label i18n key for the overlay title.
    */
   PointerOverlay.setTitle = function(label) {
     var button = $('pointer-settings-button');

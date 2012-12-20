@@ -32,7 +32,7 @@ cr.define('ntp', function() {
 
   /**
    * Record an event in the UMA histogram.
-   * @param {Number} eventId The id of the event to be recorded.
+   * @param {number} eventId The id of the event to be recorded.
    * @private
    */
   function recordUmaEvent_(eventId) {
@@ -293,7 +293,7 @@ cr.define('ntp', function() {
 
     /**
      * Appends a menu item to |this.menu|.
-     * @param {String} textId The ID for the localized string that acts as
+     * @param {string} textId The ID for the localized string that acts as
      *     the item's label.
      */
     appendMenuItem_: function(textId) {

@@ -281,8 +281,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Update the arrow so that it appears at the correct position.
-     * @param {Boolean} visible Whether the arrow should be visible.
-     * @param {Boolean} atTop Whether the arrow should be at the top of the
+     * @param {boolean} visible Whether the arrow should be visible.
+     * @param {boolean} atTop Whether the arrow should be at the top of the
      * bubble.
      * @param {number} tipOffset The horizontal distance between the tip of the
      * arrow and the reference edge of the bubble (as specified by the arrow
@@ -357,7 +357,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Hide or show the close button.
-     * @param {Boolean} isVisible True if the close button should be visible.
+     * @param {boolean} isVisible True if the close button should be visible.
      */
     set closeButtonVisible(isVisible) {
       this.querySelector('.bubble-close').hidden = !isVisible;

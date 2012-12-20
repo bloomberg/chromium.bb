@@ -36,7 +36,7 @@ MenuButton.createDropDownArrows();
  * @param {boolean} continued Whether this visit is on the same day as the
  *     visit before it.
  * @param {HistoryModel} model The model object this entry belongs to.
- * @param {Number} id The identifier for the entry.
+ * @param {number} id The identifier for the entry.
  * @constructor
  */
 function Visit(result, continued, model, id) {
@@ -296,8 +296,8 @@ HistoryModel.prototype.setView = function(view) {
 
 /**
  * Start a new search - this will clear out our model.
- * @param {String} searchText The text to search for
- * @param {Number} opt_page The page to view - this is mostly used when setting
+ * @param {string} searchText The text to search for
+ * @param {number} opt_page The page to view - this is mostly used when setting
  *     up an initial view, use #requestPage otherwise.
  */
 HistoryModel.prototype.setSearchText = function(searchText, opt_page) {
@@ -320,7 +320,7 @@ HistoryModel.prototype.reload = function() {
 };
 
 /**
- * @return {String} The current search text.
+ * @return {string} The current search text.
  */
 HistoryModel.prototype.getSearchText = function() {
   return this.searchText_;
@@ -329,7 +329,7 @@ HistoryModel.prototype.getSearchText = function() {
 /**
  * Tell the model that the view will want to see the current page. When
  * the data becomes available, the model will call the view back.
- * @param {Number} page The page we want to view.
+ * @param {number} page The page we want to view.
  */
 HistoryModel.prototype.requestPage = function(page) {
   this.requestedPage_ = page;
@@ -381,7 +381,7 @@ HistoryModel.prototype.addResults = function(info, results) {
 };
 
 /**
- * @return {Number} The number of visits in the model.
+ * @return {number} The number of visits in the model.
  */
 HistoryModel.prototype.getSize = function() {
   return this.visits_.length;
@@ -389,8 +389,8 @@ HistoryModel.prototype.getSize = function() {
 
 /**
  * Get a list of visits between specified index positions.
- * @param {Number} start The start index
- * @param {Number} end The end index
+ * @param {number} start The start index
+ * @param {number} end The end index
  * @return {Array.<Visit>} A list of visits
  */
 HistoryModel.prototype.getNumberedRange = function(start, end) {
@@ -486,7 +486,7 @@ HistoryModel.prototype.queryHistory_ = function() {
 
 /**
  * Check to see if we have data for the given page.
- * @param {Number} page The page number.
+ * @param {number} page The page number.
  * @return {boolean} Whether we have any data for the given page.
  * @private
  */
@@ -496,7 +496,7 @@ HistoryModel.prototype.haveDataForPage_ = function(page) {
 
 /**
  * Check to see if we have data to fill the given page.
- * @param {Number} page The page number.
+ * @param {number} page The page number.
  * @return {boolean} Whether we have data to fill the page.
  * @private
  */
@@ -852,7 +852,7 @@ function load() {
 /**
  * TODO(glen): Get rid of this function.
  * Set the history view to a specified page.
- * @param {String} term The string to search for
+ * @param {string} term The string to search for
  */
 function setSearch(term) {
   if (historyView) {

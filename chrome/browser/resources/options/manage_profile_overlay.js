@@ -120,7 +120,7 @@ cr.define('options', function() {
      *       filePath: "/path/to/profile/data/on/disk"
      *       isCurrentProfile: false,
      *     };
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @private
@@ -176,7 +176,7 @@ cr.define('options', function() {
     /**
      * Display the error bubble, with |errorText| in the bubble.
      * @param {string} errorText The localized string id to display as an error.
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @private
@@ -191,7 +191,7 @@ cr.define('options', function() {
 
     /**
      * Hide the error bubble.
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @private
@@ -204,7 +204,7 @@ cr.define('options', function() {
     /**
      * oninput callback for <input> field.
      * @param {Event} event The event object.
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @private
@@ -242,7 +242,7 @@ cr.define('options', function() {
 
     /**
      * Called when the selected icon in the icon grid changes.
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @private

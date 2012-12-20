@@ -46,7 +46,7 @@ FileTasks.prototype.init = function(urls, opt_mimeTypes) {
 
 /**
  * Returns amount of tasks.
- * @return {Number=} amount of tasks.
+ * @return {number=} amount of tasks.
  */
 FileTasks.prototype.size = function() {
   return (this.tasks_ && this.tasks_.length) || 0;
@@ -555,8 +555,8 @@ FileTasks.decorate = function(method) {
  * Shows modal action picker dialog with currently available list of tasks.
  *
  * @param {DefaultActionDialog} actionDialog Action dialog to show and update.
- * @param {String} title Title to use.
- * @param {String} message Message to use.
+ * @param {string} title Title to use.
+ * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.
  */
 FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,

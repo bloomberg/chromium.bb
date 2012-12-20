@@ -140,13 +140,13 @@ Gallery.openStandalone = function(path, pageState) {
 
 /**
  * Tools fade-out timeout im milliseconds.
- * @type {Number}
+ * @type {number}
  */
 Gallery.FADE_TIMEOUT = 3000;
 
 /**
  * First time tools fade-out timeout im milliseconds.
- * @type {Number}
+ * @type {number}
  */
 Gallery.FIRST_FADE_TIMEOUT = 1000;
 
@@ -731,7 +731,7 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
 };
 
 /**
- * @return {Boolean} True if file renaming is currently in progress
+ * @return {boolean} True if file renaming is currently in progress
  * @private
  */
 Gallery.prototype.isRenaming_ = function() {
