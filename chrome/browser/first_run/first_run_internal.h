@@ -94,17 +94,6 @@ void SetImportPreferencesAndLaunchImport(
     MasterPrefs* out_prefs,
     installer::MasterPreferences* install_prefs);
 
-#if !defined(USE_AURA)
-// AutoImport code which is common to all platforms.
-void AutoImportPlatformCommon(
-    scoped_refptr<ImporterHost> importer_host,
-    Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
-    bool make_chrome_default);
-#endif  // !defined(USE_AURA)
-
 int ImportBookmarkFromFileIfNeeded(Profile* profile,
                                    const CommandLine& cmdline);
 

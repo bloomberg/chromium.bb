@@ -25,38 +25,6 @@ bool ImportBookmarks(const FilePath& import_bookmarks_path) {
 
 namespace first_run {
 
-void AutoImport(
-    Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
-    bool make_chrome_default,
-    ProcessSingleton* process_singleton) {
-  // We need to avoid dispatching new tabs when we are importing because
-  // that will lead to data corruption or a crash. Because there is no UI for
-  // the import process, we pass NULL as the window to bring to the foreground
-  // when a CopyData message comes in; this causes the message to be silently
-  // discarded, which is the correct behavior during the import process.
-  process_singleton->Lock(NULL);
-
-  scoped_refptr<ImporterHost> importer_host;
-  // TODO(csilv,mirandac): Out-of-process import has only been qualified on
-  // MacOS X, so we will only use it on that platform since it is required.
-  // Remove this conditional logic once oop import is qualified for
-  // Linux/Windows. http://crbug.com/22142
-  importer_host = new ExternalProcessImporterHost;
-
-  internal::AutoImportPlatformCommon(importer_host,
-                                     profile,
-                                     homepage_defined,
-                                     import_items,
-                                     dont_import_items,
-                                     make_chrome_default);
-
-  process_singleton->Unlock();
-  first_run::CreateSentinel();
-}
-
 FilePath MasterPrefsPath() {
   return master_prefs::MasterPrefsPath();
 }

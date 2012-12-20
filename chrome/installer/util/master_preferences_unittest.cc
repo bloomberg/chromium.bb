@@ -51,7 +51,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
-    "     \"skip_first_run_ui\": true,\n"
     "     \"show_welcome_page\": true,\n"
     "     \"import_search_engine\": true,\n"
     "     \"import_history\": true,\n"
@@ -80,7 +79,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(prefs.read_from_file());
 
   const char* expected_true[] = {
-    installer::master_preferences::kDistroSkipFirstRunPref,
     installer::master_preferences::kDistroImportSearchPref,
     installer::master_preferences::kDistroImportHistoryPref,
     installer::master_preferences::kDistroImportBookmarksPref,
@@ -123,7 +121,6 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
-    "     \"skip_first_run_ui\": true,\n"
     "     \"import_search_engine\": true,\n"
     "     \"import_bookmarks\": false,\n"
     "     \"import_bookmarks_from_file\": \"\",\n"
@@ -139,7 +136,6 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_TRUE(prefs.read_from_file());
 
   ExpectedBooleans expected_bool[] = {
-    { installer::master_preferences::kDistroSkipFirstRunPref, true },
     { installer::master_preferences::kDistroImportSearchPref, true },
     { installer::master_preferences::kDistroImportBookmarksPref, false },
     { installer::master_preferences::kDoNotCreateDesktopShortcut, true },
@@ -245,7 +241,6 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
-    "     \"skip_first_run_ui\": true,\n"
     "     \"do_not_create_desktop_shortcut\": false,\n"
     "     \"do_not_create_quick_launch_shortcut\": false,\n"
     "     \"do_not_launch_chrome\": true,\n"
@@ -264,7 +259,6 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
 
   // Check prefs that do not have any equivalent command line option.
   ExpectedBooleans expected_bool[] = {
-    { installer::master_preferences::kDistroSkipFirstRunPref, true },
     { installer::master_preferences::kDoNotLaunchChrome, true },
     { installer::master_preferences::kSystemLevel, true },
     { installer::master_preferences::kVerboseLogging, false },

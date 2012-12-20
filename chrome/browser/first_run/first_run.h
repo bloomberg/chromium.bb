@@ -105,8 +105,11 @@ void AutoImport(Profile* profile,
                 bool homepage_defined,
                 int import_items,
                 int dont_import_items,
-                bool make_chrome_default,
                 ProcessSingleton* process_singleton);
+
+// Does remaining first run tasks for |profile| and makes Chrome default browser
+// if |make_chrome_default|.
+void DoFirstRunTasks(Profile* profile, bool make_chrome_default);
 
 // Imports bookmarks and/or browser items (depending on platform support)
 // in this process. This function is paired with first_run::ImportSettings().

@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/google/google_util.h"
@@ -1202,8 +1203,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                             master_prefs_->homepage_defined,
                             master_prefs_->do_import_items,
                             master_prefs_->dont_import_items,
-                            master_prefs_->make_chrome_default,
                             process_singleton_.get());
+      first_run::DoFirstRunTasks(profile_, master_prefs_->make_chrome_default);
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
       // TODO(thakis): Look into moving this POSIX-specific section to
       // ChromeBrowserMainPartsPosix::PostInteractiveFirstRunInit().

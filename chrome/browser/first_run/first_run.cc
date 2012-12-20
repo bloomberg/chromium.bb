@@ -327,13 +327,6 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
   }
 }
 
-bool SkipFirstRunUI(installer::MasterPreferences* install_prefs) {
-  bool value = false;
-  install_prefs->GetBool(installer::master_preferences::kDistroSkipFirstRunPref,
-                         &value);
-  return value;
-}
-
 void SetRLZPref(first_run::MasterPrefs* out_prefs,
                 installer::MasterPreferences* install_prefs) {
   if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
@@ -353,99 +346,6 @@ bool IsOrganicFirstRun() {
   return google_util::IsOrganicFirstRun(brand);
 }
 #endif
-
-#if !defined(USE_AURA)
-void AutoImportPlatformCommon(
-    scoped_refptr<ImporterHost> importer_host,
-    Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
-    bool make_chrome_default) {
-  FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
-
-  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-  importer_list->DetectSourceProfilesHack();
-
-  // Do import if there is an available profile for us to import.
-  if (importer_list->count() > 0) {
-    // Don't show the warning dialog if import fails.
-    importer_host->set_headless();
-    int items = 0;
-
-    if (IsOrganicFirstRun()) {
-      // Home page is imported in organic builds only unless turned off or
-      // defined in master_preferences.
-      if (homepage_defined) {
-        dont_import_items |= importer::HOME_PAGE;
-        if (import_items & importer::HOME_PAGE)
-          import_items &= ~importer::HOME_PAGE;
-      }
-      // Search engines are not imported automatically in organic builds if the
-      // user already has a user preferences directory.
-      if (local_state_file_exists) {
-        dont_import_items |= importer::SEARCH_ENGINES;
-        if (import_items & importer::SEARCH_ENGINES)
-          import_items &= ~importer::SEARCH_ENGINES;
-      }
-    }
-
-    PrefService* user_prefs = profile->GetPrefs();
-
-    SetImportItem(user_prefs,
-                  prefs::kImportHistory,
-                  import_items,
-                  dont_import_items,
-                  importer::HISTORY,
-                  items);
-    SetImportItem(user_prefs,
-                  prefs::kImportHomepage,
-                  import_items,
-                  dont_import_items,
-                  importer::HOME_PAGE,
-                  items);
-    SetImportItem(user_prefs,
-                  prefs::kImportSearchEngine,
-                  import_items,
-                  dont_import_items,
-                  importer::SEARCH_ENGINES,
-                  items);
-    SetImportItem(user_prefs,
-                  prefs::kImportBookmarks,
-                  import_items,
-                  dont_import_items,
-                  importer::FAVORITES,
-                  items);
-
-    ImportSettings(profile, importer_host, importer_list, items);
-  }
-
-  content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
-
-  // Launch the first run dialog only for certain builds, and only if the user
-  // has not already set preferences.
-  if (IsOrganicFirstRun() && !local_state_file_exists) {
-    startup_metric_utils::SetNonBrowserUIDisplayed();
-    ShowFirstRunDialog(profile);
-  }
-
-  if (make_chrome_default &&
-      ShellIntegration::CanSetAsDefaultBrowser() ==
-          ShellIntegration::SET_DEFAULT_UNATTENDED) {
-    ShellIntegration::SetAsDefaultBrowser();
-  }
-
-  // Display the first run bubble if there is a default search provider.
-  TemplateURLService* template_url =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (template_url && template_url->GetDefaultSearchProvider())
-    FirstRunBubbleLauncher::ShowFirstRunBubbleSoon();
-  SetShowWelcomePagePref();
-  SetPersonalDataManagerFirstRunPref();
-}
-#endif  // !defined(USE_AURA)
 
 int ImportBookmarkFromFileIfNeeded(Profile* profile,
                                    const CommandLine& cmdline) {
@@ -655,27 +555,130 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
       install_prefs.get());
 
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!internal::SkipFirstRunUI(install_prefs.get()))
-    return SHOW_FIRST_RUN;
-
-  // From here on we won't show first run so we need to do the work to show the
-  // bubble anyway, unless it's already been explicitly suppressed.
-  SetShowFirstRunBubblePref(true);
-
-  // We need to be able to create the first run sentinel or else we cannot
-  // proceed because ImportSettings will launch the importer process which
-  // would end up here if the sentinel is not present.
-  if (!CreateSentinel())
-    return SKIP_FIRST_RUN;
-
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
 
-  return SKIP_FIRST_RUN;
+  return SHOW_FIRST_RUN;
+}
+
+void AutoImport(
+    Profile* profile,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    ProcessSingleton* process_singleton) {
+#if !defined(USE_AURA)
+  // We need to avoid dispatching new tabs when we are importing because
+  // that will lead to data corruption or a crash. Because there is no UI for
+  // the import process, we pass NULL as the window to bring to the foreground
+  // when a CopyData message comes in; this causes the message to be silently
+  // discarded, which is the correct behavior during the import process.
+  process_singleton->Lock(NULL);
+
+  scoped_refptr<ImporterHost> importer_host;
+  // TODO(csilv,mirandac): Out-of-process import has only been qualified on
+  // MacOS X, so we will only use it on that platform since it is required.
+  // Remove this conditional logic once oop import is qualified for
+  // Linux/Windows. http://crbug.com/22142
+#if defined(OS_MACOSX)
+  importer_host = new ExternalProcessImporterHost;
+#else
+  importer_host = new ImporterHost;
+#endif
+
+  FilePath local_state_path;
+  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  bool local_state_file_exists = file_util::PathExists(local_state_path);
+
+  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+  importer_list->DetectSourceProfilesHack();
+
+  // Do import if there is an available profile for us to import.
+  if (importer_list->count() > 0) {
+    // Don't show the warning dialog if import fails.
+    importer_host->set_headless();
+    int items = 0;
+
+    if (internal::IsOrganicFirstRun()) {
+      // Home page is imported in organic builds only unless turned off or
+      // defined in master_preferences.
+      if (homepage_defined) {
+        dont_import_items |= importer::HOME_PAGE;
+        if (import_items & importer::HOME_PAGE)
+          import_items &= ~importer::HOME_PAGE;
+      }
+      // Search engines are not imported automatically in organic builds if the
+      // user already has a user preferences directory.
+      if (local_state_file_exists) {
+        dont_import_items |= importer::SEARCH_ENGINES;
+        if (import_items & importer::SEARCH_ENGINES)
+          import_items &= ~importer::SEARCH_ENGINES;
+      }
+    }
+
+    PrefService* user_prefs = profile->GetPrefs();
+
+    SetImportItem(user_prefs,
+                  prefs::kImportHistory,
+                  import_items,
+                  dont_import_items,
+                  importer::HISTORY,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportHomepage,
+                  import_items,
+                  dont_import_items,
+                  importer::HOME_PAGE,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportSearchEngine,
+                  import_items,
+                  dont_import_items,
+                  importer::SEARCH_ENGINES,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportBookmarks,
+                  import_items,
+                  dont_import_items,
+                  importer::FAVORITES,
+                  items);
+
+    internal::ImportSettings(profile, importer_host, importer_list, items);
+  }
+
+  content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
+
+  process_singleton->Unlock();
+  first_run::CreateSentinel();
+#endif  // !defined(USE_AURA)
+}
+
+void DoFirstRunTasks(Profile* profile, bool make_chrome_default) {
+  if (make_chrome_default &&
+      ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_UNATTENDED) {
+    ShellIntegration::SetAsDefaultBrowser();
+  }
+
+#if !defined(USE_AURA)
+  FilePath local_state_path;
+  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  bool local_state_file_exists = file_util::PathExists(local_state_path);
+
+  // Launch the first run dialog only for certain builds, and only if the user
+  // has not already set preferences.
+  if (internal::IsOrganicFirstRun() && !local_state_file_exists) {
+    startup_metric_utils::SetNonBrowserUIDisplayed();
+    ShowFirstRunDialog(profile);
+  }
+  // Display the first run bubble if there is a default search provider.
+  TemplateURLService* template_url =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url && template_url->GetDefaultSearchProvider())
+    FirstRunBubbleLauncher::ShowFirstRunBubbleSoon();
+  SetShowWelcomePagePref();
+  SetPersonalDataManagerFirstRunPref();
+#endif  // !defined(USE_AURA)
 }
 
 }  // namespace first_run

@@ -68,36 +68,6 @@ bool ImportBookmarks(const FilePath& import_bookmarks_path) {
 
 namespace first_run {
 
-void AutoImport(
-    Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
-    bool make_chrome_default,
-    ProcessSingleton* process_singleton) {
-#if !defined(USE_AURA)
-  // We need to avoid dispatching new tabs when we are importing because
-  // that will lead to data corruption or a crash. Because there is no UI for
-  // the import process, we pass NULL as the window to bring to the foreground
-  // when a CopyData message comes in; this causes the message to be silently
-  // discarded, which is the correct behavior during the import process.
-  process_singleton->Lock(NULL);
-
-  scoped_refptr<ImporterHost> importer_host;
-  importer_host = new ImporterHost;
-
-  internal::AutoImportPlatformCommon(importer_host,
-                                     profile,
-                                     homepage_defined,
-                                     import_items,
-                                     dont_import_items,
-                                     make_chrome_default);
-
-  process_singleton->Unlock();
-  CreateSentinel();
-#endif  // !defined(USE_AURA)
-}
-
 FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
   FilePath master_prefs;
