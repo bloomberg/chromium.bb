@@ -4,6 +4,9 @@
 
 #ifndef SANDBOX_LINUX_SERVICES_ANDROID_ARM_UCONTEXT_H_
 #define SANDBOX_LINUX_SERVICES_ANDROID_ARM_UCONTEXT_H_
+
+#include <asm/sigcontext.h>
+
 typedef long int greg_t;
 typedef unsigned long sigset_t;
 typedef struct ucontext {
