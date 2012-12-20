@@ -43,14 +43,6 @@ std::string AwContentRendererClient::GetDefaultEncoding() {
   return AwResource::GetDefaultTextEncoding();
 }
 
-WebKit::WebPlugin* AwContentRendererClient::CreatePluginReplacement(
-    content::RenderView* render_view,
-    const FilePath& plugin_path) {
-  // TODO(boliu): Call WebViewPlugin::Create with appropriate html for missing
-  // plugin placeholder.
-  return NULL;
-}
-
 bool AwContentRendererClient::HasErrorPage(int http_status_code,
                           std::string* error_domain) {
   return http_status_code >= 400;

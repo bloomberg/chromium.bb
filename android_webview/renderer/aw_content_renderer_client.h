@@ -21,9 +21,6 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void RenderThreadStarted() OVERRIDE;
   virtual void RenderViewCreated(content::RenderView* render_view) OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
-  virtual WebKit::WebPlugin* CreatePluginReplacement(
-      content::RenderView* render_view,
-      const FilePath& plugin_path) OVERRIDE;
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
   virtual void GetNavigationErrorStrings(
