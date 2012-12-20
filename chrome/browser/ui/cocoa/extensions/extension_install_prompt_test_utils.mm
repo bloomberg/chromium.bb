@@ -66,8 +66,7 @@ gfx::Image LoadInstallPromptIcon() {
 
 ExtensionInstallPrompt::Prompt BuildExtensionInstallPrompt(
     Extension* extension) {
-  ExtensionInstallPrompt::Prompt prompt(
-      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
+  ExtensionInstallPrompt::Prompt prompt(ExtensionInstallPrompt::INSTALL_PROMPT);
   prompt.set_extension(extension);
   prompt.set_icon(LoadInstallPromptIcon());
   return prompt;

@@ -26,13 +26,14 @@ public:
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
+  ExtensionInstallPrompt::ShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
   ExtensionInstallPrompt::Prompt prompt =
       chrome::BuildExtensionInstallPrompt(extension_);
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(tab,
+      new ExtensionInstallDialogController(show_params,
                                            &delegate,
                                            prompt);
 

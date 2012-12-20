@@ -88,7 +88,7 @@ class WebIntentPicker {
   // dialog. We *MUST* eventually call either Proceed() or Abort() on
   // |delegate|.
   virtual void OnShowExtensionInstallDialog(
-      content::WebContents* parent_web_contents,
+      const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
 

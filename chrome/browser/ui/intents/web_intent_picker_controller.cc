@@ -709,15 +709,13 @@ void WebIntentPickerController::Reset() {
 }
 
 void WebIntentPickerController::OnShowExtensionInstallDialog(
-      content::WebContents* parent_web_contents,
-      ExtensionInstallPrompt::Delegate* delegate,
-      const ExtensionInstallPrompt::Prompt& prompt) {
+    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
   picker_model_->SetPendingExtensionInstallDelegate(delegate);
   picker_model_->SetPendingExtensionInstallPrompt(prompt);
-  if (picker_) {
-    picker_->OnShowExtensionInstallDialog(
-        parent_web_contents, delegate, prompt);
-  }
+  if (picker_)
+    picker_->OnShowExtensionInstallDialog(show_params, delegate, prompt);
 }
 
 void WebIntentPickerController::SetWindowDispositionSource(

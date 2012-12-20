@@ -31,6 +31,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace content {
+class PageNavigator;
 class WebContents;
 }
 
@@ -63,7 +64,7 @@ class ExtensionInstallPrompt
   // that logic.
   class Prompt {
    public:
-    Prompt(Profile* profile, PromptType type);
+    explicit Prompt(PromptType type);
     ~Prompt();
 
     void SetPermissions(const std::vector<string16>& permissions);
@@ -71,6 +72,7 @@ class ExtensionInstallPrompt
                                       double average_rating,
                                       int rating_count);
     void SetOAuthIssueAdvice(const IssueAdviceInfo& issue_advice);
+    void SetUserNameFromProfile(Profile* profile);
 
     PromptType type() const { return type_; }
     void set_type(PromptType type) { type_ = type; }
@@ -117,6 +119,7 @@ class ExtensionInstallPrompt
 
    private:
     PromptType type_;
+
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
     std::vector<string16> permissions_;
@@ -124,6 +127,9 @@ class ExtensionInstallPrompt
     // Descriptions and details for OAuth2 permissions to display to the user.
     // These correspond to permission scopes.
     IssueAdviceInfo oauth_issue_advice_;
+
+    // User name to be used in Oauth heading label.
+    string16 oauth_user_name_;
 
     // The extension or bundle being installed.
     const extensions::Extension* extension_;
@@ -139,8 +145,6 @@ class ExtensionInstallPrompt
     // Range is kMinExtensionRating to kMaxExtensionRating
     double average_rating_;
     int rating_count_;
-
-    Profile* profile_;
   };
 
   static const int kMinExtensionRating = 0;
@@ -159,7 +163,23 @@ class ExtensionInstallPrompt
     virtual ~Delegate() {}
   };
 
-  typedef base::Callback<void(content::WebContents* parent_web_contents,
+  // Parameters to show a prompt dialog. Two sets of the
+  // parameters are supported: either use a parent WebContents or use a
+  // parent NativeWindow + a PageNavigator.
+  struct ShowParams {
+    explicit ShowParams(content::WebContents* contents);
+    ShowParams(gfx::NativeWindow window, content::PageNavigator* navigator);
+
+    // Parent web contents of the install UI dialog. This can be NULL.
+    content::WebContents* parent_web_contents;
+
+    // NativeWindow parent and navigator. If initialized using a parent web
+    // contents, these are derived from it.
+    gfx::NativeWindow parent_window;
+    content::PageNavigator* navigator;
+  };
+
+  typedef base::Callback<void(const ExtensionInstallPrompt::ShowParams&,
                               ExtensionInstallPrompt::Delegate*,
                               const ExtensionInstallPrompt::Prompt&)>
       ShowDialogCallback;
@@ -180,6 +200,12 @@ class ExtensionInstallPrompt
 
   // Creates a prompt with a parent web content.
   explicit ExtensionInstallPrompt(content::WebContents* contents);
+
+  // Creates a prompt with a profile, a native window and a page navigator.
+  ExtensionInstallPrompt(Profile* profile,
+                         gfx::NativeWindow native_window,
+                         content::PageNavigator* navigator);
+
   virtual ~ExtensionInstallPrompt();
 
   ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
@@ -295,7 +321,6 @@ class ExtensionInstallPrompt
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
-  content::WebContents* parent_web_contents_;
   MessageLoop* ui_loop_;
 
   // The extensions installation icon.
@@ -314,16 +339,14 @@ class ExtensionInstallPrompt
   // The object responsible for doing the UI specific actions.
   scoped_ptr<ExtensionInstallUI> install_ui_;
 
+  // Parameters to show the confirmation UI.
+  ShowParams show_params_;
+
   // The delegate we will call Proceed/Abort on after confirmation UI.
   Delegate* delegate_;
 
-  Profile* profile_;
-
   // A pre-filled prompt.
   Prompt prompt_;
-
-  // The type of prompt we are going to show.
-  PromptType prompt_type_;
 
   scoped_ptr<OAuth2MintTokenFlow> token_flow_;
 

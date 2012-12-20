@@ -86,7 +86,7 @@ namespace chrome {
 // ExtensionInstallPrompt::Delegate instance.
 class ExtensionInstallDialog {
  public:
-  ExtensionInstallDialog(content::WebContents* parent_web_contents,
+  ExtensionInstallDialog(const ExtensionInstallPrompt::ShowParams& show_params,
                          ExtensionInstallPrompt::Delegate* delegate,
                          const ExtensionInstallPrompt::Prompt& prompt);
  private:
@@ -105,10 +105,10 @@ class ExtensionInstallDialog {
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
-    content::WebContents* parent_web_contents,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate *delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : navigator_(parent_web_contents),
+    : navigator_(show_params.navigator),
       delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
@@ -124,9 +124,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     extension_id_ = prompt.extension()->id();
 
   // Build the dialog.
-  gfx::NativeWindow parent = NULL;
-  if (parent_web_contents)
-    parent = parent_web_contents->GetView()->GetTopLevelNativeWindow();
+  gfx::NativeWindow parent = show_params.parent_window;
   dialog_ = gtk_dialog_new_with_buttons(
       UTF16ToUTF8(prompt.GetDialogTitle()).c_str(),
       parent,
@@ -396,10 +394,10 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    content::WebContents* parent_web_content,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  new chrome::ExtensionInstallDialog(parent_web_content, delegate, prompt);
+  new chrome::ExtensionInstallDialog(show_params, delegate, prompt);
 }
 
 }  // namespace

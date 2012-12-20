@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -17,23 +18,27 @@
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    content::WebContents* parent_web_contents,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
+  if (!show_params.parent_web_contents) {
+    // TODO(sail): Add support for showing the dialog without a parent window.
+    NOTIMPLEMENTED();
+    return;
+  }
+
   // This object will delete itself when the dialog closes.
-  new ExtensionInstallDialogController(parent_web_contents,
-                                       delegate,
-                                       prompt);
+  new ExtensionInstallDialogController(show_params, delegate, prompt);
 }
 
 }  // namespace
 
 ExtensionInstallDialogController::ExtensionInstallDialogController(
-    content::WebContents* web_contents,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) : delegate_(delegate) {
   view_controller_.reset([[ExtensionInstallViewController alloc]
-      initWithNavigator:web_contents
+      initWithNavigator:show_params.navigator
                delegate:this
                  prompt:prompt]);
 
@@ -45,7 +50,7 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac(
-      this, web_contents, sheet));
+      this, show_params.parent_web_contents, sheet));
 }
 
 ExtensionInstallDialogController::~ExtensionInstallDialogController() {

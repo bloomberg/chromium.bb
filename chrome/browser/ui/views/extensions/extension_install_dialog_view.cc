@@ -18,7 +18,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -197,25 +196,23 @@ class IssueAdviceView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(IssueAdviceView);
 };
 
-void DoShowDialog(content::WebContents* parent_web_contents,
+void DoShowDialog(const ExtensionInstallPrompt::ShowParams& show_params,
                   ExtensionInstallPrompt::Delegate* delegate,
                   const ExtensionInstallPrompt::Prompt& prompt,
                   bool show_launcher_opt_in) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  gfx::NativeWindow parent = NULL;
-  if (parent_web_contents)
-    parent = parent_web_contents->GetView()->GetTopLevelNativeWindow();
   views::Widget::CreateWindowWithParent(
-      new ExtensionInstallDialogView(parent_web_contents, delegate, prompt,
+      new ExtensionInstallDialogView(show_params.navigator, delegate, prompt,
                                      show_launcher_opt_in),
-      parent)->Show();
+      show_params.parent_window)->Show();
 }
 
 // Runs on the FILE thread. Check if the launcher is present and then show
 // the install dialog with an appropriate |show_launcher_opt_in|.
-void CheckLauncherAndShowDialog(content::WebContents* parent_web_contents,
-                                ExtensionInstallPrompt::Delegate* delegate,
-                                const ExtensionInstallPrompt::Prompt& prompt) {
+void CheckLauncherAndShowDialog(
+    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 #if defined(OS_WIN)
   bool present = chrome_launcher_support::IsAppLauncherPresent();
@@ -226,12 +223,11 @@ void CheckLauncherAndShowDialog(content::WebContents* parent_web_contents,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&DoShowDialog, parent_web_contents, delegate, prompt,
-                 !present));
+      base::Bind(&DoShowDialog, show_params, delegate, prompt, !present));
 }
 
 void ShowExtensionInstallDialogImpl(
-    content::WebContents* parent_web_contents,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -243,12 +239,11 @@ void ShowExtensionInstallDialogImpl(
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,
-        base::Bind(&CheckLauncherAndShowDialog, parent_web_contents, delegate,
-                   prompt));
+        base::Bind(&CheckLauncherAndShowDialog, show_params, delegate, prompt));
     return;
   }
 #endif
-  DoShowDialog(parent_web_contents, delegate, prompt, false);
+  DoShowDialog(show_params, delegate, prompt, false);
 }
 
 }  // namespace

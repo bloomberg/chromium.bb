@@ -8,7 +8,7 @@
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    content::WebContents* parent_web_contents,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   NOTIMPLEMENTED();

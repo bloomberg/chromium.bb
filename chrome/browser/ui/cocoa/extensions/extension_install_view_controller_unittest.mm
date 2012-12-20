@@ -197,7 +197,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
 
   // No warnings should trigger skinny prompt.
   ExtensionInstallPrompt::Prompt inline_prompt(
-      NULL, ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
+      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
   inline_prompt.SetInlineInstallWebstoreData("1,000", 3.5, 200);
   inline_prompt.set_extension(extension_.get());
   inline_prompt.set_icon(chrome::LoadInstallPromptIcon());

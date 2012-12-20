@@ -168,7 +168,7 @@ WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
 }
 
 void WebstoreStandaloneInstaller::BeginInstall() {
-  AddRef(); // Balanced in CompleteInstall or WebContentsDestroyed.
+  AddRef();  // Balanced in CompleteInstall or WebContentsDestroyed.
 
   if (!Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
@@ -319,7 +319,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       this,
       id_,
       manifest,
-      "", // We don't have any icon data.
+      "",  // We don't have any icon data.
       icon_url,
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
           GetRequestContext());
@@ -347,12 +347,10 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
   manifest_.reset(manifest);
   icon_ = icon;
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   ExtensionInstallPrompt::PromptType prompt_type = use_inline_prompt_ ?
       ExtensionInstallPrompt::INLINE_INSTALL_PROMPT :
       ExtensionInstallPrompt::INSTALL_PROMPT;
-  ExtensionInstallPrompt::Prompt prompt(profile, prompt_type);
+  ExtensionInstallPrompt::Prompt prompt(prompt_type);
   if (use_inline_prompt_) {
     prompt.SetInlineInstallWebstoreData(localized_user_count_,
                                         average_rating_,
@@ -420,7 +418,7 @@ void WebstoreStandaloneInstaller::WebContentsDestroyed(
   // Abort any in-progress fetches.
   if (webstore_data_url_fetcher_.get()) {
     webstore_data_url_fetcher_.reset();
-    Release(); // Matches the AddRef in BeginInstall.
+    Release();  // Matches the AddRef in BeginInstall.
   }
 }
 
@@ -442,7 +440,7 @@ void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
   if (!callback_.is_null())
     callback_.Run(error.empty(), error);
 
-  Release(); // Matches the AddRef in BeginInstall.
+  Release();  // Matches the AddRef in BeginInstall.
 }
 
 // static

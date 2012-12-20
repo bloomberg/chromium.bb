@@ -24,7 +24,7 @@ class ExtensionInstallDialogController :
     public ConstrainedWindowMacDelegate {
  public:
   ExtensionInstallDialogController(
-      content::WebContents* web_contents,
+      const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogController();

@@ -32,6 +32,7 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -155,15 +156,21 @@ Profile* ProfileForWebContents(content::WebContents* web_contents) {
   return Profile::FromBrowserContext(web_contents->GetBrowserContext());
 }
 
+gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
+  if (!contents)
+    return NULL;
+
+  return contents->GetView()->GetTopLevelNativeWindow();
+}
+
 }  // namespace
 
-ExtensionInstallPrompt::Prompt::Prompt(Profile* profile, PromptType type)
+ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
       extension_(NULL),
       bundle_(NULL),
       average_rating_(0.0),
-      rating_count_(0),
-      profile_(profile) {
+      rating_count_(0) {
 }
 
 ExtensionInstallPrompt::Prompt::~Prompt() {
@@ -177,6 +184,16 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
 void ExtensionInstallPrompt::Prompt::SetOAuthIssueAdvice(
     const IssueAdviceInfo& issue_advice) {
   oauth_issue_advice_ = issue_advice;
+}
+
+void ExtensionInstallPrompt::Prompt::SetUserNameFromProfile(Profile* profile) {
+  // |profile| can be NULL in unit tests.
+  if (profile) {
+    oauth_user_name_ = UTF8ToUTF16(profile->GetPrefs()->GetString(
+        prefs::kGoogleServicesUsername));
+  } else {
+    oauth_user_name_.clear();
+  }
 }
 
 void ExtensionInstallPrompt::Prompt::SetInlineInstallWebstoreData(
@@ -255,14 +272,7 @@ string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
-  string16 username(ASCIIToUTF16("username@example.com"));
-  // |profile_| can be NULL in unit tests.
-  if (profile_) {
-    username = UTF8ToUTF16(profile_->GetPrefs()->GetString(
-        prefs::kGoogleServicesUsername));
-  }
-  int resource_id = kOAuthHeaderIds[type_];
-  return l10n_util::GetStringFUTF16(resource_id, username);
+  return l10n_util::GetStringFUTF16(kOAuthHeaderIds[type_], oauth_user_name_);
 }
 
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
@@ -327,6 +337,20 @@ const IssueAdviceInfoEntry& ExtensionInstallPrompt::Prompt::GetOAuthIssue(
   return oauth_issue_advice_[index];
 }
 
+ExtensionInstallPrompt::ShowParams::ShowParams(content::WebContents* contents)
+    : parent_web_contents(contents),
+      parent_window(NativeWindowForWebContents(contents)),
+      navigator(contents) {
+}
+
+ExtensionInstallPrompt::ShowParams::ShowParams(
+    gfx::NativeWindow window,
+    content::PageNavigator* navigator)
+    : parent_web_contents(NULL),
+      parent_window(window),
+      navigator(navigator) {
+}
+
 // static
 scoped_refptr<Extension>
     ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
@@ -361,14 +385,27 @@ scoped_refptr<Extension>
 ExtensionInstallPrompt::ExtensionInstallPrompt(
     content::WebContents* contents)
     : record_oauth2_grant_(false),
-      parent_web_contents_(contents),
       ui_loop_(MessageLoop::current()),
       extension_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
+      show_params_(contents),
       delegate_(NULL),
-      profile_(ProfileForWebContents(contents)),
-      prompt_(profile_, UNSET_PROMPT_TYPE),
-      prompt_type_(UNSET_PROMPT_TYPE) {
+      prompt_(UNSET_PROMPT_TYPE) {
+  prompt_.SetUserNameFromProfile(install_ui_->profile());
+}
+
+ExtensionInstallPrompt::ExtensionInstallPrompt(
+    Profile* profile,
+    gfx::NativeWindow native_window,
+    content::PageNavigator* navigator)
+    : record_oauth2_grant_(false),
+      ui_loop_(MessageLoop::current()),
+      extension_(NULL),
+      install_ui_(ExtensionInstallUI::Create(profile)),
+      show_params_(native_window, navigator),
+      delegate_(NULL),
+      prompt_(UNSET_PROMPT_TYPE) {
+  prompt_.SetUserNameFromProfile(install_ui_->profile());
 }
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
@@ -381,7 +418,7 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   bundle_ = bundle;
   permissions_ = permissions;
   delegate_ = bundle;
-  prompt_type_ = BUNDLE_INSTALL_PROMPT;
+  prompt_.set_type(BUNDLE_INSTALL_PROMPT);
 
   FetchOAuthIssueAdviceIfNeeded();
 }
@@ -396,7 +433,6 @@ void ExtensionInstallPrompt::ConfirmStandaloneInstall(
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
   prompt_ = prompt;
-  prompt_type_ = prompt.type();
 
   SetIcon(icon);
   FetchOAuthIssueAdviceIfNeeded();
@@ -422,7 +458,7 @@ void ExtensionInstallPrompt::ConfirmInstall(
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
-  prompt_type_ = INSTALL_PROMPT;
+  prompt_.set_type(INSTALL_PROMPT);
   show_dialog_callback_ = show_dialog_callback;
 
   // We special-case themes to not show any confirm UI. Instead they are
@@ -449,7 +485,7 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
-  prompt_type_ = RE_ENABLE_PROMPT;
+  prompt_.set_type(RE_ENABLE_PROMPT);
 
   LoadImageIfNeeded();
 }
@@ -460,7 +496,7 @@ void ExtensionInstallPrompt::ConfirmExternalInstall(
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
-  prompt_type_ = EXTERNAL_INSTALL_PROMPT;
+  prompt_.set_type(EXTERNAL_INSTALL_PROMPT);
 
   LoadImageIfNeeded();
 }
@@ -473,7 +509,7 @@ void ExtensionInstallPrompt::ConfirmPermissions(
   extension_ = extension;
   permissions_ = permissions;
   delegate_ = delegate;
-  prompt_type_ = PERMISSIONS_PROMPT;
+  prompt_.set_type(PERMISSIONS_PROMPT);
 
   LoadImageIfNeeded();
 }
@@ -485,7 +521,7 @@ void ExtensionInstallPrompt::ConfirmIssueAdvice(
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   delegate_ = delegate;
-  prompt_type_ = PERMISSIONS_PROMPT;
+  prompt_.set_type(PERMISSIONS_PROMPT);
 
   record_oauth2_grant_ = true;
   prompt_.SetOAuthIssueAdvice(issue_advice);
@@ -526,8 +562,8 @@ void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image) {
 
 void ExtensionInstallPrompt::LoadImageIfNeeded() {
   // Bundle install prompts do not have an icon.
-  // Also |profile_| can be NULL in unit tests.
-  if (!icon_.empty() || !profile_) {
+  // Also |install_ui_.profile()| can be NULL in unit tests.
+  if (!icon_.empty() || !install_ui_->profile()) {
     FetchOAuthIssueAdviceIfNeeded();
     return;
   }
@@ -541,7 +577,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   // TODO(tbarzic): We should use IconImage here and load the required bitmap
   //     lazily.
   int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
-  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
+  extensions::ImageLoader::Get(install_ui_->profile())->LoadImageAsync(
       extension_, image, gfx::Size(pixel_size, pixel_size),
       base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
 }
@@ -549,9 +585,9 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   // |extension_| may be NULL, e.g. in the bundle install case.
   if (!extension_ ||
-      prompt_type_ == BUNDLE_INSTALL_PROMPT ||
-      prompt_type_ == INLINE_INSTALL_PROMPT ||
-      prompt_type_ == EXTERNAL_INSTALL_PROMPT ||
+      prompt_.type() == BUNDLE_INSTALL_PROMPT ||
+      prompt_.type() == INLINE_INSTALL_PROMPT ||
+      prompt_.type() == EXTERNAL_INSTALL_PROMPT ||
       prompt_.GetOAuthIssueCount() != 0U) {
     ShowConfirmation();
     return;
@@ -592,8 +628,6 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  prompt_.set_type(prompt_type_);
-
   if (permissions_ &&
       (!extension_ || !extension_->ShouldSkipPermissionWarnings())) {
     Extension::Type extension_type = extension_ ? extension_->GetType() :
@@ -601,7 +635,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));
   }
 
-  switch (prompt_type_) {
+  switch (prompt_.type()) {
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INLINE_INSTALL_PROMPT:
@@ -623,10 +657,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   if (AutoConfirmPrompt(delegate_))
     return;
 
-  if (show_dialog_callback_.is_null()) {
-    GetDefaultShowDialogCallback().Run(
-        parent_web_contents_, delegate_, prompt_);
-  } else {
-    show_dialog_callback_.Run(parent_web_contents_, delegate_, prompt_);
-  }
+  if (show_dialog_callback_.is_null())
+    GetDefaultShowDialogCallback().Run(show_params_, delegate_, prompt_);
+  else
+    show_dialog_callback_.Run(show_params_, delegate_, prompt_);
 }

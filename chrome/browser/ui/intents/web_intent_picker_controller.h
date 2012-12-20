@@ -219,7 +219,7 @@ class WebIntentPickerController
 
   // Called to show a custom extension install dialog.
   void OnShowExtensionInstallDialog(
-      content::WebContents* parent_web_contents,
+      const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
 
