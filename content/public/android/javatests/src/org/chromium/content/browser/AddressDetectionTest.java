@@ -22,8 +22,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
         return intentUrl.equals(expectedUrl);
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testMultipleAddressesInText() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_multiple.html");
 
@@ -34,8 +38,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
                 "76 Ninth Avenue 4th Floor New York, NY 10011"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testSplitAddresses() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_split.html");
 
@@ -52,8 +60,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
                 "1818 Library Street Suite 400, VA 20190"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testAddressLimits() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_limits.html");
 
@@ -70,8 +82,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
                 "1600 Amphitheatre Parkway Mountain View, CA 94043"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testRealAddresses() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_real.html");
 
@@ -88,8 +104,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
                 "79th Street, New York, NY, 10024-5192"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testSpecialChars() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_special_chars.html");
 

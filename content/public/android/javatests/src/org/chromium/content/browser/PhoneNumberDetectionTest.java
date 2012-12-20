@@ -38,8 +38,12 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         startActivityWithTestUrlAndCommandLineArgs(testUrl, cmdlineArgs);
     }
 
+    /*
     @LargeTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testInternationalNumberIntents() throws Throwable {
         startActivityWithTestUrl("content/content_detection/phone_international.html");
 
@@ -152,8 +156,12 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+97144509500"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testLocalUSNumbers() throws Throwable {
         startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "US");
 
@@ -174,8 +182,12 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+31205045100"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testLocalUKNumbers() throws Throwable {
         startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "GB");
 
@@ -196,8 +208,12 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+31205045100"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testLocalFRNumbers() throws Throwable {
         startActivityWithTestUrlAndCountryIso("content/content_detection/phone_local.html", "FR");
 

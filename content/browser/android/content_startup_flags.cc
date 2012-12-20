@@ -63,9 +63,8 @@ void SetContentCommandLineFlags(int max_render_process_count) {
   parsed_command_line->AppendSwitch(switches::kEnableFixedLayout);
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
 
-  // FIXME(aelias): Commented out due to flaky tests.
-//  parsed_command_line->AppendSwitch(
-//      cc::switches::kEnableCompositorFrameMessage);
+  parsed_command_line->AppendSwitch(
+      cc::switches::kEnableCompositorFrameMessage);
 }
 
 }  // namespace content

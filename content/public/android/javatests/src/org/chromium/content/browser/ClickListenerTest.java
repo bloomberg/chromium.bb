@@ -14,8 +14,12 @@ import org.chromium.base.test.util.Feature;
  */
 public class ClickListenerTest extends ContentDetectionTestBase {
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testClickContentOnLink() throws Throwable {
         startActivityWithTestUrl("content/content_detection/click_listeners.html");
 
@@ -24,8 +28,12 @@ public class ClickListenerTest extends ContentDetectionTestBase {
         assertTrue(isCurrentTestUrl("content/content_detection/empty.html"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testClickContentOnJSListener1() throws Throwable {
         startActivityWithTestUrl("content/content_detection/click_listeners.html");
 
@@ -35,8 +43,12 @@ public class ClickListenerTest extends ContentDetectionTestBase {
         assertTrue(isCurrentTestUrl("content/content_detection/empty.html"));
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    Bug 166920
+    */
+    @DisabledTest
     public void testClickContentOnJSListener2() throws Throwable {
         startActivityWithTestUrl("content/content_detection/click_listeners.html");
 
