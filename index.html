@@ -87,6 +87,21 @@ Before you drop, you will see a caret at the place where the text should go.
 When you drop however, <code>event.preventDefault()</code> is called, so the
 text does not get inserted. However, the drag caret remains visible.</p>
 
+<h3><a name="bugfix-cleartypecanvas">bugfix/cleartypecanvas</a> (Shezan Baig; D32281407; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>)</h3>
+<p>Open <a href="repros/cleartypecanvas">this link</a> in Chrome, and notice
+that the canvas element does not use ClearType fonts even though
+<code>subpixel-antialiased</code> is used.</p> <p>Note that when painting to an
+<code>ImageBuffer</code>, Chromium disables ClearType even if it is the default
+on the system.  However, in our case, we are explicitly requesting it in the
+document, so this change makes Chromium honor the
+<code>-webkit-font-smoothing</code> setting if it is requested explicitly.</p>
+<ul>
+<li><p>The <code>-webkit-font-smoothing</code> setting has no effect in Windows for Skia.
+This is the change that is being tracked upstream by WebKit bug
+<a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>.</p></li>
+<li><p>Don't disable ClearType on <code>ImageBuffer</code> if it was explicitly requested.
+This is not yet being tracked upstream.</p></li>
+</ul>
 
 <hr/>
 <h6>Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.</h6>

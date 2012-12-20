@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+html {
+    background: black;
+    color: #F09000;
+    font-size: 8px;
+}
+.nosmooth {
+    -webkit-font-smoothing: none;
+}
+</style>
+<script>
+function doDraw()
+{
+  var the_canvas = document.getElementById('canvas1');
+  var context = the_canvas.getContext('2d');
+  context.clearRect(0,0,200,20);
+
+  context.fillStyle = "#F09000";
+  context.fillText("0123456789ABCDEFabcdef - no cleartype even though subpixel-antialiased specified", 0, 20);
+}
+</script>
+</head>
+<body onload="doDraw();">
+<canvas style="-webkit-font-smoothing:subpixel-antialiased" id='canvas1' width="200" height="20"></canvas>
+<div class="nosmooth">0123456789ABCDEFabcdef - using cleartype even though nosmooth specified</div>
+<div>0123456789ABCDEFabcdef - this is the default control test</div>
+</body>
+</html>
+
