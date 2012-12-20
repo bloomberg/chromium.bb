@@ -496,7 +496,6 @@ class ImeAdapter {
     static public class AdapterInputConnection extends BaseInputConnection {
         private View mInternalView;
         private ImeAdapter mImeAdapter;
-        private Editable mEditable;
         private boolean mSingleLine;
 
         // Factory function.
@@ -523,16 +522,14 @@ class ImeAdapter {
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
 
-            if (mEditable == null) {
-                mEditable = Editable.Factory.getInstance().newEditable("");
-            }
+            Editable editable = getEditable();
 
-            int prevSelectionStart = Selection.getSelectionStart(mEditable);
-            int prevSelectionEnd = Selection.getSelectionEnd(mEditable);
-            int prevEditableLength = mEditable.length();
-            int prevCompositionStart = getComposingSpanStart(mEditable);
-            int prevCompositionEnd = getComposingSpanEnd(mEditable);
-            String prevText = mEditable.toString();
+            int prevSelectionStart = Selection.getSelectionStart(editable);
+            int prevSelectionEnd = Selection.getSelectionEnd(editable);
+            int prevEditableLength = editable.length();
+            int prevCompositionStart = getComposingSpanStart(editable);
+            int prevCompositionEnd = getComposingSpanEnd(editable);
+            String prevText = editable.toString();
 
             selectionStart = Math.min(selectionStart, text.length());
             selectionEnd = Math.min(selectionEnd, text.length());
@@ -557,9 +554,9 @@ class ImeAdapter {
             }
 
             if (!textUnchanged) {
-                mEditable.replace(0, mEditable.length(), text);
+                editable.replace(0, editable.length(), text);
             }
-            Selection.setSelection(mEditable, selectionStart, selectionEnd);
+            Selection.setSelection(editable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
 
             if (textUnchanged || prevText.equals("")) {
@@ -569,15 +566,6 @@ class ImeAdapter {
                 getInputMethodManager().updateSelection(mInternalView,
                         selectionStart, selectionEnd, compositionStart, compositionEnd);
             }
-        }
-
-        @Override
-        public Editable getEditable() {
-            if (mEditable == null) {
-                mEditable = Editable.Factory.getInstance().newEditable("");
-                Selection.setSelection(mEditable, 0);
-            }
-            return mEditable;
         }
 
         @Override
@@ -632,14 +620,11 @@ class ImeAdapter {
         @Override
         public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
             ExtractedText et = new ExtractedText();
-            if (mEditable == null) {
-                et.text = "";
-            } else {
-                et.text = mEditable.toString();
-                et.partialEndOffset = mEditable.length();
-                et.selectionStart = Selection.getSelectionStart(mEditable);
-                et.selectionEnd = Selection.getSelectionEnd(mEditable);
-            }
+            Editable editable = getEditable();
+            et.text = editable.toString();
+            et.partialEndOffset = editable.length();
+            et.selectionStart = Selection.getSelectionStart(editable);
+            et.selectionEnd = Selection.getSelectionEnd(editable);
             et.flags = mSingleLine ? ExtractedText.FLAG_SINGLE_LINE : 0;
             return et;
         }
@@ -686,8 +671,8 @@ class ImeAdapter {
 
         @Override
         public boolean finishComposingText() {
-            if (mEditable == null
-                    || (getComposingSpanStart(mEditable) == getComposingSpanEnd(mEditable))) {
+            Editable editable = getEditable();
+            if (getComposingSpanStart(editable) == getComposingSpanEnd(editable)) {
                 return true;
             }
             super.finishComposingText();
