@@ -6290,13 +6290,6 @@
    fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
 }
 {
-   bug_164676_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash4test12_GLOBAL__N_112DragTestView13WriteDragDataERKN3gfx5PointEPN2ui14OSExchangeDataE
-   fun:_ZN5views4View6DoDragERKN2ui12LocatedEventERKN3gfx5PointENS1_13DragDropTypes15DragEventSourceE
-}
-{
    bug_164676_h
    Memcheck:Leak
    fun:_Znw*

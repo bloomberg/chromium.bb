@@ -71,56 +71,56 @@ class DragTestView : public views::View {
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  void WriteDragData(const gfx::Point& p, OSExchangeData* data) OVERRIDE {
+  virtual void WriteDragData(const gfx::Point& p,
+                             OSExchangeData* data) OVERRIDE {
     data->SetString(UTF8ToUTF16("I am being dragged"));
-    gfx::ImageSkiaRep* image = new gfx::ImageSkiaRep(
-        gfx::Size(10, 20), ui::SCALE_FACTOR_100P);
-    gfx::ImageSkia* image_skia = new gfx::ImageSkia(*image);
+    gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), ui::SCALE_FACTOR_100P);
+    gfx::ImageSkia image_skia(image_rep);
 
     drag_utils::SetDragImageOnDataObject(
-        *image_skia, gfx::Size(image_skia->width(), image_skia->height()),
-        gfx::Vector2d(), data);
+        image_skia, image_skia.size(), gfx::Vector2d(), data);
   }
 
-  bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     return true;
   }
 
-  void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     if (event->type() == ui::ET_GESTURE_LONG_TAP)
       long_tap_received_ = true;
     return;
   }
 
-  bool GetDropFormats(int* formats,
-                      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
 
-  bool CanDrop(const OSExchangeData& data) OVERRIDE {
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE {
     return true;
   }
 
-  void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE {
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE {
     num_drag_enters_++;
   }
 
-  int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE {
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE {
     num_drag_updates_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  void OnDragExited() OVERRIDE {
+  virtual void OnDragExited() OVERRIDE {
     num_drag_exits_++;
   }
 
-  int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     num_drops_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  void OnDragDone() OVERRIDE {
+  virtual void OnDragDone() OVERRIDE {
     drag_done_received_ = true;
   }
 
