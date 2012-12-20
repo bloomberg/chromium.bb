@@ -26,9 +26,10 @@ class Rect;
 class SURFACE_EXPORT AcceleratedPresenter
     : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
-  typedef base::Callback<void(bool,
-                              base::TimeTicks,
-                              base::TimeDelta)> CompletionTask;
+  typedef base::Callback<void(bool)> CopyCompletionTask;
+
+  typedef base::Callback<void(base::TimeTicks,
+                              base::TimeDelta)> PresentCompletionTask;
 
   explicit AcceleratedPresenter(gfx::PluginWindowHandle window);
 
@@ -45,7 +46,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   void AsyncPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const CompletionTask& completion_task);
+      const CopyCompletionTask& copy_completion_task,
+      const PresentCompletionTask& present_completion_task);
 
   // Schedule the presenter to free all its resources. This can be called on any
   // thread.
@@ -81,7 +83,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const CompletionTask& completion_task);
+      const CopyCompletionTask& copy_completion_task,
+      const PresentCompletionTask& present_completion_task);
   void DoSuspend();
   void DoPresent(const base::Closure& composite_task);
   void DoReleaseSurface();
