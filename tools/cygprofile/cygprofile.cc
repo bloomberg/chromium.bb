@@ -105,6 +105,7 @@ class CygTlsLog {
  private:
   static const int kBufMaxSize;
   static const char kLogFilenameFmt[];
+  static const char kLogFileNamePrefix[];
 
   // Flush the log to file. Create file if needed.
   // Must be called with locked log_mutex_.
@@ -163,12 +164,11 @@ CygTlsLog* const kMagicBeingConstructed = reinterpret_cast<CygTlsLog*>(1);
 // Note, that we also flush by timer so not all thread logs may grow up to this.
 const int CygTlsLog::kBufMaxSize = 3000;
 
-
 #if defined(OS_ANDROID)
-const char CytTlsLog::kLogFileNamePrefix =
-"/data/local/tmp/chrome/cyglog/";
+const char CygTlsLog::kLogFileNamePrefix[] =
+    "/data/local/tmp/chrome/cyglog/";
 #else
-const char CytTlsLog::kLogFileNamePrefix = "/var/log/chrome/";
+const char CygTlsLog::kLogFileNamePrefix[] = "/var/log/chrome/";
 #endif
 
 // "cyglog.PID.LWP.pthread_self.PPID"
