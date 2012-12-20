@@ -414,6 +414,7 @@ FileTasks.prototype.openGallery = function(urls) {
   galleryFrame.onload = function() {
     fm.show_();
     galleryFrame.contentWindow.ImageUtil.metrics = metrics;
+    window.galleryTestAPI = galleryFrame.contentWindow.galleryTestAPI;
 
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.directoryModel_.getCurrentDirEntry();

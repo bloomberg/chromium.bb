@@ -52,3 +52,5 @@
 //<include src="mosaic_mode.js">
 //<include src="slide_mode.js">
 //<include src="ribbon.js">
+
+//<include src="gallery_testapi.js">

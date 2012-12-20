@@ -669,8 +669,13 @@ SlideMode.prototype.loadItem_ = function(
     loadCallback(loadType, delay);
   }.bind(this);
 
+  var displayDone = function() {
+    cr.dispatchSimpleEvent(this, 'image-displayed');
+    displayCallback();
+  }.bind(this);
+
   this.editor_.openSession(url, metadata, effect,
-      this.saveCurrentImage_.bind(this), displayCallback, loadDone);
+      this.saveCurrentImage_.bind(this), displayDone, loadDone);
 };
 
 /**
@@ -880,6 +885,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
           this.select(++this.displayedIndex_);
         }
         callback();
+        cr.dispatchSimpleEvent(this, 'image-saved');
       }.bind(this));
 };
 

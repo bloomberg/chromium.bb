@@ -63,6 +63,11 @@ function Gallery(context) {
 }
 
 /**
+ * Gallery extends cr.EventTarget.
+ */
+Gallery.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
@@ -78,8 +83,9 @@ Gallery.open = function(context, urls, selectedUrls) {
  * Create a Gallery object in a tab.
  * @param {string} path File system path to a selected file.
  * @param {object} pageState Page state object.
+ * @param {function=} opt_callback Called when gallery object is constructed.
  */
-Gallery.openStandalone = function(path, pageState) {
+Gallery.openStandalone = function(path, pageState, opt_callback) {
   ImageUtil.metrics = metrics;
 
   var currentDir;
@@ -134,6 +140,7 @@ Gallery.openStandalone = function(path, pageState) {
         displayStringFunction: strf
       };
       Gallery.open(context, urls, selectedUrls);
+      if (opt_callback) opt_callback();
     });
   }
 };
@@ -251,6 +258,12 @@ Gallery.prototype.initDom_ = function() {
       this.dataModel_, this.selectionModel_, this.context_,
       this.toggleMode_.bind(this), onThumbnailError,
       this.displayStringFunction_);
+  this.slideMode_.addEventListener('image-displayed', function() {
+    cr.dispatchSimpleEvent(this, 'image-displayed');
+  }.bind(this));
+  this.slideMode_.addEventListener('image-saved', function() {
+    cr.dispatchSimpleEvent(this, 'image-saved');
+  }.bind(this));
 
   var deleteButton = this.createToolbarButton_('delete', 'delete');
   deleteButton.addEventListener('click', this.onDelete_.bind(this));
@@ -330,14 +343,19 @@ Gallery.prototype.load = function(urls, selectedUrls) {
     mosaic.init();
     mosaic.show();
     this.inactivityWatcher_.check();  // Show the toolbar.
+    cr.dispatchSimpleEvent(this, 'loaded');
   } else {
     this.setCurrentMode_(this.slideMode_);
+    var maybeLoadMosaic = function() {
+      if (mosaic) mosaic.init();
+      cr.dispatchSimpleEvent(this, 'loaded');
+    }.bind(this);
     /* TODO: consider nice blow-up animation for the first image */
     this.slideMode_.enter(null, function() {
         // Flash the toolbar briefly to show it is there.
         this.inactivityWatcher_.kick(Gallery.FIRST_FADE_TIMEOUT);
       }.bind(this),
-      mosaic ? mosaic.init.bind(mosaic) : function() {});
+      maybeLoadMosaic);
   }
 };
 
