@@ -158,10 +158,12 @@ def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
 class UploadRemote(run_isolated.Remote):
   def __init__(self, namespace, *args, **kwargs):
     super(UploadRemote, self).__init__(*args, **kwargs)
-    self.namespace = namespace
+    self.namespace = str(namespace)
 
   def get_file_handler(self, base_url):
+    base_url = str(base_url)
     def upload_file(content, hash_key):
+      hash_key = str(hash_key)
       content_url = base_url.rstrip('/') + '/content/'
       if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
         upload_hash_content_to_blobstore(
