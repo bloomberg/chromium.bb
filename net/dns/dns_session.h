@@ -14,12 +14,13 @@
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_socket_pool.h"
-#include "net/udp/datagram_client_socket.h"
 
 namespace net {
 
 class ClientSocketFactory;
+class DatagramClientSocket;
 class NetLog;
+class StreamSocket;
 
 // Session parameters and state shared between DNS transactions.
 // Ref-counted so that DnsClient::Request can keep working in absence of
@@ -35,6 +36,8 @@ class NET_EXPORT_PRIVATE DnsSession
                 unsigned server_index,
                 scoped_ptr<DatagramClientSocket> socket);
     ~SocketLease();
+
+    unsigned server_index() const { return server_index_; }
 
     DatagramClientSocket* socket() { return socket_.get(); }
 
@@ -67,6 +70,11 @@ class NET_EXPORT_PRIVATE DnsSession
   // When the SocketLease is destroyed, the socket will be freed.
   scoped_ptr<SocketLease> AllocateSocket(unsigned server_index,
                                          const NetLog::Source& source);
+
+  // Creates a StreamSocket from the factory for a transaction over TCP. These
+  // sockets are not pooled.
+  scoped_ptr<StreamSocket> CreateTCPSocket(unsigned server_index,
+                                           const NetLog::Source& source);
 
  private:
   friend class base::RefCounted<DnsSession>;

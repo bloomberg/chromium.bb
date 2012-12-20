@@ -13,6 +13,8 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_socket_pool.h"
+#include "net/socket/stream_socket.h"
+#include "net/udp/datagram_client_socket.h"
 
 namespace net {
 
@@ -73,6 +75,12 @@ scoped_ptr<DnsSession::SocketLease> DnsSession::AllocateSocket(
 
   SocketLease* lease = new SocketLease(this, server_index, socket.Pass());
   return scoped_ptr<SocketLease>(lease);
+}
+
+scoped_ptr<StreamSocket> DnsSession::CreateTCPSocket(
+    unsigned server_index,
+    const NetLog::Source& source) {
+  return socket_pool_->CreateTCPSocket(server_index, source);
 }
 
 // Release a socket.

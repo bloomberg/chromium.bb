@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/stream_socket.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
@@ -55,6 +57,16 @@ void DnsSocketPool::InitializeInternal(
   net_log_ = net_log;
   nameservers_ = nameservers;
   initialized_ = true;
+}
+
+scoped_ptr<StreamSocket> DnsSocketPool::CreateTCPSocket(
+    unsigned server_index,
+    const NetLog::Source& source) {
+  DCHECK_LT(server_index, nameservers_->size());
+
+  return scoped_ptr<StreamSocket>(
+      socket_factory_->CreateTransportClientSocket(
+          AddressList((*nameservers_)[server_index]), net_log_, source));
 }
 
 scoped_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(

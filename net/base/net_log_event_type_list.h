@@ -1399,6 +1399,17 @@ EVENT_TYPE(DNS_TRANSACTION_QUERY)
 //   }
 EVENT_TYPE(DNS_TRANSACTION_ATTEMPT)
 
+// This event is created when DnsTransaction creates a new TCP socket and
+// tries to resolve the fully-qualified name.
+//
+// It has a single parameter:
+//
+//   {
+//     "source_dependency": <Source id of the TCP socket created for the
+//                           attempt>,
+//   }
+EVENT_TYPE(DNS_TRANSACTION_TCP_ATTEMPT)
+
 // This event is created when DnsTransaction receives a matching response.
 //
 // It has the following parameters:

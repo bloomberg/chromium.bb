@@ -131,6 +131,10 @@ DnsResponse::DnsResponse()
     : io_buffer_(new IOBufferWithSize(dns_protocol::kMaxUDPSize + 1)) {
 }
 
+DnsResponse::DnsResponse(size_t length)
+    : io_buffer_(new IOBufferWithSize(length)) {
+}
+
 DnsResponse::DnsResponse(const void* data,
                          size_t length,
                          size_t answer_offset)
@@ -145,7 +149,7 @@ DnsResponse::~DnsResponse() {
 
 bool DnsResponse::InitParse(int nbytes, const DnsQuery& query) {
   // Response includes query, it should be at least that size.
-  if (nbytes < query.io_buffer()->size() || nbytes > dns_protocol::kMaxUDPSize)
+  if (nbytes < query.io_buffer()->size() || nbytes >= io_buffer_->size())
     return false;
 
   // Match the query id.

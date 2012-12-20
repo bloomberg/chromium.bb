@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
@@ -16,6 +17,7 @@ class ClientSocketFactory;
 class DatagramClientSocket;
 class IPEndPoint;
 class NetLog;
+class StreamSocket;
 
 // A DnsSocketPool is an abstraction layer around a ClientSocketFactory that
 // allows preallocation, reuse, or other strategies to manage sockets connected
@@ -58,6 +60,12 @@ class NET_EXPORT_PRIVATE DnsSocketPool {
   virtual void FreeSocket(
       unsigned server_index,
       scoped_ptr<DatagramClientSocket> socket) = 0;
+
+  // Creates a StreamSocket from the factory for a transaction over TCP. These
+  // sockets are not pooled.
+  scoped_ptr<StreamSocket> CreateTCPSocket(
+      unsigned server_index,
+      const NetLog::Source& source);
 
  protected:
   DnsSocketPool(ClientSocketFactory* socket_factory);
