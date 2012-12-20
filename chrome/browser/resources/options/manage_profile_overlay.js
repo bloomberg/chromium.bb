@@ -171,6 +171,9 @@ cr.define('options', function() {
      */
     receiveNewProfileDefaults_: function(profileInfo) {
       ManageProfileOverlay.setProfileInfo(profileInfo, 'create');
+      $('create-profile-name-label').hidden = false;
+      $('create-profile-name').hidden = false;
+      $('create-profile-name').focus();
       $('create-profile-ok').disabled = false;
     },
 
@@ -367,8 +370,9 @@ cr.define('options', function() {
 
       if ($('create-shortcut'))
         $('create-shortcut').checked = true;
+      $('create-profile-name-label').hidden = true;
+      $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
-      $('create-profile-name').focus();
     },
   };
 
