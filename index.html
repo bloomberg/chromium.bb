@@ -103,6 +103,31 @@ This is the change that is being tracked upstream by WebKit bug
 This is not yet being tracked upstream.</p></li>
 </ul>
 
+<h3><a name="bugfix-contractionFix">bugfix/contractionFix</a> (Edward Christie)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-cursorContext">bugfix/cursorContext</a> (Shezan Baig; D35952365)</h3>
+<p>It is somewhat hard to reproduce, the window height needs to be just about
+right.</p>
+<p>Open <a href="repros/cursorContext.html">this link</a> in Chrome, and hit
+Enter until the cursor is at the last possible line where the scrollbar does
+not appear.  Make sure there is just enough space for about half a line
+more.</p>
+<p>Now keep typing on this line, letting it word-wrap which causes the scrollbar
+to appear.  Keep doing this for a few lines.  You will notice that on some
+lines (usually the second or the third, then every alternating line after
+that), the scrollbar does not scroll down completely.</p>
+<p>In our product, there is an overlay around the RTE of about a couple of pixels.
+The purpose of the padding on the contenteditable was to prevent this overlay
+from covering the text.  However, since the bottom of the text was right
+against the border of the <code>content-editable</code>, this was causing the
+descent of some characters to be obscured.</p>
+<p>We "fixed" this in this branch by inflating the reveal rect by about half the
+cursor height, showing more "context" when moving up and down in a scrollable
+contenteditable.  However, a proper fix would be to make the last line scroll
+completely, taking the padding into account.  We haven't gotten around to this
+yet.</p>
+
 <hr/>
 <h6>Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.</h6>
 <h6>Firefox is a registered trademark of Mozilla Corp.</h6>
