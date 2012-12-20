@@ -18,6 +18,10 @@ cr.define('options', function() {
     this.title = title;
     this.pageDivName = pageDivName;
     this.pageDiv = $(this.pageDivName);
+    // |pageDiv.page| is set to the page object (this) when the page is visible
+    // to track which page is being shown when multiple pages can share the same
+    // underlying div.
+    this.pageDiv.page = null;
     this.tab = null;
     this.lastFocusedElement = null;
   }
@@ -775,7 +779,9 @@ cr.define('options', function() {
           this.container.classList.contains('transparent')) {
         return false;
       }
-      return !this.pageDiv.hidden;
+      if (this.pageDiv.hidden)
+        return false;
+      return this.pageDiv.page == this;
     },
 
     /**
@@ -792,6 +798,7 @@ cr.define('options', function() {
       if (this.isOverlay) {
         this.setOverlayVisible_(visible);
       } else {
+        this.pageDiv.page = this;
         this.pageDiv.hidden = !visible;
         this.onVisibilityChanged_();
       }
@@ -840,6 +847,7 @@ cr.define('options', function() {
       if (visible) {
         container.hidden = false;
         pageDiv.hidden = false;
+        pageDiv.page = this;
         // NOTE: This is a hacky way to force the container to layout which
         // will allow us to trigger the webkit transition.
         container.scrollTop;

@@ -66,6 +66,8 @@ void ManageProfileHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "manageProfile",
                 IDS_PROFILES_MANAGE_TITLE);
+  RegisterTitle(localized_strings, "createProfile",
+                IDS_PROFILES_CREATE_TITLE);
 }
 
 void ManageProfileHandler::InitializeHandler() {
@@ -86,6 +88,9 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
       base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestNewProfileDefaults",
+      base::Bind(&ManageProfileHandler::RequestNewProfileDefaults,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
@@ -112,12 +117,25 @@ void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
   SendProfileIcons(create_value);
 }
 
+void ManageProfileHandler::RequestNewProfileDefaults(const ListValue* args) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+
+  DictionaryValue profile_info;
+  profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
+  profile_info.SetString("iconURL", cache.GetDefaultAvatarIconUrl(icon_index));
+
+  web_ui()->CallJavascriptFunction(
+      "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
+}
+
 void ManageProfileHandler::SendProfileIcons(
     const base::StringValue& icon_grid) {
   ListValue image_url_list;
 
   // First add the GAIA picture if it's available.
-  ProfileInfoCache& cache =
+  const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   Profile* profile = Profile::FromWebUI(web_ui());
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
@@ -143,7 +161,7 @@ void ManageProfileHandler::SendProfileIcons(
 }
 
 void ManageProfileHandler::SendProfileNames() {
-  ProfileInfoCache& cache =
+  const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   DictionaryValue profile_name_dict;
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i)

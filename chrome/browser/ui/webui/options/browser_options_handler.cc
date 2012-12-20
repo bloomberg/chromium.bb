@@ -477,10 +477,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::CreateProfile,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "createProfileInfo",
-      base::Bind(&BrowserOptionsHandler::CreateProfileInfo,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "themesReset",
       base::Bind(&BrowserOptionsHandler::ThemesReset,
                  base::Unretained(this)));
@@ -994,20 +990,6 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   ProfileManager::CreateMultiProfileAsync(name, icon, callback, desktop_type,
                                           managed_user);
-}
-
-void BrowserOptionsHandler::CreateProfileInfo(const ListValue* args) {
-  DictionaryValue profile_info;
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
-  size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
-
-  profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
-  profile_info.SetString("iconURL", cache.GetDefaultAvatarIconUrl(icon_index));
-
-  web_ui()->CallJavascriptFunction("ManageProfileOverlay.showCreateDialog",
-                                   profile_info);
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

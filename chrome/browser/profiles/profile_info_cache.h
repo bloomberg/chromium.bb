@@ -87,7 +87,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
-  string16 ChooseNameForNewProfile(size_t icon_index);
+  string16 ChooseNameForNewProfile(size_t icon_index) const;
 
   // Checks if the given profile has switched to using GAIA information
   // for the profile name and picture. This pref is used to switch over

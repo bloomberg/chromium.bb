@@ -118,14 +118,13 @@ void AvatarMenuModel::EditProfile(size_t index) {
 }
 
 void AvatarMenuModel::AddNewProfile() {
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  if (browser_)
-    desktop_type = browser_->host_desktop_type();
-
-  ProfileManager::CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback(), desktop_type,
-      false);
-  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
+  Browser* browser = browser_;
+  if (!browser) {
+    const Browser::CreateParams params(ProfileManager::GetLastUsedProfile(),
+                                       chrome::GetActiveDesktop());
+    browser = new Browser(params);
+  }
+  chrome::ShowSettingsSubPage(browser, chrome::kCreateProfileSubPage);
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {

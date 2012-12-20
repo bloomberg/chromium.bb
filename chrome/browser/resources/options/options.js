@@ -14,6 +14,7 @@ var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var ContentSettings = options.ContentSettings;
 var CookiesView = options.CookiesView;
+var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
 var ManagedUserSettings = options.ManagedUserSettings;
@@ -117,6 +118,8 @@ function load() {
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
+  OptionsPage.registerOverlay(CreateProfileOverlay.getInstance(),
+                              BrowserOptions.getInstance());
   if (!cr.isMac) {
     OptionsPage.registerOverlay(EditDictionaryOverlay.getInstance(),
                                 LanguageOptions.getInstance(),

@@ -279,6 +279,7 @@ const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kContentSettingsSubPage[] = "content";
+const char kCreateProfileSubPage[] = "createProfile";
 const char kExtensionsSubPage[] = "extensions";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";

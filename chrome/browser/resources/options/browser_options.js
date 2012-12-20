@@ -178,7 +178,7 @@ cr.define('options', function() {
         profilesList.addEventListener('change',
             this.setProfileViewButtonsStatus_);
         $('profiles-create').onclick = function(event) {
-          chrome.send('createProfileInfo');
+          ManageProfileOverlay.showCreateDialog();
         };
         $('profiles-manage').onclick = function(event) {
           ManageProfileOverlay.showManageDialog();

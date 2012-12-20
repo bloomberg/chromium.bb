@@ -606,7 +606,7 @@ void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                     OnProfileAvatarChanged(profile_path));
 }
 
-string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) {
+string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) const {
   string16 name;
   for (int name_index = 1; ; ++name_index) {
     if (icon_index < kGenericIconCount) {

@@ -39,6 +39,11 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // |args| is of the form: [ {string} iconURL ]
   void RequestDefaultProfileIcons(const base::ListValue* args);
 
+  // Callback for the "requestNewProfileDefaults" message.
+  // Sends an object to WebUI of the form:
+  //   { "name": profileName, "iconURL": iconURL }
+  void RequestNewProfileDefaults(const base::ListValue* args);
+
   // Sends an object to WebUI of the form:
   //   profileNames = {
   //     "Profile Name 1": true,

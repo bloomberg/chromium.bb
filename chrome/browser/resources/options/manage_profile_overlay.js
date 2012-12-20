@@ -98,8 +98,6 @@ cr.define('options', function() {
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 
-      if ($('create-shortcut'))
-        $('create-shortcut').checked = true;
       if ($('manage-shortcut'))
         $('manage-shortcut').checked = false;
 
@@ -108,7 +106,6 @@ cr.define('options', function() {
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
       $('manage-profile-name').focus();
-      $('create-profile-name').focus();
     },
 
     /**
@@ -161,6 +158,20 @@ cr.define('options', function() {
       grid.measured_ = null;
       grid.columns = 0;
       grid.redraw();
+    },
+
+    /**
+     * Callback to set the initial values when creating a new profile.
+     * @param {Object} profileInfo An object of the form:
+     *     profileInfo = {
+     *       name: "Profile Name",
+     *       iconURL: "chrome://path/to/icon/image",
+     *     };
+     * @private
+     */
+    receiveNewProfileDefaults_: function(profileInfo) {
+      ManageProfileOverlay.setProfileInfo(profileInfo, 'create');
+      $('create-profile-ok').disabled = false;
     },
 
     /**
@@ -252,8 +263,10 @@ cr.define('options', function() {
       if (!iconURL || iconURL == this.iconGridSelectedURL_)
         return;
       this.iconGridSelectedURL_ = iconURL;
-      chrome.send('profileIconSelectionChanged',
-                  [this.profileInfo_.filePath, iconURL]);
+      if (this.profileInfo_ && this.profileInfo_.filePath) {
+        chrome.send('profileIconSelectionChanged',
+                    [this.profileInfo_.filePath, iconURL]);
+      }
     },
 
     /**
@@ -301,27 +314,17 @@ cr.define('options', function() {
 
     /**
      * Display the "Create Profile" dialog.
-     * @param {Object} profileInfo The profile object of the profile to
-     *     create. Upon creation, this object only needs a name and an avatar.
      * @private
      */
-    showCreateDialog_: function(profileInfo) {
-      ManageProfileOverlay.setProfileInfo(profileInfo, 'create');
-      $('manage-profile-overlay-create').hidden = false;
-      $('manage-profile-overlay-manage').hidden = true;
-      $('manage-profile-overlay-delete').hidden = true;
-      $('create-profile-instructions').textContent =
-         loadTimeData.getStringF('createProfileInstructions');
-      ManageProfileOverlay.getInstance().hideErrorBubble_('create');
-
-      OptionsPage.showPageByName('manageProfile', false);
+    showCreateDialog_: function() {
+      OptionsPage.navigateToPage('createProfile');
     },
-
   };
 
   // Forward public APIs to private implementations.
   [
     'receiveDefaultProfileIcons',
+    'receiveNewProfileDefaults',
     'receiveProfileNames',
     'setProfileInfo',
     'setProfileName',
@@ -335,8 +338,43 @@ cr.define('options', function() {
     };
   });
 
+  function CreateProfileOverlay() {
+    OptionsPage.call(this, 'createProfile',
+                     loadTimeData.getString('createProfileTabTitle'),
+                     'manage-profile-overlay');
+  };
+
+  cr.addSingletonGetter(CreateProfileOverlay);
+
+  CreateProfileOverlay.prototype = {
+    // Inherit from ManageProfileOverlay.
+    __proto__: ManageProfileOverlay.prototype,
+
+    /**
+     * Configures the overlay to the "create user" mode.
+     * @override
+     */
+    didShowPage: function() {
+      chrome.send('requestDefaultProfileIcons');
+      chrome.send('requestNewProfileDefaults');
+
+      $('manage-profile-overlay-create').hidden = false;
+      $('manage-profile-overlay-manage').hidden = true;
+      $('manage-profile-overlay-delete').hidden = true;
+      $('create-profile-instructions').textContent =
+         loadTimeData.getStringF('createProfileInstructions');
+      ManageProfileOverlay.getInstance().hideErrorBubble_('create');
+
+      if ($('create-shortcut'))
+        $('create-shortcut').checked = true;
+      $('create-profile-ok').disabled = true;
+      $('create-profile-name').focus();
+    },
+  };
+
   // Export
   return {
-    ManageProfileOverlay: ManageProfileOverlay
+    ManageProfileOverlay: ManageProfileOverlay,
+    CreateProfileOverlay: CreateProfileOverlay,
   };
 });
