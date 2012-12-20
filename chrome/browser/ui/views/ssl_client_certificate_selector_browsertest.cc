@@ -288,7 +288,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, DISABLED_Escape) {
   Mock::VerifyAndClear(auth_requestor_.get());
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectDefault) {
+// Flaky, http://crbug.com/103534 .
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest,
+                       DISABLED_SelectDefault) {
   EXPECT_CALL(*auth_requestor_, CertificateSelected(mit_davidben_cert_.get()));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
