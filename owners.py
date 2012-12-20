@@ -49,6 +49,7 @@ Examples for all of these combinations can be found in tests/owners_unittest.py.
 """
 
 import collections
+import random
 import re
 
 
@@ -252,60 +253,60 @@ class Database(object):
           ('%s is not a "set" directive, "*", '
            'or an email address: "%s"' % (line_type, directive)))
 
-
   def _covering_set_of_owners_for(self, files):
-    # Get the set of directories from the files.
-    dirs = set()
-    for f in files:
-      dirs.add(self._enclosing_dir_with_owners(f))
+    dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
+    all_possible_owners = self._all_possible_owners(dirs_remaining)
+    suggested_owners = set()
+    while dirs_remaining:
+      owner = self.lowest_cost_owner(all_possible_owners, dirs_remaining)
+      suggested_owners.add(owner)
+      dirs_to_remove = set(el[0] for el in all_possible_owners[owner])
+      dirs_remaining -= dirs_to_remove
+    return suggested_owners
 
-
-    owned_dirs = {}
-    dir_owners = {}
-
+  def _all_possible_owners(self, dirs):
+    """Returns a list of (potential owner, distance-from-dir) tuples; a
+    distance of 1 is the lowest/closest possible distance (which makes the
+    subsequent math easier)."""
+    all_possible_owners = {}
     for current_dir in dirs:
-      # Get the list of owners for each directory.
-      current_owners = set()
       dirname = current_dir
-      while dirname in self.owners_for:
-        current_owners |= self.owners_for[dirname]
+      distance = 1
+      while True:
+        for owner in self.owners_for.get(dirname, []):
+          all_possible_owners.setdefault(owner, [])
+          # If the same person is in multiple OWNERS files above a given
+          # directory, only count the closest one.
+          if not any(current_dir == el[0] for el in all_possible_owners[owner]):
+            all_possible_owners[owner].append((current_dir, distance))
         if self._stop_looking(dirname):
           break
-        prev_parent = dirname
         dirname = self.os_path.dirname(dirname)
-        if prev_parent == dirname:
-          break
+        distance += 1
+    return all_possible_owners
 
-      # Map each directory to a list of its owners.
-      dir_owners[current_dir] = current_owners
+  @staticmethod
+  def lowest_cost_owner(all_possible_owners, dirs):
+    # We want to minimize both the number of reviewers and the distance
+    # from the files/dirs needing reviews. The "pow(X, 1.75)" below is
+    # an arbitrarily-selected scaling factor that seems to work well - it
+    # will select one reviewer in the parent directory over three reviewers
+    # in subdirs, but not one reviewer over just two.
+    total_costs_by_owner = {}
+    for owner in all_possible_owners:
+      total_distance = 0
+      num_directories_owned = 0
+      for dirname, distance in all_possible_owners[owner]:
+        if dirname in dirs:
+          total_distance += distance
+          num_directories_owned += 1
+        if num_directories_owned:
+          total_costs_by_owner[owner] = (total_distance /
+                                         pow(num_directories_owned, 1.75))
 
-      # Add the directory to the list of each owner.
-      for owner in current_owners:
-        owned_dirs.setdefault(owner, set()).add(current_dir)
-
-    final_owners = set()
-    while dirs:
-      # Find the owner that has the most directories.
-      max_count = 0
-      max_owner = None
-      owner_count = {}
-      for dirname in dirs:
-        for owner in dir_owners[dirname]:
-          count = owner_count.get(owner, 0) + 1
-          owner_count[owner] = count
-          if count >= max_count:
-            max_owner = owner
-            max_count = count
-
-      # If no more directories have OWNERS, we're done.
-      if not max_owner:
-        break
-
-      final_owners.add(max_owner)
-
-      # Remove all directories owned by the current owner from the remaining
-      # list.
-      for dirname in owned_dirs[max_owner]:
-        dirs.discard(dirname)
-
-    return final_owners
+    # Return the lowest cost owner. In the case of a tie, pick one randomly.
+    lowest_cost = min(total_costs_by_owner.itervalues())
+    lowest_cost_owners = filter(
+      lambda owner: total_costs_by_owner[owner] == lowest_cost,
+      total_costs_by_owner)
+    return random.Random().choice(lowest_cost_owners)
