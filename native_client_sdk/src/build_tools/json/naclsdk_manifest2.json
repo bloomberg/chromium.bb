@@ -256,6 +256,16 @@
       "revision": 0
     },
     {
+      "name": "pepper_25",
+      "description": "Chrome 25 bundle, revision xxxxx",
+      "stability": "dev",
+      "recommended": "no",
+      "version": 25,
+      "repath": "pepper_25",
+      "archives": [],
+      "revision": 0
+    },
+    {
       "name": "pepper_canary",
       "description": "Chrome Canary",
       "stability": "canary",
