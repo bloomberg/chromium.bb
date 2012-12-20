@@ -59,6 +59,7 @@ public:
 
     void setVisible(bool);
     void setCanDraw(bool);
+    void setHasPendingTree(bool);
 
     void setNeedsCommit();
 

@@ -151,12 +151,15 @@ void PictureLayerImpl::didUpdateTransforms() {
       last_content_scale_y_ == contentsScaleY()) {
     time_delta = current_time - last_update_time_;
   }
-  tilings_.UpdateTilePriorities(layerTreeImpl()->device_viewport_size(),
-                                contentsScaleX(),
-                                contentsScaleY(),
-                                last_screen_space_transform_,
-                                current_screen_space_transform,
-                                time_delta);
+  WhichTree tree = layerTreeImpl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+  tilings_.UpdateTilePriorities(
+      tree,
+      layerTreeImpl()->device_viewport_size(),
+      contentsScaleX(),
+      contentsScaleY(),
+      last_screen_space_transform_,
+      current_screen_space_transform,
+      time_delta);
 
   last_screen_space_transform_ = current_screen_space_transform;
   last_update_time_ = current_time;
@@ -214,7 +217,7 @@ void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
 
   // If a new tiling is created on the active tree, sync it to the pending tree
   // so that it can share the same tiles.
-  if (layerTreeImpl()->IsActiveTree())
+  if (layerTreeImpl()->IsPendingTree())
     return;
 
   PictureLayerImpl* pending_twin = static_cast<PictureLayerImpl*>(

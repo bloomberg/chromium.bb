@@ -17,11 +17,12 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 void PictureLayerTilingSet::CloneAll(
     const PictureLayerTilingSet& other,
     const Region& invalidation) {
-  layer_bounds_ = other.layer_bounds_;
   tilings_.clear();
   tilings_.reserve(other.tilings_.size());
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
     tilings_.append(other.tilings_[i]->Clone());
+    tilings_.last()->SetLayerBounds(LayerBounds());
+    tilings_.last()->SetClient(client_);
     tilings_.last()->Invalidate(invalidation);
   }
 }
@@ -34,6 +35,7 @@ void PictureLayerTilingSet::Clone(
     DCHECK_NE(tilings_[i]->contents_scale(), tiling->contents_scale());
 
   tilings_.append(tiling->Clone());
+  tilings_.last()->SetClient(client_);
   tilings_.last()->Invalidate(invalidation);
 }
 
@@ -181,6 +183,7 @@ PictureLayerTilingSet::Iterator::operator bool() const {
 }
 
 void PictureLayerTilingSet::UpdateTilePriorities(
+    WhichTree tree,
     const gfx::Size& device_viewport,
     float layer_content_scale_x,
     float layer_content_scale_y,
@@ -189,8 +192,13 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     double time_delta) {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     tilings_[i]->UpdateTilePriorities(
-        device_viewport, layer_content_scale_x, layer_content_scale_y,
-        last_screen_transform, current_screen_transform, time_delta);
+        tree,
+        device_viewport,
+        layer_content_scale_x,
+        layer_content_scale_y,
+        last_screen_transform,
+        current_screen_transform,
+        time_delta);
   }
 }
 

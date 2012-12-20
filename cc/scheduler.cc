@@ -43,6 +43,12 @@ void Scheduler::setCanDraw(bool canDraw)
     processScheduledActions();
 }
 
+void Scheduler::setHasPendingTree(bool hasPendingTree)
+{
+    m_stateMachine.setHasPendingTree(hasPendingTree);
+    processScheduledActions();
+}
+
 void Scheduler::setNeedsCommit()
 {
     m_stateMachine.setNeedsCommit();

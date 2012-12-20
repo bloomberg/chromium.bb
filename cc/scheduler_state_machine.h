@@ -120,7 +120,15 @@ public:
     // Indicates whether drawing would, at this time, make sense.
     // canDraw can be used to supress flashes or checkerboarding
     // when such behavior would be undesirable.
-    void setCanDraw(bool can) { m_canDraw = can; }
+    void setCanDraw(bool can);
+
+    // Indicates whether or not there is a pending tree.  This influences
+    // whether or not we can succesfully commit at this time.  If the
+    // last commit is still being processed (but not blocking), it may not
+    // be possible to take another commit yet.  This overrides force commit,
+    // as a commit is already still in flight.
+    void setHasPendingTree(bool hasPendingTree);
+    bool hasPendingTree() const { return m_hasPendingTree; }
 
     void didLoseOutputSurface();
     void didRecreateOutputSurface();
@@ -155,6 +163,7 @@ protected:
     bool m_visible;
     bool m_canBeginFrame;
     bool m_canDraw;
+    bool m_hasPendingTree;
     bool m_drawIfPossibleFailed;
     TextureState m_textureState;
     OutputSurfaceState m_outputSurfaceState;

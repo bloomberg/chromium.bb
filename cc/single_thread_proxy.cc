@@ -230,6 +230,12 @@ void SingleThreadProxy::setNeedsRedraw()
     setNeedsCommit();
 }
 
+void SingleThreadProxy::onHasPendingTreeStateChanged(bool havePendingTree)
+{
+    // Thread-only feature.
+    NOTREACHED();
+}
+
 void SingleThreadProxy::setDeferCommits(bool deferCommits)
 {
     // Thread-only feature.

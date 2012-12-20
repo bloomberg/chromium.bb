@@ -26,6 +26,7 @@ SchedulerStateMachine::SchedulerStateMachine()
     , m_visible(false)
     , m_canBeginFrame(false)
     , m_canDraw(false)
+    , m_hasPendingTree(false)
     , m_drawIfPossibleFailed(false)
     , m_textureState(LAYER_TEXTURE_STATE_UNLOCKED)
     , m_outputSurfaceState(OUTPUT_SURFACE_ACTIVE)
@@ -52,6 +53,7 @@ std::string SchedulerStateMachine::toString()
     base::StringAppendF(&str, "m_canBeginFrame = %d; ", m_canBeginFrame);
     base::StringAppendF(&str, "m_canDraw = %d; ", m_canDraw);
     base::StringAppendF(&str, "m_drawIfPossibleFailed = %d; ", m_drawIfPossibleFailed);
+    base::StringAppendF(&str, "m_hasPendingTree = %d; ", m_hasPendingTree);
     base::StringAppendF(&str, "m_textureState = %d; ", m_textureState);
     base::StringAppendF(&str, "m_outputSurfaceState = %d; ", m_outputSurfaceState);
     return str;
@@ -123,7 +125,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         if (m_outputSurfaceState != OUTPUT_SURFACE_ACTIVE && m_needsForcedRedraw)
             return ACTION_DRAW_FORCED;
         if (m_outputSurfaceState != OUTPUT_SURFACE_ACTIVE && m_needsForcedCommit)
-            return ACTION_BEGIN_FRAME;
+            // TODO(enne): Should probably drop the active tree on force commit
+            return m_hasPendingTree ? ACTION_NONE : ACTION_BEGIN_FRAME;
         if (m_outputSurfaceState == OUTPUT_SURFACE_LOST)
             return ACTION_BEGIN_OUTPUT_SURFACE_RECREATION;
         if (m_outputSurfaceState == OUTPUT_SURFACE_RECREATING)
@@ -131,7 +134,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         if (shouldDraw())
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         if (m_needsCommit && ((m_visible && m_canBeginFrame) || m_needsForcedCommit))
-            return ACTION_BEGIN_FRAME;
+            // TODO(enne): Should probably drop the active tree on force commit
+            return m_hasPendingTree ? ACTION_NONE : ACTION_BEGIN_FRAME;
         return ACTION_NONE;
 
     case COMMIT_STATE_FRAME_IN_PROGRESS:
@@ -149,7 +153,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         // or textures are not available, proceed to the next step (similar as in COMMIT_STATE_IDLE).
         bool canCommit = m_visible || m_needsForcedCommit;
         if (m_needsCommit && canCommit && drawSuspendedUntilCommit())
-            return ACTION_BEGIN_FRAME;
+            return m_hasPendingTree ? ACTION_NONE : ACTION_BEGIN_FRAME;
         return ACTION_NONE;
     }
 
@@ -169,6 +173,7 @@ void SchedulerStateMachine::updateState(Action action)
         return;
 
     case ACTION_BEGIN_FRAME:
+        DCHECK(!m_hasPendingTree);
         DCHECK(m_visible || m_needsForcedCommit);
         m_commitState = COMMIT_STATE_FRAME_IN_PROGRESS;
         m_needsCommit = false;
@@ -233,6 +238,11 @@ void SchedulerStateMachine::setMainThreadNeedsLayerTextures()
 
 bool SchedulerStateMachine::vsyncCallbackNeeded() const
 {
+    // If we have a pending tree, need to keep getting notifications until
+    // the tree is ready to be swapped.
+    if (m_hasPendingTree)
+        return true;
+
     // If we can't draw, don't tick until we are notified that we can draw again.
     if (!m_canDraw)
         return false;
@@ -320,6 +330,16 @@ void SchedulerStateMachine::didLoseOutputSurface()
     if (m_outputSurfaceState == OUTPUT_SURFACE_LOST || m_outputSurfaceState == OUTPUT_SURFACE_RECREATING)
         return;
     m_outputSurfaceState = OUTPUT_SURFACE_LOST;
+}
+
+void SchedulerStateMachine::setHasPendingTree(bool hasPendingTree)
+{
+    m_hasPendingTree = hasPendingTree;
+}
+
+void SchedulerStateMachine::setCanDraw(bool can)
+{
+    m_canDraw = can;
 }
 
 void SchedulerStateMachine::didRecreateOutputSurface()

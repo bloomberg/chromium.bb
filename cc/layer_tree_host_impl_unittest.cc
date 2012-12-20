@@ -66,6 +66,7 @@ public:
         , m_alwaysImplThread(&m_proxy)
         , m_alwaysMainThreadBlocked(&m_proxy)
         , m_onCanDrawStateChangedCalled(false)
+        , m_hasPendingTree(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
         , m_reduceMemoryResult(true)
@@ -92,6 +93,7 @@ public:
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
     virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
+    virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE { m_hasPendingTree = hasPendingTree; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
@@ -219,6 +221,7 @@ protected:
 
     scoped_ptr<LayerTreeHostImpl> m_hostImpl;
     bool m_onCanDrawStateChangedCalled;
+    bool m_hasPendingTree;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
     bool m_reduceMemoryResult;

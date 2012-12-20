@@ -281,20 +281,39 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
     m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
 
-    if (m_needsFullTreeSync) {
-        hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl->activeTree()));
+    // In impl-side painting, synchronize to the pending tree so that it has
+    // time to raster before being displayed.  If no pending tree is needed,
+    // synchronization can happen directly to the active tree.
+    LayerTreeImpl* syncTree;
+    bool needsFullTreeSync = false;
+    if (m_settings.implSidePainting) {
+        // Commits should not occur while there is already a pending tree.
+        DCHECK(!hostImpl->pendingTree());
+        hostImpl->createPendingTree();
+        syncTree = hostImpl->pendingTree();
+        // TODO(enne): we could recycle old active trees and keep track for
+        // multiple main thread frames whether a sync is needed
+        needsFullTreeSync = true;
+    } else {
+        syncTree = hostImpl->activeTree();
+        needsFullTreeSync = m_needsFullTreeSync;
+    }
+
+    if (needsFullTreeSync) {
+        syncTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), syncTree->DetachLayerTree(), syncTree));
     } else {
         TRACE_EVENT0("cc", "LayerTreeHost::pushPropertiesRecursive");
-        pushPropertiesRecursive(rootLayer(), hostImpl->rootLayer());
+        pushPropertiesRecursive(rootLayer(), syncTree->RootLayer());
     }
     m_needsFullTreeSync = false;
 
     if (m_rootLayer && m_hudLayer)
-        hostImpl->activeTree()->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(hostImpl->rootLayer(), m_hudLayer->id())));
+        syncTree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(syncTree->RootLayer(), m_hudLayer->id())));
     else
-        hostImpl->activeTree()->set_hud_layer(0);
+        syncTree->set_hud_layer(0);
 
-    hostImpl->activeTree()->set_source_frame_number(commitNumber());
+    // TODO(enne): Do these need to be moved to layer tree as well?
+    syncTree->set_source_frame_number(commitNumber());
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);

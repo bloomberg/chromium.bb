@@ -237,8 +237,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
 
-    // TODO(nduca): For now, assume we have an active tree. This will be removed
-    // in future patches.
+    // LTHI always has an active tree.
     m_activeTree = LayerTreeImpl::create(this);
 }
 
@@ -283,6 +282,14 @@ bool LayerTreeHostImpl::canDraw()
     // Note: If you are changing this function or any other function that might
     // affect the result of canDraw, make sure to call m_client->onCanDrawStateChanged
     // in the proper places and update the notifyIfCanDrawChanged test.
+
+    // TODO(enne): Since prepareToDraw is the only place that currently does
+    // tree activiation, this allows prepareToDraw to be entered even if the
+    // active tree can't draw.  This could cause flashing, though.  This should
+    // probably be refactored such that the scheduler handles the tree
+    // activation rather than prepareToDrwa.
+    if (pendingTree())
+        return true;
 
     if (!rootLayer()) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no root layer");
@@ -413,6 +420,16 @@ void LayerTreeHostImpl::updateDrawProperties()
         float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
         LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, m_renderSurfaceLayerList);
     }
+
+    // TODO(nduca): Move this to LayerTreeImpl
+    // Note: pending tree calcDrawProperties must follow the active tree one,
+    // as some properties are synced from active -> pending.
+    if (pendingTree() && pendingTree()->RootLayer())
+    {
+        float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
+        LayerList dummyList;
+        LayerTreeHostCommon::calculateDrawProperties(pendingTree()->RootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, dummyList);
+    }
 }
 
 void LayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<RenderPass> renderPass)
@@ -512,7 +529,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     DCHECK(frame.renderPasses.empty());
 
     updateDrawProperties();
-    if (!canDraw())
+    if (!canDraw() || !rootLayer())
       return false;
 
     trackDamageForAllSurfaces(rootLayer(), *frame.renderSurfaceLayerList);
@@ -561,7 +578,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
             if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->drawableContentRect(), &hasOcclusionFromOutsideTargetSurface))
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
-                DCHECK_EQ(this->activeTree(), it->layerTreeImpl());
+                DCHECK_EQ(activeTree(), it->layerTreeImpl());
                 it->willDraw(m_resourceProvider.get());
                 frame.willDrawLayers.push_back(*it);
 
@@ -751,6 +768,8 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
 
     if (m_tileManager)
         m_tileManager->CheckForCompletedSetPixels();
+
+    activatePendingTreeIfNeeded();
 
     frame.renderSurfaceLayerList = &m_renderSurfaceLayerList;
     frame.renderPasses.clear();
@@ -997,6 +1016,51 @@ static LayerImpl* findScrollLayerForContentLayer(LayerImpl* layerImpl)
 void LayerTreeHostImpl::setRootLayer(scoped_ptr<LayerImpl> layer)
 {
     m_activeTree->SetRootLayer(layer.Pass());
+    setNeedsUpdateDrawProperties();
+}
+
+void LayerTreeHostImpl::createPendingTree()
+{
+    CHECK(!m_pendingTree);
+    m_pendingTree = LayerTreeImpl::create(this);
+    m_client->onCanDrawStateChanged(canDraw());
+    m_client->onHasPendingTreeStateChanged(pendingTree());
+}
+
+void LayerTreeHostImpl::activatePendingTreeIfNeeded()
+{
+    if (!pendingTree())
+        return;
+
+    int total_pending = m_tileManager->GetTilesInBinCount(NOW_BIN, PENDING_TREE);
+    int total_active = m_tileManager->GetTilesInBinCount(NOW_BIN, ACTIVE_TREE);
+    int drawable_pending = m_tileManager->GetDrawableTilesInBinCount(NOW_BIN, PENDING_TREE);
+    int drawable_active = m_tileManager->GetDrawableTilesInBinCount(NOW_BIN, ACTIVE_TREE);
+
+    if (total_pending && total_active) {
+        float percent_pending = drawable_pending / static_cast<float>(total_pending);
+        float percent_active = drawable_active / static_cast<float>(total_active);
+        if (percent_pending < percent_active)
+            return;
+    }
+
+    // If there are no pending total tiles (i.e. an empty tree), we should
+    // commit immediately.  Similarly, if there are no active tree tiles.
+    activatePendingTree();
+}
+
+void LayerTreeHostImpl::activatePendingTree()
+{
+    CHECK(m_pendingTree);
+    m_activeTree.swap(m_pendingTree);
+    // TODO(enne): consider recycling this tree to prevent layer churn
+    m_pendingTree.reset();
+    m_client->onCanDrawStateChanged(canDraw());
+    m_client->onHasPendingTreeStateChanged(pendingTree());
+
+    // TODO(nduca): Once render surface layer list moves to the tree so
+    // that updateDrawProperties() affects both trees, this will be
+    // unnecessary.
     setNeedsUpdateDrawProperties();
 }
 

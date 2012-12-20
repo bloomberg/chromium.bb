@@ -269,6 +269,7 @@ gfx::Size PictureLayerTiling::Iterator::texture_size() const {
 }
 
 void PictureLayerTiling::UpdateTilePriorities(
+    WhichTree tree,
     const gfx::Size& device_viewport,
     float layer_content_scale_x,
     float layer_content_scale_y,
@@ -290,7 +291,7 @@ void PictureLayerTiling::UpdateTilePriorities(
       priority.time_to_visible_in_seconds =
           TilePriority::kMaxTimeToVisibleInSeconds;
       // TODO(qinmin): pass the correct tree to this function.
-      it->second->set_priority(ACTIVE_TREE, priority);
+      it->second->set_priority(tree, priority);
       continue;
     }
 
@@ -312,7 +313,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     priority.distance_to_visible_in_pixels =
         TilePriority::manhattanDistance(screen_rect, view_rect);
     // TODO(qinmin): pass the correct tree to this function.
-    it->second->set_priority(ACTIVE_TREE, priority);
+    it->second->set_priority(tree, priority);
   }
 }
 

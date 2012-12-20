@@ -18,6 +18,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       base::TimeTicks,
       base::TimeDelta) OVERRIDE { }
   virtual void onCanDrawStateChanged(bool) OVERRIDE { }
+  virtual void onHasPendingTreeStateChanged(bool) OVERRIDE { }
   virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
   virtual void setNeedsCommitOnImplThread() OVERRIDE { }
   virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }

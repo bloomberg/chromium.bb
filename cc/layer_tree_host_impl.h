@@ -42,6 +42,7 @@ public:
     virtual void onSwapBuffersCompleteOnImplThread() = 0;
     virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) = 0;
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
+    virtual void onHasPendingTreeStateChanged(bool hasPendingTree) = 0;
     virtual void setNeedsRedrawOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void setNeedsManageTilesOnImplThread() = 0;
@@ -208,6 +209,8 @@ public:
 
     LayerTreeImpl* activeTree() { return m_activeTree.get(); }
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
+    void createPendingTree();
+    void activatePendingTreeIfNeeded();
 
     // TODO(nduca): Remove these in favor of LayerTreeImpl.
     void setRootLayer(scoped_ptr<LayerImpl>);
@@ -308,6 +311,7 @@ public:
 
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
+    void activatePendingTree();
 
     // Virtual for testing.
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime);

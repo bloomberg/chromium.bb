@@ -327,6 +327,13 @@ void ThreadProxy::onCanDrawStateChanged(bool canDraw)
     m_schedulerOnImplThread->setCanDraw(canDraw);
 }
 
+void ThreadProxy::onHasPendingTreeStateChanged(bool hasPendingTree)
+{
+    DCHECK(isImplThread());
+    TRACE_EVENT1("cc", "ThreadProxy::onHasPendingTreeStateChanged", "hasPendingTree", hasPendingTree);
+    m_schedulerOnImplThread->setHasPendingTree(hasPendingTree);
+}
+
 void ThreadProxy::setNeedsCommitOnImplThread()
 {
     DCHECK(isImplThread());

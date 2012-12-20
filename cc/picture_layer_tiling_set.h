@@ -17,7 +17,7 @@ class CC_EXPORT PictureLayerTilingSet {
   PictureLayerTilingSet(PictureLayerTilingClient* client);
   ~PictureLayerTilingSet();
 
-  // Shallow copies all data (except client) from other.
+  // Shallow copies all data (except client and bounds from other).
   void CloneAll(
      const PictureLayerTilingSet& other,
      const Region& invalidation);
@@ -36,12 +36,14 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void Reset();
 
-  void UpdateTilePriorities(const gfx::Size& device_viewport,
-                            float layer_content_scale_x,
-                            float layer_content_scale_y,
-                            const gfx::Transform& last_screen_transform,
-                            const gfx::Transform& current_screen_transform,
-                            double time_delta);
+  void UpdateTilePriorities(
+      WhichTree tree,
+      const gfx::Size& device_viewport,
+      float layer_content_scale_x,
+      float layer_content_scale_y,
+      const gfx::Transform& last_screen_transform,
+      const gfx::Transform& current_screen_transform,
+      double time_delta);
 
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate

@@ -38,13 +38,6 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->invalidation_.Swap(pile_invalidation_);
   pile_.PushPropertiesTo(layer_impl->pile_);
 
-  // TODO(enne): Remove this once syncing happens to the pending tree rather
-  // than the active one.
-  if (layer_impl->layerTreeImpl()->IsActiveTree()) {
-    layer_impl->tilings_.Invalidate(layer_impl->invalidation_);
-    return;
-  }
-
   layer_impl->SyncFromActiveLayer();
 }
 

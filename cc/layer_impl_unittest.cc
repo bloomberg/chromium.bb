@@ -55,12 +55,14 @@ namespace {
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)                 \
     root->resetAllChangeTrackingForSubtree();                           \
     hostImpl.forcePrepareToDraw();                                      \
+    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());                 \
     codeToTest;                                                         \
     EXPECT_TRUE(hostImpl.needsUpdateDrawProperties());
 
 #define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)              \
     root->resetAllChangeTrackingForSubtree();                           \
     hostImpl.forcePrepareToDraw();                                      \
+    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());                 \
     codeToTest;                                                         \
     EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());
 
