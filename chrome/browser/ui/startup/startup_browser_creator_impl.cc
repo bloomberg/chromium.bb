@@ -776,9 +776,8 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   if (!browser || !browser->is_type_tabbed()) {
     // The startup code only executes for browsers launched in desktop mode.
     // i.e. HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
-    chrome::HostDesktopType host_desktop_type = browser ?
-        browser->host_desktop_type() : chrome::HOST_DESKTOP_TYPE_NATIVE;
-    browser = new Browser(Browser::CreateParams(profile_, host_desktop_type));
+    browser = new Browser(Browser::CreateParams(
+        profile_, chrome::HOST_DESKTOP_TYPE_NATIVE));
   } else {
 #if defined(TOOLKIT_GTK)
     // Setting the time of the last action on the window here allows us to steal
