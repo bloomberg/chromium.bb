@@ -807,7 +807,7 @@ static bool addTestAnimation(Layer* layer)
     scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
     curve->addKeyframe(FloatKeyframe::create(0, 0.3f, scoped_ptr<TimingFunction>()));
     curve->addKeyframe(FloatKeyframe::create(1, 0.7f, scoped_ptr<TimingFunction>()));
-    scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.PassAs<AnimationCurve>(), 0, 0, ActiveAnimation::Opacity));
+    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), 0, 0, Animation::Opacity));
 
     return layer->addAnimation(animation.Pass());
 }

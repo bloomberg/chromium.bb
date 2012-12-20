@@ -248,8 +248,8 @@ public:
       bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
-    ActiveAnimation* animation =
-        controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+    Animation* animation =
+        controller->getAnimation(0, Animation::Opacity);
     if (!animation)
       return;
 
@@ -267,8 +267,8 @@ public:
 
     LayerAnimationController* controller_impl =
         host_impl->rootLayer()->layerAnimationController();
-    ActiveAnimation* animation_impl =
-        controller_impl->getActiveAnimation(0, ActiveAnimation::Opacity);
+    Animation* animation_impl =
+        controller_impl->getAnimation(0, Animation::Opacity);
 
     controller->removeAnimation(animation->id());
     controller_impl->removeAnimation(animation_impl->id());
@@ -298,8 +298,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
   virtual void notifyAnimationStarted(double time) OVERRIDE {
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
-    ActiveAnimation* animation =
-        controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+    Animation* animation =
+        controller->getAnimation(0, Animation::Opacity);
     main_start_time_ = animation->startTime();
     controller->removeAnimation(animation->id());
 
@@ -313,8 +313,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
       bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
         impl_host->rootLayer()->layerAnimationController();
-    ActiveAnimation* animation =
-        controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+    Animation* animation =
+        controller->getAnimation(0, Animation::Opacity);
     if (!animation)
       return;
 
@@ -349,8 +349,8 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents :
   virtual void notifyAnimationFinished(double time) OVERRIDE {
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
-    ActiveAnimation* animation =
-        controller->getActiveAnimation(0, ActiveAnimation::Opacity);
+    Animation* animation =
+        controller->getAnimation(0, Animation::Opacity);
     controller->removeAnimation(animation->id());
     endTest();
   }
@@ -419,9 +419,9 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
 
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
-      scoped_ptr<ActiveAnimation> animation(
-          ActiveAnimation::create(curve.Pass(), 1, 1,
-                                  ActiveAnimation::Opacity));
+      scoped_ptr<Animation> animation(
+          Animation::create(curve.Pass(), 1, 1,
+                                  Animation::Opacity));
       layer->layerAnimationController()->addAnimation(animation.Pass());
 
       // We add the animation *before* attaching the layer to the tree.

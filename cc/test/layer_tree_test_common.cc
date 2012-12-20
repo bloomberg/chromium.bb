@@ -4,7 +4,7 @@
 
 #include "cc/test/layer_tree_test_common.h"
 
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 #include "cc/animation_registrar.h"
 #include "cc/content_layer.h"
 #include "cc/font_atlas.h"

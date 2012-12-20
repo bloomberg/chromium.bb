@@ -10,7 +10,7 @@
 #include "cc/layer_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
-using cc::ActiveAnimation;
+using cc::Animation;
 using cc::AnimationCurve;
 using cc::EaseTimingFunction;
 using cc::FloatKeyframe;
@@ -37,7 +37,7 @@ int addOpacityTransition(Target& target, double duration, float startOpacity, fl
 
     int id = nextAnimationId++;
 
-    scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.PassAs<AnimationCurve>(), id, 0, ActiveAnimation::Opacity));
+    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Opacity));
     animation->setNeedsSynchronizedStartTime(true);
 
     target.addAnimation(animation.Pass());
@@ -61,7 +61,7 @@ int addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY
 
     int id = nextAnimationId++;
 
-    scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.PassAs<AnimationCurve>(), id, 0, ActiveAnimation::Transform));
+    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Transform));
     animation->setNeedsSynchronizedStartTime(true);
 
     target.addAnimation(animation.Pass());

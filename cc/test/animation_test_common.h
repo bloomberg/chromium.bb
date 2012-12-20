@@ -5,7 +5,7 @@
 #ifndef CC_TEST_ANIMATION_TEST_COMMON_H_
 #define CC_TEST_ANIMATION_TEST_COMMON_H_
 
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 #include "cc/animation_curve.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_animation_value_observer.h"

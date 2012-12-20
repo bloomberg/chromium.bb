@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ACTIVE_ANIMATION_H_
-#define CC_ACTIVE_ANIMATION_H_
+#ifndef CC_ANIMATION_H_
+#define CC_ANIMATION_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,10 +13,10 @@ namespace cc {
 
 class AnimationCurve;
 
-// An ActiveAnimation, contains all the state required to play an AnimationCurve.
+// An Animation, contains all the state required to play an AnimationCurve.
 // Specifically, the affected property, the run state (paused, finished, etc.),
 // loop count, last pause time, and the total time spent paused.
-class CC_EXPORT ActiveAnimation {
+class CC_EXPORT Animation {
 public:
     // Animations begin in one of the 'waiting' states. Animations waiting for the next tick
     // will start the next time the controller animates. Animations waiting for target
@@ -47,9 +47,9 @@ public:
         TargetPropertyEnumSize
     };
 
-    static scoped_ptr<ActiveAnimation> create(scoped_ptr<AnimationCurve>, int animationId, int groupId, TargetProperty);
+    static scoped_ptr<Animation> create(scoped_ptr<AnimationCurve>, int animationId, int groupId, TargetProperty);
 
-    virtual ~ActiveAnimation();
+    virtual ~Animation();
 
     int id() const { return m_id; }
     int group() const { return m_group; }
@@ -100,14 +100,14 @@ public:
         NonControllingInstance
     };
 
-    scoped_ptr<ActiveAnimation> clone(InstanceType) const;
-    scoped_ptr<ActiveAnimation> cloneAndInitialize(InstanceType, RunState initialRunState, double startTime) const;
+    scoped_ptr<Animation> clone(InstanceType) const;
+    scoped_ptr<Animation> cloneAndInitialize(InstanceType, RunState initialRunState, double startTime) const;
     bool isControllingInstance() const { return m_isControllingInstance; }
 
-    void pushPropertiesTo(ActiveAnimation*) const;
+    void pushPropertiesTo(Animation*) const;
 
 private:
-    ActiveAnimation(scoped_ptr<AnimationCurve>, int animationId, int groupId, TargetProperty);
+    Animation(scoped_ptr<AnimationCurve>, int animationId, int groupId, TargetProperty);
 
     scoped_ptr<AnimationCurve> m_curve;
 
@@ -147,16 +147,16 @@ private:
 
     // Animations lead dual lives. An active animation will be conceptually owned by
     // two controllers, one on the impl thread and one on the main. In reality, there
-    // will be two separate ActiveAnimation instances for the same animation. They
+    // will be two separate Animation instances for the same animation. They
     // will have the same group id and the same target property (these two values
     // uniquely identify an animation). The instance on the impl thread is the instance
     // that ultimately controls the values of the animating layer and so we will refer
     // to it as the 'controlling instance'.
     bool m_isControllingInstance;
 
-    DISALLOW_COPY_AND_ASSIGN(ActiveAnimation);
+    DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 } // namespace cc
 
-#endif  // CC_ACTIVE_ANIMATION_H_
+#endif  // CC_ANIMATION_H_
