@@ -93,7 +93,7 @@ class MEDIA_EXPORT AudioBus {
   void ZeroFramesPartial(int start_frame, int frames);
 
  private:
-  friend class scoped_ptr<AudioBus>;
+  friend struct base::DefaultDeleter<AudioBus>;
   ~AudioBus();
 
   AudioBus(int channels, int frames);

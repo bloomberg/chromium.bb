@@ -77,7 +77,7 @@ class SyncFileSystemService
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
-  friend class scoped_ptr<SyncFileSystemService>;
+  friend struct base::DefaultDeleter<SyncFileSystemService>;
 
   explicit SyncFileSystemService(Profile* profile);
   virtual ~SyncFileSystemService();

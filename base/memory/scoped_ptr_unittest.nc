@@ -25,11 +25,63 @@ scoped_ptr<Child> DowncastUsingPassAs(scoped_ptr<Parent> object) {
   return object.PassAs<Child>();
 }
 
-#elif defined(NCTEST_NO_REF_COUNTED_SCOPED_PTR)  // [r"creating array with negative size"]
+#elif defined(NCTEST_NO_REF_COUNTED_SCOPED_PTR)  // [r"size of array is negative"]
 
 // scoped_ptr<> should not work for ref-counted objects.
 void WontCompile() {
   scoped_ptr<RefCountedClass> x;
+}
+
+#elif defined(NCTEST_NO_ARRAY_WITH_SIZE)  // [r"size of array is negative"]
+
+void WontCompile() {
+  scoped_ptr<int[10]> x;
+}
+
+#elif defined(NCTEST_NO_PASS_FROM_ARRAY)  // [r"is private"]
+
+void WontCompile() {
+  scoped_ptr<int[]> a;
+  scoped_ptr<int*> b;
+  b = a.Pass();
+}
+
+#elif defined(NCTEST_NO_PASS_TO_ARRAY)  // [r"no match for 'operator='"]
+
+void WontCompile() {
+  scoped_ptr<int*> a;
+  scoped_ptr<int[]> b;
+  b = a.Pass();
+}
+
+#elif defined(NCTEST_NO_CONSTRUCT_FROM_ARRAY)  // [r"is private"]
+
+void WontCompile() {
+  scoped_ptr<int[]> a;
+  scoped_ptr<int*> b(a.Pass());
+}
+
+#elif defined(NCTEST_NO_CONSTRUCT_TO_ARRAY)  // [r"no matching function for call'"]
+
+void WontCompile() {
+  scoped_ptr<int*> a;
+  scoped_ptr<int[]> b(a.Pass());
+}
+
+#elif defined(NCTEST_NO_DELETER_REFERENCE)  // [r"fails to be a struct or class type'"]
+
+struct Deleter {
+  void operator()(int*) {}
+};
+
+// Current implementation doesn't support Deleter Reference types. Enabling
+// support would require changes to the behavior of the constructors to match
+// including the use of SFINAE to discard the type-converting constructor
+// as per C++11 20.7.1.2.1.19.
+void WontCompile() {
+  Deleter d;
+  int n;
+  scoped_ptr<int*, Deleter&> a(&n, d);
 }
 
 #endif

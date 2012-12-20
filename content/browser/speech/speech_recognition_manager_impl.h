@@ -91,7 +91,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
  protected:
   // BrowserMainLoop is the only one allowed to istantiate and free us.
   friend class BrowserMainLoop;
-  friend class scoped_ptr<SpeechRecognitionManagerImpl>;  // Needed for dtor.
+  // Needed for dtor.
+  friend struct base::DefaultDeleter<SpeechRecognitionManagerImpl>;
   SpeechRecognitionManagerImpl();
   virtual ~SpeechRecognitionManagerImpl();
 

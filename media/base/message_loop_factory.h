@@ -38,8 +38,9 @@ class MEDIA_EXPORT MessageLoopFactory {
   scoped_refptr<base::MessageLoopProxy> GetMessageLoop(Type type);
 
  private:
-  // Only allow scoped_ptr<> to delete factory.
-  friend class scoped_ptr<MessageLoopFactory>;
+  // Restrict who can delete the factory to scoped_ptr<>. scoped_ptr<> uses
+  // base::DefaultDeleter.
+  friend struct base::DefaultDeleter<MessageLoopFactory>;
   ~MessageLoopFactory();
 
   // Returns the thread associated with |type| creating a new thread if needed.

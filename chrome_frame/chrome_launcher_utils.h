@@ -6,10 +6,10 @@
 #define CHROME_FRAME_CHROME_LAUNCHER_UTILS_H_
 
 #include <string>
+#include "base/memory/scoped_ptr.h"
 
 class CommandLine;
 class FilePath;
-template <class C> class scoped_ptr;
 
 namespace chrome_launcher {
 

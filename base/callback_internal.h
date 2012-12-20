@@ -130,10 +130,10 @@ struct CallbackParamTraits<T[]> {
 // TODO(ajwong): We might be able to use SFINAE to search for the existence of
 // a Pass() function in the type and avoid the whitelist in CallbackParamTraits
 // and CallbackForward.
-template <typename T>
-struct CallbackParamTraits<scoped_ptr<T> > {
-  typedef scoped_ptr<T> ForwardType;
-  typedef scoped_ptr<T> StorageType;
+template <typename T, typename D>
+struct CallbackParamTraits<scoped_ptr<T, D> > {
+  typedef scoped_ptr<T, D> ForwardType;
+  typedef scoped_ptr<T, D> StorageType;
 };
 
 template <typename T>
@@ -173,8 +173,8 @@ struct CallbackParamTraits<ScopedVector<T> > {
 template <typename T>
 T& CallbackForward(T& t) { return t; }
 
-template <typename T>
-scoped_ptr<T> CallbackForward(scoped_ptr<T>& p) { return p.Pass(); }
+template <typename T, typename D>
+scoped_ptr<T, D> CallbackForward(scoped_ptr<T, D>& p) { return p.Pass(); }
 
 template <typename T>
 scoped_array<T> CallbackForward(scoped_array<T>& p) { return p.Pass(); }

@@ -156,10 +156,10 @@ class PersonalDataManager
   friend class AutofillTest;
   friend class PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
-  friend class scoped_ptr<PersonalDataManager>;
   friend class ProfileSyncServiceAutofillTest;
   friend class RemoveAutofillTester;
   friend class TestingAutomationProvider;
+  friend struct base::DefaultDeleter<PersonalDataManager>;
   friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(int, std::vector<CreditCard>*);
 

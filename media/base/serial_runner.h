@@ -56,7 +56,7 @@ class SerialRunner {
       const Queue& bound_fns, const PipelineStatusCB& done_cb);
 
  private:
-  friend class scoped_ptr<SerialRunner>;
+  friend struct base::DefaultDeleter<SerialRunner>;
 
   SerialRunner(const Queue& bound_fns, const PipelineStatusCB& done_cb);
   ~SerialRunner();
