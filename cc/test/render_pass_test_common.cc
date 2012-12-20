@@ -29,7 +29,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
           gfx::Size(20, 12),
           resourceProvider->bestTextureFormat(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(texture_resource);
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
   shared_state->SetAll(gfx::Transform(),
                        rect,

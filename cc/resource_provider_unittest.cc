@@ -20,9 +20,6 @@
 using namespace WebKit;
 
 using testing::Mock;
-using testing::StrictMock;
-using testing::NiceMock;
-using testing::_;
 
 namespace cc {
 namespace {
@@ -590,7 +587,6 @@ TEST_P(ResourceProviderTest, ScopedSampler)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
     ResourceProvider::ResourceId id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->allocateForTesting(id);
 
     // Creating a sampler with the default filter should not change any texture
     // parameters.
@@ -641,76 +637,6 @@ TEST_P(ResourceProviderTest, ManagedResource)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_MANAGED_CHROMIUM));
     ResourceProvider::ResourceId id = resourceProvider->createManagedResource(size, format, ResourceProvider::TextureUsageAny);
 
-    Mock::VerifyAndClearExpectations(context);
-}
-
-class AllocationTrackingContext3D : public FakeWebGraphicsContext3D {
-public:
-    MOCK_METHOD9(texImage2D, void(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat,
-                                  WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format,
-                                  WGC3Denum type, const void* pixels));
-    MOCK_METHOD9(texSubImage2D, void(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset,
-                                     WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format,
-                                     WGC3Denum type, const void* pixels));
-    MOCK_METHOD9(asyncTexImage2DCHROMIUM, void(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat,
-                                              WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format,
-                                              WGC3Denum type, const void* pixels));
-    MOCK_METHOD9(asyncTexSubImage2DCHROMIUM, void(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset,
-                                                  WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format,
-                                                  WGC3Denum type, const void* pixels));
-};
-
-TEST_P(ResourceProviderTest, TextureAllocation)
-{
-    // Only for GL textures.
-    if (GetParam() != ResourceProvider::GLTexture)
-        return;
-    scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
-        static_cast<WebKit::WebGraphicsContext3D*>(new NiceMock<AllocationTrackingContext3D>));
-    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(mock_context.Pass()));
-
-    gfx::Size size(2, 2);
-    gfx::Vector2d offset(0, 0);
-    gfx::Rect rect(0, 0, 2, 2);
-    WGC3Denum format = GL_RGBA;
-    ResourceProvider::ResourceId id = 0;
-    uint8_t pixels[16] = {0};
-
-    AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->Context3D());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-
-    // Lazy allocation. Don't allocate when creating the resource.
-    EXPECT_CALL(*context, texImage2D(_,_,_,_,_,_,_,_,_)).Times(0);
-    EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,_,_,_,_,_,_)).Times(0);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->deleteResource(id);
-    Mock::VerifyAndClearExpectations(context);
-
-    // Do allocate when we set the pixels.
-    EXPECT_CALL(*context, texImage2D(_,_,_,2,2,_,_,_,_)).Times(1);
-    EXPECT_CALL(*context, texSubImage2D(_,_,_,_,2,2,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->setPixels(id, pixels, rect, rect, offset);
-    resourceProvider->deleteResource(id);
-    Mock::VerifyAndClearExpectations(context);
-
-    // Same for setPixelsFromBuffer
-    EXPECT_CALL(*context, texImage2D(_,_,_,2,2,_,_,_,_)).Times(1);
-    EXPECT_CALL(*context, texSubImage2D(_,_,_,_,2,2,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->acquirePixelBuffer(id);
-    resourceProvider->setPixelsFromBuffer(id);
-    resourceProvider->releasePixelBuffer(id);
-    resourceProvider->deleteResource(id);
-    Mock::VerifyAndClearExpectations(context);
-
-    // Same for async version.
-    EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,2,2,_,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->acquirePixelBuffer(id);
-    resourceProvider->beginSetPixels(id);
-    resourceProvider->releasePixelBuffer(id);
-    resourceProvider->deleteResource(id);
     Mock::VerifyAndClearExpectations(context);
 }
 
