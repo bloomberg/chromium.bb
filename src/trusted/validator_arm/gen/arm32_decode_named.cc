@@ -2055,109 +2055,109 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Sadd16_Rule_148_A1_P296_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Sasx_Rule_150_A1_P300_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Ssax_Rule_185_A1_P366_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Ssub16_Rule_186_A1_P368_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SSSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Sadd8_Rule_149_A1_P298_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00100000 /* op1(21:20)=01 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Ssub8_Rule_187_A1_P370_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SSUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qadd16_Rule_125_A1_P252_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qsax_Rule_130_A1_P262_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qsub16_Rule_132_A1_P266_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qadd8_Rule_126_A1_P254_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QSUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shadd16_Rule_159_A1_P318_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shasx_Rule_161_A1_P322_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shsax_Rule_162_A1_P324_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shsub16_Rule_163_A1_P326_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shadd8_Rule_160_A1_P320_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00300000 /* op1(21:20)=11 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Shsub8_Rule_164_A1_P328_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_SHSUB8_instance_;
   }
 
   if (true &&
