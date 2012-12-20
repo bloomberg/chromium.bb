@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -28,8 +27,7 @@ namespace ppapi {
 // PP_Var IDs) for each module. This allows us to track all references owned by
 // a given module and free them when the plugin exits independently of other
 // plugins that may be running at the same time.
-class NPObjectVar : public Var,
-                    public base::SupportsWeakPtr<NPObjectVar> {
+class NPObjectVar : public Var {
  public:
   // You should always use FromNPObject to create an NPObjectVar. This function
   // guarantees that we maintain the 1:1 mapping between NPObject and

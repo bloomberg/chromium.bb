@@ -41,6 +41,7 @@ PP_VarType NPObjectVar::GetType() const {
 
 void NPObjectVar::InstanceDeleted() {
   DCHECK(pp_instance_);
+  HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
   pp_instance_ = 0;
 }
 

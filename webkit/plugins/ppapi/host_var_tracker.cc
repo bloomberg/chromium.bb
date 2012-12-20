@@ -43,8 +43,7 @@ void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
 
   DCHECK(np_object_map->find(object_var->np_object()) ==
          np_object_map->end()) << "NPObjectVar already in map";
-  np_object_map->insert(
-      std::make_pair(object_var->np_object(), object_var->AsWeakPtr()));
+  np_object_map->insert(std::make_pair(object_var->np_object(), object_var));
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
@@ -69,10 +68,6 @@ void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
     return;
   }
   np_object_map->erase(found_object);
-
-  // Clean up when the map is empty.
-  if (np_object_map->empty())
-    instance_map_.erase(found_instance);
 }
 
 NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
@@ -108,18 +103,11 @@ void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
     return;  // Nothing to do.
   NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
 
-  // Force delete all var references. It's possible that deleting an object "A"
-  // will cause it to delete another object "B" it references, thus removing "B"
-  // from instance_map_. Therefore, we need to make a copy over which we can
-  // iterate safely. Furthermore, the maps contain WeakPtrs so that we can
-  // detect if the object is gone so that we don't dereference invalid memory.
-  NPObjectToNPObjectVarMap np_object_map_copy = *np_object_map;
-  NPObjectToNPObjectVarMap::iterator cur_var =
-      np_object_map_copy.begin();
-  while (cur_var != np_object_map_copy.end()) {
-    NPObjectToNPObjectVarMap::iterator current = cur_var++;
-    ForceReleaseNPObject(current->second);
-    np_object_map->erase(current->first);
+  // Force delete all var references. ForceReleaseNPObject() will cause
+  // this object, and potentially others it references, to be removed from
+  // |np_object_map|.
+  while (!np_object_map->empty()) {
+    ForceReleaseNPObject(np_object_map->begin()->second);
   }
 
   // Remove the record for this instance since it should be empty.
@@ -127,15 +115,9 @@ void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
   instance_map_.erase(found_instance);
 }
 
-void HostVarTracker::ForceReleaseNPObject(
-    const base::WeakPtr< ::ppapi::NPObjectVar>& object) {
-  // There's a chance that the object was already deleted before we got here.
-  // See DidDeleteInstance for further explanation. If the object was deleted,
-  // the WeakPtr will return NULL.
-  if (!object.get())
-    return;
-  object->InstanceDeleted();
-  VarMap::iterator iter = live_vars_.find(object->GetExistingVarID());
+void HostVarTracker::ForceReleaseNPObject(::ppapi::NPObjectVar* object_var) {
+  object_var->InstanceDeleted();
+  VarMap::iterator iter = live_vars_.find(object_var->GetExistingVarID());
   if (iter == live_vars_.end()) {
     NOTREACHED();
     return;

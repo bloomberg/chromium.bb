@@ -13,7 +13,6 @@
 #include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -66,9 +65,9 @@ class HostVarTracker : public ::ppapi::VarTracker {
 
   // Clear the reference count of the given object and remove it from
   // live_vars_.
-  void ForceReleaseNPObject(const base::WeakPtr< ::ppapi::NPObjectVar>& object);
+  void ForceReleaseNPObject(::ppapi::NPObjectVar* object_var);
 
-  typedef std::map<NPObject*, base::WeakPtr< ::ppapi::NPObjectVar> >
+  typedef std::map<NPObject*, ::ppapi::NPObjectVar*>
       NPObjectToNPObjectVarMap;
 
   // Lists all known NPObjects, first indexed by the corresponding instance,
