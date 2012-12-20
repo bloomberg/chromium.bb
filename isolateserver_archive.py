@@ -142,6 +142,8 @@ def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
     hash_contents: The contents to upload.
   """
   logging.debug('Generating url to directly upload file to blobstore')
+  assert isinstance(hash_key, str), hash_key
+  assert isinstance(content, str), (hash_key, content)
   upload_url = url_open(generate_upload_url, None).read()
 
   if not upload_url:
