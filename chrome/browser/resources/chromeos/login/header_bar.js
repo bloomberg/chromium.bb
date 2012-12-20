@@ -73,6 +73,10 @@ cr.define('login', function() {
      */
     handleAddUserClick_: function(e) {
       Oobe.showSigninUI();
+      // Prevent further propagation of click event. Otherwise, the click event
+      // handler of document object will set wallpaper to user's wallpaper when
+      // there is only one existing user. See http://crbug.com/166477
+      e.stopPropagation();
     },
 
     /**
