@@ -245,7 +245,7 @@ void WalletClient::OnURLFetchComplete(
         scoped_ptr<FullWallet> full_wallet(
             FullWallet::CreateFullWallet(*response_dict));
         if (full_wallet.get())
-          observer_->OnGetFullWallet(full_wallet.release());
+          observer_->OnGetFullWallet(full_wallet.get());
         else
           observer_->OnNetworkError(response_code);
       } else {
@@ -258,7 +258,7 @@ void WalletClient::OnURLFetchComplete(
         scoped_ptr<WalletItems> wallet_items(
             WalletItems::CreateWalletItems(*response_dict));
         if (wallet_items.get())
-          observer_->OnGetWalletItems(wallet_items.release());
+          observer_->OnGetWalletItems(wallet_items.get());
         else
           observer_->OnNetworkError(response_code);
       } else {
