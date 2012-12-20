@@ -278,6 +278,47 @@ TEST_F(LayerTreeHostTestSetNeedsRedraw, runMultiThread)
     runTest(true);
 }
 
+class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestNoExtraCommitFromInvalidate()
+        : m_rootLayer(ContentLayer::create(&m_client))
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_rootLayer->setAutomaticallyComputeRasterScale(false);
+        m_rootLayer->setIsDrawable(true);
+        m_rootLayer->setBounds(gfx::Size(1, 1));
+        m_layerTreeHost->setRootLayer(m_rootLayer);
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        switch (m_layerTreeHost->commitNumber()) {
+        case 1:
+            // Changing the content bounds will cause a single commit!
+            m_rootLayer->setRasterScale(4.0f);
+            break;
+        default:
+            // No extra commits.
+            EXPECT_EQ(2, m_layerTreeHost->commitNumber());
+            endTest();
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    FakeContentLayerClient m_client;
+    scoped_refptr<ContentLayer> m_rootLayer;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate)
+
 class LayerTreeHostTestCompositeAndReadback : public LayerTreeHostTest {
 public:
     LayerTreeHostTestCompositeAndReadback()

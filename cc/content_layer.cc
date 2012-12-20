@@ -4,6 +4,7 @@
 
 #include "cc/content_layer.h"
 
+#include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
@@ -69,8 +70,12 @@ void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
 void ContentLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
-    createUpdaterIfNeeded();
-    updateUseLCDText();
+    {
+        base::AutoReset<bool> ignoreSetNeedsCommit(&m_ignoreSetNeedsCommit, true);
+
+        createUpdaterIfNeeded();
+        updateUseLCDText();
+    }
 
     TiledLayer::update(queue, occlusion, stats);
     m_needsDisplay = false;

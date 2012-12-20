@@ -4,6 +4,7 @@
 
 #include "cc/tiled_layer.h"
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "cc/layer_impl.h"
@@ -634,9 +635,13 @@ void TiledLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occl
 {
     DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
 
-    ContentsScalingLayer::update(queue, occlusion, stats);
+    {
+        base::AutoReset<bool> ignoreSetNeedsCommit(&m_ignoreSetNeedsCommit, true);
 
-    updateBounds();
+        ContentsScalingLayer::update(queue, occlusion, stats);
+        updateBounds();
+    }
+
     if (m_tiler->hasEmptyBounds() || !drawsContent())
         return;
 

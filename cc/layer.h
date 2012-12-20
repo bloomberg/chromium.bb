@@ -317,6 +317,10 @@ protected:
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
     int m_layerId;
 
+    // When true, the layer is about to perform an update. Any commit requests
+    // will be handled implcitly after the update completes.
+    bool m_ignoreSetNeedsCommit;
+
 private:
     friend class base::RefCounted<Layer>;
 

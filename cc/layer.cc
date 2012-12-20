@@ -30,6 +30,7 @@ Layer::Layer()
     : m_needsDisplay(false)
     , m_stackingOrderChanged(false)
     , m_layerId(s_nextLayerId++)
+    , m_ignoreSetNeedsCommit(false)
     , m_parent(0)
     , m_layerTreeHost(0)
     , m_scrollable(false)
@@ -103,6 +104,8 @@ void Layer::setLayerTreeHost(LayerTreeHost* host)
 
 void Layer::setNeedsCommit()
 {
+    if (m_ignoreSetNeedsCommit)
+        return;
     if (m_layerTreeHost)
         m_layerTreeHost->setNeedsCommit();
 }
@@ -668,7 +671,8 @@ void Layer::setRasterScale(float scale)
         return;
     m_rasterScale = scale;
 
-    if (!m_automaticallyComputeRasterScale)
+    // When automatically computed, this acts like a draw property.
+    if (m_automaticallyComputeRasterScale)
         return;
     setNeedsDisplay();
 }
