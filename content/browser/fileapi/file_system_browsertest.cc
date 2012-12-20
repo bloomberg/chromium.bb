@@ -16,6 +16,7 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "content/test/layout_browsertest.h"
 #include "net/test/test_server.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -78,6 +79,18 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
   }
 };
 
+// This class runs WebKit filesystem layout tests.
+class FileSystemLayoutTest : public InProcessBrowserLayoutTest {
+ public:
+  FileSystemLayoutTest() :
+      InProcessBrowserLayoutTest(
+          FilePath(),
+          FilePath(
+              FILE_PATH_LITERAL("fast/filesystem_temp")
+                  ).NormalizePathSeparators()) {
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, RequestTest) {
   SimpleTest(GetTestUrl("fileapi", "request_test.html"));
 }
@@ -88,6 +101,260 @@ IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, CreateTest) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
+}
+
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, AsyncOperations) {
+  RunLayoutTest("async-operations.html");
+}
+
+/* FAIL: NOT IMPLEMENTED: WebTestDelegate.registerIsolatedFileSystem
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, CrossFilesystemOp) {
+  RunLayoutTest("cross-filesystem-op.html");
+}
+*/
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, DirectoryEntryToUri) {
+  RunLayoutTest("directory-entry-to-uri.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, EntryPointsMissingArguments) {
+  RunLayoutTest("entry-points-missing-arguments.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileAfterReloadCrash) {
+  RunLayoutTest("file-after-reload-crash.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileEntryToUri) {
+  RunLayoutTest("file-entry-to-uri.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileFromFileEntry) {
+  RunLayoutTest("file-from-file-entry.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileMetadataAfterWrite) {
+  RunLayoutTest("file-metadata-after-write.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FilesystemMissingArguments) {
+  RunLayoutTest("filesystem-missing-arguments.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FilesystemNoCallbackNullPtrCrash) {
+  RunLayoutTest("filesystem-no-callback-null-ptr-crash.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FilesystemReference) {
+  RunLayoutTest("filesystem-reference.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FilesystemUnserializable) {
+  RunLayoutTest("filesystem-unserializable.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FilesystemUriOrigin) {
+  RunLayoutTest("filesystem-uri-origin.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterAbortContinue) {
+  RunLayoutTest("file-writer-abort-continue.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterAbortDepth) {
+  RunLayoutTest("file-writer-abort-depth.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterAbort) {
+  RunLayoutTest("file-writer-abort.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterEmptyBlob) {
+  RunLayoutTest("file-writer-empty-blob.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterEvents) {
+  RunLayoutTest("file-writer-events.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterGcBlob) {
+  RunLayoutTest("file-writer-gc-blob.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterTruncateExtend) {
+  RunLayoutTest("file-writer-truncate-extend.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FileWriterWriteOverlapped) {
+  RunLayoutTest("file-writer-write-overlapped.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, FlagsPassing) {
+  RunLayoutTest("flags-passing.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, InputAccessEntries) {
+  RunLayoutTest("input-access-entries.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, NotEnoughArguments) {
+  RunLayoutTest("not-enough-arguments.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpCopy) {
+  RunLayoutTest("op-copy.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpGetEntry) {
+  RunLayoutTest("op-get-entry.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpGetMetadata) {
+  RunLayoutTest("op-get-metadata.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpGetParent) {
+  RunLayoutTest("op-get-parent.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpMove) {
+  RunLayoutTest("op-move.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpReadDirectory) {
+  RunLayoutTest("op-read-directory.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpRemove) {
+  RunLayoutTest("op-remove.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpRestrictedChars) {
+  RunLayoutTest("op-restricted-chars.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpRestrictedNames) {
+  RunLayoutTest("op-restricted-names.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, OpRestrictedUnicode) {
+  RunLayoutTest("op-restricted-unicode.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, ReadDirectory) {
+  RunLayoutTest("read-directory.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimplePersistent) {
+  RunLayoutTest("simple-persistent.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimpleReadonlyFileObject) {
+  RunLayoutTest("simple-readonly-file-object.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimpleReadonly) {
+  RunLayoutTest("simple-readonly.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest,
+    SimpleRequiredArgumentsGetdirectory) {
+  RunLayoutTest("simple-required-arguments-getdirectory.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimpleRequiredArgumentsGetfile)
+{
+  RunLayoutTest("simple-required-arguments-getfile.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest,
+    SimpleRequiredArgumentsGetmetadata) {
+  RunLayoutTest("simple-required-arguments-getmetadata.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimpleRequiredArgumentsRemove) {
+  RunLayoutTest("simple-required-arguments-remove.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, SimpleTemporary) {
+  RunLayoutTest("simple-temporary.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersAsyncOperations) {
+  RunLayoutTest("workers/async-operations.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersDetachedFrameCrash) {
+  RunLayoutTest("workers/detached-frame-crash.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileEntryToUriSync) {
+  RunLayoutTest("workers/file-entry-to-uri-sync.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileFromFileEntry) {
+  RunLayoutTest("workers/file-from-file-entry.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileFromFileEntrySync)
+{
+  RunLayoutTest("workers/file-from-file-entry-sync.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileWriterEmptyBlob) {
+  RunLayoutTest("workers/file-writer-empty-blob.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileWriterEvents) {
+  RunLayoutTest("workers/file-writer-events.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest,
+    WorkersFileWriterEventsSharedWorker) {
+  RunLayoutTest("workers/file-writer-events-shared-worker.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileWriterGcBlob) {
+  RunLayoutTest("workers/file-writer-gc-blob.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest,
+    WorkersFileWriterSyncTruncateExtend) {
+  RunLayoutTest("workers/file-writer-sync-truncate-extend.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest,
+    WorkersFileWriterSyncWriteOverlapped) {
+  RunLayoutTest("workers/file-writer-sync-write-overlapped.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileWriterTruncateExtend) {
+  RunLayoutTest("workers/file-writer-truncate-extend.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersFileWriterWriteOverlapped) {
+  RunLayoutTest("workers/file-writer-write-overlapped.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersSimplePersistent) {
+  RunLayoutTest("workers/simple-persistent.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersSimplePersistentSync) {
+  RunLayoutTest("workers/simple-persistent-sync.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersSimpleTemporary) {
+  RunLayoutTest("workers/simple-temporary.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersSimpleTemporarySync) {
+  RunLayoutTest("workers/simple-temporary-sync.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, WorkersSyncOperations) {
+  RunLayoutTest("workers/sync-operations.html");
 }
 
 }  // namespace content

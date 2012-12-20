@@ -229,8 +229,8 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/fast/files":
     Var("webkit_trunk") + "/LayoutTests/fast/files@" +
     Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/filesystem/resources":
-    Var("webkit_trunk") + "/LayoutTests/fast/filesystem/resources@" +
+  "src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp":
+    Var("webkit_trunk") + "/LayoutTests/fast/filesystem@" +
     Var("webkit_revision"),
   "src/content/test/data/layout_tests/LayoutTests/media":
     Var("webkit_trunk") + "/LayoutTests/media@" +
@@ -416,7 +416,7 @@ deps_os = {
     "src/build/util/support": None,
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/events": None,
-    "src/content/test/data/layout_tests/LayoutTests/fast/filesystem/resources": None,
+    "src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/js/resources": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/workers": None,
     "src/content/test/data/layout_tests/LayoutTests/http/tests/appcache": None,
