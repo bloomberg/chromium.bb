@@ -470,8 +470,8 @@ class MyActivity(object):
     ret['modified'] = datetime_from_google_code(issue['updated']['$t'])
 
     ret['owner'] = ''
-    if 'issues:owner' in issue:
-      ret['owner'] = issue['issues:owner'][0]['issues:username'][0]['$t']
+    if 'issues$owner' in issue:
+      ret['owner'] = issue['issues$owner']['issues$username']['$t']
     ret['author'] = issue['author'][0]['name']['$t']
 
     if 'shorturl' in project:
@@ -708,19 +708,49 @@ class MyActivity(object):
       print "No %s in committers.py, skipping WebKit checks." % email
       self.webkit_repo = None
 
-  @staticmethod
-  def print_change(change):
-    print '%s %s' % (
-        change['review_url'],
-        change['header'],
-        )
+  def print_change(self, change):
+    self.print_generic(self.options.output_format,
+                       self.options.output_format_changes,
+                       change['header'],
+                       change['review_url'],
+                       change['author'])
+
+  def print_issue(self, issue):
+    optional_values = {
+        'owner': issue['owner'],
+    }
+    self.print_generic(self.options.output_format,
+                       self.options.output_format_issues,
+                       issue['header'],
+                       issue['url'],
+                       issue['author'],
+                       optional_values)
+
+  def print_review(self, review):
+    self.print_generic(self.options.output_format,
+                       self.options.output_format_reviews,
+                       review['header'],
+                       review['review_url'],
+                       review['author'])
 
   @staticmethod
-  def print_issue(issue):
-    print '%s %s' % (
-        issue['url'],
-        issue['header'],
-        )
+  def print_generic(default_fmt, specific_fmt,
+                    title, url, author,
+                    optional_values=None):
+    output_format = specific_fmt if specific_fmt is not None else default_fmt
+    output_format = unicode(output_format)
+    required_values = {
+        'title': title,
+        'url': url,
+        'author': author,
+    }
+    # Merge required and optional values.
+    if optional_values is not None:
+      values = dict(required_values.items() + optional_values.items())
+    else:
+      values = required_values
+    print output_format.format(**values)
+
 
   def filter_issue(self, issue, should_filter_by_user=True):
     def maybe_filter_username(email):
@@ -791,7 +821,7 @@ class MyActivity(object):
     if self.reviews:
       print '\nReviews:'
       for review in self.reviews:
-        self.print_change(review)
+        self.print_review(review)
 
   def get_issues(self):
     for project in google_code_projects:
@@ -799,6 +829,12 @@ class MyActivity(object):
 
     for instance in bugzilla_instances:
       self.issues += self.bugzilla_issues(instance, self.user)
+
+  def print_issues(self):
+    if self.issues:
+      print '\nIssues:'
+      for issue in self.issues:
+        self.print_issue(issue)
 
   def process_activities(self):
     # If a webkit bug was a review, don't list it as an issue.
@@ -813,12 +849,6 @@ class MyActivity(object):
       return issue['webkit_bug_id'] in ids
 
     self.issues = filter(lambda issue: not duplicate_issue(issue), self.issues)
-
-  def print_issues(self):
-    if self.issues:
-      print '\nIssues:'
-      for c in self.issues:
-        self.print_issue(c)
 
   def print_activity(self):
     self.print_changes()
@@ -862,23 +892,52 @@ def main():
       action='store_true',
       help='Ask to authenticate for instances with no auth cookie')
 
-  group = optparse.OptionGroup(parser, 'Activity Types',
+  activity_types_group = optparse.OptionGroup(parser, 'Activity Types',
                                'By default, all activity will be looked up and '
                                'printed. If any of these are specified, only '
                                'those specified will be searched.')
-  group.add_option(
+  activity_types_group.add_option(
       '-c', '--changes',
       action='store_true',
       help='Show changes.')
-  group.add_option(
+  activity_types_group.add_option(
       '-i', '--issues',
       action='store_true',
       help='Show issues.')
-  group.add_option(
+  activity_types_group.add_option(
       '-r', '--reviews',
       action='store_true',
       help='Show reviews.')
-  parser.add_option_group(group)
+  parser.add_option_group(activity_types_group)
+
+  output_format_group = optparse.OptionGroup(parser, 'Output Format',
+                              'By default, all activity will be printed in the '
+                              'following format: {url} {title}. This can be '
+                              'changed for either all activity types or '
+                              'individually for each activity type. The format '
+                              'is defined as documented for '
+                              'string.format(...). The variables available for '
+                              'all activity types are url, title and author. '
+                              'Format options for specific activity types will '
+                              'override the generic format.')
+  output_format_group.add_option(
+      '-f', '--output-format', metavar='<format>',
+      default=u'{url} {title}',
+      help='Specifies the format to use when printing all your activity.')
+  output_format_group.add_option(
+      '--output-format-changes', metavar='<format>',
+      default=None,
+      help='Specifies the format to use when printing changes.')
+  output_format_group.add_option(
+      '--output-format-issues', metavar='<format>',
+      default=None,
+      help='Specifies the format to use when printing issues. Has support '
+           'for the additional variable owner.')
+  output_format_group.add_option(
+      '--output-format-reviews', metavar='<format>',
+      default=None,
+      help='Specifies the format to use when printing reviews.')
+  parser.add_option_group(output_format_group)
 
   # Remove description formatting
   parser.format_description = (
