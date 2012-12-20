@@ -14,6 +14,7 @@ enum SingletonResourceID {
   // a hack until PPB_Broker trusted has been fully refactored to the new
   // resource model.
   BROKER_SINGLETON_ID,
+  BROWSER_FONT_SINGLETON_ID,
   FLASH_CLIPBOARD_SINGLETON_ID,
   FLASH_FILE_SINGLETON_ID,
   FLASH_FULLSCREEN_SINGLETON_ID,

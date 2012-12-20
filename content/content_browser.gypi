@@ -672,6 +672,8 @@
     'browser/renderer_host/pepper/browser_ppapi_host_impl.h',
     'browser/renderer_host/pepper/content_browser_pepper_host_factory.cc',
     'browser/renderer_host/pepper/content_browser_pepper_host_factory.h',
+    'browser/renderer_host/pepper/pepper_browser_font_singleton_host.cc',
+    'browser/renderer_host/pepper/pepper_browser_font_singleton_host.h',
     'browser/renderer_host/pepper/pepper_flash_browser_host.cc',
     'browser/renderer_host/pepper/pepper_flash_browser_host.h',
     'browser/renderer_host/pepper/pepper_flash_file_host.cc',

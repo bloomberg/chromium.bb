@@ -135,7 +135,7 @@ class PepperMessageFilter
   // notifications.
   typedef std::set<uint32> NetworkMonitorIdSet;
 
-  void OnGetFontFamilies(IPC::Message* reply);
+  void OnGetLocalTimeZoneOffset(base::Time t, double* result);
 
   void OnTCPCreate(int32 routing_id,
                    uint32 plugin_dispatcher_id,
@@ -233,10 +233,6 @@ class PepperMessageFilter
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);
   void OnUpdateActivity();
-
-  // Callback when the font list has been retrieved on a background thread.
-  void GetFontFamiliesComplete(IPC::Message* reply_msg,
-                               scoped_ptr<base::ListValue> result);
 
   uint32 GenerateSocketID();
 

@@ -2023,11 +2023,6 @@ PP_Var PluginInstance::GetDefaultCharSet(PP_Instance instance) {
   return StringVar::StringToPPVar(encoding);
 }
 
-PP_Var PluginInstance::GetFontFamilies(PP_Instance instance) {
-  // No in-process implementation.
-  return PP_MakeUndefined();
-}
-
 // These PPB_ContentDecryptor_Private calls are responses to
 // PPP_ContentDecryptor_Private calls made on |content_decryptor_delegate_|.
 // Therefore, |content_decryptor_delegate_| must have been initialized when
@@ -2150,6 +2145,7 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   // Flash APIs and some others aren't implemented in-process.
   switch (id) {
     case ::ppapi::BROKER_SINGLETON_ID:
+    case ::ppapi::BROWSER_FONT_SINGLETON_ID:
     case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
     case ::ppapi::FLASH_FILE_SINGLETON_ID:
     case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:

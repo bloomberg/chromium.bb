@@ -85,9 +85,6 @@ class PPB_Instance_API {
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) = 0;
 
-  // Font.
-  virtual PP_Var GetFontFamilies(PP_Instance instance) = 0;
-
   // Fullscreen.
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) = 0;

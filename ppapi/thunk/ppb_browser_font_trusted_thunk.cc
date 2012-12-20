@@ -4,6 +4,7 @@
 
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_browser_font_singleton_api.h"
 #include "ppapi/thunk/ppb_browser_font_trusted_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -15,7 +16,7 @@ namespace {
 typedef EnterResource<PPB_BrowserFont_Trusted_API> EnterBrowserFont;
 
 PP_Var GetFontFamilies(PP_Instance instance) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_BrowserFont_Singleton_API> enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.functions()->GetFontFamilies(instance);

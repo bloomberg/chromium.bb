@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_host.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
@@ -54,6 +55,15 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
              host_->GetPpapiHost(), instance,
              params.pp_resource(), manager.Pass()));
       }
+    }
+  }
+
+  // Private interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
+      case PpapiHostMsg_BrowserFontSingleton_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperBrowserFontSingletonHost(
+            host_, instance, params.pp_resource()));
     }
   }
 

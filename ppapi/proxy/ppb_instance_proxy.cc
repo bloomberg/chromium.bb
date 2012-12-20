@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/proxy/broker_resource.h"
+#include "ppapi/proxy/browser_font_singleton_resource.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
@@ -323,21 +324,6 @@ void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
   NOTIMPLEMENTED();  // Not proxied yet.
 }
 
-PP_Var PPB_Instance_Proxy::GetFontFamilies(PP_Instance instance) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_MakeUndefined();
-
-  // Assume the font families don't change, so we can cache the result globally.
-  CR_DEFINE_STATIC_LOCAL(std::string, families, ());
-  if (families.empty()) {
-    PluginGlobals::Get()->GetBrowserSender()->Send(
-        new PpapiHostMsg_PPBInstance_GetFontFamilies(&families));
-  }
-
-  return StringVar::StringToPPVar(families);
-}
-
 PP_Bool PPB_Instance_Proxy::SetFullscreen(PP_Instance instance,
                                           PP_Bool fullscreen) {
   PP_Bool result = PP_FALSE;
@@ -379,8 +365,11 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
     case GAMEPAD_SINGLETON_ID:
       new_singleton = new GamepadResource(connection, instance);
       break;
-// Flash resources aren't needed for NaCl.
+// Flash/trusted resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
+    case BROWSER_FONT_SINGLETON_ID:
+      new_singleton = new BrowserFontSingletonResource(connection, instance);
+      break;
     case FLASH_CLIPBOARD_SINGLETON_ID:
       new_singleton = new FlashClipboardResource(connection, instance);
       break;
@@ -395,6 +384,7 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
           static_cast<PluginDispatcher*>(dispatcher()));
       break;
 #else
+    case BROWSER_FONT_SINGLETON_ID:
     case FLASH_CLIPBOARD_SINGLETON_ID:
     case FLASH_FILE_SINGLETON_ID:
     case FLASH_FULLSCREEN_SINGLETON_ID:

@@ -965,8 +965,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBInstance_GetFontFamilies,
-                            std::string /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,
@@ -1337,13 +1335,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
                             bool /* succeeded */,
                             ppapi::PPB_X509Certificate_Fields /* result */)
 
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-// PPB_Font.
-IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
-                            std::string /* result */)
-
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-
 //-----------------------------------------------------------------------------
 // Resource call/reply messages.
 //
@@ -1566,7 +1557,22 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_AudioInput_OpenReply)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_AudioInput_StartOrStop, bool /* capture */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Close)
 
+// BrowserFont -----------------------------------------------------------------
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_BrowserFontSingleton_Create)
+
+// Requests that the browser reply with the list of font families via
+// PpapiPluginMsg_BrowserFontSingleton_GetFontFamiliesReply.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_BrowserFontSingleton_GetFontFamilies)
+
+// Reply to PpapiHostMsg_BrowserFontSingleton_GetFontFamilies with the font
+// family list. The |families| result is encoded by separating each family name
+// by a null character.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_BrowserFontSingleton_GetFontFamiliesReply,
+                     std::string /* families */)
+
 // Flash -----------------------------------------------------------------------
+
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_Create)
 
 // Message to notify the browser to register an update in system activity.

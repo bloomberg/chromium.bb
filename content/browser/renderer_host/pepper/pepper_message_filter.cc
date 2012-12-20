@@ -16,7 +16,6 @@
 #include "base/process_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
@@ -28,7 +27,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/font_list_async.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
@@ -138,8 +136,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_PPBInstance_GetFontFamilies,
-                                    OnGetFontFamilies)
     // TCP messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Create, OnTCPCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Connect, OnTCPConnect)
@@ -237,12 +233,6 @@ void PepperMessageFilter::RemoveTCPServerSocket(uint32 socket_id) {
 PepperMessageFilter::~PepperMessageFilter() {
   if (!network_monitor_ids_.empty())
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-}
-
-void PepperMessageFilter::OnGetFontFamilies(IPC::Message* reply_msg) {
-  GetFontListAsync(
-      base::Bind(&PepperMessageFilter::GetFontFamiliesComplete,
-                 this, reply_msg));
 }
 
 void PepperMessageFilter::OnTCPCreate(int32 routing_id,
@@ -696,37 +686,6 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     *succeeded = false;
   *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
                                                      result);
-}
-
-void PepperMessageFilter::GetFontFamiliesComplete(
-    IPC::Message* reply_msg,
-    scoped_ptr<base::ListValue> result) {
-  std::string output;
-  // If this is a NaCl plugin without private permission, we return an empty
-  // string in |output|. We must reply to the message.
-  if (process_type_ != NACL ||
-      permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
-    for (size_t i = 0; i < result->GetSize(); i++) {
-      base::ListValue* cur_font;
-      if (!result->GetList(i, &cur_font))
-        continue;
-
-      // Each entry is actually a list of (font name, localized name).
-      // We only care about the regular name.
-      std::string font_name;
-      if (!cur_font->GetString(0, &font_name))
-        continue;
-
-      // Font names are separated with nulls. We also want an explicit null at
-      // the end of the string (Pepper strings aren't null terminated so since
-      // we specify there will be a null, it should actually be in the string).
-      output.append(font_name);
-      output.push_back(0);
-    }
-  }
-
-  PpapiHostMsg_PPBInstance_GetFontFamilies::WriteReplyParams(reply_msg, output);
-  Send(reply_msg);
 }
 
 uint32 PepperMessageFilter::GenerateSocketID() {
