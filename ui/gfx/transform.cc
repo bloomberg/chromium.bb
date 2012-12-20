@@ -9,6 +9,7 @@
 
 #include <cmath>
 
+#include "base/stringprintf.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/vector3d_f.h"
@@ -362,6 +363,30 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   xform.mapMScalars(p);
 
   point.SetPoint(ToRoundedInt(p[0]), ToRoundedInt(p[1]));
+}
+
+std::string Transform::ToString() const {
+  return base::StringPrintf(
+      "[ %+0.4f %+0.4f %+0.4f %+0.4f  \n"
+      "  %+0.4f %+0.4f %+0.4f %+0.4f  \n"
+      "  %+0.4f %+0.4f %+0.4f %+0.4f  \n"
+      "  %+0.4f %+0.4f %+0.4f %+0.4f ]\n",
+      matrix_.getDouble(0, 0),
+      matrix_.getDouble(0, 1),
+      matrix_.getDouble(0, 2),
+      matrix_.getDouble(0, 3),
+      matrix_.getDouble(1, 0),
+      matrix_.getDouble(1, 1),
+      matrix_.getDouble(1, 2),
+      matrix_.getDouble(1, 3),
+      matrix_.getDouble(2, 0),
+      matrix_.getDouble(2, 1),
+      matrix_.getDouble(2, 2),
+      matrix_.getDouble(2, 3),
+      matrix_.getDouble(3, 0),
+      matrix_.getDouble(3, 1),
+      matrix_.getDouble(3, 2),
+      matrix_.getDouble(3, 3));
 }
 
 }  // namespace gfx

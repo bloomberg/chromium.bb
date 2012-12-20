@@ -5,6 +5,8 @@
 #ifndef UI_GFX_TRANSFORM_H_
 #define UI_GFX_TRANSFORM_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/ui_export.h"
@@ -160,6 +162,8 @@ class UI_EXPORT Transform {
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }
   SkMatrix44& matrix() { return matrix_; }
+
+  std::string ToString() const;
 
  private:
   void TransformPointInternal(const SkMatrix44& xform,
