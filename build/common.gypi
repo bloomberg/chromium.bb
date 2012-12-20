@@ -1046,7 +1046,7 @@
         # every single project file for not using the "current" SDK.
         'ios_sdk%': '',
         'ios_sdk_path%': '',
-        'ios_deployment_target%': '4.3',
+        'ios_deployment_target%': '5.0',
 
         'conditions': [
           # ios_product_name is set to the name of the .app bundle as it should
