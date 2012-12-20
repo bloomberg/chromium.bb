@@ -636,59 +636,6 @@ const CGFloat kRapidCloseDist = 2.5;
   [self setNeedsDisplay:YES];
 }
 
-// Returns the bezier path used to draw the tab given the bounds to draw it in.
-- (NSBezierPath*)bezierPathForRect:(NSRect)rect {
-  // TODO(thakis): Replace this with bitmap-based background drawing. Until
-  // then, this contains some magic numbers to make the fill shape fit the
-  // (bitmap based) tab outline. http://crbug.com/52468
-  rect.origin.x += 1;
-  rect.size.width -= 2;
-  rect.size.height -= 1;
-  const CGFloat lineWidth = [self cr_lineWidth];
-  const CGFloat halfLineWidth = lineWidth / 2.0;
-
-  // Outset by halfLineWidth in order to draw on pixels rather than on borders
-  // (which would cause blurry pixels). Subtract lineWidth of height to
-  // compensate, otherwise clipping will occur.
-  rect = NSInsetRect(rect, halfLineWidth, -halfLineWidth);
-  rect.size.height -= lineWidth;
-
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2 * lineWidth);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2 * lineWidth);
-  NSPoint topRight =
-      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-  NSPoint topLeft =
-      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-
-  CGFloat baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
-  CGFloat bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
-
-  // Outset many of these values by lineWidth to cause the fill to bleed outside
-  // the clip area.
-  NSBezierPath* path = [NSBezierPath bezierPath];
-  CGFloat left = bottomLeft.x + (lineWidth == 1 ? 3 : 1) * lineWidth;
-  CGFloat right = bottomRight.x - (lineWidth == 1 ? 3 : 1) * lineWidth;
-  [path moveToPoint:NSMakePoint(left, bottomLeft.y - (2 * lineWidth))];
-  [path lineToPoint:NSMakePoint(left, bottomLeft.y)];
-  [path lineToPoint:bottomLeft];
-  [path curveToPoint:topLeft
-       controlPoint1:NSMakePoint(left + baseControlPointOutset,
-                                 bottomLeft.y)
-       controlPoint2:NSMakePoint(topLeft.x - bottomControlPointInset,
-                                 topLeft.y)];
-  [path lineToPoint:topRight];
-  [path curveToPoint:bottomRight
-       controlPoint1:NSMakePoint(topRight.x + bottomControlPointInset,
-                                 topRight.y)
-       controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
-                                 bottomRight.y)];
-  [path lineToPoint:NSMakePoint(right, bottomRight.y)];
-  [path lineToPoint:NSMakePoint(right, bottomRight.y - (2 * lineWidth))];
-  return path;
-}
-
 - (CGImageRef)tabClippingMask {
   // NOTE: NSHeight([self bounds]) doesn't match the height of the bitmaps.
   CGFloat scale = 1;
