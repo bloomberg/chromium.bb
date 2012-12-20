@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <signal.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
+
 #ifndef SECCOMP_BPF_STANDALONE
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -12,6 +16,11 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
+
+// Android's signal.h doesn't define ucontext etc.
+#if defined(OS_ANDROID) && defined(__arm__)
+#include "sandbox/linux/services/android_arm_ucontext.h"
+#endif
 
 namespace {
 
@@ -40,7 +49,8 @@ void WriteFailedStderrSetupMessage(int out_fd) {
 // way to mark a signal as allocated. So, the potential for collision is
 // possibly even worse.
 bool GetIsInSigHandler(const ucontext_t *ctx) {
-  return sigismember(&ctx->uc_sigmask, SIGBUS);
+  // Note: on Android, sigismember does not take a pointer to const.
+  return sigismember(const_cast<sigset_t*>(&ctx->uc_sigmask), SIGBUS);
 }
 
 void SetIsInSigHandler() {

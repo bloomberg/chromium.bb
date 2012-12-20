@@ -15,6 +15,12 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Workaround for Android's prctl.h file.
+#if !defined(PR_CAPBSET_READ)
+#define PR_CAPBSET_READ 23
+#define PR_CAPBSET_DROP 24
+#endif
+
 using namespace playground2;
 using sandbox::BrokerProcess;
 

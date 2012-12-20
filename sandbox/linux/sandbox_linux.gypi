@@ -25,12 +25,6 @@
       ['OS == "android"', {
         'sources/': [
           ['include', '^linux/'],
-          # TODO(jln): some files don't yet even compile on Android.
-          # crbug.com/166704
-          ['exclude', 'errorcode_unittest\\.cc$'],
-          ['exclude', 'sandbox_bpf\\.cc$'],
-          ['exclude', 'sandbox_bpf_unittest\\.cc$'],
-          ['exclude', 'syscall_unittest\\.cc$'],
         ],
       }],
     ],
@@ -100,6 +94,11 @@
             'seccomp-bpf/syscall_iterator_unittest.cc',
             'seccomp-bpf/syscall_unittest.cc',
           ],
+        }],
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ]
         }],
       ],
     },
