@@ -559,6 +559,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       FilePath(kDummyDrivePath),
       local_file_path,
       mime_type,
+      entry->etag(),
       base::Bind(&DriveFileSyncClient::DidUploadFile,
                  AsWeakPtr(), callback));
 }
@@ -584,6 +585,10 @@ void DriveFileSyncClient::DidUploadFile(
       return;
     case google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE:
       callback.Run(google_apis::GDATA_NO_SPACE,
+                   std::string(), std::string());
+      return;
+    case google_apis::DRIVE_UPLOAD_ERROR_CONFLICT:
+      callback.Run(google_apis::HTTP_CONFLICT,
                    std::string(), std::string());
       return;
     case google_apis::DRIVE_UPLOAD_ERROR_ABORT:

@@ -77,6 +77,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
+      const std::string& etag,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
     DCHECK(!callback.is_null());
 

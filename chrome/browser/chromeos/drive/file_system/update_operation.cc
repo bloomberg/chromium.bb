@@ -101,6 +101,7 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
       drive_file_path,
       cache_file_path,
       entry_proto->file_specific_info().content_mime_type(),
+      "",  // etag
       base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

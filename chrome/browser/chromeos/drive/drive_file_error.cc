@@ -142,6 +142,9 @@ DriveFileError DriveUploadErrorToDriveFileError(
     case google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE:
       return DRIVE_FILE_ERROR_NO_SPACE;
 
+    case google_apis::DRIVE_UPLOAD_ERROR_CONFLICT:
+      return DRIVE_FILE_ERROR_THROTTLED;
+
     case google_apis::DRIVE_UPLOAD_ERROR_ABORT:
       return DRIVE_FILE_ERROR_ABORT;
   }

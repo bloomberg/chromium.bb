@@ -19,6 +19,7 @@ enum ResponseCode {
   MOVED = 301,
   RESUME_INCOMPLETE = 308,
   NOT_FOUND = 404,
+  PRECONDITION = 412,
   ACCESS_DENIED = 500,
 };
 

@@ -64,10 +64,16 @@ class DriveUploaderInterface {
   // Uploads an existing file (a file that already exists on Drive).
   //
   // See comments at UploadNewFile() about common parameters.
+  //
+  // etag:
+  //   Expected ETag for the destination file. If it does not match, the upload
+  //   fails with UPLOAD_ERROR_CONFLICT.
+  //   If |etag| is empty, the test is skipped.
   virtual void UploadExistingFile(const GURL& upload_location,
                                   const FilePath& drive_file_path,
                                   const FilePath& local_file_path,
                                   const std::string& content_type,
+                                  const std::string& etag,
                                   const UploadCompletionCallback& callback) = 0;
 };
 
@@ -88,6 +94,7 @@ class DriveUploader : public DriveUploaderInterface {
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
+      const std::string& etag,
       const UploadCompletionCallback& callback) OVERRIDE;
 
  private:

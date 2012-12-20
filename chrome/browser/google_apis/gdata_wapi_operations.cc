@@ -67,13 +67,15 @@ InitiateUploadParams::InitiateUploadParams(
     const std::string& content_type,
     int64 content_length,
     const GURL& upload_location,
-    const FilePath& drive_file_path)
+    const FilePath& drive_file_path,
+    const std::string& etag)
     : upload_mode(upload_mode),
       title(title),
       content_type(content_type),
       content_length(content_length),
       upload_location(upload_location),
-      drive_file_path(drive_file_path) {
+      drive_file_path(drive_file_path),
+      etag(etag) {
 }
 
 InitiateUploadParams::~InitiateUploadParams() {
@@ -624,8 +626,14 @@ InitiateUploadOperation::GetExtraRequestHeaders() const {
   headers.push_back(
       kUploadContentLength + base::Int64ToString(params_.content_length));
 
-  if (params_.upload_mode == UPLOAD_EXISTING_FILE)
-    headers.push_back(kIfMatchAllHeader);
+  if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
+    if (params_.etag.empty()) {
+      headers.push_back(kIfMatchAllHeader);
+    } else {
+      headers.push_back(
+          StringPrintf(kIfMatchHeaderFormat, params_.etag.c_str()));
+    }
+  }
 
   return headers;
 }

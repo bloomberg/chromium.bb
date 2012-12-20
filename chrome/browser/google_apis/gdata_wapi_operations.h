@@ -405,18 +405,22 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 // - |title| should be set.
 // - |upload_location| should be the upload_url() of the parent directory.
 //   (resumable-create-media URL)
+// - |etag| is ignored.
 //
 // When updating an existing file (UPLOAD_EXISTING_FILE):
 // - |title| should be empty
 // - |upload_location| should be the upload_url() of the existing file.
 //   (resumable-edit-media URL)
+// - If |etag| should be empty or should match the etag() of the destination
+//   file.
 struct InitiateUploadParams {
   InitiateUploadParams(UploadMode upload_mode,
                        const std::string& title,
                        const std::string& content_type,
                        int64 content_length,
                        const GURL& upload_location,
-                       const FilePath& drive_file_path);
+                       const FilePath& drive_file_path,
+                       const std::string& etag);
   ~InitiateUploadParams();
 
   const UploadMode upload_mode;
@@ -425,6 +429,7 @@ struct InitiateUploadParams {
   const int64 content_length;
   const GURL upload_location;
   const FilePath drive_file_path;
+  const std::string etag;
 };
 
 // Callback type for DocumentServiceInterface::InitiateUpload.
