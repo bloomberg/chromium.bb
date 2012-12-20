@@ -301,6 +301,8 @@ void ThreadedTest::doBeginTest()
     if (m_endWhenBeginReturns)
         realEndTest();
 
+    LayerTreeHost::setNeedsFilterContext(false);
+
     // Allow commits to happen once beginTest() has had a chance to post tasks
     // so that those tasks will happen before the first commit.
     if (m_layerTreeHost)

@@ -29,6 +29,7 @@
       'layer_tree_host_impl_unittest.cc',
       'layer_tree_host_unittest.cc',
       'layer_tree_host_unittest_animation.cc',
+      'layer_tree_host_unittest_occlusion.cc',
       'layer_unittest.cc',
       'math_util_unittest.cc',
       'nine_patch_layer_impl_unittest.cc',
