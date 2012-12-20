@@ -12,6 +12,7 @@
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
+#include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/date/clock_observer.h"
@@ -91,6 +92,9 @@ public:
 
   void AddSmsObserver(SmsObserver* observer);
   void RemoveSmsObserver(SmsObserver* observer);
+
+  void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
+  void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged(
@@ -127,6 +131,7 @@ public:
   void NotifyVpnRefreshNetwork(const NetworkIconInfo &info);
   void NotifyWillToggleWifi();
   void NotifyAddSmsMessage(const base::DictionaryValue& message);
+  void NotifyEnterpriseDomainChanged();
 #endif
 
  private:
@@ -148,6 +153,7 @@ public:
   ObserverList<NetworkObserver> network_observers_;
   ObserverList<NetworkObserver> vpn_observers_;
   ObserverList<SmsObserver> sms_observers_;
+  ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

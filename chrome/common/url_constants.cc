@@ -498,6 +498,11 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";
 #endif
 
+#if defined(OS_CHROMEOS)
+const char kLearnMoreEnterpriseURL[] =
+    "https://support.google.com/chromeos/bin/answer.py?answer=2535613";
+#endif
+
 const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,
   kChromeUIKillURL,

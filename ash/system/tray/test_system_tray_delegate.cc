@@ -98,6 +98,10 @@ const std::string TestSystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
 
+const string16 TestSystemTrayDelegate::GetEnterpriseMessage() const {
+  return string16();
+}
+
 bool TestSystemTrayDelegate::SystemShouldUpgrade() const {
   return true;
 }
@@ -141,6 +145,9 @@ void TestSystemTrayDelegate::ShowAccessibilityHelp() {
 }
 
 void TestSystemTrayDelegate::ShowPublicAccountInfo() {
+}
+
+void TestSystemTrayDelegate::ShowEnterpriseInfo() {
 }
 
 void TestSystemTrayDelegate::ShutDown() {

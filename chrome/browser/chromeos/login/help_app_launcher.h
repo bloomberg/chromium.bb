@@ -16,8 +16,7 @@ namespace chromeos {
 // Provides help content during OOBE / login.
 // Based on connectivity state (offline/online) shows help topic dialog
 // or launches HelpApp in BWSI mode.
-class HelpAppLauncher : public LoginWebDialog::Delegate,
-                        public base::RefCountedThreadSafe<HelpAppLauncher> {
+class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
  public:
   // IDs of help topics available from HelpApp.
   enum HelpTopic {
@@ -33,6 +32,8 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
     HELP_ACCOUNT_DISABLED = 188756,
     // Showed in case when hosted account is used.
     HELP_HOSTED_ACCOUNT = 1054228,
+    // Showed as "Learn more" about enterprise enrolled devices.
+    HELP_ENTERPRISE = 2535613,
   };
 
   // Parent window is used to show dialog.
@@ -43,9 +44,6 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
 
  protected:
   virtual ~HelpAppLauncher();
-
-  // LoginWebDialog::Delegate implementation:
-  virtual void OnDialogClosed() OVERRIDE {}
 
  private:
   friend class base::RefCountedThreadSafe<HelpAppLauncher>;
