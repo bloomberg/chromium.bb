@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "ui/gfx/size_conversions.h"
 
 using namespace WebKit;
 
@@ -318,7 +319,9 @@ void ThreadedTest::setupTree()
     }
 
     gfx::Size rootBounds = m_layerTreeHost->rootLayer()->bounds();
-    m_layerTreeHost->setViewportSize(rootBounds, rootBounds);
+    gfx::Size deviceRootBounds = gfx::ToCeiledSize(
+        gfx::ScaleSize(rootBounds, m_layerTreeHost->deviceScaleFactor()));
+    m_layerTreeHost->setViewportSize(rootBounds, deviceRootBounds);
 }
 
 void ThreadedTest::timeout()
