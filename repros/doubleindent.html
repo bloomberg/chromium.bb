@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <script>
+            function onLoad() {
+                var theFrame = document.getElementById("theFrame");
+                var doc = theFrame.contentDocument;
+                doc.open();
+                doc.write(
+                    '<html><body contenteditable="true">' +
+                    '<img alt="Bloomberg" height="33" src="bblogo.png" width="144">' +
+                    '</body></html>'
+                        );
+                doc.close();
+            }
+
+            function outdent() {
+                var theFrame = document.getElementById("theFrame");
+                var doc = theFrame.contentDocument;
+                doc.execCommand("outdent", false, true);
+            };
+
+            function indent() {
+                var theFrame = document.getElementById("theFrame");
+                var doc = theFrame.contentDocument;
+                doc.execCommand("indent", false, true);
+            };
+</script>
+</head>
+<body onload="onLoad()">
+    <iframe id="theFrame"></iframe>
+    <div>
+        <button id="Indent" onclick="indent()">Indent</button>
+    </div>
+    <div>
+        <button id="Outdent" onclick="outdent()">Outdent</button>
+    </div>
+    <p id="reflection">
+</body>
+</html>
+
+
