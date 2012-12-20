@@ -119,7 +119,7 @@ class NotificationListTest : public testing::Test {
 
   scoped_ptr<MockNotificationListDelegate> delegate_;
   scoped_ptr<NotificationList> notification_list_;
-  uint counter_;
+  size_t counter_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationListTest);
 };
