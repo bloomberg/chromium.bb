@@ -280,13 +280,16 @@ void ChangePictureOptionsHandler::SendOldImage(const std::string& image_url) {
 
 void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   std::string image_url;
+  std::string image_type;
   if (!args ||
-      args->GetSize() != 1 ||
-      !args->GetString(0, &image_url)) {
+      args->GetSize() != 2 ||
+      !args->GetString(0, &image_url) ||
+      !args->GetString(1, &image_type)) {
     NOTREACHED();
     return;
   }
   DCHECK(!image_url.empty());
+  DCHECK(!image_type.empty());
 
   const User* user = UserManager::Get()->GetLoggedInUser();
   UserImageManager* user_image_manager =
@@ -294,10 +297,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   int image_index = User::kInvalidImageIndex;
   bool waiting_for_camera_photo = false;
 
-  if (image_url == previous_image_url_) {
+  if (image_type == "old") {
     // Previous image re-selected.
-    // This must come before the IsDefaultImageUrl check in case user has an
-    // old (no longer shown in stock) default image.
     if (previous_image_index_ == User::kExternalImageIndex) {
       DCHECK(!previous_image_.isNull());
       user_image_manager->SaveUserImage(
@@ -313,7 +314,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
                               kHistogramImageOld,
                               kHistogramImagesCount);
     VLOG(1) << "Selected old user image";
-  } else if (IsDefaultImageUrl(image_url, &image_index)) {
+  } else if (image_type == "default" &&
+             IsDefaultImageUrl(image_url, &image_index)) {
     // One of the default user images.
     user_image_manager->SaveUserDefaultImageIndex(user->email(), image_index);
 
@@ -321,7 +323,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
                               GetDefaultImageHistogramValue(image_index),
                               kHistogramImagesCount);
     VLOG(1) << "Selected default user image: " << image_index;
-  } else if (image_url == user_photo_data_url_) {
+  } else if (image_type == "camera") {
     // Camera image is selected.
     if (user_photo_.isNull()) {
       DCHECK(image_decoder_.get());
@@ -330,7 +332,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     } else {
       SetImageFromCamera(user_photo_);
     }
-  } else {
+  } else if (image_type == "profile") {
     // Profile image selected. Could be previous (old) user image.
     user_image_manager->SaveUserImageFromProfileImage(user->email());
 
@@ -345,6 +347,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
                                 kHistogramImagesCount);
       VLOG(1) << "Selected profile image";
     }
+  } else {
+    NOTREACHED() << "Unexpected image type: " << image_type;
   }
 
   // Ignore the result of the previous decoding if it's no longer needed.

@@ -56,13 +56,14 @@
 #user-image-preview {
   margin: 20px 10px 0 0;
   max-width: 220px;
+  position: relative;
 }
 
 #user-image-preview .perspective-box {
   -webkit-perspective: 600px;
 }
 
-.user-image-preview-img {
+#user-image-preview-img {
   background: white;
   border: solid 1px #cacaca;
   border-radius: 4px;
@@ -71,8 +72,16 @@
   padding: 2px;
 }
 
-.camera.live .user-image-preview-img {
+.camera.live #user-image-preview-img {
   display: none;
+}
+
+.animation #user-image-preview-img {
+  -webkit-transition: -webkit-transform 200ms linear;
+}
+
+.camera.flip-x #user-image-preview-img {
+  -webkit-transform: rotateY(180deg);
 }
 
 .user-image-stream-area {
@@ -130,7 +139,7 @@
   -webkit-transition: opacity 75ms linear;
   background: url('chrome://theme/IDR_MIRROR_FLIP') no-repeat;
   border: none;
-  bottom: 8px;
+  bottom: 44px;  /* 8px + image bottom. */
   display: block;
   height: 32px;
   opacity: 0;
@@ -145,7 +154,8 @@ html[dir=rtl] #flip-photo {
 }
 
 /* "Flip photo" button is hidden during flip animation. */
-.online:not(.animation) .user-image-stream-area:hover #flip-photo {
+.camera.online:not(.animation) #flip-photo,
+.camera:not(.live):not(.animation) #flip-photo {
   opacity: 0.75;
 }
 

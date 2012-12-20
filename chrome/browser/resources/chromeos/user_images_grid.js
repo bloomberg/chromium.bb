@@ -480,23 +480,35 @@ cr.define('options', function() {
 
     /**
      * Whether the camera live stream and photo should be flipped horizontally.
+     * If setting this property results in photo update, 'photoupdated' event
+     * will be fired with 'dataURL' property containing the photo encoded as
+     * a data URL
      * @type {boolean}
      */
     get flipPhoto() {
       return this.flipPhoto_ || false;
     },
     set flipPhoto(value) {
+      if (this.flipPhoto_ == value)
+        return;
       this.flipPhoto_ = value;
-      this.previewElement.classList[value ? 'add' : 'remove']('flip-x');
+      this.previewElement.classList.toggle('flip-x');
+      if (!this.cameraLive) {
+        // Flip current still photo.
+        var e = new cr.Event('photoupdated');
+        e.dataURL = this.flipPhoto ?
+            this.flipFrame_(this.previewImage_) : this.previewImage_.src;
+        this.dispatchEvent(e);
+      }
     },
 
     /**
-     * Performs photo capture from the live camera stream.
-     * @param {function=} opt_callback Callback that receives taken photo as
-     *     data URL.
+     * Performs photo capture from the live camera stream. 'phototaken' event
+     * will be fired as soon as captured photo is available, with 'dataURL'
+     * property containing the photo encoded as a data URL.
      * @return {boolean} Whether photo capture was successful.
      */
-    takePhoto: function(opt_callback) {
+    takePhoto: function() {
       if (!this.cameraOnline)
         return false;
       var canvas = document.createElement('canvas');
@@ -504,17 +516,16 @@ cr.define('options', function() {
       canvas.height = CAPTURE_SIZE.height;
       this.captureFrame_(
           this.cameraVideo_, canvas.getContext('2d'), CAPTURE_SIZE);
-      var photoURL = canvas.toDataURL('image/png');
-      if (opt_callback && typeof opt_callback == 'function')
-        opt_callback(photoURL);
-      // Wait until image is loaded before displaying it.
-      var self = this;
+      // Preload image before displaying it.
       var previewImg = new Image();
       previewImg.addEventListener('load', function(e) {
-        self.cameraTitle_ = self.capturedImageTitle_;
-        self.cameraImage = this.src;
-      });
-      previewImg.src = photoURL;
+        this.cameraTitle_ = this.capturedImageTitle_;
+        this.cameraImage = previewImg.src;
+      }.bind(this));
+      previewImg.src = canvas.toDataURL('image/png');
+      var e = new cr.Event('phototaken');
+      e.dataURL = this.flipPhoto ? this.flipFrame_(canvas) : previewImg.src;
+      this.dispatchEvent(e);
       return true;
     },
 
@@ -576,15 +587,25 @@ cr.define('options', function() {
       }
       src.x = (width - src.width) / 2;
       src.y = (height - src.height) / 2;
-      if (this.flipPhoto) {
-        ctx.save();
-        ctx.translate(destSize.width, 0);
-        ctx.scale(-1.0, 1.0);
-      }
       ctx.drawImage(video, src.x, src.y, src.width, src.height,
                     0, 0, destSize.width, destSize.height);
-      if (this.flipPhoto)
-        ctx.restore();
+    },
+
+    /**
+     * Flips frame horizontally.
+     * @param {HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} source
+     *     Frame to flip.
+     * @return {string} Flipped frame as data URL.
+     */
+    flipFrame_: function(source) {
+      var canvas = document.createElement('canvas');
+      canvas.width = CAPTURE_SIZE.width;
+      canvas.height = CAPTURE_SIZE.height;
+      var ctx = canvas.getContext('2d');
+      ctx.translate(CAPTURE_SIZE.width, 0);
+      ctx.scale(-1.0, 1.0);
+      ctx.drawImage(source, 0, 0);
+      return canvas.toDataURL('image/png');
     },
 
     /**

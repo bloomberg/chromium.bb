@@ -58,6 +58,10 @@ cr.define('options', function() {
                                  this.handleImageSelected_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
+      imageGrid.addEventListener('phototaken',
+                                 this.handlePhotoTaken_.bind(this));
+      imageGrid.addEventListener('photoupdated',
+                                 this.handlePhotoTaken_.bind(this));
 
       // Set the title for "Take Photo" button.
       imageGrid.cameraTitle = loadTimeData.getString('takePhoto');
@@ -85,6 +89,10 @@ cr.define('options', function() {
             imageGrid.flipPhoto = !imageGrid.flipPhoto;
           });
       $('user-image-stream-crop').addEventListener(
+          'webkitTransitionEnd', function(e) {
+            previewElement.classList.remove('animation');
+          });
+      $('user-image-preview-img').addEventListener(
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
@@ -144,9 +152,15 @@ cr.define('options', function() {
      * @private
      */
     handleTakePhoto_: function() {
-      $('user-image-grid').takePhoto(function(photoURL) {
-        chrome.send('photoTaken', [photoURL]);
-      });
+      $('user-image-grid').takePhoto();
+    },
+
+    /**
+     * Handle photo captured event.
+     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
+     */
+    handlePhotoTaken_: function(e) {
+      chrome.send('photoTaken', [e.dataURL]);
     },
 
     /**
@@ -170,7 +184,7 @@ cr.define('options', function() {
       // of the action buttons.
       if (!imageGrid.inProgramSelection &&
           url != ButtonImages.TAKE_PHOTO && url != ButtonImages.CHOOSE_FILE) {
-        chrome.send('selectImage', [url]);
+        chrome.send('selectImage', [url, imageGrid.selectionType]);
       }
       // Start/stop camera on (de)selection.
       if (!imageGrid.inProgramSelection &&
@@ -226,6 +240,7 @@ cr.define('options', function() {
         // Insert next to the profile image.
         var pos = imageGrid.indexOf(this.profileImage_) + 1;
         this.oldImage_ = imageGrid.addItem(imageUrl, undefined, undefined, pos);
+        this.oldImage_.type = 'old';
         imageGrid.selectedItem = this.oldImage_;
       }
     },

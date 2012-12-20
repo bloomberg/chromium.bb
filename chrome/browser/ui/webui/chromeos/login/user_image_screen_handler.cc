@@ -218,18 +218,27 @@ void UserImageScreenHandler::HandleCheckCameraPresence(
 
 void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
   std::string image_url;
-  if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
+  std::string image_type;
+  if (!args ||
+      args->GetSize() != 2 ||
+      !args->GetString(0, &image_url) ||
+      !args->GetString(1, &image_type)) {
     NOTREACHED();
+    return;
+  }
   if (image_url.empty())
     return;
 
   int user_image_index = User::kInvalidImageIndex;
-  if (IsDefaultImageUrl(image_url, &user_image_index)) {
+  if (image_type == "default" &&
+      IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
-  } else if (image_url == user_photo_data_url_) {
+  } else if (image_type == "camera") {
     selected_image_ = User::kExternalImageIndex;
-  } else {
+  } else if (image_type == "profile") {
     selected_image_ = User::kProfileImageIndex;
+  } else {
+    NOTREACHED() << "Unexpected image type: " << image_type;
   }
 }
 

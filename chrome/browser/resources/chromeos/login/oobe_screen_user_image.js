@@ -74,6 +74,10 @@ cr.define('oobe', function() {
                                  this.handleSelect_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
+      imageGrid.addEventListener('phototaken',
+                                 this.handlePhotoTaken_.bind(this));
+      imageGrid.addEventListener('photoupdated',
+                                 this.handlePhotoUpdated_.bind(this));
 
       // Set the title for camera item in the grid.
       imageGrid.setCameraTitles(
@@ -110,6 +114,10 @@ cr.define('oobe', function() {
             imageGrid.flipPhoto = !imageGrid.flipPhoto;
           });
       $('user-image-stream-crop').addEventListener(
+          'webkitTransitionEnd', function(e) {
+            previewElement.classList.remove('animation');
+          });
+      $('user-image-preview-img').addEventListener(
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
@@ -192,7 +200,8 @@ cr.define('oobe', function() {
         $('ok-button').disabled = true;
       } else {
         $('ok-button').disabled = false;
-        chrome.send('selectImage', [imageGrid.selectedItemUrl]);
+        chrome.send('selectImage',
+                    [imageGrid.selectedItemUrl, imageGrid.selectionType]);
       }
       // Start/stop camera on (de)selection.
       if (!imageGrid.inProgramSelection &&
@@ -223,11 +232,25 @@ cr.define('oobe', function() {
      * Handle photo capture from the live camera stream.
      */
     handleTakePhoto_: function(e) {
-      $('user-image-grid').takePhoto((function(photoURL) {
-        chrome.send('photoTaken', [photoURL]);
-        this.announceAccessibleMessage_(
-            localStrings.getString('photoCaptureAccessibleText'));
-      }).bind(this));
+      $('user-image-grid').takePhoto();
+    },
+
+    /**
+     * Handle photo captured event.
+     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
+     */
+    handlePhotoTaken_: function(e) {
+      chrome.send('photoTaken', [e.dataURL]);
+      this.announceAccessibleMessage_(
+          localStrings.getString('photoCaptureAccessibleText'));
+    },
+
+    /**
+     * Handle photo updated event.
+     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
+     */
+    handlePhotoUpdated_: function(e) {
+      chrome.send('photoTaken', [e.dataURL]);
     },
 
     /**
