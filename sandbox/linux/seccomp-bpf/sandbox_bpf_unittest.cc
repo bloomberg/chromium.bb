@@ -451,19 +451,21 @@ BPF_TEST(SandboxBpf, SigMask, RedirectAllSyscallsPolicy) {
   // entirely in the kernel.
   sigset_t mask0, mask1, mask2;
 
-  // Call sigprocmask() to verify that SIGUSR1 wasn't blocked, if we didn't
+  // Call sigprocmask() to verify that SIGUSR2 wasn't blocked, if we didn't
   // change the mask (it shouldn't have been, as it isn't blocked by default
   // in POSIX).
+  //
+  // Use SIGUSR2 because Android seems to use SIGUSR1 for some purpose.
   sigemptyset(&mask0);
   BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, &mask1));
-  BPF_ASSERT(!sigismember(&mask1, SIGUSR1));
+  BPF_ASSERT(!sigismember(&mask1, SIGUSR2));
 
   // Try again, and this time we verify that we can block it. This
   // requires a second call to sigprocmask().
-  sigaddset(&mask0, SIGUSR1);
+  sigaddset(&mask0, SIGUSR2);
   BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, NULL));
   BPF_ASSERT(!sigprocmask(SIG_BLOCK, NULL, &mask2));
-  BPF_ASSERT( sigismember(&mask2, SIGUSR1));
+  BPF_ASSERT( sigismember(&mask2, SIGUSR2));
 }
 
 BPF_TEST(SandboxBpf, UnsafeTrapWithErrno, RedirectAllSyscallsPolicy) {

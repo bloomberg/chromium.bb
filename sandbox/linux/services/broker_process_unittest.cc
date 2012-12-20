@@ -12,6 +12,10 @@
 #include <string>
 #include <vector>
 
+#if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
+#endif
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -172,12 +176,24 @@ TEST(BrokerProcess, OpenCpuinfoNoClientCheck) {
 }
 
 TEST(BrokerProcess, OpenFileRW) {
-  char templatename[] = "BrokerProcessXXXXXX";
-  int tempfile = mkstemp(templatename);
+  const char basename[] = "BrokerProcessXXXXXX";
+  char template_name[2048];
+#if defined(OS_ANDROID)
+  FilePath cache_directory;
+  ASSERT_TRUE(base::android::GetCacheDirectory(&cache_directory));
+  ssize_t length = snprintf(template_name, sizeof(template_name),
+                            "%s%s",
+                            cache_directory.value().c_str(), basename);
+  ASSERT_LT(length, static_cast<ssize_t>(sizeof(template_name)));
+#else
+  strncpy(template_name, basename, sizeof(basename) - 1);
+  template_name[sizeof(basename) - 1] = '\0';
+#endif
+  int tempfile = mkstemp(template_name);
   ASSERT_GE(tempfile, 0);
   char tempfile_name[2048];
   int written = snprintf(tempfile_name, sizeof(tempfile_name),
-                          "/proc/self/fd/%d", tempfile);
+                         "/proc/self/fd/%d", tempfile);
   ASSERT_LT(written, static_cast<int>(sizeof(tempfile_name)));
 
   std::vector<std::string> whitelist;
