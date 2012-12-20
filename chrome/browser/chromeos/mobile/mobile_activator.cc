@@ -358,9 +358,11 @@ void MobileActivator::StartActivation() {
   if (network->activate_over_non_cellular_network()) {
     // Fast forward to payment portal loading if the activation is performed
     // over a non-cellular network.
-    state_ = (network->activation_state() == ACTIVATION_STATE_ACTIVATED) ?
-            PLAN_ACTIVATION_DONE :
-            PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
+    ChangeState(network,
+                (network->activation_state() == ACTIVATION_STATE_ACTIVATED) ?
+                PLAN_ACTIVATION_DONE :
+                PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
+                "");
   } else {
     // Try to start with OTASP immediately if we have received payment recently.
     state_ = lib->HasRecentCellularPlanPayment() ?
