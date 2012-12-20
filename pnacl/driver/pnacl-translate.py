@@ -157,8 +157,7 @@ EXTRA_ENV = {
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_X8664':
                            '-O1 ' +
-  # broken
-  #                        '-fast-isel ' +
+                          '-fast-isel ' +
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_ARM':
   # due to slow turn around times ARM settings have not been explored in depth
