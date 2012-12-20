@@ -19,3 +19,5 @@ GamepadProviderTest.PollingAccess
 PepperGamepadHostTest.WaitForReply
 # crbug.com/159234
 WebContentsVideoCaptureDeviceTest.*
+# crbug.com/167045
+ContentViewPopupZoomerTest.testPopupZoomerShowsUp
