@@ -377,6 +377,4 @@ void MediaStorageUtil::SetGetDeviceInfoFromPathFunctionForTesting(
   g_test_get_device_info_from_path_function = function;
 }
 
-MediaStorageUtil::MediaStorageUtil() {}
-
 }  // namespace chrome

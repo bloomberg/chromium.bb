@@ -99,10 +99,7 @@ class MediaStorageUtil {
       GetDeviceInfoFromPathFunction function);
 
  private:
-  // All methods are static, this class should not be instantiated.
-  MediaStorageUtil();
-
-  DISALLOW_COPY_AND_ASSIGN(MediaStorageUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MediaStorageUtil);
 };
 
 }  // namespace chrome
