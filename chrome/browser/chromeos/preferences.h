@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/prefs/pref_service_observer.h"
 
 class PrefService;
 
@@ -23,7 +24,7 @@ class InputMethodManager;
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences {
+class Preferences : public PrefServiceObserver {
  public:
   Preferences();
   explicit Preferences(
@@ -89,6 +90,13 @@ class Preferences {
   // current prefs values. We set the delay and interval at once since an
   // underlying XKB API requires it.
   void UpdateAutoRepeatRate();
+
+  // Force natural scroll to on if --enable-natural-scroll-default is specified
+  // on the cmd line.
+  void ForceNaturalScrollDefault();
+
+  // PrefServiceObserver implementation.
+  virtual void OnIsSyncingChanged() OVERRIDE;
 
   PrefService* prefs_;
 
