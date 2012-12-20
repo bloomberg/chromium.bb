@@ -18,11 +18,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
+#include "jni/AwCookieManager_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
-#include "jni/CookieManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;

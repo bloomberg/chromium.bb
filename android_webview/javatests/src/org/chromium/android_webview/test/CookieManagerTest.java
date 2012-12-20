@@ -10,7 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.CookieManager;
+import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class CookieManagerTest extends AndroidWebViewTestBase {
 
-    private CookieManager mCookieManager;
+    private AwCookieManager mCookieManager;
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
@@ -39,7 +39,7 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        mCookieManager = new CookieManager();
+        mCookieManager = new AwCookieManager();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
