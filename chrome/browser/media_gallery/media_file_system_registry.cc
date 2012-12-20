@@ -278,7 +278,9 @@ class ExtensionGalleriesHost
       DCHECK(!fsid.empty());
 
       MediaFileSystemInfo new_entry(
-          MakeJSONFileSystemName(gallery_info.display_name, pref_id, device_id),
+          MakeJSONFileSystemName(gallery_info.display_name,
+                                 pref_id,
+                                 device_id),
           path,
           fsid);
       result.push_back(new_entry);
@@ -320,20 +322,16 @@ class ExtensionGalleriesHost
     ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
 
     base::DictionaryValue dict_value;
-    dict_value.SetStringWithoutPathExpansion(
-        MediaFileSystemRegistry::kNameKey, sanitized_name);
+    dict_value.SetStringWithoutPathExpansion("name", sanitized_name);
 
     // This should have been a StringValue, but it's a bit late to change it.
-    dict_value.SetIntegerWithoutPathExpansion(
-        MediaFileSystemRegistry::kGalleryIdKey, pref_id);
+    dict_value.SetIntegerWithoutPathExpansion("galleryId", pref_id);
 
     // |device_id| can be empty, in which case, just omit it.
     std::string transient_device_id =
         GetTransientIdForRemovableDeviceId(device_id);
-    if (!transient_device_id.empty()) {
-      dict_value.SetStringWithoutPathExpansion(
-          MediaFileSystemRegistry::kDeviceIdKey, transient_device_id);
-    }
+    if (!transient_device_id.empty())
+      dict_value.SetStringWithoutPathExpansion("deviceId", transient_device_id);
 
     std::string json_string;
     base::JSONWriter::Write(&dict_value, &json_string);
@@ -424,10 +422,6 @@ class ExtensionGalleriesHost
 /******************
  * Public methods
  ******************/
-
-const char MediaFileSystemRegistry::kDeviceIdKey[] = "deviceId";
-const char MediaFileSystemRegistry::kGalleryIdKey[] = "galleryId";
-const char MediaFileSystemRegistry::kNameKey[] = "name";
 
 void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,
@@ -704,13 +698,10 @@ MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
       mtp_device_delegate_map_.find(device_location);
   if (delegate_it != mtp_device_delegate_map_.end())
     return delegate_it->second;
-  ScopedMTPDeviceMapEntry* mtp_device_host =
-      new ScopedMTPDeviceMapEntry(
-          device_location,
-          base::Bind(
-              &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
-              base::Unretained(this),
-              device_location));
+  ScopedMTPDeviceMapEntry* mtp_device_host = new ScopedMTPDeviceMapEntry(
+      device_location, base::Bind(
+          &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
+          base::Unretained(this), device_location));
   mtp_device_delegate_map_[device_location] = mtp_device_host;
   return mtp_device_host;
 }
