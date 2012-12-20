@@ -181,7 +181,7 @@ deps_os = {
             None,
         'src/content/test/data/layout_tests/LayoutTests/fast/events':
             None,
-        'src/content/test/data/layout_tests/LayoutTests/fast/filesystem/resources':
+        'src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp':
             None,
         'src/content/test/data/layout_tests/LayoutTests/fast/js/resources':
             None,
