@@ -120,11 +120,11 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
 
   // Get printer capabilities. For more info see here:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
-  caps.color_capable = (::DeviceCapabilities(info_5.get()->pPrinterName,
-                                             info_5.get()->pPortName,
-                                             DC_COLORDEVICE,
-                                             NULL,
-                                             NULL) == 1);
+  caps.color_changeable = (::DeviceCapabilities(info_5.get()->pPrinterName,
+                                                info_5.get()->pPortName,
+                                                DC_COLORDEVICE,
+                                                NULL,
+                                                NULL) == 1);
 
   caps.duplex_capable = (::DeviceCapabilities(info_5.get()->pPrinterName,
                                               info_5.get()->pPortName,
@@ -155,7 +155,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     }
   } else {
     LOG(WARNING) << "Fallback to color/simplex mode.";
-    caps.color_default = caps.color_capable;
+    caps.color_default = caps.color_changeable;
     caps.duplex_default = SIMPLEX;
   }
 

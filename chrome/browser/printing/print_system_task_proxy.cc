@@ -137,7 +137,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
 
   DictionaryValue settings_info;
   settings_info.SetString(kPrinterId, printer_name);
-  settings_info.SetBoolean(kDisableColorOption, !info.color_capable);
+  settings_info.SetBoolean(kDisableColorOption, !info.color_changeable);
   settings_info.SetBoolean(printing::kSettingSetColorAsDefault,
                            info.color_default);
   // TODO(gene): Make new capabilities format for Print Preview

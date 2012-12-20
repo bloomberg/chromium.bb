@@ -25,7 +25,7 @@ PrinterBasicInfo::PrinterBasicInfo()
 PrinterBasicInfo::~PrinterBasicInfo() {}
 
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
-    : color_capable(false),
+    : color_changeable(false),
       duplex_capable(false),
       color_default(false),
       duplex_default(UNKNOWN_DUPLEX_MODE) {}

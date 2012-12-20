@@ -382,7 +382,7 @@ bool parsePpdCapabilities(
     VLOG(1) << "Unknown printer color model";
   }
 
-  caps.color_capable = (cm_color && cm_black && (cm_color != cm_black));
+  caps.color_changeable = (cm_color && cm_black && (cm_color != cm_black));
   caps.color_default = is_color;
 
   ppdClose(ppd);

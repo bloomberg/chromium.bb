@@ -33,7 +33,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
 
   printing::PrinterSemanticCapsAndDefaults caps;
   EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
-  EXPECT_FALSE(caps.color_capable);
+  EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
   EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);
@@ -58,7 +58,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
 
   printing::PrinterSemanticCapsAndDefaults caps;
   EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
-  EXPECT_FALSE(caps.color_capable);
+  EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
   EXPECT_EQ(caps.duplex_default, printing::SIMPLEX);
@@ -82,7 +82,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
 
   printing::PrinterSemanticCapsAndDefaults caps;
   EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
-  EXPECT_FALSE(caps.color_capable);
+  EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_FALSE(caps.duplex_capable);
   EXPECT_EQ(caps.duplex_default, printing::UNKNOWN_DUPLEX_MODE);
@@ -115,7 +115,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
 
   printing::PrinterSemanticCapsAndDefaults caps;
   EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
-  EXPECT_TRUE(caps.color_capable);
+  EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
   EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);
@@ -152,7 +152,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
 
   printing::PrinterSemanticCapsAndDefaults caps;
   EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
-  EXPECT_TRUE(caps.color_capable);
+  EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
   EXPECT_EQ(caps.duplex_default, printing::LONG_EDGE);

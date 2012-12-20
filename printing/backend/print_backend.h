@@ -39,7 +39,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   ~PrinterSemanticCapsAndDefaults();
 
   // Capabilities.
-  bool color_capable;
+  bool color_changeable;
   bool duplex_capable;
 
   // Current defaults.
