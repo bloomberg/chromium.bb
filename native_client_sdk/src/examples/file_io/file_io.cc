@@ -15,9 +15,11 @@
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "ppapi/utility/threading/simple_thread.h"
 
 #ifndef INT32_MAX
 #define INT32_MAX (0x7FFFFFFF)
@@ -53,41 +55,36 @@ class FileIoInstance : public pp::Instance {
       : pp::Instance(instance),
         callback_factory_(this),
         file_system_(this, PP_FILESYSTEMTYPE_LOCALPERSISTENT),
-        file_system_ready_(false) {
+        file_system_ready_(false),
+        file_thread_(this) {
   }
 
   virtual ~FileIoInstance() {
+    file_thread_.Join();
   }
 
   virtual bool Init(uint32_t /*argc*/, const char* /*argn*/[],
       const char* /*argv*/[]) {
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-        &FileIoInstance::FileSystemOpenCallback);
-    int32_t rv = file_system_.Open(1024*1024, callback);
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
-      return false;
-    }
+    file_thread_.Start();
+    // Open the file system on the file_thread_. Since this is the first
+    // operation we perform there, and because we do everything on the
+    // file_thread_ synchronously, this ensures that the FileSystem is open
+    // before any FileIO operations execute.
+    file_thread_.message_loop().PostWork(
+        callback_factory_.NewCallback(&FileIoInstance::OpenFileSystem));
     return true;
   }
 
- protected:
+ private:
   pp::CompletionCallbackFactory<FileIoInstance> callback_factory_;
   pp::FileSystem file_system_;
+
+  // Indicates whether file_system_ was opened successfully. We only read/write
+  // this on the file_thread_.
   bool file_system_ready_;
 
- private:
-  /// Struct to hold various info about a file operation. Our scheme in this
-  /// example is to allocate this information on the heap so that is persists
-  /// after the asynchronous call until the callback is called, and is
-  /// therefore available to the main thread to complete the requested operation
-  struct Request {
-    pp::FileRef ref;
-    pp::FileIO file;
-    std::string file_contents;
-    int64_t offset;
-    PP_FileInfo info;
-  };
+  // We do all our file operations on the file_thread_.
+  pp::SimpleThread file_thread_;
 
   /// Handler for messages coming in from the browser via postMessage().  The
   /// @a var_message can contain anything: a JSON string; a string that encodes
@@ -99,7 +96,7 @@ class FileIoInstance : public pp::Instance {
   virtual void HandleMessage(const pp::Var& var_message) {
     if (!var_message.is_string())
       return;
-    
+
     // Parse message into: instruction file_name_length file_name [file_text]
     std::string message = var_message.AsString();
     std::string instruction;
@@ -119,299 +116,155 @@ class FileIoInstance : public pp::Instance {
 
     // Dispatch the instruction
     if (instruction.compare(kLoadPrefix) == 0) {
-      Load(file_name);
+      file_thread_.message_loop().PostWork(
+          callback_factory_.NewCallback(&FileIoInstance::Load, file_name));
       return;
     }
-    
+
     if (instruction.compare(kSavePrefix) == 0) {
       // Read the rest of the message as the file text
       reader.ignore(1);  // Eat the delimiter
       std::string file_text = message.substr(reader.tellg());
-      Save(file_name, file_text);
+      file_thread_.message_loop().PostWork(
+          callback_factory_.NewCallback(&FileIoInstance::Save,
+                                        file_name,
+                                        file_text));
       return;
     }
 
     if (instruction.compare(kDeletePrefix) == 0) {
-      Delete(file_name);
+      file_thread_.message_loop().PostWork(
+          callback_factory_.NewCallback(&FileIoInstance::Delete, file_name));
       return;
     }
   }
 
-  bool Save(const std::string& file_name, const std::string& file_contents) {
+  void OpenFileSystem(int32_t /* result */) {
+    int32_t rv = file_system_.Open(1024*1024, pp::CompletionCallback());
+    if (rv == PP_OK) {
+      file_system_ready_ = true;
+      // Notify the user interface that we're ready
+      PostMessage(pp::Var("READY|"));
+    } else {
+      ShowErrorMessage("Failed to open file system", rv);
+    }
+  }
+
+  void Save(int32_t /* result */, const std::string& file_name,
+            const std::string& file_contents) {
     if (!file_system_ready_) {
       ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
-      return false;
+      return;
     }
+    pp::FileRef ref(file_system_, file_name.c_str());
+    pp::FileIO file(this);
 
-    FileIoInstance::Request* request = new FileIoInstance::Request;
-    request->ref = pp::FileRef(file_system_, file_name.c_str());
-    request->file = pp::FileIO(this);
-    request->file_contents = file_contents;
-
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::SaveOpenCallback, request);
-    int32_t rv = request->file.Open(request->ref,
+    int32_t open_result = file.Open(
+        ref,
         PP_FILEOPENFLAG_WRITE|PP_FILEOPENFLAG_CREATE|PP_FILEOPENFLAG_TRUNCATE,
-        callback);
-
-    // Handle cleanup in the callback if error
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
-      return false;
-    }
-    return true;
-  }
-
-  void SaveOpenCallback(int32_t result, FileIoInstance::Request* request) {
-    if (result != PP_OK) {
-      ShowErrorMessage("File open for write failed", result);
-      delete request;
+        pp::CompletionCallback());
+    if (open_result != PP_OK) {
+      ShowErrorMessage("File open for write failed", open_result);
       return;
     }
 
-    // It is an error to write 0 bytes to the file, however,
-    // upon opening we have truncated the file to length 0
-    if (request->file_contents.length() == 0) {
-      pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::SaveFlushCallback, request);
-      int32_t rv = request->file.Flush(callback);
-
-      // Handle cleanup in the callback if error
-      if (rv != PP_OK_COMPLETIONPENDING) {
-        callback.Run(rv);
+    // We have truncated the file to 0 bytes. So we need only write if
+    // file_contents is non-empty.
+    if (!file_contents.empty()) {
+      if (file_contents.length() > INT32_MAX) {
+        ShowErrorMessage("File too big", PP_ERROR_FILETOOBIG);
         return;
       }
-    } else if (request->file_contents.length() <= INT32_MAX) {
-      request->offset = 0;
-      pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::SaveWriteCallback, request);
-        
-      int32_t rv = request->file.Write(request->offset,
-          request->file_contents.c_str(),
-          request->file_contents.length(), callback);
-
-      // Handle cleanup in the callback if error
-      if (rv != PP_OK_COMPLETIONPENDING) {
-        callback.Run(rv);
-        return;
-      }
-    } else {
-      ShowErrorMessage("File too big", PP_ERROR_FILETOOBIG);
-      delete request;
-      return;
+      int64_t offset = 0;
+      int32_t bytes_written = 0;
+      do {
+        bytes_written = file.Write(offset,
+                                   file_contents.data() + offset,
+                                   file_contents.length(),
+                                   pp::CompletionCallback());
+        if (bytes_written > 0) {
+          offset += bytes_written;
+        } else {
+          ShowErrorMessage("File write failed", bytes_written);
+          return;
+        }
+      } while (bytes_written < static_cast<int64_t>(file_contents.length()));
     }
-  }
-
-  void SaveWriteCallback(int32_t bytes_written,
-      FileIoInstance::Request* request) {
-    // bytes_written is the error code if < 0
-    if (bytes_written < 0) {
-      ShowErrorMessage("File write failed", bytes_written);
-      delete request;
-      return;
-    }
-
-    // Ensure the content length is something write() can handle
-    assert(request->file_contents.length() <= INT32_MAX);
-
-    request->offset += bytes_written;
-
-    if (static_cast<size_t>(request->offset) == request->file_contents.length()
-        || bytes_written == 0) {
-      // All bytes have been written, flush the write buffer to complete
-      pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::SaveFlushCallback, request);
-      int32_t rv = request->file.Flush(callback);
-
-      // Handle cleanup in the callback if error
-      if (rv != PP_OK_COMPLETIONPENDING) {
-        callback.Run(rv);
-        return;
-      }
-    } else {
-      // If all the bytes haven't been written call write again with remainder
-      pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::SaveWriteCallback, request);
-      int32_t rv = request->file.Write(request->offset,
-          request->file_contents.c_str() + request->offset,
-          request->file_contents.length() - request->offset, callback);
-
-      // Handle cleanup in the callback if error
-      if (rv != PP_OK_COMPLETIONPENDING) {
-        callback.Run(rv);
-        return;
-      }
-    }
-  }
-
-  void SaveFlushCallback(int32_t result, FileIoInstance::Request* request) {
-    if (result != PP_OK) {
-      ShowErrorMessage("File fail to flush", result);
-      delete request;
+    // All bytes have been written, flush the write buffer to complete
+    int32_t flush_result = file.Flush(pp::CompletionCallback());
+    if (flush_result != PP_OK) {
+      ShowErrorMessage("File fail to flush", flush_result);
       return;
     }
     ShowStatusMessage("Save successful");
-    delete request;
   }
 
-  bool Load(const std::string& file_name) {
+  void Load(int32_t /* result */, const std::string& file_name) {
     if (!file_system_ready_) {
       ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
-      return false;
+      return;
     }
+    pp::FileRef ref(file_system_, file_name.c_str());
+    pp::FileIO file(this);
 
-    FileIoInstance::Request* request = new FileIoInstance::Request;
-    request->ref = pp::FileRef(file_system_, file_name.c_str());
-    request->file = pp::FileIO(this);
-
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::LoadOpenCallback, request);
-    int32_t rv = request->file.Open(request->ref, PP_FILEOPENFLAG_READ,
-        callback);
-
-    // Handle cleanup in the callback if error
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
-      return false;
-    }
-    return true;
-  }
-
-  void LoadOpenCallback(int32_t result, FileIoInstance::Request* request) {
-    if (result == PP_ERROR_FILENOTFOUND) {
+    int32_t open_result = file.Open(ref, PP_FILEOPENFLAG_READ,
+                                    pp::CompletionCallback());
+    if (open_result == PP_ERROR_FILENOTFOUND) {
       ShowStatusMessage("File not found");
-      delete request;
       return;
-    } else if (result != PP_OK) {
-      ShowErrorMessage("File open for read failed", result);
-      delete request;
+    } else if (open_result != PP_OK) {
+      ShowErrorMessage("File open for read failed", open_result);
       return;
     }
-
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-          &FileIoInstance::LoadQueryCallback, request);
-    int32_t rv = request->file.Query(&request->info, callback);
-
-    // Handle cleanup in the callback if error
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
+    PP_FileInfo info;
+    int32_t query_result = file.Query(&info, pp::CompletionCallback());
+    if (query_result != PP_OK) {
+      ShowErrorMessage("File query failed", query_result);
       return;
     }
-  }
-
-  void LoadQueryCallback(int32_t result, FileIoInstance::Request* request) {
-    if (result != PP_OK) {
-      ShowErrorMessage("File query failed", result);
-      delete request;
-      return;
-    }
-
     // FileIO.Read() can only handle int32 sizes
-    if (request->info.size > INT32_MAX) {
+    if (info.size > INT32_MAX) {
       ShowErrorMessage("File too big", PP_ERROR_FILETOOBIG);
-      delete request;
       return;
     }
 
-    // Allocate a buffer to read the file into
-    // Here we must allocate on the heap so FileIO::Read will write to this
-    // one and only copy of file_contents
-    request->file_contents.resize(request->info.size, '\0');
-    request->offset = 0;
-
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-        &FileIoInstance::LoadReadCallback, request);
-    int32_t rv = request->file.Read(request->offset,
-        &request->file_contents[request->offset],
-        request->file_contents.length(), callback);
-
-    // Handle cleanup in the callback if error
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
-      return;
-    }
-  }
-
-  void LoadReadCallback(int32_t bytes_read, FileIoInstance::Request* request) {
-    // If bytes_read < 0 then it indicates the error code
-    if (bytes_read < 0) {
+    std::vector<char> data(info.size);
+    int64_t offset = 0;
+    int32_t bytes_read = 0;
+    do {
+      bytes_read = file.Read(offset, &data[offset], data.size() - offset,
+                             pp::CompletionCallback());
+      if (bytes_read > 0)
+        offset += bytes_read;
+    } while (bytes_read > 0);
+    // If bytes_read < PP_OK then it indicates the error code.
+    if (bytes_read < PP_OK) {
       ShowErrorMessage("File read failed", bytes_read);
-      delete request;
       return;
     }
-
-    // Ensure the content length is something read() can handle
-    assert(request->file_contents.length() <= INT32_MAX);
-
-    request->offset += bytes_read;
-
-    if (static_cast<size_t>(request->offset) == request->file_contents.length()
-        || bytes_read == 0) {
-      // Done reading, send content to the user interface
-      PostMessage(pp::Var("DISP|" + request->file_contents));
-      ShowStatusMessage("Load complete");
-      delete request;
-    } else {
-      // Some bytes remain to be read, call read again with remainder
-      pp::CompletionCallback callback = callback_factory_.NewCallback(
-            &FileIoInstance::LoadReadCallback, request);
-      int32_t rv = request->file.Read(request->offset,
-          &request->file_contents[request->offset],
-          request->file_contents.length() - request->offset, callback);
-
-      // Handle cleanup in the callback if error
-      if (rv != PP_OK_COMPLETIONPENDING) {
-        callback.Run(rv);
-        return;
-      }
-    }
+    PP_DCHECK(bytes_read == 0);
+    // Done reading, send content to the user interface
+    std::string string_data(data.begin(), data.end());
+    PostMessage(pp::Var("DISP|" + string_data));
+    ShowStatusMessage("Load complete");
   }
 
-  bool Delete(const std::string& file_name) {
+  void Delete(int32_t /* result */, const std::string& file_name) {
     if (!file_system_ready_) {
       ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
-      return false;
+      return;
     }
+    pp::FileRef ref(file_system_, file_name.c_str());
 
-    FileIoInstance::Request* request = new FileIoInstance::Request;
-    request->ref = pp::FileRef(file_system_, file_name.c_str());
-   
-    pp::CompletionCallback callback = callback_factory_.NewCallback(
-        &FileIoInstance::DeleteCallback, request);
-    int32_t rv = request->ref.Delete(callback);
-
-    // Handle cleanup in the callback if error
-    if (rv != PP_OK_COMPLETIONPENDING) {
-      callback.Run(rv);
-      return false;
-    }
-    return true;
-  }
-
-  void DeleteCallback(int32_t result, FileIoInstance::Request* request) {
+    int32_t result = ref.Delete(pp::CompletionCallback());
     if (result == PP_ERROR_FILENOTFOUND) {
       ShowStatusMessage("File not found");
-      delete request;
       return;
     } else if (result != PP_OK) {
       ShowErrorMessage("Deletion failed", result);
-      delete request;
       return;
     }
-
     ShowStatusMessage("File deleted");
-    delete request;
-  }
-
-  void FileSystemOpenCallback(int32_t result) {
-    if (result != PP_OK) {
-      ShowErrorMessage("File system open call failed", result);
-      return;
-    }
-
-    file_system_ready_ = true;
-    // Notify the user interface that we're ready
-    PostMessage(pp::Var("READY|"));
   }
 
   /// Encapsulates our simple javascript communication protocol
