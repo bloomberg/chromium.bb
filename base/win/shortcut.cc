@@ -184,7 +184,7 @@ bool ResolveShortcut(const FilePath& shortcut_path,
   WCHAR temp[MAX_PATH];
   if (target_path) {
     // Try to find the target of a shortcut.
-    result = i_shell_link->Resolve(0, SLR_NO_UI);
+    result = i_shell_link->Resolve(0, SLR_NO_UI | SLR_NOSEARCH);
     if (FAILED(result))
       return false;
 
