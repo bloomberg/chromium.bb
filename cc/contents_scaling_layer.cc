@@ -11,7 +11,10 @@ gfx::Size ContentsScalingLayer::computeContentBoundsForScale(float scaleX, float
   return gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scaleX, scaleY));
 }
 
-ContentsScalingLayer::ContentsScalingLayer() {
+ContentsScalingLayer::ContentsScalingLayer()
+    : last_update_contents_scale_x_(0.f)
+    , last_update_contents_scale_y_(0.f)
+ {
 }
 
 ContentsScalingLayer::~ContentsScalingLayer() {
@@ -33,6 +36,20 @@ void ContentsScalingLayer::didUpdateBounds() {
   drawProperties().content_bounds = computeContentBoundsForScale(
       contentsScaleX(),
       contentsScaleY());
+}
+
+void ContentsScalingLayer::update(
+    ResourceUpdateQueue& queue,
+    const OcclusionTracker* occlusion,
+    RenderingStats& stats) {
+  if (drawProperties().contents_scale_x == last_update_contents_scale_x_ &&
+      drawProperties().contents_scale_y == last_update_contents_scale_y_)
+    return;
+  
+  last_update_contents_scale_x_ = drawProperties().contents_scale_x;
+  last_update_contents_scale_y_ = drawProperties().contents_scale_y;
+  // Invalidate the whole layer if scale changed.
+  setNeedsDisplayRect(gfx::Rect(bounds()));
 }
 
 }  // namespace cc

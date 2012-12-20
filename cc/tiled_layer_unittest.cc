@@ -788,11 +788,12 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 0));
     EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
 
-    // Change the contents scale and verify that the content rectangle requiring painting
-    // is not scaled.
+    layer->setNeedsDisplayRect(gfx::Rect());
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(), layer->lastNeedsDisplayRect());
+
+    // Change the contents scale.
     layer->updateContentsScale(2);
     layer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 200, 200);
-    EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100), layer->lastNeedsDisplayRect());
 
     // The impl side should get 2x2 tiles now.
     layer->setTexturePriorities(m_priorityCalculator);
@@ -804,6 +805,10 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 0));
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
+
+    // Verify that changing the contents scale caused invalidation, and
+    // that the layer-space rectangle requiring painting is not scaled.
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100), layer->lastNeedsDisplayRect());
 
     // Invalidate the entire layer again, but do not paint. All tiles should be gone now from the
     // impl side.

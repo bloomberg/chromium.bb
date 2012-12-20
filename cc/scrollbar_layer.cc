@@ -300,8 +300,10 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
     }
 }
 
-void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats& stats)
+void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
+    ContentsScalingLayer::update(queue, occlusion, stats);
+
     if (contentBounds().IsEmpty())
         return;
 

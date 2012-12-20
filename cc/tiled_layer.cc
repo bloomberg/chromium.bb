@@ -633,6 +633,9 @@ void TiledLayer::updateScrollPrediction()
 void TiledLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
+
+    ContentsScalingLayer::update(queue, occlusion, stats);
+
     updateBounds();
     if (m_tiler->hasEmptyBounds() || !drawsContent())
         return;
