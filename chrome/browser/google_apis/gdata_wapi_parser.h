@@ -336,11 +336,6 @@ class FeedEntry {
   // List of entry categories.
   const ScopedVector<Category>& categories() const { return categories_; }
 
-  // Registers the mapping between JSON field names and the members in
-  // this class.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<FeedEntry>* converter);
-
   void set_etag(const std::string& etag) { etag_ = etag; }
   void set_authors(ScopedVector<Author>* authors) {
     authors_.swap(*authors);
@@ -356,6 +351,12 @@ class FeedEntry {
   }
 
  protected:
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  template<typename FeedEntryDescendant>
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FeedEntryDescendant>* converter);
+
   std::string etag_;
   ScopedVector<Author> authors_;
   ScopedVector<Link> links_;

@@ -475,16 +475,18 @@ FeedEntry::~FeedEntry() {
 }
 
 // static
+template<typename FeedEntryDescendant>
 void FeedEntry::RegisterJSONConverter(
-    base::JSONValueConverter<FeedEntry>* converter) {
+    base::JSONValueConverter<FeedEntryDescendant>* converter) {
   converter->RegisterStringField(kETagField, &FeedEntry::etag_);
-  converter->RegisterRepeatedMessage(kAuthorField, &FeedEntry::authors_);
-  converter->RegisterRepeatedMessage(kLinkField, &FeedEntry::links_);
-  converter->RegisterRepeatedMessage(kCategoryField, &FeedEntry::categories_);
-  converter->RegisterCustomField<base::Time>(
-      kUpdatedField,
-      &FeedEntry::updated_time_,
-      &util::GetTimeFromString);
+  converter->template RegisterRepeatedMessage<Author>(
+      kAuthorField, &FeedEntry::authors_);
+  converter->template RegisterRepeatedMessage<Link>(
+      kLinkField, &FeedEntry::links_);
+  converter->template RegisterRepeatedMessage<Category>(
+      kCategoryField, &FeedEntry::categories_);
+  converter->template RegisterCustomField<base::Time>(
+      kUpdatedField, &FeedEntry::updated_time_, &util::GetTimeFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -527,8 +529,7 @@ bool ResourceEntry::ParseChangestamp(const base::Value* value,
 void ResourceEntry::RegisterJSONConverter(
     base::JSONValueConverter<ResourceEntry>* converter) {
   // Inherit the parent registrations.
-  FeedEntry::RegisterJSONConverter(
-      reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
+  FeedEntry::RegisterJSONConverter(converter);
   converter->RegisterStringField(
       kResourceIdField, &ResourceEntry::resource_id_);
   converter->RegisterStringField(kIDField, &ResourceEntry::id_);
@@ -793,8 +794,7 @@ ResourceList::~ResourceList() {
 void ResourceList::RegisterJSONConverter(
     base::JSONValueConverter<ResourceList>* converter) {
   // inheritance
-  FeedEntry::RegisterJSONConverter(
-      reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
+  FeedEntry::RegisterJSONConverter(converter);
   // TODO(zelidrag): Once we figure out where these will be used, we should
   // check for valid start_index_ and items_per_page_ values.
   converter->RegisterCustomField<int>(
