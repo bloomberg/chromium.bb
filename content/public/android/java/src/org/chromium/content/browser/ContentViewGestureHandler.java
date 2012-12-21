@@ -168,6 +168,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int GESTURE_PINCH_BEGIN = 10;
     static final int GESTURE_PINCH_BY = 11;
     static final int GESTURE_PINCH_END = 12;
+    static final int GESTURE_SHOW_PRESS_CANCEL = 13;
 
     // These have to be kept in sync with content/port/common/input_event_ack_state.h
     static final int INPUT_EVENT_ACK_STATE_CONSUMED = 0;
@@ -325,10 +326,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         mLastRawX = e2.getRawX();
                         mLastRawY = e2.getRawY();
                         if (didUIStealScroll) return true;
-                        if (!mNativeScrolling && mMotionEventDelegate.sendGesture(
-                                GESTURE_SCROLL_START, e1.getEventTime(),
-                                        (int) e1.getX(), (int) e1.getY(), null)) {
-                            mNativeScrolling = true;
+                        if (!mNativeScrolling) {
+                            sendShowPressCancelIfNecessary(e1);
+                            if (mMotionEventDelegate.sendGesture(
+                                    GESTURE_SCROLL_START, e1.getEventTime(),
+                                            (int) e1.getX(), (int) e1.getY(), null)) {
+                                mNativeScrolling = true;
+                            }
 
                         }
                         // distanceX and distanceY is the scrolling offset since last onScroll.
@@ -435,7 +439,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         // this method might be called after receiving the up event.
                         // These corner cases should be ignored.
                         if (mLongPressDetector.isInLongPress() || mIgnoreSingleTap) return true;
-
                         int x = (int) e.getX();
                         int y = (int) e.getY();
                         mExtraParamBundle.clear();
@@ -448,6 +451,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
+                        sendShowPressCancelIfNecessary(e);
                         mMotionEventDelegate.sendGesture(GESTURE_DOUBLE_TAP,
                                 e.getEventTime(), (int) e.getX(), (int) e.getY(), null);
                         return true;
@@ -456,6 +460,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public void onLongPress(MotionEvent e) {
                         if (!mZoomManager.isScaleGestureDetectionInProgress()) {
+                            sendShowPressCancelIfNecessary(e);
                             mMotionEventDelegate.sendGesture(GESTURE_LONG_PRESS,
                                     e.getEventTime(), (int) e.getX(), (int) e.getY(), null);
                         }
@@ -833,6 +838,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
         trySendNextEventToNative(newDownEvent);
     }
 
+    void sendShowPressCancelIfNecessary(MotionEvent e) {
+        if (!mShowPressIsCalled) return;
+
+        if (mMotionEventDelegate.sendGesture(GESTURE_SHOW_PRESS_CANCEL,
+                e.getEventTime(), (int) e.getX(), (int) e.getY(), null)) {
+            mShowPressIsCalled = false;
+        }
+    }
+
     /**
      * @return Whether the ContentViewGestureHandler can handle a MotionEvent right now. True only
      * if it's the start of a new stream (ACTION_DOWN), or a continuation of the current stream.
@@ -856,5 +870,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     int getNumberOfPendingMotionEvents() {
         return mPendingMotionEvents.size();
+    }
+
+    /**
+     * This is for testing only.
+     * Sends a show pressed state gesture through mListener. This should always be called after
+     * a down event;
+     */
+    void sendShowPressedStateGestureForTest() {
+        if (mCurrentDownEvent == null) return;
+        mListener.onShowPress(mCurrentDownEvent);
     }
 }

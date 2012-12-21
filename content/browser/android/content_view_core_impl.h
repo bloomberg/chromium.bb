@@ -122,6 +122,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                  jint y,
                  jboolean disambiguation_popup_tap);
   void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
+  void ShowPressCancel(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void DoubleTap(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y) ;
   void LongPress(JNIEnv* env,
                  jobject obj,

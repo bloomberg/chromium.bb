@@ -933,6 +933,17 @@ void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
     GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
+void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
+                                          jobject obj,
+                                          jlong time_ms,
+                                          jint x,
+                                          jint y) {
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureTapCancel, time_ms, x, y);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+}
+
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y) {
   WebGestureEvent event = MakeGestureEvent(
