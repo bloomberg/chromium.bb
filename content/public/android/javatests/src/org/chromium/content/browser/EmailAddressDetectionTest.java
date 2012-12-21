@@ -22,12 +22,8 @@ public class EmailAddressDetectionTest extends ContentDetectionTestBase {
         return intentUrl.equals(expectedUrl);
     }
 
-    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
-    Bug 166920
-    */
-    @DisabledTest
     public void testValidEmailAddresses() throws Throwable {
         startActivityWithTestUrl("content/content_detection/email.html");
 
