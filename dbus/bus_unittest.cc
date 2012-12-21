@@ -109,7 +109,7 @@ TEST(BusTest, GetExportedObject) {
 }
 
 // http://crbug.com/137846
-TEST(BusTest, FLAKY_UnregisterExportedObject) {
+TEST(BusTest, DISABLED_UnregisterExportedObject) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
   thread_options.message_loop_type = MessageLoop::TYPE_IO;

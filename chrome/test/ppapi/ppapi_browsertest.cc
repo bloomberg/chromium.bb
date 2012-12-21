@@ -467,7 +467,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
 // Timing out on Windows. http://crbug.com/129571
 #if defined(OS_WIN)
 #define MAYBE_URLRequest_CreateAndIsURLRequestInfo \
-  FLAKY_URLRequest_CreateAndIsURLRequestInfo
+  DISABLED_URLRequest_CreateAndIsURLRequestInfo
 #else
 #define MAYBE_URLRequest_CreateAndIsURLRequestInfo \
     URLRequest_CreateAndIsURLRequestInfo

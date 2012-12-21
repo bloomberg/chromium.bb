@@ -78,8 +78,6 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
 
 }  // namespace
 
-const char TestSuite::kStrictFailureHandling[] = "strict_failure_handling";
-
 TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
   PreInitialize(argc, argv, true);
 }
@@ -124,42 +122,8 @@ void TestSuite::PreInitialize(int argc, char** argv,
 
 
 // static
-bool TestSuite::IsMarkedFlaky(const testing::TestInfo& test) {
-  return strncmp(test.name(), "FLAKY_", 6) == 0;
-}
-
-// static
 bool TestSuite::IsMarkedMaybe(const testing::TestInfo& test) {
   return strncmp(test.name(), "MAYBE_", 6) == 0;
-}
-
-// static
-bool TestSuite::ShouldIgnoreFailure(const testing::TestInfo& test) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kStrictFailureHandling))
-    return false;
-  return IsMarkedFlaky(test);
-}
-
-// static
-bool TestSuite::NonIgnoredFailures(const testing::TestInfo& test) {
-  return test.should_run() && test.result()->Failed() &&
-      !ShouldIgnoreFailure(test);
-}
-
-int TestSuite::GetTestCount(TestMatch test_match) {
-  testing::UnitTest* instance = testing::UnitTest::GetInstance();
-  int count = 0;
-
-  for (int i = 0; i < instance->total_test_case_count(); ++i) {
-    const testing::TestCase& test_case = *instance->GetTestCase(i);
-    for (int j = 0; j < test_case.total_test_count(); ++j) {
-      if (test_match(*test_case.GetTestInfo(j))) {
-        count++;
-      }
-    }
-  }
-
-  return count;
 }
 
 void TestSuite::CatchMaybeTests() {
@@ -193,17 +157,6 @@ int TestSuite::Run() {
   base::test_listener_ios::RegisterTestEndListener();
 #endif
   int result = RUN_ALL_TESTS();
-
-  // If there are failed tests, see if we should ignore the failures.
-  if (result != 0 && GetTestCount(&TestSuite::NonIgnoredFailures) == 0)
-    result = 0;
-
-  // Display the number of flaky tests.
-  int flaky_count = GetTestCount(&TestSuite::IsMarkedFlaky);
-  if (flaky_count) {
-    printf("  YOU HAVE %d FLAKY %s\n\n", flaky_count,
-           flaky_count == 1 ? "TEST" : "TESTS");
-  }
 
 #if defined(OS_MACOSX)
   // This MUST happen before Shutdown() since Shutdown() tears down

@@ -552,7 +552,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
 }
 
 // crbug.com/160502
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, FLAKY_GatherStatistics) {
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
+                       DISABLED_GatherStatistics) {
   GatherStatistics();
 
   // No stats should be recorded for this CPUUsage because this was the first

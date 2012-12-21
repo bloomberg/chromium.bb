@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
 }
 
 #if defined(OS_MACOSX)
-#define MAYBE_ExtensionAccessibleResources FLAKY_ExtensionAccessibleResources
+#define MAYBE_ExtensionAccessibleResources DISABLED_ExtensionAccessibleResources
 #else
 #define MAYBE_ExtensionAccessibleResources ExtensionAccessibleResources
 #endif

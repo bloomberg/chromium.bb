@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
 
 #if defined(OS_WIN)
 // http://crbug.com/141913
-#define MAYBE_InstallRequiresConfirm FLAKY_InstallRequiresConfirm
+#define MAYBE_InstallRequiresConfirm DISABLED_InstallRequiresConfirm
 #else
 #define MAYBE_InstallRequiresConfirm InstallRequiresConfirm
 #endif

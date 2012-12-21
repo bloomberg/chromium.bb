@@ -806,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 #endif
 
 // See http://crbug.com/147579
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_PageUpDownKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_PageUpDownKeys) {
   static const KeyEventTestData kTestPageUp = {
     ui::VKEY_PRIOR, false, false, false, false,
     false, false, false, false, 2,

@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
 }
 
 // crbug.com/149924
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_TabDuplicate) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabDuplicate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "duplicate.html")) << message_;
 }
 

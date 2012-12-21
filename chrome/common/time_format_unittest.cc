@@ -49,7 +49,7 @@ TEST(TimeFormat, FormatTime) {
 }
 
 // crbug.com/159388: This test fails when daylight savings time ends.
-TEST(TimeFormat, FLAKY_RelativeDate) {
+TEST(TimeFormat, RelativeDate) {
   base::Time now = base::Time::Now();
   string16 today_str = TimeFormat::RelativeDate(now, NULL);
   EXPECT_EQ(ASCIIToUTF16("Today"), today_str);

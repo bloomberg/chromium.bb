@@ -257,7 +257,7 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(
 }
 
 #if defined(OS_WIN)
-#define MAYBE_HandlersRegistered FLAKY_HandlersRegistered
+#define MAYBE_HandlersRegistered DISABLED_HandlersRegistered
 #else
 #define MAYBE_HandlersRegistered HandlersRegistered
 #endif

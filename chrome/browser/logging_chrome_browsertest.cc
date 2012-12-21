@@ -90,7 +90,7 @@ class RendererCrashTest : public InProcessBrowserTest,
 };
 
 // Flaky, http://crbug.com/107226 .
-IN_PROC_BROWSER_TEST_F(RendererCrashTest, FLAKY_Crash) {
+IN_PROC_BROWSER_TEST_F(RendererCrashTest, DISABLED_Crash) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(

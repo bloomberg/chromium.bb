@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreToDifferentWindow) {
 // Close a tab, open a new window, close the first window, then restore the
 // tab. It should be in a new window.
 // If this becomes flaky, use http://crbug.com/14774
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, FLAKY_BasicRestoreFromClosedWindow) {
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, DISABLED_BasicRestoreFromClosedWindow) {
   // Navigate to url1 then url2.
   ui_test_utils::NavigateToURL(browser(), url1_);
   ui_test_utils::NavigateToURL(browser(), url2_);

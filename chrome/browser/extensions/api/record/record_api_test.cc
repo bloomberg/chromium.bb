@@ -272,7 +272,7 @@ class RecordApiTest : public InProcessBrowserTest {
 };
 
 
-IN_PROC_BROWSER_TEST_F(RecordApiTest, FLAKY_CheckCapture) {
+IN_PROC_BROWSER_TEST_F(RecordApiTest, DISABLED_CheckCapture) {
   base::ScopedTempDir user_data_dir;
   scoped_ptr<base::ListValue> result;
 

@@ -401,7 +401,7 @@ class WaitForAutoResizeNarrower : public TestPanelNotificationObserver {
 };
 
 // crbug.com/160504
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.

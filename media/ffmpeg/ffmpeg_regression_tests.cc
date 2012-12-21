@@ -86,8 +86,8 @@ class FlakyFFmpegRegressionTest
                                                                video_md5, \
                                                                audio_md5)));
 
-#define FLAKY_FFMPEG_TEST_CASE(name, fn) \
-    INSTANTIATE_TEST_CASE_P(FLAKY_##name, FlakyFFmpegRegressionTest, \
+#define DISABLED_FFMPEG_TEST_CASE(name, fn) \
+    INSTANTIATE_TEST_CASE_P(DISABLED_##name, FlakyFFmpegRegressionTest, \
                             testing::Values(FlakyRegressionTestData(fn)));
 
 // Test cases from issues.
@@ -304,25 +304,25 @@ FFMPEG_TEST_CASE(BIG_MEM_2, "security/looping1.mov",
 FFMPEG_TEST_CASE(BIG_MEM_5, "security/looping5.mov",
                  DEMUXER_ERROR_COULD_NOT_OPEN, DEMUXER_ERROR_COULD_NOT_OPEN,
                  kNullHash, kNullHash);
-FLAKY_FFMPEG_TEST_CASE(BIG_MEM_3, "security/looping3.mov");
-FLAKY_FFMPEG_TEST_CASE(BIG_MEM_4, "security/looping4.mov");
+DISABLED_FFMPEG_TEST_CASE(BIG_MEM_3, "security/looping3.mov");
+DISABLED_FFMPEG_TEST_CASE(BIG_MEM_4, "security/looping4.mov");
 
 // Flaky under threading or for other reasons.  Per rbultje, most of these will
 // never be reliable since FFmpeg does not guarantee consistency in error cases.
 // We only really care that these don't cause crashes or errors under tooling.
-FLAKY_FFMPEG_TEST_CASE(Cr99652, "security/99652.webm");
-FLAKY_FFMPEG_TEST_CASE(Cr100464, "security/100464.webm");
-FLAKY_FFMPEG_TEST_CASE(Cr111342, "security/111342.ogm");
-FLAKY_FFMPEG_TEST_CASE(OGV_0, "security/big_dims.ogv");
-FLAKY_FFMPEG_TEST_CASE(OGV_3, "security/smclock_1_0.ogv");
-FLAKY_FFMPEG_TEST_CASE(OGV_4, "security/smclock.ogv.1.0.ogv");
-FLAKY_FFMPEG_TEST_CASE(OGV_6, "security/smclocktheora_1_10000.ogv");
-FLAKY_FFMPEG_TEST_CASE(OGV_13, "security/smclocktheora_1_790.ogv");
-FLAKY_FFMPEG_TEST_CASE(MP4_3, "security/clockh264aac_300413969.mp4");
-FLAKY_FFMPEG_TEST_CASE(MP4_4, "security/clockh264aac_301350139.mp4");
-FLAKY_FFMPEG_TEST_CASE(MP4_12, "security/assert1.mov");
+DISABLED_FFMPEG_TEST_CASE(Cr99652, "security/99652.webm");
+DISABLED_FFMPEG_TEST_CASE(Cr100464, "security/100464.webm");
+DISABLED_FFMPEG_TEST_CASE(Cr111342, "security/111342.ogm");
+DISABLED_FFMPEG_TEST_CASE(OGV_0, "security/big_dims.ogv");
+DISABLED_FFMPEG_TEST_CASE(OGV_3, "security/smclock_1_0.ogv");
+DISABLED_FFMPEG_TEST_CASE(OGV_4, "security/smclock.ogv.1.0.ogv");
+DISABLED_FFMPEG_TEST_CASE(OGV_6, "security/smclocktheora_1_10000.ogv");
+DISABLED_FFMPEG_TEST_CASE(OGV_13, "security/smclocktheora_1_790.ogv");
+DISABLED_FFMPEG_TEST_CASE(MP4_3, "security/clockh264aac_300413969.mp4");
+DISABLED_FFMPEG_TEST_CASE(MP4_4, "security/clockh264aac_301350139.mp4");
+DISABLED_FFMPEG_TEST_CASE(MP4_12, "security/assert1.mov");
 // Not really flaky, but can't pass the seek test.
-FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
+DISABLED_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
 
 // Videos with massive gaps between frame timestamps that result in long hangs
 // with our pipeline.  Should be uncommented when we support clockless playback.

@@ -28,35 +28,16 @@ class TestSuite {
   TestSuite(int argc, char** argv);
   virtual ~TestSuite();
 
-  // Returns true if the test is marked as flaky.
-  static bool IsMarkedFlaky(const testing::TestInfo& test);
-
-  // Returns true if the test is marked as failing.
-  static bool IsMarkedFailing(const testing::TestInfo& test);
-
   // Returns true if the test is marked as "MAYBE_".
   // When using different prefixes depending on platform, we use MAYBE_ and
   // preprocessor directives to replace MAYBE_ with the target prefix.
   static bool IsMarkedMaybe(const testing::TestInfo& test);
-
-  // Returns true if the test failure should be ignored.
-  static bool ShouldIgnoreFailure(const testing::TestInfo& test);
-
-  // Returns true if the test failed and the failure shouldn't be ignored.
-  static bool NonIgnoredFailures(const testing::TestInfo& test);
-
-  // Returns the number of tests where the match function returns true.
-  int GetTestCount(TestMatch test_match);
 
   void CatchMaybeTests();
 
   void ResetCommandLine();
 
   int Run();
-
-  // A command-line flag that makes a test failure always result in a non-zero
-  // process exit code.
-  static const char kStrictFailureHandling[];
 
  protected:
   // This constructor is only accessible to specialized test suite

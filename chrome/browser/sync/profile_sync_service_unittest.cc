@@ -437,7 +437,7 @@ TEST_F(ProfileSyncServiceTest, FailToDownloadControlTypes) {
 // reenable sync.  The handler should get notified of the state
 // changes.
 // Flaky on all platforms. http://crbug.com/154491
-TEST_F(ProfileSyncServiceTest, FLAKY_DisableInvalidationsOnStop) {
+TEST_F(ProfileSyncServiceTest, DISABLED_DisableInvalidationsOnStop) {
   harness_.StartSyncServiceAndSetInitialSyncEnded(
       true, true, true, true, syncer::STORAGE_IN_MEMORY);
 

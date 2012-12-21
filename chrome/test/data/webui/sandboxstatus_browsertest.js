@@ -24,9 +24,7 @@ SandboxStatusUITest.prototype = {
 //   the proper way to address such failures is to install the SUID
 //   sandbox. See:
 //     http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-// - PLEASE DO NOT DISABLE THIS TEST. If you can't figure out how to
-//   get the SUID sandbox installed, please mark the test FLAKY_ so we
-//   can get clear information on where the sandbox is and isn't installed.
+// - PLEASE DO NOT GLOBALLY DISABLE THIS TEST.
 // SUID sandbox is currently incompatible with AddressSanitizer,
 // see http://crbug.com/137653.
 GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
@@ -40,7 +38,7 @@ GEN('#endif');
 /**
  * Test if the SUID sandbox is enabled.
  *
- * TODO(bradchen): Remove FLAKY_ and flip polarity of this test once
+ * TODO(bradchen): Remove DISABLED_ and flip polarity of this test once
  * the SUID sandbox is enabled on the Chromium bots. In the mean time
  * this test will make it clear that the enabling steps are effective.
  */
@@ -58,7 +56,7 @@ TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
 // The seccomp-bpf sandbox is also not compatible with ASAN.
 GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
 GEN('# define MAYBE_testBPFSandboxEnabled \\');
-GEN('     FLAKY_testBPFSandboxEnabled');
+GEN('     DISABLED_testBPFSandboxEnabled');
 GEN('#else');
 GEN('# define MAYBE_testBPFSandboxEnabled \\');
 GEN('     DISABLED_testBPFSandboxEnabled');
@@ -67,7 +65,7 @@ GEN('#endif');
 /**
  * Test if the seccomp-bpf sandbox is enabled.
  * We know that some machines lack kernel support for this. So we mark
- * it as FLAKY_.
+ * it as DISABLED_.
  * It's very convenient to quickly be able to check whether tests ran with
  * or without the Seccomp BPF sandbox through this mechanism.
  */

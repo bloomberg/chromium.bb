@@ -242,7 +242,7 @@ TEST_F(DnsConfigServiceTest, WatchFailure) {
 #if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_WIN)
 // TODO(szym): This is really an integration test and can time out if HOSTS is
 // huge. http://crbug.com/107810
-TEST_F(DnsConfigServiceTest, FLAKY_GetSystemConfig) {
+TEST_F(DnsConfigServiceTest, DISABLED_GetSystemConfig) {
   service_.reset();
   scoped_ptr<DnsConfigService> service(DnsConfigService::CreateSystemService());
 

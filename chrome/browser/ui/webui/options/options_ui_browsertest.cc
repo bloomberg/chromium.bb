@@ -42,7 +42,7 @@ void OptionsBrowserTest::VerifyTitle() {
 }
 
 // Flaky, see http://crbug.com/119671.
-IN_PROC_BROWSER_TEST_F(OptionsBrowserTest, FLAKY_LoadOptionsByURL) {
+IN_PROC_BROWSER_TEST_F(OptionsBrowserTest, DISABLED_LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();

@@ -422,10 +422,6 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
     new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
   }
 
-  // Do not let the child ignore failures.  We need to propagate the
-  // failure status back to the parent.
-  new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
-
   base::ScopedTempDir temp_dir;
   // Create a new data dir and pass it to the child.
   if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {

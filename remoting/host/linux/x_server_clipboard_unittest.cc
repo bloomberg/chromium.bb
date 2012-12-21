@@ -96,7 +96,7 @@ class XServerClipboardTest : public testing::Test {
 };
 
 // http://crbug.com/163428
-TEST_F(XServerClipboardTest, FLAKY_CopyPaste) {
+TEST_F(XServerClipboardTest, DISABLED_CopyPaste) {
   // Verify clipboard data can be transferred more than once. Then verify that
   // the code continues to function in the opposite direction (so client1_ will
   // send then receive, and client2_ will receive then send).

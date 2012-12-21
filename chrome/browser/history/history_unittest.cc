@@ -708,7 +708,7 @@ TEST_F(HistoryTest, SetTitle) {
 }
 
 // crbug.com/159387: This test fails when daylight savings time ends.
-TEST_F(HistoryTest, FLAKY_Segments) {
+TEST_F(HistoryTest, DISABLED_Segments) {
   ASSERT_TRUE(history_service_.get());
 
   static const void* scope = static_cast<void*>(this);

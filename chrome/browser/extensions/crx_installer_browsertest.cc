@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests that scopes are only granted if |record_oauth2_grant_| on the prompt is
 // true.
 #if defined(OS_WIN)
-#define MAYBE_GrantScopes FLAKY_GrantScopes
+#define MAYBE_GrantScopes DISABLED_GrantScopes
 #else
 #define MAYBE_GrantScopes GrantScopes
 #endif

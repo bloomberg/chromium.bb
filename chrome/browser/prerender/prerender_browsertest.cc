@@ -1350,7 +1350,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
 #elif defined(OS_MACOSX)
 // http://crbug.com/100514
-#define MAYBE_PrerenderDelayLoadPlugin FLAKY_PrerenderDelayLoadPlugin
+#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
 #else
 #define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
 #endif
