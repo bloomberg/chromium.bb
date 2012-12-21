@@ -17,10 +17,9 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
-#include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/models/tree_node_model.h"
@@ -36,6 +35,10 @@ class Profile;
 
 namespace bookmark_utils {
 struct TitleMatch;
+}
+
+namespace history {
+struct FaviconImageResult;
 }
 
 // BookmarkNode ---------------------------------------------------------------
