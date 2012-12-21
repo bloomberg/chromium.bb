@@ -26,6 +26,11 @@ bool InitAudioSessionIOS() {
       AudioSessionSetProperty(
           kAudioSessionProperty_OverrideCategoryMixWithOthers,
           sizeof(allowMixing), &allowMixing);
+      UInt32 defaultToSpeaker = true;
+      AudioSessionSetProperty(
+          kAudioSessionProperty_OverrideCategoryDefaultToSpeaker,
+          sizeof(defaultToSpeaker),
+          &defaultToSpeaker);
       // Speech input cannot be used if either of these two conditions fail.
       kSessionInitialized = (error == kAudioSessionNoError) && result;
   });
