@@ -81,9 +81,11 @@ void TransferBuffer::FreePendingToken(void* p, unsigned int token) {
 
 void TransferBuffer::AllocateRingBuffer(unsigned int size) {
   for (;size >= min_buffer_size_; size /= 2) {
-    int32 id = helper_->command_buffer()->CreateTransferBuffer(size, -1);
+    int32 id = -1;
+    gpu::Buffer buffer =
+        helper_->command_buffer()->CreateTransferBuffer(size, &id);
     if (id != -1) {
-      buffer_ = helper_->command_buffer()->GetTransferBuffer(id);
+      buffer_ = buffer;
       ring_buffer_.reset(new AlignedRingBuffer(
           alignment_,
           id,

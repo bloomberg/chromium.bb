@@ -52,18 +52,14 @@ bool CommandBufferHelper::AllocateRingBuffer() {
     return true;
   }
 
-  int32 id = command_buffer_->CreateTransferBuffer(ring_buffer_size_, -1);
+  int32 id = -1;
+  Buffer buffer = command_buffer_->CreateTransferBuffer(ring_buffer_size_, &id);
   if (id < 0) {
     ClearUsable();
     return false;
   }
 
-  ring_buffer_ = command_buffer_->GetTransferBuffer(id);
-  if (!ring_buffer_.ptr) {
-    ClearUsable();
-    return false;
-  }
-
+  ring_buffer_ = buffer;
   ring_buffer_id_ = id;
   command_buffer_->SetGetBuffer(id);
 

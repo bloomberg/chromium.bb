@@ -60,16 +60,15 @@ int32 MockCommandBufferBase::GetNextFreeTransferBufferId() {
   return -1;
 }
 
-int32 MockCommandBufferBase::CreateTransferBuffer(
-    size_t size, int32 id_request) {
-  int32 id = GetNextFreeTransferBufferId();
-  if (id >= 0) {
-    int32 ndx = id - kTransferBufferBaseId;
+Buffer MockCommandBufferBase::CreateTransferBuffer(size_t size, int32* id) {
+  *id = GetNextFreeTransferBufferId();
+  if (*id >= 0) {
+    int32 ndx = *id - kTransferBufferBaseId;
     transfer_buffers_[ndx].reset(new int8[size]);
     transfer_buffer_buffers_[ndx].ptr = transfer_buffers_[ndx].get();
     transfer_buffer_buffers_[ndx].size = size;
   }
-  return id;
+  return GetTransferBuffer(*id);
 }
 
 void MockCommandBufferBase::DestroyTransferBufferHelper(int32 id) {
@@ -84,14 +83,6 @@ Buffer MockCommandBufferBase::GetTransferBuffer(int32 id) {
   GPU_DCHECK_GE(id, kTransferBufferBaseId);
   GPU_DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   return transfer_buffer_buffers_[id - kTransferBufferBaseId];
-}
-
-int32 MockCommandBufferBase::RegisterTransferBuffer(
-    base::SharedMemory* shared_memory,
-    size_t size,
-    int32 id_request) {
-  GPU_NOTREACHED();
-  return -1;
 }
 
 void MockCommandBufferBase::FlushHelper(int32 put_offset) {

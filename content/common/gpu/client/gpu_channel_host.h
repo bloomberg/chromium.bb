@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -150,14 +151,28 @@ class GpuChannelHost : public IPC::Sender,
 
   GpuChannelHostFactory* factory() const { return factory_; }
   int gpu_host_id() const { return gpu_host_id_; }
+
+  // Do not use this function! It does not take the context lock and even
+  // if it did the PID might become invalid immediately after releasing it
+  // TODO(apatrick): Make all callers use ShareToGpuProcess().
   base::ProcessId gpu_pid() const { return channel_->peer_pid(); }
+
   int client_id() const { return client_id_; }
+
+  // Returns a handle to the shared memory that can be sent via IPC to the
+  // GPU process. The caller is responsible for ensuring it is closed. Returns
+  // an invalid handle on failure.
+  base::SharedMemoryHandle ShareToGpuProcess(
+      base::SharedMemory* shared_memory);
 
   // Generates n unique mailbox names that can be used with
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
   // handled only on the GPU process' IO thread, and so is not effectively
   // a finish.
   bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
+
+  // Reserve one unused transfer buffer ID.
+  int32 ReserveTransferBufferId();
 
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
@@ -214,6 +229,9 @@ class GpuChannelHost : public IPC::Sender,
 
   // A pool of valid mailbox names.
   std::vector<std::string> mailbox_name_pool_;
+
+  // Transfer buffer IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_transfer_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

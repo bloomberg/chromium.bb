@@ -14,6 +14,10 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
+#if defined(OS_WIN)
+#include "content/public/common/sandbox_init.h"
+#endif
+
 using base::AutoLock;
 using base::MessageLoopProxy;
 
@@ -29,6 +33,7 @@ GpuChannelHost::GpuChannelHost(
       client_id_(client_id),
       gpu_host_id_(gpu_host_id),
       state_(kUnconnected) {
+  next_transfer_buffer_id_.GetNext();
 }
 
 void GpuChannelHost::Connect(
@@ -254,6 +259,31 @@ void GpuChannelHost::RemoveRoute(int route_id) {
                                channel_filter_.get(), route_id));
 }
 
+base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
+    base::SharedMemory* shared_memory) {
+  AutoLock lock(context_lock_);
+
+  if (!channel_.get())
+    return base::SharedMemory::NULLHandle();
+
+  base::SharedMemoryHandle handle;
+#if defined(OS_WIN)
+  // Windows needs to explicitly duplicate the handle out to another process.
+  if (!BrokerDuplicateHandle(shared_memory->handle(),
+                             channel_->peer_pid(),
+                             &handle,
+                             FILE_MAP_WRITE,
+                             0)) {
+    return base::SharedMemory::NULLHandle();
+  }
+#else
+  if (!shared_memory->ShareToProcess(channel_->peer_pid(), &handle))
+    return base::SharedMemory::NULLHandle();
+#endif
+
+  return handle;
+}
+
 bool GpuChannelHost::GenerateMailboxNames(unsigned num,
                                           std::vector<std::string>* names) {
   TRACE_EVENT0("gpu", "GenerateMailboxName");
@@ -287,6 +317,10 @@ void GpuChannelHost::OnGenerateMailboxNamesReply(
   mailbox_name_pool_.insert(mailbox_name_pool_.end(),
                             names.begin(),
                             names.end());
+}
+
+int32 GpuChannelHost::ReserveTransferBufferId() {
+  return next_transfer_buffer_id_.GetNext();
 }
 
 GpuChannelHost::~GpuChannelHost() {}

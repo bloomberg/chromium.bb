@@ -104,11 +104,17 @@ void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
   UpdateState();
 }
 
-void CommandBufferService::SetSharedStateBuffer(int32 transfer_buffer_id) {
-  gpu::Buffer buffer = GetTransferBuffer(transfer_buffer_id);
-  shared_state_ = reinterpret_cast<CommandBufferSharedState*>(buffer.ptr);
+bool CommandBufferService::SetSharedStateBuffer(
+    scoped_ptr<base::SharedMemory> shared_state_shm) {
+  shared_state_shm_.reset(shared_state_shm.release());
+  if (!shared_state_shm_->Map(sizeof(*shared_state_)))
+    return false;
+
+  shared_state_ =
+      static_cast<CommandBufferSharedState*>(shared_state_shm_->memory());
 
   UpdateState();
+  return true;
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {
@@ -116,20 +122,26 @@ void CommandBufferService::SetGetOffset(int32 get_offset) {
   get_offset_ = get_offset;
 }
 
-int32 CommandBufferService::CreateTransferBuffer(size_t size,
-                                                 int32 id_request) {
-  return transfer_buffer_manager_->CreateTransferBuffer(size, id_request);
+Buffer CommandBufferService::CreateTransferBuffer(size_t size,
+                                                  int32* id) {
+  *id = -1;
+
+  SharedMemory buffer;
+  if (!buffer.CreateAnonymous(size))
+    return Buffer();
+
+  static int32 next_id = 1;
+  *id = next_id++;
+
+  if (!RegisterTransferBuffer(*id, &buffer, size))
+    return Buffer();
+
+  return GetTransferBuffer(*id);
 }
 
-int32 CommandBufferService::RegisterTransferBuffer(
-    base::SharedMemory* shared_memory, size_t size, int32 id_request) {
-  return transfer_buffer_manager_->RegisterTransferBuffer(
-      shared_memory, size, id_request);
-}
-
-void CommandBufferService::DestroyTransferBuffer(int32 handle) {
-  transfer_buffer_manager_->DestroyTransferBuffer(handle);
-  if (handle == ring_buffer_id_) {
+void CommandBufferService::DestroyTransferBuffer(int32 id) {
+  transfer_buffer_manager_->DestroyTransferBuffer(id);
+  if (id == ring_buffer_id_) {
     ring_buffer_id_ = -1;
     ring_buffer_ = Buffer();
     num_entries_ = 0;
@@ -138,8 +150,17 @@ void CommandBufferService::DestroyTransferBuffer(int32 handle) {
   }
 }
 
-Buffer CommandBufferService::GetTransferBuffer(int32 handle) {
-  return transfer_buffer_manager_->GetTransferBuffer(handle);
+Buffer CommandBufferService::GetTransferBuffer(int32 id) {
+  return transfer_buffer_manager_->GetTransferBuffer(id);
+}
+
+bool CommandBufferService::RegisterTransferBuffer(
+    int32 id,
+    base::SharedMemory* shared_memory,
+    size_t size) {
+  return transfer_buffer_manager_->RegisterTransferBuffer(id,
+                                                          shared_memory,
+                                                          size);
 }
 
 void CommandBufferService::SetToken(int32 token) {

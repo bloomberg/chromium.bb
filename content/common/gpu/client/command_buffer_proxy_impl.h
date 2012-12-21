@@ -76,12 +76,10 @@ class CommandBufferProxyImpl
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
   virtual void SetGetBuffer(int32 shm_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
-  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
-  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size,
-                                       int32 id_request) OVERRIDE;
+  virtual gpu::Buffer CreateTransferBuffer(size_t size,
+                                           int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual gpu::Buffer GetTransferBuffer(int32 handle) OVERRIDE;
+  virtual gpu::Buffer GetTransferBuffer(int32 id) OVERRIDE;
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(
@@ -116,10 +114,6 @@ class CommandBufferProxyImpl
   // a finish.
   bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
 
-  // Set a task that will be invoked the next time the window becomes invalid
-  // and needs to be repainted. Takes ownership of task.
-  void SetNotifyRepaintTask(const base::Closure& callback);
-
   // Sends an IPC message with the new state of surface visibility.
   bool SetSurfaceVisible(bool visible);
 
@@ -148,7 +142,6 @@ class CommandBufferProxyImpl
 
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
-  void OnNotifyRepaint();
   void OnDestroyed(gpu::error::ContextLostReason reason);
   void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
@@ -158,6 +151,12 @@ class CommandBufferProxyImpl
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();
+
+  // The shared memory area used to update state.
+  gpu::CommandBufferSharedState* shared_state() const {
+    return reinterpret_cast<gpu::CommandBufferSharedState*>(
+        shared_state_shm_->memory());
+  }
 
   // Local cache of id to transfer buffer mapping.
   TransferBufferMap transfer_buffers_;
@@ -170,7 +169,7 @@ class CommandBufferProxyImpl
   State last_state_;
 
   // The shared memory area used to update state.
-  gpu::CommandBufferSharedState* shared_state_;
+  scoped_ptr<base::SharedMemory> shared_state_shm_;
 
   // |*this| is owned by |*channel_| and so is always outlived by it, so using a
   // raw pointer is ok.
@@ -182,8 +181,6 @@ class CommandBufferProxyImpl
   // Tasks to be invoked in echo responses.
   std::queue<base::Closure> echo_tasks_;
 
-  base::Closure notify_repaint_task_;
-
   base::Closure channel_error_callback_;
 
   base::Callback<void(const GpuMemoryAllocationForRenderer&)>
@@ -194,9 +191,6 @@ class CommandBufferProxyImpl
   // Tasks to be invoked in SignalSyncPoint responses.
   uint32 next_signal_id_;
   SignalTaskMap signal_tasks_;
-
-  // ID of transfer buffer containing shared state.
-  int32 state_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

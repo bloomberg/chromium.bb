@@ -32,11 +32,8 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
   virtual void SetGetBuffer(int transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
-  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
+  virtual Buffer CreateTransferBuffer(size_t size, int32* id) OVERRIDE;
   virtual Buffer GetTransferBuffer(int32 id) OVERRIDE;
-  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size,
-                                       int32 id_request) OVERRIDE;
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;
   virtual void SetContextLostReason(error::ContextLostReason reason) OVERRIDE;

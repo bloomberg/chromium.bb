@@ -141,7 +141,9 @@ PP_Graphics3DTrustedState PPB_Graphics3D_Impl::GetState() {
 }
 
 int32_t PPB_Graphics3D_Impl::CreateTransferBuffer(uint32_t size) {
-  return GetCommandBuffer()->CreateTransferBuffer(size, -1);
+  int32_t id = -1;
+  GetCommandBuffer()->CreateTransferBuffer(size, &id);
+  return id;
 }
 
 PP_Bool PPB_Graphics3D_Impl::DestroyTransferBuffer(int32_t id) {
