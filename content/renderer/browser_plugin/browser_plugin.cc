@@ -186,7 +186,6 @@ void BrowserPlugin::UpdateDOMAttribute(
   }
 }
 
-
 bool BrowserPlugin::SetSrcAttribute(const std::string& src,
                                     std::string* error_message) {
   if (!valid_partition_id_) {
