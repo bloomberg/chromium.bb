@@ -38,6 +38,7 @@ class TestFileIO : public TestCase {
   };
 
   std::string TestOpen();
+  std::string TestOpenDirectory();
   std::string TestReadWriteSetLength();
   std::string TestReadToArrayWriteSetLength();
   std::string TestTouchQuery();

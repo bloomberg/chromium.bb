@@ -26,6 +26,8 @@ int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
       return PP_ERROR_NOSPACE;
     case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
       return PP_ERROR_FAILED;
+    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+      return PP_ERROR_NOTAFILE;
     default:
       return PP_ERROR_FAILED;
   }

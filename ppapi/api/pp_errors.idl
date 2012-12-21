@@ -103,6 +103,8 @@
    * unexpectedly.
    */
   PP_ERROR_FILECHANGED    = -23,
+  /** This value indicates that the pathname does not reference a file. */
+  PP_ERROR_NOTAFILE       = -24,
   /** This value indicates failure due to a time limit being exceeded. */
   PP_ERROR_TIMEDOUT       = -30,
   /**

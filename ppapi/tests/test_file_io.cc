@@ -137,6 +137,7 @@ bool TestFileIO::Init() {
 
 void TestFileIO::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Open, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(OpenDirectory, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSetLength, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ReadToArrayWriteSetLength, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(TouchQuery, filter);
@@ -245,6 +246,43 @@ std::string TestFileIO::TestOpen() {
       INVALID_FLAG_COMBINATION);
   if (!result.empty())
     return result;
+
+  PASS();
+}
+
+std::string TestFileIO::TestOpenDirectory() {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  // Make a directory.
+  pp::FileRef dir_ref(file_system, "/test_dir_open_directory");
+  rv = dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::MakeDirectory force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::MakeDirectory", rv);
+
+  // Open the directory. This is expected to fail since directories cannot be
+  // opened.
+  pp::FileIO file_io(instance_);
+  rv = file_io.Open(dir_ref, PP_FILEOPENFLAG_READ, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  // Check for failing open operation for the directory.
+  if (rv != PP_ERROR_NOTAFILE)
+    return ReportError("FileIO::Open", rv);
 
   PASS();
 }
