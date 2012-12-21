@@ -4,7 +4,7 @@
 
 #include "ui/gl/async_pixel_transfer_delegate_android.h"
 
-#include <sys/resource.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -38,18 +38,18 @@ bool CheckErrors(const char* file, int line) {
   GLenum glerror;
   bool success = true;
   while ((eglerror = eglGetError()) != EGL_SUCCESS) {
-     LOG(ERROR) << "Async transfer eglerror at "
+     LOG(ERROR) << "Async transfer EGL error at "
                 << file << ":" << line << " " << eglerror;
      success = false;
   }
   while ((glerror = glGetError()) != GL_NO_ERROR) {
-     LOG(ERROR) << "Async transfer openglerror at "
+     LOG(ERROR) << "Async transfer OpenGL error at "
                 << file << ":" << line << " " << glerror;
      success = false;
   }
   return success;
 }
-#define CHK() CheckErrors(__FILE__, __LINE__)
+#define CHECK_GL() CheckErrors(__FILE__, __LINE__)
 
 // We duplicate shared memory to avoid use-after-free issues. This could also
 // be solved by ref-counting something, or with a destruction callback. There
@@ -92,11 +92,6 @@ class TransferThread : public base::Thread {
   }
 
   virtual void Init() OVERRIDE {
-    // Lower the thread priority for uploads.
-    // TODO(epenner): What's a good value? Without lowering this, uploads
-    // would often execute immediately and block the GPU thread.
-    setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), 5);
-
     GLShareGroup* share_group = NULL;
     bool software = false;
     surface_ = new gfx::PbufferGLSurfaceEGL(software, gfx::Size(1,1));
@@ -124,6 +119,10 @@ class TransferThread : public base::Thread {
 base::LazyInstance<TransferThread>
     g_transfer_thread = LAZY_INSTANCE_INITIALIZER;
 
+base::MessageLoopProxy* transfer_message_loop_proxy() {
+  return g_transfer_thread.Pointer()->message_loop_proxy();
+}
+
 } // namespace
 
 // Class which holds async pixel transfers state (EGLImage).
@@ -134,6 +133,7 @@ class TransferStateInternal
  public:
   explicit TransferStateInternal(GLuint texture_id)
       : texture_id_(texture_id),
+        thread_texture_id_(0),
         needs_late_bind_(false),
         transfer_in_progress_(false),
         egl_image_(EGL_NO_IMAGE_KHR) {
@@ -147,8 +147,17 @@ class TransferStateInternal
   }
 
   void BindTransfer(AsyncTexImage2DParams* bound_params) {
+    TRACE_EVENT2("gpu", "BindAsyncTransfer glEGLImageTargetTexture2DOES",
+                 "width", late_bind_define_params_.width,
+                 "height", late_bind_define_params_.height);
     DCHECK(bound_params);
     DCHECK(needs_late_bind_);
+    DCHECK(texture_id_);
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
+    // We can only change the active texture and unit 0,
+    // as that is all that will be restored.
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
     *bound_params = late_bind_define_params_;
     needs_late_bind_ = false;
@@ -167,15 +176,26 @@ protected:
   friend class base::RefCountedThreadSafe<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
 
+  static void DeleteTexture(GLuint id) {
+    glDeleteTextures(1, &id);
+  }
+
   virtual ~TransferStateInternal() {
     if (egl_image_) {
       EGLDisplay display = eglGetCurrentDisplay();
       eglDestroyImageKHR(display, egl_image_);
+      if (thread_texture_id_) {
+        transfer_message_loop_proxy()->PostTask(FROM_HERE,
+            base::Bind(&DeleteTexture, thread_texture_id_));
+      }
     }
   }
 
   // The 'real' texture.
   GLuint texture_id_;
+
+  // The EGLImage sibling on the upload thread.
+  GLuint thread_texture_id_;
 
   // Indicates there is a new EGLImage and the 'real'
   // texture needs to be bound to it as an EGLImage target.
@@ -234,9 +254,6 @@ class AsyncPixelTransferDelegateAndroid : public AsyncPixelTransferDelegate {
   virtual AsyncPixelTransferState*
       CreateRawPixelTransferState(GLuint texture_id) OVERRIDE;
 
-  base::MessageLoopProxy* transfer_message_loop_proxy() {
-    return g_transfer_thread.Pointer()->message_loop_proxy();
-  }
   static void PerformAsyncTexImage2D(
       TransferStateInternal* state,
       AsyncTexImage2DParams tex_params,
@@ -249,6 +266,15 @@ class AsyncPixelTransferDelegateAndroid : public AsyncPixelTransferDelegate {
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateAndroid);
 };
 
+namespace {
+// Imagination has some odd problems still.
+bool IsImagination() {
+  std::string vendor;
+  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  return vendor.find("Imagination") != std::string::npos;
+}
+}
+
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
 // - Bind EGLImages to OpenGL textures (GL_OES_EGL_image)
@@ -256,15 +282,12 @@ class AsyncPixelTransferDelegateAndroid : public AsyncPixelTransferDelegate {
 scoped_ptr<AsyncPixelTransferDelegate>
     AsyncPixelTransferDelegate::Create(gfx::GLContext* context) {
   DCHECK(context);
-  // TODO(epenner): Enable it! Waiting for impl-side painting
-  // to be more stable before enabling this.
-  bool enable = false;
-  if (enable &&
-      context->HasExtension("EGL_KHR_fence_sync") &&
+  if (context->HasExtension("EGL_KHR_fence_sync") &&
       context->HasExtension("EGL_KHR_image") &&
       context->HasExtension("EGL_KHR_image_base") &&
       context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
-      context->HasExtension("GL_OES_EGL_image")) {
+      context->HasExtension("GL_OES_EGL_image") &&
+      !IsImagination()) {
     return make_scoped_ptr(
         static_cast<AsyncPixelTransferDelegate*>(
             new AsyncPixelTransferDelegateAndroid()));
@@ -332,6 +355,8 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
       base::Bind(
           &TransferStateInternal::TexImage2DCompleted,
           state));
+
+  DCHECK(CHECK_GL());
 }
 
 void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
@@ -354,6 +379,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
 
   // Create the EGLImage if it hasn't already been created.
   if (!state->egl_image_) {
+    TRACE_EVENT0("gpu", "eglCreateImageKHR");
     EGLDisplay egl_display = eglGetCurrentDisplay();
     EGLContext egl_context = eglGetCurrentContext();
     EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
@@ -361,7 +387,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
         reinterpret_cast<EGLClientBuffer>(state->texture_id_);
     EGLint egl_attrib_list[] = {
         EGL_GL_TEXTURE_LEVEL_KHR, tex_params.level, // mip-level to reference.
-        EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, // preserve the data in the texture.
+        EGL_IMAGE_PRESERVED_KHR, EGL_FALSE,         // throw away texture data.
         EGL_NONE
     };
     state->egl_image_ = eglCreateImageKHR(
@@ -387,14 +413,17 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
       base::Bind(
           &TransferStateInternal::TexSubImage2DCompleted,
           state));
+
+  DCHECK(CHECK_GL());
 }
 
 namespace {
-void WaitForGlFence() {
+void WaitForGl() {
+  TRACE_EVENT0("gpu", "eglWaitSync");
+
   // Uploads usually finish on the CPU, but just in case add a fence
   // and guarantee the upload has completed. The flush bit is set to
   // insure we don't wait forever.
-
   EGLDisplay display = eglGetCurrentDisplay();
   EGLSyncKHR fence = eglCreateSyncKHR(display, EGL_SYNC_FENCE_KHR, NULL);
   EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
@@ -412,6 +441,14 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
     TransferStateInternal* state,
     AsyncTexImage2DParams tex_params,
     AsyncMemoryParams mem_params) {
+  TRACE_EVENT2("gpu", "PerformAsyncTexImage",
+               "width", tex_params.width,
+               "height", tex_params.height);
+  DCHECK(state);
+  DCHECK(!state->thread_texture_id_);
+  DCHECK_EQ(0, tex_params.level);
+  DCHECK_EQ(EGL_NO_IMAGE_KHR, state->egl_image_);
+
   // TODO(epenner): This is just to insure it is deleted. Could bind() do this?
   scoped_ptr<SharedMemory> shared_memory =
       make_scoped_ptr(mem_params.shared_memory);
@@ -420,23 +457,21 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
                           mem_params.shm_size,
                           mem_params.shm_data_offset,
                           mem_params.shm_data_size);
-
-  // In texImage2D, we do everything on the upload thread. This is
-  // because texImage2D can incur CPU allocation cost, and it also
-  // 'orphans' any previous EGLImage bound to the texture.
-  DCHECK_EQ(0, tex_params.level);
-  DCHECK_EQ(EGL_NO_IMAGE_KHR, state->egl_image_);
-  TRACE_EVENT2("gpu", "performAsyncTexImage2D",
-               "width", tex_params.width,
-               "height", tex_params.height);
-
-  // Create a texture from the image and upload to it.
-  GLuint temp_texture = 0;
-  glGenTextures(1, &temp_texture);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, temp_texture);
   {
-    TRACE_EVENT0("gpu", "performAsyncTexSubImage2D glTexImage2D");
+    TRACE_EVENT0("gpu", "glTexImage2D no data");
+    glGenTextures(1, &state->thread_texture_id_);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
+
+    // These params are needed for EGLImage creation to succeed on several
+    // Android devices. I couldn't find this requirement in the EGLImage
+    // extension spec, but several devices fail without it.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Allocate first, so we can create the EGLImage without
+    // EGL_IMAGE_PRESERVED, which can be costly.
     glTexImage2D(
         GL_TEXTURE_2D,
         tex_params.level,
@@ -446,36 +481,57 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
         tex_params.border,
         tex_params.format,
         tex_params.type,
+        NULL);
+  }
+  {
+    TRACE_EVENT0("gpu", "eglCreateImageKHR");
+    EGLDisplay egl_display = eglGetCurrentDisplay();
+    EGLContext egl_context = eglGetCurrentContext();
+    EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
+    EGLClientBuffer egl_buffer =
+        reinterpret_cast<EGLClientBuffer>(state->thread_texture_id_);
+    EGLint egl_attrib_list[] = {
+        EGL_GL_TEXTURE_LEVEL_KHR, tex_params.level, // mip-map level.
+        EGL_IMAGE_PRESERVED_KHR, EGL_FALSE,         // throw away texture data.
+        EGL_NONE
+    };
+    state->egl_image_ = eglCreateImageKHR(
+        egl_display,
+        egl_context,
+        egl_target,
+        egl_buffer,
+        egl_attrib_list);
+  }
+  {
+    TRACE_EVENT0("gpu", "glTexSubImage2D with data");
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        tex_params.level,
+        0,
+        0,
+        tex_params.width,
+        tex_params.height,
+        tex_params.format,
+        tex_params.type,
         data);
   }
 
-  // Create the EGLImage, as texSubImage always 'orphan's a previous EGLImage.
-  EGLDisplay egl_display = eglGetCurrentDisplay();
-  EGLContext egl_context = eglGetCurrentContext();
-  EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
-  EGLClientBuffer egl_buffer = (EGLClientBuffer) temp_texture;
-  EGLint egl_attrib_list[] = {
-      EGL_GL_TEXTURE_LEVEL_KHR, tex_params.level, // mip-map level.
-      EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,          // preserve the data.
-      EGL_NONE
-  };
-  state->egl_image_ = eglCreateImageKHR(
-      egl_display,
-      egl_context,
-      egl_target,
-      egl_buffer,
-      egl_attrib_list);
-  WaitForGlFence();
-
-  // We can delete this thread's texture as the real texture
-  // now contains the data.
-  glDeleteTextures(1, &temp_texture);
+  WaitForGl();
+  DCHECK(CHECK_GL());
 }
 
 void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
     TransferStateInternal* state,
     AsyncTexSubImage2DParams tex_params,
     AsyncMemoryParams mem_params) {
+  TRACE_EVENT2("gpu", "PerformAsyncTexSubImage2D",
+               "width", tex_params.width,
+               "height", tex_params.height);
+
+  DCHECK(state);
+  DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
+  DCHECK_EQ(0, tex_params.level);
+
   // TODO(epenner): This is just to insure it is deleted. Could bind() do this?
   scoped_ptr<SharedMemory> shared_memory =
       make_scoped_ptr(mem_params.shared_memory);
@@ -485,22 +541,18 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
                           mem_params.shm_data_offset,
                           mem_params.shm_data_size);
 
-  // For a texSubImage, the texture must already have been
-  // created on the main thread, along with EGLImageKHR.
-  DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
-  DCHECK_EQ(0, tex_params.level);
-  TRACE_EVENT2("gpu", "performAsyncTexSubImage2D",
-               "width", tex_params.width,
-               "height", tex_params.height);
-
-  // Create a texture from the image and upload to it.
-  GLuint temp_texture = 0;
-  glGenTextures(1, &temp_texture);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, temp_texture);
-  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, state->egl_image_);
+  if (!state->thread_texture_id_) {
+    TRACE_EVENT0("gpu", "glEGLImageTargetTexture2DOES");
+    glGenTextures(1, &state->thread_texture_id_);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, state->egl_image_);
+  } else {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
+  }
   {
-    TRACE_EVENT0("gpu", "performAsyncTexSubImage2D glTexSubImage2D");
+    TRACE_EVENT0("gpu", "glTexSubImage2D");
     glTexSubImage2D(
         GL_TEXTURE_2D,
         tex_params.level,
@@ -512,11 +564,9 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
         tex_params.type,
         data);
   }
-  WaitForGlFence();
+  WaitForGl();
 
-  // We can delete this thread's texture as the real texture
-  // now contains the data.
-  glDeleteTextures(1, &temp_texture);
+  DCHECK(CHECK_GL());
 }
 
 }  // namespace gfx
