@@ -8,12 +8,34 @@ body {
     line-height: 1.6;
 }
 
+pre {
+    background-color: #F8F8F8;
+    border: 1px solid #CCC;
+    font-size: 13px;
+    line-height: 19px;
+    overflow: auto;
+    padding: 6px 10px;
+    border-radius: 3px;
+    margin: 15px 0;
+}
+
 code {
     margin: 0 2px;
     padding: 0px 5px;
     border: 1px solid #EAEAEA;
     background-color: #F8F8F8;
     border-radius: 3px;
+}
+
+pre, code {
+    font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+pre code {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -377,6 +399,108 @@ send this upstream.</p>
 that make indenting and outdenting of list items behave closer to how it works
 in MS Word.</p>
 <p>TODO: The code for this is very messy, it needs to be cleaned up.</p>
+
+<h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>We needed to modify the behavior of the <code>InsertHTML</code> command.
+The WebKit behavior is to prevent the inserted HTML from being nested inside
+style spans.  This branch adds <code>InsertHTMLNested</code> command that
+allows the HTML to be nested inside style spans.</p>
+
+<h3><a name="feature-instrumentLayout">feature/instrumentLayout</a> (Inseob Lee; D35009812)</h3>
+<p>TODO</p>
+
+<h3><a name="feature-instrumentRefCountedLeakCounter">feature/instrumentRefCountedLeakCounter</a> (Imran Haider)</h3>
+<p>TODO</p>
+
+<h3><a name="feature-line-erase">feature/line-erase</a> (Imran Haider)</h3>
+<p>This bugfix addresses an issue when rendering:</p>
+<pre><code>&lt;div contenteditable="true"&gt;aaaa&lt;div&gt;bbcc&lt;/div&gt;&lt;/div&gt;</code></pre>
+<p>when the width of the browser is such that the "aaaa" takes up the whole
+line.  Selecting and copying "aaaa" inbetween "bb" and "cc" will cause the "cc"
+to disappear.</p>
+<p>The disappearance of "cc" is caused by a invalid memory access and may
+possibly lead to memory corruption.  The root cause of the problem is that the
+new-line character after the source content is assumed to take some space (4
+pixels) when it in fact doesn't take any space since it's at the end of the
+line.  This miscalculation causes the final midpoint to not be placed and so
+makes it impossible to compute the trailing whitespace string.</p>
+<p>The missing trailing whitespace string causes the midpoint to not be placed
+between the pasted content and the new-line character.  Since the new-line
+character is part of the paragraph instead of being a separate node, the
+new-line is never removed by <code>removeUnrenderedTextNodesAtEnds()</code>.
+This causes the <code>endOfParagraph()</code> to return a reference to the
+new-line character instead of the actual end of the pasted content.  At a later
+point, <code>ReplaceSelectionCommand::mergeEndIfNeeded</code> makes an
+assuption that there is a character after the end of paragraph, which is an
+invalid assumption now.  This leads to an invalid memory access and sometimes
+causes some nodes to disappear.</p>
+
+<h3><a name="feature-nColumnSpan">feature/nColumnSpan</a> (Shezan Baig; D33399541, D36821222)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>When using the multicolumn feature, there is a way to make an element span
+across all columns (<code>-webkit-column-span: all</code>).</p>
+<p>However, we needed a way to span across a specified number of columns, (e.g.
+<code>-webkit-column-span: 2</code>).  Once CSS Regions have matured (WebKit
+bug <a href="https://bugs.webkit.org/show_bug.cgi?id=57312">57312</a>), we
+should be able to use Regions to achieve this effect, then we can get rid of
+this branch.  However, we needed this one specific feature immediately, so this
+branch just hacks it in.</p>
+
+<h3><a name="feature-noV8RecursionScopeCheck">feature/noV8RecursionScopeCheck</a> (Shezan Baig; D34552506)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch makes it so that we don't need to use the
+<code>MicrotaskSuppression</code> guard whenever our product invokes
+Javascript.  Our product uses V8 for non-WebKit related code.  Having to use
+the <code>MicrotaskSuppression</code> guard would introduce WebKit dependency
+on our non-WebKit related code.</p>
+
+<h3><a name="feature-opaque-bmp">feature/opaque-bmp</a> (Imran Haider)</h3>
+<p>This bugfix addresses a misinterpretation of the 4th byte of a 32-bit
+uncompressed BMP image with a v1 header.  As per the <a
+    href="http://msdn.microsoft.com/en-us/library/dd183376%28VS.85%29.aspx">specification</a>,
+"The high byte in each DWORD is not used".  Prior to this change, this byte was
+assumed to be unused if its value remained unchanged but interprets it as the
+alpha channel if its value changes throughout the image data.  This fallback
+behavior may cause problem for some users if the BMP image was created by an
+encoder that copied uninitialize values into the 4th byte of every pixel.</p>
+
+<h3><a name="feature-preserveSelDirection">feature/preserveSelDirection</a> (Shezan Baig; D36076457)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch makes it so that when text is selected inside a contenteditable,
+and then a style is applied on that text, the original selection direction
+would be preserved.</p>
+
+<h3><a name="feature-resetCachedGDISettings">feature/resetCachedGDISettings</a> (Shezan Baig; D31921707, upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86891">86891</a>)</h3>
+<p>Skia caches GDI settings like ClearType, so when these settings change (for
+example, after remoting to a different machine, or manually changing it in the
+system settings), the app does not pick up the new setting.</p>
+<p>This branch adds a way to reset this cache.  There is also an upstream
+ticket, however, this is not so much of an issue for Chrome because Chrome just
+creates new processes for each tab, so it picks up the new setting that
+way.</p>
+
+<h3><a name="feature-v8dll">feature/v8dll</a> (Shezan Baig)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This is just a small change to use V8 in a separate DLL.</p>
+
+<h3><a name="feature-virtualAllocHooks">feature/virtualAllocHooks</a> (Lilit Darbinyan)</h3>
+<p>TODO</p>
+
+<h3><a name="feature-timeline-on-startup">feature/timeline-on-startup</a> (Imran Haider)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>We needed a way to start up the inspector and the timeline before loading
+the main document.  This change allows us to get a notification when the
+<code>devtools.js</code> has completed processing a batch of messages.  The
+first notification tells us that the inspector has processed all of the
+initialization messages and so we can continue to inject JS to kick start the
+timeline and to start loading the main document.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
