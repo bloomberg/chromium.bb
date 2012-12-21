@@ -265,6 +265,32 @@ empty.</p>
 indented block will be highlighted on load.  Click on the <code>OUTDENT</code>
 button.  There are now a bunch of empty lines added in between.</p>
 
+<h3><a name="bugfix-pasteUsesLineBreak">bugfix/pasteUsesLineBreak</a> (Shezan Baig; D33830147)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-perl_filenames">bugfix/perl_filenames</a> (Edward Christie)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-printBkTransparent">bugfix/printBkTransparent</a> (Shezan Baig; D32606365)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-printTextTop">bugfix/printTextTop</a> (Shezan Baig; D32606285)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-removeMarkersUponEditing">bugfix/removeMarkersUponEditing</a> (Edward Christie)</h3>
+<p>TODO</p>
+
+<h3><a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a> (Shezan Baig; D32861389)</h3>
+<p>This bug is somewhat hard to reproduce, the window size needs to be just
+about right.</p>
+<p>Open <a href="repros/scrollClipRect.html">this link</a> in Chrome, and
+resize the window so that new outer scrollbars appear over the existing
+scrollbars of the iframe.  Then resize it just a little smaller.  Then use the
+mouse wheel to scroll the contents of the iframe.</p>
+<p>If the window is sized just right, you will see that only a portion of the
+iframe scrolls.  This is because the clipRect is not being calculated correctly
+due to the scale transform being applied.</p>
+
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
 file is used as a css background, or in an <code>img</code> element, it does
