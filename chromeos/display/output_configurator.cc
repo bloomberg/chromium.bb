@@ -170,9 +170,7 @@ void DestroyUnusedCrtcs(Display* display,
                         XRRScreenResources* screen,
                         Window window,
                         CrtcConfig* config1,
-                        CrtcConfig* config2,
-                        int width,
-                        int height) {
+                        CrtcConfig* config2) {
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
   // This function tries to be smart to avoid too many off/on cycles:
@@ -203,8 +201,10 @@ void DestroyUnusedCrtcs(Display* display,
       // In case our CRTC doesn't fit in our current framebuffer, disable it.
       // It'll get reenabled after we resize the framebuffer.
       XRRModeInfo* mode_info = ModeInfoForID(screen, config.mode);
-      if (static_cast<int>(mode_info->width) > width ||
-          static_cast<int>(mode_info->height) > height) {
+      int current_width = DisplayWidth(display, DefaultScreen(display));
+      int current_height = DisplayHeight(display, DefaultScreen(display));
+      if (static_cast<int>(mode_info->width) > current_width ||
+          static_cast<int>(mode_info->height) > current_height) {
         config.mode = None;
         config.output = None;
       }
@@ -225,7 +225,7 @@ void CreateFrameBuffer(Display* display,
                        CrtcConfig* config2) {
   VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
 
-  DestroyUnusedCrtcs(display, screen, window, config1, config2, width, height);
+  DestroyUnusedCrtcs(display, screen, window, config1, config2);
 
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
