@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper/pepper_flash_file_host.h"
+#include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -37,58 +36,17 @@ const int kWritePermissions = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_WRITE |
                               base::PLATFORM_FILE_EXCLUSIVE_WRITE |
                               base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+}  // namespace
 
-// All file messages are handled by BrowserThread's blocking pool.
-class FileMessageFilter : public ppapi::host::ResourceMessageFilter {
- public:
-  FileMessageFilter(const std::string& plugin_name,
-                    const FilePath& profile_data_directory,
-                    int render_process_id,
-                    base::ProcessHandle plugin_process_handle);
- protected:
-  // ppapi::host::ResourceMessageFilter implementation.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) OVERRIDE;
-  virtual int32_t OnResourceMessageReceived(
-      const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+PepperFlashFileMessageFilter::PepperFlashFileMessageFilter(
+    PP_Instance instance,
+    BrowserPpapiHost* host)
+    : plugin_process_handle_(host->GetPluginProcessHandle()) {
+  int unused;
+  host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
+  FilePath profile_data_directory = host->GetProfileDataDirectory();
+  std::string plugin_name = host->GetPluginName();
 
- private:
-  virtual ~FileMessageFilter();
-
-  int32_t OnOpenFile(ppapi::host::HostMessageContext* context,
-                     const ppapi::PepperFilePath& path,
-                     int flags);
-  int32_t OnRenameFile(ppapi::host::HostMessageContext* context,
-                       const ppapi::PepperFilePath& from_path,
-                       const ppapi::PepperFilePath& to_path);
-  int32_t OnDeleteFileOrDir(ppapi::host::HostMessageContext* context,
-                            const ppapi::PepperFilePath& path,
-                            bool recursive);
-  int32_t OnCreateDir(ppapi::host::HostMessageContext* context,
-                      const ppapi::PepperFilePath& path);
-  int32_t OnQueryFile(ppapi::host::HostMessageContext* context,
-                      const ppapi::PepperFilePath& path);
-  int32_t OnGetDirContents(ppapi::host::HostMessageContext* context,
-                           const ppapi::PepperFilePath& path);
-  int32_t OnCreateTemporaryFile(ppapi::host::HostMessageContext* context);
-
-  FilePath ValidateAndConvertPepperFilePath(
-      const ppapi::PepperFilePath& pepper_path,
-      int flags);
-
-  FilePath plugin_data_directory_;
-  int render_process_id_;
-  base::ProcessHandle plugin_process_handle_;
-};
-
-FileMessageFilter::FileMessageFilter(
-    const std::string& plugin_name,
-    const FilePath& profile_data_directory,
-    int render_process_id,
-    base::ProcessHandle plugin_process_handle)
-    : render_process_id_(render_process_id),
-      plugin_process_handle_(plugin_process_handle) {
   if (profile_data_directory.empty() || plugin_name.empty()) {
     // These are used to construct the path. If they are not set it means we
     // will construct a bad path and could provide access to the wrong files.
@@ -96,16 +54,23 @@ FileMessageFilter::FileMessageFilter(
     // |ValidateAndConvertPepperFilePath| will fail.
     NOTREACHED();
   } else {
-    plugin_data_directory_ = PepperFlashFileHost::GetDataDirName(
+    plugin_data_directory_ = GetDataDirName(
         profile_data_directory).Append(FilePath::FromUTF8Unsafe(plugin_name));
   }
 }
 
-FileMessageFilter::~FileMessageFilter() {
+PepperFlashFileMessageFilter::~PepperFlashFileMessageFilter() {
+}
+
+// static
+FilePath PepperFlashFileMessageFilter::GetDataDirName(
+    const FilePath& profile_path) {
+  return profile_path.Append(kPepperDataDirname);
 }
 
 scoped_refptr<base::TaskRunner>
-FileMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message& msg) {
+PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& msg) {
   // The blocking pool provides a pool of threads to run file
   // operations, instead of a single thread which might require
   // queuing time.  Since these messages are synchronous as sent from
@@ -117,10 +82,10 @@ FileMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message& msg) {
   return scoped_refptr<base::TaskRunner>(BrowserThread::GetBlockingPool());
 }
 
-int32_t FileMessageFilter::OnResourceMessageReceived(
+int32_t PepperFlashFileMessageFilter::OnResourceMessageReceived(
    const IPC::Message& msg,
    ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(FileMessageFilter, msg)
+  IPC_BEGIN_MESSAGE_MAP(PepperFlashFileMessageFilter, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_OpenFile,
                                       OnOpenFile)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_RenameFile,
@@ -140,7 +105,7 @@ int32_t FileMessageFilter::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-int32_t FileMessageFilter::OnOpenFile(
+int32_t PepperFlashFileMessageFilter::OnOpenFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path,
     int flags) {
@@ -178,7 +143,7 @@ int32_t FileMessageFilter::OnOpenFile(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FileMessageFilter::OnRenameFile(
+int32_t PepperFlashFileMessageFilter::OnRenameFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& from_path,
     const ppapi::PepperFilePath& to_path) {
@@ -196,7 +161,7 @@ int32_t FileMessageFilter::OnRenameFile(
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
 }
 
-int32_t FileMessageFilter::OnDeleteFileOrDir(
+int32_t PepperFlashFileMessageFilter::OnDeleteFileOrDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path,
     bool recursive) {
@@ -211,7 +176,7 @@ int32_t FileMessageFilter::OnDeleteFileOrDir(
   return ppapi::PlatformFileErrorToPepperError(result ?
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
 }
-int32_t FileMessageFilter::OnCreateDir(
+int32_t PepperFlashFileMessageFilter::OnCreateDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path,
@@ -226,7 +191,7 @@ int32_t FileMessageFilter::OnCreateDir(
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
 }
 
-int32_t FileMessageFilter::OnQueryFile(
+int32_t PepperFlashFileMessageFilter::OnQueryFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path,
@@ -243,7 +208,7 @@ int32_t FileMessageFilter::OnQueryFile(
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
 }
 
-int32_t FileMessageFilter::OnGetDirContents(
+int32_t PepperFlashFileMessageFilter::OnGetDirContents(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path, kReadPermissions);
@@ -272,7 +237,7 @@ int32_t FileMessageFilter::OnGetDirContents(
   return PP_OK;
 }
 
-int32_t FileMessageFilter::OnCreateTemporaryFile(
+int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
     ppapi::host::HostMessageContext* context) {
   ppapi::PepperFilePath dir_path(
       ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL, FilePath());
@@ -314,7 +279,7 @@ int32_t FileMessageFilter::OnCreateTemporaryFile(
   return PP_OK_COMPLETIONPENDING;
 }
 
-FilePath FileMessageFilter::ValidateAndConvertPepperFilePath(
+FilePath PepperFlashFileMessageFilter::ValidateAndConvertPepperFilePath(
     const ppapi::PepperFilePath& pepper_path,
     int flags) {
   FilePath file_path;  // Empty path returned on error.
@@ -338,30 +303,6 @@ FilePath FileMessageFilter::ValidateAndConvertPepperFilePath(
       break;
   }
   return file_path;
-}
-
-}  // namespace
-
-PepperFlashFileHost::PepperFlashFileHost(
-    BrowserPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
-    : ResourceHost(host->GetPpapiHost(), instance, resource) {
-  int render_process_id, unused;
-  host->GetRenderViewIDsForInstance(instance, &render_process_id, &unused);
-  AddFilter(scoped_refptr<ppapi::host::ResourceMessageFilter>(
-      new FileMessageFilter(host->GetPluginName(),
-                            host->GetProfileDataDirectory(),
-                            render_process_id,
-                            host->GetPluginProcessHandle())));
-}
-
-PepperFlashFileHost::~PepperFlashFileHost() {
-}
-
-// static
-FilePath PepperFlashFileHost::GetDataDirName(const FilePath& profile_path) {
-  return profile_path.Append(kPepperDataDirname);
 }
 
 }  // namespace content

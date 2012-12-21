@@ -6,15 +6,19 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
-#include "content/browser/renderer_host/pepper/pepper_flash_file_host.h"
+#include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
+#include "ppapi/host/message_filter_host.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
+using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
+using ppapi::host::ResourceMessageFilter;
 
 namespace content {
 
@@ -69,9 +73,13 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Flash interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_FLASH)) {
     switch (message.type()) {
-      case PpapiHostMsg_FlashFile_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashFileHost(
-            host_, instance, params.pp_resource()));
+      case PpapiHostMsg_FlashFile_Create::ID: {
+        scoped_refptr<ResourceMessageFilter> file_filter(
+            new PepperFlashFileMessageFilter(instance, host_));
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, params.pp_resource(),
+            file_filter));
+      }
     }
   }
 
