@@ -1568,6 +1568,8 @@
         'browser/ui/views/infobars/translate_message_infobar.h',
         'browser/ui/views/javascript_app_modal_dialog_views.cc',
         'browser/ui/views/javascript_app_modal_dialog_views.h',
+        'browser/ui/views/load_complete_listener.cc',
+        'browser/ui/views/load_complete_listener.h',
         'browser/ui/views/location_bar/action_box_button_view.cc',
         'browser/ui/views/location_bar/action_box_button_view.h',
         'browser/ui/views/location_bar/content_setting_image_view.cc',
