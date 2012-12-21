@@ -150,6 +150,30 @@ outside the <code>table-cell</code>.</p>
 page in and out.  The content outside the <code>iframe</code> zooms, but the
 content inside the <code>iframe</code> does not zoom.</p>
 
+<h3><a name="bugfix-imgresample">bugfix/imgresample</a> (Shezan Baig; D32353761)</h3>
+<p>The change for this branch is only noticable when the <code><a
+        href="#bugfix-svgscale">bugfix/svgscale</a></code> branch has been
+applied to make SVG images scale properly.  Therefore, we cannot reproduce the
+issue in Chrome until bug <a
+    href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a> is fixed
+upstream.  However, we can build a <code>test_shell</code> with
+<code>bugfix/svgscale</code> merged in to test this.</p>
+<p>Open <a href="repros/svgscale.html">this link</a> in a
+<code>test_shell</code> that has been patched with
+<code>bugfix/svgscale</code>.  The second icon is using an
+<code>&lt;img&gt;</code> element, and the third icon is using an
+<code>&lt;embed&gt;</code> element.  Without the
+<code>bugfix/imgresample</code> patch, the second icon appears a little fuzzier
+than the third icon (you may need to zoom in to the pixel level to notice the
+difference).</p>
+<p>Once the <code>bugfix/imgresample</code> patch is applied, the second icon
+matches the third icon more closely.</p>
+
+<h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
+<p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
+file is used as a css background, or in an <code>img</code> element, it does
+not scale properly.  It only scales properly when used in an <code>embed</code>
+element.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
