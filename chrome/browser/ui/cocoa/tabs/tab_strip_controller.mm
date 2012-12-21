@@ -1397,7 +1397,10 @@ private:
     [self startClosingTabWithAnimation:tab];
     [self layoutTabs];
   } else {
-    [self removeTab:tab];
+    // Don't remove the tab, as that makes the window look jarring without any
+    // tabs. Instead, simply mark it as closing to prevent the tab from
+    // generating any drags or selections.
+    [(TabView*)[tab view] setClosing:YES];
   }
 
   [delegate_ onTabDetachedWithContents:contents];
