@@ -44,14 +44,6 @@ namespace content {
 
 namespace {
 
-// A multiplier for slow tests. We generally avoid multiplying
-// test timeouts by any constants. Here it is used as last resort
-// to implement the SLOW_ test prefix.
-const int kSlowTestTimeoutMultiplier = 5;
-
-// Tests with this prefix have a longer timeout, see above.
-const char kSlowTestPrefix[] = "SLOW_";
-
 // Tests with this prefix run before the same test without it, and use the same
 // profile. i.e. Foo.PRE_Test runs and then Foo.Test. This allows writing tests
 // that span browser restarts.
@@ -307,19 +299,6 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-base::TimeDelta GetTestTerminationTimeout(const std::string& test_name,
-                                          base::TimeDelta default_timeout) {
-  base::TimeDelta timeout = default_timeout;
-
-  // Make it possible for selected tests to request a longer timeout.
-  // Generally tests should really avoid doing too much, and splitting
-  // a test instead of using SLOW prefix is strongly preferred.
-  if (test_name.find(kSlowTestPrefix) != std::string::npos)
-    timeout *= kSlowTestTimeoutMultiplier;
-
-  return timeout;
-}
-
 int RunTestInternal(const testing::TestCase* test_case,
                     const std::string& test_name,
                     CommandLine* command_line,
@@ -378,12 +357,11 @@ int RunTestInternal(const testing::TestCase* test_case,
   if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
     return -1;
 
-  base::TimeDelta timeout = GetTestTerminationTimeout(
-      test_name, default_timeout);
-
   int exit_code = 0;
-  if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code, timeout)) {
-    LOG(ERROR) << "Test timeout (" << timeout.InMilliseconds()
+  if (!base::WaitForExitCodeWithTimeout(process_handle,
+                                        &exit_code,
+                                        default_timeout)) {
+    LOG(ERROR) << "Test timeout (" << default_timeout.InMilliseconds()
                << " ms) exceeded for " << test_name;
 
     if (was_timeout)

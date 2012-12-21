@@ -544,7 +544,7 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
-TEST_PPAPI_NACL_VIA_HTTP(SLOW_PostMessage_SendingArrayBuffer)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
 // http://crbug.com/167150
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_NoHandler)
@@ -935,10 +935,6 @@ TEST_PPAPI_OUT_OF_PROCESS(Printing)
 // PPB_MessageLoop is only supported out-of-process.
 // TODO(dmichael): Enable for NaCl with the IPC proxy. crbug.com/116317
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
-// Note to sheriffs: MessageLoop_Post starts a thread, which has a history of
-// slowness, particularly on Windows XP. If this test times out, please try
-// marking it SLOW_ before disabling.
-//    - dmichael
 // MessageLoop_Post starts a thread so only run it if pepper threads are
 // enabled.
 #ifdef ENABLE_PEPPER_THREADING
