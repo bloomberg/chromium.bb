@@ -10,10 +10,13 @@
 class GURL;
 class Tab;
 class TabStrip;
-class TabStripSelectionModel;
 
 namespace gfx {
 class Point;
+}
+
+namespace ui {
+class ListSelectionModel;
 }
 
 // Model/Controller for the TabStrip.
@@ -23,7 +26,7 @@ class TabStripController {
   virtual ~TabStripController() {}
 
   // Returns the selection model of the tabstrip.
-  virtual const TabStripSelectionModel& GetSelectionModel() = 0;
+  virtual const ui::ListSelectionModel& GetSelectionModel() = 0;
 
   // Returns the number of tabs in the model.
   virtual int GetCount() const = 0;

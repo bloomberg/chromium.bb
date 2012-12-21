@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
+#include "ui/base/models/list_selection_model.h"
 
 class Profile;
 class TabStripModelDelegate;
@@ -369,9 +369,9 @@ class TabStripModel : public content::NotificationObserver {
   bool IsTabSelected(int index) const;
 
   // Sets the selection to match that of |source|.
-  void SetSelectionFromModel(const TabStripSelectionModel& source);
+  void SetSelectionFromModel(const ui::ListSelectionModel& source);
 
-  const TabStripSelectionModel& selection_model() const {
+  const ui::ListSelectionModel& selection_model() const {
     return selection_model_;
   }
 
@@ -518,12 +518,12 @@ class TabStripModel : public content::NotificationObserver {
   void NotifyIfActiveOrSelectionChanged(
       content::WebContents* old_contents,
       NotifyTypes notify_types,
-      const TabStripSelectionModel& old_model);
+      const ui::ListSelectionModel& old_model);
 
   // Sets the selection to |new_model| and notifies any observers.
   // Note: This function might end up sending 0 to 3 notifications in the
   // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
-  void SetSelection(const TabStripSelectionModel& new_model,
+  void SetSelection(const ui::ListSelectionModel& new_model,
                     NotifyTypes notify_types);
 
   // Selects either the next tab (|forward| is true), or the previous tab
@@ -635,7 +635,7 @@ class TabStripModel : public content::NotificationObserver {
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
 
-  TabStripSelectionModel selection_model_;
+  ui::ListSelectionModel selection_model_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };

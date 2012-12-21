@@ -187,7 +187,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     for (int i = 0; i < pinned_count; ++i)
       model->SetTabPinned(i, true);
 
-    TabStripSelectionModel selection_model;
+    ui::ListSelectionModel selection_model;
     std::vector<std::string> selection;
     base::SplitStringAlongWhitespace(selected_tabs, &selection);
     for (size_t i = 0; i < selection.size(); ++i) {
@@ -285,7 +285,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
-      const TabStripSelectionModel& old_model) OVERRIDE {
+      const ui::ListSelectionModel& old_model) OVERRIDE {
     State s(model()->GetActiveWebContents(), model()->active_index(), SELECT);
     s.src_contents = model()->GetWebContentsAt(old_model.active());
     s.src_index = old_model.active();
@@ -378,7 +378,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(1, s2));
     State s3(contents1, 0, MockTabStripModelObserver::SELECT);
     s3.src_contents = NULL;
-    s3.src_index = TabStripSelectionModel::kUnselectedIndex;
+    s3.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(2, s3));
     observer.ClearStates();
   }
@@ -450,7 +450,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(8, observer.GetStateCount());
     State s1(detached, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(0, s1));
-    State s2(detached, TabStripSelectionModel::kUnselectedIndex,
+    State s2(detached, ui::ListSelectionModel::kUnselectedIndex,
         MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(1, s2));
     State s3(contents2, 1, MockTabStripModelObserver::ACTIVATE);
@@ -459,7 +459,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(2, s3));
     State s4(contents2, 1, MockTabStripModelObserver::SELECT);
     s4.src_contents = NULL;
-    s4.src_index = TabStripSelectionModel::kUnselectedIndex;
+    s4.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(3, s4));
     State s5(detached, 2, MockTabStripModelObserver::INSERT);
     s5.foreground = true;
@@ -488,7 +488,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(0, s1));
     State s2(contents3, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents3, TabStripSelectionModel::kUnselectedIndex,
+    State s3(contents3, ui::ListSelectionModel::kUnselectedIndex,
         MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(2, s3));
     State s4(contents2, 1, MockTabStripModelObserver::ACTIVATE);
@@ -497,7 +497,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(3, s4));
     State s5(contents2, 1, MockTabStripModelObserver::SELECT);
     s5.src_contents = NULL;
-    s5.src_index = TabStripSelectionModel::kUnselectedIndex;
+    s5.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(4, s5));
     observer.ClearStates();
   }

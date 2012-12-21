@@ -117,6 +117,7 @@
         'base/gtk/menu_label_accelerator_util_unittest.cc',
         'base/keycodes/usb_keycode_map_unittest.cc',
         'base/models/list_model_unittest.cc',
+        'base/models/list_selection_model_unittest.cc',
         'base/models/tree_node_model_unittest.cc',
         'base/test/data/resource.h',
         'base/text/bytes_formatting_unittest.cc',

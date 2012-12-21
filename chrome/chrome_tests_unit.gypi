@@ -1363,7 +1363,6 @@
         'browser/ui/tabs/pinned_tab_test_utils.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
         'browser/ui/tabs/tab_strip_model_unittest.cc',
-        'browser/ui/tabs/tab_strip_selection_model_unittest.cc',
         'browser/ui/tabs/test_tab_strip_model_delegate.cc',
         'browser/ui/tabs/test_tab_strip_model_delegate.h',
         'browser/ui/tests/ui_gfx_image_unittest.cc',

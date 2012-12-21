@@ -27,7 +27,10 @@ class StackedTabStripLayout;
 class Tab;
 class TabDragController;
 class TabStripController;
-class TabStripSelectionModel;
+
+namespace ui {
+class ListSelectionModel;
+}
 
 namespace views {
 class ImageView;
@@ -97,8 +100,8 @@ class TabStrip : public views::View,
 
   // Invoked when the selection changes from |old_selection| to
   // |new_selection|.
-  void SetSelection(const TabStripSelectionModel& old_selection,
-                    const TabStripSelectionModel& new_selection);
+  void SetSelection(const ui::ListSelectionModel& old_selection,
+                    const ui::ListSelectionModel& new_selection);
 
   // Invoked when the title of a tab changes and the tab isn't loading.
   void TabTitleChangedNotLoading(int model_index);
@@ -163,7 +166,7 @@ class TabStrip : public views::View,
   void SetImmersiveStyle(bool enable);
 
   // TabController overrides:
-  virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
+  virtual const ui::ListSelectionModel& GetSelectionModel() OVERRIDE;
   virtual bool SupportsMultipleSelection() OVERRIDE;
   virtual void SelectTab(Tab* tab) OVERRIDE;
   virtual void ExtendSelectionTo(Tab* tab) OVERRIDE;
@@ -178,7 +181,7 @@ class TabStrip : public views::View,
   virtual void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,
-      const TabStripSelectionModel& original_selection) OVERRIDE;
+      const ui::ListSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE;
   virtual bool EndDrag(EndDragReason reason) OVERRIDE;

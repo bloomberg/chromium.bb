@@ -285,8 +285,8 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
 
 void BrowserEventRouter::TabSelectionChanged(
     TabStripModel* tab_strip_model,
-    const TabStripSelectionModel& old_model) {
-  TabStripSelectionModel::SelectedIndices new_selection =
+    const ui::ListSelectionModel& old_model) {
+  ui::ListSelectionModel::SelectedIndices new_selection =
       tab_strip_model->selection_model().selected_indices();
   ListValue* all = new ListValue();
 

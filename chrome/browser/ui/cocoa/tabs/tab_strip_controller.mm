@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -66,6 +65,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
@@ -1233,10 +1233,10 @@ private:
   }
 
   // First get the vector of indices, which is allays sorted in ascending order.
-  TabStripSelectionModel::SelectedIndices selection(
+  ui::ListSelectionModel::SelectedIndices selection(
       tabStripModel_->selection_model().selected_indices());
   // Iterate through all of the tabs, selecting each as necessary.
-  TabStripSelectionModel::SelectedIndices::iterator iter = selection.begin();
+  ui::ListSelectionModel::SelectedIndices::iterator iter = selection.begin();
   int i = 0;
   for (TabController* current in tabArray_.get()) {
     BOOL selected = iter != selection.end() &&

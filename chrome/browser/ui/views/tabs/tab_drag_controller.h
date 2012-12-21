@@ -12,16 +12,19 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
 class Screen;
+}
+namespace ui {
+class ListSelectionModel;
 }
 namespace views {
 class View;
@@ -32,7 +35,6 @@ class Tab;
 struct TabRendererData;
 class TabStrip;
 class TabStripModel;
-class TabStripSelectionModel;
 
 // TabDragController is responsible for managing the tab dragging session. When
 // the user presses the mouse on a tab a new TabDragController is created and
@@ -91,7 +93,7 @@ class TabDragController : public content::WebContentsDelegate,
             const std::vector<Tab*>& tabs,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
-            const TabStripSelectionModel& initial_selection_model,
+            const ui::ListSelectionModel& initial_selection_model,
             DetachBehavior detach_behavior,
             MoveBehavior move_behavior);
 
@@ -561,10 +563,10 @@ class TabDragController : public content::WebContentsDelegate,
 
   // The selection model before the drag started. See comment above Init() for
   // details.
-  TabStripSelectionModel initial_selection_model_;
+  ui::ListSelectionModel initial_selection_model_;
 
   // The selection model of |attached_tabstrip_| before the tabs were attached.
-  TabStripSelectionModel selection_model_before_attach_;
+  ui::ListSelectionModel selection_model_before_attach_;
 
   // Initial x-coordinates of the tabs when the drag started. Only used for
   // touch mode.

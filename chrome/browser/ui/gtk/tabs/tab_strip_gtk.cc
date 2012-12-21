@@ -1055,7 +1055,7 @@ void TabStripGtk::ActiveTabChanged(WebContents* old_contents,
 }
 
 void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
-                                      const TabStripSelectionModel& old_model) {
+                                      const ui::ListSelectionModel& old_model) {
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
@@ -1087,7 +1087,7 @@ void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
       GetTabAtAdjustForAnimation(*it)->SchedulePaint();
   }
 
-  TabStripSelectionModel::SelectedIndices no_longer_selected;
+  ui::ListSelectionModel::SelectedIndices no_longer_selected;
   std::insert_iterator<std::vector<int> > it2(no_longer_selected,
                                               no_longer_selected.begin());
   std::set_difference(old_model.selected_indices().begin(),

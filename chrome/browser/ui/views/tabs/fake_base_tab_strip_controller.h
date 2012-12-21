@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "ui/base/models/list_selection_model.h"
 
 class TabStrip;
 
@@ -22,7 +22,7 @@ class FakeBaseTabStripController : public TabStripController {
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
 
   // TabStripController overrides:
-  virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
+  virtual const ui::ListSelectionModel& GetSelectionModel() OVERRIDE;
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int index) const OVERRIDE;
   virtual bool IsActiveTab(int index) const OVERRIDE;
@@ -53,7 +53,7 @@ class FakeBaseTabStripController : public TabStripController {
 
   int num_tabs_;
 
-  TabStripSelectionModel selection_model_;
+  ui::ListSelectionModel selection_model_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBaseTabStripController);
 };

@@ -421,7 +421,7 @@ void TabDragController::Init(
     const std::vector<Tab*>& tabs,
     const gfx::Point& mouse_offset,
     int source_tab_offset,
-    const TabStripSelectionModel& initial_selection_model,
+    const ui::ListSelectionModel& initial_selection_model,
     DetachBehavior detach_behavior,
     MoveBehavior move_behavior) {
   DCHECK(!tabs.empty());
@@ -1263,7 +1263,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
       // initial_selection_model_. Before resetting though we have to remove all
       // the tabs from initial_selection_model_ as it was created with the tabs
       // still there.
-      TabStripSelectionModel selection_model;
+      ui::ListSelectionModel selection_model;
       selection_model.Copy(initial_selection_model_);
       for (DragData::const_reverse_iterator i(drag_data_.rbegin());
            i != drag_data_.rend(); ++i) {
@@ -1665,7 +1665,7 @@ void TabDragController::RevertDrag() {
 
 void TabDragController::ResetSelection(TabStripModel* model) {
   DCHECK(model);
-  TabStripSelectionModel selection_model;
+  ui::ListSelectionModel selection_model;
   bool has_one_valid_tab = false;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     // |contents| is NULL if a tab was deleted out from under us.

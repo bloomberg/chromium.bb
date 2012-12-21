@@ -31,7 +31,7 @@ void TabStripModelObserver::ActiveTabChanged(WebContents* old_contents,
 
 void TabStripModelObserver::TabSelectionChanged(
     TabStripModel* tab_strip_model,
-    const TabStripSelectionModel& model) {
+    const ui::ListSelectionModel& model) {
 }
 
 void TabStripModelObserver::TabMoved(WebContents* contents,

@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_resources.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,10 +28,10 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
-
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"
@@ -858,7 +857,7 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
   // Allow a right click from touch to drag, which corresponds to a long click.
   if (event.IsOnlyLeftMouseButton() ||
       (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
-    TabStripSelectionModel original_selection;
+    ui::ListSelectionModel original_selection;
     original_selection.Copy(controller()->GetSelectionModel());
     if (controller()->SupportsMultipleSelection()) {
       if (event.IsShiftDown() && event.IsControlDown()) {
@@ -956,7 +955,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       if (event->details().touch_points() != 1)
         return;
 
-      TabStripSelectionModel original_selection;
+      ui::ListSelectionModel original_selection;
       original_selection.Copy(controller()->GetSelectionModel());
       if (!IsSelected())
         controller()->SelectTab(this);

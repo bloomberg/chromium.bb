@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 
 class TabStripModel;
-class TabStripSelectionModel;
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
+class ListSelectionModel;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +90,7 @@ class TabStripModelObserver {
   // of the selection model before the change. See also ActiveTabChanged for
   // details.
   virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
-                                   const TabStripSelectionModel& old_model);
+                                   const ui::ListSelectionModel& old_model);
 
   // The specified WebContents at |from_index| was moved to |to_index|.
   virtual void TabMoved(content::WebContents* contents,

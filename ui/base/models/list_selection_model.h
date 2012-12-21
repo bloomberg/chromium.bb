@@ -2,30 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_SELECTION_MODEL_H_
-#define CHROME_BROWSER_UI_TABS_TAB_STRIP_SELECTION_MODEL_H_
+#ifndef UI_BASE_MODELS_LIST_SELECTION_MODEL_H_
+#define UI_BASE_MODELS_LIST_SELECTION_MODEL_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/base/ui_export.h"
 
-// Selection model used by the tab strip. In addition to the set of selected
-// indices TabStripSelectionModel maintains the following:
+namespace ui {
+
+// Selection model represented as a list of ints. Used by the TabStrip. In
+// addition to the set of selected indices ListSelectionModel maintains the
+// following:
 // active: the index of the currently visible tab in the tab strip.
 // anchor: the index of the last tab the user clicked on. Extending the
 // selection extends it from this index.
 //
-// Typically there is only one selected tab in the tabstrip, in which case the
-// anchor and active index correspond to the same thing.
-class TabStripSelectionModel {
+// Typically there is only one selected item, in which case the anchor and
+// active index correspond to the same thing.
+class UI_EXPORT ListSelectionModel {
  public:
   typedef std::vector<int> SelectedIndices;
 
   // Used to identify no selection.
   static const int kUnselectedIndex;
 
-  TabStripSelectionModel();
-  ~TabStripSelectionModel();
+  ListSelectionModel();
+  ~ListSelectionModel();
 
   // See class description for details of the anchor.
   void set_anchor(int anchor) { anchor_ = anchor; }
@@ -92,10 +96,10 @@ class TabStripSelectionModel {
   const SelectedIndices& selected_indices() const { return selected_indices_; }
 
   // Copies the selection from |source| to this.
-  void Copy(const TabStripSelectionModel& source);
+  void Copy(const ListSelectionModel& source);
 
   // Compares this selection with |rhs|.
-  bool Equals(const TabStripSelectionModel& rhs) const;
+  bool Equals(const ListSelectionModel& rhs) const;
 
  private:
   SelectedIndices selected_indices_;
@@ -104,7 +108,9 @@ class TabStripSelectionModel {
 
   int anchor_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabStripSelectionModel);
+  DISALLOW_COPY_AND_ASSIGN(ListSelectionModel);
 };
 
-#endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_SELECTION_MODEL_H_
+}  // namespace ui
+
+#endif  // UI_BASE_MODELS_LIST_SELECTION_MODEL_H_

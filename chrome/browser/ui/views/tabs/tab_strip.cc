@@ -20,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -35,6 +34,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -794,8 +794,8 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
   }
 }
 
-void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
-                            const TabStripSelectionModel& new_selection) {
+void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
+                            const ui::ListSelectionModel& new_selection) {
   if (touch_layout_.get()) {
     touch_layout_->SetActiveIndex(new_selection.active());
     // Only start an animation if we need to. Otherwise clicking on an
@@ -815,8 +815,8 @@ void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
     }
   }
 
-  TabStripSelectionModel::SelectedIndices no_longer_selected;
-  std::insert_iterator<TabStripSelectionModel::SelectedIndices>
+  ui::ListSelectionModel::SelectedIndices no_longer_selected;
+  std::insert_iterator<ui::ListSelectionModel::SelectedIndices>
       it(no_longer_selected, no_longer_selected.begin());
   std::set_difference(old_selection.selected_indices().begin(),
                       old_selection.selected_indices().end(),
@@ -928,7 +928,7 @@ void TabStrip::SetImmersiveStyle(bool enable) {
   }
 }
 
-const TabStripSelectionModel& TabStrip::GetSelectionModel() {
+const ui::ListSelectionModel& TabStrip::GetSelectionModel() {
   return controller_->GetSelectionModel();
 }
 
@@ -1014,7 +1014,7 @@ bool TabStrip::IsTabPinned(const Tab* tab) const {
 void TabStrip::MaybeStartDrag(
     Tab* tab,
     const ui::LocatedEvent& event,
-    const TabStripSelectionModel& original_selection) {
+    const ui::ListSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
   // so the View system can misinterpret this easily if the mouse is down that
@@ -1046,7 +1046,7 @@ void TabStrip::MaybeStartDrag(
   }
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), tab) != tabs.end());
-  TabStripSelectionModel selection_model;
+  ui::ListSelectionModel selection_model;
   if (!original_selection.IsSelected(model_index))
     selection_model.Copy(original_selection);
   // Delete the existing DragController before creating a new one. We do this as

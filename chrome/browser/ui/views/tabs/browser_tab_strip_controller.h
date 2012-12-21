@@ -15,11 +15,14 @@
 class Browser;
 class Tab;
 class TabStrip;
-class TabStripSelectionModel;
 struct TabRendererData;
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
+class ListSelectionModel;
 }
 
 // An implementation of TabStripController that sources data from the
@@ -41,7 +44,7 @@ class BrowserTabStripController : public TabStripController,
   bool IsTabPinned(Tab* tab) const;
 
   // TabStripController implementation:
-  virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
+  virtual const ui::ListSelectionModel& GetSelectionModel() OVERRIDE;
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int model_index) const OVERRIDE;
   virtual bool IsActiveTab(int model_index) const OVERRIDE;
@@ -75,7 +78,7 @@ class BrowserTabStripController : public TabStripController,
                              int model_index) OVERRIDE;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
-      const TabStripSelectionModel& old_model) OVERRIDE;
+      const ui::ListSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,
                         int from_model_index,
                         int to_model_index) OVERRIDE;

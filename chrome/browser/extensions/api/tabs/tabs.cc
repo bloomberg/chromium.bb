@@ -71,6 +71,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -1185,7 +1186,7 @@ bool HighlightTabsFunction::RunImpl() {
     return false;
 
   TabStripModel* tabstrip = browser->tab_strip_model();
-  TabStripSelectionModel selection;
+  ui::ListSelectionModel selection;
   int active_index = -1;
 
   Value* tab_value = NULL;

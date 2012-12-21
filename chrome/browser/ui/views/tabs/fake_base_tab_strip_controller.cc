@@ -25,7 +25,7 @@ void FakeBaseTabStripController::RemoveTab(int index) {
   tab_strip_->RemoveTabAt(index);
 }
 
-const TabStripSelectionModel& FakeBaseTabStripController::GetSelectionModel() {
+const ui::ListSelectionModel& FakeBaseTabStripController::GetSelectionModel() {
   return selection_model_;
 }
 

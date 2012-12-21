@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
+#include "ui/base/models/list_selection_model.h"
 
 #include <algorithm>
 #include <valarray>
 
 #include "base/logging.h"
 
+namespace ui {
+
 // static
-const int TabStripSelectionModel::kUnselectedIndex = -1;
+const int ListSelectionModel::kUnselectedIndex = -1;
 
 static void IncrementFromImpl(int index, int* value) {
   if (*value >= index)
@@ -19,7 +21,7 @@ static void IncrementFromImpl(int index, int* value) {
 
 static bool DecrementFromImpl(int index, int* value) {
   if (*value == index) {
-    *value = TabStripSelectionModel::kUnselectedIndex;
+    *value = ListSelectionModel::kUnselectedIndex;
     return true;
   }
   if (*value > index)
@@ -27,15 +29,15 @@ static bool DecrementFromImpl(int index, int* value) {
   return false;
 }
 
-TabStripSelectionModel::TabStripSelectionModel()
+ListSelectionModel::ListSelectionModel()
     : active_(kUnselectedIndex),
       anchor_(kUnselectedIndex) {
 }
 
-TabStripSelectionModel::~TabStripSelectionModel() {
+ListSelectionModel::~ListSelectionModel() {
 }
 
-void TabStripSelectionModel::IncrementFrom(int index) {
+void ListSelectionModel::IncrementFrom(int index) {
   // Shift the selection to account for the newly inserted tab.
   for (SelectedIndices::iterator i = selected_indices_.begin();
        i != selected_indices_.end(); ++i) {
@@ -45,7 +47,7 @@ void TabStripSelectionModel::IncrementFrom(int index) {
   IncrementFromImpl(index, &active_);
 }
 
-void TabStripSelectionModel::DecrementFrom(int index) {
+void ListSelectionModel::DecrementFrom(int index) {
   for (SelectedIndices::iterator i = selected_indices_.begin();
        i != selected_indices_.end(); ) {
     if (DecrementFromImpl(index, &(*i)))
@@ -57,33 +59,33 @@ void TabStripSelectionModel::DecrementFrom(int index) {
   DecrementFromImpl(index, &active_);
 }
 
-void TabStripSelectionModel::SetSelectedIndex(int index) {
+void ListSelectionModel::SetSelectedIndex(int index) {
   anchor_ = active_ = index;
   selected_indices_.clear();
   if (index != kUnselectedIndex)
     selected_indices_.push_back(index);
 }
 
-bool TabStripSelectionModel::IsSelected(int index) const {
+bool ListSelectionModel::IsSelected(int index) const {
   return std::find(selected_indices_.begin(), selected_indices_.end(), index) !=
       selected_indices_.end();
 }
 
-void TabStripSelectionModel::AddIndexToSelection(int index) {
+void ListSelectionModel::AddIndexToSelection(int index) {
   if (!IsSelected(index)) {
     selected_indices_.push_back(index);
     std::sort(selected_indices_.begin(), selected_indices_.end());
   }
 }
 
-void TabStripSelectionModel::RemoveIndexFromSelection(int index) {
+void ListSelectionModel::RemoveIndexFromSelection(int index) {
   SelectedIndices::iterator i = std::find(selected_indices_.begin(),
                                           selected_indices_.end(), index);
   if (i != selected_indices_.end())
     selected_indices_.erase(i);
 }
 
-void TabStripSelectionModel::SetSelectionFromAnchorTo(int index) {
+void ListSelectionModel::SetSelectionFromAnchorTo(int index) {
   if (anchor_ == kUnselectedIndex) {
     SetSelectedIndex(index);
   } else {
@@ -96,7 +98,7 @@ void TabStripSelectionModel::SetSelectionFromAnchorTo(int index) {
   }
 }
 
-void TabStripSelectionModel::AddSelectionFromAnchorTo(int index) {
+void ListSelectionModel::AddSelectionFromAnchorTo(int index) {
   if (anchor_ == kUnselectedIndex) {
     SetSelectedIndex(index);
   } else {
@@ -110,7 +112,7 @@ void TabStripSelectionModel::AddSelectionFromAnchorTo(int index) {
   }
 }
 
-void TabStripSelectionModel::Move(int from, int to) {
+void ListSelectionModel::Move(int from, int to) {
   DCHECK_NE(to, from);
   bool was_anchor = from == anchor_;
   bool was_active = from == active_;
@@ -130,20 +132,22 @@ void TabStripSelectionModel::Move(int from, int to) {
     AddIndexToSelection(to);
 }
 
-void TabStripSelectionModel::Clear() {
+void ListSelectionModel::Clear() {
   anchor_ = active_ = kUnselectedIndex;
   SelectedIndices empty_selection;
   selected_indices_.swap(empty_selection);
 }
 
-void TabStripSelectionModel::Copy(const TabStripSelectionModel& source) {
+void ListSelectionModel::Copy(const ListSelectionModel& source) {
   selected_indices_ = source.selected_indices_;
   active_ = source.active_;
   anchor_ = source.anchor_;
 }
 
-bool TabStripSelectionModel::Equals(const TabStripSelectionModel& rhs) const {
+bool ListSelectionModel::Equals(const ListSelectionModel& rhs) const {
   return active_ == rhs.active() &&
       anchor_ == rhs.anchor() &&
       selected_indices() == rhs.selected_indices();
 }
+
+}  // namespace ui

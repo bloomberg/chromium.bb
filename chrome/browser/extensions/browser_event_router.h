@@ -54,7 +54,7 @@ class BrowserEventRouter : public TabStripModelObserver,
                                 bool user_gesture) OVERRIDE;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
-      const TabStripSelectionModel& old_model) OVERRIDE;
+      const ui::ListSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;

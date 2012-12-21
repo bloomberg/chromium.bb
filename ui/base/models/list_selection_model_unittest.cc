@@ -2,22 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/models/list_selection_model.h"
+
 #include <algorithm>
 #include <string>
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test TabStripSelectionModelTest;
+namespace ui {
+
+typedef testing::Test ListSelectionModelTest;
 
 // Returns the state of the selection model as a string. The format is:
 // 'active=X anchor=X selection=X X X...'.
-static std::string StateAsString(const TabStripSelectionModel& model) {
+static std::string StateAsString(const ListSelectionModel& model) {
   std::string result = "active=" + base::IntToString(model.active()) +
       " anchor=" + base::IntToString(model.anchor()) +
       " selection=";
-  const TabStripSelectionModel::SelectedIndices& selection(
+  const ListSelectionModel::SelectedIndices& selection(
       model.selected_indices());
   for (size_t i = 0; i < selection.size(); ++i) {
     if (i != 0)
@@ -27,28 +30,28 @@ static std::string StateAsString(const TabStripSelectionModel& model) {
   return result;
 }
 
-TEST_F(TabStripSelectionModelTest, InitialState) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, InitialState) {
+  ListSelectionModel model;
   EXPECT_EQ("active=-1 anchor=-1 selection=", StateAsString(model));
   EXPECT_TRUE(model.empty());
 }
 
-TEST_F(TabStripSelectionModelTest, SetSelectedIndex) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, SetSelectedIndex) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
   EXPECT_EQ("active=2 anchor=2 selection=2", StateAsString(model));
   EXPECT_FALSE(model.empty());
 }
 
-TEST_F(TabStripSelectionModelTest, SetSelectedIndexToEmpty) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, SetSelectedIndexToEmpty) {
+  ListSelectionModel model;
   model.SetSelectedIndex(-1);
   EXPECT_EQ("active=-1 anchor=-1 selection=", StateAsString(model));
   EXPECT_TRUE(model.empty());
 }
 
-TEST_F(TabStripSelectionModelTest, IncrementFrom) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, IncrementFrom) {
+  ListSelectionModel model;
   model.SetSelectedIndex(1);
   model.IncrementFrom(1);
   EXPECT_EQ("active=2 anchor=2 selection=2", StateAsString(model));
@@ -59,8 +62,8 @@ TEST_F(TabStripSelectionModelTest, IncrementFrom) {
   EXPECT_EQ("active=2 anchor=2 selection=2", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, DecrementFrom) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, DecrementFrom) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
   model.DecrementFrom(0);
   EXPECT_EQ("active=1 anchor=1 selection=1", StateAsString(model));
@@ -77,15 +80,15 @@ TEST_F(TabStripSelectionModelTest, DecrementFrom) {
   EXPECT_EQ("active=2 anchor=2 selection=2", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, IsSelected) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, IsSelected) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
   EXPECT_FALSE(model.IsSelected(0));
   EXPECT_TRUE(model.IsSelected(2));
 }
 
-TEST_F(TabStripSelectionModelTest, AddIndexToSelected) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, AddIndexToSelected) {
+  ListSelectionModel model;
   model.AddIndexToSelection(2);
   EXPECT_EQ("active=-1 anchor=-1 selection=2", StateAsString(model));
 
@@ -93,8 +96,8 @@ TEST_F(TabStripSelectionModelTest, AddIndexToSelected) {
   EXPECT_EQ("active=-1 anchor=-1 selection=2 4", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, RemoveIndexFromSelection) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, RemoveIndexFromSelection) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
   model.AddIndexToSelection(4);
   EXPECT_EQ("active=2 anchor=2 selection=2 4", StateAsString(model));
@@ -106,8 +109,8 @@ TEST_F(TabStripSelectionModelTest, RemoveIndexFromSelection) {
   EXPECT_EQ("active=2 anchor=2 selection=", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, SetSelectionFromAnchorTo) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, SetSelectionFromAnchorTo) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
   model.SetSelectionFromAnchorTo(7);
   EXPECT_EQ("active=7 anchor=2 selection=2 3 4 5 6 7", StateAsString(model));
@@ -122,16 +125,16 @@ TEST_F(TabStripSelectionModelTest, SetSelectionFromAnchorTo) {
   EXPECT_EQ("active=7 anchor=7 selection=7", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, Clear) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, Clear) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
 
   model.Clear();
   EXPECT_EQ("active=-1 anchor=-1 selection=", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, MoveToLeft) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, MoveToLeft) {
+  ListSelectionModel model;
   model.SetSelectedIndex(0);
   model.AddIndexToSelection(4);
   model.AddIndexToSelection(10);
@@ -141,8 +144,8 @@ TEST_F(TabStripSelectionModelTest, MoveToLeft) {
   EXPECT_EQ("active=0 anchor=0 selection=0 1 10", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, MoveToRight) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, MoveToRight) {
+  ListSelectionModel model;
   model.SetSelectedIndex(0);
   model.AddIndexToSelection(4);
   model.AddIndexToSelection(10);
@@ -152,19 +155,19 @@ TEST_F(TabStripSelectionModelTest, MoveToRight) {
   EXPECT_EQ("active=3 anchor=3 selection=3 4 10", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, Copy) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, Copy) {
+  ListSelectionModel model;
   model.SetSelectedIndex(0);
   model.AddIndexToSelection(4);
   model.AddIndexToSelection(10);
   EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model));
-  TabStripSelectionModel model2;
+  ListSelectionModel model2;
   model2.Copy(model);
   EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model2));
 }
 
-TEST_F(TabStripSelectionModelTest, AddSelectionFromAnchorTo) {
-  TabStripSelectionModel model;
+TEST_F(ListSelectionModelTest, AddSelectionFromAnchorTo) {
+  ListSelectionModel model;
   model.SetSelectedIndex(2);
 
   model.AddSelectionFromAnchorTo(4);
@@ -174,12 +177,12 @@ TEST_F(TabStripSelectionModelTest, AddSelectionFromAnchorTo) {
   EXPECT_EQ("active=0 anchor=2 selection=0 1 2 3 4", StateAsString(model));
 }
 
-TEST_F(TabStripSelectionModelTest, Equals) {
-  TabStripSelectionModel model1;
+TEST_F(ListSelectionModelTest, Equals) {
+  ListSelectionModel model1;
   model1.SetSelectedIndex(0);
   model1.AddSelectionFromAnchorTo(4);
 
-  TabStripSelectionModel model2;
+  ListSelectionModel model2;
   model2.SetSelectedIndex(0);
   model2.AddSelectionFromAnchorTo(4);
 
@@ -190,3 +193,5 @@ TEST_F(TabStripSelectionModelTest, Equals) {
   EXPECT_FALSE(model1.Equals(model2));
   EXPECT_FALSE(model2.Equals(model1));
 }
+
+}  // namespace ui
