@@ -536,12 +536,6 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
         failed_tests.push_back(test_name);
 
         bool ignore_failure = false;
-
-        // Never ignore crashes or hangs/timeouts, they are serious and should
-        // always be visible.
-        if (exit_code != -1 && !was_timeout)
-          ignore_failure = base::TestSuite::ShouldIgnoreFailure(*test_info);
-
         printer.OnTestEnd(test_info->name(), test_case->name(), true, true,
                           ignore_failure,
                           (base::Time::Now() - start_time).InMillisecondsF());
