@@ -117,9 +117,6 @@ INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
 #if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
-#define MAYBE(test) test
-#else
-#define MAYBE(test) DISABLED_ ## test
 #endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
@@ -130,22 +127,21 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
                          "com.example.invalid", kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE(BasicPlayback_AudioOnly)) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_AudioOnly) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
                          GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       MAYBE(BasicPlayback_AudioClearVideo)) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_AudioClearVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo,
                          GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE(BasicPlayback_VideoAudio)) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoAudio) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
@@ -166,8 +162,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
                          GetParam(), kExpected));
 }
 
-// TODO(acolwell): Reenable when the changes for http://webk.it/104583 land.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
