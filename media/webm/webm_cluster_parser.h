@@ -49,7 +49,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // Helper class that manages per-track state.
   class Track {
    public:
-    explicit Track(int track_num);
+    Track(int track_num, bool is_video);
     ~Track();
 
     int track_num() const { return track_num_; }
@@ -60,9 +60,16 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // Clears all buffer state.
     void Reset();
 
+    // Helper function used to inspect block data to determine if the
+    // block is a keyframe.
+    // |data| contains the bytes in the block.
+    // |size| indicates the number of bytes in |data|.
+    bool IsKeyframe(const uint8* data, int size) const;
+
    private:
     int track_num_;
     BufferQueue buffers_;
+    bool is_video_;
   };
 
   // WebMParserClient methods.
@@ -71,9 +78,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   virtual bool OnUInt(int id, int64 val) OVERRIDE;
   virtual bool OnBinary(int id, const uint8* data, int size) OVERRIDE;
 
-  bool ParseBlock(const uint8* buf, int size, int duration);
-  bool OnBlock(int track_num, int timecode, int duration, int flags,
-               const uint8* data, int size);
+  bool ParseBlock(bool is_simple_block, const uint8* buf, int size,
+                  int duration);
+  bool OnBlock(bool is_simple_block, int track_num, int timecode, int duration,
+               int flags, const uint8* data, int size);
 
   double timecode_multiplier_;  // Multiplier used to convert timecodes into
                                 // microseconds.

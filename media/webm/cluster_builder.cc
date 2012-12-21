@@ -100,6 +100,10 @@ void ClusterBuilder::AddBlockGroup(int track_num, int64 timecode, int duration,
   UpdateUInt64(block_group_offset + kBlockGroupBlockSizeOffset, block_size);
   buf += sizeof(kBlockGroupHeader);
 
+  // Make sure the 4 most-significant bits are 0.
+  // http://www.matroska.org/technical/specs/index.html#block_structure
+  flags &= 0x0f;
+
   WriteBlock(buf, track_num, timecode, flags, data, size);
 
   bytes_used_ += bytes_needed;

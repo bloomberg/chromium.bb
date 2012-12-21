@@ -38,8 +38,8 @@ WebMClusterParser::WebMClusterParser(
       cluster_timecode_(-1),
       cluster_start_time_(kNoTimestamp()),
       cluster_ended_(false),
-      audio_(audio_track_num),
-      video_(video_track_num),
+      audio_(audio_track_num, false),
+      video_(video_track_num, true),
       log_cb_(log_cb) {
 }
 
@@ -111,7 +111,7 @@ bool WebMClusterParser::OnListEnd(int id) {
     return false;
   }
 
-  bool result = ParseBlock(block_data_.get(), block_data_size_,
+  bool result = ParseBlock(false, block_data_.get(), block_data_size_,
                            block_duration_);
   block_data_.reset();
   block_data_size_ = -1;
@@ -134,7 +134,8 @@ bool WebMClusterParser::OnUInt(int id, int64 val) {
   return true;
 }
 
-bool WebMClusterParser::ParseBlock(const uint8* buf, int size, int duration) {
+bool WebMClusterParser::ParseBlock(bool is_simple_block, const uint8* buf,
+                                   int size, int duration) {
   if (size < 4)
     return false;
 
@@ -161,12 +162,13 @@ bool WebMClusterParser::ParseBlock(const uint8* buf, int size, int duration) {
 
   const uint8* frame_data = buf + 4;
   int frame_size = size - (frame_data - buf);
-  return OnBlock(track_num, timecode, duration, flags, frame_data, frame_size);
+  return OnBlock(is_simple_block, track_num, timecode, duration, flags,
+                 frame_data, frame_size);
 }
 
 bool WebMClusterParser::OnBinary(int id, const uint8* data, int size) {
   if (id == kWebMIdSimpleBlock)
-    return ParseBlock(data, size, -1);
+    return ParseBlock(true, data, size, -1);
 
   if (id != kWebMIdBlock)
     return true;
@@ -182,7 +184,8 @@ bool WebMClusterParser::OnBinary(int id, const uint8* data, int size) {
   return true;
 }
 
-bool WebMClusterParser::OnBlock(int track_num, int timecode,
+bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
+                                int timecode,
                                 int  block_duration,
                                 int flags,
                                 const uint8* data, int size) {
@@ -222,9 +225,13 @@ bool WebMClusterParser::OnBlock(int track_num, int timecode,
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
       (cluster_timecode_ + timecode) * timecode_multiplier_);
 
-  // The first bit of the flags is set when the block contains only keyframes.
+  // The first bit of the flags is set when a SimpleBlock contains only
+  // keyframes. If this is a Block, then inspection of the payload is
+  // necessary to determine whether it contains a keyframe or not.
   // http://www.matroska.org/technical/specs/index.html
-  bool is_keyframe = (flags & 0x80) != 0;
+  bool is_keyframe =
+      is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
+
   scoped_refptr<StreamParserBuffer> buffer =
       StreamParserBuffer::CopyFrom(data, size, is_keyframe);
 
@@ -279,8 +286,9 @@ bool WebMClusterParser::OnBlock(int track_num, int timecode,
   return track->AddBuffer(buffer);
 }
 
-WebMClusterParser::Track::Track(int track_num)
-    : track_num_(track_num) {
+WebMClusterParser::Track::Track(int track_num, bool is_video)
+    : track_num_(track_num),
+      is_video_(is_video) {
 }
 
 WebMClusterParser::Track::~Track() {}
@@ -299,6 +307,29 @@ bool WebMClusterParser::Track::AddBuffer(
 
 void WebMClusterParser::Track::Reset() {
   buffers_.clear();
+}
+
+bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
+  // For now, assume that all blocks are keyframes for datatypes other than
+  // video. This is a valid assumption for Vorbis, WebVTT, & Opus.
+  if (!is_video_)
+    return true;
+
+  // Make sure the block is big enough for the minimal keyframe header size.
+  if (size < 7)
+    return false;
+
+  // The LSb of the first byte must be a 0 for a keyframe.
+  // http://tools.ietf.org/html/rfc6386 Section 19.1
+  if ((data[0] & 0x01) != 0)
+    return false;
+
+  // Verify VP8 keyframe startcode.
+  // http://tools.ietf.org/html/rfc6386 Section 19.1
+  if (data[3] != 0x9d || data[4] != 0x01 || data[5] != 0x2a)
+    return false;
+
+  return true;
 }
 
 }  // namespace media

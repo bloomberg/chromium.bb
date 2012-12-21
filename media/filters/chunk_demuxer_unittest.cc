@@ -30,6 +30,14 @@ static const uint8 kTracksHeader[] = {
   0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // tracks(size = 0)
 };
 
+// WebM Block bytes that represent a VP8 keyframe.
+static const uint8 kVP8Keyframe[] = {
+  0x010, 0x00, 0x00, 0x9d, 0x01, 0x2a, 0x00, 0x10, 0x00, 0x10, 0x00
+};
+
+// WebM Block bytes that represent a VP8 interframe.
+static const uint8 kVP8Interframe[] = { 0x11, 0x00, 0x00 };
+
 static const int kTracksHeaderSize = sizeof(kTracksHeader);
 static const int kTracksSizeOffset = 4;
 
@@ -484,6 +492,15 @@ class ChunkDemuxerTest : public testing::Test {
     return GenerateCluster(timecode, timecode, block_count);
   }
 
+  void AddVideoBlockGroup(ClusterBuilder* cb, int track_num, int64 timecode,
+                          int duration, int flags) {
+    const uint8* data =
+        (flags & kWebMFlagKeyframe) != 0 ? kVP8Keyframe : kVP8Interframe;
+    int size = (flags & kWebMFlagKeyframe) != 0 ? sizeof(kVP8Keyframe) :
+        sizeof(kVP8Interframe);
+    cb->AddBlockGroup(track_num, timecode, duration, flags, data, size);
+  }
+
   scoped_ptr<Cluster> GenerateCluster(int first_audio_timecode,
                                       int first_video_timecode,
                                       int block_count) {
@@ -527,11 +544,11 @@ class ChunkDemuxerTest : public testing::Test {
     if (audio_timecode <= video_timecode) {
       cb.AddBlockGroup(kAudioTrackNum, audio_timecode, kAudioBlockDuration,
                        kWebMFlagKeyframe, data.get(), size);
-      cb.AddBlockGroup(kVideoTrackNum, video_timecode, kVideoBlockDuration,
-                       video_flag, data.get(), size);
+      AddVideoBlockGroup(&cb, kVideoTrackNum, video_timecode,
+                         kVideoBlockDuration, video_flag);
     } else {
-      cb.AddBlockGroup(kVideoTrackNum, video_timecode, kVideoBlockDuration,
-                       video_flag, data.get(), size);
+      AddVideoBlockGroup(&cb, kVideoTrackNum, video_timecode,
+                         kVideoBlockDuration, video_flag);
       cb.AddBlockGroup(kAudioTrackNum, audio_timecode, kAudioBlockDuration,
                        kWebMFlagKeyframe, data.get(), size);
     }
@@ -560,8 +577,13 @@ class ChunkDemuxerTest : public testing::Test {
 
     // Make the last block a BlockGroup so that it doesn't get delayed by the
     // block duration calculation logic.
-    cb.AddBlockGroup(track_number, timecode, block_duration,
-                      kWebMFlagKeyframe, data.get(), size);
+    if (track_number == kVideoTrackNum) {
+      AddVideoBlockGroup(&cb, track_number, timecode, block_duration,
+                         kWebMFlagKeyframe);
+    } else {
+      cb.AddBlockGroup(track_number, timecode, block_duration,
+                       kWebMFlagKeyframe, data.get(), size);
+    }
     return cb.Finish();
   }
 
