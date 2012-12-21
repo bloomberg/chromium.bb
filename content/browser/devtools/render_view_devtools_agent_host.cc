@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
@@ -17,6 +18,12 @@
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/snapshot/snapshot.h"
+
 
 namespace content {
 
@@ -25,6 +32,8 @@ typedef std::map<RenderViewHost*, RenderViewDevToolsAgentHost*> Instances;
 namespace {
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
+
+using WebKit::WebDevToolsAgent;
 
 // static
 DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHost(
@@ -139,8 +148,37 @@ void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
 
 void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message) {
+  WebDevToolsAgent::BrowserDataHint dataHint =
+      WebDevToolsAgent::shouldPatchWithBrowserData(message.data(),
+                                                   message.length());
+  if (dataHint == WebDevToolsAgent::BrowserDataHintNone) {
+    DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
+        this, message);
+    return;
+  }
+
+  // Prepare the data and patch message with it.
+  std::string overriden_message;
+  switch (dataHint) {
+    case WebDevToolsAgent::BrowserDataHintScreenshot:
+      {
+        std::string base_64_data;
+        if (CaptureScreenshot(&base_64_data)) {
+          overriden_message = WebDevToolsAgent::patchWithBrowserData(
+              WebKit::WebString::fromUTF8(message),
+              dataHint,
+              WebKit::WebString::fromUTF8(base_64_data)).utf8();
+        }
+        break;
+      }
+    case WebDevToolsAgent::BrowserDataHintNone:
+      // Fall through.
+    default:
+      overriden_message = message;
+  }
+
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-      this, message);
+      this, overriden_message);
 }
 
 void RenderViewDevToolsAgentHost::OnClearBrowserCache() {
@@ -149,6 +187,22 @@ void RenderViewDevToolsAgentHost::OnClearBrowserCache() {
 
 void RenderViewDevToolsAgentHost::OnClearBrowserCookies() {
   GetContentClient()->browser()->ClearCookies(render_view_host_);
+}
+
+bool RenderViewDevToolsAgentHost::CaptureScreenshot(std::string* base_64_data) {
+  gfx::Rect view_bounds = render_view_host_->GetView()->GetViewBounds();
+  gfx::Rect snapshot_bounds(view_bounds.size());
+  gfx::Size snapshot_size = snapshot_bounds.size();
+  std::vector<unsigned char> png;
+  if (!ui::GrabViewSnapshot(render_view_host_->GetView()->GetNativeView(),
+                            &png,
+                            snapshot_bounds))
+    return false;
+
+  return base::Base64Encode(base::StringPiece(
+                                reinterpret_cast<char*>(&*png.begin()),
+                                png.size()),
+                            base_64_data);
 }
 
 }  // namespace content

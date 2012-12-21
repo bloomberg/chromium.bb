@@ -41,6 +41,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
 
+  bool CaptureScreenshot(std::string* base_64_data);
+
   RenderViewHost* render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
