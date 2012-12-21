@@ -376,7 +376,8 @@ def gyp_main(args):
       options.generator_output = g_o
 
   if not options.parallel and options.use_environment:
-    options.parallel = bool(os.environ.get('GYP_PARALLEL'))
+    p = os.environ.get('GYP_PARALLEL')
+    options.parallel = bool(p and p != '0')
 
   for mode in options.debug:
     gyp.debug[mode] = 1

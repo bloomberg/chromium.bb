@@ -494,7 +494,7 @@ def CallLoadTargetBuildFile(global_flags,
             aux_data_out,
             dependencies)
   except Exception, e:
-    print "Exception: ", e
+    print >>sys.stderr, 'Exception: ', e
     return None
 
 
@@ -569,6 +569,12 @@ def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
     parallel_state.condition.acquire()
     while parallel_state.dependencies or parallel_state.pending:
       if parallel_state.error:
+        print >>sys.stderr, (
+            '\n'
+            'Note: an error occurred while running gyp using multiprocessing.\n'
+            'For more verbose output, set GYP_PARALLEL=0 in your environment.\n'
+            'If the error only occurs when GYP_PARELLEL=1, '
+            'please report a bug!')
         break
       if not parallel_state.dependencies:
         parallel_state.condition.wait()
@@ -2553,7 +2559,7 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     build_file = os.path.normpath(build_file)
     try:
       if parallel:
-        print >>sys.stderr, 'Using parallel processing (experimental).'
+        print >>sys.stderr, 'Using parallel processing.'
         LoadTargetBuildFileParallel(build_file, data, aux_data,
                                     variables, includes, depth, check)
       else:
