@@ -185,6 +185,23 @@ enable the existing justification logic in elements that have
 modification to the justification logic itself to match how Microsoft Word
 software works.</p>
 
+<h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
+<p>Open <a href="repros/listMarkerAlignment.html">this link</a> in Chrome.  The
+list markers are all left-aligned, even though the second and third
+<code>li</code> elements are not.</p>
+
+<h3><a name="bugfix-listMarkerFont">bugfix/listMarkerFont</a> (Shezan Baig; D32534047)</h3>
+<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
+that we wanted specifically for our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch makes it so that the font used for the list marker will be the same
+as the first character in the list item.</p>
+<p>Open <a href="repros/listMarkerFont.html">this link</a> in Chrome.  The list
+item will be selected.  When you click <code>BIGGER</code> or
+<code>SMALLER</code> to change the font size, the list marker's font does not
+change with it.  In our product, we wanted the list marker's font to match the
+first character in the list item.</p>
+
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
 file is used as a css background, or in an <code>img</code> element, it does

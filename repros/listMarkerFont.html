@@ -1,0 +1,13 @@
+<button onclick="document.execCommand('fontSize', false, document.queryCommandValue('fontSize')+1);">BIGGER</button>
+<button onclick="document.execCommand('fontSize', false, document.queryCommandValue('fontSize')-1);">SMALLER</button>
+<div id="textarea" contenteditable="true">
+<ol>
+    <li><span>F</span>irst
+</ol>
+</div>
+<script>
+var elem = document.getElementById("textarea");
+elem.focus();
+window.getSelection().selectAllChildren(elem);
+</script>
+
