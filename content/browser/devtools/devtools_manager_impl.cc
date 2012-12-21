@@ -241,9 +241,12 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
         FROM_HERE,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
+  int process_id = agent_host->GetRenderProcessId();
+
+  // Lazy agent hosts can be deleted from within detach.
+  // Do not access agent_host below this line.
   agent_host->Detach();
 
-  int process_id = agent_host->GetRenderProcessId();
   if (process_id == -1)
     return;
   for (AgentToClientHostMap::iterator it = agent_to_client_host_.begin();

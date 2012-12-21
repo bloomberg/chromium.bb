@@ -58,8 +58,8 @@ class WorkerDevToolsManager {
   void RemoveInspectedWorkerData(const WorkerId& id);
   InspectedWorkersList::iterator FindInspectedWorker(int host_id, int route_id);
 
-  void RegisterDevToolsAgentHostForWorker(int worker_process_id,
-                                          int worker_route_id);
+  void ConnectDevToolsAgentHostToWorker(int worker_process_id,
+                                        int worker_route_id);
   void ForwardToWorkerDevToolsAgent(int worker_process_host_id,
                                     int worker_route_id,
                                     const IPC::Message& message);
@@ -71,10 +71,10 @@ class WorkerDevToolsManager {
       int worker_process_id,
       int worker_route_id,
       const std::string& state);
-  static void NotifyWorkerDestroyedOnIOThread(int worker_process_id,
-                                              int worker_route_id);
-  static void NotifyWorkerDestroyedOnUIThread(int worker_process_id,
-                                              int worker_route_id);
+  static void NotifyConnectionFailedOnIOThread(int worker_process_id,
+                                               int worker_route_id);
+  static void NotifyConnectionFailedOnUIThread(int worker_process_id,
+                                               int worker_route_id);
   static void SendResumeToWorker(const WorkerId& id);
 
   InspectedWorkersList inspected_workers_;

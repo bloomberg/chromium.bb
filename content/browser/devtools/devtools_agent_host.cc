@@ -47,11 +47,13 @@ void DevToolsAgentHost::AddMessageToConsole(ConsoleMessageLevel level,
       message));
 }
 
-void DevToolsAgentHost::NotifyCloseListener() {
+bool DevToolsAgentHost::NotifyCloseListener() {
   if (close_listener_) {
     close_listener_->AgentHostClosing(this);
     close_listener_ = NULL;
+    return true;
   }
+  return false;
 }
 
 }  // namespace content
