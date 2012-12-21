@@ -820,6 +820,7 @@ static WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
   result.type = type;
   result.x = x;
   result.y = y;
+  result.sourceDevice = WebGestureEvent::Touchscreen;
   result.timeStampSeconds = timestamp_seconds;
   result.modifiers = modifiers;
 

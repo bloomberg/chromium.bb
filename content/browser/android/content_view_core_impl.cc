@@ -847,6 +847,7 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
   event.x = x / DpiScale();
   event.y = y / DpiScale();
   event.timeStampSeconds = time_ms / 1000.0;
+  event.sourceDevice = WebGestureEvent::Touchscreen;
   UpdateVSyncFlagOnInputEvent(&event);
   return event;
 }
@@ -894,6 +895,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
       WebInputEvent::GestureFlingStart, time_ms, x, y);
   event.data.flingStart.velocityX = vx / DpiScale();
   event.data.flingStart.velocityY = vy / DpiScale();
+  // FIXME(mohsen || rjkroege): Remove following line after removing uses of
+  // flingStart.sourceDevice in WebKit, but before removing the field itself.
   event.data.flingStart.sourceDevice = WebGestureEvent::Touchscreen;
 
   if (GetRenderWidgetHostViewAndroid())

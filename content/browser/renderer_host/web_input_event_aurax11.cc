@@ -158,30 +158,27 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   WebKit::WebGestureEvent webkit_event;
 
   switch (event->type()) {
-    case ui::ET_SCROLL:
-      // TODO(sadrul || rjkroege): This will do touchscreen style scrolling in
-      // response to touchpad events. Currently, touchscreen and touchpad
-      // scrolls are the same. However, if the planned changes to touchscreen
-      // scrolling take place, this will no longer be so. If so, this needs to
-      // be adjusted.
-      webkit_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
-      webkit_event.data.scrollUpdate.deltaX = event->x_offset();
-      webkit_event.data.scrollUpdate.deltaY = event->y_offset();
-      break;
     case ui::ET_SCROLL_FLING_START:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
       webkit_event.data.flingStart.velocityX = event->x_offset();
       webkit_event.data.flingStart.velocityY = event->y_offset();
+      // FIXME(mohsen || rjkroege): Remove following line after removing uses of
+      // flingStart.sourceDevice in WebKit, but before removing the field
+      // itself.
       webkit_event.data.flingStart.sourceDevice =
           WebKit::WebGestureEvent::Touchpad;
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
       break;
+    case ui::ET_SCROLL:
+      NOTREACHED() << "Invalid gesture type: " << event->type();
+      break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }
 
+  webkit_event.sourceDevice = WebKit::WebGestureEvent::Touchpad;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
 

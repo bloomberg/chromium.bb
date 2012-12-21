@@ -266,6 +266,7 @@ WebKit::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
   WebKit::WebGestureEvent gesture_event;
   gesture_event.timeStampSeconds = time_stamp;
   gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
+  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
   return gesture_event;
 }
 

@@ -1627,6 +1627,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     // event to stop any in-progress flings.
     WebKit::WebGestureEvent fling_cancel = gesture;
     fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
+    fling_cancel.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
     host_->ForwardGestureEvent(fling_cancel);
   }
 

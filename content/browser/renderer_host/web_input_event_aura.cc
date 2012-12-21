@@ -186,6 +186,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
 
   // All other fields are ignored on a GestureFlingCancel event.
   gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
+  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchpad;
   return gesture_event;
 }
 

@@ -189,6 +189,9 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
       gesture_event.type = WebKit::WebInputEvent::GestureFlingStart;
       gesture_event.data.flingStart.velocityX = event.details().velocity_x();
       gesture_event.data.flingStart.velocityY = event.details().velocity_y();
+      // FIXME(mohsen || rjkroege): Remove following line after removing uses of
+      // flingStart.sourceDevice in WebKit, but before removing the field
+      // itself.
       gesture_event.data.flingStart.sourceDevice =
           WebKit::WebGestureEvent::Touchscreen;
       break;
@@ -225,6 +228,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
       NOTREACHED() << "Unknown gesture type: " << event.type();
   }
 
+  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   gesture_event.timeStampSeconds = event.time_stamp().InSecondsF();
 
