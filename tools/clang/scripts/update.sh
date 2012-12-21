@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=169803
+CLANG_REVISION=170392
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -166,6 +166,16 @@ for CONFIG in Debug Release; do
     fi
   fi
 done
+
+# Clobber NaCl toolchain stamp files, see http://crbug.com/159793
+if [[ -d "${MAKE_DIR}" ]]; then
+  find "${MAKE_DIR}" -name 'stamp.untar' -exec rm {} +
+fi
+if [[ "${OS}" = "Darwin" ]]; then
+  if [[ -d "${XCODEBUILD_DIR}" ]]; then
+    find "${XCODEBUILD_DIR}" -name 'stamp.untar' -exec rm {} +
+  fi
+fi
 
 if [[ -z "$force_local_build" ]]; then
   # Check if there's a prebuilt binary and if so just fetch that. That's faster,
