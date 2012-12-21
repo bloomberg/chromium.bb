@@ -48,6 +48,8 @@ BalloonHost::BalloonHost(Balloon* balloon)
 void BalloonHost::Shutdown() {
   NotifyDisconnect();
   web_contents_.reset();
+  site_instance_ = NULL;
+  balloon_ = NULL;  // No longer safe to access |balloon_|
 }
 
 extensions::WindowController*
@@ -65,17 +67,21 @@ const string16& BalloonHost::GetSource() const {
 }
 
 void BalloonHost::CloseContents(WebContents* source) {
+  if (!balloon_)
+    return;
   balloon_->CloseByScript();
   NotifyDisconnect();
 }
 
 void BalloonHost::HandleMouseDown() {
-  balloon_->OnClick();
+  if (balloon_)
+    balloon_->OnClick();
 }
 
 void BalloonHost::ResizeDueToAutoResize(WebContents* source,
                                         const gfx::Size& pref_size) {
-  balloon_->ResizeDueToAutoResize(pref_size);
+  if (balloon_)
+    balloon_->ResizeDueToAutoResize(pref_size);
 }
 
 void BalloonHost::AddNewContents(WebContents* source,
