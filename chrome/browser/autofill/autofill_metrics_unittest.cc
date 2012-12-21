@@ -1429,8 +1429,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(
                     AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE));
-    AutofillManager::GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
-    AutofillManager::GUIDPair empty(std::string(), 0);
+    PersonalDataManager::GUIDPair guid(
+        "00000000-0000-0000-0000-000000000001", 0);
+    PersonalDataManager::GUIDPair empty(std::string(), 0);
     autofill_manager_->OnFillAutofillFormData(
         0, form, form.fields.front(),
         autofill_manager_->PackGUIDs(empty, guid));

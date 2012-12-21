@@ -133,7 +133,6 @@ class PersonalDataManager
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of
   // form. Identifying info is loaded into the last four outparams.
-  // TODO(estade): port AutofillManager and its test to use this function.
   void GetProfileSuggestions(
       AutofillFieldType type,
       const string16& field_contents,

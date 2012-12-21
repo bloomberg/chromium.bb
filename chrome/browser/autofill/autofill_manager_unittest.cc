@@ -51,6 +51,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
+typedef PersonalDataManager::GUIDPair GUIDPair;
 using content::BrowserThread;
 using content::WebContents;
 using testing::_;
@@ -607,8 +608,6 @@ class TestAutofillManager : public AutofillManager {
 
 class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  typedef AutofillManager::GUIDPair GUIDPair;
-
   AutofillManagerTest()
       : ChromeRenderViewHostTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_),

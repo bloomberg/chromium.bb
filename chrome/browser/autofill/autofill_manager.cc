@@ -63,6 +63,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
+typedef PersonalDataManager::GUIDPair GUIDPair;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -1129,83 +1130,19 @@ void AutofillManager::GetProfileSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) const {
-  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  if (!field.is_autofilled) {
-    std::vector<AutofillProfile*> matched_profiles;
-    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
-         iter != profiles.end(); ++iter) {
-      AutofillProfile* profile = *iter;
+  std::vector<AutofillFieldType> field_types(form->field_count());
+  for (size_t i = 0; i < form->field_count(); ++i) {
+    field_types[i] = form->field(i)->type();
+  }
+  std::vector<GUIDPair> guid_pairs;
 
-      // The value of the stored data for this field type in the |profile|.
-      std::vector<string16> multi_values;
-      profile->GetMultiInfo(type, app_locale, &multi_values);
+  personal_data_->GetProfileSuggestions(
+      type, field.value, field.is_autofilled, field_types,
+      values, labels, icons, &guid_pairs);
 
-      for (size_t i = 0; i < multi_values.size(); ++i) {
-        if (!multi_values[i].empty() &&
-            StartsWith(multi_values[i], field.value, false)) {
-          matched_profiles.push_back(profile);
-          values->push_back(multi_values[i]);
-          unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
-                                          GUIDPair(profile->guid(), i)));
-        }
-      }
-    }
-
-    std::vector<AutofillFieldType> form_fields;
-    form_fields.reserve(form->field_count());
-    for (std::vector<AutofillField*>::const_iterator iter = form->begin();
-         iter != form->end(); ++iter) {
-      form_fields.push_back((*iter)->type());
-    }
-
-    AutofillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
-                                          type, 1, labels);
-
-    // No icons for profile suggestions.
-    icons->resize(values->size());
-  } else {
-    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
-         iter != profiles.end(); ++iter) {
-      AutofillProfile* profile = *iter;
-
-      // The value of the stored data for this field type in the |profile|.
-      std::vector<string16> multi_values;
-      profile->GetMultiInfo(type, app_locale, &multi_values);
-
-      for (size_t i = 0; i < multi_values.size(); ++i) {
-        if (multi_values[i].empty())
-          continue;
-        string16 profile_value_lower_case(StringToLowerASCII(multi_values[i]));
-        string16 field_value_lower_case(StringToLowerASCII(field.value));
-        // Phone numbers could be split in US forms, so field value could be
-        // either prefix or suffix of the phone.
-        bool matched_phones = false;
-        if (type == PHONE_HOME_NUMBER && !field_value_lower_case.empty() &&
-            (profile_value_lower_case.find(field_value_lower_case) !=
-             string16::npos)) {
-          matched_phones = true;
-        }
-        if (matched_phones ||
-            profile_value_lower_case == field_value_lower_case) {
-          for (size_t j = 0; j < multi_values.size(); ++j) {
-            if (!multi_values[j].empty()) {
-              values->push_back(multi_values[j]);
-              unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
-                                              GUIDPair(profile->guid(), j)));
-            }
-          }
-          // We've added all the values for this profile so move on to the next.
-          break;
-        }
-      }
-    }
-
-    // No labels for previously filled fields.
-    labels->resize(values->size());
-
-    // No icons for profile suggestions.
-    icons->resize(values->size());
+  for (size_t i = 0; i < guid_pairs.size(); ++i) {
+    unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
+                                    guid_pairs[i]));
   }
 }
 
@@ -1302,7 +1239,7 @@ int AutofillManager::GUIDToID(const GUIDPair& guid) const {
   }
 }
 
-const AutofillManager::GUIDPair AutofillManager::IDToGUID(int id) const {
+const GUIDPair AutofillManager::IDToGUID(int id) const {
   if (id == 0)
     return GUIDPair(std::string(), 0);
 

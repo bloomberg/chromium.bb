@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 
@@ -35,7 +36,6 @@ class AutofillMetrics;
 class CreditCard;
 class FormGroup;
 class GURL;
-class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
 
@@ -113,11 +113,6 @@ class AutofillManager : public content::WebContentsObserver,
                   autofill::AutofillManagerDelegate* delegate);
   virtual ~AutofillManager();
 
-  // The string/int pair is composed of the guid string and variant index
-  // respectively.  The variant index is an index into the multi-valued item
-  // (where applicable).
-  typedef std::pair<std::string, size_t> GUIDPair;
-
   // Test code should prefer to use this constructor.
   AutofillManager(content::WebContents* web_contents,
                   autofill::AutofillManagerDelegate* delegate,
@@ -148,13 +143,16 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
-  virtual int GUIDToID(const GUIDPair& guid) const;
-  virtual const GUIDPair IDToGUID(int id) const;
+  virtual int GUIDToID(const PersonalDataManager::GUIDPair& guid) const;
+  virtual const PersonalDataManager::GUIDPair IDToGUID(int id) const;
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  int PackGUIDs(const GUIDPair& cc_guid, const GUIDPair& profile_guid) const;
-  void UnpackGUIDs(int id, GUIDPair* cc_guid, GUIDPair* profile_guid) const;
+  int PackGUIDs(const PersonalDataManager::GUIDPair& cc_guid,
+                const PersonalDataManager::GUIDPair& profile_guid) const;
+  void UnpackGUIDs(int id,
+                   PersonalDataManager::GUIDPair* cc_guid,
+                   PersonalDataManager::GUIDPair* profile_guid) const;
 
   const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
   void set_metric_logger(const AutofillMetrics* metric_logger);
@@ -366,8 +364,8 @@ class AutofillManager : public content::WebContentsObserver,
   ScopedVector<FormStructure> form_structures_;
 
   // GUID to ID mapping.  We keep two maps to convert back and forth.
-  mutable std::map<GUIDPair, int> guid_id_map_;
-  mutable std::map<int, GUIDPair> id_guid_map_;
+  mutable std::map<PersonalDataManager::GUIDPair, int> guid_id_map_;
+  mutable std::map<int, PersonalDataManager::GUIDPair> id_guid_map_;
 
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.
