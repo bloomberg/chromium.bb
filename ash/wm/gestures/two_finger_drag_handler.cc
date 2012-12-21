@@ -132,10 +132,11 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       Reset();
 
       if (event.details().swipe_up()) {
-        wm::MaximizeWindow(target);
+        if (wm::CanMaximizeWindow(target))
+          wm::MaximizeWindow(target);
       } else if (event.details().swipe_down()) {
         wm::MinimizeWindow(target);
-      } else {
+      } else if (wm::CanSnapWindow(target)) {
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(
