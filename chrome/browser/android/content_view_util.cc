@@ -13,7 +13,7 @@
 
 static jint CreateNativeWebContents(
     JNIEnv* env, jclass clazz, jboolean incognito) {
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (incognito)
     profile = profile->GetOffTheRecordProfile();
 
