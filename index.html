@@ -224,6 +224,38 @@ contents of the table will be selected on load.  Hit the "List" button multiple
 times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
 
+<h3><a name="bugfix-nonWindowContexts">bugfix/nonWindowContexts</a> (Shezan Baig)</h3>
+<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
+that we wanted specifically for our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch removes the assumption that every V8 context has a <code>DOMWindow</code>
+associated with it.  This is necessary for our product because we have multiple
+V8 contexts living in the same process that need to share data with each other.</p>
+
+<h3><a name="bugfix-nonemptycellbackspace">bugfix/nonemptycellbackspace</a> (Shezan Baig)</h3>
+<p>Note: This branch has been miscategorized as a bugfix, it is actually a
+feature that we wanted specifically for our product, so it is unlikely that we
+will send this upstream.</p>
+<p>This branch makes it so that hitting <code>&lt;backspace&gt;</code> when the
+cursor is at the beginning of a table cell will be a no-op.  The default
+behavior in WebKit is to move into the previous cell and start deleting from
+there.</p>
+<p>Open <a href="repros/nonemptycellbackspace.html">this link</a> in Chrome,
+and put the cursor in the beginning of the second or third cell and start
+backspacing.  Note that the issue does not happen when the cell is empty.</p>
+
+<h3><a name="bugfix-nonemptycelldelete">bugfix/nonemptycelldelete</a> (Shezan Baig)</h3>
+<p>Note: This branch has been miscategorized as a bugfix, it is actually a
+feature that we wanted specifically for our product, so it is unlikely that we
+will send this upstream.</p>
+<p>This branch makes it so that hitting <code>&lt;delete&gt;</code> when the
+cursor is at the end of a table cell will be a no-op.  The default behavior in
+WebKit is to move into the next cell and start deleting from there.</p>
+<p>Open <a href="repros/nonemptycelldelete.html">this link</a> in Chrome, and
+put the cursor at the end of the first cell, after the 'c' and start deleting.
+The table in the next cell will be highlighted on the first press, and deleted
+on the second press.  Note that the issue does not happen when the cell is
+empty.</p>
 
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
