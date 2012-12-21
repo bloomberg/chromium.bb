@@ -87,7 +87,6 @@ void BrowserPluginTest::SetUp() {
 }
 
 void BrowserPluginTest::TearDown() {
-  browser_plugin_manager()->Cleanup();
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::TearDown();

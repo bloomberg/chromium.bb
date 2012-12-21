@@ -23,10 +23,6 @@ class MockBrowserPluginManager : public BrowserPluginManager {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) OVERRIDE;
 
-  // Iterate over all BrowserPlugins and tell them to cleanup after themselves
-  // before we blow away the MockRenderProcess.
-  void Cleanup();
-
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 

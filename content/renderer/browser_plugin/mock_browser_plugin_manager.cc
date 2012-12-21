@@ -27,14 +27,6 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
                                params);
 }
 
-void MockBrowserPluginManager::Cleanup() {
-  IDMap<BrowserPlugin>::iterator iter(&instances_);
-  while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->Cleanup();
-    iter.Advance();
-  }
-}
-
 bool MockBrowserPluginManager::Send(IPC::Message* msg) {
   // This is a copy-and-paste from MockRenderThread::Send.
   // We need to simulate a synchronous channel, thus we are going to receive

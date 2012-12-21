@@ -135,18 +135,11 @@ BrowserPlugin::BrowserPlugin(
 }
 
 BrowserPlugin::~BrowserPlugin() {
-  current_damage_buffer_.reset();
-  pending_damage_buffer_.reset();
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
           render_view_routing_id_,
           instance_id_));
-}
-
-void BrowserPlugin::Cleanup() {
-  current_damage_buffer_.reset();
-  pending_damage_buffer_.reset();
 }
 
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -963,7 +956,7 @@ base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
   *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;
   if (shared_buf->ShareToProcess(base::GetCurrentProcessHandle(),
                                  damage_buffer_handle))
-      return shared_buf.release();
+    return shared_buf.release();
   NOTREACHED();
   return NULL;
 }

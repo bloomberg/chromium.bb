@@ -33,8 +33,6 @@ class CONTENT_EXPORT BrowserPlugin :
     NON_EXPORTED_BASE(public WebKit::WebPlugin) {
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
-  // Called only by tests to clean up before we blow away the MockRenderProcess.
-  void Cleanup();
 
   bool OnMessageReceived(const IPC::Message& msg);
 
