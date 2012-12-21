@@ -292,7 +292,8 @@ ProfileImplIOData::LazyParams::LazyParams()
 ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
-    : ProfileIOData(false) {}
+    : ProfileIOData(false),
+      http_server_properties_manager_(NULL) {}
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
 
