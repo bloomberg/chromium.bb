@@ -6282,17 +6282,6 @@
    fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
 }
 {
-   bug_166995
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash21PartialScreenshotView22StartPartialScreenshotEPNS_18ScreenshotDelegateE
-   fun:_ZN3ash21AcceleratorController13PerformActionEiRKN2ui11AcceleratorE
-   fun:_ZN3ash21AcceleratorController18AcceleratorPressedERKN2ui11AcceleratorE
-   fun:_ZN2ui18AcceleratorManager7ProcessERKNS_11AcceleratorE
-   fun:_ZN3ash21AcceleratorController7ProcessERKN2ui11AcceleratorE
-   fun:_ZN3ash25AcceleratorControllerTest18ProcessWithContextERKN2ui11AcceleratorE
-}
-{
    bug_166470
    Memcheck:Leak
    fun:_Znw*
