@@ -212,34 +212,32 @@ message SyncEntity {
     optional bytes bookmark_favicon = 14;
   }
 
-  // Supplies a numeric position for this item, relative to other items with
-  // the same parent.
+  // Supplies a numeric position for this item, relative to other items with the
+  // same parent.  Deprecated in M26, though clients are still required to set
+  // it.
   //
   // Present in both GetUpdatesResponse and CommitMessage.
   //
-  // In a CommitMessage context, server implementations may choose whether
-  // to compute a position based on this field or based on
-  // |insert_after_item_id|.  Clients should set both values so that they
-  // result in a consistent ordering regardless of which choice the server
-  // makes.
+  // At one point this was used as an alternative / supplement to
+  // the deprecated |insert_after_item_id|, but now it, too, has been
+  // deprecated.
   //
-  // This is deprecated: clients should set |ordinal_in_parent|
-  // instead.  But until the production servers fully support
-  // |ordinal_in_parent|, clients should set all three position fields
-  // (|position_in_parent|, |insert_after_item_id|, and
-  // |ordinal_in_parent| in commits) and continue to respect any
-  // |position_in_parent| values returned by CommitResponses.
+  // In order to maintain compatibility with older clients, newer clients should
+  // still set this field.  Its value should be based on the first 8 bytes of
+  // this item's |unique_position|.
   //
-  // Similarly, when |ordinal_in_parent| is absent in a GetUpdates and
-  // |position_in_parent| is present, clients should continue to honor
-  // the |position_in_parent| value (after transforming it as
-  // described below).
+  // Nerwer clients must also support the receipt of items that contain
+  // |position_in_parent| but no |unique_position|.  They should locally convert
+  // the given int64 position to a UniquePosition.
   //
-  // When both |ordinal_in_parent| and |position_in_parent| are set,
-  // the first 8 bytes of |ordinal_in_parent| must be equal to the
-  // bytes of flip-sign-bit(|position_in_parent|) in big-endian order
-  // (MSB first), and if those bytes are all zero, a 9th byte equal to
-  // 128 must be added.
+  // The conversion from int64 to UniquePosition is as follows:
+  // The int64 value will have its sign bit flipped then placed in big endian
+  // order as the first 8 bytes of the UniquePosition.  The subsequent bytes of
+  // the UniquePosition will consist of the item's unique suffix.
+  //
+  // Conversion from UniquePosition to int64 reverses this process: the first 8
+  // bytes of the position are to be interpreted as a big endian int64 value
+  // with its sign bit flipped.
   optional int64 position_in_parent = 15;
 
   // Contains the ID of the element (under the same parent) after which this
@@ -250,7 +248,9 @@ message SyncEntity {
   // communicate position.
   //
   // Present only in CommitMessage.
-  // This is deprecated: see comment for |position_in_parent| above.
+  //
+  // This is deprecated.  Clients are allowed to omit this as long as they
+  // include |position_in_parent| instead.
   optional string insert_after_item_id = 16;
 
   // Arbitrary key/value pairs associated with this item.
@@ -268,12 +268,19 @@ message SyncEntity {
   // reunite the original with its official committed version in the case
   // where a client does not receive or process the commit response for
   // some reason.
+  //
   // Present only in GetUpdatesResponse.
+  //
+  // This field is also used in determining the unique identifier used in
+  // bookmarks' unique_position field.
   optional string originator_cache_guid = 19;
 
   // The local item id of this entry from the client that initially
   // committed this entity. Typically a negative integer.
   // Present only in GetUpdatesResponse.
+  //
+  // This field is also used in determinging the unique identifier used in
+  // bookmarks' unique_position field.
   optional string originator_client_item_id = 20;
 
   // Extensible container for datatype-specific data.
@@ -312,30 +319,33 @@ message SyncEntity {
   //
   optional string client_defined_unique_tag = 23;
 
-  // Supplies an ordinal for this item, relative to other items with the
-  // same parent.  Ordinals are ordered lexicographically bytewise.
-  // Ordinals must be at least 8 bytes (for backwards compatibility), and
-  // must not be all zeroes.
+  // This positioning system had a relatively short life.  It was made obsolete
+  // by |unique_position| before either the client or server made much of an
+  // attempt to support it.  In fact, no client ever read or set this field.
   //
-  // Clients should not make sure that each item they know of has a
-  // unique ordinal-in-parent.  However, updates from the server might
-  // break this invariant.  In that case, among the items with the
-  // same ordinal-in-parent, a client should randomly pick one, and
-  // then perturb the ordinal-in-parents of all the other ones (within
-  // the bounds of the preceding and succeeding ordinal-in-parent)
-  // until they're unique; a byte of randomness per item should be
-  // more than enough.
-  //
-  // Available in version 31+.
-  //
-  // Present in both GetUpdatesResponse and CommitMessage.
-  //
-  // In a CommitMessage context, server implementations may choose whether
-  // to compute a position based on this field, |position_in_parent|, or
-  // |insert_after_item_id|.  Clients should set all values so that they
-  // result in a consistent ordering regardless of which choice the server
-  // makes.
+  // Deprecated in M26.
   optional bytes ordinal_in_parent = 24;
+
+  // This is the fourth attempt at positioning.
+  //
+  // Unique positions are unique per-item, since they are guaranteed to end with
+  // a fixed-length suffix that is unique per-item.  The position string may not
+  // end with a '\0' byte.
+  //
+  // Prior to the suffix is a series of arbitrary bytes of arbitrary length.
+  // Items under the same parent are positioned relative to each other by a
+  // lexicographic comparison of their UniquePosition values.
+  //
+  // This field is present in both GetUpdatesResponse and CommitMessage, if the
+  // item's type requires it and the client that wrote the item supports it (M26
+  // or higher).  Clients must also be prepared to handle updates from clients
+  // that do not set this field.  See the comments on
+  // |server_position_in_parent| for more information on how this is handled.
+  //
+  // This field will not be set for items whose type ignores positioning.
+  // Clients should not attempt to read this field on the receipt of an item of
+  // a type that ignores positioning.
+  optional bytes unique_position = 25;
 };
 
 // This message contains diagnostic information used to correlate
@@ -564,7 +574,10 @@ message CommitResponse {
     optional string parent_id_string = 4;
 
     // This value is the same as the position_in_parent value returned within
-    // the SyncEntity message in GetUpdatesResponse.
+    // the SyncEntity message in GetUpdatesResponse.  There was a time when the
+    // client would attempt to honor this position, but nowadays the server
+    // should ensure it is no different from the position_in_parent sent up in
+    // the commit request and the client should not read it.
     optional int64 position_in_parent = 5;
 
     // The item's current version.
