@@ -14,52 +14,6 @@
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/sandbox_factory.h"
 
-namespace {
-
-// TODO(jschuh): Remove this after we narrow down the cause of the crashes.
-class ThreadTracker {
- public:
-  static void NTAPI UpdateCount(PVOID module, DWORD reason, PVOID reserved) {
-    if (reason == DLL_THREAD_ATTACH) {
-      // We hit the threshold, but the loader would eat an exception fired now.
-      // So, schedule an APC to fire the exception exactly once after loading
-      // is complete.
-      if (::InterlockedIncrement(&count_) == cap_ &&
-          !InterlockedExchange(&crash_triggered_, TRUE)) {
-        ::QueueUserAPC(CrashProcessCallback, ::GetCurrentThread(), NULL);
-      }
-    } else if (reason == DLL_THREAD_DETACH) {
-      ::InterlockedDecrement(&count_);
-    }
-  }
-
-  static void SetCap(LONG cap) { cap_ = cap; }
-
- private:
-  static void CALLBACK CrashProcessCallback(ULONG_PTR) { __debugbreak(); }
-
-  static volatile LONG count_;
-  static volatile LONG cap_;
-  static volatile LONG crash_triggered_;
-};
-
-LONG volatile ThreadTracker::count_ = 1;
-LONG volatile ThreadTracker::cap_ = LONG_MAX;
-LONG volatile ThreadTracker::crash_triggered_ = FALSE;
-
-}  // namespace
-
-// Magic required to get our function called on thread attach and detach.
-extern "C" {
-#pragma data_seg(push, old_seg)
-#pragma data_seg(".CRT$XLB")
-PIMAGE_TLS_CALLBACK p_thread_callback = ThreadTracker::UpdateCount;
-#pragma data_seg(pop, old_seg)
-
-#pragma comment(linker, "/INCLUDE:__tls_used")
-#pragma comment(linker, "/INCLUDE:_p_thread_callback")
-}
-
 int RunChrome(HINSTANCE instance) {
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
@@ -71,10 +25,6 @@ int RunChrome(HINSTANCE instance) {
   // Initialize the sandbox services.
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   content::InitializeSandboxInfo(&sandbox_info);
-
-  // Cap the threads for any sandboxed process.
-  if (sandbox_info.target_services)
-    ThreadTracker::SetCap(200);
 
   // Load and launch the chrome dll. *Everything* happens inside.
   MainDllLoader* loader = MakeMainDllLoader();
