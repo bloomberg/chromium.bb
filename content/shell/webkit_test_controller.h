@@ -149,6 +149,7 @@ class WebKitTestController : public base::NonThreadSafe,
   bool did_finish_load_;
 
   webkit_glue::WebPreferences prefs_;
+  bool should_override_prefs_;
 
   base::CancelableClosure watchdog_;
 

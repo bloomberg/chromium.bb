@@ -22,9 +22,8 @@ namespace content {
 void ExportLayoutTestSpecificPreferences(
     const WebTestRunner::WebPreferences& from, webkit_glue::WebPreferences* to);
 
-// Copies the settings relevant to layout tests.
-void CopyLayoutTestSpecificPreferences(const webkit_glue::WebPreferences& from,
-                                       webkit_glue::WebPreferences* to);
+// Applies settings that differ between layout tests and regular mode.
+void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs);
 
 }  // namespace content
 
