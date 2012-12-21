@@ -752,7 +752,7 @@
    fun:_ZN3gfx9GLApiBase15glLinkProgramFnEj
    fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl11linkProgramEj
    fun:_ZN2cc18ProgramBindingBase4linkEPN6WebKit20WebGraphicsContext3DE
-   fun:_ZN2cc14ProgramBindingINS_15VertexShaderPosENS_19FragmentShaderColorEE10initializeEPN6WebKit20WebGraphicsContext3DEb
+   fun:_ZN2cc14ProgramBindingINS_*
 }
 # bug_todo_getdelim, bug_todo_getdelim2 and bug_todo_grep used to happen on
 # Google Lucid workstations only.
@@ -6137,22 +6137,6 @@
    fun:_ZN3net25FtpNetworkTransactionTest18ExecuteTransactionEPNS_21FtpSocketDataProviderEPKcii
 }
 {
-   bug_162732
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN3gfx9RealGLApi15glLinkProgramFnEj
-   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl11linkProgramEj
-   fun:_ZN2cc18ProgramBindingBase4linkEPN6WebKit20WebGraphicsContext3DE
-   fun:_ZN2cc14ProgramBindingINS_*
-   fun:_ZN2cc10GLRenderer*
-   fun:_ZN2cc10GLRenderer*
-   fun:_ZN2cc10GLRenderer8drawQuadERNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadE
-   fun:_ZN2cc14DirectRenderer14drawRenderPassERNS0_12DrawingFrameEPKNS_10RenderPassE
-   fun:_ZN2cc14DirectRenderer9drawFrameERKSt6vectorIPNS_10RenderPassESaIS3_EERKNS_16ScopedPtrHashMapINS2_2IdES2_EE
-   fun:_ZN2cc17LayerTreeHostImpl10drawLayersERKNS0_9FrameDataE
-}
-{
    bug_162825
    Memcheck:Uninitialized
    fun:bcmp
@@ -6460,4 +6444,18 @@
    fun:_ZN16BrowserWindowGtk11InitWidgetsEv
    fun:_ZN16BrowserWindowGtk4InitEv
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+}
+{
+   bug_167216a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN33AppShortcutLauncherItemController18GetApplicationListEv
+   fun:_ZN30ChromeLauncherControllerPerApp18GetApplicationListERKN3ash12LauncherItemE
+}
+{
+   bug_167216b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN30ChromeLauncherControllerPerApp25GetBrowserApplicationListEv
+   fun:_ZN30ChromeLauncherControllerPerApp18GetApplicationListERKN3ash12LauncherItemE
 }

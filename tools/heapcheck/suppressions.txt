@@ -1673,3 +1673,15 @@
    ...
    fun:ash::KeyboardOverlayViewTest_OpenAcceleratorsClose_Test::TestBody
 }
+{
+   bug_167216a
+   Heapcheck:Leak
+   fun:ChromeLauncherControllerPerApp::GetBrowserApplicationList
+   fun:ChromeLauncherControllerPerApp::GetApplicationList
+}
+{
+   bug_167216b
+   Heapcheck:Leak
+   fun:AppShortcutLauncherItemController::GetApplicationList
+   fun:ChromeLauncherControllerPerApp::GetApplicationList
+}
