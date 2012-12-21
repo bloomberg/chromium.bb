@@ -1644,30 +1644,6 @@
    fun:ash::AcceleratorController::AcceleratorPressed
 }
 {
-   bug_167048_a
-   Heapcheck:Leak
-   ...
-   fun:ash::SessionStateControllerImpl2::*PreLockAnimation
-   fun:ash::SessionStateControllerImpl2::*LockAnimation
-   fun:ash::PowerButtonController::On*ButtonEvent
-   fun:ash::test::SessionStateControllerImpl2Test::*Button
-}
-{
-   bug_167048_b
-   Heapcheck:Leak
-   ...
-   fun:ash::SessionStateControllerImpl2::StartPostLockAnimation
-   fun:ash::SessionStateControllerImpl2::OnLockStateChanged
-   fun:ash::test::SessionStateControllerImpl2Test::SystemLocks
-}
-{
-   bug_167048_c
-   Heapcheck:Leak
-   ...
-   fun:ash::SessionStateControllerImpl2::StartImmediatePreLockAnimation
-   fun:ash::SessionStateControllerImpl2::OnStartingLock
-}
-{
    bug_167165
    Heapcheck:Leak
    ...

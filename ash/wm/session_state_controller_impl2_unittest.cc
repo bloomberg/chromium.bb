@@ -111,7 +111,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
     // We would control animations in a fine way:
     ui::LayerAnimator::set_disable_animations_for_test(false);
-    //TODO(antrim) : restore
+    // TODO(antrim) : restore
     // animator_helper_ = ui::test::CreateLayerAnimatorHelperForTest();
 
     // Temporary disable animations so that observer is always called, and
@@ -135,7 +135,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
   }
 
   void TearDown() {
-    //TODO(antrim) : restore
+    // TODO(antrim) : restore
     // animator_helper_->AdvanceUntilDone();
     AshTestBase::TearDown();
   }
@@ -397,7 +397,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   scoped_ptr<SessionStateControllerImpl2::TestApi> test_api_;
   scoped_ptr<SessionStateAnimator::TestApi> animator_api_;
-  //TODO(antrim) : restore
+  // TODO(antrim) : restore
 //  scoped_ptr<ui::test::AnimationContainerTestHelper> animator_helper_;
 
  private:
