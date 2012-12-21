@@ -482,8 +482,8 @@ void NetworkIconImpl::Update(const NetworkState* network) {
   bool dirty = image_.isNull();
 
   // If the network state has changed, the icon needs updating.
-  if (state_ != network->state()) {
-    state_ = network->state();
+  if (state_ != network->connection_state()) {
+    state_ = network->connection_state();
     dirty = true;
   }
 

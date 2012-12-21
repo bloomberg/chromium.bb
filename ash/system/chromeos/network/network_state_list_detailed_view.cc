@@ -374,7 +374,7 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
   button_mobile_->SetVisible(
       handler->TechnologyAvailable(flimflam::kTypeCellular));
   if (proxy_settings_)
-    proxy_settings_->SetEnabled(handler->ActiveNetwork() != NULL);
+    proxy_settings_->SetEnabled(handler->DefaultNetwork() != NULL);
 }
 
 void NetworkStateListDetailedView::UpdateNetworks(
@@ -626,7 +626,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
 
   std::string ip_address("0.0.0.0");
-  const chromeos::NetworkState* network = handler->ActiveNetwork();
+  const chromeos::NetworkState* network = handler->DefaultNetwork();
   if (network)
     ip_address = network->ip_address();
   std::string ethernet_address =

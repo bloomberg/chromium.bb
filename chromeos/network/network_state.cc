@@ -24,7 +24,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (key == flimflam::kSignalStrengthProperty) {
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == flimflam::kStateProperty) {
-    return GetStringValue(key, value, &state_);
+    return GetStringValue(key, value, &connection_state_);
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
   } else if (key == flimflam::kActivationStateProperty) {
@@ -42,25 +42,25 @@ bool NetworkState::PropertyChanged(const std::string& key,
 }
 
 bool NetworkState::IsConnectedState() const {
-  return StateIsConnected(state_);
+  return StateIsConnected(connection_state_);
 }
 
 bool NetworkState::IsConnectingState() const {
-  return StateIsConnecting(state_);
+  return StateIsConnecting(connection_state_);
 }
 
 // static
-bool NetworkState::StateIsConnected(const std::string& state) {
-  return (state == flimflam::kStateReady ||
-          state == flimflam::kStateOnline ||
-          state == flimflam::kStatePortal);
+bool NetworkState::StateIsConnected(const std::string& connection_state) {
+  return (connection_state == flimflam::kStateReady ||
+          connection_state == flimflam::kStateOnline ||
+          connection_state == flimflam::kStatePortal);
 }
 
 // static
-bool NetworkState::StateIsConnecting(const std::string& state) {
-  return (state == flimflam::kStateAssociation ||
-          state == flimflam::kStateConfiguration ||
-          state == flimflam::kStateCarrier);
+bool NetworkState::StateIsConnecting(const std::string& connection_state) {
+  return (connection_state == flimflam::kStateAssociation ||
+          connection_state == flimflam::kStateConfiguration ||
+          connection_state == flimflam::kStateCarrier);
 }
 
 }  // namespace chromeos

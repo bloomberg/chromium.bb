@@ -242,7 +242,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
   std::string str =
       WrapWithTD(network->name()) +
       WrapWithTD(network->type()) +
-      WrapWithTD(network->state()) +
+      WrapWithTD(network->connection_state()) +
       WrapWithTD(network->path()) +
       WrapWithTD(network->ip_address()) +
       WrapWithTD(network->security()) +

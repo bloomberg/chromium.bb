@@ -28,7 +28,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& technology() const { return technology_; }
   const std::string& ip_address() const { return ip_address_; }
   const std::string& device_path() const { return device_path_; }
-  const std::string& state() const { return state_; }
+  const std::string& connection_state() const { return connection_state_; }
   const std::string& error() const { return error_; }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
@@ -38,8 +38,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool IsConnectingState() const;
 
   // Helpers (used e.g. when a state is cached)
-  static bool StateIsConnected(const std::string& state);
-  static bool StateIsConnecting(const std::string& state);
+  static bool StateIsConnected(const std::string& connection_state);
+  static bool StateIsConnecting(const std::string& connection_state);
 
  private:
   friend class NetworkStateHandler;
@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string security_;
   std::string device_path_;
   std::string ip_address_;
-  std::string state_;
+  std::string connection_state_;
   std::string error_;
   // Wireless properties
   int signal_strength_;

@@ -46,7 +46,7 @@ void TrayNetworkStateObserver::NetworkListChanged(
     detailed->NetworkListChanged(networks);
 }
 
-void TrayNetworkStateObserver::NetworkServiceChanged(
+void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
   tray::NetworkDetailedView* detailed = tray_->detailed();
   if (detailed)

@@ -31,14 +31,14 @@ class NetworkState;
 class NetworkStateHandlerObserver;
 class NetworkStateHandlerTest;
 
-// Class for tracking the list of visible networks and their state.
+// Class for tracking the list of visible networks and their properties.
 //
-// This class maps essential state from the connection manager (Shill) for
-// each visible network. It is not used to change the state of services or
-// devices, only global (manager) state.
+// This class maps essential properties from the connection manager (Shill) for
+// each visible network. It is not used to change the properties of services or
+// devices, only global (manager) properties.
 //
-// All getters return the currently cached state. This class is expected to
-// keep states up to date by managing the appropriate Shill observers.
+// All getters return the currently cached properties. This class is expected to
+// keep properties up to date by managing the appropriate Shill observers.
 // It will invoke its own more specific observer methods when the specified
 // changes occur.
 class CHROMEOS_EXPORT NetworkStateHandler
@@ -66,8 +66,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   bool TechnologyAvailable(const std::string& technology) const;
   bool TechnologyEnabled(const std::string& technology) const;
 
-  // Asynchronously sets the enabled state for |technology|.
-  // Note: Modifes Manager state. Calls |error_callback| on failure.
+  // Asynchronously sets the enabled property for |technology|.
+  // Note: Modifies Manager state. Calls |error_callback| on failure.
   void SetTechnologyEnabled(
       const std::string& technology,
       bool enabled,
@@ -82,19 +82,23 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Finds and returns a network state by |service_path| or NULL if not found.
   // Note: NetworkState is frequently updated asynchronously, i.e. properties
   // are not always updated all at once. This will contain the most recent
-  // value for each state. To receive notifications when the state changes,
-  // observer this class and implement NetworkServiceChanged().
+  // value for each property. To receive notifications when a property changes,
+  // observe this class and implement NetworkPropertyChanged().
   const NetworkState* GetNetworkState(const std::string& service_path) const;
 
-  // Returns the "active" network (first network in the list if connected),
-  // NULL if none.
-  const NetworkState* ActiveNetwork() const;
+  // Returns the default connected network (which includes VPNs) or NULL.
+  // This is equivalent to ConnectedNetworkByType(kMatchTypeDefault).
+  const NetworkState* DefaultNetwork() const;
 
-  // Returns the first connected network of type |type|, otherwise NULL.
+  // Returns the primary connected network of matching |type|, otherwise NULL.
+  // |type| can be a type defined in service_constants.h, or one of the
+  // following special constants:
+  // * kMatchTypeDefault returns the default (active) network
+  // * kMatchTypeNonVirtual returns the primary connected non virtual network
+  // * kMatchTypeWireless returns the primary connected wireless network
   const NetworkState* ConnectedNetworkByType(const std::string& type) const;
 
-  // Returns the first connecting network of type |type|, otherwise NULL.
-  // An empty type will return any connecting non-ethernet network.
+  // Like ConnectedNetworkByType() but returns a connecting network or NULL.
   const NetworkState* ConnectingNetworkByType(const std::string& type) const;
 
   // Returns the hardware (MAC) address for the first connected network
@@ -113,6 +117,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   // Returns true if a scan was requested.
   bool RequestWifiScan() const;
+
+  static const char kMatchTypeDefault[];
+  static const char kMatchTypeWireless[];
+  static const char kMatchTypeNonVirtual[];
 
  protected:
   NetworkStateHandler();
@@ -155,9 +163,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void ManagerPropertyChanged() OVERRIDE;
 
   // Called by |shill_property_handler_| when the service or device list has
-  // changed and all entries have been updated. If |type| == TYPE_NETWORK,
-  // this notifies observers that the network list has changed, and if the
-  // active network has changed sends that notification also.
+  // changed and all entries have been updated. This updates the list and
+  // notifies observers. If |type| == TYPE_NETWORK this also calls
+  // CheckDefaultNetworkChanged().
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
 
@@ -181,10 +189,21 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Gets the list specified by |type|.
   ManagedStateList* GetManagedList(ManagedState::ManagedType type);
 
-  // Helper function called to parse |network| properties.
+  // Helper function called to parse |network| properties. Also calls
+  // OnNetworkConnectionStateChanged() if the connection_state property changes.
   bool ParseNetworkServiceProperty(NetworkState* network,
                                    const std::string& key,
                                    const base::Value& value);
+
+  // Helper function to notify observers. Calls CheckDefaultNetworkChanged().
+  void OnNetworkConnectionStateChanged(NetworkState* network);
+
+  // If the default network changed returns true and sets
+  // |default_network_path_|.
+  bool CheckDefaultNetworkChanged();
+
+  // Logs an event and notifies observers.
+  void OnDefaultNetworkChanged();
 
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
@@ -200,8 +219,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   std::set<std::string> available_technologies_;
   std::set<std::string> enabled_technologies_;
 
-  // Keeps track of the active network for notifying observers when it changes.
-  std::string active_network_path_;
+  // Keeps track of the default network for notifying observers when it changes.
+  std::string default_network_path_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };
