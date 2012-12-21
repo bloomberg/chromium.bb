@@ -28,8 +28,8 @@ my @tables = glob("$tablesdir/*");
 @tables = grep(!/.+\.dic$/, @tables);
 # exclude Makefiles, README and shell scripts
 @tables = grep(!/Makefile|README|maketablelist\.sh/, @tables);
-# exclude backup and diff and patch files
-@tables = grep(!/.+~$|.+\.diff$|.+\.patch$/, @tables);
+# exclude backup, diff, patch and txt files
+@tables = grep(!/.+~$|.+\.diff$|.+\.patch$|.+\.txt$/, @tables);
 # exclude tables that only work when included inside others
 @tables = grep(!/countries\.cti|compress\.ctb|corrections\.ctb|hu-exceptionwords\.cti|core\.[cu]tb|-translation\.ctb/, @tables);
 # exclude other oddballs
