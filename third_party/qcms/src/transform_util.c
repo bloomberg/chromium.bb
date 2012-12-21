@@ -36,7 +36,7 @@
 
 /* value must be a value between 0 and 1 */
 //XXX: is the above a good restriction to have?
-float lut_interp_linear(double value, uint16_t *table, int length)
+float lut_interp_linear(double value, uint16_t *table, size_t length)
 {
 	int upper, lower;
 	value = value * (length - 1); // scale to length of the array
@@ -49,11 +49,11 @@ float lut_interp_linear(double value, uint16_t *table, int length)
 }
 
 /* same as above but takes and returns a uint16_t value representing a range from 0..1 */
-uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, int length)
+uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, size_t length)
 {
 	/* Start scaling input_value to the length of the array: 65535*(length-1).
 	 * We'll divide out the 65535 next */
-	uint32_t value = (input_value * (length - 1));
+	uintptr_t value = (input_value * (length - 1));
 	uint32_t upper = (value + 65534) / 65535; /* equivalent to ceil(value/65535) */
 	uint32_t lower = value / 65535;           /* equivalent to floor(value/65535) */
 	/* interp is the distance from upper to value scaled to 0..65535 */
@@ -67,11 +67,11 @@ uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, int length)
 /* same as above but takes an input_value from 0..PRECACHE_OUTPUT_MAX
  * and returns a uint8_t value representing a range from 0..1 */
 static
-uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table, int length)
+uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table, size_t length)
 {
 	/* Start scaling input_value to the length of the array: PRECACHE_OUTPUT_MAX*(length-1).
 	 * We'll divide out the PRECACHE_OUTPUT_MAX next */
-	uint32_t value = (input_value * (length - 1));
+	uintptr_t value = (input_value * (length - 1));
 
 	/* equivalent to ceil(value/PRECACHE_OUTPUT_MAX) */
 	uint32_t upper = (value + PRECACHE_OUTPUT_MAX-1) / PRECACHE_OUTPUT_MAX;
@@ -91,7 +91,7 @@ uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table,
 
 /* value must be a value between 0 and 1 */
 //XXX: is the above a good restriction to have?
-float lut_interp_linear_float(float value, float *table, int length)
+float lut_interp_linear_float(float value, float *table, size_t length)
 {
         int upper, lower;
         value = value * (length - 1);
@@ -408,7 +408,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
  which has an maximum error of about 9855 (pixel difference of ~38.346)
 
  For now, we punt the decision of output size to the caller. */
-static uint16_t *invert_lut(uint16_t *table, int length, int out_length)
+static uint16_t *invert_lut(uint16_t *table, int length, size_t out_length)
 {
         int i;
         /* for now we invert the lut by creating a lut of size out_length

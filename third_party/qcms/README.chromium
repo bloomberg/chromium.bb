@@ -29,5 +29,7 @@ google.patch contains the following modifications. Apply with
  - Only reference code from transform-sse1.c and transform-sse2.c when SSE is
    enabled.
  - Do not use an x86-only attribute on ARM.
+ - Fix integer truncation warning/errors on Win64 build.
 To regenerate google.patch:
   git diff b8456f38 src > google.patch
+

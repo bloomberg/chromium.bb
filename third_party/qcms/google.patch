@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..0523846 100644
+index 36b7011..d3c3dfe 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -34,6 +34,24 @@ index 36b7011..0523846 100644
         // Compare with our tolerance
         for (i = 0; i < 3; ++i) {
             if (!(((sum[i] - tolerance[i]) <= target[i]) &&
+@@ -402,7 +411,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
+ // present that are not part of the tag_index.
+ static struct curveType *read_curveType(struct mem_source *src, uint32_t offset, uint32_t *len)
+ {
+-	static const size_t COUNT_TO_LENGTH[5] = {1, 3, 4, 5, 7};
++	static const uint32_t COUNT_TO_LENGTH[5] = {1, 3, 4, 5, 7};
+ 	struct curveType *curve = NULL;
+ 	uint32_t type = read_u32(src, offset);
+ 	uint32_t count;
+@@ -657,7 +666,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+ 	uint16_t num_input_table_entries;
+ 	uint16_t num_output_table_entries;
+ 	uint8_t in_chan, grid_points, out_chan;
+-	uint32_t clut_offset, output_offset;
++	size_t clut_offset, output_offset;
+ 	uint32_t clut_size;
+ 	size_t entry_size;
+ 	struct lutType *lut;
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
 index 7d83623..1e3e125 100644
 --- a/third_party/qcms/src/qcms.h
@@ -762,9 +780,55 @@ index 9a6562b..7312ced 100644
  
  qcms_bool qcms_supports_iccv4;
 diff --git a/third_party/qcms/src/transform_util.c b/third_party/qcms/src/transform_util.c
-index e8447e5..f68699d 100644
+index e8447e5..f4338b2 100644
 --- a/third_party/qcms/src/transform_util.c
 +++ b/third_party/qcms/src/transform_util.c
+@@ -36,7 +36,7 @@
+ 
+ /* value must be a value between 0 and 1 */
+ //XXX: is the above a good restriction to have?
+-float lut_interp_linear(double value, uint16_t *table, int length)
++float lut_interp_linear(double value, uint16_t *table, size_t length)
+ {
+ 	int upper, lower;
+ 	value = value * (length - 1); // scale to length of the array
+@@ -49,11 +49,11 @@ float lut_interp_linear(double value, uint16_t *table, int length)
+ }
+ 
+ /* same as above but takes and returns a uint16_t value representing a range from 0..1 */
+-uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, int length)
++uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, size_t length)
+ {
+ 	/* Start scaling input_value to the length of the array: 65535*(length-1).
+ 	 * We'll divide out the 65535 next */
+-	uint32_t value = (input_value * (length - 1));
++	uintptr_t value = (input_value * (length - 1));
+ 	uint32_t upper = (value + 65534) / 65535; /* equivalent to ceil(value/65535) */
+ 	uint32_t lower = value / 65535;           /* equivalent to floor(value/65535) */
+ 	/* interp is the distance from upper to value scaled to 0..65535 */
+@@ -67,11 +67,11 @@ uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, int length)
+ /* same as above but takes an input_value from 0..PRECACHE_OUTPUT_MAX
+  * and returns a uint8_t value representing a range from 0..1 */
+ static
+-uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table, int length)
++uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table, size_t length)
+ {
+ 	/* Start scaling input_value to the length of the array: PRECACHE_OUTPUT_MAX*(length-1).
+ 	 * We'll divide out the PRECACHE_OUTPUT_MAX next */
+-	uint32_t value = (input_value * (length - 1));
++	uintptr_t value = (input_value * (length - 1));
+ 
+ 	/* equivalent to ceil(value/PRECACHE_OUTPUT_MAX) */
+ 	uint32_t upper = (value + PRECACHE_OUTPUT_MAX-1) / PRECACHE_OUTPUT_MAX;
+@@ -91,7 +91,7 @@ uint8_t lut_interp_linear_precache_output(uint32_t input_value, uint16_t *table,
+ 
+ /* value must be a value between 0 and 1 */
+ //XXX: is the above a good restriction to have?
+-float lut_interp_linear_float(float value, float *table, int length)
++float lut_interp_linear_float(float value, float *table, size_t length)
+ {
+         int upper, lower;
+         value = value * (length - 1);
 @@ -235,6 +235,21 @@ float u8Fixed8Number_to_float(uint16_t x)
  	return x/256.;
  }
@@ -799,3 +863,29 @@ index e8447e5..f68699d 100644
  }
  
  struct matrix build_colorant_matrix(qcms_profile *p)
+@@ -390,7 +408,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+  which has an maximum error of about 9855 (pixel difference of ~38.346)
+ 
+  For now, we punt the decision of output size to the caller. */
+-static uint16_t *invert_lut(uint16_t *table, int length, int out_length)
++static uint16_t *invert_lut(uint16_t *table, int length, size_t out_length)
+ {
+         int i;
+         /* for now we invert the lut by creating a lut of size out_length
+diff --git a/third_party/qcms/src/transform_util.h b/third_party/qcms/src/transform_util.h
+index 8f358a8..de465f4 100644
+--- a/third_party/qcms/src/transform_util.h
++++ b/third_party/qcms/src/transform_util.h
+@@ -31,9 +31,9 @@
+ //XXX: could use a bettername
+ typedef uint16_t uint16_fract_t;
+ 
+-float lut_interp_linear(double value, uint16_t *table, int length);
+-float lut_interp_linear_float(float value, float *table, int length);
+-uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, int length);
++float lut_interp_linear(double value, uint16_t *table, size_t length);
++float lut_interp_linear_float(float value, float *table, size_t length);
++uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, size_t length);
+ 
+ 
+ static inline float lerp(float a, float b, float t)
