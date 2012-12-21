@@ -1647,8 +1647,9 @@ void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
   DCHECK(sync_initialized());
   DCHECK(!(type == IMPLICIT && IsUsingSecondaryPassphrase())) <<
       "Data is already encrypted using an explicit passphrase";
-  DCHECK(!(type == EXPLICIT && IsPassphraseRequired())) <<
-      "Cannot switch to an explicit passphrase if a passphrase is required";
+  DCHECK(!(type == EXPLICIT &&
+           passphrase_required_reason_ == syncer::REASON_DECRYPTION)) <<
+         "Can not set explicit passphrase when decryption is needed.";
 
   if (type == EXPLICIT)
     UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase", true);
