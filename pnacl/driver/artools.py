@@ -10,29 +10,67 @@
 #
 
 # Tool for reading archive (.a) files
+# For information about the archive file format, see:
+#   http://en.wikipedia.org/wiki/Ar_(Unix)
 
 # TODO(pdox): Refactor driver_tools so that there is no circular dependency.
 # (just using DecodeELFHeader still)
 import driver_tools
 import driver_log
+import pathtools
 
+# See above link to wiki entry on archive format.
 AR_MAGIC = '!<arch>\n'
+# Thin archives are like normal archives except that there are only
+# indirect references to each member (the data is not embedded).
+# See manpage for a description of this.
+THIN_MAGIC = '!<thin>\n'
+
 
 def IsArchive(filename):
   fp = driver_log.DriverOpen(filename, "rb")
-  magic = fp.read(8)
+  magic = fp.read(len(AR_MAGIC))
   fp.close()
-  return magic == AR_MAGIC
+  return magic in [AR_MAGIC, THIN_MAGIC]
+
+
+def GetMemberFilename(member, strtab_data):
+  """ Get the real filename of the archive member. """
+  if not member.is_long_name:
+    return member.name.strip()
+  else:
+    # GNU style long filenames are /[index]
+    # where index is a position within the strtab_data.
+    name_index = int(member.name[1:].strip())
+    name_data = strtab_data[name_index:]
+    name_data = name_data.split('\n', 2)[0]
+    assert (name_data.endswith('/'))
+    return name_data[:-1]
+
+
+def GetThinArchiveData(archive_filename, member, strtab_data):
+  # Get member's filename (relative to the archive) and open the member
+  # ourselves to check the data.
+  member_filename = GetMemberFilename(member, strtab_data)
+  member_filename = pathtools.join(
+      pathtools.dirname(pathtools.abspath(archive_filename)),
+      member_filename)
+  member_fp = driver_log.DriverOpen(member_filename, 'rb')
+  data = member_fp.read(member.size)
+  member_fp.close()
+  return data
+
 
 def GetArchiveType(filename):
   fp = driver_log.DriverOpen(filename, "rb")
 
   # Read the archive magic header
-  magic = fp.read(8)
-  assert(magic == AR_MAGIC)
+  magic = fp.read(len(AR_MAGIC))
+  assert(magic in [AR_MAGIC, THIN_MAGIC])
 
   # Find a regular file or symbol table
   found_type = ''
+  strtab_data = ''
   while not found_type:
     member = MemberHeader(fp)
     if member.error == 'EOF':
@@ -40,14 +78,29 @@ def GetArchiveType(filename):
     elif member.error:
       driver_log.Log.Fatal("%s: %s", filename, member.error)
 
-    data = fp.read(member.size)
     if member.is_regular_file:
+      if not magic == THIN_MAGIC:
+        data = fp.read(member.size)
+      else:
+        # For thin archives, do not read the data section.
+        # We instead must get at the member indirectly.
+        data = GetThinArchiveData(filename, member, strtab_data)
+
       if data.startswith('BC'):
         found_type = 'archive-bc'
       else:
         elf_header = driver_tools.DecodeELFHeader(data, filename)
         if elf_header:
           found_type = 'archive-%s' % elf_header.arch
+    elif member.is_strtab:
+      # We need the strtab data to get long filenames.
+      data = fp.read(member.size)
+      strtab_data = data
+      continue
+    else:
+      # Other symbol tables we can just skip ahead.
+      data = fp.read(member.size)
+      continue
 
   if not found_type:
     driver_log.Log.Fatal("%s: Unable to determine archive type", filename)
@@ -56,8 +109,6 @@ def GetArchiveType(filename):
   return found_type
 
 
-# For information about the .ar file format, see:
-#   http://en.wikipedia.org/wiki/Ar_(Unix)
 class MemberHeader(object):
   def __init__(self, fp):
     self.error = ''
@@ -75,7 +126,7 @@ class MemberHeader(object):
     self.fmag = header[58:60]
 
     if self.fmag != '`\n':
-      self.error = 'Invalid archive member header magic string'
+      self.error = 'Invalid archive member header magic string %s' % header
       return
 
     self.size = int(self.size)
@@ -94,8 +145,7 @@ class MemberHeader(object):
       self.error = "BSD-style long file names not supported"
       return
 
-    # If it's a GNU long filename, note this, but don't actually
-    # look it up. (we don't need it)
+    # If it's a GNU long filename, note this.  We use this for thin archives.
     self.is_long_name = (self.is_regular_file and self.name.startswith('/'))
 
     if self.is_regular_file and not self.is_long_name:
