@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_console_dev.idl modified Mon Nov 19 09:22:44 2012.
+// From ppb_console.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
