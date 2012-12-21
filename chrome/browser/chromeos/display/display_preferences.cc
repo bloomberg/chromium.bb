@@ -159,12 +159,11 @@ void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
 void SetDisplayLayoutPref(const gfx::Display& display,
                           int layout,
                           int offset) {
-  PrefService* local_state = g_browser_process->local_state();
-
-  {
+  ash::DisplayLayout display_layout(
+      static_cast<ash::DisplayLayout::Position>(layout), offset);
+  if (IsValidUser()) {
+    PrefService* local_state = g_browser_process->local_state();
     DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
-    ash::DisplayLayout display_layout(
-        static_cast<ash::DisplayLayout::Position>(layout), offset);
 
     std::string name = base::Int64ToString(display.id());
     DCHECK(!name.empty());
@@ -178,12 +177,13 @@ void SetDisplayLayoutPref(const gfx::Display& display,
     }
     if (ash::DisplayLayout::ConvertToValue(display_layout, layout_value.get()))
       pref_data->Set(name, layout_value.release());
+
+    local_state->SetInteger(prefs::kSecondaryDisplayLayout, layout);
+    local_state->SetInteger(prefs::kSecondaryDisplayOffset, offset);
   }
 
-  local_state->SetInteger(prefs::kSecondaryDisplayLayout, layout);
-  local_state->SetInteger(prefs::kSecondaryDisplayOffset, offset);
-
-  NotifyDisplayLayoutChanged();
+  ash::Shell::GetInstance()->display_controller()->SetLayoutForDisplayId(
+      display.id(), display_layout);
 }
 
 void StorePrimaryDisplayIDPref(int64 display_id) {
@@ -199,10 +199,7 @@ void StorePrimaryDisplayIDPref(int64 display_id) {
 
 void SetDisplayOverscan(const gfx::Display& display,
                         const gfx::Insets& insets) {
-  if (!IsValidUser())
-    return;
-
-  {
+  if (IsValidUser()) {
     DictionaryPrefUpdate update(
         g_browser_process->local_state(), prefs::kDisplayOverscans);
     const std::string id = base::Int64ToString(display.id());
@@ -213,7 +210,8 @@ void SetDisplayOverscan(const gfx::Display& display,
     pref_data->Set(id, insets_value);
   }
 
-  NotifyDisplayOverscans();
+  ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
+      display.id(), insets);
 }
 
 void SetPrimaryDisplayIDPref(int64 display_id) {
