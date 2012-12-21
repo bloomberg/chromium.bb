@@ -22,8 +22,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using WebKit::WebDevToolsAgent;
-
 namespace content {
 
 // Called on the UI thread.
@@ -38,12 +36,12 @@ DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
 
 namespace {
 
-static WorkerDevToolsManager::WorkerId g_null_id = std::make_pair(-1, -1);
-
 typedef std::map<WorkerDevToolsManager::WorkerId,
                  WorkerDevToolsManager::WorkerDevToolsAgentHost*> AgentHosts;
+typedef std::map<WorkerDevToolsManager::WorkerId,
+                 int> OrphanHosts;
 base::LazyInstance<AgentHosts>::Leaky g_agent_map = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<AgentHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<OrphanHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -61,49 +59,20 @@ struct WorkerDevToolsManager::TerminatedInspectedWorker {
 class WorkerDevToolsManager::WorkerDevToolsAgentHost
     : public DevToolsAgentHost {
  public:
-  explicit WorkerDevToolsAgentHost(WorkerId worker_id) {
-    SetWorkerId(worker_id, false);
-  }
-
-  void SetWorkerId(WorkerId worker_id, bool reattach) {
-    worker_id_ = worker_id;
+  explicit WorkerDevToolsAgentHost(WorkerId worker_id)
+      : worker_id_(worker_id) {
     g_agent_map.Get()[worker_id_] = this;
-
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(
-            &ConnectToWorker,
+            &RegisterAgent,
             worker_id.first,
             worker_id.second));
-
-    if (reattach)
-      Reattach(state_);
   }
 
-  void ResetWorkerId() {
-    g_agent_map.Get().erase(worker_id_);
-    worker_id_ = g_null_id;
-  }
-
-  virtual void Detach() {
-    DevToolsAgentHost::Detach();
-    SelfDestruct();
-  }
-
-  void SaveAgentRuntimeState(const std::string& state) {
-    state_ = state;
-  }
-
-  void ConnectionFailed() {
-    // Depending on whether we are connected or not, we should disconnect and
-    // self-destruct.
-    if (NotifyCloseListener())
-      return;  // Detach will delete this instance.
-    SelfDestruct();
-  }
-
-  void SelfDestruct() {
+  void WorkerDestroyed() {
+    NotifyCloseListener();
     delete this;
   }
 
@@ -112,10 +81,10 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
     g_agent_map.Get().erase(worker_id_);
   }
 
-  static void ConnectToWorker(
+  static void RegisterAgent(
       int worker_process_id,
       int worker_route_id) {
-    WorkerDevToolsManager::GetInstance()->ConnectDevToolsAgentHostToWorker(
+    WorkerDevToolsManager::GetInstance()->RegisterDevToolsAgentHostForWorker(
         worker_process_id, worker_route_id);
   }
 
@@ -129,10 +98,6 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
 
   // DevToolsAgentHost implementation.
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE {
-    if (worker_id_ == g_null_id) {
-      delete message;
-      return;
-    }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -141,13 +106,11 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
             worker_id_.second,
             base::Owned(message)));
   }
-
   virtual void NotifyClientAttaching() OVERRIDE {}
   virtual void NotifyClientDetaching() OVERRIDE {}
   virtual int GetRenderProcessId() OVERRIDE { return -1; }
 
   WorkerId worker_id_;
-  std::string state_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);
 };
@@ -157,12 +120,8 @@ class WorkerDevToolsManager::DetachedClientHosts {
  public:
   static void WorkerReloaded(WorkerId old_id, WorkerId new_id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    AgentHosts::iterator it = g_orphan_map.Get().find(old_id);
-    if (it != g_orphan_map.Get().end()) {
-      g_orphan_map.Get().erase(old_id);
-      it->second->SetWorkerId(new_id, true);
+    if (ReattachClient(old_id, new_id))
       return;
-    }
     RemovePendingWorkerData(old_id);
   }
 
@@ -173,30 +132,37 @@ class WorkerDevToolsManager::DetachedClientHosts {
       RemovePendingWorkerData(id);
       return;
     }
-
     WorkerDevToolsAgentHost* agent = it->second;
-    DevToolsManagerImpl* devtools_manager = DevToolsManagerImpl::GetInstance();
-    DevToolsClientHost* client_host =
-        devtools_manager->GetDevToolsClientHostFor(agent);
-
-    if (!client_host) {
-      // Agent has no client hosts -> delete it.
+    DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
+        agent,
+        WebKit::WebDevToolsAgent::workerDisconnectedFromWorkerEvent().utf8());
+    int cookie = DevToolsManagerImpl::GetInstance()->DetachClientHost(agent);
+    agent->WorkerDestroyed();
+    if (cookie == -1) {
       RemovePendingWorkerData(id);
-      agent->SelfDestruct();
       return;
     }
-
-    // Client host is debugging this worker agent host.
-    devtools_manager->DispatchOnInspectorFrontend(
-        agent,
-        WebDevToolsAgent::workerDisconnectedFromWorkerEvent().utf8());
-    g_orphan_map.Get()[id] = agent;
-    agent->ResetWorkerId();
+    g_orphan_map.Get()[id] = cookie;
   }
 
  private:
   DetachedClientHosts() {}
   ~DetachedClientHosts() {}
+
+  static bool ReattachClient(WorkerId old_id, WorkerId new_id) {
+    OrphanHosts::iterator it = g_orphan_map.Get().find(old_id);
+    if (it == g_orphan_map.Get().end())
+      return false;
+    DevToolsAgentHost* agent =
+        WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+            new_id.first,
+            new_id.second);
+    DevToolsManagerImpl::GetInstance()->AttachClientHost(
+        it->second,
+        agent);
+    g_orphan_map.Get().erase(it);
+    return true;
+  }
 
   static void RemovePendingWorkerData(WorkerId id) {
     BrowserThread::PostTask(
@@ -339,7 +305,7 @@ static WorkerProcessHost* FindWorkerProcess(int worker_process_id) {
   return NULL;
 }
 
-void WorkerDevToolsManager::ConnectDevToolsAgentHostToWorker(
+void WorkerDevToolsManager::RegisterDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
   if (WorkerProcessHost* process = FindWorkerProcess(worker_process_id)) {
@@ -355,7 +321,7 @@ void WorkerDevToolsManager::ConnectDevToolsAgentHostToWorker(
       }
     }
   }
-  NotifyConnectionFailedOnIOThread(worker_process_id, worker_route_id);
+  NotifyWorkerDestroyedOnIOThread(worker_process_id, worker_route_id);
 }
 
 void WorkerDevToolsManager::ForwardToDevToolsClient(
@@ -424,29 +390,29 @@ void WorkerDevToolsManager::SaveAgentRuntimeStateOnUIThread(
                                                             worker_route_id));
   if (it == g_agent_map.Get().end())
     return;
-  it->second->SaveAgentRuntimeState(state);
+  DevToolsManagerImpl::GetInstance()->SaveAgentRuntimeState(it->second, state);
 }
 
 // static
-void WorkerDevToolsManager::NotifyConnectionFailedOnIOThread(
+void WorkerDevToolsManager::NotifyWorkerDestroyedOnIOThread(
     int worker_process_id,
     int worker_route_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &WorkerDevToolsManager::NotifyConnectionFailedOnUIThread,
+          &WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread,
           worker_process_id,
           worker_route_id));
 }
 
 // static
-void WorkerDevToolsManager::NotifyConnectionFailedOnUIThread(
+void WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread(
     int worker_process_id,
     int worker_route_id) {
   AgentHosts::iterator it = g_agent_map.Get().find(WorkerId(worker_process_id,
                                                             worker_route_id));
   if (it != g_agent_map.Get().end())
-    it->second->ConnectionFailed();
+    it->second->WorkerDestroyed();
 }
 
 // static
