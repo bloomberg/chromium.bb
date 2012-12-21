@@ -51,6 +51,14 @@ namespace {
 // overhead this is a size relatively likely to take only one RTT.
 const int kSmallResourceMaxBytes = 14 * 1024;
 
+// From http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-21#section-6
+//      a "non-error response" is one with a 2xx (Successful) or 3xx
+//      (Redirection) status code.
+bool NonErrorResponse(int status_code) {
+  int status_code_range = status_code / 100;
+  return status_code_range == 2 || status_code_range == 3;
+}
+
 }  // namespace
 
 namespace net {
@@ -845,7 +853,8 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
     DoneWritingToEntry(false);
   }
-  if (new_response_->headers->response_code() == 416) {
+  if (new_response_->headers->response_code() == 416 &&
+      (request_->method == "GET" || request_->method == "POST")) {
     DCHECK_EQ(NONE, mode_);
     response_ = *new_response_;
     return OK;
@@ -858,11 +867,18 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   if (mode_ == WRITE &&
       (request_->method == "PUT" || request_->method == "DELETE")) {
-    if (new_response->headers->response_code() == 200) {
+    if (NonErrorResponse(new_response->headers->response_code())) {
       int ret = cache_->DoomEntry(cache_key_, NULL);
       DCHECK_EQ(OK, ret);
     }
+    cache_->DoneWritingToEntry(entry_, true);
+    entry_ = NULL;
     mode_ = NONE;
+  }
+
+  if (mode_ != NONE && request_->method == "POST" &&
+      NonErrorResponse(new_response->headers->response_code())) {
+    cache_->DoomMainEntryForUrl(request_->url);
   }
 
   // Are we expecting a response to a conditional query?

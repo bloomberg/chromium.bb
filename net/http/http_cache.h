@@ -266,6 +266,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // be currently in use.
   int AsyncDoomEntry(const std::string& key, Transaction* trans);
 
+  // Dooms the entry associated with a GET for a given |url|.
+  void DoomMainEntryForUrl(const GURL& url);
+
   // Closes a previously doomed entry.
   void FinalizeDoomedEntry(ActiveEntry* entry);
 
