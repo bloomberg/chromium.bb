@@ -30,6 +30,8 @@
 
         video.addEventListener('pause', function() {
           video.addEventListener('seeked', function() {
+            if (mediaSource.readyState != "ended")
+              mediaSource.endOfStream();
             if (!firstVideoSeek) {
               setDocTitle('One video seeked.');
               firstVideoSeek = true;
