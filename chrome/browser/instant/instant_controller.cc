@@ -485,6 +485,12 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     return false;
   }
 
+  // There may re-entrance here, from the call to browser_->CommitInstant below,
+  // which can cause a TabDeactivated notification which gets back here.
+  // In this case, loader_->ReleaseContents() was called already.
+  if (!loader_->contents())
+    return false;
+
   if (!IsPreviewingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
     return false;
 
