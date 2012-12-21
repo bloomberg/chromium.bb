@@ -1,0 +1,16 @@
+<button onclick="document.execCommand('insertOrderedList', false);">List</button>
+<div contenteditable="true">
+    <table border="1">
+		<tbody id="selected">
+			<tr><td>fsdf</td><td>fsdf</td></tr>
+			<tr><td>gghfg</td><td>fsfg</td></tr>
+		</tbody>
+	</table>
+	<br><br>
+</div>
+<script>
+var selected = document.getElementById("selected");
+window.getSelection().selectAllChildren(selected);
+</script>
+
+
