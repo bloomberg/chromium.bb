@@ -39,7 +39,7 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
   const extensions::Extension* GetExtension();
   // Cleans up when a RenderViewHost is removed, or on destruction.
   void RemoveRenderViewHostForExtensions(content::RenderViewHost* rvh);
-  void OnFocusedEditableNodeTouched();
+  void OnFocusedNodeTouched(bool editable);
 
   Profile* profile_;
   chrome_browser_net::Predictor* predictor_;

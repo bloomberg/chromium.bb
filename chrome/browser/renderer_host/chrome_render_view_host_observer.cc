@@ -66,8 +66,8 @@ bool ChromeRenderViewHostObserver::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewHostObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedEditableNodeTouched,
-                        OnFocusedEditableNodeTouched)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedNodeTouched,
+                        OnFocusedNodeTouched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -152,9 +152,11 @@ void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
     process_manager->UnregisterRenderViewHost(rvh);
 }
 
-void ChromeRenderViewHostObserver::OnFocusedEditableNodeTouched() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
-      content::Source<RenderViewHost>(render_view_host()),
-      content::NotificationService::NoDetails());
+void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
+  if (editable) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_FOCUSED_NODE_TOUCHED,
+        content::Source<RenderViewHost>(render_view_host()),
+        content::Details<bool>(&editable));
+  }
 }

@@ -653,8 +653,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
 
 // Message sent from renderer to the browser when the element that is focused
-// and currently accepts keyboard input inside the webpage has been touched.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FocusedEditableNodeTouched)
+// has been touched. A bool is passed in this message which indicates if the
+// node is editable.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusedNodeTouched,
+                    bool /* editable */)
 
 // Suggest results -----------------------------------------------------------
 

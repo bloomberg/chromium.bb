@@ -668,11 +668,12 @@ void ChromeRenderViewObserver::DidHandleGestureEvent(
   if (event.type != WebKit::WebGestureEvent::GestureTap)
     return;
 
-  if (render_view()->GetWebView()->textInputType() !=
-      WebKit::WebTextInputTypeNone) {
-    render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
-        routing_id()));
-  }
+  WebKit::WebTextInputType text_input_type =
+      render_view()->GetWebView()->textInputType();
+
+  render_view()->Send(new ChromeViewHostMsg_FocusedNodeTouched(
+      routing_id(),
+      text_input_type != WebKit::WebTextInputTypeNone));
 }
 
 void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,
