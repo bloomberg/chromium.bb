@@ -403,10 +403,18 @@ bool ContentDecryptorDelegate::CancelDecrypt(
   media::Decryptor::DecryptCB decrypt_cb;
   switch (stream_type) {
     case media::Decryptor::kAudio:
+      // Release the shared memory as it can still be in use by the plugin.
+      // The next Decrypt() call will need to allocate a new shared memory
+      // buffer.
+      audio_input_resource_ = NULL;
       pending_audio_decrypt_request_id_ = 0;
       decrypt_cb = base::ResetAndReturn(&pending_audio_decrypt_cb_);
       break;
     case media::Decryptor::kVideo:
+      // Release the shared memory as it can still be in use by the plugin.
+      // The next Decrypt() call will need to allocate a new shared memory
+      // buffer.
+      video_input_resource_ = NULL;
       pending_video_decrypt_request_id_ = 0;
       decrypt_cb = base::ResetAndReturn(&pending_video_decrypt_cb_);
       break;
@@ -941,12 +949,20 @@ void ContentDecryptorDelegate::CancelDecode(
     media::Decryptor::StreamType stream_type) {
   switch (stream_type) {
     case media::Decryptor::kAudio:
+      // Release the shared memory as it can still be in use by the plugin.
+      // The next DecryptAndDecode() call will need to allocate a new shared
+      // memory buffer.
+      audio_input_resource_ = NULL;
       pending_audio_decode_request_id_ = 0;
       if (!pending_audio_decode_cb_.is_null())
         base::ResetAndReturn(&pending_audio_decode_cb_).Run(
             media::Decryptor::kSuccess, media::Decryptor::AudioBuffers());
       break;
     case media::Decryptor::kVideo:
+      // Release the shared memory as it can still be in use by the plugin.
+      // The next DecryptAndDecode() call will need to allocate a new shared
+      // memory buffer.
+      video_input_resource_ = NULL;
       pending_video_decode_request_id_ = 0;
       if (!pending_video_decode_cb_.is_null())
         base::ResetAndReturn(&pending_video_decode_cb_).Run(
