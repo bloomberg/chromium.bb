@@ -291,6 +291,16 @@ mouse wheel to scroll the contents of the iframe.</p>
 iframe scrolls.  This is because the clipRect is not being calculated correctly
 due to the scale transform being applied.</p>
 
+<h3><a name="bugfix-selectionGapTransform">bugfix/selectionGapTransform</a> (Shezan Baig)</h3>
+<p>Open <a href="repros/selectionGapTransform.html">this link</a> in Chrome,
+and play around with selection.  For example, use the mouse to select from the
+first line of text to the last line of text, then move the mouse back to
+unselect.  While playing with it, at some points you will notice that the
+selection highlights are not properly being removed when unselecting, and
+sometimes the selection highlights don't properly appear at the right time.</p>
+<p>This is because the code that fills the gaps between elements does not
+handle transforms properly.</p>
+
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
 file is used as a css background, or in an <code>img</code> element, it does
