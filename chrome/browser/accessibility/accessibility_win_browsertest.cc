@@ -429,8 +429,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document1_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// Flaky, http://crbug.com/167320 .
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestRendererAccessibilityTree) {
+                       DISABLED_TestRendererAccessibilityTree) {
   LoadInitialAccessibilityTreeFromHtml(
       "<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
