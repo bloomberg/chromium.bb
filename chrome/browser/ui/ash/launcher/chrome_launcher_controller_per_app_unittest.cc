@@ -287,7 +287,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
   ChromeLauncherAppMenuItems items(controller->GetApplicationList(item));
   // There should be one item in there: The title.
   EXPECT_EQ(expected_items + 1, items.size());
-  EXPECT_EQ(false, items[0]->IsEnabled());
+  EXPECT_FALSE(items[0]->IsEnabled());
   for (size_t i = 0; i < expected_items; i++) {
     EXPECT_EQ(title[i], items[1 + i]->title());
   }
@@ -296,7 +296,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
   // There should be one item in there.
   int expected_menu_items = expected_items ? (expected_items + 2) : 1;
   EXPECT_EQ(expected_menu_items, menu->GetItemCount());
-  EXPECT_EQ(false, menu->IsEnabledAt(0));
+  EXPECT_FALSE(menu->IsEnabledAt(0));
   if (expected_items) {
     EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR , menu->GetTypeAt(1));
   }
