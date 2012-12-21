@@ -1237,8 +1237,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+// Flaky, http://crbug.com/167340 .
 IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinks) {
+    PrerenderBrowserTest, DISABLED_PrerenderPageRemovingLinkWithTwoLinks) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
