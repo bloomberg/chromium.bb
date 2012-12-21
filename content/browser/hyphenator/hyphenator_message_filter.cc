@@ -90,6 +90,14 @@ void HyphenatorMessageFilter::OpenDictionary(const string16& locale) {
         GetContentClient()->browser()->GetHyphenDictionaryDirectory();
   }
   std::string rule_file = locale.empty() ? "en-US" : UTF16ToASCII(locale);
+
+  // Currently, only en-US is hyphenated. This is a quick fix for
+  // http://crbug.com/167122.
+  // TODO(groby): The proper fix entails validating if locale is a properly
+  // formatted locale string, but knowledge about valid locales currently
+  // resides in chrome, not content.
+  if (rule_file != "en-US")
+    return;
   rule_file.append("-1-0.dic");
   FilePath rule_path = dictionary_base_.AppendASCII(rule_file);
   dictionary_file_ = base::CreatePlatformFile(
