@@ -21,6 +21,9 @@ class DevToolsAgentHost;
 // All methods are supposed to be called on the IO thread.
 class WorkerDevToolsManager {
  public:
+  typedef std::pair<int, int> WorkerId;
+  class WorkerDevToolsAgentHost;
+
   // Returns the WorkerDevToolsManager singleton.
   static WorkerDevToolsManager* GetInstance();
 
@@ -45,10 +48,7 @@ class WorkerDevToolsManager {
 
  private:
   friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
-  typedef std::pair<int, int> WorkerId;
-  class AgentHosts;
   class DetachedClientHosts;
-  class WorkerDevToolsAgentHost;
   struct InspectedWorker;
   typedef std::list<InspectedWorker> InspectedWorkersList;
 

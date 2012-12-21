@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_agent_host.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
@@ -33,49 +34,16 @@ DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
       worker_route_id);
 }
 
-class WorkerDevToolsManager::AgentHosts {
-public:
-  static void Add(WorkerId id, WorkerDevToolsAgentHost* host) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!instance_)
-      instance_ = new AgentHosts();
-    instance_->map_[id] = host;
-  }
-  static void Remove(WorkerId id) {
-    DCHECK(instance_);
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    Instances& map = instance_->map_;
-    map.erase(id);
-    if (map.empty()) {
-      delete instance_;
-      instance_ = NULL;
-    }
-  }
+namespace {
 
-  static WorkerDevToolsAgentHost* GetAgentHost(WorkerId id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!instance_)
-      return NULL;
-    Instances& map = instance_->map_;
-    Instances::iterator it = map.find(id);
-    if (it == map.end())
-      return NULL;
-    return it->second;
-  }
+typedef std::map<WorkerDevToolsManager::WorkerId,
+                 WorkerDevToolsManager::WorkerDevToolsAgentHost*> AgentHosts;
+typedef std::map<WorkerDevToolsManager::WorkerId,
+                 int> OrphanHosts;
+base::LazyInstance<AgentHosts>::Leaky g_agent_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<OrphanHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
 
-private:
-  AgentHosts() {
-  }
-  ~AgentHosts() {}
-
-  static AgentHosts* instance_;
-  typedef std::map<WorkerId, WorkerDevToolsAgentHost*> Instances;
-  Instances map_;
-};
-
-WorkerDevToolsManager::AgentHosts*
-    WorkerDevToolsManager::AgentHosts::instance_ = NULL;
-
+}  // namespace
 
 struct WorkerDevToolsManager::TerminatedInspectedWorker {
   TerminatedInspectedWorker(WorkerId id, const GURL& url, const string16& name)
@@ -93,7 +61,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
  public:
   explicit WorkerDevToolsAgentHost(WorkerId worker_id)
       : worker_id_(worker_id) {
-    AgentHosts::Add(worker_id, this);
+    g_agent_map.Get()[worker_id_] = this;
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -110,7 +78,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
 
  private:
   virtual ~WorkerDevToolsAgentHost() {
-    AgentHosts::Remove(worker_id_);
+    g_agent_map.Get().erase(worker_id_);
   }
 
   static void RegisterAgent(
@@ -152,18 +120,19 @@ class WorkerDevToolsManager::DetachedClientHosts {
  public:
   static void WorkerReloaded(WorkerId old_id, WorkerId new_id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (instance_ && instance_->ReattachClient(old_id, new_id))
+    if (ReattachClient(old_id, new_id))
       return;
     RemovePendingWorkerData(old_id);
   }
 
   static void WorkerDestroyed(WorkerId id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    WorkerDevToolsAgentHost* agent = AgentHosts::GetAgentHost(id);
-    if (!agent) {
+    AgentHosts::iterator it = g_agent_map.Get().find(id);
+    if (it == g_agent_map.Get().end()) {
       RemovePendingWorkerData(id);
       return;
     }
+    WorkerDevToolsAgentHost* agent = it->second;
     DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
         agent,
         WebKit::WebDevToolsAgent::workerDisconnectedFromWorkerEvent().utf8());
@@ -173,22 +142,16 @@ class WorkerDevToolsManager::DetachedClientHosts {
       RemovePendingWorkerData(id);
       return;
     }
-    if (!instance_)
-      new DetachedClientHosts();
-    instance_->worker_id_to_cookie_[id] = cookie;
+    g_orphan_map.Get()[id] = cookie;
   }
 
  private:
-  DetachedClientHosts() {
-    instance_ = this;
-  }
-  ~DetachedClientHosts() {
-    instance_ = NULL;
-  }
+  DetachedClientHosts() {}
+  ~DetachedClientHosts() {}
 
-  bool ReattachClient(WorkerId old_id, WorkerId new_id) {
-    WorkerIdToCookieMap::iterator it = worker_id_to_cookie_.find(old_id);
-    if (it == worker_id_to_cookie_.end())
+  static bool ReattachClient(WorkerId old_id, WorkerId new_id) {
+    OrphanHosts::iterator it = g_orphan_map.Get().find(old_id);
+    if (it == g_orphan_map.Get().end())
       return false;
     DevToolsAgentHost* agent =
         WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
@@ -197,9 +160,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
     DevToolsManagerImpl::GetInstance()->AttachClientHost(
         it->second,
         agent);
-    worker_id_to_cookie_.erase(it);
-    if (worker_id_to_cookie_.empty())
-      delete this;
+    g_orphan_map.Get().erase(it);
     return true;
   }
 
@@ -212,14 +173,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
   static void RemoveInspectedWorkerDataOnIOThread(WorkerId id) {
     WorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(id);
   }
-
-  static DetachedClientHosts* instance_;
-  typedef std::map<WorkerId, int> WorkerIdToCookieMap;
-  WorkerIdToCookieMap worker_id_to_cookie_;
 };
-
-WorkerDevToolsManager::DetachedClientHosts*
-    WorkerDevToolsManager::DetachedClientHosts::instance_ = NULL;
 
 struct WorkerDevToolsManager::InspectedWorker {
   InspectedWorker(WorkerProcessHost* host, int route_id, const GURL& url,
@@ -245,10 +199,10 @@ DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
   WorkerId id(worker_process_id, worker_route_id);
-  WorkerDevToolsAgentHost* result = AgentHosts::GetAgentHost(id);
-  if (!result)
-    result = new WorkerDevToolsAgentHost(id);
-  return result;
+  AgentHosts::iterator it = g_agent_map.Get().find(id);
+  if (it == g_agent_map.Get().end())
+    return new WorkerDevToolsAgentHost(id);
+  return it->second;
 }
 
 WorkerDevToolsManager::WorkerDevToolsManager() {
@@ -419,12 +373,11 @@ void WorkerDevToolsManager::ForwardToDevToolsClientOnUIThread(
     int worker_process_id,
     int worker_route_id,
     const std::string& message) {
-  WorkerDevToolsAgentHost* agent_host = AgentHosts::GetAgentHost(WorkerId(
-      worker_process_id,
-      worker_route_id));
-  if (!agent_host)
+  AgentHosts::iterator it = g_agent_map.Get().find(WorkerId(worker_process_id,
+                                                            worker_route_id));
+  if (it == g_agent_map.Get().end())
     return;
-  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(agent_host,
+  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(it->second,
                                                                   message);
 }
 
@@ -433,12 +386,11 @@ void WorkerDevToolsManager::SaveAgentRuntimeStateOnUIThread(
     int worker_process_id,
     int worker_route_id,
     const std::string& state) {
-  WorkerDevToolsAgentHost* agent_host = AgentHosts::GetAgentHost(WorkerId(
-      worker_process_id,
-      worker_route_id));
-  if (!agent_host)
+  AgentHosts::iterator it = g_agent_map.Get().find(WorkerId(worker_process_id,
+                                                            worker_route_id));
+  if (it == g_agent_map.Get().end())
     return;
-  DevToolsManagerImpl::GetInstance()->SaveAgentRuntimeState(agent_host, state);
+  DevToolsManagerImpl::GetInstance()->SaveAgentRuntimeState(it->second, state);
 }
 
 // static
@@ -457,10 +409,10 @@ void WorkerDevToolsManager::NotifyWorkerDestroyedOnIOThread(
 void WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread(
     int worker_process_id,
     int worker_route_id) {
-  WorkerDevToolsAgentHost* host =
-      AgentHosts::GetAgentHost(WorkerId(worker_process_id, worker_route_id));
-  if (host)
-    host->WorkerDestroyed();
+  AgentHosts::iterator it = g_agent_map.Get().find(WorkerId(worker_process_id,
+                                                            worker_route_id));
+  if (it != g_agent_map.Get().end())
+    it->second->WorkerDestroyed();
 }
 
 // static
