@@ -7,6 +7,9 @@
  * This file defines the <code>PPB_WebSocket</code> interface providing
  * bi-directional, full-duplex, communications over a single TCP socket.
  */
+
+[generate_thunk]
+
 label Chrome {
   M18 = 1.0
 };
@@ -240,6 +243,7 @@ interface PPB_WebSocket {
    * Returns <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
    * Connect().
    */
+  [report_errors=False]
   int32_t Connect([in] PP_Resource web_socket,
                   [in] PP_Var url,
                   [in, size_as=protocol_count] PP_Var[] protocols,
@@ -282,6 +286,7 @@ interface PPB_WebSocket {
    * Returns <code>PP_ERROR_INPROGRESS</code> if a previous call to Close() is
    * not finished.
    */
+  [report_errors=False]
   int32_t Close([in] PP_Resource web_socket,
                 [in] uint16_t code,
                 [in] PP_Var reason,
@@ -311,6 +316,7 @@ interface PPB_WebSocket {
    * Until buffered message become empty, ReceiveMessage() continues to return
    * <code>PP_OK</code> as if connection is still established without errors.
    */
+  [report_errors=False]
   int32_t ReceiveMessage([in] PP_Resource web_socket,
                          [out] PP_Var message,
                          [in] PP_CompletionCallback callback);
@@ -338,6 +344,7 @@ interface PPB_WebSocket {
    * Otherwise, returns <code>PP_OK</code>, which doesn't necessarily mean
    * that the server received the message.
    */
+  [report_errors=False]
   int32_t SendMessage([in] PP_Resource web_socket,
                       [in] PP_Var message);
 
@@ -351,6 +358,7 @@ interface PPB_WebSocket {
    *
    * @return Returns the number of bytes.
    */
+  [report_errors=False]
   uint64_t GetBufferedAmount([in] PP_Resource web_socket);
 
   /**
@@ -362,6 +370,7 @@ interface PPB_WebSocket {
    *
    * @return Returns 0 if called before the close code is set.
    */
+  [report_errors=False]
   uint16_t GetCloseCode([in] PP_Resource web_socket);
 
   /**
@@ -375,6 +384,7 @@ interface PPB_WebSocket {
    * close reason is set, the return value contains an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
+  [report_errors=False]
   PP_Var GetCloseReason([in] PP_Resource web_socket);
 
   /**
@@ -389,6 +399,7 @@ interface PPB_WebSocket {
    * Otherwise, returns <code>PP_TRUE</code> if the connection was closed
    * cleanly.
    */
+  [report_errors=False]
   PP_Bool GetCloseWasClean([in] PP_Resource web_socket);
 
   /**
@@ -402,6 +413,7 @@ interface PPB_WebSocket {
    * connection is established, the var's data is an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
+  [report_errors=False]
   PP_Var GetExtensions([in] PP_Resource web_socket);
 
   /**
@@ -415,6 +427,7 @@ interface PPB_WebSocket {
    * connection is established, the var contains the empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
+  [report_errors=False]
   PP_Var GetProtocol([in] PP_Resource web_socket);
 
   /**
@@ -428,6 +441,7 @@ interface PPB_WebSocket {
    * before Connect() is called, or if this function is called on an
    * invalid resource.
    */
+  [on_failure=PP_WEBSOCKETREADYSTATE_INVALID, report_errors=False]
   PP_WebSocketReadyState GetReadyState([in] PP_Resource web_socket);
 
   /**
@@ -441,5 +455,6 @@ interface PPB_WebSocket {
    * <code>PP_VARTYPE_UNDEFINED</code> if this function is called on an
    * invalid resource.
    */
+  [report_errors=False]
   PP_Var GetURL([in] PP_Resource web_socket);
 };
