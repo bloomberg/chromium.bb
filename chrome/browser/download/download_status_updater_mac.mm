@@ -272,12 +272,21 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   if (NSProgressSupported()) {
     CrNSProgressUserData* progress_data = static_cast<CrNSProgressUserData*>(
         download->GetUserData(&kCrNSProgressUserDataKey));
-    if (!progress_data)
-      CreateNSProgress(download);
-    else if (download->GetState() != content::DownloadItem::IN_PROGRESS)
+
+    // Only show progress if the download is IN_PROGRESS and it hasn't been
+    // renamed to its final name. Setting the progress after the final rename
+    // results in the file being stuck in an in-progress state on the dock. See
+    // http://crbug.com/166683.
+    if (download->GetState() == content::DownloadItem::IN_PROGRESS &&
+        !download->GetFullPath().empty() &&
+        download->GetFullPath() != download->GetTargetFilePath()) {
+      if (!progress_data)
+        CreateNSProgress(download);
+      else
+        UpdateNSProgress(download, progress_data);
+    } else {
       DestroyNSProgress(download, progress_data);
-    else
-      UpdateNSProgress(download, progress_data);
+    }
   }
 
   // Handle downloads that ended.
