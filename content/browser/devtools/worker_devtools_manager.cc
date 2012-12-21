@@ -160,8 +160,8 @@ class WorkerDevToolsManager::DetachedClientHosts {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     AgentHosts::iterator it = g_orphan_map.Get().find(old_id);
     if (it != g_orphan_map.Get().end()) {
-      g_orphan_map.Get().erase(old_id);
       it->second->SetWorkerId(new_id, true);
+      g_orphan_map.Get().erase(old_id);
       return;
     }
     RemovePendingWorkerData(old_id);
