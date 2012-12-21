@@ -18,19 +18,35 @@ typedef InProcessBrowserTest FirstRunBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowFirstRunBubblePref) {
   EXPECT_TRUE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldShowFirstRunBubble));
-  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(true));
+      prefs::kShowFirstRunBubbleOption));
+  EXPECT_EQ(first_run::FIRST_RUN_BUBBLE_DONT_SHOW,
+            g_browser_process->local_state()->GetInteger(
+                prefs::kShowFirstRunBubbleOption));
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(
+      first_run::FIRST_RUN_BUBBLE_SHOW));
   ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldShowFirstRunBubble));
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldShowFirstRunBubble));
+      prefs::kShowFirstRunBubbleOption));
+  EXPECT_EQ(first_run::FIRST_RUN_BUBBLE_SHOW,
+            g_browser_process->local_state()->GetInteger(
+                prefs::kShowFirstRunBubbleOption));
   // Test that toggling the value works in either direction after it's been set.
-  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(false));
-  EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldShowFirstRunBubble));
-  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(true));
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldShowFirstRunBubble));
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(
+      first_run::FIRST_RUN_BUBBLE_DONT_SHOW));
+  EXPECT_EQ(first_run::FIRST_RUN_BUBBLE_DONT_SHOW,
+            g_browser_process->local_state()->GetInteger(
+                prefs::kShowFirstRunBubbleOption));
+  // Test that the value can't be set to FIRST_RUN_BUBBLE_SHOW after it has been
+  // set to FIRST_RUN_BUBBLE_SUPPRESS.
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(
+      first_run::FIRST_RUN_BUBBLE_SUPPRESS));
+  EXPECT_EQ(first_run::FIRST_RUN_BUBBLE_SUPPRESS,
+            g_browser_process->local_state()->GetInteger(
+                prefs::kShowFirstRunBubbleOption));
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(
+      first_run::FIRST_RUN_BUBBLE_SHOW));
+  EXPECT_EQ(first_run::FIRST_RUN_BUBBLE_SUPPRESS,
+            g_browser_process->local_state()->GetInteger(
+                prefs::kShowFirstRunBubbleOption));
 }
 
 IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {

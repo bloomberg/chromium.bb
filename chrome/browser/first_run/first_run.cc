@@ -259,7 +259,7 @@ void SetupMasterPrefsFromInstallPrefs(
   if (install_prefs->GetBool(
           installer::master_preferences::kDistroSuppressFirstRunBubble,
           &value) && value)
-    SetShowFirstRunBubblePref(false);
+    SetShowFirstRunBubblePref(FIRST_RUN_BUBBLE_SUPPRESS);
 
   if (install_prefs->GetBool(
           installer::master_preferences::kDistroImportHistoryPref,
@@ -414,11 +414,17 @@ bool RemoveSentinel() {
   return file_util::Delete(first_run_sentinel, false);
 }
 
-bool SetShowFirstRunBubblePref(bool show_bubble) {
+bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
-  local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, show_bubble);
+  if (local_state->GetInteger(
+          prefs::kShowFirstRunBubbleOption) != FIRST_RUN_BUBBLE_SUPPRESS) {
+    // Set the new state as long as the bubble wasn't explicitly suppressed
+    // already.
+    local_state->SetInteger(prefs::kShowFirstRunBubbleOption,
+                            show_bubble_option);
+  }
   return true;
 }
 
@@ -468,7 +474,7 @@ const CommandLine& GetExtraArgumentsForImportProcess() {
 
 // static
 void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
-  SetShowFirstRunBubblePref(true);
+  SetShowFirstRunBubblePref(FIRST_RUN_BUBBLE_SHOW);
   // This FirstRunBubbleLauncher instance will manage its own lifetime.
   new FirstRunBubbleLauncher();
 }
@@ -492,7 +498,8 @@ void FirstRunBubbleLauncher::Observe(
 
   // Check the preference to determine if the bubble should be shown.
   PrefService* prefs = g_browser_process->local_state();
-  if (!prefs || !prefs->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
+  if (!prefs || prefs->GetInteger(
+          prefs::kShowFirstRunBubbleOption) != FIRST_RUN_BUBBLE_SHOW) {
     delete this;
     return;
   }
@@ -530,7 +537,8 @@ void FirstRunBubbleLauncher::Observe(
     return;
 
   // Reset the preference and notifications to avoid showing the bubble again.
-  prefs->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
+  prefs->SetInteger(prefs::kShowFirstRunBubbleOption,
+                    FIRST_RUN_BUBBLE_DONT_SHOW);
 
   // Show the bubble now and destroy this bubble launcher.
   browser->ShowFirstRunBubble();

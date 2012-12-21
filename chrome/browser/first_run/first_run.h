@@ -40,6 +40,15 @@ enum FirstRunBubbleMetric {
   NUM_FIRST_RUN_BUBBLE_METRICS
 };
 
+// Options for the first run bubble. The default is FIRST_RUN_BUBBLE_DONT_SHOW.
+// FIRST_RUN_BUBBLE_SUPPRESS is stronger in that FIRST_RUN_BUBBLE_SHOW should
+// never be set once FIRST_RUN_BUBBLE_SUPPRESS is set.
+enum FirstRunBubbleOptions {
+  FIRST_RUN_BUBBLE_DONT_SHOW,
+  FIRST_RUN_BUBBLE_SUPPRESS,
+  FIRST_RUN_BUBBLE_SHOW,
+};
+
 enum ProcessMasterPreferencesResult {
   SHOW_FIRST_RUN = 0,           // Should show the first run flow.
   SKIP_FIRST_RUN,               // Should skip the first run flow.
@@ -77,12 +86,12 @@ void RegisterUserPrefs(PrefService* prefs);
 // sentinel file could not be removed.
 bool RemoveSentinel();
 
-// Sets the kShouldShowFirstRunBubble local state pref so that the browser
+// Sets the kShowFirstRunBubbleOption local state pref so that the browser
 // shows the bubble once the main message loop gets going (or refrains from
-// showing the bubble, if |show_bubble| is false). Returns false if the pref
-// could not be set. This function can be called multiple times, but only the
-// initial call will actually set the preference.
-bool SetShowFirstRunBubblePref(bool show_bubble);
+// showing the bubble, if |show_bubble| is not FIRST_RUN_BUBBLE_SHOW).
+// Once FIRST_RUN_BUBBLE_SUPPRESS is set, no other value can be set.
+// Returns false if the pref service could not be retrieved.
+bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option);
 
 // Sets the kShouldShowWelcomePage local state pref so that the browser
 // loads the welcome tab once the message loop gets going. Returns false

@@ -1445,9 +1445,9 @@ const char kContentSettingsWindowLastTabIndex[] =
 const char kCertificateManagerWindowLastTabIndex[] =
     "certificate_manager_window.last_tab_index";
 
-// Boolean that specifies if the first run bubble should be shown.
+// Integer that specifies if the first run bubble should be shown.
 // This preference is only registered by the first-run procedure.
-const char kShouldShowFirstRunBubble[] = "show-first-run-bubble";
+const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
 
 // Signal that we should show the welcome page when we launch Chrome.
 const char kShouldShowWelcomePage[] = "show-welcome-page";

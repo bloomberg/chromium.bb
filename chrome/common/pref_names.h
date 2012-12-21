@@ -507,7 +507,7 @@ extern const char kSafeBrowsingWrappedKey[];
 extern const char kOptionsWindowLastTabIndex[];
 extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kCertificateManagerWindowLastTabIndex[];
-extern const char kShouldShowFirstRunBubble[];
+extern const char kShowFirstRunBubbleOption[];
 extern const char kShouldShowWelcomePage[];
 
 extern const char kLastKnownGoogleURL[];

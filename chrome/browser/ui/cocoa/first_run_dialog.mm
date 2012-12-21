@@ -126,7 +126,7 @@ void ShowFirstRun(Profile* profile) {
       TemplateURLServiceFactory::GetForProfile(profile);
   if (search_engines_model &&
       search_engines_model->GetDefaultSearchProvider()) {
-    first_run::SetShowFirstRunBubblePref(true);
+    first_run::SetShowFirstRunBubblePref(first_run::FIRST_RUN_BUBBLE_SHOW);
   }
   first_run::SetShowWelcomePagePref();
 }
