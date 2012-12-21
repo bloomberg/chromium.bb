@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper/pepper_flash_browser_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
 #include "base/time.h"
 #include "content/public/browser/browser_context.h"
@@ -26,7 +26,12 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
-namespace content {
+using content::BrowserPpapiHost;
+using content::BrowserThread;
+using content::RenderProcessHost;
+using content::ResourceContext;
+
+namespace chrome {
 
 namespace {
 
@@ -137,7 +142,8 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
 
   PP_FlashLSORestrictions restrictions = PP_FLASHLSORESTRICTIONS_NONE;
   if (resource_context_ && document_url.is_valid() && plugin_url.is_valid()) {
-    ContentBrowserClient* client = GetContentClient()->browser();
+    content::ContentBrowserClient* client =
+        content::GetContentClient()->browser();
     if (!client->AllowPluginLocalDataAccess(document_url, plugin_url,
                                             resource_context_)) {
       restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
@@ -150,4 +156,4 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
       static_cast<int32_t>(restrictions)));
 }
 
-}  // namespace content
+}  // namespace chrome

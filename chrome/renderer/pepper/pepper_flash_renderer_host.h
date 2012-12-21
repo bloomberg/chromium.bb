@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_
+#ifndef CHROME_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_
+#define CHROME_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_
 
 #include <string>
 #include <vector>
@@ -26,12 +26,14 @@ struct PPBFlash_DrawGlyphs_Params;
 }
 
 namespace content {
-
 class RendererPpapiHost;
+}
+
+namespace chrome {
 
 class PepperFlashRendererHost : public ppapi::host::ResourceHost {
  public:
-  PepperFlashRendererHost(RendererPpapiHost* host,
+  PepperFlashRendererHost(content::RendererPpapiHost* host,
                           PP_Instance instance,
                           PP_Resource resource);
   virtual ~PepperFlashRendererHost();
@@ -61,11 +63,11 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
   // yet been replied to.
   std::vector<ppapi::host::ReplyMessageContext> navigate_replies_;
 
-  RendererPpapiHost* host_;
+  content::RendererPpapiHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashRendererHost);
 };
 
-}  // namespace content
+}  // namespace chrome
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_
+#endif  // CHROME_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_

@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 
 #include "chrome/browser/renderer_host/pepper/pepper_broker_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -51,6 +52,17 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_, instance, params.pp_resource()));
     }
   }
+
+  // Flash interfaces.
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+          ppapi::PERMISSION_FLASH)) {
+    switch (message.type()) {
+      case PpapiHostMsg_Flash_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashBrowserHost(
+            host_, instance, params.pp_resource()));
+    }
+  }
+
   return scoped_ptr<ResourceHost>();
 }
 

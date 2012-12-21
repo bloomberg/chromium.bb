@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_
+#define CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
@@ -14,16 +14,18 @@ namespace base {
 class Time;
 }
 
-class GURL;
-
 namespace content {
-
 class BrowserPpapiHost;
 class ResourceContext;
+}
+
+class GURL;
+
+namespace chrome {
 
 class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
  public:
-  PepperFlashBrowserHost(BrowserPpapiHost* host,
+  PepperFlashBrowserHost(content::BrowserPpapiHost* host,
                          PP_Instance instance,
                          PP_Resource resource);
   virtual ~PepperFlashBrowserHost();
@@ -44,16 +46,17 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
   void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,
                                 const GURL& document_url,
                                 const GURL& plugin_url,
-                                ResourceContext* resource_context);
+                                content::ResourceContext* resource_context);
 
-  BrowserPpapiHost* host_;
+  content::BrowserPpapiHost* host_;
   int render_process_id_;
-  ResourceContext* resource_context_;  // For fetching the Flash LSO settings.
+  // For fetching the Flash LSO settings.
+  content::ResourceContext* resource_context_;
   base::WeakPtrFactory<PepperFlashBrowserHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHost);
 };
 
-}  // namespace content
+}  // namespace chrome
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_

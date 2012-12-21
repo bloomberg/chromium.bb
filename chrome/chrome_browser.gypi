@@ -1659,6 +1659,8 @@
         'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h',
         'browser/renderer_host/pepper/pepper_broker_host.cc',
         'browser/renderer_host/pepper/pepper_broker_host.h',
+        'browser/renderer_host/pepper/pepper_flash_browser_host.cc',
+        'browser/renderer_host/pepper/pepper_flash_browser_host.h',
         'browser/renderer_host/pepper/pepper_flash_device_id_host.cc',
         'browser/renderer_host/pepper/pepper_flash_device_id_host.h',
         'browser/renderer_host/pepper/pepper_talk_host.cc',

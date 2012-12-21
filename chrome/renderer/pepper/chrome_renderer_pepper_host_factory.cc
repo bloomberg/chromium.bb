@@ -8,6 +8,7 @@
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
+#include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -42,6 +43,10 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
   if (host_->GetPpapiHost()->permissions().HasPermission(
       ppapi::PERMISSION_FLASH)) {
     switch (message.type()) {
+      case PpapiHostMsg_Flash_Create::ID: {
+        return scoped_ptr<ResourceHost>(new PepperFlashRendererHost(
+            host_, instance, params.pp_resource()));
+      }
       case PpapiHostMsg_FlashFontFile_Create::ID: {
         ppapi::proxy::SerializedFontDescription description;
         PP_PrivateFontCharset charset;
@@ -55,7 +60,6 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FlashFullscreen_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperFlashFullscreenHost(
             host_, instance, params.pp_resource()));
-        break;
       }
       case PpapiHostMsg_FlashMenu_Create::ID: {
         ppapi::proxy::SerializedFlashMenu serialized_menu;

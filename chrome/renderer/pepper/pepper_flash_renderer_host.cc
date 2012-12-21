@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_flash_renderer_host.h"
+#include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
 
 #include <vector>
 
@@ -33,10 +33,10 @@
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
 
-namespace content {
+namespace chrome {
 
 PepperFlashRendererHost::PepperFlashRendererHost(
-    RendererPpapiHost* host,
+    content::RendererPpapiHost* host,
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
@@ -77,7 +77,7 @@ int32_t PepperFlashRendererHost::OnMsgGetProxyForURL(
   if (!gurl.is_valid())
     return PP_ERROR_FAILED;
   std::string proxy;
-  bool result = RenderThread::Get()->ResolveProxy(gurl, &proxy);
+  bool result = content::RenderThread::Get()->ResolveProxy(gurl, &proxy);
   if (!result)
     return PP_ERROR_FAILED;
   host_context->reply_msg = PpapiPluginMsg_Flash_GetProxyForURLReply(proxy);
@@ -240,4 +240,4 @@ int32_t PepperFlashRendererHost::OnMsgIsRectTopmost(
   return PP_ERROR_FAILED;
 }
 
-}  // namespace content
+}  // namespace chrome
