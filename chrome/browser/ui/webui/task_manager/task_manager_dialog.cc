@@ -195,7 +195,7 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 
 void TaskManagerDialogImpl::OpenWebDialog() {
   window_ = chrome::ShowWebDialog(NULL,
-                                  ProfileManager::GetDefaultProfile(),
+                                  ProfileManager::GetLastUsedProfile(),
                                   this);
 }
 
