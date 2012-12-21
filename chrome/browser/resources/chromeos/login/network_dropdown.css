@@ -38,6 +38,10 @@
   z-index: 10;
 }
 
+html[dir=rtl] .dropdown-title {
+  background-position: center left;
+}
+
 .dropdown-title:enabled:hover {
   background-image: url('../../shared/images/select.png'),
       -webkit-gradient(linear, left top, left bottom,
