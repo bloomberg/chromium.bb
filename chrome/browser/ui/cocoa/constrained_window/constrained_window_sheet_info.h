@@ -16,7 +16,7 @@
 // public use.
 @interface ConstrainedWindowSheetInfo : NSObject {
  @private
-  scoped_nsprotocol<id<ConstrainedWindowSheet> > sheet_;
+  scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
   scoped_nsobject<NSView> parentView_;
   scoped_nsobject<NSWindow> overlayWindow_;
   BOOL sheetDidShow_;

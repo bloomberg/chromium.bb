@@ -59,7 +59,7 @@ class ConstrainedWindowMac : public ConstrainedWindow,
   // The WebContents that owns and constrains this ConstrainedWindow. Weak.
   content::WebContents* web_contents_;
 
-  scoped_nsprotocol<id<ConstrainedWindowSheet> > sheet_;
+  scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
