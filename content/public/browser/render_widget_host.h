@@ -161,7 +161,14 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void UpdateTextDirection(WebKit::WebTextDirection direction) = 0;
   virtual void NotifyTextDirection() = 0;
 
+  virtual void Focus() = 0;
   virtual void Blur() = 0;
+
+  // Sets whether the renderer should show controls in an active state.  On all
+  // platforms except mac, that's the same as focused. On mac, the frontmost
+  // window will show active controls even if the focus is not in the web
+  // contents, but e.g. in the omnibox.
+  virtual void SetActive(bool active) = 0;
 
   // Copies the given subset of the backing store into the given (uninitialized)
   // PlatformCanvas. If |src_rect| is empty, the whole contents is copied.

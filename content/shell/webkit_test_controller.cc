@@ -175,6 +175,8 @@ bool WebKitTestController::PrepareForLayoutTest(
       test_url.spec().find("\\inspector\\") != std::string::npos) {
     main_window_->ShowDevTools();
   }
+  main_window_->web_contents()->GetRenderViewHost()->Focus();
+  main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   return true;
 }
 

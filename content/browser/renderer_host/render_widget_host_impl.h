@@ -103,7 +103,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void SelectAll() OVERRIDE;
   virtual void UpdateTextDirection(WebKit::WebTextDirection direction) OVERRIDE;
   virtual void NotifyTextDirection() OVERRIDE;
+  virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
   virtual void CopyFromBackingStore(
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
@@ -175,19 +177,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Returns true if the RenderWidget is hidden.
   bool is_hidden() const { return is_hidden_; }
 
-  // Called to notify the RenderWidget that its associated native window got
-  // focused.
+  // Called to notify the RenderWidget that its associated native window
+  // got/lost focused.
   virtual void GotFocus();
-
-  // Tells the renderer it got/lost focus.
-  virtual void Focus();
   virtual void LostCapture();
-
-  // Sets whether the renderer should show controls in an active state.  On all
-  // platforms except mac, that's the same as focused. On mac, the frontmost
-  // window will show active controls even if the focus is not in the web
-  // contents, but e.g. in the omnibox.
-  void SetActive(bool active);
 
   // Called to notify the RenderWidget that it has lost the mouse lock.
   virtual void LostMouseLock();
