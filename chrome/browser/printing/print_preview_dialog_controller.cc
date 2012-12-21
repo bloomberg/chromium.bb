@@ -290,6 +290,11 @@ void PrintPreviewDialogController::Observe(
 }
 
 // static
+bool PrintPreviewDialogController::IsPrintPreviewDialog(WebContents* contents) {
+  return IsPrintPreviewURL(contents->GetURL());
+}
+
+// static
 bool PrintPreviewDialogController::IsPrintPreviewTab(WebContents* tab) {
   return IsPrintPreviewURL(tab->GetURL());
 }

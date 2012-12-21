@@ -71,7 +71,11 @@ class PrintPreviewDialogController
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Returns true if |tab| is a print preview tab.
+  // Returns true if |contents| is a print preview dialog.
+  static bool IsPrintPreviewDialog(content::WebContents* contents);
+
+  // DEPRECATED. Use IsPrintPreviewDialog() instead.
+  // TODO(thestig) Remove.
   static bool IsPrintPreviewTab(content::WebContents* tab);
 
   // Returns true if |url| is a print preview url.

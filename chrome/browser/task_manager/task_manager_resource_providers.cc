@@ -173,7 +173,7 @@ bool IsContentsInstant(WebContents* web_contents) {
 bool IsContentsBackgroundPrinted(WebContents* web_contents) {
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();
-  return printing_manager->HasPrintPreviewTab(web_contents);
+  return printing_manager->HasPrintPreviewDialog(web_contents);
 }
 
 }  // namespace
