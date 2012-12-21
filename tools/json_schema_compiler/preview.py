@@ -11,6 +11,7 @@ import code
 import cpp_type_generator
 import cpp_util
 import h_generator
+import idl_schema
 import json_schema
 import model
 import optparse
@@ -145,7 +146,7 @@ function updateEverything() {
 
   var targetName = window.location.hash;
   targetName = targetName.substring('#'.length);
-  targetName = targetName.substring(0, targetName.length - '.json'.length);
+  targetName = targetName.split('.', 1)[0]
 
   if (targetName !== '') {
     var basePath = window.location.pathname;
@@ -174,31 +175,52 @@ window.addEventListener('hashchange', updateEverything, false);
 updateEverything();
 </script>''')
 
-  def _ShowCompiledFile(self, parsed_url, head, body):
-    """Show the compiled version of a json file given the path to the compiled
-    file.
+  def _LoadModel(self, basedir, name):
+    """Loads and returns the model for the |name| API from either its JSON or
+    IDL file, e.g.
+        name=contextMenus will be loaded from |basedir|/context_menus.json,
+        name=alarms will be loaded from |basedir|/alarms.idl.
     """
+    loaders = {
+      'json': json_schema.Load,
+      'idl': idl_schema.Load
+    }
+    # APIs are referred to like "webRequest" but that's in a file
+    # "web_request.json" so we need to unixify the name.
+    unix_name = model.UnixName(name)
+    for loader_ext, loader_fn in loaders.items():
+      file_path = '%s/%s.%s' % (basedir, unix_name, loader_ext)
+      if os.path.exists(file_path):
+        # For historical reasons these files contain a singleton list with the
+        # model, so just return that single object.
+        return (loader_fn(file_path)[0], file_path)
+    raise ValueError('File for model "%s" not found' % name)
 
+  def _ShowCompiledFile(self, parsed_url, head, body):
+    """Show the compiled version of a json or idl file given the path to the
+    compiled file.
+    """
     api_model = model.Model()
 
     request_path = self._GetRequestPath(parsed_url)
     (file_root, file_ext) = os.path.splitext(request_path)
     (filedir, filename) = os.path.split(file_root)
-    json_file_path = os.path.normpath(file_root + '.json')
 
     try:
-      # Get main json file
-      api_defs = json_schema.Load(json_file_path)
-      namespace = api_model.AddNamespace(api_defs[0], json_file_path)
+      # Get main file.
+      (api_def, file_path) = self._LoadModel(filedir, filename)
+      namespace = api_model.AddNamespace(api_def, file_path)
       type_generator = cpp_type_generator.CppTypeGenerator(
          'previewserver::api', namespace, namespace.unix_name)
 
-      # Get json file depedencies
-      for dependency in api_defs[0].get('dependencies', []):
-        json_file_path = os.path.join(filedir, dependency + '.json')
-        api_defs = json_schema.Load(json_file_path)
-        referenced_namespace = api_model.AddNamespace(api_defs[0],
-            json_file_path)
+      # Get the model's dependencies.
+      for dependency in api_def.get('dependencies', []):
+        # Dependencies can contain : in which case they don't refer to APIs,
+        # rather, permissions or manifest keys.
+        if ':' in dependency:
+          continue
+        (api_def, file_path) = self._LoadModel(filedir, dependency)
+        referenced_namespace = api_model.AddNamespace(api_def, file_path)
         if referenced_namespace:
           type_generator.AddNamespace(referenced_namespace,
               cpp_util.Classname(referenced_namespace.name).lower())
@@ -289,9 +311,9 @@ updateEverything();
     for filename in sorted(os.listdir(path)):
       full_path = os.path.join(path, filename)
       (file_root, file_ext) = os.path.splitext(full_path)
-      if os.path.isdir(full_path):
+      if os.path.isdir(full_path) and not full_path.endswith('.xcodeproj'):
         html.Append('<li><a href="/%s/">%s/</a>' % (full_path, filename))
-      elif file_ext == '.json':
+      elif file_ext in ['.json', '.idl']:
         # cc/h panes will automatically update via the hash change event.
         html.Append('<li><a href="#%s">%s</a>' %
             (filename, filename))
@@ -310,16 +332,16 @@ if __name__ == '__main__':
   parser = optparse.OptionParser(
       description='Runs a server to preview the json_schema_compiler output.',
       usage='usage: %prog [option]...')
-  parser.add_option('-p', '--port', default=8000,
+  parser.add_option('-p', '--port', default='8000',
       help='port to run the server on')
 
   (opts, argv) = parser.parse_args()
 
   try:
-    print('Starting previewserver on port %d' % opts.port)
+    print('Starting previewserver on port %s' % opts.port)
     print('The extension documentation can be found at:')
     print('')
-    print('  http://localhost:%d/chrome/common/extensions/api' % opts.port)
+    print('  http://localhost:%s/chrome/common/extensions/api' % opts.port)
     print('')
 
     highlighters = {
