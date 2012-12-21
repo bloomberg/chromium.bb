@@ -51,7 +51,7 @@ const int kMessageBubblePadding = 11;
 const int kShowSideloadWipeoutBubbleMax = 3;
 
 // How many extensions to show in the bubble (max).
-const int kMaxExtensionsToShow = 7;
+const size_t kMaxExtensionsToShow = 7;
 
 // How long to wait until showing the bubble (in seconds).
 const int kBubbleAppearanceWaitTime = 5;
@@ -233,7 +233,7 @@ void DisabledExtensionsView::Init() {
   extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   std::vector<string16> extension_list;
-  int count = 0;
+  size_t count = 0;
   char16 bullet_point = 0x2022;
   for (ExtensionSet::const_iterator iter = wiped_out_->begin();
        iter != wiped_out_->end() && count < kMaxExtensionsToShow; ++iter) {
@@ -244,7 +244,7 @@ void DisabledExtensionsView::Init() {
     count++;
   }
 
-  if (count == kMaxExtensionsToShow) {
+  if (wiped_out_->size() > kMaxExtensionsToShow) {
     string16 difference =
         base::IntToString16(wiped_out_->size() - kMaxExtensionsToShow);
     extension_list.push_back(bullet_point + ASCIIToUTF16(" ") +
@@ -292,8 +292,6 @@ void DisabledExtensionsView::Init() {
   layout->AddView(settings_button_);
   dismiss_button_ = new views::NativeTextButton(this,
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_DISMISS));
-  dismiss_button_->SetFont(
-      dismiss_button_->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(dismiss_button_);
 
   content::RecordAction(
