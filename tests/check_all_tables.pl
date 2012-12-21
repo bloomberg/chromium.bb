@@ -25,15 +25,17 @@ my $tablesdir = (split(',', $ENV{LOUIS_TABLEPATH}))[0];
 # get all the tables from the tables directory
 my @tables = glob("$tablesdir/*");
 # exclude hyphenation dicts
-@tables = grep(!/.dic/, @tables);
+@tables = grep(!/.+\.dic$/, @tables);
 # exclude Makefiles, README and shell scripts
-@tables = grep(!/Makefile|README|maketablelist.sh/, @tables);
+@tables = grep(!/Makefile|README|maketablelist\.sh/, @tables);
+# exclude backup and diff and patch files
+@tables = grep(!/.+~$|.+\.diff$|.+\.patch$/, @tables);
 # exclude tables that only work when included inside others
-@tables = grep(!/countries.cti|compress.ctb|corrections.ctb|hu-exceptionwords.cti|core.[cu]tb|-translation.ctb/, @tables);
+@tables = grep(!/countries\.cti|compress\.ctb|corrections\.ctb|hu-exceptionwords\.cti|core\.[cu]tb|-translation\.ctb/, @tables);
 # exclude other oddballs
-@tables = grep(!/lang2table/, @tables);
+@tables = grep(!/lang2table$/, @tables);
 # exclude known bad tables
-@tables = grep(!/eo-g1.ctb/, @tables);
+@tables = grep(!/eo-g1\.ctb/, @tables);
 
 
 foreach my $table (@tables) {

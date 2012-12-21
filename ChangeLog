@@ -1,3 +1,8 @@
+2012-12-21  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/check_all_tables.pl: Exlude backup, patch and diff files
+	from the table tests.
+
 2012-12-20  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/Makefile.am (table_files):
