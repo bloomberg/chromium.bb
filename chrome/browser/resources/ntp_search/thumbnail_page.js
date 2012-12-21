@@ -91,14 +91,13 @@ cr.define('ntp', function() {
       var favicon = this.querySelector('.thumbnail-favicon') ||
                     this.ownerDocument.createElement('div');
       favicon.className = 'thumbnail-favicon';
-      favicon.style.backgroundImage =
-          url('chrome://favicon/size/16/' + dataUrl);
+      favicon.style.backgroundImage = url(getFaviconURL(dataUrl));
       this.appendChild(favicon);
 
       var self = this;
       var image = new Image();
 
-      // If the thumbnail image fails to load, show the favicon and URL instead.
+      // If the thumbnail image fails to load, show an alternative presentation.
       // TODO(jeremycho): Move to a separate function?
       image.onerror = function() {
         banner = thumbnailImage.querySelector('.thumbnail-banner') ||
