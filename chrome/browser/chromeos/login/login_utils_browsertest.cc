@@ -146,7 +146,8 @@ class LoginUtilsTest : public testing::Test,
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
-        prepared_profile_(NULL) {}
+        prepared_profile_(NULL),
+        created_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     // This test is not a full blown InProcessBrowserTest, and doesn't have
@@ -357,6 +358,10 @@ class LoginUtilsTest : public testing::Test,
     prepared_profile_ = profile;
   }
 
+  virtual void OnProfileCreated(Profile* profile) OVERRIDE {
+    created_profile_ = profile;
+  }
+
 #if defined(ENABLE_RLZ)
   virtual void OnRlzInitialized(Profile* profile) OVERRIDE {
     rlz_initialized_cb_.Run();
@@ -484,6 +489,7 @@ class LoginUtilsTest : public testing::Test,
   policy::BrowserPolicyConnector* connector_;
   MockCryptohomeLibrary* cryptohome_;
   Profile* prepared_profile_;
+  Profile* created_profile_;
 
   base::Closure rlz_initialized_cb_;
 
@@ -509,6 +515,11 @@ TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   // The profile will be created without waiting for a policy response.
   PrepareProfile(kUsername);
 
+  // This should shortcut cookie transfer step that is missing due to
+  // IO thread being mocked.
+  EXPECT_TRUE(created_profile_);
+  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
+
   EXPECT_TRUE(prepared_profile_);
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
@@ -531,6 +542,11 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   // Login with a non-enterprise user shouldn't block.
   PrepareProfile(kUsernameOtherDomain);
 
+  // This should shortcut cookie transfer step that is missing due to
+  // IO thread being mocked.
+  EXPECT_TRUE(created_profile_);
+  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
+
   EXPECT_TRUE(prepared_profile_);
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
   EXPECT_EQ(kUsernameOtherDomain, user_manager->GetLoggedInUser()->email());
@@ -549,6 +565,11 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
   wait_for_rlz_init.Run();
   // Wait for blocking RLZ tasks to complete.
   RunUntilIdle();
+
+  // This should shortcut cookie transfer step that is missing due to
+  // IO thread being mocked.
+  EXPECT_TRUE(created_profile_);
+  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   // RLZ brand code has been set to empty string.
   EXPECT_TRUE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));
@@ -648,6 +669,11 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     fetcher->set_response_code(500);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
+
+  // This should shortcut cookie transfer step that is missing due to
+  // IO thread being mocked.
+  EXPECT_TRUE(created_profile_);
+  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   // The profile is finally ready:
   EXPECT_TRUE(prepared_profile_);

@@ -22,23 +22,64 @@ namespace chromeos {
 
 namespace {
 
+// Callback for transferring |cookies_to_transfer| into |cookie_monster| if
+// its jar is completely empty.
+void OnTransferCookiesIfEmptyJar(
+    net::CookieMonster* cookie_monster,
+    const net::CookieList& cookies_to_transfer,
+    const base::Callback<void()>& cookies_transfered_callback,
+    const net::CookieList& cookies_in_jar) {
+  std::string sid;
+  std::string lsid;
+  // Transfer only if the existing cookie jar is empty.
+  if (!cookies_in_jar.size())
+    cookie_monster->InitializeFrom(cookies_to_transfer);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, cookies_transfered_callback);
+  return;
+}
+
+// Callback for receiving |cookies_to_transfer| from the authentication profile
+// cookie jar.
+void OnGetCookiesToTransfer(
+    net::CookieMonster* cookie_monster,
+    const base::Callback<void()>& cookies_transfered_callback,
+    const net::CookieList& cookies_to_transfer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Nothing to transfer over?
+  if (!cookies_to_transfer.size()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, cookies_transfered_callback);
+    return;
+  }
+  // Now let's see if the target cookie monster's jar is even empty.
+  cookie_monster->GetAllCookiesAsync(
+      base::Bind(&OnTransferCookiesIfEmptyJar,
+                 make_scoped_refptr(cookie_monster),
+                 cookies_to_transfer,
+                 cookies_transfered_callback));
+}
+
 // Transfers initial set of Profile cookies from the |from_context| to cookie
 // jar of |to_context|.
 void TransferDefaultCookiesOnIOThread(
     net::URLRequestContextGetter* from_context,
-    net::URLRequestContextGetter* to_context) {
+    net::URLRequestContextGetter* to_context,
+    const base::Callback<void()>& cookies_transfered_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieStore* new_store =
+  net::CookieStore* to_store =
       to_context->GetURLRequestContext()->cookie_store();
-  net::CookieMonster* new_monster = new_store->GetCookieMonster();
+  net::CookieMonster* to_monster = to_store->GetCookieMonster();
 
-  net::CookieStore* default_store =
+  net::CookieStore* from_store =
       from_context->GetURLRequestContext()->cookie_store();
-  net::CookieMonster* default_monster = default_store->GetCookieMonster();
-  default_monster->SetKeepExpiredCookies();
-  default_monster->GetAllCookiesAsync(
-      base::Bind(base::IgnoreResult(&net::CookieMonster::InitializeFrom),
-                 new_monster));
+  net::CookieMonster* from_monster = from_store->GetCookieMonster();
+  from_monster->SetKeepExpiredCookies();
+  from_monster->GetAllCookiesAsync(base::Bind(&OnGetCookiesToTransfer,
+                                              make_scoped_refptr(to_monster),
+                                              cookies_transfered_callback));
 }
 
 // Transfers default server bound certs of |from_context| to server bound certs
@@ -76,12 +117,14 @@ void TransferDefaultAuthCacheOnIOThread(
 // automatically transfered into the profile.
 void TransferDefaultCookiesAndServerBoundCerts(
     Profile* from_profile,
-    Profile* to_profile) {
+    Profile* to_profile,
+    const base::Callback<void()>& cookies_transfered_callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&TransferDefaultCookiesOnIOThread,
                  make_scoped_refptr(from_profile->GetRequestContext()),
-                 make_scoped_refptr(to_profile->GetRequestContext())));
+                 make_scoped_refptr(to_profile->GetRequestContext()),
+                 cookies_transfered_callback));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&TransferDefaultServerBoundCertsIOThread,
@@ -104,12 +147,20 @@ void TransferDefaultAuthCache(Profile* from_profile,
 
 }  // namespace
 
-void ProfileAuthData::Transfer(Profile* from_profile,
-                               Profile* to_profile,
-                               bool transfer_cookies) {
+void ProfileAuthData::Transfer(
+    Profile* from_profile,
+    Profile* to_profile,
+    bool transfer_cookies,
+    const base::Callback<void()>& cookies_transfered_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (transfer_cookies)
-    TransferDefaultCookiesAndServerBoundCerts(from_profile, to_profile);
+  if (transfer_cookies) {
+    TransferDefaultCookiesAndServerBoundCerts(from_profile,
+                                              to_profile,
+                                              cookies_transfered_callback);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, cookies_transfered_callback);
+  }
 
   TransferDefaultAuthCache(from_profile, to_profile);
 }

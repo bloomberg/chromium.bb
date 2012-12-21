@@ -188,7 +188,7 @@ class LoginUtilsImpl
   LoginUtilsImpl()
       : pending_requests_(false),
         using_oauth_(false),
-        has_cookies_(false),
+        has_web_auth_cookies_(false),
         delegate_(NULL),
         job_restart_request_(NULL),
         should_restore_auth_session_(false),
@@ -232,6 +232,7 @@ class LoginUtilsImpl
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
+  virtual void CompleteProfileCreate(Profile* user_profile) OVERRIDE;
 
   // OAuth1TokenFetcher::Delegate overrides.
   void OnOAuth1AccessTokenAvailable(const std::string& token,
@@ -298,9 +299,18 @@ class LoginUtilsImpl
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(Profile* pref);
 
+  // Initializes basic preferences for newly created profile.
+  void InitProfilePreferences(Profile* user_profile);
+
   // Callback for asynchronous profile creation.
   void OnProfileCreated(Profile* profile,
                         Profile::CreateStatus status);
+
+  // Finalized profile preparation.
+  void FinalizePrepareProfile(Profile* user_profile);
+
+  // Restores GAIA auth cookies for the created profile.
+  void RestoreAuthCookies(Profile* user_profile);
 
   // Initializes RLZ. If |disabled| is true, financial pings are turned off.
   void InitRlz(Profile* user_profile, bool disabled);
@@ -308,7 +318,9 @@ class LoginUtilsImpl
   std::string password_;
   bool pending_requests_;
   bool using_oauth_;
-  bool has_cookies_;
+  // True if the authenrication profile's cookie jar should contain
+  // authentication cookies from the authentication extension log in flow.
+  bool has_web_auth_cookies_;
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
   scoped_refptr<Authenticator> authenticator_;
   scoped_ptr<PolicyOAuthFetcher> policy_oauth_fetcher_;
@@ -428,7 +440,7 @@ void LoginUtilsImpl::PrepareProfile(
 
   pending_requests_ = pending_requests;
   using_oauth_ = using_oauth;
-  has_cookies_ = has_cookies;
+  has_web_auth_cookies_ = has_cookies;
   delegate_ = delegate;
 
   policy::BrowserPolicyConnector* connector =
@@ -480,36 +492,44 @@ void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
     delegate_ = NULL;
 }
 
+void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
+  if (UserManager::Get()->IsCurrentUserNew())
+    SetFirstLoginPrefs(user_profile->GetPrefs());
+  // Make sure that the google service username is properly set (we do this
+  // on every sign in, not just the first login, to deal with existing
+  // profiles that might not have it set yet).
+  StringPrefMember google_services_username;
+  google_services_username.Init(prefs::kGoogleServicesUsername,
+                                user_profile->GetPrefs());
+  google_services_username.SetValue(
+      UserManager::Get()->GetLoggedInUser()->display_email());
+  // Make sure we flip every profile to not share proxies if the user hasn't
+  // specified so explicitly.
+  const PrefService::Preference* use_shared_proxies_pref =
+      user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
+  if (use_shared_proxies_pref->IsDefaultValue())
+    user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
+  policy::NetworkConfigurationUpdater* network_configuration_updater =
+      g_browser_process->browser_policy_connector()->
+      GetNetworkConfigurationUpdater();
+  if (network_configuration_updater)
+    network_configuration_updater->OnUserPolicyInitialized();
+  RespectLocalePreference(user_profile);
+}
+
 void LoginUtilsImpl::OnProfileCreated(
     Profile* user_profile,
     Profile::CreateStatus status) {
   CHECK(user_profile);
+
+  if (delegate_)
+    delegate_->OnProfileCreated(user_profile);
+
   switch (status) {
     case Profile::CREATE_STATUS_INITIALIZED:
       break;
     case Profile::CREATE_STATUS_CREATED: {
-      if (UserManager::Get()->IsCurrentUserNew())
-        SetFirstLoginPrefs(user_profile->GetPrefs());
-      // Make sure that the google service username is properly set (we do this
-      // on every sign in, not just the first login, to deal with existing
-      // profiles that might not have it set yet).
-      StringPrefMember google_services_username;
-      google_services_username.Init(prefs::kGoogleServicesUsername,
-                                    user_profile->GetPrefs());
-      google_services_username.SetValue(
-          UserManager::Get()->GetLoggedInUser()->display_email());
-      // Make sure we flip every profile to not share proxies if the user hasn't
-      // specified so explicitly.
-      const PrefService::Preference* use_shared_proxies_pref =
-          user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
-      if (use_shared_proxies_pref->IsDefaultValue())
-        user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
-      policy::NetworkConfigurationUpdater* network_configuration_updater =
-          g_browser_process->browser_policy_connector()->
-          GetNetworkConfigurationUpdater();
-      if (network_configuration_updater)
-        network_configuration_updater->OnUserPolicyInitialized();
-      RespectLocalePreference(user_profile);
+      InitProfilePreferences(user_profile);
       return;
     }
     case Profile::CREATE_STATUS_FAIL:
@@ -532,40 +552,57 @@ void LoginUtilsImpl::OnProfileCreated(
                              policy_oauth_fetcher_->oauth1_secret());
     }
 
-    // Transfer proxy authentication cache and optionally cookies and server
+    // Transfer proxy authentication cache, cookies (optionally) and server
     // bound certs from the profile that was used for authentication.  This
     // profile contains cookies that auth extension should have already put in
     // place that will ensure that the newly created session is authenticated
     // for the websites that work with the used authentication schema.
     ProfileAuthData::Transfer(authenticator_->authentication_profile(),
                               user_profile,
-                              has_cookies_);   // transfer_cookies
-
-    std::string oauth1_token;
-    std::string oauth1_secret;
-    if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
-        !has_cookies_) {
-      // Verify OAuth access token when we find it in the profile and always if
-      // if we don't have cookies.
-      // TODO(xiyuan): Change back to use authenticator to verify token when
-      // we support Gaia in lock screen.
-      VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
-    } else {
-      // If we don't have it, fetch OAuth1 access token.
-      // Once we get that, we will kick off individual requests for OAuth2
-      // tokens for all our services.
-      // Use off-the-record profile that was used for this step. It should
-      // already contain all needed cookies that will let us skip GAIA's user
-      // authentication UI.
-      //
-      // TODO(rickcam) We should use an isolated App here.
-      oauth1_token_fetcher_.reset(
-          new OAuth1TokenFetcher(this,
-                                 authenticator_->authentication_profile()));
-      oauth1_token_fetcher_->Start();
-    }
+                              has_web_auth_cookies_,  // transfer_cookies
+                              base::Bind(
+                                  &LoginUtilsImpl::CompleteProfileCreate,
+                                  AsWeakPtr(),
+                                  user_profile));
+    return;
   }
 
+  FinalizePrepareProfile(user_profile);
+}
+
+void LoginUtilsImpl::RestoreAuthCookies(Profile* user_profile) {
+  std::string oauth1_token;
+  std::string oauth1_secret;
+  if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
+      !has_web_auth_cookies_) {
+    // Verify OAuth access token when we find it in the profile and always if
+    // if we don't have cookies.
+    // TODO(xiyuan): Change back to use authenticator to verify token when
+    // we support Gaia in lock screen.
+    VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
+  } else {
+    // If we don't have it, fetch OAuth1 access token.
+    // Once we get that, we will kick off individual requests for OAuth2
+    // tokens for all our services.
+    // Use off-the-record profile that was used for this step. It should
+    // already contain all needed cookies that will let us skip GAIA's user
+    // authentication UI.
+    //
+    // TODO(rickcam) We should use an isolated App here.
+    oauth1_token_fetcher_.reset(
+        new OAuth1TokenFetcher(this,
+                               authenticator_->authentication_profile()));
+    oauth1_token_fetcher_->Start();
+  }
+}
+
+void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {
+  RestoreAuthCookies(user_profile);
+  FinalizePrepareProfile(user_profile);
+}
+
+void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
+  BootTimesLoader* btl = BootTimesLoader::Get();
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
   CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
@@ -1135,7 +1172,9 @@ void LoginUtilsImpl::OnOAuth1AccessTokenAvailable(const std::string& token,
   Profile* user_profile = ProfileManager::GetDefaultProfile();
   StoreOAuth1AccessToken(user_profile, token, secret);
 
-  // Verify OAuth1 token by doing OAuthLogin and fetching credentials.
+  // Verify OAuth1 token by doing OAuthLogin and fetching credentials. If we
+  // have just transfered auth cookies out of authenticated cookie jar, there
+  // is no need to try to mint them from OAuth token again.
   VerifyOAuth1AccessToken(user_profile, token, secret);
 }
 
