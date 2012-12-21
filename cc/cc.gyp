@@ -5,8 +5,8 @@
 {
   'variables': {
     'cc_source_files': [
-      'animation.cc',
-      'animation.h',
+      'active_animation.cc',
+      'active_animation.h',
       'animation_curve.cc',
       'animation_curve.h',
       'animation_events.h',

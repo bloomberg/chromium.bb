@@ -649,7 +649,7 @@ float LayerImpl::opacity() const
 
 bool LayerImpl::opacityIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(Animation::Opacity);
+    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
 }
 
 void LayerImpl::setPosition(const gfx::PointF& position)
@@ -696,7 +696,7 @@ const gfx::Transform& LayerImpl::transform() const
 
 bool LayerImpl::transformIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(Animation::Transform);
+    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
 }
 
 void LayerImpl::setContentBounds(const gfx::Size& contentBounds)
