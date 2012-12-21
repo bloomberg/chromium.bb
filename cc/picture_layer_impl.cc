@@ -22,7 +22,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
     : LayerImpl(treeImpl, id),
       tilings_(this),
       pile_(PicturePileImpl::Create()),
-      last_update_time_(0) {
+      last_update_time_(0),
+      is_mask_(false) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -132,8 +133,7 @@ void PictureLayerImpl::didUpdateTransforms() {
     // TODO(enne): Add tilings during pinch zoom
     // TODO(enne): Consider culling old tilings after pinch finishes.
     if (!tilings_.num_tilings()) {
-      gfx::Size tile_size = layerTreeImpl()->settings().defaultTileSize;
-      AddTiling(contentsScaleX(), tile_size);
+      AddTiling(contentsScaleX(), TileSize());
       // TODO(enne): Add a low-res tiling as well.
     }
   } else {
@@ -141,7 +141,8 @@ void PictureLayerImpl::didUpdateTransforms() {
     tilings_.Reset();
   }
 
-  gfx::Transform  current_screen_space_transform = screenSpaceTransform();
+  gfx::Transform current_screen_space_transform =
+      screenSpaceTransform();
   double current_time =
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   double time_delta = 0;
@@ -170,6 +171,8 @@ void PictureLayerImpl::didUpdateTransforms() {
 }
 
 void PictureLayerImpl::didUpdateBounds() {
+  if (is_mask_)
+    tilings_.Reset();
   tilings_.SetLayerBounds(bounds());
 }
 
@@ -210,6 +213,30 @@ void PictureLayerImpl::SyncTiling(
   tilings_.Clone(tiling, invalidation_);
 }
 
+void PictureLayerImpl::SetIsMask(bool is_mask) {
+  if (is_mask_ == is_mask)
+    return;
+  is_mask_ = is_mask;
+  tilings_.Reset();
+}
+
+ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
+  gfx::Rect content_rect(gfx::Point(), contentBounds());
+  float scale = contentsScaleX();
+  for (PictureLayerTilingSet::Iterator iter(&tilings_, scale, content_rect);
+       iter;
+       ++iter) {
+    // Mask resource not ready yet.
+    if (!*iter || !iter->GetResourceId())
+      return 0;
+    // Masks only supported if they fit on exactly one tile.
+    if (iter.geometry_rect() != content_rect)
+      return 0;
+    return iter->GetResourceId();
+  }
+  return 0;
+}
+
 void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
   const PictureLayerTiling* tiling = tilings_.AddTiling(
       contents_scale,
@@ -226,6 +253,17 @@ void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
     return;
   DCHECK_EQ(id(), pending_twin->id());
   pending_twin->SyncTiling(tiling);
+}
+
+gfx::Size PictureLayerImpl::TileSize() const {
+  if (is_mask_) {
+    int max_size = layerTreeImpl()->MaxTextureSize();
+    return gfx::Size(
+        std::min(max_size, contentBounds().width()),
+        std::min(max_size, contentBounds().height()));
+  }
+
+  return layerTreeImpl()->settings().defaultTileSize;
 }
 
 }  // namespace cc

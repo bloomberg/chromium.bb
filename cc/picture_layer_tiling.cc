@@ -283,6 +283,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect view_rect(gfx::Point(), device_viewport);
   int right = tiling_data_.TileXIndexFromSrcCoord(content_rect.width() - 1);
   int bottom = tiling_data_.TileYIndexFromSrcCoord(content_rect.height() - 1);
+
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     TileMapKey key = it->first;
     TilePriority priority;
@@ -290,7 +291,6 @@ void PictureLayerTiling::UpdateTilePriorities(
       priority.distance_to_visible_in_pixels = std::numeric_limits<int>::max();
       priority.time_to_visible_in_seconds =
           TilePriority::kMaxTimeToVisibleInSeconds;
-      // TODO(qinmin): pass the correct tree to this function.
       it->second->set_priority(tree, priority);
       continue;
     }
@@ -312,7 +312,6 @@ void PictureLayerTiling::UpdateTilePriorities(
 
     priority.distance_to_visible_in_pixels =
         TilePriority::manhattanDistance(screen_rect, view_rect);
-    // TODO(qinmin): pass the correct tree to this function.
     it->second->set_priority(tree, priority);
   }
 }

@@ -54,6 +54,7 @@ class CC_EXPORT LayerTreeImpl {
   bool IsPendingTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
+  int MaxTextureSize() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

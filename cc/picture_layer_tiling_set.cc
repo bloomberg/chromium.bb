@@ -73,7 +73,7 @@ void PictureLayerTilingSet::Reset() {
     tilings_[i]->Reset();
 }
 
-PictureLayerTilingSet::Iterator::Iterator(PictureLayerTilingSet* set,
+PictureLayerTilingSet::Iterator::Iterator(const PictureLayerTilingSet* set,
                                           float contents_scale,
                                           gfx::Rect content_rect)
     : set_(set),

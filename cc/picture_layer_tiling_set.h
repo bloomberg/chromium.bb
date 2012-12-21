@@ -52,7 +52,10 @@ class CC_EXPORT PictureLayerTilingSet {
   // exactly fill rect with no overlap.
   class CC_EXPORT Iterator {
    public:
-    Iterator(PictureLayerTilingSet* set, float contents_scale, gfx::Rect rect);
+    Iterator(
+      const PictureLayerTilingSet* set,
+      float contents_scale,
+      gfx::Rect rect);
     ~Iterator();
 
     // Visible rect (no borders), always in the space of rect,
@@ -70,7 +73,7 @@ class CC_EXPORT PictureLayerTilingSet {
     operator bool() const;
 
    private:
-    PictureLayerTilingSet* set_;
+    const PictureLayerTilingSet* set_;
     float contents_scale_;
     PictureLayerTiling::Iterator tiling_iter_;
     int current_tiling_;

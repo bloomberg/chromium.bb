@@ -15,7 +15,8 @@ scoped_refptr<PictureLayer> PictureLayer::create(ContentLayerClient* client) {
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client) :
-  client_(client) {
+  client_(client),
+  is_mask_(false) {
 }
 
 PictureLayer::~PictureLayer() {
@@ -33,6 +34,7 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   Layer::pushPropertiesTo(base_layer);
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  layer_impl->SetIsMask(is_mask_);
   layer_impl->tilings_.SetLayerBounds(bounds());
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(pile_invalidation_);
@@ -60,6 +62,10 @@ void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
   pending_invalidation_.Clear();
 
   pile_.Update(client_, pile_invalidation_, stats);
+}
+
+void PictureLayer::setIsMask(bool is_mask) {
+  is_mask_ = is_mask;
 }
 
 }  // namespace cc

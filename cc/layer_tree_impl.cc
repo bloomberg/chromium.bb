@@ -126,7 +126,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         device_viewport_size(),
         device_scale_factor(),
         pinch_zoom_viewport().pageScaleFactor(),
-        layer_tree_host_impl_->rendererCapabilities().maxTextureSize,
+        MaxTextureSize(),
         settings().canUseLCDText,
         render_surface_layer_list_);
   }
@@ -215,6 +215,10 @@ LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
   if (!tree)
     return NULL;
   return tree->LayerById(id);
+}
+
+int LayerTreeImpl::MaxTextureSize() const {
+  return layer_tree_host_impl_->rendererCapabilities().maxTextureSize;
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {

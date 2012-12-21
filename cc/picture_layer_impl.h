@@ -41,10 +41,15 @@ public:
   void SyncFromActiveLayer();
   void SyncTiling(const PictureLayerTiling* tiling);
 
+  // Mask-related functions
+  void SetIsMask(bool is_mask);
+  virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
+
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
   void AddTiling(float contents_scale, gfx::Size tile_size);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
+  gfx::Size TileSize() const;
 
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;
@@ -56,6 +61,7 @@ protected:
   gfx::Size last_content_bounds_;
   float last_content_scale_x_;
   float last_content_scale_y_;
+  bool is_mask_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

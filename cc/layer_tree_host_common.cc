@@ -233,6 +233,16 @@ static inline bool subtreeShouldBeSkipped(Layer* layer)
 static inline void markLayerAsUpdated(LayerImpl* layer)
 {
     layer->didUpdateTransforms();
+
+    // Mask layers don't get this call, so explicitly update them so they can
+    // kick off tile rasterization.
+    if (layer->maskLayer())
+        layer->maskLayer()->didUpdateTransforms();
+    if (layer->replicaLayer()) {
+        layer->replicaLayer()->didUpdateTransforms();
+        if (layer->replicaLayer()->maskLayer())
+            layer->replicaLayer()->maskLayer()->didUpdateTransforms();
+    }
 }
 
 static inline void markLayerAsUpdated(Layer* layer)

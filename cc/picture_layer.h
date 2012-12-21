@@ -30,6 +30,7 @@ public:
   virtual void setNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
   virtual void update(ResourceUpdateQueue&, const OcclusionTracker*,
                       RenderingStats&) OVERRIDE;
+  virtual void setIsMask(bool is_mask) OVERRIDE;
 
 protected:
   explicit PictureLayer(ContentLayerClient*);
@@ -42,6 +43,7 @@ private:
   Region pending_invalidation_;
   // Invalidation from the last time update was called.
   Region pile_invalidation_;
+  bool is_mask_;
 };
 
 }  // namespace cc
