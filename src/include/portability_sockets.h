@@ -8,18 +8,8 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_SOCKETS_H_ 1
 
 #if NACL_WINDOWS
-
+# include <winsock2.h>
 # include <windows.h>
-/*
- * Gyp and scons builds have some different defines that include
- * WIN32_LEAN_AND_MEAN. So we have to detect whether winsock.h is already
- * included and including winsock2.h will lead to redefinition errors.
- * TODO(halyavin): ensure that WIN32_LEAN_AND_MEAN is set in both builds and
- * replace this with a meaningful error message.
- */
-# ifndef AF_IPX
-#  include <winsock2.h>
-# endif
 
 typedef SOCKET NaClSocketHandle;
 

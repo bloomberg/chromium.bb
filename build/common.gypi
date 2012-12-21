@@ -709,6 +709,9 @@
           'NOMINMAX',
           '_CRT_RAND_S',
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
+          # WIN32_LEAN_AND_MEAN tells windows.h to omit obsolete and rarely
+          # used #include files. This allows use of Winsock 2.0 which otherwise
+          # would conflict with Winsock 1.x included by windows.h.
           'WIN32_LEAN_AND_MEAN',
           '_SECURE_ATL',
           '__STDC_LIMIT_MACROS=1',

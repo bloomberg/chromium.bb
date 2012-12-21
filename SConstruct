@@ -2154,8 +2154,12 @@ def MakeWindowsEnv():
           ['NOMINMAX', '1'],
           # WIN32 is used by ppapi
           ['WIN32', '1'],
+          # WIN32_LEAN_AND_MEAN tells windows.h to omit obsolete and rarely
+          # used #include files. This allows use of Winsock 2.0 which otherwise
+          # would conflict with Winsock 1.x included by windows.h.
+          ['WIN32_LEAN_AND_MEAN', ''],
       ],
-      LIBS = ['wsock32', 'advapi32'],
+      LIBS = ['ws2_32', 'advapi32'],
       # TODO(bsy) remove 4355 once cross-repo
       # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
       CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800'],
