@@ -1825,12 +1825,14 @@ public class ContentViewCore implements MotionEventDelegate {
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateContentSize(int width, int height) {
-        if (mContentWidth != width || mContentHeight != height) {
-            mPopupZoomer.hide(true);
-        }
         // Make sure the content size is at least the View size
-        mContentWidth = Math.max(width, getWidth());
-        mContentHeight = Math.max(height, getHeight());
+        final int newContentWidth = Math.max(width, getWidth());
+        final int newContentHeight = Math.max(height, getHeight());
+        if (mContentWidth != newContentWidth || mContentHeight != newContentHeight) {
+            mPopupZoomer.hide(true);
+            mContentWidth = newContentWidth;
+            mContentHeight = newContentHeight;
+        }
     }
 
     @SuppressWarnings("unused")
