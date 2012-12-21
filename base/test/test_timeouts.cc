@@ -56,11 +56,10 @@ int TestTimeouts::tiny_timeout_ms_ = 100;
 int TestTimeouts::action_timeout_ms_ = 10000;
 #ifndef NDEBUG
 int TestTimeouts::action_max_timeout_ms_ = 45000;
-int TestTimeouts::large_test_timeout_ms_ = 10 * 60 * 1000;
 #else
 int TestTimeouts::action_max_timeout_ms_ = 30000;
-int TestTimeouts::large_test_timeout_ms_ = 10 * 45 * 1000;
 #endif  // NDEBUG
+int TestTimeouts::large_test_timeout_ms_ = 10 * 60 * 1000;
 
 // static
 void TestTimeouts::Initialize() {
