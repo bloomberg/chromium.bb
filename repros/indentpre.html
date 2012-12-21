@@ -1,0 +1,10 @@
+<div id="editable" style="white-space: pre" contenteditable="true">
+<div id="hello">Hello</div></div>
+<script>
+var editable = document.getElementById('editable');
+editable.focus();
+document.execCommand('selectAll', false, true);
+//document.execCommand('indent', false, true);
+</script>
+<button id="indentbutton" onclick="document.execCommand('indent', false, true);">INDENT</button>
+
