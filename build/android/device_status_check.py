@@ -10,9 +10,10 @@ import optparse
 import os
 import smtplib
 import sys
+import re
 
 from pylib import buildbot_report
-from pylib.android_commands import GetAttachedDevices
+from pylib import android_commands
 from pylib.cmd_helper import GetCmdOutput
 
 
@@ -33,21 +34,29 @@ def DeviceInfo(serial):
   device_type = AdbShellCmd('getprop ro.build.product')
   device_build = AdbShellCmd('getprop ro.build.id')
 
+  setup_wizard_disabled = AdbShellCmd(
+      'getprop ro.setupwizard.mode') == 'DISABLED'
+  battery = AdbShellCmd('dumpsys battery')
+  battery_level = int(re.findall('level: (\d+)', battery)[0])
+  battery_temp = float(re.findall('temperature: (\d+)', battery)[0])/10
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' % (device_build,
                                   AdbShellCmd('getprop ro.build.fingerprint')),
-            '  Battery: %s%%' % AdbShellCmd('dumpsys battery | grep level '
-                                            "| awk '{print $2}'"),
-            '  Battery temp: %s' % AdbShellCmd('dumpsys battery'
-                                               '| grep temp '
-                                               "| awk '{print $2}'"),
+            '  Battery: %s%%' % battery_level,
+            '  Battery temp: %s' % battery_temp,
             '  IMEI slice: %s' % AdbShellCmd('dumpsys iphonesubinfo '
                                              '| grep Device'
                                              "| awk '{print $4}'")[-6:],
             '  Wifi IP: %s' % AdbShellCmd('getprop dhcp.wlan0.ipaddress'),
             '']
 
-  return device_type, device_build, '\n'.join(report)
+  warnings = []
+  if battery_level < 5:
+    warnings += ['critically low battery']
+  if not setup_wizard_disabled:
+    warnings += ['Setup wizard not disabled. Was it provisioned correctly?']
+
+  return device_type, device_build, '\n'.join(report), warnings
 
 
 def CheckForMissingDevices(options, adb_online_devs):
@@ -92,8 +101,8 @@ def CheckForMissingDevices(options, adb_online_devs):
   if missing_devs:
     from_address = 'buildbot@chromium.org'
     to_address = 'chromium-android-device-alerts@google.com'
-    bot_name = os.environ['BUILDBOT_BUILDERNAME']
-    slave_name = os.environ['BUILDBOT_SLAVENAME']
+    bot_name = os.environ.get('BUILDBOT_BUILDERNAME')
+    slave_name = os.environ.get('BUILDBOT_SLAVENAME')
     num_online_devs = len(adb_online_devs)
     subject = 'Devices offline on %s, %s (%d remaining).' % (slave_name,
                                                              bot_name,
@@ -110,7 +119,8 @@ def CheckForMissingDevices(options, adb_online_devs):
          'SHERIFF: See go/chrome_device_monitor',
          'Cache file: %s\n\n' % last_devices_path,
          'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
-         'adb devices(GetAttachedDevices): %s' % GetAttachedDevices()])
+         'adb devices(GetAttachedDevices): %s' %
+         android_commands.GetAttachedDevices()])
 
     print body
 
@@ -118,7 +128,7 @@ def CheckForMissingDevices(options, adb_online_devs):
     last_missing = ReadDeviceList('.last_missing')
     new_missing_devs = set(missing_devs) - set(last_missing)
 
-    if new_missing_devs:
+    if new_missing_devs and bot_name:
       msg_body = '\r\n'.join(
           ['From: %s' % from_address,
            'To: %s' % to_address,
@@ -153,10 +163,10 @@ def main():
   if args:
     parser.error('Unknown options %s' % args)
   buildbot_report.PrintNamedStep('Device Status Check')
-  devices = GetAttachedDevices()
-  types, builds, reports = [], [], []
+  devices = android_commands.GetAttachedDevices()
+  types, builds, reports, errors = [], [], [], []
   if devices:
-    types, builds, reports = zip(*[DeviceInfo(dev) for dev in devices])
+    types, builds, reports, errors = zip(*[DeviceInfo(dev) for dev in devices])
 
   unique_types = list(set(types))
   unique_builds = list(set(builds))
@@ -164,6 +174,14 @@ def main():
   buildbot_report.PrintMsg('Online devices: %d. Device types %s, builds %s'
                            % (len(devices), unique_types, unique_builds))
   print '\n'.join(reports)
+
+  full_errors = []
+  for serial, device_errors in zip(devices, errors):
+    full_errors.extend('%s: %s' % (serial, error) for error in device_errors)
+  if full_errors:
+    buildbot_report.PrintWarning()
+    print '\n'.join(full_errors)
+
   CheckForMissingDevices(options, devices)
 
 if __name__ == '__main__':
