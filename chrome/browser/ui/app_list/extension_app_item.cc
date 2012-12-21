@@ -253,11 +253,11 @@ void ExtensionAppItem::SetIconWithOverlay(const gfx::ImageSkia& icon) {
   gfx::Canvas icon_canvas(gfx::Size(EXTENSION_ICON_MEDIUM,
                                     EXTENSION_ICON_MEDIUM),
                           ui::SCALE_FACTOR_100P, false);
-  icon_canvas.DrawImageInt(icon, kIconOffset, kIconOffset + kVerticalAdjust);
   icon_canvas.DrawImageInt(
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_APP_LIST_TAB_OVERLAY),
       0, 0);
+  icon_canvas.DrawImageInt(icon, kIconOffset, kIconOffset + kVerticalAdjust);
   SetIcon(gfx::ImageSkia(icon_canvas.ExtractImageRep()));
 }
 
