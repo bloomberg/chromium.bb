@@ -496,7 +496,7 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
 
 void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   if (source == add_profile_link_) {
-    avatar_menu_model_->AddNewProfile();
+    avatar_menu_model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
     return;
   }
 

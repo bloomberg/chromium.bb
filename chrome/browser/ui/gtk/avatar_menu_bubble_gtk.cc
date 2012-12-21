@@ -117,7 +117,7 @@ void AvatarMenuBubbleGtk::OnSizeRequest(GtkWidget* widget,
 void AvatarMenuBubbleGtk::OnNewProfileLinkClicked(GtkWidget* link) {
   if (!bubble_)
     return;
-  avatar_menu_model_->AddNewProfile();
+  avatar_menu_model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
   CloseBubble();
 }
 

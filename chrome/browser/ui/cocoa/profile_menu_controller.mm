@@ -99,8 +99,7 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)newProfile:(id)sender {
-  model_->AddNewProfile();
-  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_MENU);
+  model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
 }
 
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu

@@ -117,7 +117,7 @@ void AvatarMenuModel::EditProfile(size_t index) {
   chrome::ShowSettingsSubPage(browser, page);
 }
 
-void AvatarMenuModel::AddNewProfile() {
+void AvatarMenuModel::AddNewProfile(ProfileMetrics::ProfileAdd type) {
   Browser* browser = browser_;
   if (!browser) {
     const Browser::CreateParams params(ProfileManager::GetLastUsedProfile(),
@@ -125,6 +125,7 @@ void AvatarMenuModel::AddNewProfile() {
     browser = new Browser(params);
   }
   chrome::ShowSettingsSubPage(browser, chrome::kCreateProfileSubPage);
+  ProfileMetrics::LogProfileAddNewUser(type);
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {

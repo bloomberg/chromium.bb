@@ -71,7 +71,7 @@ const CGFloat kLabelInset = 49.0;
 }
 
 - (IBAction)newProfile:(id)sender {
-  model_->AddNewProfile();
+  model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 
 - (IBAction)switchToProfile:(id)sender {
