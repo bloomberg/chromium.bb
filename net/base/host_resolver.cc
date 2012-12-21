@@ -4,6 +4,10 @@
 
 #include "net/base/host_resolver.h"
 
+#include "base/logging.h"
+#include "base/metrics/field_trial.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/dns/dns_client.h"
@@ -19,6 +23,67 @@ namespace {
 // further optimized, but 8 is what FF currently does. We found some routers
 // that limit this to 6, so we're temporarily holding it at that level.
 const size_t kDefaultMaxProcTasks = 6u;
+
+// When configuring from field trial, do not allow
+const size_t kSaneMaxProcTasks = 20u;
+
+PrioritizedDispatcher::Limits GetDispatcherLimits(
+    const HostResolver::Options& options) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES,
+                                       options.max_concurrent_resolves);
+
+  // If not using default, do not use the field trial.
+  if (limits.total_jobs != HostResolver::kDefaultParallelism)
+    return limits;
+
+  // Default, without trial is no reserved slots.
+  limits.total_jobs = kDefaultMaxProcTasks;
+
+  // Parallelism is determined by the field trial.
+  std::string group = base::FieldTrialList::FindFullName(
+      "HostResolverDispatch");
+
+  if (group.empty())
+    return limits;
+
+  // The format of the group name is a list of non-negative integers separated
+  // by ':'. Each of the elements in the list corresponds to an element in
+  // |reserved_slots|, except the last one which is the |total_jobs|.
+
+  std::vector<std::string> group_parts;
+  base::SplitString(group, ':', &group_parts);
+  if (group_parts.size() != NUM_PRIORITIES + 1) {
+    NOTREACHED();
+    return limits;
+  }
+
+  std::vector<size_t> parsed(group_parts.size());
+  size_t total_reserved_slots = 0;
+
+  for (size_t i = 0; i < group_parts.size(); ++i) {
+    if (!base::StringToSizeT(group_parts[i], &parsed[i])) {
+      NOTREACHED();
+      return limits;
+    }
+  }
+
+  size_t total_jobs = parsed.back();
+  parsed.pop_back();
+  for (size_t i = 0; i < parsed.size(); ++i) {
+    total_reserved_slots += parsed[i];
+  }
+
+  // There must be some unreserved slots available for the all priorities.
+  if (total_reserved_slots > total_jobs ||
+      (total_reserved_slots == total_jobs && parsed[MINIMUM_PRIORITY] == 0)) {
+    NOTREACHED();
+    return limits;
+  }
+
+  limits.total_jobs = total_jobs;
+  limits.reserved_slots = parsed;
+  return limits;
+}
 
 }  // namespace
 
@@ -61,17 +126,12 @@ base::Value* HostResolver::GetDnsConfigAsValue() const {
 // static
 scoped_ptr<HostResolver>
 HostResolver::CreateSystemResolver(const Options& options, NetLog* net_log) {
-  size_t max_concurrent_resolves = options.max_concurrent_resolves;
-  if (max_concurrent_resolves == kDefaultParallelism)
-    max_concurrent_resolves = kDefaultMaxProcTasks;
-
   scoped_ptr<HostCache> cache;
   if (options.enable_caching)
     cache = HostCache::CreateDefaultCache();
   return scoped_ptr<HostResolver>(new HostResolverImpl(
       cache.Pass(),
-      PrioritizedDispatcher::Limits(NUM_PRIORITIES,
-                                    max_concurrent_resolves),
+      GetDispatcherLimits(options),
       HostResolverImpl::ProcTaskParams(NULL, options.max_retry_attempts),
       net_log));
 }
