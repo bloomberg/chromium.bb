@@ -196,7 +196,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateGuest,
 IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_BuffersSwappedACK,
                     int /* route_id */,
                     int /* gpu_host_id */,
-                    uint64 /* surface_handle */,
+                    std::string /* mailbox_name */,
                     uint32 /* sync_point */)
 
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
@@ -336,14 +336,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginMsg_PluginAtPositionRequest,
 IPC_MESSAGE_ROUTED5(BrowserPluginMsg_BuffersSwapped,
                     int /* instance_id */,
                     gfx::Size /* size */,
-                    uint64 /* surface_handle */,
+                    std::string /* mailbox_name */,
                     int /* route_id */,
                     int /* gpu_host_id */)
-
-// HW accelerated surface was created in the guest, forward this
-// information to the embedder to update rendering parameters
-// in the compositor.
-IPC_MESSAGE_ROUTED3(BrowserPluginMsg_AcceleratedSurfaceNew,
-                    int /* instance_id */,
-                    uint64 /* surface_handle */,
-                    std::string /* mailbox_name */)

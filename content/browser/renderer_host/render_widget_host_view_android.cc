@@ -56,8 +56,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0),
-      current_buffer_id_(0) {
+      texture_id_in_layer_(0) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
@@ -394,31 +393,29 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
 
+  if (params.mailbox_name.empty())
+    return;
+
   // TODO(sievers): When running the impl thread in the browser we
   // need to delay the ACK until after commit and use more than a single
   // texture.
   DCHECK(!CompositorImpl::IsThreadingEnabled());
 
-  uint64 previous_buffer = current_buffer_id_;
-  if (previous_buffer && texture_id_in_layer_) {
-    DCHECK(id_to_mailbox_.find(previous_buffer) != id_to_mailbox_.end());
+  if (texture_id_in_layer_) {
+    DCHECK(!current_mailbox_name_.empty());
     ImageTransportFactoryAndroid::GetInstance()->ReleaseTexture(
         texture_id_in_layer_,
         reinterpret_cast<const signed char*>(
-            id_to_mailbox_[previous_buffer].c_str()));
-  }
-
-  current_buffer_id_ = params.surface_handle;
-  if (!texture_id_in_layer_) {
+            current_mailbox_name_.data()));
+  } else {
     texture_id_in_layer_ = factory->CreateTexture();
     texture_layer_->setTextureId(texture_id_in_layer_);
   }
 
-  DCHECK(id_to_mailbox_.find(current_buffer_id_) != id_to_mailbox_.end());
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
       texture_id_in_layer_,
       reinterpret_cast<const signed char*>(
-          id_to_mailbox_[current_buffer_id_].c_str()));
+          params.mailbox_name.data()));
 
   // We need to tell ContentViewCore about the new frame before calling
   // setNeedsDisplay() below so that it has the needed information schedule the
@@ -434,10 +431,11 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
 
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.surface_handle = previous_buffer;
+  ack_params.mailbox_name = current_mailbox_name_;
   ack_params.sync_point = sync_point;
    RenderWidgetHostImpl::AcknowledgeBufferPresent(
       params.route_id, gpu_host_id, ack_params);
+  current_mailbox_name_ = params.mailbox_name;
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -448,13 +446,6 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
   NOTREACHED();
-}
-
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceNew(
-    uint64 surface_id,
-    const std::string& mailbox_name) {
-  DCHECK(surface_id == 1 || surface_id == 2);
-  id_to_mailbox_[surface_id] = mailbox_name;
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {

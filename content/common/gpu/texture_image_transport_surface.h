@@ -67,22 +67,18 @@ class TextureImageTransportSurface :
     // The actual GL texture id.
     uint32 service_id;
 
-    // The surface handle for this texture (only 1 and 2 are valid).
-    uint64 surface_handle;
+    // The mailbox name for the current service_id. Needs to be unique per
+    // GL texture and is invalid while service_id is zero.
+    gpu::gles2::MailboxName mailbox_name;
   };
 
   virtual ~TextureImageTransportSurface();
   void CreateBackTexture();
   void AttachBackTextureToFBO();
   void ReleaseBackTexture();
-  void BufferPresentedImpl(uint64 surface_handle);
+  void BufferPresentedImpl(const std::string& mailbox_name);
   void ProduceTexture(Texture& texture);
   void ConsumeTexture(Texture& texture);
-
-  gpu::gles2::MailboxName& mailbox_name(uint64 surface_handle) {
-    DCHECK(surface_handle == 1 || surface_handle == 2);
-    return mailbox_names_[surface_handle - 1];
-  }
 
   // The framebuffer that represents this surface (service id). Allocated lazily
   // in OnMakeCurrent.
@@ -116,9 +112,6 @@ class TextureImageTransportSurface :
 
   // Whether we unscheduled command buffer because of pending SwapBuffers.
   bool did_unschedule_;
-
-  // The mailbox names used for texture exchange. Uses surface_handle as key.
-  gpu::gles2::MailboxName mailbox_names_[2];
 
   // Holds a reference to the mailbox manager for cleanup.
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;

@@ -102,13 +102,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ImageTransportHelper::SendAcceleratedSurfaceNew(
-    GpuHostMsg_AcceleratedSurfaceNew_Params params) {
-  params.surface_id = stub_->surface_id();
-  params.route_id = route_id_;
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceNew(params));
-}
-
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params) {
   // TRACE_EVENT for gpu tests:

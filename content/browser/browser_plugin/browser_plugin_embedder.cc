@@ -331,10 +331,10 @@ void BrowserPluginEmbedder::OnPluginDestroyed(int instance_id) {
 
 void BrowserPluginEmbedder::OnSwapBuffersACK(int route_id,
                                              int gpu_host_id,
-                                             uint64 surface_handle,
+                                             const std::string& mailbox_name,
                                              uint32 sync_point) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.surface_handle = 0; // TODO
+  ack_params.mailbox_name = mailbox_name;
   ack_params.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_host_id,

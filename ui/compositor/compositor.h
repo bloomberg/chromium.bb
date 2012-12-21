@@ -112,8 +112,13 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   virtual unsigned int PrepareTexture() = 0;
   virtual WebKit::WebGraphicsContext3D* HostContext3D() = 0;
 
-  virtual void Consume(const gfx::Size& new_size) {}
-  virtual void Produce() {}
+  // Replaces the texture with the texture from the specified mailbox.
+  virtual void Consume(const std::string& mailbox_name,
+                       const gfx::Size& new_size) {}
+
+  // Moves the texture into the mailbox and returns the mailbox name.
+  // The texture must have been previously consumed from a mailbox.
+  virtual std::string Produce();
 
  protected:
   virtual ~Texture();

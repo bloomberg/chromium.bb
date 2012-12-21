@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/font_atlas.h"
@@ -202,6 +203,10 @@ Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
 }
 
 Texture::~Texture() {
+}
+
+std::string Texture::Produce() {
+  return EmptyString();
 }
 
 CompositorLock::CompositorLock(Compositor* compositor)

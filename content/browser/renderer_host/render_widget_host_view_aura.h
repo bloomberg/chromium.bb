@@ -128,8 +128,6 @@ class RenderWidgetHostViewAura
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void AcceleratedSurfaceNew(uint64 surface_id,
-                                     const std::string& mailbox_name) OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
@@ -268,13 +266,11 @@ class RenderWidgetHostViewAura
 
   struct BufferPresentedParams {
     BufferPresentedParams(int route_id,
-                          int gpu_host_id,
-                          uint64 surface_handle);
+                          int gpu_host_id);
     ~BufferPresentedParams();
 
     int32 route_id;
     int gpu_host_id;
-    uint64 surface_handle;
     scoped_refptr<ui::Texture> texture_to_produce;
   };
 
@@ -309,6 +305,7 @@ class RenderWidgetHostViewAura
 
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
                           const gfx::Rect& damage_rect,
+                          const std::string& mailbox_name,
                           BufferPresentedParams* params);
 
   void SwapBuffersCompleted(const BufferPresentedParams& params);
@@ -367,10 +364,8 @@ class RenderWidgetHostViewAura
 
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
-  std::map<uint64, scoped_refptr<ui::Texture> > image_transport_clients_;
-
-  // The identifier of the current frontbuffer.
-  uint64 current_surface_;
+  // The current frontbuffer texture.
+  scoped_refptr<ui::Texture> current_surface_;
 
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;

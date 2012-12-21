@@ -66,9 +66,7 @@ class DefaultTransportFactory
   }
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      const gfx::Size& size,
-      float device_scale_factor,
-      const std::string& mailbox_name) OVERRIDE {
+      float device_scale_factor) OVERRIDE {
     return NULL;
   }
 
@@ -153,39 +151,40 @@ class ImageTransportClientTexture : public OwnedTexture {
  public:
   ImageTransportClientTexture(
       WebKit::WebGraphicsContext3D* host_context,
-      const gfx::Size& size,
-      float device_scale_factor,
-      const std::string& mailbox_name)
+      float device_scale_factor)
       : OwnedTexture(host_context,
-                     size,
+                     gfx::Size(0, 0),
                      device_scale_factor,
-                     host_context->createTexture()),
-        mailbox_name_(mailbox_name) {
-    DCHECK(mailbox_name.size() == GL_MAILBOX_SIZE_CHROMIUM);
+                     host_context->createTexture()) {
   }
 
-  virtual void Consume(const gfx::Size& new_size) OVERRIDE {
-    if (!mailbox_name_.length())
+  virtual void Consume(const std::string& mailbox_name,
+                       const gfx::Size& new_size) OVERRIDE {
+    DCHECK(mailbox_name.size() == GL_MAILBOX_SIZE_CHROMIUM);
+    mailbox_name_ = mailbox_name;
+    if (mailbox_name.empty())
       return;
 
     DCHECK(host_context_ && texture_id_);
     host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
     host_context_->consumeTextureCHROMIUM(
         GL_TEXTURE_2D,
-        reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
+        reinterpret_cast<const signed char*>(mailbox_name.c_str()));
     size_ = new_size;
     host_context_->flush();
   }
 
-  virtual void Produce() OVERRIDE {
-    if (!mailbox_name_.length())
-      return;
-
-    DCHECK(host_context_ && texture_id_);
-    host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-    host_context_->produceTextureCHROMIUM(
-        GL_TEXTURE_2D,
-        reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
+  virtual std::string Produce() OVERRIDE {
+    std::string name;
+    if (!mailbox_name_.empty()) {
+      DCHECK(host_context_ && texture_id_);
+      host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
+      host_context_->produceTextureCHROMIUM(
+          GL_TEXTURE_2D,
+          reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
+      mailbox_name_.swap(name);
+    }
+    return name;
   }
 
  protected:
@@ -434,15 +433,12 @@ class GpuProcessTransportFactory :
   }
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      const gfx::Size& size,
-      float device_scale_factor,
-      const std::string& mailbox_name) {
+      float device_scale_factor) {
     if (!shared_context_.get())
         return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(shared_context_.get(),
-                                        size, device_scale_factor,
-                                        mailbox_name));
+                                        device_scale_factor));
     return image;
   }
 

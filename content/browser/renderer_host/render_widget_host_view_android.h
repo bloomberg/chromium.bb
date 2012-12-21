@@ -103,8 +103,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
-  virtual void AcceleratedSurfaceNew(uint64 surface_id,
-                                     const std::string& mailbox_name) OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
@@ -194,11 +192,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // Used for image transport when needing to share resources across threads.
   scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
 
-  typedef std::map<uint64, std::string> MailboxMap;
-  MailboxMap id_to_mailbox_;
-
-  // The identifier of the previously received frame
-  uint64 current_buffer_id_;
+  // The mailbox name of the previously received frame.
+  std::string current_mailbox_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

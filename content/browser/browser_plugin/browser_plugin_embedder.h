@@ -114,7 +114,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void OnPluginDestroyed(int instance_id);
   void OnSwapBuffersACK(int route_id,
                         int gpu_host_id,
-                        uint64 surface_handle,
+                        const std::string& mailbox_name,
                         uint32 sync_point);
 
   // Static factory instance (always NULL for non-test).

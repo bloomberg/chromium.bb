@@ -100,7 +100,7 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
           guest_->embedder_routing_id(),
           guest_->instance_id(),
           params.size,
-          params.surface_handle,
+          params.mailbox_name,
           params.route_id,
           gpu_host_id));
 }
@@ -113,24 +113,13 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
           guest_->embedder_routing_id(),
           guest_->instance_id(),
           params.surface_size,
-          params.surface_handle,
+          params.mailbox_name,
           params.route_id,
           gpu_host_id));
 }
 
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceNew(
-    uint64 surface_handle,
-    const std::string& mailbox_name) {
-  guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_AcceleratedSurfaceNew(
-          guest_->embedder_routing_id(),
-          guest_->instance_id(),
-          surface_handle,
-          mailbox_name));
 }
 
 void RenderWidgetHostViewGuest::InitAsChild(

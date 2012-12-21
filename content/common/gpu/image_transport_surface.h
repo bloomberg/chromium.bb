@@ -23,7 +23,6 @@
 #include "ui/surface/transport_dib.h"
 
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
-struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
@@ -107,8 +106,6 @@ class ImageTransportHelper
 
   // Helper send functions. Caller fills in the surface specific params
   // like size and surface id. The helper fills in the rest.
-  void SendAcceleratedSurfaceNew(
-      GpuHostMsg_AcceleratedSurfaceNew_Params params);
   void SendAcceleratedSurfaceBuffersSwapped(
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
   void SendAcceleratedSurfacePostSubBuffer(

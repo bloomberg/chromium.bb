@@ -26,7 +26,6 @@
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
-struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace gfx {
@@ -97,8 +96,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
   void OnAcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
   void OnAcceleratedSurfaceSuspend(int32 surface_id);
-  void OnAcceleratedSurfaceNew(
-      const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
   void OnAcceleratedSurfaceRelease(
       const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
   void OnVideoMemoryUsageStatsReceived(

@@ -70,12 +70,9 @@ class ImageTransportFactory {
   // Destroys a shared surface handle.
   virtual void DestroySharedSurfaceHandle(gfx::GLSurfaceHandle surface) = 0;
 
-  // Creates a transport texture of a given size and scale factor, and using the
-  // opaque handle sent by the GPU process.
+  // Creates a transport texture for a given scale factor.
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      const gfx::Size& size,
-      float device_scale_factor,
-      const std::string& mailbox_name) = 0;
+      float device_scale_factor) = 0;
 
   // Variant of CreateTransportClient() that deletes the texture on the GPU when
   // the returned value is deleted.
