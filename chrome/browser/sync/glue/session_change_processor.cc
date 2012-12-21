@@ -254,7 +254,8 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
   ScopedStopObserving<SessionChangeProcessor> stop_observing(this);
 
   syncer::ReadNode root(trans);
-  if (root.InitByTagLookup(kSessionsTag) != syncer::BaseNode::INIT_OK) {
+  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS)) !=
+                           syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Sessions root node lookup failed.");
     return;

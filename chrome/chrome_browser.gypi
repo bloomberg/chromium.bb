@@ -1985,6 +1985,8 @@
         'browser/sync/glue/synced_window_delegate.h',
         'browser/sync/glue/synced_window_delegate_android.cc',
         'browser/sync/glue/synced_window_delegate_android.h',
+        'browser/sync/glue/tab_node_pool.cc',
+        'browser/sync/glue/tab_node_pool.h',
         'browser/sync/glue/theme_data_type_controller.cc',
         'browser/sync/glue/theme_data_type_controller.h',
         'browser/sync/glue/typed_url_change_processor.cc',

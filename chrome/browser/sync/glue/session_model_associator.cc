@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -141,7 +142,8 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = false;
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncer::ReadNode root(&trans);
-  if (root.InitByTagLookup(kSessionsTag) != syncer::BaseNode::INIT_OK) {
+  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS)) !=
+                           syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoSessionsFolderError;
     return false;
   }
@@ -153,7 +155,8 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 int64 SessionModelAssociator::GetSyncIdFromChromeId(const size_t& id) {
   DCHECK(CalledOnValidThread());
-  return GetSyncIdFromSessionTag(TabIdToTag(GetCurrentMachineTag(), id));
+  return GetSyncIdFromSessionTag(
+      TabNodePool::TabIdToTag(GetCurrentMachineTag(), id));
 }
 
 int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
@@ -165,7 +168,7 @@ int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   return node.GetId();
 }
 
-const SyncedTabDelegate*
+const size_t*
 SessionModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
   NOTREACHED();
   return NULL;
@@ -583,7 +586,7 @@ void SessionModelAssociator::FaviconsUpdated(
   }
 }
 
-void SessionModelAssociator::Associate(const SyncedTabDelegate* tab,
+void SessionModelAssociator::Associate(const size_t* tab,
                                        int64 sync_id) {
   NOTIMPLEMENTED();
 }
@@ -1052,66 +1055,6 @@ bool SessionModelAssociator::UpdateSyncModelDataFromClient(
   return AssociateWindows(true, error);
 }
 
-SessionModelAssociator::TabNodePool::TabNodePool(
-    ProfileSyncService* sync_service)
-    : tab_pool_fp_(-1),
-      sync_service_(sync_service) {
-}
-
-SessionModelAssociator::TabNodePool::~TabNodePool() {}
-
-void SessionModelAssociator::TabNodePool::AddTabNode(int64 sync_id) {
-  tab_syncid_pool_.resize(tab_syncid_pool_.size() + 1);
-  tab_syncid_pool_[static_cast<size_t>(++tab_pool_fp_)] = sync_id;
-}
-
-int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
-  DCHECK_GT(machine_tag_.length(), 0U);
-  if (tab_pool_fp_ == -1) {
-    // Tab pool has no free nodes, allocate new one.
-    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    syncer::ReadNode root(&trans);
-    if (root.InitByTagLookup(kSessionsTag) != syncer::BaseNode::INIT_OK) {
-      LOG(ERROR) << kNoSessionsFolderError;
-      return syncer::kInvalidId;
-    }
-    size_t tab_node_id = tab_syncid_pool_.size();
-    std::string tab_node_tag = TabIdToTag(machine_tag_, tab_node_id);
-    syncer::WriteNode tab_node(&trans);
-    syncer::WriteNode::InitUniqueByCreationResult result =
-        tab_node.InitUniqueByCreation(SESSIONS, root, tab_node_tag);
-    if (result != syncer::WriteNode::INIT_SUCCESS) {
-      LOG(ERROR) << "Could not create new node with tag "
-                 << tab_node_tag << "!";
-      return syncer::kInvalidId;
-    }
-    // We fill the new node with just enough data so that in case of a crash/bug
-    // we can identify the node as our own on re-association and reuse it.
-    tab_node.SetTitle(UTF8ToWide(tab_node_tag));
-    sync_pb::SessionSpecifics specifics;
-    specifics.set_session_tag(machine_tag_);
-    specifics.set_tab_node_id(tab_node_id);
-    tab_node.SetSessionSpecifics(specifics);
-
-    // Grow the pool by 1 since we created a new node. We don't actually need
-    // to put the node's id in the pool now, since the pool is still empty.
-    // The id will be added when that tab is closed and the node is freed.
-    tab_syncid_pool_.resize(tab_node_id + 1);
-    DVLOG(1) << "Adding sync node "
-             << tab_node.GetId() << " to tab syncid pool";
-    return tab_node.GetId();
-  } else {
-    // There are nodes available, grab next free and decrement free pointer.
-    return tab_syncid_pool_[static_cast<size_t>(tab_pool_fp_--)];
-  }
-}
-
-void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
-  // Pool size should always match # of free tab nodes.
-  DCHECK_LT(tab_pool_fp_, static_cast<int64>(tab_syncid_pool_.size()));
-  tab_syncid_pool_[static_cast<size_t>(++tab_pool_fp_)] = sync_id;
-}
-
 void SessionModelAssociator::AttemptSessionsDataRefresh() const {
   DVLOG(1) << "Triggering sync refresh for sessions datatype.";
   const syncer::ModelTypeSet types(syncer::SESSIONS);
@@ -1213,7 +1156,8 @@ void SessionModelAssociator::DeleteForeignSession(const std::string& tag) {
 
   syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncer::ReadNode root(&trans);
-  if (root.InitByTagLookup(kSessionsTag) != syncer::BaseNode::INIT_OK) {
+  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS)) !=
+                           syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoSessionsFolderError;
     return;
   }

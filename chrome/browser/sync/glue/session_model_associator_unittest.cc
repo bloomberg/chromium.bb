@@ -159,54 +159,6 @@ TEST_F(SyncSessionModelAssociatorTest, PopulateSessionWindow) {
   ASSERT_EQ(1U, tracker.num_synced_tabs(std::string("tag")));
 }
 
-TEST_F(SyncSessionModelAssociatorTest, TabNodePool) {
-  SessionModelAssociator::TabNodePool pool(NULL);
-  pool.set_machine_tag("tag");
-  ASSERT_TRUE(pool.empty());
-  ASSERT_TRUE(pool.full());
-  ASSERT_EQ(0U, pool.capacity());
-  pool.AddTabNode(5);
-  pool.AddTabNode(10);
-  ASSERT_FALSE(pool.empty());
-  ASSERT_TRUE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  ASSERT_EQ(10, pool.GetFreeTabNode());  // Returns last free tab.
-  ASSERT_FALSE(pool.empty());
-  ASSERT_FALSE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  ASSERT_EQ(5, pool.GetFreeTabNode());  // Returns last free tab.
-  ASSERT_TRUE(pool.empty());
-  ASSERT_FALSE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  // Release them in reverse order.
-  pool.FreeTabNode(10);
-  pool.FreeTabNode(5);
-  ASSERT_EQ(2U, pool.capacity());
-  ASSERT_FALSE(pool.empty());
-  ASSERT_TRUE(pool.full());
-  ASSERT_EQ(5, pool.GetFreeTabNode());  // Returns last free tab.
-  ASSERT_FALSE(pool.empty());
-  ASSERT_FALSE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  ASSERT_FALSE(pool.empty());
-  ASSERT_FALSE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  ASSERT_EQ(10, pool.GetFreeTabNode());  // Returns last free tab.
-  ASSERT_TRUE(pool.empty());
-  ASSERT_FALSE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  // Release them again.
-  pool.FreeTabNode(10);
-  pool.FreeTabNode(5);
-  ASSERT_FALSE(pool.empty());
-  ASSERT_TRUE(pool.full());
-  ASSERT_EQ(2U, pool.capacity());
-  pool.clear();
-  ASSERT_TRUE(pool.empty());
-  ASSERT_TRUE(pool.full());
-  ASSERT_EQ(0U, pool.capacity());
-}
-
 namespace {
 
 class SyncedTabDelegateMock : public SyncedTabDelegate {
