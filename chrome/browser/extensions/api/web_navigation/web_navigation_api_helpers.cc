@@ -97,15 +97,9 @@ void DispatchOnCommitted(const char* event_name,
   dict->SetInteger(keys::kProcessIdKey,
                    web_contents->GetRenderViewHost()->GetProcess()->GetID());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
-  const char *transition_type_as_string =
-      content::PageTransitionGetCoreTransitionString(transition_type);
-  // See http://crbug.com/166166. If you trigger this, please add repro steps
-  // to the bug (or at least report what transition_type you saw).
-  DCHECK(transition_type_as_string)
-      << "Navigation with invalid transition type " << transition_type;
   dict->SetString(
       keys::kTransitionTypeKey,
-      transition_type_as_string ? transition_type_as_string : "unknown");
+      content::PageTransitionGetCoreTransitionString(transition_type));
   ListValue* qualifiers = new ListValue();
   if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->Append(Value::CreateStringValue("client_redirect"));
