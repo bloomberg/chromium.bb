@@ -185,7 +185,7 @@ enable the existing justification logic in elements that have
 modification to the justification logic itself to match how Microsoft Word
 software works.</p>
 
-<h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
+<h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment</a> (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
 <p>Open <a href="repros/listMarkerAlignment.html">this link</a> in Chrome.  The
 list markers are all left-aligned, even though the second and third
 <code>li</code> elements are not.</p>
@@ -201,6 +201,19 @@ item will be selected.  When you click <code>BIGGER</code> or
 <code>SMALLER</code> to change the font size, the list marker's font does not
 change with it.  In our product, we wanted the list marker's font to match the
 first character in the list item.</p>
+
+<h3><a name="bugfix-listMarkerSelection">bugfix/listMarkerSelection</a> (Shezan Baig; D32422051)</h3>
+<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
+that we wanted specifically for our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch makes it so that list markers are not highlighted when the list
+item is selected.  This matches the behavior in Firefox and Microsoft Word
+software.</p>
+<p>Open <a href="repros/listMarkerSelection.html">this link</a> in Chrome.
+Notice that the list markers are highlighted.  Additionally, notice that the
+list marker highlight does not honor the <code>::selection</code> background
+color specified in the stylesheet.  In our product, we didn't want the list
+markers to be highlighted when selected.</p>
 
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG

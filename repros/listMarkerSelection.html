@@ -1,0 +1,16 @@
+<html>
+    <style>
+        *::selection { background: red; }
+    </style>
+    <body>
+        <ul>
+            <li>One</li>
+            <li>Two</li>
+            <li>Three</li>
+        </ul>
+    </body>
+    <script>
+        getSelection().selectAllChildren(document.getElementsByTagName("body")[0]);
+    </script>
+</html>
+
