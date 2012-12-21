@@ -6434,17 +6434,3 @@
    fun:_ZN16BrowserWindowGtk4InitEv
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
 }
-{
-   bug_167216a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN33AppShortcutLauncherItemController18GetApplicationListEv
-   fun:_ZN30ChromeLauncherControllerPerApp18GetApplicationListERKN3ash12LauncherItemE
-}
-{
-   bug_167216b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN30ChromeLauncherControllerPerApp25GetBrowserApplicationListEv
-   fun:_ZN30ChromeLauncherControllerPerApp18GetApplicationListERKN3ash12LauncherItemE
-}

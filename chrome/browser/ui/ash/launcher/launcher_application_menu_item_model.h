@@ -15,7 +15,7 @@ class LauncherApplicationMenuItemModel : public ui::SimpleMenuModel,
                                          public ui::SimpleMenuModel::Delegate {
  public:
   explicit LauncherApplicationMenuItemModel(
-      ChromeLauncherAppMenuItems* item_list);
+      scoped_ptr<ChromeLauncherAppMenuItems> item_list);
   virtual ~LauncherApplicationMenuItemModel();
 
   // Overridden from ui::SimpleMenuModel::Delegate:

@@ -7,9 +7,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
-    ChromeLauncherAppMenuItems* item_list)
+    scoped_ptr<ChromeLauncherAppMenuItems> item_list)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      launcher_items_(item_list) {
+      launcher_items_(item_list.get()) {
   Build();
 }
 

@@ -236,7 +236,7 @@ void ChromeLauncherControllerPerApp::Init() {
 
 ChromeLauncherControllerPerApp*
 ChromeLauncherControllerPerApp::GetPerAppInterface() {
-  return NULL;
+  return this;
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::CreateTabbedLauncherItem(
@@ -271,14 +271,16 @@ void ChromeLauncherControllerPerApp::SetItemStatus(
     ash::LauncherID id,
     ash::LauncherItemStatus status) {
   int index = model_->ItemIndexByID(id);
-  DCHECK_GE(index, 0);
-  ash::LauncherItem item = model_->items()[index];
-  item.status = status;
-  model_->Set(index, item);
+  // Since ordinary browser windows are not registered, we might get a negative
+  // index here.
+  if (index >= 0) {
+    ash::LauncherItem item = model_->items()[index];
+    item.status = status;
+    model_->Set(index, item);
 
-  if (model_->items()[index].type == ash::TYPE_BROWSER_SHORTCUT)
-    return;
-
+    if (model_->items()[index].type == ash::TYPE_BROWSER_SHORTCUT)
+      return;
+  }
   // Determine the new browser's active state and change if necessary.
   int browser_index = -1;
   for (size_t index = 0; index < model_->items().size() && browser_index == -1;
@@ -779,7 +781,8 @@ ui::MenuModel* ChromeLauncherControllerPerApp::CreateContextMenu(
 
 ui::MenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
     const ash::LauncherItem& item) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(item));
+  return new LauncherApplicationMenuItemModel(
+      scoped_ptr<ChromeLauncherAppMenuItems>(GetApplicationList(item)));
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
