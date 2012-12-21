@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_
-#define CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_
+#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_
 
 #include "base/string16.h"
 
@@ -13,10 +13,10 @@ class AutofillPopupDelegate {
  public:
   // Called when the autofill suggestion indicated by |unique_id| has been
   // temporarily selected (e.g., hovered).
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id) = 0;
+  virtual void SelectAutofillSuggestion(int unique_id) = 0;
 
-  // Inform the delegate that an Autofill suggestion has been chosen. Returns
-  // true if the suggestion was selected.
+  // Inform the delegate that a row in the popup has been chosen.
+  // TODO(estade): does this really need to return a value?
   virtual bool DidAcceptAutofillSuggestion(const string16& value,
                                            int unique_id,
                                            unsigned index) = 0;
@@ -34,4 +34,4 @@ class AutofillPopupDelegate {
   virtual void ControllerDestroyed() = 0;
 };
 
-#endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_

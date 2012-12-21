@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class ConstrainedWindowViews;
@@ -20,6 +22,7 @@ class Textfield;
 
 namespace ui {
 class ComboboxModel;
+class KeyEvent;
 }
 
 namespace autofill {
@@ -31,13 +34,16 @@ struct DetailInput;
 class AutofillDialogViews : public AutofillDialogView,
                             public views::DialogDelegate,
                             public views::ButtonListener,
-                            public views::ComboboxListener {
+                            public views::ComboboxListener,
+                            public views::TextfieldController,
+                            public views::FocusChangeListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
 
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
+  virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual int GetSuggestionSelection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
@@ -45,6 +51,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
@@ -60,6 +67,18 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::ComboboxListener implementation:
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+
+  // views::TextfieldController implementation:
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE;
+
+  // views::FocusChangeListener implementation.
+  virtual void OnWillChangeFocus(views::View* focused_before,
+                                 views::View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(views::View* focused_before,
+                                views::View* focused_now) OVERRIDE;
 
  private:
   typedef std::map<const DetailInput*, views::Textfield*> TextfieldMap;

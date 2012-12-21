@@ -18,6 +18,9 @@ class AutofillDialogView {
   // Shows the dialog.
   virtual void Show() = 0;
 
+  // Called when the contents of a section have changed.
+  virtual void UpdateSection(DialogSection section) = 0;
+
   // Returns the index into the suggestion model for |section|.
   virtual int GetSuggestionSelection(DialogSection section) = 0;
 

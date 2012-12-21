@@ -93,6 +93,22 @@ void AutofillDialogViews::Show() {
   // Ownership of |contents_| is handed off by this call. The ConstrainedWindow
   // will take care of deleting itself after calling DeleteDelegate().
   window_ = new ConstrainedWindowViews(controller_->web_contents(), this);
+  window_->GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void AutofillDialogViews::UpdateSection(DialogSection section) {
+  const DetailInputs& updated_inputs =
+      controller_->RequestedFieldsForSection(section);
+  DetailsGroup* group = GroupForSection(section);
+
+  for (DetailInputs::const_iterator iter = updated_inputs.begin();
+       iter != updated_inputs.end(); ++iter) {
+    TextfieldMap::iterator input = group->textfields.find(&(*iter));
+    if (input == group->textfields.end())
+      continue;
+
+    input->second->SetText(iter->autofilled_value);
+  }
 }
 
 int AutofillDialogViews::GetSuggestionSelection(DialogSection section) {
@@ -121,6 +137,10 @@ bool AutofillDialogViews::UseBillingForShipping() {
 
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
+}
+
+void AutofillDialogViews::WindowClosing() {
+  window_->GetFocusManager()->RemoveFocusChangeListener(this);
 }
 
 void AutofillDialogViews::DeleteDelegate() {
@@ -178,6 +198,38 @@ void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   UpdateDetailsGroupState(*group);
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
+
+void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
+                                          const string16& new_contents) {
+  // TODO(estade): work for not billing.
+  for (TextfieldMap::iterator iter = billing_.textfields.begin();
+       iter != billing_.textfields.end();
+       ++iter) {
+    if (iter->second == sender) {
+      controller_->UserEditedInput(iter->first,
+                                   GetWidget()->GetNativeView(),
+                                   sender->GetBoundsInScreen(),
+                                   new_contents);
+      break;
+    }
+  }
+}
+
+bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
+                                         const ui::KeyEvent& key_event) {
+  // TODO(estade): implement.
+  return false;
+}
+
+void AutofillDialogViews::OnWillChangeFocus(
+    views::View* focused_before,
+    views::View* focused_now) {
+  controller_->FocusMoved();
+}
+
+void AutofillDialogViews::OnDidChangeFocus(
+    views::View* focused_before,
+    views::View* focused_now) {}
 
 void AutofillDialogViews::InitChildViews() {
   contents_ = new views::View();
@@ -372,7 +424,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       layout->AddView(combobox);
 
       for (int i = 0; i < input_model->GetItemCount(); ++i) {
-        if (input.starting_value == input_model->GetItemAt(i)) {
+        if (input.autofilled_value == input_model->GetItemAt(i)) {
           combobox->SetSelectedIndex(i);
           break;
         }
@@ -380,7 +432,8 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
     } else {
       views::Textfield* field = new views::Textfield();
       field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
-      field->SetText(input.starting_value);
+      field->SetText(input.autofilled_value);
+      field->SetController(this);
       textfields->insert(std::make_pair(&input, field));
       layout->AddView(field);
     }

@@ -15,16 +15,25 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/gfx/native_widget_types.h"
 
+class AutofillPopupControllerImpl;
 class FormGroup;
 class GURL;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace autofill {
@@ -48,7 +57,7 @@ struct DetailInput {
   float expand_weight;
   // When non-empty, indicates the value that should be pre-filled into the
   // input.
-  string16 starting_value;
+  string16 autofilled_value;
 };
 
 // Sections of the dialog --- all fields that may be shown to the user fit under
@@ -71,7 +80,7 @@ typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
-class AutofillDialogController {
+class AutofillDialogController : public AutofillPopupDelegate {
  public:
   AutofillDialogController(
       content::WebContents* contents,
@@ -79,7 +88,7 @@ class AutofillDialogController {
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
       const base::Callback<void(const FormStructure*)>& callback);
-  ~AutofillDialogController();
+  virtual ~AutofillDialogController();
 
   void Show();
 
@@ -108,6 +117,25 @@ class AutofillDialogController {
   // whether the Autofill operation should be aborted.
   void ViewClosed(DialogAction action);
 
+  // Called by the view when the user changes the contents of a text field.
+  void UserEditedInput(const DetailInput* input,
+                       gfx::NativeView view,
+                       const gfx::Rect& content_bounds,
+                       const string16& field_contents);
+
+  // Called when focus has changed position within the view.
+  void FocusMoved();
+
+  // AutofillPopupDelegate implementation.
+  virtual void SelectAutofillSuggestion(int unique_id) OVERRIDE;
+  virtual bool DidAcceptAutofillSuggestion(const string16& value,
+                                           int unique_id,
+                                           unsigned index) OVERRIDE;
+  virtual void RemoveAutocompleteEntry(const string16& value) OVERRIDE;
+  virtual void RemoveAutofillProfileOrCreditCard(int unique_id) OVERRIDE;
+  virtual void ClearPreviewedForm() OVERRIDE;
+  virtual void ControllerDestroyed() OVERRIDE;
+
   content::WebContents* web_contents() { return contents_; }
 
  private:
@@ -123,11 +151,6 @@ class AutofillDialogController {
 
   // Initializes |suggested_email_| et al.
   void GenerateComboboxModels();
-
-  // Fills in all the DetailInputs structs with guessed values for
-  // starting_value. The guesses come from Autofill data, drawing from the most
-  // filled out AutofillProfile.
-  void PopulateInputsWithGuesses();
 
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.
@@ -145,6 +168,21 @@ class AutofillDialogController {
 
   // Gets the SuggestionsComboboxModel for |section|.
   SuggestionsComboboxModel* SuggestionsModelForSection(DialogSection section);
+
+  // Loads profiles that can suggest data for |type|. |field_contents| is the
+  // part the user has already typed. |inputs| is the rest of section.
+  // Identifying info is loaded into the last three outparams as well as
+  // |popup_guids_|.
+  void GetProfileSuggestions(
+      AutofillFieldType type,
+      const string16& field_contents,
+      const DetailInputs& inputs,
+      std::vector<string16>* popup_values,
+      std::vector<string16>* popup_labels,
+      std::vector<string16>* popup_icons);
+
+  // Returns the PersonalDataManager for |profile_|.
+  PersonalDataManager* GetManager();
 
   // The |profile| for |contents_|.
   Profile* const profile_;
@@ -177,6 +215,11 @@ class AutofillDialogController {
   SuggestionsComboboxModel suggested_cc_;
   SuggestionsComboboxModel suggested_billing_;
   SuggestionsComboboxModel suggested_shipping_;
+
+  // The GUIDs for the currently showing unverified profiles popup.
+  std::vector<PersonalDataManager::GUIDPair> popup_guids_;
+
+  AutofillPopupControllerImpl* popup_controller_;
 
   scoped_ptr<AutofillDialogView> view_;
 

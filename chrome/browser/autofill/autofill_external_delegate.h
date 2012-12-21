@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/autofill/autofill_popup_delegate.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
+#include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/password_form_fill_data.h"
@@ -47,7 +47,7 @@ class AutofillExternalDelegate
                                              AutofillManager* autofill_manager);
 
   // AutofillPopupDelegate implementation.
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id) OVERRIDE;
+  virtual void SelectAutofillSuggestion(int unique_id) OVERRIDE;
   virtual bool DidAcceptAutofillSuggestion(const string16& value,
                                            int unique_id,
                                            unsigned index) OVERRIDE;

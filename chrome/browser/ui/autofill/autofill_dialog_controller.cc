@@ -85,49 +85,13 @@ void FilterInputs(const FormStructure& form_structure,
   }
 }
 
-// Finds the instance of T which has the most data for filling in the inputs in
-// |all_inputs|. T should be a FormGroup type.
-template<class T> FormGroup* GetBestDataSource(
-    const std::vector<T*>& sources,
-    const DetailInputs* const* all_inputs,
-    size_t all_inputs_length) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-
-  int best_field_fill_count = 0;
-  FormGroup* best_source = NULL;
-
-  for (size_t i = 0; i < sources.size(); ++i) {
-    int field_fill_count = 0;
-
-    for (size_t j = 0; j < all_inputs_length; ++j) {
-      const DetailInputs& inputs = *all_inputs[j];
-      for (size_t k = 0; k < inputs.size(); ++k) {
-        if (!sources[i]->GetInfo(inputs[k].type, app_locale).empty())
-          field_fill_count++;
-      }
-    }
-
-    // TODO(estade): should there be a better tiebreaker?
-    if (field_fill_count > best_field_fill_count) {
-      best_field_fill_count = field_fill_count;
-      best_source = sources[i];
-    }
-  }
-
-  return best_source;
-}
-
-// Uses |group| to fill in the |starting_value| for all inputs in |all_inputs|
+// Uses |group| to fill in the |autofilled_value| for all inputs in |all_inputs|
 // (an out-param).
-void FillInputsFromFormGroup(FormGroup* group,
-                             DetailInputs** all_inputs,
-                             size_t all_inputs_length) {
+void FillInputFromFormGroup(FormGroup* group, DetailInputs* inputs) {
   const std::string app_locale = AutofillCountry::ApplicationLocale();
-  for (size_t i = 0; i < all_inputs_length; ++i) {
-    DetailInputs& inputs = *all_inputs[i];
-    for (size_t j = 0; j < inputs.size(); ++j) {
-      inputs[j].starting_value = group->GetInfo(inputs[j].type, app_locale);
-    }
+  for (size_t j = 0; j < inputs->size(); ++j) {
+    (*inputs)[j].autofilled_value =
+        group->GetInfo((*inputs)[j].type, app_locale);
   }
 }
 
@@ -154,12 +118,16 @@ AutofillDialogController::AutofillDialogController(
       form_structure_(form),
       source_url_(source_url),
       ssl_status_(ssl_status),
-      callback_(callback) {
+      callback_(callback),
+      popup_controller_(NULL) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
 }
 
-AutofillDialogController::~AutofillDialogController() {}
+AutofillDialogController::~AutofillDialogController() {
+  if (popup_controller_)
+    popup_controller_->Hide();
+}
 
 void AutofillDialogController::Show() {
   bool has_types = false;
@@ -226,9 +194,7 @@ void AutofillDialogController::Show() {
 
   // TODO(estade): make this actually check if it's a first run.
   bool first_run = true;
-  if (first_run)
-    PopulateInputsWithGuesses();
-  else
+  if (!first_run)
     GenerateComboboxModels();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
@@ -385,9 +351,95 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
   delete this;
 }
 
+void AutofillDialogController::UserEditedInput(
+    const DetailInput* input,
+    gfx::NativeView view,
+    const gfx::Rect& content_bounds,
+    const string16& field_contents) {
+  // TODO(estade): support all sections, not just billing.
+  std::vector<string16> popup_values, popup_labels, popup_icons;
+  std::vector<AutofillFieldType> field_types;
+  const DetailInputs& inputs = RequestedFieldsForSection(SECTION_BILLING);
+  field_types.reserve(inputs.size());
+  for (DetailInputs::const_iterator iter = inputs.begin();
+       iter != inputs.end(); ++iter) {
+    field_types.push_back(iter->type);
+  }
+  GetManager()->GetProfileSuggestions(input->type,
+                                      field_contents,
+                                      false,
+                                      field_types,
+                                      &popup_values,
+                                      &popup_labels,
+                                      &popup_icons,
+                                      &popup_guids_);
+
+  // TODO(estade): do we need separators and control rows like 'Clear
+  // Form'?
+  std::vector<int> popup_ids;
+  for (size_t i = 0; i < popup_guids_.size(); ++i) {
+    popup_ids.push_back(i);
+  }
+
+  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
+      popup_controller_, this, view, content_bounds);
+  popup_controller_->Show(popup_values,
+                          popup_labels,
+                          popup_icons,
+                          popup_ids);
+}
+
+void AutofillDialogController::FocusMoved() {
+  if (popup_controller_) {
+    popup_controller_->Hide();
+    ControllerDestroyed();
+  }
+}
+
+void AutofillDialogController::SelectAutofillSuggestion(int unique_id) {
+  // TODO(estade): implement.
+}
+
+bool AutofillDialogController::DidAcceptAutofillSuggestion(
+    const string16& value,
+    int unique_id,
+    unsigned index) {
+  const PersonalDataManager::GUIDPair& pair = popup_guids_[unique_id];
+  // TODO(estade): need to use the variant, |pair.second|.
+  AutofillProfile* profile = GetManager()->GetProfileByGUID(pair.first);
+  // TODO(estade): we shouldn't let this happen.
+  if (!profile)
+    return false;
+
+  // TODO(estade): implement for all sections.
+  FillInputFromFormGroup(profile, &requested_billing_fields_);
+  view_->UpdateSection(SECTION_BILLING);
+
+  // TODO(estade): not sure why it's necessary to do this explicitly.
+  popup_controller_->Hide();
+  ControllerDestroyed();
+  return true;
+}
+
+void AutofillDialogController::RemoveAutocompleteEntry(const string16& value) {
+  // TODO(estade): implement.
+}
+
+void AutofillDialogController::RemoveAutofillProfileOrCreditCard(
+    int unique_id) {
+  // TODO(estade): implement.
+}
+
+void AutofillDialogController::ClearPreviewedForm() {
+  // TODO(estade): implement.
+}
+
+void AutofillDialogController::ControllerDestroyed() {
+  popup_controller_ = NULL;
+}
+
 void AutofillDialogController::GenerateComboboxModels() {
-  PersonalDataManager* manager =
-      PersonalDataManagerFactory::GetForProfile(profile_);
+  PersonalDataManager* manager = GetManager();
   const std::vector<CreditCard*>& cards = manager->credit_cards();
   for (size_t i = 0; i < cards.size(); ++i) {
     suggested_cc_.AddItem(cards[i]->guid(), cards[i]->Label());
@@ -408,40 +460,13 @@ void AutofillDialogController::GenerateComboboxModels() {
   suggested_shipping_.AddItem("", ASCIIToUTF16("Enter new shipping"));
 }
 
-void AutofillDialogController::PopulateInputsWithGuesses() {
-  PersonalDataManager* manager =
-      PersonalDataManagerFactory::GetForProfile(profile_);
-
-  DetailInputs* profile_inputs[] = { &requested_email_fields_,
-                                     &requested_billing_fields_ };
-  const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
-  FormGroup* best_profile =
-      GetBestDataSource(profiles, profile_inputs, arraysize(profile_inputs));
-  if (best_profile) {
-    FillInputsFromFormGroup(best_profile,
-                            profile_inputs,
-                            arraysize(profile_inputs));
-  }
-
-  DetailInputs* cc_inputs[] = { &requested_cc_fields_ };
-  const std::vector<CreditCard*>& credit_cards = manager->credit_cards();
-  FormGroup* best_cc =
-      GetBestDataSource(credit_cards, cc_inputs, arraysize(cc_inputs));
-  if (best_cc) {
-    FillInputsFromFormGroup(best_cc,
-                            cc_inputs,
-                            arraysize(cc_inputs));
-  }
-}
-
 void AutofillDialogController::FillOutputForSectionWithComparator(
     DialogSection section, const InputFieldComparator& compare) {
   int suggestion_selection = view_->GetSuggestionSelection(section);
   SuggestionsComboboxModel* model = SuggestionsModelForSection(section);
+  PersonalDataManager* manager = GetManager();
   if (suggestion_selection < model->GetItemCount() - 1) {
     std::string guid = model->GetItemKeyAt(suggestion_selection);
-    PersonalDataManager* manager =
-        PersonalDataManagerFactory::GetForProfile(profile_);
     FormGroup* form_group = section == SECTION_CC ?
         static_cast<FormGroup*>(manager->GetCreditCardByGUID(guid)) :
         static_cast<FormGroup*>(manager->GetProfileByGUID(guid));
@@ -456,8 +481,6 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
     view_->GetUserInput(section, &output);
 
     // Save the info as new or edited data, then fill it into |form_structure_|.
-    PersonalDataManager* manager =
-        PersonalDataManagerFactory::GetForProfile(profile_);
     if (section == SECTION_CC) {
       CreditCard card;
       FillFormGroupFromOutputs(output, &card);
@@ -525,6 +548,10 @@ SuggestionsComboboxModel* AutofillDialogController::SuggestionsModelForSection(
 
   NOTREACHED();
   return NULL;
+}
+
+PersonalDataManager* AutofillDialogController::GetManager() {
+  return PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
 }  // namespace autofill

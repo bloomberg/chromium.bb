@@ -221,7 +221,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestionAtIndex(-1);
+  external_delegate_->SelectAutofillSuggestion(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
@@ -231,18 +231,18 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
 // Test that the ClearPreview IPC is only sent the form was being previewed
 // (i.e. it isn't autofilling a password).
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
-  // Called by SelectAutofillSuggestionAtIndex, add expectation to remove
+  // Called by SelectAutofillSuggestion, add expectation to remove
   // warning.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
 
   // Ensure selecting a new password entries or Autofill entries will
   // cause any previews to get cleared.
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestionAtIndex(
+  external_delegate_->SelectAutofillSuggestion(
       WebAutofillClient::MenuItemIDPasswordEntry);
 
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestionAtIndex(1);
+  external_delegate_->SelectAutofillSuggestion(1);
 }
 
 // Test that the popup is hidden once we are done editing the autofill field.

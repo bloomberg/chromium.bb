@@ -68,7 +68,7 @@ AutofillExternalDelegate::~AutofillExternalDelegate() {
     controller_->Hide();
 }
 
-void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
+void AutofillExternalDelegate::SelectAutofillSuggestion(int unique_id) {
   ClearPreviewedForm();
 
   // Only preview the data if it is a profile.

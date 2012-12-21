@@ -22,7 +22,7 @@ class MockAutofillExternalDelegate :
   MockAutofillExternalDelegate() : TestAutofillExternalDelegate(NULL, NULL) {};
   virtual ~MockAutofillExternalDelegate() {};
 
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id)
+  virtual void SelectAutofillSuggestion(int unique_id)
       OVERRIDE {}
   virtual void RemoveAutocompleteEntry(const string16& value) OVERRIDE {}
   virtual void RemoveAutofillProfileOrCreditCard(int unique_id) OVERRIDE {}

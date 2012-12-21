@@ -202,6 +202,7 @@
         'browser/ui/autofill/autofill_popup_controller.h',
         'browser/ui/autofill/autofill_popup_controller_impl.cc',
         'browser/ui/autofill/autofill_popup_controller_impl.h',
+        'browser/ui/autofill/autofill_popup_delegate.h',
         'browser/ui/autofill/autofill_popup_view.cc',
         'browser/ui/autofill/autofill_popup_view.h',
         'browser/ui/autofill/tab_autofill_manager_delegate.cc',

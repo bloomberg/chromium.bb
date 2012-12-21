@@ -7,12 +7,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "chrome/browser/autofill/autofill_popup_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/keyboard_listener.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 
+class AutofillPopupDelegate;
 class AutofillPopupView;
 
 namespace ui {

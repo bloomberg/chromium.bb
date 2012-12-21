@@ -44,6 +44,10 @@ class PersonalDataManager
       public ProfileKeyedService,
       public content::NotificationObserver {
  public:
+  // A pair of GUID and variant index. Represents a single FormGroup and a
+  // specific data variant.
+  typedef std::pair<std::string, size_t> GUIDPair;
+
   // WebDataServiceConsumer:
   virtual void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
@@ -124,6 +128,21 @@ class PersonalDataManager
   const std::vector<AutofillProfile*>& GetProfiles();
   virtual const std::vector<AutofillProfile*>& web_profiles() const;
   virtual const std::vector<CreditCard*>& credit_cards() const;
+
+  // Loads profiles that can suggest data for |type|. |field_contents| is the
+  // part the user has already typed. |field_is_autofilled| is true if the field
+  // has already been autofilled. |other_field_types| represents the rest of
+  // form. Identifying info is loaded into the last four outparams.
+  // TODO(estade): port AutofillManager and its test to use this function.
+  void GetProfileSuggestions(
+      AutofillFieldType type,
+      const string16& field_contents,
+      bool field_is_autofilled,
+      std::vector<AutofillFieldType> other_field_types,
+      std::vector<string16>* labels,
+      std::vector<string16>* sub_labels,
+      std::vector<string16>* icons,
+      std::vector<GUIDPair>* guid_pairs);
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same

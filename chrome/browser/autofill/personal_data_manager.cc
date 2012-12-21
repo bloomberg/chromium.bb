@@ -541,6 +541,87 @@ void PersonalDataManager::Refresh() {
   LoadCreditCards();
 }
 
+void PersonalDataManager::GetProfileSuggestions(
+    AutofillFieldType type,
+    const string16& field_contents,
+    bool field_is_autofilled,
+    std::vector<AutofillFieldType> other_field_types,
+    std::vector<string16>* labels,
+    std::vector<string16>* sub_labels,
+    std::vector<string16>* icons,
+    std::vector<GUIDPair>* guid_pairs) {
+  labels->clear();
+  sub_labels->clear();
+  icons->clear();
+  guid_pairs->clear();
+
+  const std::vector<AutofillProfile*>& profiles = GetProfiles();
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  std::vector<AutofillProfile*> matched_profiles;
+  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    AutofillProfile* profile = *iter;
+
+    // The value of the stored data for this field type in the |profile|.
+    std::vector<string16> multi_values;
+    profile->GetMultiInfo(type, app_locale, &multi_values);
+
+    for (size_t i = 0; i < multi_values.size(); ++i) {
+      if (!field_is_autofilled) {
+        // Suggest data that starts with what the user has typed.
+        if (!multi_values[i].empty() &&
+            StartsWith(multi_values[i], field_contents, false)) {
+          matched_profiles.push_back(profile);
+          labels->push_back(multi_values[i]);
+          guid_pairs->push_back(GUIDPair(profile->guid(), i));
+        }
+      } else {
+        if (multi_values[i].empty())
+          continue;
+
+        string16 profile_value_lower_case(
+            StringToLowerASCII(multi_values[i]));
+        string16 field_value_lower_case(StringToLowerASCII(field_contents));
+        // Phone numbers could be split in US forms, so field value could be
+        // either prefix or suffix of the phone.
+        bool matched_phones = false;
+        if (type == PHONE_HOME_NUMBER && !field_value_lower_case.empty() &&
+            (profile_value_lower_case.find(field_value_lower_case) !=
+             string16::npos)) {
+          matched_phones = true;
+        }
+
+        // Suggest variants of the profile that's already been filled in.
+        if (matched_phones ||
+            profile_value_lower_case == field_value_lower_case) {
+          for (size_t j = 0; j < multi_values.size(); ++j) {
+            if (!multi_values[j].empty()) {
+              labels->push_back(multi_values[j]);
+              guid_pairs->push_back(GUIDPair(profile->guid(), j));
+            }
+          }
+
+          // We've added all the values for this profile so move on to the
+          // next.
+          break;
+        }
+      }
+    }
+  }
+
+  if (!field_is_autofilled) {
+    AutofillProfile::CreateInferredLabels(
+        &matched_profiles, &other_field_types,
+        type, 1, sub_labels);
+  } else {
+    // No sub-labels for previously filled fields.
+    sub_labels->resize(labels->size());
+  }
+
+  // No icons for profile suggestions.
+  icons->resize(labels->size());
+}
+
 PersonalDataManager::PersonalDataManager()
     : browser_context_(NULL),
       is_data_loaded_(false),

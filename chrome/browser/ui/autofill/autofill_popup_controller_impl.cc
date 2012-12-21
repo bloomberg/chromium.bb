@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/webkit_resources.h"
@@ -367,7 +368,7 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
   selected_line_ = selected_line;
 
   if (selected_line_ != kNoSelection) {
-    delegate_->SelectAutofillSuggestionAtIndex(
+    delegate_->SelectAutofillSuggestion(
         autofill_unique_ids_[selected_line_]);
   }
 }
