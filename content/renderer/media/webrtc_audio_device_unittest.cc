@@ -246,7 +246,8 @@ TEST_F(WebRTCAudioDeviceTest, Construct) {
 // webrtc::VoEExternalMedia implementation to hijack the output audio and
 // verify that streaming starts correctly.
 // Disabled when running headless since the bots don't have the required config.
-TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
+// Flaky, http://crbug.com/167299 .
+TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
   if (!has_output_devices_) {
     LOG(WARNING) << "No output device detected.";
     return;
@@ -393,7 +394,8 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
 
 // Uses WebRtcAudioDeviceImpl to play a local wave file.
 // Disabled when running headless since the bots don't have the required config.
-TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
+// Flaky, http://crbug.com/167298 .
+TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
   if (!has_output_devices_) {
     LOG(WARNING) << "No output device detected.";
     return;
