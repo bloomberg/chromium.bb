@@ -234,8 +234,12 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
       (GetMenuItemAt(i)->y() == vis_bounds.y()) ? i : i - 1);
 
   // If the first item isn't entirely visible, make it visible, otherwise make
-  // the next/previous one entirely visible.
+  // the next/previous one entirely visible. If enough wasn't scrolled to show
+  // any new rows, then just scroll the amount so that smooth scrolling using
+  // the trackpad is possible.
   int delta = abs(e.offset() / ui::MouseWheelEvent::kWheelDelta);
+  if (delta == 0)
+    return OnScroll(0, e.offset());
   for (bool scroll_up = (e.offset() > 0); delta != 0; --delta) {
     int scroll_target;
     if (scroll_up) {
