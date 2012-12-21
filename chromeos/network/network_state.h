@@ -43,7 +43,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
  private:
   friend class NetworkStateHandler;
-  friend class NetworkChangeNotifierChromeosUpdateTest;
 
   // Called by NetworkStateHandler when the ip config changes.
   void set_ip_address(const std::string& ip_address) {
