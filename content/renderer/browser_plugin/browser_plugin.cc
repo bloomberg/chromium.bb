@@ -106,8 +106,7 @@ BrowserPlugin::BrowserPlugin(
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
-      current_damage_buffer_(NULL),
-      pending_damage_buffer_(NULL),
+      damage_buffer_sequence_id_(0),
       resize_ack_received_(true),
       sad_guest_(NULL),
       guest_crashed_(false),
@@ -136,10 +135,8 @@ BrowserPlugin::BrowserPlugin(
 }
 
 BrowserPlugin::~BrowserPlugin() {
-  if (current_damage_buffer_)
-    FreeDamageBuffer(&current_damage_buffer_);
-  if (pending_damage_buffer_)
-    FreeDamageBuffer(&pending_damage_buffer_);
+  current_damage_buffer_.reset();
+  pending_damage_buffer_.reset();
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
@@ -148,10 +145,8 @@ BrowserPlugin::~BrowserPlugin() {
 }
 
 void BrowserPlugin::Cleanup() {
-  if (current_damage_buffer_)
-    FreeDamageBuffer(&current_damage_buffer_);
-  if (pending_damage_buffer_)
-    FreeDamageBuffer(&pending_damage_buffer_);
+  current_damage_buffer_.reset();
+  pending_damage_buffer_.reset();
 }
 
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -218,9 +213,8 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
     create_guest_params.persist_storage = persist_storage_;
     create_guest_params.focused = ShouldGuestBeFocused();
     create_guest_params.visible = visible_;
-    pending_damage_buffer_ =
-        GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
-                                      &create_guest_params.resize_guest_params);
+    GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
+                                  &create_guest_params.resize_guest_params);
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_CreateGuest(
             render_view_routing_id_,
@@ -271,8 +265,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState() {
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  pending_damage_buffer_ =
-      GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
+  GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
   resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetAutoSize(
       render_view_routing_id_,
@@ -292,33 +285,18 @@ void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
   TriggerEvent(kEventSizeChanged, &props);
 }
 
-#if defined(OS_MACOSX)
-bool BrowserPlugin::DamageBufferValid(
-    const TransportDIB::Id& damage_buffer_id) {
-  return TransportDIB::is_valid_id(damage_buffer_id);
+// static
+bool BrowserPlugin::UsesDamageBuffer(
+    const BrowserPluginMsg_UpdateRect_Params& params) {
+  return params.damage_buffer_sequence_id != 0;
 }
 
-bool BrowserPlugin::DamageBufferMatches(
-    const TransportDIB* damage_buffer,
-    const TransportDIB::Id& other_damage_buffer_id) {
-  if (!damage_buffer)
+bool BrowserPlugin::UsesPendingDamageBuffer(
+    const BrowserPluginMsg_UpdateRect_Params& params) {
+  if (!pending_damage_buffer_.get())
     return false;
-  return damage_buffer->id() == other_damage_buffer_id;
+  return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
-#else
-bool BrowserPlugin::DamageBufferValid(
-    const TransportDIB::Handle& damage_buffer_handle) {
-  return TransportDIB::is_valid_handle(damage_buffer_handle);
-}
-
-bool BrowserPlugin::DamageBufferMatches(
-    const TransportDIB* damage_buffer,
-    const TransportDIB::Handle& other_damage_buffer_handle) {
-  if (!damage_buffer)
-    return false;
-  return damage_buffer->handle() == other_damage_buffer_handle;
-}
-#endif
 
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
   DCHECK(render_view_);
@@ -446,14 +424,12 @@ void BrowserPlugin::OnUpdateRect(
   // damage buffer then we know the guest will no longer use the current
   // damage buffer. At this point, we drop the current damage buffer, and
   // mark the pending damage buffer as the current damage buffer.
-  if (DamageBufferMatches(pending_damage_buffer_,
-                          params.damage_buffer_identifier)) {
+  if (UsesPendingDamageBuffer(params)) {
     SwapDamageBuffers();
     use_new_damage_buffer = true;
   }
 
-  if (params.is_resize_ack ||
-      !DamageBufferValid(params.damage_buffer_identifier))
+  if (params.is_resize_ack || !UsesDamageBuffer(params))
     resize_ack_received_ = true;
 
   if ((!auto_size_ &&
@@ -468,9 +444,8 @@ void BrowserPlugin::OnUpdateRect(
       // If we have no pending damage buffer, then the guest has not caught up
       // with the BrowserPlugin container. We now tell the guest about the new
       // container size.
-      pending_damage_buffer_ =
-          GetDamageBufferWithSizeParams(&auto_size_params,
-                                        &resize_guest_params);
+      GetDamageBufferWithSizeParams(&auto_size_params,
+                                    &resize_guest_params);
     }
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
@@ -503,8 +478,8 @@ void BrowserPlugin::OnUpdateRect(
     }
   }
 
-  // No more work to do since there is no damage buffer.
-  if (!DamageBufferValid(params.damage_buffer_identifier))
+  // No more work to do since the guest is no longer using a damage buffer.
+  if (!UsesDamageBuffer(params))
     return;
 
   // If we are seeing damage buffers, HW compositing should be turned off.
@@ -531,7 +506,7 @@ void BrowserPlugin::OnUpdateRect(
   for (unsigned i = 0; i < params.copy_rects.size(); i++) {
     backing_store_->PaintToBackingStore(params.bitmap_rect,
                                         params.copy_rects,
-                                        current_damage_buffer_);
+                                        current_damage_buffer_->memory());
   }
   // Invalidate the container.
   // If the BrowserPlugin is scheduled to be deleted, then container_ will be
@@ -900,8 +875,7 @@ void BrowserPlugin::updateGeometry(
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  pending_damage_buffer_ =
-      PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+  PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
   resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
@@ -909,29 +883,12 @@ void BrowserPlugin::updateGeometry(
       params));
 }
 
-void BrowserPlugin::FreeDamageBuffer(TransportDIB** damage_buffer) {
-  DCHECK(damage_buffer);
-  DCHECK(*damage_buffer);
-#if defined(OS_MACOSX)
-  // We don't need to (nor should we) send ViewHostMsg_FreeTransportDIB
-  // message to the browser to free the damage buffer since we manage the
-  // damage buffer ourselves.
-  delete *damage_buffer;
-#else
-  RenderProcess::current()->FreeTransportDIB(*damage_buffer);
-  *damage_buffer = NULL;
-#endif
-}
-
 void BrowserPlugin::SwapDamageBuffers() {
-  if (current_damage_buffer_)
-    FreeDamageBuffer(&current_damage_buffer_);
-  current_damage_buffer_ = pending_damage_buffer_;
-  pending_damage_buffer_ = NULL;
+  current_damage_buffer_.reset(pending_damage_buffer_.release());
   resize_ack_received_ = true;
 }
 
-TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
+void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
     const gfx::Size& view_size) {
   params->view_size = view_size;
@@ -939,7 +896,7 @@ TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
 
   // In HW compositing mode, we do not need a damage buffer.
   if (compositing_enabled_)
-    return NULL;
+    return;
 
   const size_t stride = skia::PlatformCanvasStrideForWidth(view_size.width());
   // Make sure the size of the damage buffer is at least four bytes so that we
@@ -951,59 +908,66 @@ TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
                                    GetDeviceScaleFactor() *
                                    GetDeviceScaleFactor()));
 
-  TransportDIB* new_damage_buffer = CreateTransportDIB(size);
-  params->damage_buffer_id = new_damage_buffer->id();
-#if defined(OS_MACOSX)
-  // |damage_buffer_id| is not enough to retrieve the damage buffer (on browser
-  // side) since we don't let the browser cache the damage buffer. We need a
-  // handle to the damage buffer for this.
-  params->damage_buffer_handle = new_damage_buffer->handle();
-#endif
-#if defined(OS_WIN)
   params->damage_buffer_size = size;
-#endif
-  return new_damage_buffer;
+  pending_damage_buffer_.reset(
+      CreateDamageBuffer(size, &params->damage_buffer_handle));
+  if (!pending_damage_buffer_.get())
+    NOTREACHED();
+  params->damage_buffer_sequence_id = ++damage_buffer_sequence_id_;
 }
 
-TransportDIB* BrowserPlugin::GetDamageBufferWithSizeParams(
+void BrowserPlugin::GetDamageBufferWithSizeParams(
     BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
     BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params) {
   PopulateAutoSizeParameters(auto_size_params);
   gfx::Size view_size = auto_size_params->enable ? auto_size_params->max_size :
       gfx::Size(width(), height());
   if (view_size.IsEmpty())
-    return NULL;
+    return;
   resize_ack_received_ = false;
-  return PopulateResizeGuestParameters(resize_guest_params, view_size);
+  PopulateResizeGuestParameters(resize_guest_params, view_size);
 }
 
-TransportDIB* BrowserPlugin::CreateTransportDIB(const size_t size) {
-#if defined(OS_MACOSX)
-  TransportDIB::Handle handle;
-  // On OSX we don't let the browser manage the transport dib. We manage the
-  // deletion of the dib in FreeDamageBuffer().
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(
-      size,
-      false,  // cache in browser.
-      &handle);
-  TransportDIB* new_damage_buffer = NULL;
-  if (browser_plugin_manager()->Send(msg) && handle.fd >= 0)
-    new_damage_buffer = TransportDIB::Map(handle);
-#else
-  TransportDIB* new_damage_buffer =
-      RenderProcess::current()->CreateTransportDIB(size);
-#endif
-  if (!new_damage_buffer)
-    NOTREACHED() << "Unable to create damage buffer";
-#if defined(OS_WIN)
-  // Windows does not map the buffer by default.
-  CHECK(new_damage_buffer->Map());
-#endif
-  DCHECK(new_damage_buffer->memory());
-  // Insert the magic word.
-  *static_cast<unsigned int*>(new_damage_buffer->memory()) = 0xdeadbeef;
-  return new_damage_buffer;
+#if defined(OS_POSIX)
+base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
+    const size_t size,
+    base::SharedMemoryHandle* damage_buffer_handle) {
+  scoped_ptr<base::SharedMemory> shared_buf(
+      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
+          size).release());
+
+  if (shared_buf.get()) {
+    if (shared_buf->Map(size)) {
+      // Insert the magic word.
+      *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;
+      shared_buf->ShareToProcess(base::GetCurrentProcessHandle(),
+                                 damage_buffer_handle);
+      return shared_buf.release();
+    }
+  }
+  NOTREACHED();
+  return NULL;
 }
+#elif defined(OS_WIN)
+base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
+    const size_t size,
+    base::SharedMemoryHandle* damage_buffer_handle) {
+  scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory());
+
+  if (!shared_buf->CreateAndMapAnonymous(size)) {
+    NOTREACHED() << "Buffer allocation failed";
+    return NULL;
+  }
+
+  // Insert the magic word.
+  *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;
+  if (shared_buf->ShareToProcess(base::GetCurrentProcessHandle(),
+                                 damage_buffer_handle))
+      return shared_buf.release();
+  NOTREACHED();
+  return NULL;
+}
+#endif
 
 void BrowserPlugin::updateFocus(bool focused) {
   if (plugin_focused_ == focused)

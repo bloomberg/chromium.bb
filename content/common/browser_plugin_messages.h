@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
+#include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/public/common/common_param_traits.h"
@@ -36,19 +37,13 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
-  // An identifier to the new buffer to use to transport damage to the embedder
-  // renderer process.
-  IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_id)
-#if defined(OS_MACOSX)
-  // On OSX, a handle to the new buffer is used to map the transport dib since
-  // we don't let browser manage the dib.
-  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_handle)
-#endif
-#if defined(OS_WIN)
-  // The size of the damage buffer because this information is not available
-  // on Windows.
-  IPC_STRUCT_MEMBER(int, damage_buffer_size)
-#endif
+  // The sequence number used to uniquely identify the damage buffer for the
+  // current container size.
+  IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)
+  // The handle to use to map the damage buffer in the browser process.
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, damage_buffer_handle)
+  // The size of the damage buffer.
+  IPC_STRUCT_MEMBER(size_t, damage_buffer_size)
   // The new size of the guest view area.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
   // Indicates the scale factor of the embedder WebView.
@@ -80,13 +75,8 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
-  // The bitmap to be painted into the view at the locations specified by
-  // update_rects.
-#if defined(OS_MACOSX)
-  IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_identifier)
-#else
-  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_identifier)
-#endif
+  // The sequence number of the damage buffer used by the browser process.
+  IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)
 
   // The position and size of the bitmap.
   IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)

@@ -38,7 +38,7 @@ class BrowserPluginBackingStore {
   void PaintToBackingStore(
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
-      TransportDIB* dib);
+      void* bitmap);
 
   void ScrollBackingStore(const gfx::Vector2d& delta,
                           const gfx::Rect& clip_rect,

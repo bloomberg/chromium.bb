@@ -49,10 +49,8 @@ BrowserPluginGuest::BrowserPluginGuest(
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
-#if defined(OS_WIN)
+      damage_buffer_sequence_id_(0),
       damage_buffer_size_(0),
-      remote_damage_buffer_handle_(0),
-#endif
       damage_buffer_scale_factor_(1.0f),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
@@ -194,50 +192,34 @@ WebContents* BrowserPluginGuest::GetWebContents() {
   return web_contents();
 }
 
-TransportDIB* BrowserPluginGuest::GetDamageBufferFromEmbedder(
+base::SharedMemory* BrowserPluginGuest::GetDamageBufferFromEmbedder(
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  TransportDIB* damage_buffer = NULL;
 #if defined(OS_WIN)
-  // On Windows we need to duplicate the handle from the remote process.
-  HANDLE section;
-  DuplicateHandle(embedder_web_contents_->GetRenderProcessHost()->GetHandle(),
-                  params.damage_buffer_id.handle,
-                  GetCurrentProcess(),
-                  &section,
-                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
-                  FALSE,
-                  0);
-  damage_buffer = TransportDIB::Map(section);
-#elif defined(OS_MACOSX)
-  // On OSX, we need the handle to map the transport dib.
-  damage_buffer = TransportDIB::Map(params.damage_buffer_handle);
-#elif defined(OS_ANDROID)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id);
+  base::ProcessHandle handle =
+      embedder_web_contents_->GetRenderProcessHost()->GetHandle();
+  scoped_ptr<base::SharedMemory> shared_buf(
+      new base::SharedMemory(params.damage_buffer_handle, false, handle));
 #elif defined(OS_POSIX)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id.shmkey);
-#endif  // defined(OS_POSIX)
-  DCHECK(damage_buffer);
-  return damage_buffer;
+  scoped_ptr<base::SharedMemory> shared_buf(
+      new base::SharedMemory(params.damage_buffer_handle, false));
+#endif
+  if (!shared_buf->Map(params.damage_buffer_size)) {
+    NOTREACHED();
+    return NULL;
+  }
+  return shared_buf.release();
 }
 
 void BrowserPluginGuest::SetDamageBuffer(
-    TransportDIB* damage_buffer,
-#if defined(OS_WIN)
-    int damage_buffer_size,
-    TransportDIB::Handle remote_handle,
-#endif
-    const gfx::Size& damage_view_size,
-    float scale_factor) {
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  damage_buffer_.reset(GetDamageBufferFromEmbedder(params));
   // Sanity check: Verify that we've correctly shared the damage buffer memory
   // between the embedder and browser processes.
-  DCHECK(*static_cast<unsigned int*>(damage_buffer->memory()) == 0xdeadbeef);
-  damage_buffer_.reset(damage_buffer);
-#if defined(OS_WIN)
-  damage_buffer_size_ = damage_buffer_size;
-  remote_damage_buffer_handle_ = remote_handle;
-#endif
-  damage_view_size_ = damage_view_size;
-  damage_buffer_scale_factor_ = scale_factor;
+  DCHECK(*static_cast<unsigned int*>(damage_buffer_->memory()) == 0xdeadbeef);
+  damage_buffer_sequence_id_ = params.damage_buffer_sequence_id;
+  damage_buffer_size_ = params.damage_buffer_size;
+  damage_view_size_ = params.view_size;
+  damage_buffer_scale_factor_ = params.scale_factor;
 }
 
 gfx::Point BrowserPluginGuest::GetScreenCoordinates(
@@ -465,20 +447,13 @@ void BrowserPluginGuest::OnResizeGuest(
         RenderWidgetHostImpl::From(web_contents()->GetRenderViewHost());
     render_widget_host->ResetSizeAndRepaintPendingFlags();
   }
-  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
-    // Invalid transport dib, so just resize the WebContents.
+  if (!base::SharedMemory::IsHandleValid(params.damage_buffer_handle)) {
+    // Invalid damage buffer, so just resize the WebContents.
     if (!params.view_size.IsEmpty())
       web_contents()->GetView()->SizeContents(params.view_size);
     return;
   }
-  TransportDIB* damage_buffer = GetDamageBufferFromEmbedder(params);
-  SetDamageBuffer(damage_buffer,
-#if defined(OS_WIN)
-                  params.damage_buffer_size,
-                  params.damage_buffer_id.handle,
-#endif
-                  params.view_size,
-                  params.scale_factor);
+  SetDamageBuffer(params);
   web_contents()->GetView()->SizeContents(params.view_size);
 }
 
@@ -629,11 +604,7 @@ void BrowserPluginGuest::OnUpdateRect(
 
   // HW accelerated case, acknowledge resize only
   if (!params.needs_ack) {
-#if defined(OS_MACOSX)
-    relay_params.damage_buffer_identifier = 0;
-#else
-    relay_params.damage_buffer_identifier = TransportDIB::DefaultHandleValue();
-#endif
+    relay_params.damage_buffer_sequence_id = 0;
     SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
         embedder_routing_id(),
         instance_id(),
@@ -655,14 +626,14 @@ void BrowserPluginGuest::OnUpdateRect(
     TransportDIB* dib = render_view_host->GetProcess()->
         GetTransportDIB(params.bitmap);
     if (dib) {
+      size_t guest_damage_buffer_size =
 #if defined(OS_WIN)
-      size_t guest_damage_buffer_size = params.bitmap_rect.width() *
-                                        params.bitmap_rect.height() * 4;
-      size_t embedder_damage_buffer_size = damage_buffer_size_;
+          params.bitmap_rect.width() *
+          params.bitmap_rect.height() * 4;
 #else
-      size_t guest_damage_buffer_size = dib->size();
-      size_t embedder_damage_buffer_size = damage_buffer_->size();
+          dib->size();
 #endif
+      size_t embedder_damage_buffer_size = damage_buffer_size_;
       void* guest_memory = dib->memory();
       void* embedder_memory = damage_buffer_->memory();
       size_t size = std::min(guest_damage_buffer_size,
@@ -670,15 +641,7 @@ void BrowserPluginGuest::OnUpdateRect(
       memcpy(embedder_memory, guest_memory, size);
     }
   }
-#if defined(OS_MACOSX)
-  relay_params.damage_buffer_identifier = damage_buffer_->id();
-#elif defined(OS_WIN)
-  // On Windows, the handle used locally differs from the handle received from
-  // the embedder process, since we duplicate the remote handle.
-  relay_params.damage_buffer_identifier = remote_damage_buffer_handle_;
-#else
-  relay_params.damage_buffer_identifier = damage_buffer_->handle();
-#endif
+  relay_params.damage_buffer_sequence_id = damage_buffer_sequence_id_;
   relay_params.bitmap_rect = params.bitmap_rect;
   relay_params.scroll_delta = params.scroll_delta;
   relay_params.scroll_rect = params.scroll_rect;

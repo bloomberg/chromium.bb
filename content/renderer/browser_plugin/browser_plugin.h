@@ -201,16 +201,16 @@ class CONTENT_EXPORT BrowserPlugin :
   void TriggerEvent(const std::string& event_name,
                     std::map<std::string, base::Value*>* props);
 
-  // Creates and maps transport dib. Overridden in tests.
-  virtual TransportDIB* CreateTransportDIB(const size_t size);
-  // Frees up the damage buffer. Overridden in tests.
-  virtual void FreeDamageBuffer(TransportDIB** damage_buffer);
+  // Creates and maps a shared damage buffer.
+  virtual base::SharedMemory* CreateDamageBuffer(
+      const size_t size,
+      base::SharedMemoryHandle* shared_memory_handle);
   // Swaps out the |current_damage_buffer_| with the |pending_damage_buffer_|.
   void SwapDamageBuffers();
 
   // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state and
-  // returns the newly allocated TransportDIB.
-  TransportDIB* PopulateResizeGuestParameters(
+  // allocates a new |pending_damage_buffer_| if in software rendering mode.
+  void PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
       const gfx::Size& view_size);
 
@@ -220,7 +220,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Populates both AutoSize and ResizeGuest parameters based on the current
   // autosize state.
-  TransportDIB* GetDamageBufferWithSizeParams(
+  void GetDamageBufferWithSizeParams(
       BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
       BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params);
 
@@ -230,16 +230,15 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the BrowserPlugin that guest has changed its size in autosize mode.
   void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
 
-#if defined(OS_MACOSX)
-  bool DamageBufferValid(const TransportDIB::Id& damage_buffer_id);
-  bool DamageBufferMatches(const TransportDIB* damage_buffer,
-                           const TransportDIB::Id& other_damage_buffer_id);
-#else
-  bool DamageBufferValid(const TransportDIB::Handle& damage_buffer_handle);
-  bool DamageBufferMatches(
-      const TransportDIB* damage_buffer,
-      const TransportDIB::Handle& other_damage_buffer_handle);
-#endif
+  // Indicates whether a damage buffer was used by the guest process for the
+  // provided |params|.
+  static bool UsesDamageBuffer(
+      const BrowserPluginMsg_UpdateRect_Params& params);
+
+  // Indicates whether the |pending_damage_buffer_| was used to copy over pixels
+  // given the provided |params|.
+  bool UsesPendingDamageBuffer(
+      const BrowserPluginMsg_UpdateRect_Params& params);
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -275,8 +274,9 @@ class CONTENT_EXPORT BrowserPlugin :
   WebKit::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
   scoped_ptr<BrowserPluginBackingStore> backing_store_;
-  TransportDIB* current_damage_buffer_;
-  TransportDIB* pending_damage_buffer_;
+  scoped_ptr<base::SharedMemory> current_damage_buffer_;
+  scoped_ptr<base::SharedMemory> pending_damage_buffer_;
+  uint32 damage_buffer_sequence_id_;
   bool resize_ack_received_;
   gfx::Rect plugin_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.

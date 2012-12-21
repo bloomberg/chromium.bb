@@ -144,23 +144,19 @@ TEST_F(BrowserPluginTest, InitialResize) {
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
   ASSERT_TRUE(browser_plugin);
   // Now the browser plugin is expecting a UpdateRect resize.
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
+  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
 
   // Send the BrowserPlugin an UpdateRect equal to its container size with
   // the same damage buffer. That should clear |pending_damage_buffer_|.
   BrowserPluginMsg_UpdateRect_Params update_rect_params;
-  update_rect_params.damage_buffer_identifier =
-#if defined(OS_MACOSX)
-        browser_plugin->pending_damage_buffer_->id();
-#else
-        browser_plugin->pending_damage_buffer_->handle();
-#endif
+  update_rect_params.damage_buffer_sequence_id =
+      browser_plugin->damage_buffer_sequence_id_;
   update_rect_params.view_size = gfx::Size(640, 480);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
   BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
-  EXPECT_FALSE(browser_plugin->pending_damage_buffer_);
+  EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
 }
 
 // Verify that the src attribute on the browser plugin works as expected.
@@ -231,7 +227,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
       static_cast<MockBrowserPlugin*>(
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
   ASSERT_TRUE(browser_plugin);
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
+  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Send an UpdateRect to the BrowserPlugin to make it use the pending damage
   // buffer.
   {
@@ -240,18 +236,14 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(640, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    // By sending the damage buffer handle back to BrowserPlugin on UpdateRect,
-    // then the BrowserPlugin knows that the browser process has received and
-    // has begun to use the pending_damage_buffer.
-    update_rect_params.damage_buffer_identifier =
-#if defined(OS_MACOSX)
-        browser_plugin->pending_damage_buffer_->id();
-#else
-        browser_plugin->pending_damage_buffer_->handle();
-#endif
+    // By sending |damage_buffer_sequence_id| back to BrowserPlugin on
+    // UpdateRect, then the BrowserPlugin knows that the browser process has
+    // received and has begun to use the |pending_damage_buffer_|.
+    update_rect_params.damage_buffer_sequence_id =
+        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
-    EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_);
+    EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_.get());
   }
 
   browser_plugin_manager()->sink().ClearMessages();
@@ -278,7 +270,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   EXPECT_EQ(480, params.view_size.height());
   // This indicates that the BrowserPlugin has sent out a previous resize
   // request but has not yet received an UpdateRect for that request.
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
+  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
 
   {
     // We send a stale UpdateRect to the BrowserPlugin.
@@ -286,17 +278,13 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(641, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    update_rect_params.damage_buffer_identifier =
-#if defined(OS_MACOSX)
-        browser_plugin->pending_damage_buffer_->id();
-#else
-        browser_plugin->pending_damage_buffer_->handle();
-#endif
+    update_rect_params.damage_buffer_sequence_id =
+        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // This tells us that the BrowserPlugin is still expecting another
     // UpdateRect with the most recent size.
-    EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
+    EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   }
   // Send the BrowserPlugin another UpdateRect, but this time with a size
   // that matches the size of the container.
@@ -305,17 +293,13 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(643, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    update_rect_params.damage_buffer_identifier =
-#if defined(OS_MACOSX)
-        browser_plugin->pending_damage_buffer_->id();
-#else
-        browser_plugin->pending_damage_buffer_->handle();
-#endif
+    update_rect_params.damage_buffer_sequence_id =
+        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // The BrowserPlugin has finally received an UpdateRect that satisifes
     // its current size, and so it is happy.
-    EXPECT_FALSE(browser_plugin->pending_damage_buffer_);
+    EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
   }
 }
 
@@ -811,7 +795,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_);
+  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Disable autosize. AutoSize state will not be sent to the guest until
   // the guest has responded to the last resize request.
   ExecuteJavaScript(kDisableAutoSize);
@@ -825,12 +809,8 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   // Send the BrowserPlugin an UpdateRect equal to its |max_size| with
   // the same damage buffer.
   BrowserPluginMsg_UpdateRect_Params update_rect_params;
-  update_rect_params.damage_buffer_identifier =
-#if defined(OS_MACOSX)
-        browser_plugin->pending_damage_buffer_->id();
-#else
-        browser_plugin->pending_damage_buffer_->handle();
-#endif
+  update_rect_params.damage_buffer_sequence_id =
+      browser_plugin->damage_buffer_sequence_id_;
   update_rect_params.view_size = gfx::Size(1337, 1338);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;

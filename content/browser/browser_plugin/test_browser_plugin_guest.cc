@@ -264,31 +264,18 @@ void TestBrowserPluginGuest::OnStop(int instance_id) {
 }
 
 void TestBrowserPluginGuest::SetDamageBuffer(
-    TransportDIB* damage_buffer,
-#if defined(OS_WIN)
-    int damage_buffer_size,
-    TransportDIB::Handle remote_handle,
-#endif
-    const gfx::Size& damage_view_size,
-    float scale_factor) {
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   ++damage_buffer_call_count_;
-  last_damage_buffer_size_ = damage_view_size;
+  last_damage_buffer_size_ = params.view_size;
 
   if (waiting_for_damage_buffer_with_size_ &&
-      expected_damage_buffer_size_ == damage_view_size &&
+      expected_damage_buffer_size_ == params.view_size &&
       damage_buffer_message_loop_runner_) {
     damage_buffer_message_loop_runner_->Quit();
     waiting_for_damage_buffer_with_size_ = false;
   }
 
-  BrowserPluginGuest::SetDamageBuffer(
-      damage_buffer,
-#if defined(OS_WIN)
-      damage_buffer_size,
-      remote_handle,
-#endif
-      damage_view_size,
-      scale_factor);
+  BrowserPluginGuest::SetDamageBuffer(params);
 }
 
 void TestBrowserPluginGuest::DidStopLoading(

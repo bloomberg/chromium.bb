@@ -34,7 +34,7 @@ BrowserPluginBackingStore::~BrowserPluginBackingStore() {
 void BrowserPluginBackingStore::PaintToBackingStore(
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    TransportDIB* dib) {
+    void* bitmap) {
   if (bitmap_rect.IsEmpty())
     return;
 
@@ -48,7 +48,7 @@ void BrowserPluginBackingStore::PaintToBackingStore(
       height <= 0 || height > kMaxSize)
     return;
 
-  if (!dib)
+  if (!bitmap)
     return;
 
   SkPaint copy_paint;
@@ -56,7 +56,7 @@ void BrowserPluginBackingStore::PaintToBackingStore(
 
   SkBitmap sk_bitmap;
   sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  sk_bitmap.setPixels(dib->memory());
+  sk_bitmap.setPixels(bitmap);
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& pixel_copy_rect = gfx::ToEnclosingRect(
         gfx::ScaleRect(copy_rects[i], scale_factor_));
