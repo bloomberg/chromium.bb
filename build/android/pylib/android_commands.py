@@ -618,9 +618,7 @@ class AndroidCommands(object):
           default_build_type)
       if not os.path.exists(md5sum_path):
         md5sum_path = '%s/Release/md5sum_bin' % cmd_helper.OutDirectory.get()
-        if not os.path.exists(md5sum_path):
-          print >> sys.stderr, 'Please build md5sum.'
-          sys.exit(1)
+        assert os.path.exists(md5sum_path), 'Please build md5sum.'
       command = 'push %s %s' % (md5sum_path, MD5SUM_DEVICE_PATH)
       assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
       self._md5sum_path = md5sum_path
