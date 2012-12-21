@@ -96,9 +96,8 @@ const char* kIntVersionTests[] = {
   // "intversion-close-between-events.html",
   "intversion-close-in-oncomplete.html",
   "intversion-close-in-upgradeneeded.html",
-  // TODO(jsbell): Renamed in http://wkrev.com/138268, re-enable when rolled.
-  //"delete-in-upgradeneeded-close-in-open-success.html",
-  //"delete-in-upgradeneeded-close-in-versionchange.html",
+  "delete-in-upgradeneeded-close-in-open-success.html",
+  "delete-in-upgradeneeded-close-in-versionchange.html",
   "intversion-gated-on-delete.html",
   "intversion-long-queue.html",
   "intversion-omit-parameter.html",
