@@ -306,8 +306,7 @@ bool CheckAndResolveLocale(const std::string& locale,
     }
   }
 
-  // Google updater uses no, iw and en for our nb, he, and en-US, and
-  // Android uses iw-*, in-*, and ji-*.  We need to map them to our codes.
+  // Google updater uses no, tl, iw and en for our nb, fil, he, and en-US.
   struct {
     const char* source;
     const char* dest;
@@ -316,8 +315,6 @@ bool CheckAndResolveLocale(const std::string& locale,
       {"tl", "fil"},
       {"iw", "he"},
       {"en", "en-US"},
-      {"in", "id"},
-      {"ji", "yi"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(alias_map); ++i) {

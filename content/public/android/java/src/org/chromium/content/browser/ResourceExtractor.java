@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.PathUtils;
 
 import java.io.File;
@@ -22,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
@@ -70,7 +70,9 @@ public class ResourceExtractor {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             HashSet<String> filenames = (HashSet<String>) prefs.getStringSet(
                     PAK_FILENAMES, new HashSet<String>());
-            String currentLanguage = Locale.getDefault().getLanguage();
+            String currentLocale = LocaleUtils.getDefaultLocale();
+            String currentLanguage = currentLocale.split("-", 2)[0];
+
             if (prefs.getString(LAST_LANGUAGE, "").equals(currentLanguage)
                     &&  filenames.size() >= sMandatoryPaks.length) {
                 boolean filesPresent = true;
@@ -95,17 +97,6 @@ public class ResourceExtractor {
                 if (p.length() > 0) p.append('|');
                 // As well as the minimum required set of .paks above, we'll also add all .paks that
                 // we have for the user's currently selected language.
-
-                // Android uses non-standard language codes for Indonesian, Hebrew, and Yiddish:
-                // http://developer.android.com/reference/java/util/Locale.html. Correct these codes
-                // so that we unpack the correct .pak file (see crbug.com/136933).
-                if (currentLanguage.equals("in")) {
-                    currentLanguage = "id";
-                } else if (currentLanguage.equals("iw")) {
-                    currentLanguage = "he";
-                } else if (currentLanguage.equals("ji")) {
-                    currentLanguage = "yi";
-                }
 
                 p.append(currentLanguage);
                 p.append("(-\\w+)?\\.pak");

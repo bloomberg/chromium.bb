@@ -10,6 +10,7 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/url_constants.h"
+#include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/path_service.h"
 #include "content/public/browser/access_token_store.h"
@@ -89,8 +90,6 @@ void AwContentBrowserClient::RenderProcessHostCreated(
 
 std::string AwContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
-  // TODO(boliu): Call to icu here? Compotentize character_encoding.cc?
-  NOTIMPLEMENTED();
   return alias_name;
 }
 
@@ -101,16 +100,20 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string AwContentBrowserClient::GetApplicationLocale() {
-  // TODO(boliu): Read Android system locale.
-  NOTIMPLEMENTED();
-  return "en-US";
+  return base::android::GetDefaultLocale();
 }
 
 std::string AwContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
-  // TODO(boliu): Read Android system locale.
-  NOTIMPLEMENTED();
-  return "en-GB,en-US,en";
+  // Start with the currnet locale.
+  std::string langs = GetApplicationLocale();
+
+  // If we're not en-US, add in en-US which will be
+  // used with a lower q-value.
+  if (StringToLowerASCII(langs) != "en-us") {
+    langs += ",en-US";
+  }
+  return langs;
 }
 
 gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {

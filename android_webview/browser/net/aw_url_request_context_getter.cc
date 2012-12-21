@@ -89,9 +89,8 @@ void AwURLRequestContextGetter::Init() {
       content::GetContentClient()->browser()->GetAcceptLangs(
           browser_context_)));
 
-  // TODO(boliu): Values from chrome/app/resources/locale_settings_en-GB.xtb
   builder.set_accept_charset(
-      net::HttpUtil::GenerateAcceptCharsetHeader("ISO-8859-1"));
+      net::HttpUtil::GenerateAcceptCharsetHeader("utf-8"));
 
   url_request_context_.reset(builder.Build());
 
