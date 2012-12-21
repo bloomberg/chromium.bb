@@ -58,11 +58,11 @@ class BluetoothDevice {
     ERROR_UNKNOWN,
     ERROR_INPROGRESS,
     ERROR_FAILED,
-    ERROR_CONNECT_FAILED,
     ERROR_AUTH_FAILED,
     ERROR_AUTH_CANCELED,
     ERROR_AUTH_REJECTED,
     ERROR_AUTH_TIMEOUT,
+    ERROR_UNSUPPORTED_DEVICE
   };
 
   // Interface for observing changes from bluetooth devices.

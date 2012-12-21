@@ -112,8 +112,22 @@ void BluetoothOptionsHandler::GetLocalizedValues(
         IDS_OPTIONS_SETTINGS_BLUETOOTH_STOP_DISCOVERY_FAILED },
     { "bluetoothChangePowerFailed",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED },
+    { "bluetoothConnectUnknownError",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNKNOWN_ERROR },
+    { "bluetoothConnectInProgress",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS },
     { "bluetoothConnectFailed",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED },
+    { "bluetoothConnectAuthFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_FAILED },
+    { "bluetoothConnectAuthCanceled",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_CANCELED },
+    { "bluetoothConnectAuthRejected",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_REJECTED },
+    { "bluetoothConnectAuthTimeout",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_TIMEOUT },
+    { "bluetoothConnectUnsupportedDevice",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE },
     { "bluetoothDisconnectFailed",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED },
     { "bluetoothForgetFailed",
@@ -299,10 +313,38 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
 void BluetoothOptionsHandler::ConnectError(
     const std::string& address,
     device::BluetoothDevice::ConnectErrorCode error_code) {
+  const char* error_name = NULL;
+
   DVLOG(1) << "Failed to connect to device: " << address;
-  ReportError("bluetoothConnectFailed", address);
-  // TODO(deymo): Choose the right error message based on error_code and pass it
-  // to ReportError.
+  switch (error_code) {
+    case device::BluetoothDevice::ERROR_UNKNOWN:
+      error_name = "bluetoothConnectUnknownError";
+      break;
+    case device::BluetoothDevice::ERROR_INPROGRESS:
+      error_name = "bluetoothConnectInProgress";
+      break;
+    case device::BluetoothDevice::ERROR_FAILED:
+      error_name = "bluetoothConnectFailed";
+      break;
+    case device::BluetoothDevice::ERROR_AUTH_FAILED:
+      error_name = "bluetoothConnectAuthFailed";
+      break;
+    case device::BluetoothDevice::ERROR_AUTH_CANCELED:
+      error_name = "bluetoothConnectAuthCanceled";
+      break;
+    case device::BluetoothDevice::ERROR_AUTH_REJECTED:
+      error_name = "bluetoothConnectAuthRejected";
+      break;
+    case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
+      error_name = "bluetoothConnectAuthTimeout";
+      break;
+    case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
+      error_name = "bluetoothConnectUnsupportedDevice";
+      break;
+  }
+  // Report an error only if there's an error to report.
+  if (error_name)
+    ReportError(error_name, address);
 }
 
 void BluetoothOptionsHandler::DisconnectError(const std::string& address) {

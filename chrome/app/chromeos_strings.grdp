@@ -661,8 +661,29 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED">
     Failed to change the power state of the Bluetooth adapter.
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNKNOWN_ERROR">
+    An unknown error occurred trying to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
+    Connection to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>" still in progress.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
     Failed to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_FAILED">
+    Authentication failed while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_CANCELED">
+    Authentication canceled while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_REJECTED">
+    Authentication code rejected while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_TIMEOUT">
+    Authentication timeout while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE">
+    Unsupported Bluetooth device: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
     Failed to disconnect from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
