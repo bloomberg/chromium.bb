@@ -16,14 +16,16 @@ using base::android::ConvertJavaStringToUTF16;
 
 namespace android_webview {
 
-AwHttpAuthHandler::AwHttpAuthHandler(
-    AwLoginDelegate* login_delegate, net::AuthChallengeInfo* auth_info) :
-    login_delegate_(make_scoped_refptr(login_delegate)),
-    host_(auth_info->challenger.host()),
-    realm_(auth_info->realm) {
+AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
+                                     net::AuthChallengeInfo* auth_info,
+                                     bool first_auth_attempt)
+    : login_delegate_(make_scoped_refptr(login_delegate)),
+      host_(auth_info->challenger.host()),
+      realm_(auth_info->realm) {
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(
-      Java_AwHttpAuthHandler_create(env, reinterpret_cast<jint>(this)));
+      Java_AwHttpAuthHandler_create(
+          env, reinterpret_cast<jint>(this), first_auth_attempt));
 }
 
 AwHttpAuthHandler:: ~AwHttpAuthHandler() {
@@ -52,8 +54,10 @@ void AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
 
 // static
 AwHttpAuthHandlerBase* AwHttpAuthHandlerBase::Create(
-    AwLoginDelegate* login_delegate, net::AuthChallengeInfo* auth_info) {
-  return new AwHttpAuthHandler(login_delegate, auth_info);
+    AwLoginDelegate* login_delegate,
+    net::AuthChallengeInfo* auth_info,
+    bool first_auth_attempt) {
+  return new AwHttpAuthHandler(login_delegate, auth_info, first_auth_attempt);
 }
 
 bool RegisterAwHttpAuthHandler(JNIEnv* env) {

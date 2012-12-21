@@ -11,6 +11,7 @@ import org.chromium.base.JNINamespace;
 public class AwHttpAuthHandler {
 
     private int mNativeAwHttpAuthHandler;
+    private boolean mFirstAttempt;
 
     public void proceed(String username, String password) {
         nativeProceed(mNativeAwHttpAuthHandler, username, password);
@@ -20,13 +21,18 @@ public class AwHttpAuthHandler {
         nativeCancel(mNativeAwHttpAuthHandler);
     }
 
-    @CalledByNative
-    public static AwHttpAuthHandler create(int nativeAwAuthHandler) {
-        return new AwHttpAuthHandler(nativeAwAuthHandler);
+    public boolean isFirstAttempt() {
+         return mFirstAttempt;
     }
 
-    private AwHttpAuthHandler(int nativeAwHttpAuthHandler) {
+    @CalledByNative
+    public static AwHttpAuthHandler create(int nativeAwAuthHandler, boolean firstAttempt) {
+        return new AwHttpAuthHandler(nativeAwAuthHandler, firstAttempt);
+    }
+
+    private AwHttpAuthHandler(int nativeAwHttpAuthHandler, boolean firstAttempt) {
         mNativeAwHttpAuthHandler = nativeAwHttpAuthHandler;
+        mFirstAttempt = firstAttempt;
     }
 
     private native void nativeProceed(int nativeAwHttpAuthHandler,

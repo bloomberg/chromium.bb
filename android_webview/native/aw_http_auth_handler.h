@@ -30,7 +30,8 @@ namespace android_webview {
 class AwHttpAuthHandler : public AwHttpAuthHandlerBase {
  public:
   AwHttpAuthHandler(AwLoginDelegate* login_delegate,
-                    net::AuthChallengeInfo* auth_info);
+                    net::AuthChallengeInfo* auth_info,
+                    bool first_auth_attempt);
   virtual ~AwHttpAuthHandler();
 
   // from AwHttpAuthHandler

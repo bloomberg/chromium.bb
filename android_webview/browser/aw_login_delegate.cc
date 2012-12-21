@@ -4,8 +4,9 @@
 
 #include "android_webview/browser/aw_login_delegate.h"
 
-#include "base/logging.h"
 #include "base/android/jni_android.h"
+#include "base/logging.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -22,6 +23,17 @@ using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
 
+namespace {
+const char* kAuthAttemptsKey = "android_webview_auth_attempts";
+
+class UrlRequestAuthAttemptsData : public base::SupportsUserData::Data {
+ public:
+  UrlRequestAuthAttemptsData() : auth_attempts_(0) { }
+  int auth_attempts_;
+};
+
+}  // namespace
+
 namespace android_webview {
 
 AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
@@ -30,16 +42,22 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
       request_(request),
       render_process_id_(0),
       render_view_id_(0) {
-    // TODO(benm): We need to track whether the last auth request for this host
-    // was successful (for HttpAuthHandler.useHttpAuthUsernamePassword()). We
-    // could attach that to the URLRequests SupportsUserData::Data and bubble
-    // that up to Java for the purpose of the API.
     ResourceRequestInfo::GetRenderViewForRequest(
         request, &render_process_id_, &render_view_id_);
 
+    UrlRequestAuthAttemptsData* count =
+        static_cast<UrlRequestAuthAttemptsData*>(
+            request->GetUserData(kAuthAttemptsKey));
+
+    if (count == NULL) {
+      count = new UrlRequestAuthAttemptsData();
+      request->SetUserData(kAuthAttemptsKey, count);
+    }
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&AwLoginDelegate::HandleHttpAuthRequestOnUIThread,
-                   make_scoped_refptr(this)));
+                   make_scoped_refptr(this), (count->auth_attempts_ == 0)));
+    count->auth_attempts_++;
 }
 
 AwLoginDelegate::~AwLoginDelegate() {
@@ -60,10 +78,12 @@ void AwLoginDelegate::Cancel() {
                  make_scoped_refptr(this)));
 }
 
-void AwLoginDelegate::HandleHttpAuthRequestOnUIThread() {
+void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
+    bool first_auth_attempt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  aw_http_auth_handler_.reset(AwHttpAuthHandlerBase::Create(this, auth_info_));
+  aw_http_auth_handler_.reset(AwHttpAuthHandlerBase::Create(
+      this, auth_info_, first_auth_attempt));
 
   RenderViewHost* render_view_host = RenderViewHost::FromID(
       render_process_id_, render_view_id_);

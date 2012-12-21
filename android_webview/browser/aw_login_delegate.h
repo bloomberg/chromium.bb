@@ -32,7 +32,7 @@ class AwLoginDelegate :
 
  private:
   virtual ~AwLoginDelegate();
-  void HandleHttpAuthRequestOnUIThread();
+  void HandleHttpAuthRequestOnUIThread(bool first_auth_attempt);
   void CancelOnIOThread();
   void ProceedOnIOThread(const string16& user, const string16& password);
 
