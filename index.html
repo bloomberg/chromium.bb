@@ -321,6 +321,63 @@ line has a tooltip set.  However, when the first tooltip shows up, and you move
 the mouse away from it, it doesn't move the tooltip to the element where the
 mouse is.</p>
 
+<h3><a name="bugfix-unifiedTextChecking">bugfix/unifiedTextChecking</a> (Edward Christie)</h3>
+<p>TODO</p>
+
+<h3><a name="feature-after_copycut">feature/after_copycut</a> (James McIlhargey)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch fires two new events <code>aftercut</code> and
+<code>aftercopy</code> which have read/write access to the clipboard
+representation.  This allows us to intercept the state of the clipboard after
+WebKit has populated it and make any tweaks.  This is useful for selectively
+overriding some copy/paste behaviour with minimal JS code.</p>
+
+<h3><a name="feature-allowImageLoadCancel">feature/allowImageLoadCancel</a> (Alex Buch; D32427286)</h3>
+<p>TODO</p>
+
+<h3><a name="feature-can_supply_proxy_service">feature/can_supply_proxy_service</a> (Angelos Evripiotis)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>We needed extra control over the proxy server configuration that's used by
+the <code>SimpleResourceLoaderBridge</code>.  This branch makes it possible to
+supply a custom <code>net::ProxyConfigService</code> so we can provide our own
+settings</p>
+
+<h3><a name="feature-colorDocumentMarkers">feature/colorDocumentMarkers</a> (Shezan Baig; D32415776)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>We needed extra control of the color of the document markers (i.e. the
+squiggly lines for spelling errors etc).  WebKit hardcodes spelling errors to
+red, grammar errors to green.  This branch makes it possible for us to specify
+the color from the document.</p>
+<p>TODO: make this a CSS property instead of a DOM attribute.</p>
+
+<h3><a name="feature-expose-request-context">feature/expose-request-context</a> (Imran Haider)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>We needed support for listing/reading/writing on the local filesystem.  For
+the local filesystem writer, we need a reference to the blob storage controller
+so that we can get the blob data.  A reference to the blob storage controller
+can be retrieved from the <code>TestShellRequestContext</code>.  This commit
+makes it possible for us to get a reference to the
+<code>TestShellRequestContext</code> from the
+<code>SimpleResourceLoaderBridge</code>.</p>
+
+<h3><a name="feature-fontSmoothing">feature/fontSmoothing</a> (Calum Robinson; D36278764)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch adds an API to control the font smoothing selection because the
+product relies on its own custom setting and not the OS default.</p>
+
+<h3><a name="feature-indentOutdentBB">feature/indentOutdentBB</a> (Shezan Baig; D36805707, D32177325)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch adds <code>IndentBB</code> and <code>OutdentBB</code> commands
+that make indenting and outdenting of list items behave closer to how it works
+in MS Word.</p>
+<p>TODO: The code for this is very messy, it needs to be cleaned up.</p>
+
 <div id="retiredblock">
 <h1>Retired Branches</h1>
 
