@@ -158,7 +158,7 @@ def main(argv):
                     "checkout utilizing manifest groups.")
   (options, args) = parser.parse_args(argv)
 
-  repo_dir = git.FindRepoDir()
+  repo_dir = git.FindRepoDir(os.getcwd())
   if not repo_dir:
     parser.error("This script must be invoked from within a repository "
                  "checkout.")

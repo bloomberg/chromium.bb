@@ -42,7 +42,7 @@ class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
     assert(os.path.exists(self.repo_root))
 
     os.chdir(self.repo_root)
-    repo_root = git.FindRepoDir()
+    repo_root = git.FindRepoDir(os.getcwd())
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
 
 
