@@ -4,6 +4,7 @@
 "
 " Adds a "Compile this file" function, using ninja. On Mac, binds Cmd-k to
 " this command. On Windows, Ctrl-F7 (which is the same as the VS default).
+" On Linux, <Leader>o, which is \o by default ("o"=creates .o files)
 "
 " Adds a "Build this target" function, using ninja. This is not bound
 " to any key by default, but can be used via the :CrBuild command.
