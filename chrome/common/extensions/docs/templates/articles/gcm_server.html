@@ -1,0 +1,134 @@
+<meta name="doc-family" content="apps">
+<h1>API Reference for GCM service</h1>
+
+<p>
+The <a href="cloudMessaging.html">Google Cloud Messaging for Chrome</a> service
+sends messages to users of a Chrome packaged app.
+The service handles all aspects of queueing and delivering messages.
+</p>
+
+<p>Messages must conform to these constraints:</p>
+
+<ul>
+	<li><strong>Maximum payload length:</strong> 256 bytes</li>
+	<li><strong>Maxium subchannels:</strong> 4</li>
+	<li><strong>Maximum API requests per day:</strong> 10,000</li>
+</ul>
+
+<h2 id="insert">Insert method</h2>
+
+<p>
+The <code>gcm_for_chrome.messages.insert</code>
+method sends a message to your app or extension user.
+</p>
+
+<h2 id="authorization">Authentication</h3>
+
+<p>
+Authentication is required to send messages to users.
+<a href="https://developers.google.com/accounts/docs/OAuth2WebServer">Using OAuth 2.0 for Web Server Applications</a>
+describes this in greater detail.
+</p>
+
+<h3 id="url">URL</h3>
+
+<p>
+The URL used to obtain access to the GCM for Chrome service:
+<code>https://accounts.google.com/o/auth2/auth</code>
+</p>.
+
+<h3 id="parameters">Required parameters</h3>
+<p>
+The required set of query string parameters are:
+</p>
+
+<table>
+  <tr>
+    <th scope="col">Parameter</th>
+    <th scope="col">Description</th>
+  </tr>
+  <tr>
+    <td><code>client_id</code></td>
+    <td>Indicates the app or extension client that is making the request.
+    Obtained from the <a href="https://code.google.com/apis/console/">Google APIs console</a>;
+    the parameter value must exactly match the client ID shown
+    in the console.
+    </td>
+  </tr>
+  <tr>
+    <td><code>client_secret</code></td>
+    <td>The client secret obtained during registration in
+    	<a href="https://code.google.com/apis/console/">Google APIs console</a>.</td>
+  </tr>
+  <tr>
+    <td><code>refresh_token</code></td>
+    <td>Token associated with app or extension used to obtain new access token.</td>
+  </tr>
+  <tr>
+    <td><code>grant_type</code></td>
+    <td>The <code>authorization_code</code> value of <code>refresh_token</code>.</td>
+  </tr>
+</table>
+
+<h3 id="response">Response</h3>
+
+The authorization response includes:
+
+<table>
+  <tr>
+    <th scope="col">Field</th>
+    <th scope="col">Description</th>
+  </tr>
+  <tr>
+    <td><code>access_token</code></td>
+    <td>Valid token required to access the GCM for Chrome service.</td>
+  </tr>
+  <tr>
+    <td><code>expires_in</code></td>
+    <td>Time until access token expires in seconds.</td>
+  </tr>
+  <tr>
+    <td><code>token_type</code></td>
+    <td>The returned token type, <code>Bearer</code>.</td>
+  </tr>
+</table>
+
+<h2 id="request">Message request</h2>
+
+<h3 id="http">HTTP request</h3>
+
+<p><code>Post https://www.googleapis.com/gcm_for_chrome/v1/messages</code></p>
+
+<h3 id="body">Request body</h3>
+
+In the request body, supply:
+
+<table>
+  <tr>
+    <th scope="col">Parameter</th>
+    <th scope="col">Description</th>
+  </tr>
+  <tr>
+    <td><code>Content-Type</code></td>
+    <td>The request body content type, <code>application/json</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Authorization</code></td>
+    <td><code>Bearer</code> HTTP header including access token, for example,
+    <code>Bearer 1/fFBGRNJru1FQd44AzqT3Zg</code>.</td>
+  </tr>
+  <tr>
+    <td><code>channelId</code></td>
+    <td>The app or extension channel ID required to push messages back to the app or extension.</td>
+  </tr>
+  <tr>
+    <td><code>subchannelId</code></td>
+    <td>The subchannel to send the message on; only values 0-3 are valid.</td>
+  </tr>
+  <tr>
+    <td><code>paylooad</code></td>
+    <td>The message body (up to 256 bytes).</td>
+  </tr>
+</table>
+
+<p class="backtotop"><a href="#top">Back to top</a></p>

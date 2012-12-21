@@ -60,6 +60,20 @@
         ]
       },
       {
+        "title": "Notifications",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Google Cloud Messaging for Chrome",
+            "fileName": "cloudMessaging.html"
+          },
+          {
+            "title": "Desktop Notifications",
+            "fileName": "notifications.html"
+          }
+        ]
+      },
+      {
         "title": "Advanced Technologies",
         "toggleable": true,
         "items": [
