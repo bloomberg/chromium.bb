@@ -456,15 +456,6 @@ void ChromotingInstance::SetCursorShape(
     return;
   }
 
-  int cursor_total_bytes = width * height * kBytesPerPixel;
-  if (cursor_shape.data().size() < cursor_total_bytes) {
-    VLOG(2) << "Not enough cursor data. Expected "
-            << cursor_total_bytes << " bytes for a "
-            << width << "x" << height << " cursor. Only received "
-            << cursor_shape.data().size() << " bytes";
-    return;
-  }
-
   if (pp::ImageData::GetNativeImageDataFormat() !=
       PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
     VLOG(2) << "Unable to set cursor shape - non-native image format";
