@@ -66,6 +66,15 @@ static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
   }
 }
 
+bool LoadAudiosesDll() {
+  static const wchar_t* const kAudiosesDLL =
+      L"%WINDIR%\\system32\\audioses.dll";
+
+  wchar_t path[MAX_PATH] = {0};
+  ExpandEnvironmentStringsW(kAudiosesDLL, path, arraysize(path));
+  return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
+}
+
 // Scoped PROPVARIANT class for automatically freeing a COM PROPVARIANT
 // structure at the end of a scope.
 class ScopedPropertyVariant {
@@ -103,7 +112,17 @@ bool CoreAudioUtil::IsSupported() {
   // Microsoft does not plan to make the Core Audio APIs available for use
   // with earlier versions of Windows, including Microsoft Windows Server 2003,
   // Windows XP, Windows Millennium Edition, Windows 2000, and Windows 98.
-  return (base::win::GetVersion() >= base::win::VERSION_VISTA);
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+
+  // The audio core APIs are implemented in the Mmdevapi.dll and Audioses.dll
+  // system components.
+  // Dependency Walker shows that it is enough to verify possibility to load
+  // the Audioses DLL since it depends on Mmdevapi.dll.
+  // See http://crbug.com/166397 why this extra step is required to guarantee
+  // Core Audio support.
+  static bool g_audioses_dll_available = LoadAudiosesDll();
+  return g_audioses_dll_available;
 }
 
 base::TimeDelta CoreAudioUtil::RefererenceTimeToTimeDelta(REFERENCE_TIME time) {
