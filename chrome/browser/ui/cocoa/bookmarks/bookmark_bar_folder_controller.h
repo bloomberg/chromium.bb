@@ -29,8 +29,8 @@
   scoped_nsobject<BookmarkButton> parentButton_;
 
   // Bookmark bar folder controller chains are torn down in two ways:
-  // 1. Clicking "outside" the folder (see use of
-  // CrApplicationEventHookProtocol in the bookmark bar controller).
+  // 1. Clicking "outside" the folder (see use of the NSEvent local event
+  //    monitor in the bookmark bar controller).
   // 2. Engaging a different folder (via hover over or explicit click).
   //
   // In either case, the BookmarkButtonControllerProtocol method

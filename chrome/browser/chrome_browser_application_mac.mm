@@ -230,9 +230,7 @@ void SwizzleInit() {
 
 - (id)init {
   SwizzleInit();
-  if ((self = [super init])) {
-    eventHooks_.reset([[NSMutableArray alloc] init]);
-  }
+  self = [super init];
 
   // Sanity check to alert if overridden methods are not supported.
   DCHECK([NSApplication
@@ -412,14 +410,6 @@ void SwizzleInit() {
   return [super sendAction:anAction to:aTarget from:sender];
 }
 
-- (void)addEventHook:(id<CrApplicationEventHookProtocol>)handler {
-  [eventHooks_ addObject:handler];
-}
-
-- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)handler {
-  [eventHooks_ removeObject:handler];
-}
-
 - (BOOL)isHandlingSendEvent {
   return handlingSendEvent_;
 }
@@ -430,9 +420,6 @@ void SwizzleInit() {
 
 - (void)sendEvent:(NSEvent*)event {
   base::mac::ScopedSendingEvent sendingEventScoper;
-  for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
-    [handler hookForEvent:event];
-  }
   [super sendEvent:event];
 }
 

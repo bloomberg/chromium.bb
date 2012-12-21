@@ -16,19 +16,11 @@
 #import "base/message_pump_mac.h"
 #include "base/synchronization/lock.h"
 
-// Event hooks must implement this protocol.
-@protocol CrApplicationEventHookProtocol
-- (void)hookForEvent:(NSEvent*)theEvent;
-@end
-
 @interface BrowserCrApplication : NSApplication<CrAppProtocol,
                                                 CrAppControlProtocol> {
  @private
   BOOL handlingSendEvent_;
   BOOL cyclingWindows_;
-
-  // Array of objects implementing CrApplicationEventHookProtocol.
-  scoped_nsobject<NSMutableArray> eventHooks_;
 
   // App's previous key windows. Most recent key window is last.
   // Does not include current key window. Elements of this vector are weak
@@ -43,17 +35,6 @@
 // application, i.e., begins a process which may lead to termination. This
 // method cancels that process.
 - (void)cancelTerminate:(id)sender;
-
-// Add or remove an event hook to be called for every sendEvent:
-// that the application receives.  These handlers are called before
-// the normal [NSApplication sendEvent:] call is made.
-
-// This is not a good alternative to a nested event loop.  It should
-// be used only when normal event logic and notification breaks down
-// (e.g. when clicking outside a canBecomeKey:NO window to "switch
-// context" out of it).
-- (void)addEventHook:(id<CrApplicationEventHookProtocol>)hook;
-- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)hook;
 
 // Keep track of the previous key windows and whether windows are being
 // cycled for use in determining whether a Panel window can become the
