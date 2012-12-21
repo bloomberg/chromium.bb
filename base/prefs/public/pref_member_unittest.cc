@@ -56,6 +56,12 @@ class GetPrefValueHelper
     event.Wait();
   }
 
+  // The thread must be stopped on the main thread. GetPrefValueHelper being
+  // ref-counted, the destructor can be called from any thread.
+  void StopThread() {
+    pref_thread_.Stop();
+  }
+
   bool value() { return value_; }
 
  private:
@@ -313,4 +319,6 @@ TEST(PrefMemberTest, MoveToThread) {
 
   helper->FetchValue();
   EXPECT_TRUE(helper->value());
+
+  helper->StopThread();
 }
