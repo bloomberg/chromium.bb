@@ -157,16 +157,15 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
     }
 }
 
-void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder, RenderPassIdHashMap& renderPassesById)
+void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder)
 {
     TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
     HISTOGRAM_COUNTS("Renderer4.renderPassCount", renderPassesInDrawOrder.size());
 
-    const RenderPass* rootRenderPass = renderPassesInDrawOrder.back();
+    const RenderPass* rootRenderPass = renderPassesInDrawOrder.last();
     DCHECK(rootRenderPass);
 
     DrawingFrame frame;
-    frame.renderPassesById = &renderPassesById;
     frame.rootRenderPass = rootRenderPass;
     frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damage_rect : rootRenderPass->output_rect;
     frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
@@ -177,7 +176,6 @@ void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder, RenderPa
     finishDrawingFrame(frame);
 
     renderPassesInDrawOrder.clear();
-    renderPassesById.clear();
 }
 
 gfx::RectF DirectRenderer::computeScissorRectForRenderPass(const DrawingFrame& frame)

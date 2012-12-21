@@ -74,10 +74,7 @@ class CC_EXPORT RenderPass {
               gfx::RectF damage_rect,
               const gfx::Transform& transform_to_root_target,
               bool has_transparent_background,
-              bool has_occlusion_from_outside_target_surface,
-              const WebKit::WebFilterOperations& filters,
-              const skia::RefPtr<SkImageFilter>& filter,
-              const WebKit::WebFilterOperations& background_filters);
+              bool has_occlusion_from_outside_target_surface);
 
   // Uniquely identifies the render pass in the compositor's current frame.
   Id id;
@@ -96,16 +93,6 @@ class CC_EXPORT RenderPass {
   // If true, then there may be pixels in the render pass' texture that are not
   // complete, since they are occluded.
   bool has_occlusion_from_outside_target_surface;
-
-  // Deprecated post-processing filters, applied to the pixels in the render
-  // pass' texture.
-  WebKit::WebFilterOperations filters;
-  // Post-processing filter applied to the pixels in the render pass' texture.
-  skia::RefPtr<SkImageFilter> filter;
-
-  // Post-processing filters, applied to the pixels showing through the
-  // background of the render pass, from behind it.
-  WebKit::WebFilterOperations background_filters;
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
@@ -139,8 +126,8 @@ struct hash<cc::RenderPass::Id> {
 }
 
 namespace cc {
-typedef std::vector<RenderPass*> RenderPassList;
-typedef ScopedPtrHashMap<RenderPass::Id, RenderPass> RenderPassIdHashMap;
+typedef ScopedPtrVector<RenderPass> RenderPassList;
+typedef base::hash_map<RenderPass::Id, RenderPass*> RenderPassIdHashMap;
 } // namespace cc
 
 #endif  // CC_RENDER_PASS_H_

@@ -11,12 +11,14 @@
 #include "cc/draw_quad.h"
 #include "cc/render_pass.h"
 #include "cc/resource_provider.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
 namespace cc {
 
 class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
  public:
   static scoped_ptr<RenderPassDrawQuad> Create();
+  virtual ~RenderPassDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -24,7 +26,10 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               bool is_replica,
               ResourceProvider::ResourceId mask_resource_id,
               gfx::Rect contents_changed_since_last_frame,
-              gfx::RectF mask_uv_rect);
+              gfx::RectF mask_uv_rect,
+              const WebKit::WebFilterOperations& filters,
+              skia::RefPtr<SkImageFilter> filter,
+              const WebKit::WebFilterOperations& background_filters);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -35,7 +40,10 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               bool is_replica,
               ResourceProvider::ResourceId mask_resource_id,
               gfx::Rect contents_changed_since_last_frame,
-              gfx::RectF mask_uv_rect);
+              gfx::RectF mask_uv_rect,
+              const WebKit::WebFilterOperations& filters,
+              skia::RefPtr<SkImageFilter> filter,
+              const WebKit::WebFilterOperations& background_filters);
 
   scoped_ptr<RenderPassDrawQuad> Copy(
       const SharedQuadState* copied_shared_quad_state,
@@ -47,7 +55,18 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   gfx::Rect contents_changed_since_last_frame;
   gfx::RectF mask_uv_rect;
 
+  // Deprecated post-processing filters, applied to the pixels in the render
+  // pass' texture.
+  WebKit::WebFilterOperations filters;
+  // Post-processing filter applied to the pixels in the render pass' texture.
+  skia::RefPtr<SkImageFilter> filter;
+
+  // Post-processing filters, applied to the pixels showing through the
+  // background of the render pass, from behind it.
+  WebKit::WebFilterOperations background_filters;
+
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
+
 private:
   RenderPassDrawQuad();
 };

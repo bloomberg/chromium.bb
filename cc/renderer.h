@@ -52,8 +52,8 @@ public:
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const;
 
     // This passes ownership of the render passes to the renderer. It should
-    // consume them, and empty the list and hash map.
-    virtual void drawFrame(RenderPassList&, RenderPassIdHashMap&) = 0;
+    // consume them, and empty the list.
+    virtual void drawFrame(RenderPassList&) = 0;
 
     // waits for rendering to finish
     virtual void finish() = 0;

@@ -95,7 +95,6 @@ private:
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
     scoped_ptr<ScopedResource> drawBackgroundFilters(
         DrawingFrame&, const RenderPassDrawQuad*,
-        const WebKit::WebFilterOperations&,
         const gfx::Transform& contentsDeviceTransform,
         const gfx::Transform& contentsDeviceTransformInverse);
     void drawRenderPassQuad(DrawingFrame&, const RenderPassDrawQuad*);

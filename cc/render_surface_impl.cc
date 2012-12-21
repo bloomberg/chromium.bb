@@ -186,9 +186,6 @@ void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
 
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->currentDamageRect(), m_screenSpaceTransform);
-    pass->filters = m_owningLayer->filters();
-    pass->filter = m_owningLayer->filter();
-    pass->background_filters = m_owningLayer->backgroundFilters();
     passSink.appendRenderPass(pass.Pass());
 }
 
@@ -240,7 +237,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     gfx::Rect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : gfx::Rect();
 
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect);
+    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, m_owningLayer->filters(), m_owningLayer->filter(), m_owningLayer->backgroundFilters());
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 

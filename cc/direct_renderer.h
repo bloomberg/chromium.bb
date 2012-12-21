@@ -26,13 +26,12 @@ public:
 
     virtual void decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder) OVERRIDE;
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
-    virtual void drawFrame(RenderPassList& renderPassesInDrawOrder, RenderPassIdHashMap& renderPassesById) OVERRIDE;
+    virtual void drawFrame(RenderPassList& renderPassesInDrawOrder) OVERRIDE;
 
     struct CC_EXPORT DrawingFrame {
         DrawingFrame();
         ~DrawingFrame();
 
-        const RenderPassIdHashMap* renderPassesById;
         const RenderPass* rootRenderPass;
         const RenderPass* currentRenderPass;
         const ScopedResource* currentTexture;

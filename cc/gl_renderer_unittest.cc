@@ -72,8 +72,7 @@ public:
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
         scoped_ptr<RenderPass> rootRenderPass = RenderPass::Create();
         rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
-        m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
-        m_renderPasses.set(renderPassId, rootRenderPass.Pass());
+        m_renderPassesInDrawOrder.append(rootRenderPass.Pass());
     }
 
     // RendererClient methods.
@@ -93,9 +92,8 @@ public:
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
     void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
 
-    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
+    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.last(); }
     RenderPassList& renderPassesInDrawOrder() { return m_renderPassesInDrawOrder; }
-    RenderPassIdHashMap& renderPasses() { return m_renderPasses; }
 
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 
@@ -106,7 +104,6 @@ private:
     bool* m_lastCallWasSetVisibility;
     scoped_ptr<LayerImpl> m_rootLayer;
     RenderPassList m_renderPassesInDrawOrder;
-    RenderPassIdHashMap m_renderPasses;
     size_t m_memoryAllocationLimitBytes;
 };
 
@@ -218,7 +215,7 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     m_renderer.setVisible(true);
-    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder(), m_mockClient.renderPasses());
+    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
     swapBuffers();
@@ -233,7 +230,7 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     char pixels[4];
-    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder(), m_mockClient.renderPasses());
+    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
     m_renderer.getFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
@@ -412,7 +409,7 @@ TEST(GLRendererTest2, opaqueBackground)
 
     EXPECT_TRUE(renderer.initialize());
 
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
 
     // On DEBUG builds, render passes with opaque background clear to blue to
     // easily see regions that were not drawn on the screen.
@@ -435,7 +432,7 @@ TEST(GLRendererTest2, transparentBackground)
 
     EXPECT_TRUE(renderer.initialize());
 
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
 
     EXPECT_EQ(1, context->clearCount());
 }
@@ -492,7 +489,7 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     context->setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
     mockClient.setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
     renderer.setVisible(true);
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
     renderer.setVisible(false);
     EXPECT_TRUE(lastCallWasSetVisiblity);
 }
@@ -605,7 +602,8 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     EXPECT_TRUE(renderer.initialize());
 
     gfx::Rect viewportRect(mockClient.deviceViewportSize());
-    ScopedPtrVector<RenderPass> renderPasses;
+    ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();
+    renderPasses.clear();
 
     RenderPass::Id rootPassId(1, 0);
     TestRenderPass* rootPass = addRenderPass(renderPasses, rootPassId, viewportRect, gfx::Transform());
@@ -616,12 +614,6 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     addQuad(childPass, viewportRect, SK_ColorBLUE);
 
     addRenderPassQuad(rootPass, childPass);
-
-    mockClient.renderPassesInDrawOrder().clear();
-    mockClient.renderPassesInDrawOrder().push_back(childPass);
-    mockClient.renderPassesInDrawOrder().push_back(rootPass);
-    mockClient.renderPasses().set(rootPassId, renderPasses.take(0));
-    mockClient.renderPasses().set(childPassId, renderPasses.take(1));
 
     // First render pass is not the root one, clearing should happen.
     EXPECT_CALL(*mockContext, clear(GL_COLOR_BUFFER_BIT))
@@ -640,7 +632,7 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
         .After(firstRenderPass);
 
     renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
 
     // In multiple render passes all but the root pass should clear the framebuffer.
     Mock::VerifyAndClearExpectations(&mockContext);

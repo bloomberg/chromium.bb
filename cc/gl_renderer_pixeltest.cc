@@ -116,7 +116,10 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
                false,         // is_replica
                0,             // mask_resource_id
                rect,          // contents_changed_since_last_frame
-               gfx::RectF()); // mask_uv_rect
+               gfx::RectF(),  // mask_uv_rect
+               WebKit::WebFilterOperations(),   // foreground filters
+               skia::RefPtr<SkImageFilter>(),   // foreground filter
+               WebKit::WebFilterOperations());  // background filters
 
   return quad.PassAs<DrawQuad>();
 }
@@ -139,11 +142,9 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
   pass->quad_list.append(color_quad.PassAs<DrawQuad>());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.get());
-  RenderPassIdHashMap pass_map;
-  pass_map.add(id, pass.PassAs<RenderPass>());
+  pass_list.append(pass.Pass());
 
-  renderer_->drawFrame(pass_list, pass_map);
+  renderer_->drawFrame(pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(FilePath(FILE_PATH_LITERAL("green.png")),
                                    rect));
@@ -181,16 +182,12 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
                                    child_pass_id));
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.get());
-  pass_list.push_back(root_pass.get());
-
-  RenderPassIdHashMap pass_map;
-  pass_map.add(child_pass_id, child_pass.Pass());
-  pass_map.add(root_pass_id, root_pass.Pass());
+  pass_list.append(child_pass.Pass());
+  pass_list.append(root_pass.Pass());
 
   renderer_->setEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
   renderer_->decideRenderPassAllocationsForFrame(pass_list);
-  renderer_->drawFrame(pass_list, pass_map);
+  renderer_->drawFrame(pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));

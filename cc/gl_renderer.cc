@@ -439,7 +439,6 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
 
 scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     DrawingFrame& frame, const RenderPassDrawQuad* quad,
-    const WebKit::WebFilterOperations& filters,
     const gfx::Transform& contentsDeviceTransform,
     const gfx::Transform& contentsDeviceTransformInverse)
 {
@@ -459,6 +458,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
     // FIXME: When this algorithm changes, update LayerTreeHost::prioritizeTextures() accordingly.
 
+    const WebKit::WebFilterOperations& filters = quad->background_filters;
     if (filters.isEmpty())
         return scoped_ptr<ScopedResource>();
 
@@ -517,11 +517,6 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     if (!contentsTexture || !contentsTexture->id())
         return;
 
-    const RenderPass* renderPass = frame.renderPassesById->get(quad->render_pass_id);
-    DCHECK(renderPass);
-    if (!renderPass)
-        return;
-
     gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
     gfx::Transform contentsDeviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quadRectMatrix);
@@ -532,16 +527,15 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     gfx::Transform contentsDeviceTransformInverse = MathUtil::inverse(contentsDeviceTransform);
     scoped_ptr<ScopedResource> backgroundTexture = drawBackgroundFilters(
-        frame, quad, renderPass->background_filters,
-        contentsDeviceTransform, contentsDeviceTransformInverse);
+        frame, quad, contentsDeviceTransform, contentsDeviceTransformInverse);
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
     SkBitmap filterBitmap;
-    if (renderPass->filter) {
-        filterBitmap = applyImageFilter(this, renderPass->filter.get(), contentsTexture, m_client->hasImplThread());
+    if (quad->filter) {
+        filterBitmap = applyImageFilter(this, quad->filter.get(), contentsTexture, m_client->hasImplThread());
     } else {
-        filterBitmap = applyFilters(this, renderPass->filters, contentsTexture, m_client->hasImplThread());
+        filterBitmap = applyFilters(this, quad->filters, contentsTexture, m_client->hasImplThread());
     }
 
     // Draw the background texture if there is one.

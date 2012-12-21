@@ -285,11 +285,6 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     if (!contentTexture || !contentTexture->id())
         return;
 
-    const RenderPass* renderPass = frame.renderPassesById->get(quad->render_pass_id);
-    DCHECK(renderPass);
-    if (!renderPass)
-        return;
-
     DCHECK(isSoftwareResource(contentTexture->id()));
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, contentTexture->id());
 
@@ -310,7 +305,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     shader->setLocalMatrix(contentMat);
     m_skCurrentPaint.setShader(shader.get());
 
-    SkImageFilter* filter = renderPass->filter.get();
+    SkImageFilter* filter = quad->filter.get();
     if (filter)
         m_skCurrentPaint.setImageFilter(filter);
 

@@ -16,6 +16,8 @@
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -204,6 +206,18 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
       quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
     SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
+#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copyA) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quadNew, copyA);
+
+#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copyA) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quadAll, copyA);
+
 #define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i) \
     scoped_ptr<Type> quadNew(Type::Create()); \
     { QUAD_DATA \
@@ -276,25 +290,38 @@ TEST(DrawQuadTest, copyRenderPassDrawQuad)
     ResourceProvider::ResourceId maskResourceId = 78;
     gfx::Rect contentsChangedSinceLastFrame(42, 11, 74, 24);
     gfx::RectF maskUVRect(-45, -21, 33, 19);
+    WebKit::WebFilterOperations filters;
+    filters.append(WebKit::WebFilterOperation::createBlurFilter(1.f));
+    WebKit::WebFilterOperations background_filters;
+    background_filters.append(
+        WebKit::WebFilterOperation::createGrayscaleFilter(1.f));
+    skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
+        new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     RenderPass::Id copiedRenderPassId(235, 11);
     CREATE_SHARED_STATE();
 
-    CREATE_QUAD_5_NEW_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, copiedRenderPassId);
+    CREATE_QUAD_8_NEW_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, filters, filter, background_filters, copiedRenderPassId);
     EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
     EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
     EXPECT_EQ(isReplica, copyQuad->is_replica);
     EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
     EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
     EXPECT_EQ(maskUVRect.ToString(), copyQuad->mask_uv_rect.ToString());
+    EXPECT_EQ(filters, copyQuad->filters);
+    EXPECT_EQ(filter, copyQuad->filter);
+    EXPECT_EQ(background_filters, copyQuad->background_filters);
 
-    CREATE_QUAD_5_ALL_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, copiedRenderPassId);
+    CREATE_QUAD_8_ALL_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, filters, filter, background_filters, copiedRenderPassId);
     EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
     EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
     EXPECT_EQ(isReplica, copyQuad->is_replica);
     EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
     EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
     EXPECT_EQ(maskUVRect.ToString(), copyQuad->mask_uv_rect.ToString());
+    EXPECT_EQ(filters, copyQuad->filters);
+    EXPECT_EQ(filter, copyQuad->filter);
+    EXPECT_EQ(background_filters, copyQuad->background_filters);
 }
 
 TEST(DrawQuadTest, copySolidColorDrawQuad)

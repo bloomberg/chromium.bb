@@ -125,8 +125,8 @@ const RendererCapabilities& DelegatingRenderer::capabilities() const {
   return capabilities_;
 }
 
-void DelegatingRenderer::drawFrame(RenderPassList& render_passes_in_draw_order,
-                                   RenderPassIdHashMap& render_passes_by_id) {
+void DelegatingRenderer::drawFrame(
+    RenderPassList& render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
   NOTIMPLEMENTED();
 }

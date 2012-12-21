@@ -70,7 +70,10 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                            false,
                            0,
                            rect,
-                           gfx::RectF());
+                           gfx::RectF(),
+                           WebKit::WebFilterOperations(),
+                           skia::RefPtr<SkImageFilter>(),
+                           WebKit::WebFilterOperations());
   AppendQuad(render_pass_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::SolidColorDrawQuad> solid_color_quad =

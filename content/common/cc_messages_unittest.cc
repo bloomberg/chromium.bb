@@ -43,9 +43,6 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->has_transparent_background, b->has_transparent_background);
     EXPECT_EQ(a->has_occlusion_from_outside_target_surface,
               b->has_occlusion_from_outside_target_surface);
-    EXPECT_EQ(a->filters, b->filters);
-    EXPECT_EQ(a->filter, b->filter);
-    EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
@@ -130,6 +127,9 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->contents_changed_since_last_frame,
               b->contents_changed_since_last_frame);
     EXPECT_EQ(a->mask_uv_rect.ToString(), b->mask_uv_rect.ToString());
+    EXPECT_EQ(a->filters, b->filters);
+    EXPECT_EQ(a->filter, b->filter);
+    EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
   void Compare(const SolidColorDrawQuad* a, const SolidColorDrawQuad* b) {
@@ -290,7 +290,10 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_bool2,
                         arbitrary_resourceid,
                         arbitrary_rect1,
-                        arbitrary_rectf1);
+                        arbitrary_rectf1,
+                        arbitrary_filters1,
+                        arbitrary_filter, // TODO(piman): not serialized.
+                        arbitrary_filters2);
   scoped_ptr<RenderPassDrawQuad> renderpass_cmp = renderpass_in->Copy(
       renderpass_in->shared_quad_state, renderpass_in->render_pass_id);
 
@@ -355,10 +358,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_rectf1,
                   arbitrary_matrix,
                   arbitrary_bool1,
-                  arbitrary_bool2,
-                  arbitrary_filters1,
-                  arbitrary_filter, // TODO(danakj): filter is not serialized.
-                  arbitrary_filters2);
+                  arbitrary_bool2);
 
   pass_in->shared_quad_state_list.append(shared_state1_in.Pass());
   pass_in->quad_list.append(checkerboard_in.PassAs<DrawQuad>());
@@ -377,10 +377,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                    arbitrary_rectf1,
                    arbitrary_matrix,
                    arbitrary_bool1,
-                   arbitrary_bool2,
-                   arbitrary_filters1,
-                   arbitrary_filter, // TODO(danakj): filter is not serialized.
-                   arbitrary_filters2);
+                   arbitrary_bool2);
 
   pass_cmp->shared_quad_state_list.append(shared_state1_cmp.Pass());
   pass_cmp->quad_list.append(checkerboard_cmp.PassAs<DrawQuad>());

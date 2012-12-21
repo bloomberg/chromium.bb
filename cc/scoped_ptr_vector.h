@@ -80,7 +80,7 @@ class ScopedPtrVector {
   }
 
   void insert(size_t index, scoped_ptr<T> item) {
-    DCHECK(index < size());
+    DCHECK(index <= size());
     data_.insert(data_.begin() + index, item.release());
   }
 

@@ -13,8 +13,6 @@
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
 
-using WebKit::WebFilterOperation;
-using WebKit::WebFilterOperations;
 using cc::TestRenderPass;
 
 namespace cc {
@@ -30,9 +28,6 @@ struct RenderPassSize {
     gfx::RectF m_damageRect;
     bool m_hasTransparentBackground;
     bool m_hasOcclusionFromOutsideTargetSurface;
-    WebKit::WebFilterOperations m_filters;
-    WebKit::WebFilterOperations m_backgroundFilters;
-    SkImageFilter* m_filter;
 };
 
 TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
@@ -43,12 +38,6 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     gfx::Rect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
     bool hasOcclusionFromOutsideTargetSurface = true;
-    WebFilterOperations filters;
-    WebFilterOperations backgroundFilters;
-
-    filters.append(WebFilterOperation::createGrayscaleFilter(0.2f));
-    backgroundFilters.append(WebFilterOperation::createInvertFilter(0.2f));
-    skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
     pass->SetAll(id,
@@ -56,10 +45,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
                  damageRect,
                  transformToRoot,
                  hasTransparentBackground,
-                 hasOcclusionFromOutsideTargetSurface,
-                 filters,
-                 filter,
-                 backgroundFilters);
+                 hasOcclusionFromOutsideTargetSurface);
 
     // Stick a quad in the pass, this should not get copied.
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
@@ -79,9 +65,6 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
     EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
     EXPECT_EQ(pass->has_occlusion_from_outside_target_surface, copy->has_occlusion_from_outside_target_surface);
-    EXPECT_EQ(pass->filters, copy->filters);
-    EXPECT_EQ(pass->filter, copy->filter);
-    EXPECT_EQ(pass->background_filters, copy->background_filters);
     EXPECT_EQ(0u, copy->quad_list.size());
 
     EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));

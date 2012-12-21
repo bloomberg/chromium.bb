@@ -155,6 +155,10 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(mask_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(contents_changed_since_last_frame)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_rect)
+  IPC_STRUCT_TRAITS_MEMBER(filters)
+  // TODO(piman): filter isn't being serialized.
+  // IPC_STRUCT_TRAITS_MEMBER(filter)
+  IPC_STRUCT_TRAITS_MEMBER(background_filters)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SolidColorDrawQuad)

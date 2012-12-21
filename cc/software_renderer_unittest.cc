@@ -90,10 +90,8 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
     rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    RenderPassIdHashMap hashmap;
-    list.push_back(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.PassAs<RenderPass>());
-    renderer()->drawFrame(list, hashmap);
+    list.append(rootRenderPass.PassAs<RenderPass>());
+    renderer()->drawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
     renderer()->getFramebufferPixels(pixels.get(), outerRect);
@@ -151,10 +149,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    RenderPassIdHashMap hashmap;
-    list.push_back(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.PassAs<RenderPass>());
-    renderer()->drawFrame(list, hashmap);
+    list.append(rootRenderPass.PassAs<RenderPass>());
+    renderer()->drawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
     renderer()->getFramebufferPixels(pixels.get(), outerRect);
@@ -174,41 +170,31 @@ TEST_F(SoftwareRendererTest, shouldClearRootRenderPass)
     initializeRenderer();
 
     RenderPassList list;
-    RenderPassIdHashMap hashmap;
-    ScopedPtrVector<RenderPass> renderPasses;
     scoped_array<SkColor> pixels(new SkColor[viewportPixels]);
 
     // Draw a fullscreen green quad in a first frame.
     RenderPass::Id rootClearPassId(1, 0);
-    TestRenderPass* rootClearPass = addRenderPass(renderPasses, rootClearPassId, viewportRect, gfx::Transform());
+    TestRenderPass* rootClearPass = addRenderPass(list, rootClearPassId, viewportRect, gfx::Transform());
     addQuad(rootClearPass, viewportRect, SK_ColorGREEN);
 
-    list.push_back(rootClearPass);
-    hashmap.set(rootClearPassId, renderPasses.take(0));
-
     renderer()->decideRenderPassAllocationsForFrame(list);
-    renderer()->drawFrame(list, hashmap);
+    renderer()->drawFrame(list);
     renderer()->getFramebufferPixels(pixels.get(), viewportRect);
 
     EXPECT_EQ(SK_ColorGREEN, pixels[0]);
     EXPECT_EQ(SK_ColorGREEN, pixels[viewportPixels - 1]);
 
-    renderPasses.clear();
-    hashmap.clear();
     list.clear();
 
     // Draw a smaller magenta rect without filling the viewport in a separate frame.
     gfx::Rect smallerRect(20, 20, 60, 60);
 
     RenderPass::Id rootSmallerPassId(2, 0);
-    TestRenderPass* rootSmallerPass = addRenderPass(renderPasses, rootSmallerPassId, viewportRect, gfx::Transform());
+    TestRenderPass* rootSmallerPass = addRenderPass(list, rootSmallerPassId, viewportRect, gfx::Transform());
     addQuad(rootSmallerPass, smallerRect, SK_ColorMAGENTA);
 
-    list.push_back(rootSmallerPass);
-    hashmap.set(rootSmallerPassId, renderPasses.take(0));
-
     renderer()->decideRenderPassAllocationsForFrame(list);
-    renderer()->drawFrame(list, hashmap);
+    renderer()->drawFrame(list);
     renderer()->getFramebufferPixels(pixels.get(), viewportRect);
 
     // If we didn't clear, the borders should still be green.

@@ -28,10 +28,7 @@ scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
                     damage_rect,
                     transform_to_root_target,
                     has_transparent_background,
-                    has_occlusion_from_outside_target_surface,
-                    filters,
-                    filter,
-                    background_filters);
+                    has_occlusion_from_outside_target_surface);
   return copy_pass.Pass();
 }
 
@@ -56,10 +53,7 @@ void RenderPass::SetAll(Id id,
                         gfx::RectF damage_rect,
                         const gfx::Transform& transform_to_root_target,
                         bool has_transparent_background,
-                        bool has_occlusion_from_outside_target_surface,
-                        const WebKit::WebFilterOperations& filters,
-                        const skia::RefPtr<SkImageFilter>& filter,
-                        const WebKit::WebFilterOperations& background_filters) {
+                        bool has_occlusion_from_outside_target_surface) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
 
@@ -70,9 +64,6 @@ void RenderPass::SetAll(Id id,
   this->has_transparent_background = has_transparent_background;
   this->has_occlusion_from_outside_target_surface =
       has_occlusion_from_outside_target_surface;
-  this->filters = filters;
-  this->filter = filter;
-  this->background_filters = background_filters;
 
   DCHECK(quad_list.isEmpty());
   DCHECK(shared_quad_state_list.isEmpty());

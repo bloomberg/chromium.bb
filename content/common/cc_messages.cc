@@ -295,9 +295,6 @@ void ParamTraits<cc::RenderPass>::Write(
   WriteParam(m, p.transform_to_root_target);
   WriteParam(m, p.has_transparent_background);
   WriteParam(m, p.has_occlusion_from_outside_target_surface);
-  WriteParam(m, p.filters);
-  // TODO(danakj): filter isn't being serialized.
-  WriteParam(m, p.background_filters);
   WriteParam(m, p.shared_quad_state_list.size());
   WriteParam(m, p.quad_list.size());
 
@@ -387,9 +384,6 @@ bool ParamTraits<cc::RenderPass>::Read(
   gfx::Transform transform_to_root_target;
   bool has_transparent_background;
   bool has_occlusion_from_outside_target_surface;
-  WebKit::WebFilterOperations filters;
-  skia::RefPtr<SkImageFilter> filter;
-  WebKit::WebFilterOperations background_filters;
   size_t shared_quad_state_list_size;
   size_t quad_list_size;
 
@@ -399,8 +393,6 @@ bool ParamTraits<cc::RenderPass>::Read(
       !ReadParam(m, iter, &transform_to_root_target) ||
       !ReadParam(m, iter, &has_transparent_background) ||
       !ReadParam(m, iter, &has_occlusion_from_outside_target_surface) ||
-      !ReadParam(m, iter, &filters) ||
-      !ReadParam(m, iter, &background_filters) ||
       !ReadParam(m, iter, &shared_quad_state_list_size) ||
       !ReadParam(m, iter, &quad_list_size))
     return false;
@@ -410,10 +402,7 @@ bool ParamTraits<cc::RenderPass>::Read(
             damage_rect,
             transform_to_root_target,
             has_transparent_background,
-            has_occlusion_from_outside_target_surface,
-            filters,
-            filter, // TODO(danakj): filter isn't being serialized.
-            background_filters);
+            has_occlusion_from_outside_target_surface);
 
   for (size_t i = 0; i < shared_quad_state_list_size; ++i) {
     scoped_ptr<cc::SharedQuadState> state(cc::SharedQuadState::Create());
@@ -496,11 +485,6 @@ void ParamTraits<cc::RenderPass>::Log(
   LogParam(p.has_transparent_background, l);
   l->append(", ");
   LogParam(p.has_occlusion_from_outside_target_surface, l);
-  l->append(", ");
-  LogParam(p.filters, l);
-  l->append(", ");
-  // TODO(danakj): filter isn't being serialized.
-  LogParam(p.background_filters, l);
   l->append(", ");
 
   l->append("[");

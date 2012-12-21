@@ -418,9 +418,8 @@ void LayerTreeHostImpl::updateDrawProperties()
 
 void LayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<RenderPass> renderPass)
 {
-    RenderPass* pass = renderPass.get();
-    renderPasses.push_back(pass);
-    renderPassesById.set(pass->id, renderPass.Pass());
+    renderPassesById[renderPass->id] = renderPass.get();
+    renderPasses.append(renderPass.Pass());
 }
 
 static void appendQuadsForLayer(RenderPass* targetRenderPass, LayerImpl* layer, OcclusionTrackerImpl& occlusionTracker, AppendQuadsData& appendQuadsData)
@@ -510,7 +509,7 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
 
 bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
-    DCHECK(frame.renderPasses.empty());
+    DCHECK(frame.renderPasses.isEmpty());
 
     if (!canDraw() || !rootLayer())
       return false;
@@ -545,7 +544,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     LayerIteratorType end = LayerIteratorType::end(frame.renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(frame.renderSurfaceLayerList); it != end; ++it) {
         RenderPass::Id targetRenderPassId = it.targetRenderSurfaceLayer()->renderSurface()->renderPassId();
-        RenderPass* targetRenderPass = frame.renderPassesById.get(targetRenderPassId);
+        RenderPass* targetRenderPass = frame.renderPassesById[targetRenderPassId];
 
         occlusionTracker.enterLayer(it);
 
@@ -553,7 +552,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
         if (it.representsContributingRenderSurface()) {
             RenderPass::Id contributingRenderPassId = it->renderSurface()->renderPassId();
-            RenderPass* contributingRenderPass = frame.renderPassesById.get(contributingRenderPassId);
+            RenderPass* contributingRenderPass = frame.renderPassesById[contributingRenderPassId];
             appendQuadsForRenderSurfaceLayer(targetRenderPass, *it, contributingRenderPass, occlusionTracker, appendQuadsData);
         } else if (it.representsItself() && !it->visibleContentRect().IsEmpty()) {
             bool hasOcclusionFromOutsideTargetSurface;
@@ -567,8 +566,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
                 if (it->hasContributingDelegatedRenderPasses()) {
                     RenderPass::Id contributingRenderPassId = it->firstContributingRenderPassId();
-                    while (frame.renderPassesById.contains(contributingRenderPassId)) {
-                        RenderPass* renderPass = frame.renderPassesById.get(contributingRenderPassId);
+                    while (frame.renderPassesById.find(contributingRenderPassId) != frame.renderPassesById.end()) {
+                        RenderPass* renderPass = frame.renderPassesById[contributingRenderPassId];
   
                         AppendQuadsData appendQuadsData(renderPass->id);
                         appendQuadsForLayer(renderPass, *it, occlusionTracker, appendQuadsData);
@@ -600,13 +599,14 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     for (size_t i = 0; i < frame.renderPasses.size(); ++i) {
         for (size_t j = 0; j < frame.renderPasses[i]->quad_list.size(); ++j)
             DCHECK(frame.renderPasses[i]->quad_list[j]->shared_quad_state);
-        DCHECK(frame.renderPassesById.contains(frame.renderPasses[i]->id));
+        DCHECK(frame.renderPassesById.find(frame.renderPasses[i]->id)
+               != frame.renderPassesById.end());
     }
 #endif
 
     if (!m_hasTransparentBackground) {
-        frame.renderPasses.back()->has_transparent_background = false;
-        appendQuadsToFillScreen(frame.renderPasses.back(), rootLayer(), m_backgroundColor, occlusionTracker);
+        frame.renderPasses.last()->has_transparent_background = false;
+        appendQuadsToFillScreen(frame.renderPasses.last(), rootLayer(), m_backgroundColor, occlusionTracker);
     }
 
     if (drawFrame)
@@ -636,22 +636,24 @@ gfx::Size LayerTreeHostImpl::contentSize() const
 static inline RenderPass* findRenderPassById(RenderPass::Id renderPassId, const LayerTreeHostImpl::FrameData& frame)
 {
     RenderPassIdHashMap::const_iterator it = frame.renderPassesById.find(renderPassId);
-    DCHECK(it != frame.renderPassesById.end());
-    return it->second;
+    return it != frame.renderPassesById.end() ? it->second : NULL;
 }
 
 static void removeRenderPassesRecursive(RenderPass::Id removeRenderPassId, LayerTreeHostImpl::FrameData& frame)
 {
     RenderPass* removeRenderPass = findRenderPassById(removeRenderPassId, frame);
+    // The pass was already removed by another quad - probably the original, and we are the replica.
+    if (!removeRenderPass)
+        return;
     RenderPassList& renderPasses = frame.renderPasses;
     RenderPassList::iterator toRemove = std::find(renderPasses.begin(), renderPasses.end(), removeRenderPass);
 
-    // The pass was already removed by another quad - probably the original, and we are the replica.
-    if (toRemove == renderPasses.end())
-        return;
+    DCHECK(toRemove != renderPasses.end());
 
-    const RenderPass* removedPass = *toRemove;
-    frame.renderPasses.erase(toRemove);
+    size_t index = toRemove - renderPasses.begin();
+    scoped_ptr<RenderPass> removedPass = renderPasses.take(index);
+    frame.renderPasses.remove(index);
+    frame.renderPassesById.erase(removeRenderPassId);
 
     // Now follow up for all RenderPass quads and remove their RenderPasses recursively.
     const QuadList& quadList = removedPass->quad_list;
@@ -682,15 +684,11 @@ bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRenderPa
 bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(const RenderPassDrawQuad& quad, const FrameData& frame) const
 {
     const RenderPass* renderPass = findRenderPassById(quad.render_pass_id, frame);
-    const RenderPassList& renderPasses = frame.renderPasses;
-    RenderPassList::const_iterator foundPass = std::find(renderPasses.begin(), renderPasses.end(), renderPass);
-
-    bool renderPassAlreadyRemoved = foundPass == renderPasses.end();
-    if (renderPassAlreadyRemoved)
+    if (!renderPass)
         return false;
 
     // If any quad or RenderPass draws into this RenderPass, then keep it.
-    const QuadList& quadList = (*foundPass)->quad_list;
+    const QuadList& quadList = renderPass->quad_list;
     for (QuadList::constBackToFrontIterator quadListIterator = quadList.backToFrontBegin(); quadListIterator != quadList.backToFrontEnd(); ++quadListIterator) {
         DrawQuad* currentQuad = *quadListIterator;
 
@@ -698,8 +696,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(cons
             return false;
 
         const RenderPass* contributingPass = findRenderPassById(RenderPassDrawQuad::MaterialCast(currentQuad)->render_pass_id, frame);
-        RenderPassList::const_iterator foundContributingPass = std::find(renderPasses.begin(), renderPasses.end(), contributingPass);
-        if (foundContributingPass != renderPasses.end())
+        if (contributingPass)
             return false;
     }
     return true;
@@ -874,7 +871,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::drawLayers");
     DCHECK(canDraw());
-    DCHECK(!frame.renderPasses.empty());
+    DCHECK(!frame.renderPasses.isEmpty());
 
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's
@@ -889,11 +886,10 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     if (m_activeTree->hud_layer())
         m_activeTree->hud_layer()->updateHudTexture(m_resourceProvider.get());
 
-    m_renderer->drawFrame(frame.renderPasses, frame.renderPassesById);
-
+    m_renderer->drawFrame(frame.renderPasses);
     // The render passes should be consumed by the renderer.
-    DCHECK(frame.renderPasses.empty());
-    DCHECK(frame.renderPassesById.empty());
+    DCHECK(frame.renderPasses.isEmpty());
+    frame.renderPassesById.clear();
 
     // The next frame should start by assuming nothing has changed, and changes are noted as they occur.
     for (unsigned int i = 0; i < frame.renderSurfaceLayerList->size(); i++)
