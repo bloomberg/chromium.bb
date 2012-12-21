@@ -11,9 +11,6 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 
-class IPAddress;
-class IPEndPoint;
-
 namespace gfe2 {
   class BalsaHeaders;
 }
