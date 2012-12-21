@@ -24,10 +24,13 @@ remoting.HostController = function() {
       console.log('Host version: ' + version);
     }
   };
+  /** @type {boolean} @private */
+  this.pluginSupported_ = true;
   try {
     this.plugin_.getDaemonVersion(printVersion);
   } catch (err) {
     console.log('Host version not available.');
+    this.pluginSupported_ = false;
   }
 };
 
@@ -68,6 +71,15 @@ remoting.HostController.prototype.isInstalled = function() {
     state != remoting.HostController.State.INSTALLING;
 }
 
+/**
+ * Checks whether or not the host plugin is valid.
+ *
+ * @return {boolean} True if the plugin is supported and loaded; false
+ *     otherwise.
+ */
+remoting.HostController.prototype.isPluginSupported = function() {
+  return this.pluginSupported_;
+};
 
 /**
  * @param {function(boolean, boolean, boolean):void} callback Callback to be

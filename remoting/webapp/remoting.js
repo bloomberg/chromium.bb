@@ -111,6 +111,8 @@ remoting.onEmail = function(email) {
 // also if the user cancels pin entry or the connection in session mode.
 remoting.initDaemonUi = function () {
   remoting.hostController = new remoting.HostController();
+  document.getElementById('share-button').disabled =
+      !remoting.hostController.isPluginSupported();
   remoting.setMode(getAppStartupMode_());
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
