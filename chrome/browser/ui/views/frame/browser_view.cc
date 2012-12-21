@@ -639,6 +639,9 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
 }
 
 bool BrowserView::IsTabStripVisible() const {
+  if (immersive_mode_controller_->ShouldHideTopViews() &&
+      immersive_mode_controller_->hide_tab_indicators())
+    return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
 

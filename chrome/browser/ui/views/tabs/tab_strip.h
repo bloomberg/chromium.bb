@@ -162,7 +162,7 @@ class TabStrip : public views::View,
   // Returns the new tab button. This is never NULL.
   views::View* newtab_button();
 
-  // Sets a painting style with a "light bar" at the top representing open tabs.
+  // Sets a painting style with miniature "tab indicator" rectangles at the top.
   void SetImmersiveStyle(bool enable);
 
   // TabController overrides:

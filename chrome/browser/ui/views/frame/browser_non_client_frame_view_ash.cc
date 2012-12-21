@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
-#include "ash/ash_switches.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
-#include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -119,17 +117,16 @@ void BrowserNonClientFrameViewAsh::Init() {
   frame_painter_->Init(frame(), window_icon_, size_button_, close_button_,
                        size_button_behavior);
 
-  // Button to enter immersive mode.
-  if (CommandLine::ForCurrentProcess()->
-        HasSwitch(ash::switches::kAshImmersive)) {
-    immersive_button_ = new views::ToggleImageButton(this);
-    immersive_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
-    immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                         views::ImageButton::ALIGN_BOTTOM);
-    AddChildView(immersive_button_);
-    frame_painter_->AddImmersiveButton(immersive_button_);
-  }
+  // Button to toggle immersive mode.
+  immersive_button_ = new views::ToggleImageButton(this);
+  immersive_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
+  immersive_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_IMMERSIVE));
+  immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                       views::ImageButton::ALIGN_BOTTOM);
+  AddChildView(immersive_button_);
+  frame_painter_->AddImmersiveButton(immersive_button_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

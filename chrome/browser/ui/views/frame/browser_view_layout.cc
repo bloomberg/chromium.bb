@@ -272,8 +272,11 @@ void BrowserViewLayout::Layout(views::View* host) {
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
   // During immersive mode reveal the content stays near the top of the view.
-  if (browser_view_->immersive_mode_controller()->IsRevealed())
-    top = browser_view_->tabstrip_->x() + TabStrip::GetImmersiveHeight();
+  if (browser_view_->immersive_mode_controller()->IsRevealed()) {
+    top = browser_view_->tabstrip_->y();
+    if (!browser_view_->immersive_mode_controller()->hide_tab_indicators())
+      top += TabStrip::GetImmersiveHeight();
+  }
 
   int bottom = LayoutDownloadShelf(browser_view_->height());
   int active_top_margin = GetTopMarginForActiveContent();

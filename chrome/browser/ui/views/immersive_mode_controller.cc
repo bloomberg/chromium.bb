@@ -15,6 +15,11 @@
 #include "ui/views/view.h"
 #include "ui/views/window/non_client_view.h"
 
+#if defined(USE_ASH)
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -257,6 +262,7 @@ ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
     : browser_view_(browser_view),
       enabled_(false),
       revealed_(false),
+      hide_tab_indicators_(false),
       native_window_(NULL) {
 }
 
@@ -272,6 +278,12 @@ void ImmersiveModeController::Init() {
   // window pointer so |this| can stop observing during destruction.
   native_window_ = browser_view_->GetNativeWindow();
   DCHECK(native_window_);
+
+#if defined(USE_ASH)
+  // Optionally allow the tab indicators to be hidden.
+  hide_tab_indicators_ = CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshImmersiveHideTabIndicators);
+#endif
 }
 
 void ImmersiveModeController::SetEnabled(bool enabled) {
@@ -342,6 +354,10 @@ void ImmersiveModeController::OnImplicitAnimationsCompleted() {
 }
 
 // Testing interface:
+void ImmersiveModeController::SetHideTabIndicatorsForTest(bool hide) {
+  hide_tab_indicators_ = hide;
+}
+
 void ImmersiveModeController::StartRevealForTest() {
   StartReveal();
 }

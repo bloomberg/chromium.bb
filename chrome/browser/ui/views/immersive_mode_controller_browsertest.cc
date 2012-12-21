@@ -5,9 +5,21 @@
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/gfx/rect.h"
+#include "ui/views/view.h"
+
+namespace {
+
+// Returns the bounds of |view| in widget coordinates.
+gfx::Rect GetRectInWidget(views::View* view) {
+  return view->ConvertRectToWidget(view->GetLocalBounds());
+}
+
+}  // namespace
 
 typedef InProcessBrowserTest ImmersiveModeControllerTest;
 
@@ -24,6 +36,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   ImmersiveModeController* controller =
       browser_view->immersive_mode_controller();
+  views::View* contents_view = browser_view->GetTabContentsContainerView();
   browser_view->GetWidget()->Maximize();
 
   // Immersive mode is not on by default.
@@ -43,6 +56,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_FALSE(browser_view->IsToolbarVisible());
+  // Content area is immediately below the tab indicators.
+  EXPECT_EQ(GetRectInWidget(browser_view).y() + Tab::GetImmersiveHeight(),
+            GetRectInWidget(contents_view).y());
 
   // Trigger a reveal keeps us in immersive mode, but top-of-window views
   // become visible.
@@ -53,6 +69,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());
+  // Content area is still immediately below the tab indicators.
+  EXPECT_EQ(GetRectInWidget(browser_view).y() + Tab::GetImmersiveHeight(),
+            GetRectInWidget(contents_view).y());
 
   // Ending a reveal keeps us in immersive mode, but toolbar goes invisible.
   controller->CancelReveal();
@@ -83,6 +102,21 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());
+
+  // When hiding the tab indicators, content is at the top of the browser view
+  // both before and during reveal.
+  controller->SetEnabled(false);
+  controller->SetHideTabIndicatorsForTest(true);
+  controller->SetEnabled(true);
+  EXPECT_FALSE(browser_view->IsTabStripVisible());
+  EXPECT_EQ(GetRectInWidget(browser_view).y(),
+            GetRectInWidget(contents_view).y());
+  controller->StartRevealForTest();
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_EQ(GetRectInWidget(browser_view).y(),
+            GetRectInWidget(contents_view).y());
+  controller->SetEnabled(false);
+  controller->SetHideTabIndicatorsForTest(false);
 
   // Reveal ends when the mouse moves out of the reveal view.
   controller->SetEnabled(true);

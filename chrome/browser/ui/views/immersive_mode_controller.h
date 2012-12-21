@@ -21,8 +21,9 @@ class View;
 }
 
 // Controller for an "immersive mode" similar to MacOS presentation mode where
-// the top-of-window views are hidden until the mouse hits the top of the screen
-// and the tab strip is painted in a rectangular "light-bar" style.
+// the top-of-window views are hidden until the mouse hits the top of the
+// screen. The tab strip is optionally painted with miniature "tab indicator"
+// rectangles.
 class ImmersiveModeController : public ui::EventHandler,
                                 public ui::ImplicitAnimationObserver {
  public:
@@ -35,6 +36,9 @@ class ImmersiveModeController : public ui::EventHandler,
   // Enables or disables immersive mode.
   void SetEnabled(bool enabled);
   bool enabled() const { return enabled_; }
+
+  // See member comment below.
+  bool hide_tab_indicators() const { return hide_tab_indicators_; }
 
   // True when the controller is hiding the top views due to immersive mode.
   bool ShouldHideTopViews() const { return enabled_ && !revealed_; }
@@ -65,6 +69,7 @@ class ImmersiveModeController : public ui::EventHandler,
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // Testing interface.
+  void SetHideTabIndicatorsForTest(bool hide);
   void StartRevealForTest();
   void OnRevealViewLostMouseForTest();
 
@@ -116,6 +121,10 @@ class ImmersiveModeController : public ui::EventHandler,
   // Represents the target state, not the current animation state, so may be
   // false while the view is still animating out.
   bool revealed_;
+
+  // True if the miniature "tab indicators" should be hidden in the main browser
+  // view when immersive mode is enabled.
+  bool hide_tab_indicators_;
 
   // View holding the tabstrip and toolbar during a reveal. Exists for a short
   // time after |revealed_| is set false to allow layer animation to finish.

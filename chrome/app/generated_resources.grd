@@ -6683,11 +6683,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable workspace scrubbing.">
         Enables workspace switching via 3 finger vertical scroll.
       </message>
-      <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_NAME" desc="Title for the flag to enable immersive mode.">
-        Enable immersive windows
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_MODE_NAME" desc="Title for the flag to set the immersive mode style.">
+        Immersive window style
       </message>
-      <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_DESCRIPTION" desc="Description for the flag to enable immersive mode.">
-        Enables an "immersive mode" for browser windows that gives more spaces to web content. Active it by maximizing a window then clicking on the button in the top right corner.
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_MODE_DESCRIPTION" desc="Description for the flag to enable immersive mode.">
+        Sets the style of an "immersive mode" for browser windows that gives more space to web content. Activate immersive mode by maximizing a window then clicking on the button in the top right corner.
+      </message>
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_HIDE_TAB_INDICATORS" desc="Description a selection in the immersive mode popup menu.">
+        Hide tab indicators
       </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
@@ -7549,6 +7552,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">
         Open the home page
+      </message>
+      <message name="IDS_TOOLTIP_IMMERSIVE" desc="The tooltip for the immersive mode button">
+        Toggle immersive mode
       </message>
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page

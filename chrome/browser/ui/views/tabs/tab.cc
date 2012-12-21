@@ -237,10 +237,10 @@ static const SkColor kMiniTitleChangeGradientColor2 =
 // errors may lead to tabs in the same tabstrip having different sizes.
 const size_t kMaxImageCacheSize = 4;
 
-// Height of the "light bar" tabs in the tab strip in immersive mode.
+// Height of the miniature tab strip in immersive mode.
 const int kImmersiveTabHeight = 3;
 
-// Height of the colored bar representing the favicon in immersive mode.
+// Height of the small tab indicator rectangles in immersive mode.
 const int kImmersiveBarHeight = 2;
 
 // Color for active and inactive tabs in the immersive mode light strip. These
