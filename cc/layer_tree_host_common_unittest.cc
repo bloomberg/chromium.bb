@@ -337,7 +337,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     parentTranslationToCenter.Translate(50, 60);
     gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * MathUtil::inverse(parentTranslationToAnchor)
             * parentTranslationToCenter * parentSublayerMatrix * MathUtil::inverse(parentTranslationToCenter);
-    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform);
+    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
     gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * MathUtil::inverse(surfaceSublayerTransform);
@@ -400,7 +400,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     childTranslationToCenter.Translate(8, 9);
     gfx::Transform replicaLayerTransform;
     replicaLayerTransform.Scale3d(3, 3, 1);
-    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform);
+    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
     gfx::Transform replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * MathUtil::inverse(surfaceSublayerTransform);
@@ -485,7 +485,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     gfx::Transform B = translationToCenter * sublayerTransform * MathUtil::inverse(translationToCenter);
     gfx::Transform R = A * translationToAnchor * replicaLayerTransform * MathUtil::inverse(translationToAnchor);
 
-    gfx::Vector2dF surface1ParentTransformScale = MathUtil::computeTransform2dScaleComponents(A * B);
+    gfx::Vector2dF surface1ParentTransformScale = MathUtil::computeTransform2dScaleComponents(A * B, 1.f);
     gfx::Transform surface1SublayerTransform;
     surface1SublayerTransform.Scale(surface1ParentTransformScale.x(), surface1ParentTransformScale.y());
 
@@ -494,7 +494,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // S1 = transform to move from renderSurface1 pixels to the layer space of the owning layer
     gfx::Transform S1 = MathUtil::inverse(surface1SublayerTransform);
 
-    gfx::Vector2dF surface2ParentTransformScale = MathUtil::computeTransform2dScaleComponents(SS1 * A * B);
+    gfx::Vector2dF surface2ParentTransformScale = MathUtil::computeTransform2dScaleComponents(SS1 * A * B, 1.f);
     gfx::Transform surface2SublayerTransform;
     surface2SublayerTransform.Scale(surface2ParentTransformScale.x(), surface2ParentTransformScale.y());
 
@@ -4079,6 +4079,78 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     expectedChildNoScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->screenSpaceTransform());
+}
+
+TEST(LayerTreeHostCommonTest, verifySurfaceLayerTransformsInHighDPI)
+{
+    // Verify draw and screen space transforms of layers in a surface.
+    MockContentLayerClient delegate;
+    gfx::Transform identityMatrix;
+
+    gfx::Transform perspectiveMatrix;
+    perspectiveMatrix.ApplyPerspectiveDepth(2);
+
+    gfx::Transform scaleSmallMatrix;
+    scaleSmallMatrix.Scale(1.0 / 10.0, 1.0 / 12.0);
+
+    scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
+
+    scoped_refptr<ContentLayer> perspectiveSurface = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(perspectiveSurface.get(), perspectiveMatrix * scaleSmallMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
+
+    scoped_refptr<ContentLayer> scaleSurface = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(scaleSurface.get(), scaleSmallMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
+
+    perspectiveSurface->setForceRenderSurface(true);
+    scaleSurface->setForceRenderSurface(true);
+
+    parent->addChild(perspectiveSurface);
+    parent->addChild(scaleSurface);
+
+    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+
+    const double deviceScaleFactor = 2.5;
+    const double pageScaleFactor = 3;
+
+    gfx::Transform pageScaleTransform;
+    pageScaleTransform.Scale(pageScaleFactor, pageScaleFactor);
+    parent->setImplTransform(pageScaleTransform);
+
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, parent);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, perspectiveSurface);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, scaleSurface);
+
+    EXPECT_EQ(3u, renderSurfaceLayerList.size());
+
+    gfx::Transform expectedParentDrawTransform;
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentDrawTransform, parent->drawTransform());
+
+    // The scaled surface is rendered at its appropriate scale, and drawn 1:1
+    // into its target.
+    gfx::Transform expectedScaleSurfaceDrawTransform;
+    expectedScaleSurfaceDrawTransform.Translate(
+        deviceScaleFactor * pageScaleFactor * scaleSurface->position().x(),
+        deviceScaleFactor * pageScaleFactor * scaleSurface->position().y());
+    gfx::Transform expectedScaleSurfaceLayerDrawTransform;
+    expectedScaleSurfaceLayerDrawTransform.PreconcatTransform(scaleSmallMatrix);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScaleSurfaceDrawTransform, scaleSurface->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScaleSurfaceLayerDrawTransform, scaleSurface->drawTransform());
+
+    // The scale for the perspective surface is not known, so it is rendered 1:1
+    // with the screen, and then scaled during drawing.
+    gfx::Transform expectedPerspectiveSurfaceDrawTransform;
+    expectedPerspectiveSurfaceDrawTransform.Translate(
+        deviceScaleFactor * pageScaleFactor * perspectiveSurface->position().x(),
+        deviceScaleFactor * pageScaleFactor * perspectiveSurface->position().y());
+    expectedPerspectiveSurfaceDrawTransform.PreconcatTransform(perspectiveMatrix);
+    expectedPerspectiveSurfaceDrawTransform.PreconcatTransform(scaleSmallMatrix);
+    gfx::Transform expectedPerspectiveSurfaceLayerDrawTransform;
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedPerspectiveSurfaceDrawTransform, perspectiveSurface->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedPerspectiveSurfaceLayerDrawTransform, perspectiveSurface->drawTransform());
 }
 
 TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChildPosition)

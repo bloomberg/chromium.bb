@@ -383,10 +383,10 @@ static inline float scaleOnAxis(double a, double b, double c)
     return std::sqrt(a * a + b * b + c * c);
 }
 
-gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const gfx::Transform& transform)
+gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const gfx::Transform& transform, float fallbackValue)
 {
     if (transform.HasPerspective())
-        return gfx::Vector2dF(1, 1);
+        return gfx::Vector2dF(fallbackValue, fallbackValue);
     float xScale = scaleOnAxis(transform.matrix().getDouble(0, 0), transform.matrix().getDouble(1, 0), transform.matrix().getDouble(2, 0));
     float yScale = scaleOnAxis(transform.matrix().getDouble(0, 1), transform.matrix().getDouble(1, 1), transform.matrix().getDouble(2, 1));
     return gfx::Vector2dF(xScale, yScale);

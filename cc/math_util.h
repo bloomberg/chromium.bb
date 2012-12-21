@@ -106,7 +106,7 @@ public:
 
     static void flattenTransformTo2d(gfx::Transform&);
 
-    static gfx::Vector2dF computeTransform2dScaleComponents(const gfx::Transform&);
+    static gfx::Vector2dF computeTransform2dScaleComponents(const gfx::Transform&, float fallbackValue);
 
     // Returns the smallest angle between the given two vectors in degrees. Neither vector is
     // assumed to be normalized.

@@ -390,7 +390,7 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
         rasterScale = 1;
 
         if (!animatingTransformToScreen && layer->automaticallyComputeRasterScale()) {
-            gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
+            gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, 0.f);
             float combinedScale = std::max(transformScale.x(), transformScale.y());
             rasterScale = combinedScale / deviceScaleFactor;
             if (!layer->boundsContainPageScale())
@@ -660,7 +660,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     gfx::Transform nextHierarchyMatrix = fullHierarchyMatrix;
     gfx::Transform sublayerMatrix;
 
-    gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
+    gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
 
     if (subtreeShouldRenderToSeparateSurface(layer, combinedTransform.IsScaleOrTranslation())) {
         // Check back-face visibility before continuing with this surface and its subtree
