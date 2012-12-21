@@ -1695,8 +1695,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/167236
+     */
+    @DisabledTest
     public void testFileUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1704,8 +1708,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/167236
+     */
+    @DisabledTest
     public void testFileUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1713,8 +1721,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/167236
+     */
+    @DisabledTest
     public void testFileUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2092,8 +2104,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/167236
+     */
+    @DisabledTest
     public void testJavaScriptPopupsBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2198,8 +2214,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/167236
+     */
+    @DisabledTest
     public void testCacheModeNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         TestWebServer webServer = null;
