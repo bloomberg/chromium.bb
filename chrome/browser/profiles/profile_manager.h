@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class CommandLine;
 class NewProfileLauncher;
 class ProfileInfoCache;
 
@@ -118,6 +119,15 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns true if the given command line indicates that this is a short-lived
+  // profile import process.
+  static bool IsImportProcess(const CommandLine& command_line);
+
+  // Whether a first-run import was triggered before the browser mainloop began.
+  // This is used in testing to verify import startup actions that occur before
+  // an observer can be registered in the test.
+  static bool DidPerformProfileImport();
 
   // Indicate that an import process will run for the next created Profile.
   void SetWillImport();

@@ -451,6 +451,21 @@ void LogFirstRunMetric(FirstRunBubbleMetric metric) {
                             NUM_FIRST_RUN_BUBBLE_METRICS);
 }
 
+namespace {
+CommandLine* GetExtraArgumentsInstance() {
+  CR_DEFINE_STATIC_LOCAL(CommandLine, arguments, (CommandLine::NoProgram()));
+  return &arguments;
+}
+}  // namespace
+
+void SetExtraArgumentsForImportProcess(const CommandLine& arguments) {
+  GetExtraArgumentsInstance()->AppendArguments(arguments, false);
+}
+
+const CommandLine& GetExtraArgumentsForImportProcess() {
+  return *GetExtraArgumentsInstance();
+}
+
 // static
 void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
   SetShowFirstRunBubblePref(true);

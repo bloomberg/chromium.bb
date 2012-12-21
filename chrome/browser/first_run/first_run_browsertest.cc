@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef InProcessBrowserTest FirstRunBrowserTest;
@@ -36,4 +41,31 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
       prefs::kShouldShowWelcomePage));
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       prefs::kShouldShowWelcomePage));
+}
+
+namespace {
+class FirstRunIntegrationBrowserTest : public InProcessBrowserTest {
+ public:
+  FirstRunIntegrationBrowserTest() {}
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kFirstRun);
+    command_line->AppendSwitch(switches::kFirstRunForceImport);
+    EXPECT_FALSE(ProfileManager::DidPerformProfileImport());
+
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+    // The forked import process should run BrowserMain.
+    CommandLine import_arguments((CommandLine::NoProgram()));
+    import_arguments.AppendSwitch(content::kLaunchAsBrowser);
+    first_run::SetExtraArgumentsForImportProcess(import_arguments);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FirstRunIntegrationBrowserTest);
+};
+}
+
+IN_PROC_BROWSER_TEST_F(FirstRunIntegrationBrowserTest, WaitForImport) {
+  ASSERT_TRUE(ProfileManager::DidPerformProfileImport());
 }

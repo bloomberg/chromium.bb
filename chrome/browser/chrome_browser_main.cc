@@ -435,11 +435,6 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
   return true;
 }
 
-bool HasImportSwitch(const CommandLine& command_line) {
-  return (command_line.HasSwitch(switches::kImport) ||
-          command_line.HasSwitch(switches::kImportFromFile));
-}
-
 void LaunchDevToolsHandlerIfNeeded(Profile* profile,
                                    const CommandLine& command_line) {
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
@@ -704,7 +699,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   is_first_run_ =
       (first_run::IsChromeFirstRun() ||
           parsed_command_line().HasSwitch(switches::kFirstRun)) &&
-      !HasImportSwitch(parsed_command_line());
+      !ProfileManager::IsImportProcess(parsed_command_line());
 #endif
 
   FilePath local_state_path;
@@ -1034,7 +1029,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // from other browsers. In case this process is a short-lived "import"
   // process that another browser runs just to import the settings, we
   // don't want to be checking for another browser process, by design.
-  pass_command_line = !HasImportSwitch(parsed_command_line());
+  pass_command_line = !ProfileManager::IsImportProcess(parsed_command_line());
 #endif
 
   // If we're being launched just to check the connector policy, we are
@@ -1147,7 +1142,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // that exits when this task has finished.
   // TODO(port): Port the Mac's IPC-based implementation to other platforms to
   //             replace this implementation. http://crbug.com/22142
-  if (HasImportSwitch(parsed_command_line())) {
+  if (ProfileManager::IsImportProcess(parsed_command_line())) {
     return first_run::ImportNow(profile_, parsed_command_line());
   }
 #endif
@@ -1198,7 +1193,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (is_first_run_) {
     PreInteractiveFirstRunInit();
 
-    if (!first_run_ui_bypass_) {
+    if (!first_run_ui_bypass_ ||
+        parsed_command_line().HasSwitch(switches::kFirstRunForceImport)) {
       first_run::AutoImport(profile_,
                             master_prefs_->homepage_defined,
                             master_prefs_->do_import_items,

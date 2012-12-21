@@ -332,6 +332,10 @@ bool ImportSettingsWin(Profile* profile,
   };
   import_cmd.CopySwitchesFrom(cmdline, kSwitchNames, arraysize(kSwitchNames));
 
+  // Allow tests to introduce additional switches.
+  import_cmd.AppendArguments(first_run::GetExtraArgumentsForImportProcess(),
+                             false);
+
   // Since ImportSettings is called before the local state is stored on disk
   // we pass the language as an argument.  GetApplicationLocale checks the
   // current command line as fallback.

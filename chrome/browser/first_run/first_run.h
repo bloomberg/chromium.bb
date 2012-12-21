@@ -97,6 +97,12 @@ bool SetPersonalDataManagerFirstRunPref();
 // Log a metric for the "FirstRun.SearchEngineBubble" histogram.
 void LogFirstRunMetric(FirstRunBubbleMetric metric);
 
+// Allow a test to specify additional arguments for the profile import process.
+void SetExtraArgumentsForImportProcess(const CommandLine& arguments);
+
+// Get any extra arguments set with SetExtraArgumentsForImportProcess.
+const CommandLine& GetExtraArgumentsForImportProcess();
+
 // -- Platform-specific functions --
 
 // Automatically import history and home page (and search engine, if

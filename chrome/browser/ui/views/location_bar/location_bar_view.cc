@@ -102,7 +102,7 @@ namespace {
 
 Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
   WebContents* contents = delegate->GetWebContents();
-  return chrome::FindBrowserWithWebContents(contents);
+  return contents ? chrome::FindBrowserWithWebContents(contents) : NULL;
 }
 
 // Height of the location bar's round corner region.
@@ -1280,6 +1280,9 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 #if !defined(OS_CHROMEOS)
   // First run bubble doesn't make sense for Chrome OS.
   Browser* browser = GetBrowserFromDelegate(delegate_);
+  if (!browser)
+    return; // Possible when browser is shutting down.
+
   FirstRunBubble::ShowBubble(browser, location_icon_view_);
 #endif
 }

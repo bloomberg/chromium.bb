@@ -703,6 +703,9 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
 
+// Force a profile auto-import that would occur on a first run.
+const char kFirstRunForceImport[]           = "first-run-force-import";
+
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 

@@ -413,11 +413,9 @@ ExtensionService::ExtensionService(Profile* profile,
   app_notification_manager_->Init();
 
   if (extensions_enabled_) {
-    if (!command_line->HasSwitch(switches::kImport) &&
-        !command_line->HasSwitch(switches::kImportFromFile)) {
-      extensions::ExternalProviderImpl::CreateExternalProviders(
-          this, profile_, &external_extension_providers_);
-    }
+    CHECK(!ProfileManager::IsImportProcess(*command_line));
+    extensions::ExternalProviderImpl::CreateExternalProviders(
+        this, profile_, &external_extension_providers_);
   }
 
   // Set this as the ExtensionService for extension sorting to ensure it
@@ -505,6 +503,8 @@ void ExtensionService::RegisterForImportFinished() {
 }
 
 void ExtensionService::InitAfterImport() {
+  component_loader_->BulkLoadDeferred();
+
   CheckForExternalUpdates();
 
   GarbageCollectExtensions();
@@ -586,36 +586,35 @@ void ExtensionService::Init() {
   DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
+  CHECK(!ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()));
+
   // TODO(mek): It might be cleaner to do the FinishDelayedInstallInfo stuff
   // here instead of in installedloader.
-  component_loader_->LoadAll();
-  extensions::InstalledLoader(this).LoadAllExtensions();
+  if (g_browser_process->profile_manager() &&
+      g_browser_process->profile_manager()->will_import()) {
+
+    // Defer component extensions with background pages, since they may conflict
+    // with the import process.
+    component_loader_->BulkLoadDeferBackgroundPages();
+    extensions::InstalledLoader(this).LoadAllExtensions();
+    RegisterForImportFinished();
+  } else {
+    component_loader_->BulkLoadAll();
+    extensions::InstalledLoader(this).LoadAllExtensions();
+
+    // TODO(erikkay) this should probably be deferred to a future point
+    // rather than running immediately at startup.
+    CheckForExternalUpdates();
+
+    // TODO(erikkay) this should probably be deferred as well.
+    GarbageCollectExtensions();
+  }
 
   // The Sideload Wipeout effort takes place during load (see above), so once
   // that is done the flag can be set so that we don't have to check again.
   if (wipeout_is_active_) {
     extension_prefs_->SetSideloadWipeoutDone();
     wipeout_is_active_ = false;  // Wipeout is only on during load.
-  }
-
-  // If we are running in the import process, don't bother initializing the
-  // extension service since this can interfere with the main browser process
-  // that is already running an extension service for this profile.
-  // TODO(aa): can we start up even less of ExtensionService?
-  // http://crbug.com/107636
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kImport) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kImportFromFile)) {
-    if (g_browser_process->profile_manager() &&
-        g_browser_process->profile_manager()->will_import()) {
-      RegisterForImportFinished();
-    } else {
-      // TODO(erikkay) this should probably be deferred to a future point
-      // rather than running immediately at startup.
-      CheckForExternalUpdates();
-
-      // TODO(erikkay) this should probably be deferred as well.
-      GarbageCollectExtensions();
-    }
   }
 
   if (extension_prefs_->NeedsStorageGarbageCollection()) {
@@ -1997,7 +1996,7 @@ void ExtensionService::UnloadAllExtensions() {
 
 void ExtensionService::ReloadExtensions() {
   UnloadAllExtensions();
-  component_loader_->LoadAll();
+  component_loader_->BulkLoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
 }
 

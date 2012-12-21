@@ -69,6 +69,8 @@ using content::UserMetricsAction;
 
 namespace {
 
+static bool did_perform_profile_import = false;
+
 // Profiles that should be deleted on shutdown.
 std::vector<FilePath>& ProfilesToDelete() {
   CR_DEFINE_STATIC_LOCAL(std::vector<FilePath>, profiles_to_delete, ());
@@ -621,12 +623,24 @@ void ProfileManager::Observe(
   }
 }
 
+// static
+bool ProfileManager::IsImportProcess(const CommandLine& command_line) {
+  return (command_line.HasSwitch(switches::kImport) ||
+          command_line.HasSwitch(switches::kImportFromFile));
+}
+
+// static
+bool ProfileManager::DidPerformProfileImport() {
+  return did_perform_profile_import;
+}
+
 void ProfileManager::SetWillImport() {
   will_import_ = true;
 }
 
 void ProfileManager::OnImportFinished(Profile* profile) {
   will_import_ = false;
+  did_perform_profile_import = true;
   DCHECK(profile);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_IMPORT_FINISHED,
@@ -690,13 +704,15 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 #if defined(ENABLE_EXTENSIONS)
-  extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
-      !go_off_the_record);
-  // During tests, when |profile| is an instance of TestingProfile,
-  // ExtensionSystem might not create an ExtensionService.
-  if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
-    profile->GetHostContentSettingsMap()->RegisterExtensionService(
-        extensions::ExtensionSystem::Get(profile)->extension_service());
+  if (!IsImportProcess(command_line)) {
+    extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
+        !go_off_the_record);
+    // During tests, when |profile| is an instance of TestingProfile,
+    // ExtensionSystem might not create an ExtensionService.
+    if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
+      profile->GetHostContentSettingsMap()->RegisterExtensionService(
+          extensions::ExtensionSystem::Get(profile)->extension_service());
+    }
   }
 #endif
   if (!command_line.HasSwitch(switches::kDisableWebResources))

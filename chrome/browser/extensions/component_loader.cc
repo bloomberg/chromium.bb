@@ -88,12 +88,29 @@ ComponentLoader::~ComponentLoader() {
   ClearAllRegistered();
 }
 
-void ComponentLoader::LoadAll() {
+void ComponentLoader::BulkLoadAll() {
   for (RegisteredComponentExtensions::iterator it =
           component_extensions_.begin();
       it != component_extensions_.end(); ++it) {
-    Load(*it);
+    Load(*it, false);
   }
+}
+
+void ComponentLoader::BulkLoadDeferBackgroundPages() {
+  for (RegisteredComponentExtensions::iterator it =
+          component_extensions_.begin();
+      it != component_extensions_.end(); ++it) {
+    Load(*it, true);
+  }
+}
+
+void ComponentLoader::BulkLoadDeferred() {
+  for (DeferredAtLoadExtensions::iterator it =
+          deferred_at_load_extensions.begin();
+      it != deferred_at_load_extensions.end(); ++it) {
+    extension_service_->AddComponentExtension(*it);
+  }
+  deferred_at_load_extensions.clear();
 }
 
 DictionaryValue* ComponentLoader::ParseManifest(
@@ -142,7 +159,7 @@ std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
   ComponentExtensionInfo info(parsed_manifest, root_directory);
   component_extensions_.push_back(info);
   if (extension_service_->is_ready())
-    Load(info);
+    Load(info, false);
   return info.extension_id;
 }
 
@@ -167,13 +184,14 @@ void ComponentLoader::Reload(const std::string& extension_id) {
          component_extensions_.begin(); it != component_extensions_.end();
          ++it) {
     if (it->extension_id == extension_id) {
-      Load(*it);
+      Load(*it, false);
       break;
     }
   }
 }
 
-const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
+void ComponentLoader::Load(const ComponentExtensionInfo& info,
+                           bool defer_if_has_background_page) {
   // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
   //               our component extensions to the new manifest version.
   int flags = Extension::REQUIRE_KEY;
@@ -188,11 +206,15 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
       &error));
   if (!extension.get()) {
     LOG(ERROR) << error;
-    return NULL;
+    return;
   }
+
   CHECK_EQ(info.extension_id, extension->id()) << extension->name();
-  extension_service_->AddComponentExtension(extension);
-  return extension;
+  if (extension->has_background_page() && defer_if_has_background_page) {
+    deferred_at_load_extensions.push_back(extension);
+  } else {
+    extension_service_->AddComponentExtension(extension);
+  }
 }
 
 void ComponentLoader::RemoveAll() {
