@@ -1278,10 +1278,9 @@ TaskManager* TaskManager::GetInstance() {
   return Singleton<TaskManager>::get();
 }
 
-void TaskManager::OpenAboutMemory() {
-  // TODO(robertshield): FTB - Merge MAD's TaskManager change.
-  Browser* browser = browser::FindOrCreateTabbedBrowserDeprecated(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(), desktop_type);
   chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
                                 content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;

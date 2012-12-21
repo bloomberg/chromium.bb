@@ -950,11 +950,12 @@ void BrowserWindowGtk::ShowUpdateChromeDialog() {
   UpdateRecommendedDialog::Show(window_);
 }
 
-void BrowserWindowGtk::ShowTaskManager() {
+void BrowserWindowGtk::ShowTaskManager(chrome::HostDesktopType desktop_type) {
   TaskManagerGtk::Show(false);
 }
 
-void BrowserWindowGtk::ShowBackgroundPages() {
+void BrowserWindowGtk::ShowBackgroundPages(
+    chrome::HostDesktopType desktop_type) {
   TaskManagerGtk::Show(true);
 }
 

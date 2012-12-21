@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -182,7 +183,7 @@ class SortHelper {
 }
 
 - (IBAction)statsLinkClicked:(id)sender {
-  TaskManager::GetInstance()->OpenAboutMemory();
+  TaskManager::GetInstance()->OpenAboutMemory(chrome::HOST_DESKTOP_TYPE_NATIVE);
 }
 
 - (IBAction)killSelectedProcesses:(id)sender {

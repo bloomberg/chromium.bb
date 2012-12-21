@@ -450,11 +450,12 @@ void BrowserWindowCocoa::ShowUpdateChromeDialog() {
   restart_browser::RequestRestart(window());
 }
 
-void BrowserWindowCocoa::ShowTaskManager() {
+void BrowserWindowCocoa::ShowTaskManager(chrome::HostDesktopType desktop_type) {
   TaskManagerMac::Show(false);
 }
 
-void BrowserWindowCocoa::ShowBackgroundPages() {
+void BrowserWindowCocoa::ShowBackgroundPages(
+    chrome::HostDesktopType desktop_type) {
   TaskManagerMac::Show(true);
 }
 

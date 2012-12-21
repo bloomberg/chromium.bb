@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ui_base_types.h"
@@ -126,8 +127,9 @@ class BrowserWindowGtk
                                         Profile* profile) OVERRIDE;
   virtual void ToggleBookmarkBar() OVERRIDE;
   virtual void ShowUpdateChromeDialog() OVERRIDE;
-  virtual void ShowTaskManager() OVERRIDE;
-  virtual void ShowBackgroundPages() OVERRIDE;
+  virtual void ShowTaskManager(chrome::HostDesktopType desktop_type) OVERRIDE;
+  virtual void ShowBackgroundPages(
+      chrome::HostDesktopType desktop_type) OVERRIDE;
   virtual void ShowBookmarkBubble(const GURL& url,
                                   bool already_bookmarked) OVERRIDE;
   virtual void ShowChromeToMobileBubble() OVERRIDE;

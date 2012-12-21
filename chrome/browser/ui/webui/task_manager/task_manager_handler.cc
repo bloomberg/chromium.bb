@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -201,7 +202,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
     DCHECK(false);
   }
 
-  task_manager_->OpenAboutMemory();
+  task_manager_->OpenAboutMemory(chrome::GetActiveDesktop());
 }
 
 void TaskManagerHandler::HandleSetUpdateColumn(const ListValue* args) {

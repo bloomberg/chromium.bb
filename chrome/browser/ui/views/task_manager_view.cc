@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -276,13 +277,15 @@ class TaskManagerView : public views::ButtonListener,
                         public views::ContextMenuController,
                         public views::Menu::Delegate {
  public:
-  explicit TaskManagerView(bool highlight_background_resources);
+  TaskManagerView(bool highlight_background_resources,
+                  chrome::HostDesktopType desktop_type);
   virtual ~TaskManagerView();
 
   // Shows the Task manager window, or re-activates an existing one. If
   // |highlight_background_resources| is true, highlights the background
   // resources in the resource display.
-  static void Show(bool highlight_background_resources);
+  static void Show(bool highlight_background_resources,
+                   chrome::HostDesktopType desktop_type);
 
   // views::View:
   virtual void Layout() OVERRIDE;
@@ -357,7 +360,10 @@ class TaskManagerView : public views::ButtonListener,
   bool is_always_on_top_;
 
   // True when the Task Manager should highlight background resources.
-  bool highlight_background_resources_;
+  const bool highlight_background_resources_;
+
+  // The host desktop type this task manager belongs to.
+  const chrome::HostDesktopType desktop_type_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
   string16 always_on_top_menu_text_;
@@ -373,12 +379,14 @@ class TaskManagerView : public views::ButtonListener,
 TaskManagerView* TaskManagerView::instance_ = NULL;
 
 
-TaskManagerView::TaskManagerView(bool highlight_background_resources)
+TaskManagerView::TaskManagerView(bool highlight_background_resources,
+                                 chrome::HostDesktopType desktop_type)
     : purge_memory_button_(NULL),
       task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
       is_always_on_top_(false),
-      highlight_background_resources_(highlight_background_resources) {
+      highlight_background_resources_(highlight_background_resources),
+      desktop_type_(desktop_type) {
   Init();
 }
 
@@ -582,13 +590,15 @@ gfx::Size TaskManagerView::GetPreferredSize() {
 }
 
 // static
-void TaskManagerView::Show(bool highlight_background_resources) {
+void TaskManagerView::Show(bool highlight_background_resources,
+                           chrome::HostDesktopType desktop_type) {
   // In Windows Metro it's not good to open this native window.
   DCHECK(!win8::IsSingleWindowMetroMode());
 
   if (instance_) {
     if (instance_->highlight_background_resources_ !=
-        highlight_background_resources) {
+        highlight_background_resources ||
+        instance_->desktop_type_ != desktop_type) {
       instance_->GetWidget()->Close();
     } else {
       // If there's a Task manager window open already, just activate it.
@@ -596,7 +606,8 @@ void TaskManagerView::Show(bool highlight_background_resources) {
       return;
     }
   }
-  instance_ = new TaskManagerView(highlight_background_resources);
+  instance_ = new TaskManagerView(highlight_background_resources,
+                                  desktop_type);
   views::Widget::CreateWindow(instance_);
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
@@ -710,7 +721,7 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
 
 void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(about_memory_link_, source);
-  task_manager_->OpenAboutMemory();
+  task_manager_->OpenAboutMemory(desktop_type_);
 }
 
 void TaskManagerView::ShowContextMenuForView(views::View* source,
@@ -799,12 +810,12 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
 namespace chrome {
 
 // Declared in browser_dialogs.h so others don't need to depend on our header.
-void ShowTaskManager() {
-  TaskManagerView::Show(false);
+void ShowTaskManager(chrome::HostDesktopType desktop_type) {
+  TaskManagerView::Show(false, desktop_type);
 }
 
-void ShowBackgroundPages() {
-  TaskManagerView::Show(true);
+void ShowBackgroundPages(chrome::HostDesktopType desktop_type) {
+  TaskManagerView::Show(true, desktop_type);
 }
 
 }  // namespace chrome

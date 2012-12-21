@@ -30,9 +30,6 @@ Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
                            chrome::HostDesktopType type);
 
-// Deprecated. Call FindOrCreateTabbedBrowser and pass a desktop type instead.
-Browser* FindOrCreateTabbedBrowserDeprecated(Profile* profile);
-
 // Returns the first tabbed browser matching |profile|. If there is no tabbed
 // browser a new one is created and returned for the desktop specified by
 // |type|. If a new browser is created it is not made visible.

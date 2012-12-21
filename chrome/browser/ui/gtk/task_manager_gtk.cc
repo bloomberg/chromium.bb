@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
@@ -856,7 +857,7 @@ void TaskManagerGtk::ShowContextMenu(const gfx::Point& point,
 }
 
 void TaskManagerGtk::OnLinkActivated() {
-  task_manager_->OpenAboutMemory();
+  task_manager_->OpenAboutMemory(chrome::HOST_DESKTOP_TYPE_NATIVE);
 }
 
 gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,

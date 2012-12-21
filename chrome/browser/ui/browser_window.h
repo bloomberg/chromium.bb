@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -200,10 +201,10 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowUpdateChromeDialog() = 0;
 
   // Shows the Task manager.
-  virtual void ShowTaskManager() = 0;
+  virtual void ShowTaskManager(chrome::HostDesktopType desktop_type) = 0;
 
   // Shows task information related to background pages.
-  virtual void ShowBackgroundPages() = 0;
+  virtual void ShowBackgroundPages(chrome::HostDesktopType desktop_type) = 0;
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.

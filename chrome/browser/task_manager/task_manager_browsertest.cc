@@ -88,7 +88,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
 // Regression test for http://crbug.com/13361
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ShutdownWhileOpen) {
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
   // Wait for loading of task manager.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
   // Wait for loading of task manager.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
   // Wait for loading of task manager.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
@@ -502,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_KillExtensionAndReload) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
   // Wait for loading of task manager.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
   // Wait for loading of task manager.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
-  browser()->window()->ShowTaskManager();
+  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);

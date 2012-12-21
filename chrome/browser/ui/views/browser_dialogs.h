@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -65,10 +66,10 @@ void ShowPageInfoBubble(views::View* anchor_view,
 FindBar* CreateFindBar(BrowserView* browser_view);
 
 // Shows the Task Manager.
-void ShowTaskManager();
+void ShowTaskManager(chrome::HostDesktopType desktop_type);
 
 // Shows the Task Manager, highlighting the background pages.
-void ShowBackgroundPages();
+void ShowBackgroundPages(chrome::HostDesktopType desktop_type);
 
 // Shows a dialog box that allows a search engine to be edited. |template_url|
 // is the search engine being edited. If it is NULL, then the dialog will add a
