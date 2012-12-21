@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
 
 #include "base/timer.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -81,6 +80,12 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   // The browser this bubble is in.
   Browser* browser_;
 
+  // The host the bubble is for, can be empty.
+  GURL url_;
+
+  // The type of the bubble; controls e.g. which buttons to show.
+  FullscreenExitBubbleType bubble_type_;
+
  private:
   // Timer to delay before allowing the bubble to hide after it's initially
   // shown.
@@ -99,12 +104,7 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   // if the mouse has moved since our last check.
   gfx::Point last_mouse_pos_;
 
- protected:
-  // The host the bubble is for, can be empty.
-  GURL url_;
-
-  // The type of the bubble; controls e.g. which buttons to show.
-  FullscreenExitBubbleType bubble_type_;
+  DISALLOW_COPY_AND_ASSIGN(FullscreenExitBubble);
 };
 
 #endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
