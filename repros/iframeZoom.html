@@ -1,0 +1,27 @@
+<html>
+<head>
+<script>
+var zoom = 1;
+function zoomIn()
+{
+    zoom += 0.1;
+    document.body.setAttribute("style", "zoom:" + zoom + ";");
+}
+function zoomOut()
+{
+    if (zoom >= 1.1) {
+        zoom -= 0.1;
+        document.body.setAttribute("style", "zoom:" + zoom + ";");
+    }
+}
+</script>
+</head>
+<body style="zoom:1;">
+<button onclick="zoomIn();">zoom in</button>
+<button onclick="zoomOut();">zoom out</button>
+<div id='container'>some scaled text
+<iframe id='frame' style="width:400px;height:600px;" src='http://www.bloomberg.com'></iframe>
+</div>
+</body>
+</html>
+
