@@ -35,7 +35,7 @@ class URandomFd {
   int fd_;
 };
 
-base::LazyInstance<URandomFd> g_urandom_fd = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<URandomFd>::Leaky g_urandom_fd = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
