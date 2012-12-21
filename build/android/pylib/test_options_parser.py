@@ -167,7 +167,8 @@ def ValidateInstrumentationOptions(option_parser, options, args):
   if os.path.exists(options.test_apk):
     # The APK is fully qualified, assume the JAR lives along side.
     options.test_apk_path = options.test_apk
-    options.test_apk_jar_path = os.path.splitext(options.test_apk_path) + '.jar'
+    options.test_apk_jar_path = (os.path.splitext(options.test_apk_path)[0] +
+                                 '.jar')
   else:
     options.test_apk_path = os.path.join(_SDK_OUT_DIR,
                                          options.build_type,
