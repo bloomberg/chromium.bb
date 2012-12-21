@@ -29,9 +29,6 @@ const char kHtmlPath[] = "path";
 const char kTabId[] = "tabId";
 const char kHeight[] = "height";
 
-const char kNoCurrentWindowError[] = "No current browser window was found";
-const char kTabNotFoundError[] = "Specified tab (or default tab) not found";
-
 }  // namespace
 
 bool ShowInfoBarFunction::RunImpl() {
