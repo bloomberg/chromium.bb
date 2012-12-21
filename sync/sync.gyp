@@ -687,6 +687,7 @@
           'syncable/syncable_enum_conversions_unittest.cc',
           'syncable/syncable_id_unittest.cc',
           'syncable/syncable_unittest.cc',
+          'syncable/syncable_util_unittest.cc',
           'util/cryptographer_unittest.cc',
           'util/data_encryption_win_unittest.cc',
           'util/data_type_histogram_unittest.cc',

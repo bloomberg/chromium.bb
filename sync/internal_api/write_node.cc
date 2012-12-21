@@ -19,6 +19,7 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_util.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/util/cryptographer.h"
 
 using std::string;
@@ -292,7 +293,7 @@ BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
   if (tag.empty())
     return INIT_FAILED_PRECONDITION;
 
-  const std::string hash = GenerateSyncableHash(model_type, tag);
+  const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
@@ -380,7 +381,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
     return INIT_FAILED_EMPTY_TAG;
   }
 
-  const std::string hash = GenerateSyncableHash(model_type, tag);
+  const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
 
   syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
 

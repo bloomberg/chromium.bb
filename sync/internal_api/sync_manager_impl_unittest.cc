@@ -63,6 +63,7 @@
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/syncable_read_transaction.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/callback_counter.h"
 #include "sync/test/engine/fake_sync_scheduler.h"
@@ -277,22 +278,6 @@ TEST_F(SyncApiTest, BasicTagWrite) {
     EXPECT_NE(node.GetId(), 0);
     EXPECT_EQ(node.GetId(), root_node.GetFirstChildId());
   }
-}
-
-TEST_F(SyncApiTest, GenerateSyncableHash) {
-  EXPECT_EQ("OyaXV5mEzrPS4wbogmtKvRfekAI=",
-      BaseNode::GenerateSyncableHash(BOOKMARKS, "tag1"));
-  EXPECT_EQ("iNFQtRFQb+IZcn1kKUJEZDDkLs4=",
-      BaseNode::GenerateSyncableHash(PREFERENCES, "tag1"));
-  EXPECT_EQ("gO1cPZQXaM73sHOvSA+tKCKFs58=",
-      BaseNode::GenerateSyncableHash(AUTOFILL, "tag1"));
-
-  EXPECT_EQ("A0eYIHXM1/jVwKDDp12Up20IkKY=",
-      BaseNode::GenerateSyncableHash(BOOKMARKS, "tag2"));
-  EXPECT_EQ("XYxkF7bhS4eItStFgiOIAU23swI=",
-      BaseNode::GenerateSyncableHash(PREFERENCES, "tag2"));
-  EXPECT_EQ("GFiWzo5NGhjLlN+OyCfhy28DJTQ=",
-      BaseNode::GenerateSyncableHash(AUTOFILL, "tag2"));
 }
 
 TEST_F(SyncApiTest, ModelTypesSiloed) {
@@ -956,7 +941,7 @@ class SyncManagerTest : public testing::Test,
     UserShare* share = sync_manager_.GetUserShare();
     syncable::WriteTransaction trans(
         FROM_HERE, syncable::UNITTEST, share->directory.get());
-    const std::string hash = BaseNode::GenerateSyncableHash(type, client_tag);
+    const std::string hash = syncable::GenerateSyncableHash(type, client_tag);
     syncable::MutableEntry entry(&trans, syncable::GET_BY_CLIENT_TAG,
                                  hash);
     EXPECT_TRUE(entry.good());
@@ -2197,7 +2182,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                 syncable::GenerateSyncableHash(BOOKMARKS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2346,7 +2331,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetEntitySpecificsNoChange) {
             mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 BaseNode::GenerateSyncableHash(PASSWORDS,
+                 syncable::GenerateSyncableHash(PASSWORDS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2381,7 +2366,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
             mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 BaseNode::GenerateSyncableHash(PASSWORDS,
+                 syncable::GenerateSyncableHash(PASSWORDS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2432,7 +2417,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
         entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 BaseNode::GenerateSyncableHash(PASSWORDS,
+                 syncable::GenerateSyncableHash(PASSWORDS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2471,7 +2456,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
         entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 BaseNode::GenerateSyncableHash(PASSWORDS,
+                 syncable::GenerateSyncableHash(PASSWORDS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2495,7 +2480,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                 syncable::GenerateSyncableHash(BOOKMARKS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2531,7 +2516,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                 syncable::GenerateSyncableHash(BOOKMARKS,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2590,7 +2575,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
   MakeServerNode(sync_manager_.GetUserShare(),
                  PREFERENCES,
                  client_tag,
-                 BaseNode::GenerateSyncableHash(PREFERENCES,
+                 syncable::GenerateSyncableHash(PREFERENCES,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2628,7 +2613,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   MakeServerNode(sync_manager_.GetUserShare(),
                  PREFERENCES,
                  client_tag,
-                 BaseNode::GenerateSyncableHash(PREFERENCES,
+                 syncable::GenerateSyncableHash(PREFERENCES,
                                                 client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2699,7 +2684,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     AddDefaultFieldValue(BOOKMARKS, &entity_specifics);
   }
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                 syncable::GenerateSyncableHash(BOOKMARKS,
                                                 client_tag),
                  entity_specifics);
 
@@ -2764,7 +2749,7 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                 syncable::GenerateSyncableHash(BOOKMARKS,
                                                 client_tag),
                  entity_specifics);
 

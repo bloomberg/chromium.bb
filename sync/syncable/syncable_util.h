@@ -5,9 +5,11 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 #define SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace tracked_objects {
 class Location;
@@ -34,6 +36,10 @@ bool SyncAssert(bool condition,
 
 int GetUnsyncedEntries(BaseTransaction* trans,
                        std::vector<int64> *handles);
+
+// Generates a fixed-length tag for the given string under the given model_type.
+std::string GenerateSyncableHash(
+    ModelType model_type, const std::string& client_tag);
 
 }  // namespace syncable
 }  // namespace syncer
