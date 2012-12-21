@@ -80,7 +80,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     ppapi::host::PpapiHost* ppapi_host_;
   };
 
-  ppapi::host::PpapiHost ppapi_host_;
+  scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
   std::string plugin_name_;
   FilePath profile_data_directory_;

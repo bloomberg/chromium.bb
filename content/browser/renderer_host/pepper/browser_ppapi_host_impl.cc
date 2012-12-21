@@ -49,22 +49,27 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     const ppapi::PpapiPermissions& permissions,
     const std::string& plugin_name,
     const FilePath& profile_data_directory)
-    : ppapi_host_(sender, permissions),
+    : ppapi_host_(new ppapi::host::PpapiHost(sender, permissions)),
       plugin_process_handle_(base::kNullProcessHandle),
       plugin_name_(plugin_name),
       profile_data_directory_(profile_data_directory) {
-  message_filter_ = new HostMessageFilter(&ppapi_host_);
-  ppapi_host_.AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+  message_filter_ = new HostMessageFilter(ppapi_host_.get());
+  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
 }
 
 BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {
   // Notify the filter so it won't foward messages to us.
   message_filter_->OnHostDestroyed();
+
+  // Delete the host explicitly first. This shutdown will destroy the
+  // resources, which may want to do cleanup in their destructors and expect
+  // their pointers to us to be valid.
+  ppapi_host_.reset();
 }
 
 ppapi::host::PpapiHost* BrowserPpapiHostImpl::GetPpapiHost() {
-  return &ppapi_host_;
+  return ppapi_host_.get();
 }
 
 base::ProcessHandle BrowserPpapiHostImpl::GetPluginProcessHandle() const {

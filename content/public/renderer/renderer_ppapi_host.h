@@ -82,7 +82,8 @@ class RendererPpapiHost {
   virtual bool IsValidInstance(PP_Instance instance) const = 0;
 
   // Returns the PluginInstance for the given PP_Instance, or NULL if the
-  // PP_Instance is invalid.
+  // PP_Instance is invalid (the common case this will be invalid is during
+  // plugin teardown when resource hosts are being force-freed).
   virtual webkit::ppapi::PluginInstance* GetPluginInstance(
       PP_Instance instance) const = 0;
 

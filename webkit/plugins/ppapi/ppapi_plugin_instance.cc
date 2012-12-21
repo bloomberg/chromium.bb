@@ -405,6 +405,11 @@ PluginInstance::PluginInstance(
 PluginInstance::~PluginInstance() {
   DCHECK(!fullscreen_container_);
 
+  // Force-unbind any Graphics. In the case of Graphics2D, if the plugin
+  // leaks the graphics 2D, it may actually get cleaned up after our
+  // destruction, so we need its pointers to be up-to-date.
+  BindGraphics(pp_instance(), 0);
+
   // Free all the plugin objects. This will automatically clear the back-
   // pointer from the NPObject so WebKit can't call into the plugin any more.
   //

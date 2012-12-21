@@ -91,6 +91,10 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
 }
 
 RendererPpapiHostImpl::~RendererPpapiHostImpl() {
+  // Delete the host explicitly first. This shutdown will destroy the
+  // resources, which may want to do cleanup in their destructors and expect
+  // their pointers to us to be valid.
+  ppapi_host_.reset();
 }
 
 // static

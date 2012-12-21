@@ -37,6 +37,10 @@ PpapiHost::~PpapiHost() {
   // technically alive in case one of the filters accesses us from the
   // destructor.
   instance_message_filters_.clear();
+
+  // The resources may also want to use us in their destructors.
+  resources_.clear();
+  pending_resource_hosts_.clear();
 }
 
 bool PpapiHost::Send(IPC::Message* msg) {

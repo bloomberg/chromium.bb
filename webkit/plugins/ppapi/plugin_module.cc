@@ -431,6 +431,10 @@ PluginModule::~PluginModule() {
   // holding a reference to us.
   DCHECK(instances_.empty());
 
+  // Some resources and other stuff are hung off of the embedder state, which
+  // should be torn down before the routing stuff below.
+  embedder_state_.reset();
+
   GetLivePluginSet()->erase(this);
 
   callback_tracker_->AbortAll();
