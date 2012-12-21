@@ -23,7 +23,6 @@ class NTPTest(pyauto.PyUITest):
     _EXPECTED_DEFAULT_APPS.append({u'title': u'Chrome'})
   else:
     _EXPECTED_DEFAULT_APPS.append({u'title': u'Cloud Print'})
-    _EXPECTED_DEFAULT_APPS.append({u'title': u'Settings'})
 
   # Default menu and thumbnail mode preferences are set in
   # ShownSectionsHandler::RegisterUserPrefs.
@@ -469,7 +468,6 @@ class NTPTest(pyauto.PyUITest):
     expected_app_url_start = 'chrome-extension://' + installed_app_id
     self.assertTrue(actual_tab_url.startswith(expected_app_url_start),
                     msg='The app was not launched in the new window.')
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
