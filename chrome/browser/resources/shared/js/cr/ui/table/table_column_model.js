@@ -67,7 +67,7 @@ cr.define('cr.ui.table', function() {
         return;
 
       this.columns_[index].name = name;
-      cr.dispatchSimpleEvent('change');
+      cr.dispatchSimpleEvent(this, 'change');
     },
 
     /**

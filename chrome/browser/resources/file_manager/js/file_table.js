@@ -62,7 +62,13 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   var columnModel = Object.create(cr.ui.table.TableColumnModel.prototype, {
     size: {
       get: function() {
-        return this.showOfflineColumn ? columns.length : columns.length - 1;
+        return this.showOfflineColumn ? this.totalSize : this.totalSize - 1;
+      }
+    },
+
+    totalSize: {
+      get: function() {
+        return columns.length;
       }
     },
 

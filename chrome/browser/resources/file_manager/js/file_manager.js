@@ -777,7 +777,18 @@ DialogType.isModal = function(type) {
 
     this.initRootsList_();
 
+    this.table_.addEventListener('column-resize-end',
+                                 this.updateStartupPrefs_.bind(this));
+
     this.setListType(prefs.listType || FileManager.ListType.DETAIL);
+
+    if (prefs.columns) {
+      var cm = this.table_.columnModel;
+      for (var i = 0; i < cm.totalSize; i++) {
+        if (prefs.columns[i] > 0)
+          cm.setWidth(i, prefs.columns[i]);
+      }
+    }
 
     this.textSearchState_ = {text: '', date: new Date()};
 
@@ -821,8 +832,13 @@ DialogType.isModal = function(type) {
     var sortStatus = this.directoryModel_.getFileList().sortStatus;
     var prefs = {
       sortField: sortStatus.field,
-      sortDirection: sortStatus.direction
+      sortDirection: sortStatus.direction,
+      columns: []
     };
+    var cm = this.table_.columnModel;
+    for (var i = 0; i < cm.totalSize; i++) {
+      prefs.columns.push(cm.getWidth(i));
+    }
     if (DialogType.isModal(this.dialogType))
       prefs.listType = this.listType;
     // Save the global default.

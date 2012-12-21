@@ -65,6 +65,7 @@ cr.define('cr.ui', function() {
      */
     handleSplitterDragEnd: function() {
       this.ownerDocument.documentElement.classList.remove('col-resize');
+      cr.dispatchSimpleEvent(this, 'column-resize-end', true);
     },
   };
 
