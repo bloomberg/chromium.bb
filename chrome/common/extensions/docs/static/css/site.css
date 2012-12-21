@@ -313,6 +313,30 @@ span.displayModeWarning {
   vertical-align: top;
 }
 
+/* Provide an intro table for api reference docs. */
+#gc-pagecontent table.intro
+#gc-pagecontent table.intro th,
+#gc-pagecontent table.intro td {
+  border-collapse: separate;
+  border-style: none;
+}
+
+#gc-pagecontent table.intro {
+  padding: 0;
+}
+
+#gc-pagecontent table.intro th {
+  border-style: none;
+  padding: 6px 12px;
+  text-align: left;
+}
+
+#gc-pagecontent table.intro td {
+  border-bottom: 1px solid #E5E5E5;
+  padding: 6px 12px;
+  vertical-align: top;
+}
+
 /* Provide a "simple" version of the table to use just for layout. */
 #gc-pagecontent table.simple,
 #gc-pagecontent table.simple th,
