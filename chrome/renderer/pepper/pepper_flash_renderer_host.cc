@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "chrome/renderer/pepper/ppb_pdf_impl.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "googleurl/src/gurl.h"
@@ -66,6 +67,8 @@ int32_t PepperFlashRendererHost::OnResourceMessageReceived(
                                       OnMsgNavigate);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_IsRectTopmost,
                                       OnMsgIsRectTopmost);
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_InvokePrinting,
+                                        OnMsgInvokePrinting);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -238,6 +241,12 @@ int32_t PepperFlashRendererHost::OnMsgIsRectTopmost(
       gfx::Rect(rect.point.x, rect.point.y,rect.size.width, rect.size.height)))
     return PP_OK;
   return PP_ERROR_FAILED;
+}
+
+int32_t PepperFlashRendererHost::OnMsgInvokePrinting(
+    ppapi::host::HostMessageContext* host_context) {
+  PPB_PDF_Impl::InvokePrintingForInstance(pp_instance());
+  return PP_OK;
 }
 
 }  // namespace chrome

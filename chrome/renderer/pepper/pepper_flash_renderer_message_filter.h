@@ -29,9 +29,6 @@ class PepperFlashRendererMessageFilter
   virtual bool OnInstanceMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
-  // Message handlers.
-  void OnHostMsgInvokePrinting(PP_Instance instance);
-
   content::RendererPpapiHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashRendererMessageFilter);

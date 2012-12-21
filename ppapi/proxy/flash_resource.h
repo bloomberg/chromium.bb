@@ -60,6 +60,7 @@ class FlashResource
                            PP_Bool from_user_action) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
+  virtual void InvokePrinting(PP_Instance instance) OVERRIDE;
 
  private:
   // Non-owning pointer to the PluginDispatcher that owns this object.

@@ -1247,10 +1247,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoDecoder_Reset,
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBVideoDecoder_Destroy,
                            ppapi::HostResource /* video_decoder */)
 
-// PPB_Flash.
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_InvokePrinting,
-                    PP_Instance /* instance */)
-
 // PPB_Flash_MessageLoop.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashMessageLoop_Create,
                            PP_Instance /* instance */,
@@ -1624,6 +1620,10 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_Flash_Navigate,
 // PP_ERROR_FAILED is sent.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_IsRectTopmost,
                      PP_Rect /* rect */)
+
+// Notifies the renderer to invoke printing for the given plugin instance. No
+// reply is sent.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_InvokePrinting)
 
 // DeviceEnumeration -----------------------------------------------------------
 // Device enumeration messages used by audio input and video capture.

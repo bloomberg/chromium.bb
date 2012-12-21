@@ -240,5 +240,9 @@ PP_Bool FlashResource::IsRectTopmost(PP_Instance instance,
   return PP_FromBool(result == PP_OK);
 }
 
+void FlashResource::InvokePrinting(PP_Instance instance) {
+  Post(RENDERER, PpapiHostMsg_Flash_InvokePrinting());
+}
+
 }  // namespace proxy
 }  // namespace ppapi

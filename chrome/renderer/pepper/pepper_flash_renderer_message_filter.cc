@@ -22,22 +22,7 @@ PepperFlashRendererMessageFilter::~PepperFlashRendererMessageFilter() {
 
 bool PepperFlashRendererMessageFilter::OnInstanceMessageReceived(
     const IPC::Message& msg) {
-  if (!host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_FLASH))
-    return false;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashRendererMessageFilter, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
-                        OnHostMsgInvokePrinting)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PepperFlashRendererMessageFilter::OnHostMsgInvokePrinting(
-    PP_Instance instance) {
-  PPB_PDF_Impl::InvokePrintingForInstance(instance);
+  return false;
 }
 
 }  // namespace chrome

@@ -47,8 +47,8 @@ class PPAPI_THUNK_EXPORT PPB_Flash_Functions_API {
                            PP_Resource request_info,
                            const char* target,
                            PP_Bool from_user_action) = 0;
-
   virtual PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) = 0;
+  virtual void InvokePrinting(PP_Instance instance) = 0;
 
   static const SingletonResourceID kSingletonResourceID = FLASH_SINGLETON_ID;
 };

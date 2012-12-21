@@ -206,8 +206,6 @@
         'renderer/pepper/pepper_flash_renderer_message_filter.h',
         'renderer/pepper/pepper_helper.cc',
         'renderer/pepper/pepper_helper.h',
-        'renderer/pepper/ppb_flash_print_impl.cc',
-        'renderer/pepper/ppb_flash_print_impl.h',
         'renderer/pepper/ppb_nacl_private_impl.cc',
         'renderer/pepper/ppb_nacl_private_impl.h',
         'renderer/pepper/ppb_pdf_impl.cc',

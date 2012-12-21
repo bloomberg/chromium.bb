@@ -39,20 +39,12 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
 
-  // This flash proxy also proxies the PPB_Flash_Print interface. This one
-  // doesn't use the regular thunk system because the _impl side is actually in
-  // Chrome rather than with the rest of the interface implementations.
-  static const PPB_Flash_Print_1_0* GetFlashPrintInterface();
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   static const ApiID kApiID = API_ID_PPB_FLASH;
 
  private:
-  // Message handlers.
-  void OnHostMsgInvokePrinting(PP_Instance instance);
-
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };
 

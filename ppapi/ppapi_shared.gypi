@@ -175,6 +175,7 @@
           'thunk/ppb_flash_menu_thunk.cc',
           'thunk/ppb_flash_message_loop_api.h',
           'thunk/ppb_flash_message_loop_thunk.cc',
+          'thunk/ppb_flash_print_thunk.cc',
           'thunk/ppb_flash_thunk.cc',
           'thunk/ppb_fullscreen_thunk.cc',
           'thunk/ppb_gamepad_api.h',

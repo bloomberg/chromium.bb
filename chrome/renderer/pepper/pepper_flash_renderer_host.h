@@ -57,6 +57,7 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
                         bool from_user_action);
   int32_t OnMsgIsRectTopmost(ppapi::host::HostMessageContext* host_context,
                              const PP_Rect& rect);
+  int32_t OnMsgInvokePrinting(ppapi::host::HostMessageContext* host_context);
 
   base::WeakPtrFactory<PepperFlashRendererHost> weak_factory_;
   // A stack of ReplyMessageContexts to track Navigate() calls which have not

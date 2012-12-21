@@ -39,26 +39,6 @@ using ppapi::thunk::EnterResourceNoLock;
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-void InvokePrinting(PP_Instance instance) {
-  ProxyAutoLock lock;
-
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFlash_InvokePrinting(
-        API_ID_PPB_FLASH, instance));
-  }
-}
-
-const PPB_Flash_Print_1_0 g_flash_print_interface = {
-  &InvokePrinting
-};
-
-}  // namespace
-
-// -----------------------------------------------------------------------------
-
 PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
 }
@@ -66,33 +46,8 @@ PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
 PPB_Flash_Proxy::~PPB_Flash_Proxy() {
 }
 
-// static
-const PPB_Flash_Print_1_0* PPB_Flash_Proxy::GetFlashPrintInterface() {
-  return &g_flash_print_interface;
-}
-
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_FLASH))
-    return false;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
-                        OnHostMsgInvokePrinting)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  // TODO(brettw) handle bad messages!
-  return handled;
-}
-
-void PPB_Flash_Proxy::OnHostMsgInvokePrinting(PP_Instance instance) {
-  // This function is actually implemented in the PPB_Flash_Print interface.
-  // It's rarely used enough that we just request this interface when needed.
-  const PPB_Flash_Print_1_0* print_interface =
-      static_cast<const PPB_Flash_Print_1_0*>(
-          dispatcher()->local_get_interface()(PPB_FLASH_PRINT_INTERFACE_1_0));
-  if (print_interface)
-    print_interface->InvokePrinting(instance);
+  return false;
 }
 
 }  // namespace proxy
