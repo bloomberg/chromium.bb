@@ -258,6 +258,9 @@ contents of the table will be selected on load.  Hit the "List" button multiple
 times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
 
+<h3><a name="bugfix-noRelayoutIfPercentSame">bugfix/noRelayoutIfPercentSame</a> (Shezan Baig; D36633185)</h3>
+<p>TODO</p>
+
 <h3><a name="bugfix-nonWindowContexts">bugfix/nonWindowContexts</a> (Shezan Baig)</h3>
 <p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
 that we wanted specifically for our product, so it is unlikely that we will
@@ -290,9 +293,6 @@ put the cursor at the end of the first cell, after the 'c' and start deleting.
 The table in the next cell will be highlighted on the first press, and deleted
 on the second press.  Note that the issue does not happen when the cell is
 empty.</p>
-
-<h3><a name="bugfix-noRelayoutIfPercentSame">bugfix/noRelayoutIfPercentSame</a> (Shezan Baig; D36633185)</h3>
-<p>TODO</p>
 
 <h3><a name="bugfix-outdentWithBR">bugfix/outdentWithBR</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92130">92130</a>)</h3>
 <p>Open <a href="repros/outdentWithBR.html">this link</a> in Chrome.  The
@@ -343,6 +343,9 @@ anti-aliasing on.  This causes "gaps" to appear around the edges where the
 filled rects got blended.  The solution was to simply turn off anti-aliasing
 when filling selection rects.</p>
 
+<h3><a name="bugfix-simplifiedIteratorFix">bugfix/simplifiedIteratorFix</a> (Edward Christie)</h3>
+<p>TODO</p>
+
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
 file is used as a css background, or in an <code>img</code> element, it does
@@ -377,6 +380,9 @@ send this upstream.</p>
 the <code>SimpleResourceLoaderBridge</code>.  This branch makes it possible to
 supply a custom <code>net::ProxyConfigService</code> so we can provide our own
 settings</p>
+
+<h3><a name="feature-checkSpellingCommand">feature/checkSpellingCommand</a> (Tianyin Zhang)</h3>
+<p>TODO</p>
 
 <h3><a name="feature-colorDocumentMarkers">feature/colorDocumentMarkers</a> (Shezan Baig; D32415776)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
@@ -487,6 +493,14 @@ send this upstream.</p>
 and then a style is applied on that text, the original selection direction
 would be preserved.</p>
 
+<h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This branch adds a print menu to <code>test_shell</code>, so that it can be
+used to test bugs like <code><a
+        href="#bugfix-printBkTransparent">bugfix/printBkTransparent</a></code>
+and <code><a href="#bugfix-printTextTop">bugfix/printTextTop</a></code>.</p>
+
 <h3><a name="feature-resetCachedGDISettings">feature/resetCachedGDISettings</a> (Shezan Baig; D31921707, upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86891">86891</a>)</h3>
 <p>Skia caches GDI settings like ClearType, so when these settings change (for
 example, after remoting to a different machine, or manually changing it in the
@@ -496,12 +510,7 @@ ticket, however, this is not so much of an issue for Chrome because Chrome just
 creates new processes for each tab, so it picks up the new setting that
 way.</p>
 
-<h3><a name="feature-v8dll">feature/v8dll</a> (Shezan Baig)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This is just a small change to use V8 in a separate DLL.</p>
-
-<h3><a name="feature-virtualAllocHooks">feature/virtualAllocHooks</a> (Lilit Darbinyan)</h3>
+<h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
 <p>TODO</p>
 
 <h3><a name="feature-timeline-on-startup">feature/timeline-on-startup</a> (Imran Haider)</h3>
@@ -513,6 +522,14 @@ the main document.  This change allows us to get a notification when the
 first notification tells us that the inspector has processed all of the
 initialization messages and so we can continue to inject JS to kick start the
 timeline and to start loading the main document.</p>
+
+<h3><a name="feature-v8dll">feature/v8dll</a> (Shezan Baig)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>This is just a small change to use V8 in a separate DLL.</p>
+
+<h3><a name="feature-virtualAllocHooks">feature/virtualAllocHooks</a> (Lilit Darbinyan)</h3>
+<p>TODO</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
@@ -568,10 +585,6 @@ available upstream.</p>
 <h3><a name="feature-instrumentRandomVirtualAlloc">feature/instrumentRandomVirtualAlloc</a> (Tianyin Zhang)</h3>
 <p>Retired in favor of <code><a
         href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
-
-<h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
-<p>This branch adds a print menu to <code>test_shell</code>, but was never
-really required, so it is retired.</p>
 </div>
 
 <hr/>
