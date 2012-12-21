@@ -141,11 +141,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   }
   void SetDefaultDisplayLayout(const DisplayLayout& layout);
 
-  // Sets/gets the display layout for the specified display or display
-  // name.  Getter returns the default value in case it doesn't have
-  // its own layout yet.
-  void SetLayoutForDisplayName(const std::string& name,
-                               const DisplayLayout& layout);
+  // Sets/gets the display layout for the specified display.  Getter returns the
+  // default value in case it doesn't have its own layout yet.
+  void SetLayoutForDisplayId(int64 id, const DisplayLayout& layout);
   const DisplayLayout& GetLayoutForDisplay(const gfx::Display& display) const;
 
   // Returns the display layout used for current secondary display.
@@ -173,7 +171,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   DisplayLayout default_display_layout_;
 
   // Per-device display layout.
-  std::map<std::string, DisplayLayout> secondary_layouts_;
+  std::map<int64, DisplayLayout> secondary_layouts_;
 
   // The ID of the display which should be primary when connected.
   // kInvalidDisplayID if no such preference is specified.

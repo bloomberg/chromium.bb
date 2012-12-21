@@ -566,9 +566,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   chromeos::accessibility::Initialize();
 
-  primary_display_switch_observer_.reset(
-      new PrimaryDisplaySwitchObserver());
-
   removable_device_notifications_ =
       new RemovableDeviceNotificationsCros();
 
@@ -582,6 +579,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
 
   NotifyDisplayLocalStatePrefChanged();
+
+  primary_display_switch_observer_.reset(
+      new PrimaryDisplaySwitchObserver());
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

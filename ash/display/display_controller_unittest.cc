@@ -238,10 +238,9 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  std::string secondary_name = Shell::GetInstance()->
-      display_manager()->GetDisplayNameFor(secondary_display);
   DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
+  display_controller->SetLayoutForDisplayId(
+      secondary_display.id(), secondary_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -324,10 +323,9 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  std::string secondary_name = Shell::GetInstance()->
-      display_manager()->GetDisplayNameFor(secondary_display);
   DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
+  display_controller->SetLayoutForDisplayId(
+      secondary_display.id(), secondary_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =

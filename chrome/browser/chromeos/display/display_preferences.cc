@@ -24,23 +24,6 @@
 namespace chromeos {
 namespace {
 
-// Replaces dot "." by "%2E" since it's the path separater of base::Value.  Also
-// replaces "%" by "%25" for unescaping.
-void EscapeDisplayName(const std::string& name, std::string* escaped) {
-  DCHECK(escaped);
-  std::string middle;
-  ReplaceChars(name, "%", "%25", &middle);
-  ReplaceChars(middle, ".", "%2E", escaped);
-}
-
-// Unescape %-encoded characters.
-std::string UnescapeDisplayName(const std::string& name) {
-  url_canon::RawCanonOutputT<char16> decoded;
-  url_util::DecodeURLEscapeSequences(name.data(), name.size(), &decoded);
-  // Display names are ASCII-only.
-  return UTF16ToASCII(string16(decoded.data(), decoded.length()));
-}
-
 // This kind of boilerplates should be done by base::JSONValueConverter but it
 // doesn't support classes like gfx::Insets for now.
 // TODO(mukai): fix base::JSONValueConverter and use it here.
@@ -109,8 +92,10 @@ void NotifyDisplayLayoutChanged() {
       continue;
     }
 
-    display_controller->SetLayoutForDisplayName(
-        UnescapeDisplayName(*it), layout);
+    int64 id = gfx::Display::kInvalidDisplayID;
+    if (!base::StringToInt64(*it, &id) || id == gfx::Display::kInvalidDisplayID)
+      continue;
+    display_controller->SetLayoutForDisplayId(id, layout);
   }
 }
 
@@ -181,9 +166,7 @@ void SetDisplayLayoutPref(const gfx::Display& display,
     ash::DisplayLayout display_layout(
         static_cast<ash::DisplayLayout::Position>(layout), offset);
 
-    std::string name;
-    EscapeDisplayName(GetDisplayManager()->GetDisplayNameFor(display),
-                      &name);
+    std::string name = base::Int64ToString(display.id());
     DCHECK(!name.empty());
 
     base::DictionaryValue* pref_data = update.Get();
@@ -241,9 +224,9 @@ void SetPrimaryDisplayIDPref(int64 display_id) {
 
 void NotifyDisplayLocalStatePrefChanged() {
   PrefService* local_state = g_browser_process->local_state();
-  NotifyDisplayLayoutChanged();
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
       local_state->GetInt64(prefs::kPrimaryDisplayID));
+  NotifyDisplayLayoutChanged();
   NotifyDisplayOverscans();
 }
 

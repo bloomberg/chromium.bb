@@ -345,12 +345,12 @@ void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
   }
 }
 
-void DisplayController::SetLayoutForDisplayName(const std::string& name,
-                                                const DisplayLayout& layout) {
-  DisplayLayout& display_for_name = secondary_layouts_[name];
-  if (display_for_name.position != layout.position ||
-      display_for_name.offset != layout.offset) {
-    secondary_layouts_[name] = layout;
+void DisplayController::SetLayoutForDisplayId(int64 id,
+                                              const DisplayLayout& layout) {
+  DisplayLayout& display_for_id = secondary_layouts_[id];
+  if (display_for_id.position != layout.position ||
+      display_for_id.offset != layout.offset) {
+    secondary_layouts_[id] = layout;
     NotifyDisplayConfigurationChanging();
     UpdateDisplayBoundsForLayout();
   }
@@ -358,9 +358,8 @@ void DisplayController::SetLayoutForDisplayName(const std::string& name,
 
 const DisplayLayout& DisplayController::GetLayoutForDisplay(
     const gfx::Display& display) const {
-  const std::string& name = GetDisplayManager()->GetDisplayNameFor(display);
-  std::map<std::string, DisplayLayout>::const_iterator it =
-      secondary_layouts_.find(name);
+  std::map<int64, DisplayLayout>::const_iterator it =
+      secondary_layouts_.find(display.id());
 
   if (it != secondary_layouts_.end())
     return it->second;
@@ -441,9 +440,8 @@ void DisplayController::SetPrimaryDisplay(
       non_primary_root, new_primary_display.GetWorkAreaInsets());
 
   // Update the layout.
-  SetLayoutForDisplayName(
-      display_manager->GetDisplayNameFor(old_primary_display),
-      GetLayoutForDisplay(new_primary_display).Invert());
+  SetLayoutForDisplayId(old_primary_display.id(),
+                        GetLayoutForDisplay(new_primary_display).Invert());
 
   // Update the dispay manager with new display info.
   std::vector<gfx::Display> displays;
