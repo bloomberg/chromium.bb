@@ -568,10 +568,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   // TODO(fsamuel): Guests don't currently support threaded compositing.
   // This should go away with the new design of the browser plugin.
   // The new design can be tracked at: http://crbug.com/134492.
-  bool is_guest = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kGuestRenderer);
-  bool threaded = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedCompositing);
+  bool is_guest = command_line.HasSwitch(switches::kGuestRenderer);
+  bool threaded = command_line.HasSwitch(switches::kEnableThreadedCompositing);
 
   bool enable = threaded && !is_guest;
   if (enable) {
@@ -598,8 +596,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDomAutomationController)) {
+  if (command_line.HasSwitch(switches::kDomAutomationController)) {
     base::StringPiece extension = GetContentClient()->GetDataResource(
         IDR_DOM_AUTOMATION_JS, ui::SCALE_FACTOR_NONE);
     RegisterExtension(new v8::Extension(
@@ -683,23 +680,16 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableShadowDOM(true);
 
-  WebRuntimeFeatures::enableStyleScoped(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
-
-  WebRuntimeFeatures::enableCSSExclusions(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
-
-  WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures)) {
+    WebRuntimeFeatures::enableStyleScoped(true);
+    WebRuntimeFeatures::enableCSSExclusions(true);
+    WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
+    WebRuntimeFeatures::enableCSSRegions(true);
+    WebRuntimeFeatures::enableDialogElement(true);
+  }
 
   WebRuntimeFeatures::enableWebIntents(
       command_line.HasSwitch(switches::kWebIntentsInvocationEnabled));
-
-  WebRuntimeFeatures::enableCSSRegions(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
-
-  WebRuntimeFeatures::enableDialogElement(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
