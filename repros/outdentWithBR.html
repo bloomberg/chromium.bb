@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button onclick="document.execCommand('outdent', false, true);">OUTDENT</button>
+<div id="test" contenteditable><blockquote>Hello<br>World<br>Goodbye<br>World<br></blockquote></div>
+</body>
+<script>
+document.getElementById("test").focus();
+document.execCommand("selectAll");
+</script>
+</html>
+
