@@ -83,8 +83,9 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   virtual QuicRandom* GetRandomGenerator() = 0;
 
   // Sends the packet out to the peer, possibly simulating packet
-  // loss if FLAGS_fake_packet_loss_percentage is set.  If the write failed
-  // errno will be copied to |*error|.
+  // loss if FLAGS_fake_packet_loss_percentage is set.  If the write
+  // succeeded, returns the number of bytes written.  If the write
+  // failed, returns -1 and the error code will be copied to |*error|.
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) = 0;
 

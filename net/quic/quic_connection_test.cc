@@ -118,6 +118,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
       *error = ERR_IO_PENDING;
       return -1;
     }
+    *error = 0;
     return packet.length();
   }
 

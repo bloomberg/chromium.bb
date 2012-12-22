@@ -279,9 +279,8 @@ TEST_F(QuicConnectionHelperTest, WritePacketToWireAsync) {
 
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(testing::Return(true));
   int error = 0;
-  EXPECT_EQ(ERR_IO_PENDING,
-            helper_->WritePacketToWire(*GetWrite(0), &error));
-  EXPECT_EQ(0, error);
+  EXPECT_EQ(-1, helper_->WritePacketToWire(*GetWrite(0), &error));
+  EXPECT_EQ(ERR_IO_PENDING, error);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(AtEof());
 }
