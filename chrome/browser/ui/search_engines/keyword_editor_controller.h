@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
-class PrefService;
+class PrefServiceSimple;
 class Profile;
 class TemplateURL;
 class TemplateURLService;
@@ -22,7 +22,7 @@ class KeywordEditorController {
   explicit KeywordEditorController(Profile* profile);
   ~KeywordEditorController();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Invoked when the user succesfully fills out the add keyword dialog.
   // Propagates the change to the TemplateURLService and updates the table

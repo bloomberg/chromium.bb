@@ -22,7 +22,7 @@ class CRLSetFetcher;
 class IOThread;
 class MHTMLGenerationManager;
 class NotificationUIManager;
-class PrefService;
+class PrefServiceSimple;
 class WatchDogThread;
 
 namespace content {
@@ -49,7 +49,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual IOThread* io_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
   virtual ProfileManager* profile_manager() OVERRIDE;
-  virtual PrefService* local_state() OVERRIDE;
+  virtual PrefServiceSimple* local_state() OVERRIDE;
   virtual chrome_variations::VariationsService* variations_service() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
@@ -106,7 +106,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
-  void SetLocalState(PrefService* local_state);
+  void SetLocalState(PrefServiceSimple* local_state);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
@@ -139,7 +139,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif  // !defined(OS_IOS)
 
   // The following objects are not owned by TestingBrowserProcess:
-  PrefService* local_state_;
+  PrefServiceSimple* local_state_;
   IOThread* io_thread_;
   net::URLRequestContextGetter* system_request_context_;
 

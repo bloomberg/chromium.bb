@@ -829,7 +829,7 @@ void ProfileManager::CreateMultiProfileAsync(
 }
 
 // static
-void ProfileManager::RegisterPrefs(PrefService* prefs) {
+void ProfileManager::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   prefs->RegisterListPref(prefs::kProfilesLastActive);

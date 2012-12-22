@@ -25,7 +25,7 @@ class CloudPolicyCoreTest : public testing::Test {
 
   MessageLoop loop_;
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
   MockCloudPolicyStore store_;
   CloudPolicyCore core_;
 

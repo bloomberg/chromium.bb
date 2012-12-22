@@ -49,7 +49,7 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/chrome_pref_service_builder.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -400,7 +400,10 @@ ProfileManager* BrowserProcessImpl::profile_manager() {
   return profile_manager_.get();
 }
 
-PrefService* BrowserProcessImpl::local_state() {
+// TODO(joi): Switch to returning just PrefService, since those
+// calling this function shouldn't be doing ad-hoc registration, that
+// happens earlier in browser_prefs::RegisterLocalState.
+PrefServiceSimple* BrowserProcessImpl::local_state() {
   DCHECK(CalledOnValidThread());
   if (!created_local_state_)
     CreateLocalState();
@@ -735,10 +738,10 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   local_state_.reset(
-      ChromePrefServiceBuilder().CreateChromePrefs(local_state_path,
-                                                   local_state_task_runner_,
-                                                   policy_service(),
-                                                   NULL, false));
+      chrome_prefs::CreateLocalState(local_state_path,
+                                     local_state_task_runner_,
+                                     policy_service(),
+                                     NULL, false));
 
   // Initialize the prefs of the local state.
   chrome::RegisterLocalState(local_state_.get());

@@ -532,14 +532,16 @@ void GetDialogWidthAndHeightFromPrefs(content::BrowserContext* browser_context,
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile->GetPrefs()->FindPreference(prefs::kCloudPrintDialogWidth)) {
-    profile->GetPrefs()->RegisterIntegerPref(prefs::kCloudPrintDialogWidth,
-                                            kDefaultWidth,
-                                            PrefService::UNSYNCABLE_PREF);
+    profile->GetPrefs()->RegisterIntegerPref(
+        prefs::kCloudPrintDialogWidth,
+        kDefaultWidth,
+        PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (!profile->GetPrefs()->FindPreference(prefs::kCloudPrintDialogHeight)) {
-    profile->GetPrefs()->RegisterIntegerPref(prefs::kCloudPrintDialogHeight,
-                                             kDefaultHeight,
-                                             PrefService::UNSYNCABLE_PREF);
+    profile->GetPrefs()->RegisterIntegerPref(
+        prefs::kCloudPrintDialogHeight,
+        kDefaultHeight,
+        PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 
   *width = profile->GetPrefs()->GetInteger(prefs::kCloudPrintDialogWidth);

@@ -22,6 +22,7 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
+class PrefServiceSimple;
 class TaskManagerModel;
 class TaskManagerModelGpuDataManagerObserver;
 
@@ -185,7 +186,7 @@ class TaskManager {
     virtual ~ResourceProvider() {}
   };
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Returns true if the process at the specified index is the browser process.
   bool IsBrowserProcess(int index) const;

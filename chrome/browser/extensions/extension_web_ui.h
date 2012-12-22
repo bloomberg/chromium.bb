@@ -21,7 +21,7 @@ namespace extensions {
 class BookmarkManagerPrivateEventRouter;
 }
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // This class implements WebUI for extensions and allows extensions to put UI in
@@ -57,7 +57,7 @@ class ExtensionWebUI : public content::WebUIController {
                                           const base::Value* override);
 
   // Called from BrowserPrefs
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Get the favicon for the extension by getting an icon from the manifest.
   // Note. |callback| is always run asynchronously.

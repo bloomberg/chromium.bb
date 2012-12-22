@@ -191,7 +191,7 @@ std::string GetPrefForRootWindow(PrefService* pref_service,
 
 // If prefs have synced and no user-set value exists at |local_path|, the value
 // from |synced_path| is copied to |local_path|.
-void MaybePropagatePrefToLocal(PrefService* pref_service,
+void MaybePropagatePrefToLocal(PrefServiceSyncable* pref_service,
                                const char* local_path,
                                const char* synced_path) {
   if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
@@ -280,7 +280,7 @@ void ChromeLauncherControllerPerBrowser::Init() {
   if (ash::Shell::HasInstance()) {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
-    PrefService* prefs = profile_->GetPrefs();
+    PrefServiceSyncable* prefs = profile_->GetPrefs();
     if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
         !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
             HasUserSetting()) {

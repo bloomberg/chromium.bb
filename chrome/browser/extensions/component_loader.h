@@ -14,7 +14,8 @@
 #include "base/values.h"
 
 class ExtensionServiceInterface;
-class PrefService;
+class PrefServiceBase;
+class PrefServiceSyncable;
 
 namespace extensions {
 
@@ -24,8 +25,8 @@ class Extension;
 class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
-                  PrefService* prefs,
-                  PrefService* local_state);
+                  PrefServiceBase* prefs,
+                  PrefServiceBase* local_state);
   virtual ~ComponentLoader();
 
   size_t registered_extensions_count() const {
@@ -88,7 +89,7 @@ class ComponentLoader {
   // platforms this |skip_session_components| is expected to be unset.
   void AddDefaultComponentExtensions(bool skip_session_components);
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Parse the given JSON manifest. Returns NULL if it cannot be parsed, or if
   // if the result is not a DictionaryValue.
@@ -139,8 +140,8 @@ class ComponentLoader {
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
 
-  PrefService* prefs_;
-  PrefService* local_state_;
+  PrefServiceBase* profile_prefs_;
+  PrefServiceBase* local_state_;
 
   ExtensionServiceInterface* extension_service_;
 

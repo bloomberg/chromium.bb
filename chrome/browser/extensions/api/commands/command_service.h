@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace base {
@@ -43,7 +43,7 @@ class CommandService : public ProfileKeyedService,
   };
 
   // Register prefs for keybinding.
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
   // Constructs a CommandService object for the given profile.
   explicit CommandService(Profile* profile);

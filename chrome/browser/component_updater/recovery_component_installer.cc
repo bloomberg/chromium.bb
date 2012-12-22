@@ -60,8 +60,12 @@ class RecoveryComponentInstaller : public ComponentInstaller {
   PrefService* prefs_;
 };
 
-void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
+void RecoveryRegisterHelper(ComponentUpdateService* cus,
+                            PrefServiceSimple* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(joi): Registrations for local state prefs shouldn't happen
+  // like this, they should be done via
+  // browser_prefs::RegisterLocalState.
   prefs->RegisterStringPref(prefs::kRecoveryComponentVersion, "0.0.0.0");
   Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
   if (!version.IsValid()) {
@@ -130,7 +134,7 @@ bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
 }
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
-                               PrefService* prefs) {
+                               PrefServiceSimple* prefs) {
 #if !defined(OS_CHROMEOS)
   // We delay execute the registration because we are not required in
   // the critical path during browser startup.

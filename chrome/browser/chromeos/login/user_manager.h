@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 namespace chromeos {
 
@@ -60,7 +60,7 @@ class UserManager {
   static UserManager* Set(UserManager* mock);
 
   // Registers user manager preferences.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   // Indicates imminent shutdown, allowing the UserManager to remove any
   // observers it has registered.

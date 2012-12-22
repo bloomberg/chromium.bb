@@ -78,7 +78,7 @@ int shutdown_num_processes_slow_;
 
 const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
-void RegisterPrefs(PrefService* local_state) {
+void RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
   local_state->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
   local_state->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);

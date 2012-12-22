@@ -87,7 +87,7 @@ class DefaultRuleIterator : public RuleIterator {
 }  // namespace
 
 // static
-void DefaultProvider::RegisterUserPrefs(PrefService* prefs) {
+void DefaultProvider::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   // The registration of the preference prefs::kDefaultContentSettings should
   // also include the default values for default content settings. This allows
   // functional tests to get default content settings by reading the preference
@@ -97,7 +97,7 @@ void DefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   DictionaryValue* default_content_settings = new DictionaryValue();
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings,
                                 default_content_settings,
-                                PrefService::SYNCABLE_PREF);
+                                PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)

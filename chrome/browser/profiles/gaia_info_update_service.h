@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 
+class PrefServiceSyncable;
 class Profile;
 class ProfileDownloader;
 
@@ -30,7 +31,7 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate {
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
 
   // Register prefs for a profile.
-  static void RegisterUserPrefs(PrefServiceBase* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // ProfileDownloaderDelegate:
   virtual bool NeedsProfilePicture() const OVERRIDE;

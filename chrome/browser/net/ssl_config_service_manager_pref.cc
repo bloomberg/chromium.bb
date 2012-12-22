@@ -149,7 +149,7 @@ class SSLConfigServiceManagerPref
   virtual ~SSLConfigServiceManagerPref() {}
 
   // Register local_state SSL preferences.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   virtual net::SSLConfigService* Get();
 
@@ -245,7 +245,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 }
 
 // static
-void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* local_state) {
+void SSLConfigServiceManagerPref::RegisterPrefs(
+    PrefServiceSimple* local_state) {
   net::SSLConfig default_config;
   local_state->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
                                    default_config.rev_checking_enabled);
@@ -352,6 +353,6 @@ SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
 }
 
 // static
-void SSLConfigServiceManager::RegisterPrefs(PrefService* prefs) {
+void SSLConfigServiceManager::RegisterPrefs(PrefServiceSimple* prefs) {
   SSLConfigServiceManagerPref::RegisterPrefs(prefs);
 }

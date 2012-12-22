@@ -13,6 +13,7 @@
 
 class LoginDatabase;
 class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // PasswordStoreX is used on Linux and other non-Windows, non-Mac OS X
@@ -56,7 +57,7 @@ class PasswordStoreX : public PasswordStoreDefault {
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   // Registers the pref setting used for the methods below.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns true if passwords have been tagged with the local profile id.
   static bool PasswordsUseLocalProfileId(PrefService* prefs);

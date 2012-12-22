@@ -46,7 +46,6 @@ class PrefValueStore {
                  PrefStore* user_prefs,
                  PrefStore* recommended_prefs,
                  PrefStore* default_prefs,
-                 PrefModelAssociator* pref_sync_associator,
                  PrefNotifier* pref_notifier);
   virtual ~PrefValueStore();
 
@@ -58,8 +57,11 @@ class PrefValueStore {
                                      PrefStore* user_prefs,
                                      PrefStore* recommended_prefs,
                                      PrefStore* default_prefs,
-                                     PrefModelAssociator* pref_sync_associator,
                                      PrefNotifier* pref_notifier);
+
+  // TODO(joi): Remove this completely; the part PrefModelAssociator
+  // needs can be handled simply as a PrefObserver.
+  void set_sync_associator(PrefModelAssociator* sync_associator);
 
   // Gets the value for the given preference name that has the specified value
   // type. Values stored in a PrefStore that have the matching |name| but

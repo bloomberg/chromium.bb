@@ -54,7 +54,7 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
 }  // anonymous namespace
 
 TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   Preferences::RegisterUserPrefs(&prefs);
   DownloadPrefs::RegisterUserPrefs(&prefs);
 

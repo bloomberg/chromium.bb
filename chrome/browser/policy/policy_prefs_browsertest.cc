@@ -430,8 +430,10 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
     if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
       continue;
 
+    PrefService* local_state = g_browser_process->local_state();
+    PrefService* user_prefs = browser()->profile()->GetPrefs();
     PrefService* prefs = (*pref_mapping)->is_local_state() ?
-        g_browser_process->local_state() : browser()->profile()->GetPrefs();
+        local_state : user_prefs;
     // The preference must have been registered.
     const PrefService::Preference* pref =
         prefs->FindPreference((*pref_mapping)->pref().c_str());
@@ -520,8 +522,10 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
       if (!policy_test_case->can_be_recommended())
         continue;
 
+      PrefService* local_state = g_browser_process->local_state();
+      PrefService* user_prefs = browser()->profile()->GetPrefs();
       PrefService* prefs = (*pref_mapping)->is_local_state() ?
-          g_browser_process->local_state() : browser()->profile()->GetPrefs();
+          local_state : user_prefs;
       // The preference must have been registered.
       const PrefService::Preference* pref =
           prefs->FindPreference((*pref_mapping)->pref().c_str());

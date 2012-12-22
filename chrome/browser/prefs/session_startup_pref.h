@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 
 class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // StartupPref specifies what should happen at startup for a specified profile.
@@ -40,7 +41,7 @@ struct SessionStartupPref {
   static const int kPrefValueURLs = 4;
   static const int kPrefValueNewTab = 5;
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns the default value for |type|.
   static Type GetDefaultStartupType();

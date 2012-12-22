@@ -67,7 +67,8 @@
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/prefs/chrome_pref_service_builder.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -233,7 +234,7 @@ PrefService* InitializeLocalState(
 
   // Load local state.  This includes the application locale so we know which
   // locale dll to load.
-  PrefService* local_state = g_browser_process->local_state();
+  PrefServiceSimple* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
   // TODO(brettw,*): this comment about ResourceBundle was here since
@@ -282,8 +283,8 @@ PrefService* InitializeLocalState(
       parsed_command_line.HasSwitch(switches::kParentProfile)) {
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
-    scoped_ptr<PrefService> parent_local_state(
-        ChromePrefServiceBuilder().CreateChromePrefs(
+    scoped_ptr<PrefServiceSimple> parent_local_state(
+        chrome_prefs::CreateLocalState(
             parent_profile,
             local_state_task_runner,
             g_browser_process->policy_service(),
@@ -750,7 +751,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // needed on Android as there aren't experimental flags.
   about_flags::ConvertFlagsToSwitches(local_state_,
                                       CommandLine::ForCurrentProcess());
-  local_state_->UpdateCommandLinePrefStore(CommandLine::ForCurrentProcess());
+  local_state_->UpdateCommandLinePrefStore(
+      new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.

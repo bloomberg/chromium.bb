@@ -65,7 +65,7 @@ PluginsResourceService::~PluginsResourceService() {
 }
 
 // static
-void PluginsResourceService::RegisterPrefs(PrefService* local_state) {
+void PluginsResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterDictionaryPref(
       prefs::kPluginsMetadata, new base::DictionaryValue());
   local_state->RegisterStringPref(prefs::kPluginsResourceCacheUpdate, "0");

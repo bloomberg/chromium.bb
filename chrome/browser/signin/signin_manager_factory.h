@@ -9,6 +9,8 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class SigninManager;
+class PrefServiceSimple;
+class PrefServiceSyncable;
 class Profile;
 
 // Singleton that owns all SigninManagers and associates them with
@@ -30,10 +32,10 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   static SigninManagerFactory* GetInstance();
 
   // Implementation of ProfileKeyedServiceFactory (public so tests can call it).
-  virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
 
   // Registers the browser-global prefs used by SigninManager.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
  private:
   friend struct DefaultSingletonTraits<SigninManagerFactory>;

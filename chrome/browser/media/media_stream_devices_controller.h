@@ -9,7 +9,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 class MediaStreamDevicesController {
@@ -22,7 +22,7 @@ class MediaStreamDevicesController {
   virtual ~MediaStreamDevicesController();
 
   // Registers the prefs backing the audio and video policies.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Public method to be called before creating the MediaStreamInfoBarDelegate.
   // This function will check the content settings exceptions and take the

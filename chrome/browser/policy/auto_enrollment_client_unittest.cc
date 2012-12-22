@@ -114,7 +114,7 @@ class AutoEnrollmentClientTest : public testing::Test {
   }
 
   ScopedTestingLocalState scoped_testing_local_state_;
-  TestingPrefService* local_state_;
+  TestingPrefServiceSimple* local_state_;
   MockDeviceManagementService* service_;
   scoped_ptr<AutoEnrollmentClient> client_;
   em::DeviceManagementRequest last_request_;

@@ -123,13 +123,10 @@ WallpaperManager::WallpaperManager()
 }
 
 // static
-void WallpaperManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterDictionaryPref(prefs::kUsersWallpaperInfo,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserWallpapers,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserWallpapersProperties,
-                                      PrefService::UNSYNCABLE_PREF);
+void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterDictionaryPref(prefs::kUsersWallpaperInfo);
+  local_state->RegisterDictionaryPref(kUserWallpapers);
+  local_state->RegisterDictionaryPref(kUserWallpapersProperties);
 }
 
 void WallpaperManager::AddObservers() {

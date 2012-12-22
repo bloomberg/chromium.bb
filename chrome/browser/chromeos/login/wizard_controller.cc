@@ -385,41 +385,26 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 }
 
 // static
-void WizardController::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterBooleanPref(kOobeComplete,
-                                   false,
-                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterIntegerPref(kDeviceRegistered,
-                                   -1,
-                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterBooleanPref(kEulaAccepted,
-                                   false,
-                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterStringPref(kInitialLocale,
-                                  "en-US",
-                                  PrefService::UNSYNCABLE_PREF);
+void WizardController::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterBooleanPref(kOobeComplete, false);
+  local_state->RegisterIntegerPref(kDeviceRegistered, -1);
+  local_state->RegisterBooleanPref(kEulaAccepted, false);
+  local_state->RegisterStringPref(kInitialLocale, "en-US");
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
   if (local_state->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
-                                     false,
-                                     PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
   }
   if (local_state->FindPreference(prefs::kHighContrastEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kHighContrastEnabled,
-                                     false,
-                                     PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
   }
   if (local_state->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
-                                     false,
-                                     PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
   }
   local_state->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
-  local_state->RegisterStringPref(prefs::kRLZBrand, std::string(),
-                                  PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterStringPref(prefs::kRLZBrand, std::string());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

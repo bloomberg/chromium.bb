@@ -53,15 +53,15 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
 }  // namespace
 
 // static
-void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
+void SessionStartupPref::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
                              TypeToPrefValue(GetDefaultStartupType()),
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
-                          PrefService::SYNCABLE_PREF);
+                          PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

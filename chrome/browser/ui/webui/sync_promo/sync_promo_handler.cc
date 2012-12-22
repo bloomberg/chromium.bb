@@ -75,13 +75,13 @@ SyncPromoHandler::~SyncPromoHandler() {
 }
 
 // static
-void SyncPromoHandler::RegisterUserPrefs(PrefService* prefs) {
+void SyncPromoHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kSyncPromoViewCount, 0,
-      PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
-      PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kSyncPromoErrorMessage, std::string(),
-      PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPromoHandler::RegisterMessages() {

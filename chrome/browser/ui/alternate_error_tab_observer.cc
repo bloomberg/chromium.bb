@@ -22,7 +22,7 @@ AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
     WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  PrefService* prefs = profile_->GetPrefs();
+  PrefServiceSyncable* prefs = profile_->GetPrefs();
   if (prefs) {
     pref_change_registrar_.Init(prefs);
     pref_change_registrar_.Add(
@@ -40,9 +40,10 @@ AlternateErrorPageTabObserver::~AlternateErrorPageTabObserver() {
 }
 
 // static
-void AlternateErrorPageTabObserver::RegisterUserPrefs(PrefService* prefs) {
+void AlternateErrorPageTabObserver::RegisterUserPrefs(
+    PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled, true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

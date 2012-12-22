@@ -23,24 +23,20 @@
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
 
-class CommandLine;
 class DefaultPrefStore;
-class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
 class PrefObserver;
-class PrefServiceObserver;
 class PrefStore;
 class PrefValueStore;
-
-namespace syncer {
-class SyncableService;
-}
 
 namespace subtle {
 class ScopedUserPrefUpdateBase;
 };
 
+// Base class for PrefServices. You can use the base class to read and
+// interact with preferences, but not to register new preferences; for
+// that see subclasses like PrefServiceSimple.
 class PrefService : public PrefServiceBase, public base::NonThreadSafe {
  public:
   enum PrefInitializationStatus {
@@ -90,15 +86,18 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
 
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
-
   };
 
-  // Creates an incognito copy of the pref service that shares most pref stores
-  // but uses a fresh non-persistent overlay for the user pref store and an
-  // individual extension pref store (to cache the effective extension prefs for
-  // incognito windows).
-  PrefService* CreateIncognitoPrefService(PrefStore* incognito_extension_prefs);
-
+  // You may wish to use PrefServiceBuilder or one of its subclasses
+  // for simplified construction.
+  PrefService(
+      PrefNotifierImpl* pref_notifier,
+      PrefValueStore* pref_value_store,
+      PersistentPrefStore* user_prefs,
+      DefaultPrefStore* default_store,
+      base::Callback<void(PersistentPrefStore::PrefReadError)>
+          read_error_callback,
+      bool async);
   virtual ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
@@ -110,94 +109,9 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
-  void AddObserver(PrefServiceObserver* observer);
-  void RemoveObserver(PrefServiceObserver* observer);
-
-  // Returns true if preferences state has synchronized with the remote
-  // preferences. If true is returned it can be assumed the local preferences
-  // has applied changes from the remote preferences. The two may not be
-  // identical if a change is in flight (from either side).
-  bool IsSyncing();
-
-  // Invoked internally when the IsSyncing() state changes.
-  void OnIsSyncingChanged();
-
   // PrefServiceBase implementation.
   virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;
   virtual bool IsUserModifiablePreference(const char* pref_name) const OVERRIDE;
-  virtual void RegisterBooleanPref(const char* path,
-                                   bool default_value) OVERRIDE;
-  virtual void RegisterIntegerPref(const char* path,
-                                   int default_value) OVERRIDE;
-  virtual void RegisterDoublePref(const char* path,
-                                  double default_value) OVERRIDE;
-  virtual void RegisterStringPref(const char* path,
-                                  const std::string& default_value) OVERRIDE;
-  virtual void RegisterFilePathPref(const char* path,
-                                    const FilePath& default_value) OVERRIDE;
-  virtual void RegisterListPref(const char* path) OVERRIDE;
-  virtual void RegisterDictionaryPref(const char* path) OVERRIDE;
-  virtual void RegisterListPref(const char* path,
-                                base::ListValue* default_value) OVERRIDE;
-  virtual void RegisterDictionaryPref(
-      const char* path, base::DictionaryValue* default_value) OVERRIDE;
-  virtual void RegisterLocalizedBooleanPref(
-      const char* path, int locale_default_message_id) OVERRIDE;
-  virtual void RegisterLocalizedIntegerPref(
-      const char* path, int locale_default_message_id) OVERRIDE;
-  virtual void RegisterLocalizedDoublePref(
-      const char* path, int locale_default_message_id) OVERRIDE;
-  virtual void RegisterLocalizedStringPref(
-      const char* path, int locale_default_message_id) OVERRIDE;
-  virtual void RegisterInt64Pref(const char* path,
-                                 int64 default_value) OVERRIDE;
-  virtual void RegisterBooleanPref(const char* path,
-                                   bool default_value,
-                                   PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterIntegerPref(const char* path,
-                                   int default_value,
-                                   PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterDoublePref(const char* path,
-                                  double default_value,
-                                  PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterStringPref(const char* path,
-                                  const std::string& default_value,
-                                  PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterFilePathPref(const char* path,
-                                    const FilePath& default_value,
-                                    PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterListPref(const char* path,
-                                PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterDictionaryPref(const char* path,
-                                      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterListPref(const char* path,
-                                base::ListValue* default_value,
-                                PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterDictionaryPref(const char* path,
-                                      base::DictionaryValue* default_value,
-                                      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterLocalizedBooleanPref(
-      const char* path,
-      int locale_default_message_id,
-      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterLocalizedIntegerPref(
-      const char* path,
-      int locale_default_message_id,
-      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterLocalizedDoublePref(
-      const char* path,
-      int locale_default_message_id,
-      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterLocalizedStringPref(
-      const char* path,
-      int locale_default_message_id,
-      PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterInt64Pref(const char* path,
-                                 int64 default_value,
-                                 PrefSyncStatus sync_status) OVERRIDE;
-  virtual void RegisterUint64Pref(const char* path,
-                                  uint64 default_value,
-                                  PrefSyncStatus sync_status) OVERRIDE;
   virtual void UnregisterPreference(const char* path) OVERRIDE;
   virtual const PrefService::Preference* FindPreference(
       const char* path) const OVERRIDE;
@@ -243,13 +157,9 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
 
   PrefInitializationStatus GetInitializationStatus() const;
 
-  // syncer::SyncableService getter.
-  // TODO(zea): Have PrefService implement syncer::SyncableService directly.
-  syncer::SyncableService* GetSyncableService();
-
-  // Tell our PrefValueStore to update itself using |command_line|.
-  // Do not call this after having derived an incognito or per tab pref service.
-  void UpdateCommandLinePrefStore(CommandLine* command_line);
+  // Tell our PrefValueStore to update itself to |command_line_store|.
+  // Takes ownership of the store.
+  virtual void UpdateCommandLinePrefStore(PrefStore* command_line_store);
 
   // We run the callback once, when initialization completes. The bool
   // parameter will be set to true for successful initialization,
@@ -257,21 +167,27 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   void AddPrefInitObserver(base::Callback<void(bool)> callback);
 
  protected:
-  // Construct a new pref service. This constructor is what
-  // factory methods end up calling and what is used for unit tests.
-  PrefService(PrefNotifierImpl* pref_notifier,
-              PrefValueStore* pref_value_store,
-              PersistentPrefStore* user_prefs,
-              DefaultPrefStore* default_store,
-              PrefModelAssociator* pref_sync_associator,
-              base::Callback<void(PersistentPrefStore::PrefReadError)>
-                  read_error_callback,
-              bool async);
+  // Registers a new preference at |path|. The |default_value| must not be
+  // NULL as it determines the preference value's type.
+  // RegisterPreference must not be called twice for the same path.
+  // This method takes ownership of |default_value|.
+  void RegisterPreference(const char* path, base::Value* default_value);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
   // unit testing.
   scoped_ptr<PrefNotifierImpl> pref_notifier_;
+
+  // The PrefValueStore provides prioritized preference values. It is owned by
+  // this PrefService. Subclasses may access it for unit testing.
+  scoped_ptr<PrefValueStore> pref_value_store_;
+
+  // Pref Stores and profile that we passed to the PrefValueStore.
+  scoped_refptr<PersistentPrefStore> user_pref_store_;
+  scoped_refptr<DefaultPrefStore> default_store_;
+
+  // Callback to call when a read error occurs.
+  base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
 
  private:
   // Hash map expected to be fastest here since it minimises expensive
@@ -280,6 +196,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // vs. std::map, and by roughly 180ms vs. std::set of Preference pointers.
   typedef base::hash_map<std::string, Preference> PreferenceMap;
 
+  // Give access to Initialize().
   friend class PrefServiceBuilder;
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
@@ -294,14 +211,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
   void ReportUserPrefChanged(const std::string& key);
-
-  // Registers a new preference at |path|. The |default_value| must not be
-  // NULL as it determines the preference value's type.
-  // RegisterPreference must not be called twice for the same path.
-  // This method takes ownership of |default_value|.
-  void RegisterPreference(const char* path,
-                          base::Value* default_value,
-                          PrefSyncStatus sync_status);
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.
@@ -328,32 +237,18 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
 
-  // The PrefValueStore provides prioritized preference values. It is owned by
-  // this PrefService. Subclasses may access it for unit testing.
-  scoped_ptr<PrefValueStore> pref_value_store_;
-
-  // Pref Stores and profile that we passed to the PrefValueStore.
-  scoped_refptr<PersistentPrefStore> user_pref_store_;
-  scoped_refptr<DefaultPrefStore> default_store_;
-
   // Local cache of registered Preference objects. The default_store_
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
   mutable PreferenceMap prefs_map_;
 
-  // The model associator that maintains the links with the sync db.
-  scoped_ptr<PrefModelAssociator> pref_sync_associator_;
-
-  // Callback to call when a read error occurs.
-  base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
-
-  // Whether CreateIncognitoPrefService() has been called to create a
-  // "forked" PrefService.
-  bool pref_service_forked_;
-
-  ObserverList<PrefServiceObserver> observer_list_;
-
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
+
+// TODO(joi): Remove these forwards. They were placed here temporarily
+// to limit the size of the initial change that split
+// PrefServiceSimple and PrefServiceSyncable out of PrefService.
+#include "chrome/browser/prefs/pref_service_simple.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_

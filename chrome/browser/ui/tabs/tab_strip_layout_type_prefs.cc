@@ -10,9 +10,9 @@
 
 namespace chrome {
 
-void RegisterTabStripLayoutTypePrefs(PrefService* prefs) {
+void RegisterTabStripLayoutTypePrefs(PrefServiceSimple* local_state) {
   // This value is device dependant, so it goes in local state.
- prefs->RegisterIntegerPref(
+  local_state->RegisterIntegerPref(
       prefs::kTabStripLayoutType,
       static_cast<int>(TAB_STRIP_LAYOUT_SHRINK));
 }

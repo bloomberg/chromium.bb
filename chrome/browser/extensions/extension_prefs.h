@@ -24,6 +24,7 @@
 class ExtensionPrefValueMap;
 class ExtensionSorting;
 class PrefService;
+class PrefServiceSyncable;
 
 namespace extensions {
 class ExtensionPrefsUninstallExtension;
@@ -92,7 +93,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Creates and initializes an ExtensionPrefs object.
   // Does not take ownership of |prefs| and |extension_pref_value_map|.
   static scoped_ptr<ExtensionPrefs> Create(
-      PrefService* prefs,
+      PrefServiceSyncable* prefs,
       const FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled);
@@ -100,7 +101,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // A version of Create which allows injection of a custom base::Time provider.
   // Use this as needed for testing.
   static scoped_ptr<ExtensionPrefs> Create(
-      PrefService* prefs,
+      PrefServiceSyncable* prefs,
       const FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled,
@@ -485,14 +486,14 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   ContentSettingsStore* content_settings_store() {
     return content_settings_store_.get();
   }
 
   // The underlying PrefService.
-  PrefService* pref_service() const { return prefs_; }
+  PrefServiceSyncable* pref_service() const { return prefs_; }
 
   // The underlying ExtensionSorting.
   ExtensionSorting* extension_sorting() const {
@@ -521,7 +522,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   friend class ExtensionPrefsUninstallExtension;     // Unit test.
 
   // See the Create methods.
-  ExtensionPrefs(PrefService* prefs,
+  ExtensionPrefs(PrefServiceSyncable* prefs,
                  const FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
                  scoped_ptr<TimeProvider> time_provider);
@@ -641,7 +642,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       DictionaryValue* extension_dict);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
-  PrefService* prefs_;
+  PrefServiceSyncable* prefs_;
 
   // Base extensions install directory.
   FilePath install_directory_;

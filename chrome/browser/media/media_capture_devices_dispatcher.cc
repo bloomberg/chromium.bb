@@ -18,16 +18,17 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
-void MediaCaptureDevicesDispatcher::RegisterUserPrefs(PrefService* user_prefs) {
+void MediaCaptureDevicesDispatcher::RegisterUserPrefs(
+    PrefServiceSyncable* user_prefs) {
   if (!user_prefs->FindPreference(prefs::kDefaultAudioCaptureDevice)) {
     user_prefs->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
                                    std::string(),
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (!user_prefs->FindPreference(prefs::kDefaultVideoCaptureDevice)) {
     user_prefs->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
                                    std::string(),
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 

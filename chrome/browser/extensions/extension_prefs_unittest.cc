@@ -834,18 +834,14 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
 ExtensionPrefsPrepopulatedTest::~ExtensionPrefsPrepopulatedTest() {}
 
 void ExtensionPrefsPrepopulatedTest::RegisterPreferences() {
-  prefs()->pref_service()->RegisterStringPref(kPref1,
-                                              kDefaultPref1,
-                                              PrefService::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(kPref2,
-                                              kDefaultPref2,
-                                              PrefService::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(kPref3,
-                                              kDefaultPref3,
-                                              PrefService::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(kPref4,
-                                              kDefaultPref4,
-                                              PrefService::UNSYNCABLE_PREF);
+  prefs()->pref_service()->RegisterStringPref(
+      kPref1, kDefaultPref1, PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs()->pref_service()->RegisterStringPref(
+      kPref2, kDefaultPref2, PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs()->pref_service()->RegisterStringPref(
+      kPref3, kDefaultPref3, PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs()->pref_service()->RegisterStringPref(
+      kPref4, kDefaultPref4, PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void ExtensionPrefsPrepopulatedTest::InstallExtControlledPref(

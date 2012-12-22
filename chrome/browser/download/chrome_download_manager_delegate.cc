@@ -483,7 +483,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
                                                FilePath* download_save_dir,
                                                bool* skip_dir_check) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefService* prefs = profile->GetPrefs();
+  PrefServiceSyncable* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.
   // If not, initialize it with default directory.
@@ -493,7 +493,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
         prefs::kDownloadDefaultDirectory);
     prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
                                 default_save_path,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 
   // Get the directory from preference.

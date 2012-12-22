@@ -62,7 +62,7 @@ int GetCacheUpdateDelay() {
 }  // namespace
 
 // static
-void PromoResourceService::RegisterPrefs(PrefService* local_state) {
+void PromoResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
   // TODO(achuith): Delete this in M26. http://crbug.com/143773
   // The promo service version number, and last locale.
   const char kNtpPromoVersion[] = "ntp.promo_version";
@@ -74,10 +74,10 @@ void PromoResourceService::RegisterPrefs(PrefService* local_state) {
 }
 
 // static
-void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
+void PromoResourceService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate,
                             "0",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   NotificationPromo::RegisterUserPrefs(prefs);
 }
 

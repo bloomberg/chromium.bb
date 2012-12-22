@@ -35,25 +35,25 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
   return Singleton<SigninManagerFactory>::get();
 }
 
-void SigninManagerFactory::RegisterUserPrefs(PrefService* user_prefs) {
+void SigninManagerFactory::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kGoogleServicesLastUsername, "",
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
-                               new ListValue, PrefService::UNSYNCABLE_PREF);
+                               new ListValue,
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kIsGooglePlusUser, false,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static
-void SigninManagerFactory::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "",
-                                  PrefService::UNSYNCABLE_PREF);
+void SigninManagerFactory::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "");
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(

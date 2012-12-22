@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "content/public/common/media_stream_request.h"
 
-class PrefService;
+class PrefServiceSyncable;
 
 // This observer is owned by MediaInternals and deleted when MediaInternals
 // is deleted.
@@ -35,7 +35,7 @@ class MediaCaptureDevicesDispatcher
   MediaCaptureDevicesDispatcher();
 
   // Registers the preferences related to Media Stream default devices.
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
   // Called on IO thread when one audio device is plugged in or unplugged.
   void AudioCaptureDevicesChanged(const content::MediaStreamDevices& devices);

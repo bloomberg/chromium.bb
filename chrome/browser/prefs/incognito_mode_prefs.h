@@ -9,6 +9,7 @@
 
 class CommandLine;
 class PrefService;
+class PrefServiceSyncable;
 
 // Specifies Incognito mode availability preferences.
 class IncognitoModePrefs {
@@ -30,7 +31,7 @@ class IncognitoModePrefs {
   };
 
   // Register incognito related preferences.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns kIncognitoModeAvailability preference value stored
   // in the given pref service.

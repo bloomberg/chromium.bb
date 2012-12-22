@@ -122,10 +122,10 @@ void PromoHandler::RegisterMessages() {
 }
 
 // static
-void PromoHandler::RegisterUserPrefs(PrefService* prefs) {
+void PromoHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kNtpPromoDesktopSessionFound,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void PromoHandler::Observe(int type,

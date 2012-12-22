@@ -279,7 +279,9 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   FakeDelegate* delegate() const { return delegate_; }
   ProtocolHandlerRegistry* registry() { return registry_.get(); }
   TestingProfile* profile() const { return profile_.get(); }
-  PrefService* pref_service() const { return profile_->GetPrefs(); }
+  // TODO(joi): Check if this can be removed, as well as the call to
+  // SetPrefService in SetUp.
+  PrefServiceSyncable* pref_service() const { return profile_->GetPrefs(); }
   const ProtocolHandler& test_protocol_handler() const {
     return test_protocol_handler_;
   }
@@ -318,11 +320,14 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
-    profile_->SetPrefService(new TestingPrefService());
+    profile_->SetPrefService(new TestingPrefServiceSyncable());
     SetUpRegistry(true);
     test_protocol_handler_ =
         CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
-    ProtocolHandlerRegistry::RegisterPrefs(pref_service());
+
+    // TODO(joi): If pref_service() and the SetPrefService above go,
+    // then this could go.
+    ProtocolHandlerRegistry::RegisterUserPrefs(pref_service());
   }
 
   virtual void TearDown() {

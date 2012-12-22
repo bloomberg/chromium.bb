@@ -103,7 +103,7 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
   if (pref_service_->FindPreference(kSyncSessionsGUID) == NULL) {
     pref_service_->RegisterStringPref(kSyncSessionsGUID,
                                       std::string(),
-                                      PrefService::UNSYNCABLE_PREF);
+                                      PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 

@@ -37,6 +37,7 @@ class DeviceStatusReportRequest;
 }
 
 class PrefService;
+class PrefServiceSimple;
 
 namespace policy {
 
@@ -63,7 +64,7 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
       enterprise_management::SessionStatusReportRequest* status) OVERRIDE;
   virtual void OnSubmittedSuccessfully() OVERRIDE;
 
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;

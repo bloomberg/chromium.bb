@@ -89,7 +89,7 @@ class URLBlacklistManagerTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  TestingPrefService pref_service_;
+  TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingURLBlacklistManager> blacklist_manager_;
 
  private:

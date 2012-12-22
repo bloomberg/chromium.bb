@@ -279,7 +279,7 @@ class ChromeDownloadManagerDelegateTest :
                               content::DownloadDangerType danger_type,
                               const FilePath& intermediate_path);
 
-  TestingPrefService* pref_service_;
+  TestingPrefServiceSyncable* pref_service_;
   base::ScopedTempDir test_download_dir_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;

@@ -93,17 +93,17 @@ DictionaryValue* ObjectIdAndStateToValue(
 
 }  // namespace
 
-InvalidatorStorage::InvalidatorStorage(PrefService* pref_service)
+InvalidatorStorage::InvalidatorStorage(PrefServiceSyncable* pref_service)
     : pref_service_(pref_service) {
   // TODO(tim): Create a Mock instead of maintaining the if(!pref_service_) case
   // throughout this file.  This is a problem now due to lack of injection at
   // ProfileSyncService. Bug 130176.
   if (pref_service_) {
     pref_service_->RegisterListPref(prefs::kInvalidatorMaxInvalidationVersions,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
     pref_service_->RegisterStringPref(prefs::kInvalidatorInvalidationState,
                                       std::string(),
-                                      PrefService::UNSYNCABLE_PREF);
+                                      PrefServiceSyncable::UNSYNCABLE_PREF);
 
     MigrateMaxInvalidationVersionsPref();
   }
@@ -195,7 +195,7 @@ void InvalidatorStorage::SerializeToList(
 // Legacy migration code.
 void InvalidatorStorage::MigrateMaxInvalidationVersionsPref() {
   pref_service_->RegisterDictionaryPref(prefs::kSyncMaxInvalidationVersions,
-                                        PrefService::UNSYNCABLE_PREF);
+                                        PrefServiceSyncable::UNSYNCABLE_PREF);
   const base::DictionaryValue* max_versions_dict =
       pref_service_->GetDictionary(prefs::kSyncMaxInvalidationVersions);
   CHECK(max_versions_dict);

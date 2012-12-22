@@ -86,8 +86,7 @@ static Experiment kExperiments[] = {
 class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() {
-    prefs_.RegisterListPref(prefs::kEnabledLabsExperiments,
-                            PrefService::UNSYNCABLE_PREF);
+    prefs_.RegisterListPref(prefs::kEnabledLabsExperiments);
     testing::ClearState();
   }
 
@@ -107,7 +106,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::SetExperiments(NULL, 0);
   }
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
 };
 
 TEST_F(AboutFlagsTest, ChangeNeedsRestart) {
@@ -261,7 +260,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
   std::string switch2_with_equals = std::string("--") +
                                     std::string(kSwitch2) +
                                     std::string("=");
-#if defined(OS_WIN)            
+#if defined(OS_WIN)
   EXPECT_NE(std::wstring::npos,
             command_line.GetCommandLineString().find(
                 ASCIIToWide(switch2_with_equals)));

@@ -56,26 +56,26 @@ ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
   return provider;
 }
 
-void ThemeServiceFactory::RegisterUserPrefs(PrefService* prefs) {
+void ThemeServiceFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 #if defined(TOOLKIT_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
                              GtkThemeService::DefaultUsesSystemTheme(),
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
                               FilePath(),
-                              PrefService::UNSYNCABLE_PREF);
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
                             ThemeService::kDefaultThemeID,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool ThemeServiceFactory::ServiceRedirectedInIncognito() const {

@@ -56,13 +56,14 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
 
 // static
-void MediaStreamDevicesController::RegisterUserPrefs(PrefService* prefs) {
+void MediaStreamDevicesController::RegisterUserPrefs(
+    PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kVideoCaptureAllowed,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 

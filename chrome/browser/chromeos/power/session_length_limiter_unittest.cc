@@ -176,7 +176,7 @@ class SessionLengthLimiterTest : public testing::Test {
     return now_;
   }
 
-  TestingPrefService local_state_;
+  TestingPrefServiceSimple local_state_;
   MockSessionLengthLimiterDelegate* delegate_;  // Owned by
                                                 // session_length_limiter_.
   scoped_refptr<ImmediateSingleThreadTaskRunner> runner_;

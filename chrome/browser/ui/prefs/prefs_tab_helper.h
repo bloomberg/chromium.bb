@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class OverlayUserPrefStore;
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace content {
@@ -26,7 +26,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   virtual ~PrefsTabHelper();
 
   static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
  protected:
   // Update the RenderView's WebPreferences. Exposed as protected for testing.

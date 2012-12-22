@@ -10,6 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "sync/internal_api/public/base/invalidation_test_util.h"
@@ -47,7 +48,7 @@ class InvalidatorStorageTest : public testing::Test {
         kAutofillId_(kChromeSyncSourceId, "AUTOFILL") {}
 
  protected:
-  TestingPrefService pref_service_;
+  TestingPrefServiceSyncable pref_service_;
 
   const invalidation::ObjectId kBookmarksId_;
   const invalidation::ObjectId kPreferencesId_;

@@ -60,7 +60,7 @@ class InputMethodPersistenceTest : public testing::Test {
                   language_prefs::kPreferredKeyboardLayout));
   }
 
-  TestingPrefService* mock_user_prefs_;
+  TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
 };

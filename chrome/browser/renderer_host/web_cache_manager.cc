@@ -53,7 +53,7 @@ int GetDefaultCacheSize() {
 }  // anonymous namespace
 
 // static
-void WebCacheManager::RegisterPrefs(PrefService* prefs) {
+void WebCacheManager::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterIntegerPref(prefs::kMemoryCacheSize, GetDefaultCacheSize());
 }
 

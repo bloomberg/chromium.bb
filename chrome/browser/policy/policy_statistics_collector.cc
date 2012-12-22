@@ -49,9 +49,8 @@ void PolicyStatisticsCollector::Initialize() {
 }
 
 // static
-void PolicyStatisticsCollector::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0,
-                           PrefService::UNSYNCABLE_PREF);
+void PolicyStatisticsCollector::RegisterPrefs(PrefServiceSimple* prefs) {
+  prefs->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
 }
 
 void PolicyStatisticsCollector::RecordPolicyUse(int id) {

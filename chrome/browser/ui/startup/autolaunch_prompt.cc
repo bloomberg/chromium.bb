@@ -11,7 +11,7 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   return false;
 }
 
-void RegisterAutolaunchPrefs(PrefService* prefs) {
+void RegisterAutolaunchUserPrefs(PrefServiceSyncable* prefs) {
   // Autolaunch is only implemented on Windows right now.
 }
 

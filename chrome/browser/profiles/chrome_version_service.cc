@@ -10,9 +10,9 @@
 #include "chrome/common/pref_names.h"
 
 // static
-void ChromeVersionService::RegisterUserPrefs(PrefService* prefs) {
+void ChromeVersionService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterStringPref(prefs::kProfileCreatedByVersion, "1.0.0.0",
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -21,7 +21,7 @@ bool GrabWindowSnapshotForUser(
       snapshot_bounds);
 }
 
-void RegisterScreenshotPrefs(PrefService* service) {
+void RegisterScreenshotPrefs(PrefServiceSimple* service) {
   service->RegisterBooleanPref(prefs::kDisableScreenshots, false);
 }
 

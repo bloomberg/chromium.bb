@@ -127,7 +127,7 @@ DataPromoNotification::~DataPromoNotification() {
   CloseNotification();
 }
 
-void DataPromoNotification::RegisterPrefs(PrefService* local_state) {
+void DataPromoNotification::RegisterPrefs(PrefServiceSimple* local_state) {
   // Carrier deal notification shown count defaults to 0.
   local_state->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 }

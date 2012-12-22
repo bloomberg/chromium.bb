@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // Create an observer per Profile that listens for gesture preferences updates.
@@ -23,12 +23,12 @@ class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
   GesturePrefsObserverFactoryAura();
   virtual ~GesturePrefsObserverFactoryAura();
 
-  void RegisterOverscrollPrefs(PrefService* prefs);
+  void RegisterOverscrollPrefs(PrefServiceSyncable* prefs);
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

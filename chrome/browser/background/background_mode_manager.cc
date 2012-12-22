@@ -219,7 +219,7 @@ BackgroundModeManager::~BackgroundModeManager() {
 }
 
 // static
-void BackgroundModeManager::RegisterPrefs(PrefService* prefs) {
+void BackgroundModeManager::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
   prefs->RegisterBooleanPref(prefs::kUserRemovedLoginItem, false);
   prefs->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);

@@ -97,7 +97,7 @@ class ProxyPolicyTest : public testing::Test {
     builder.WithCommandLine(&command_line_);
     if (with_managed_policies)
       builder.WithManagedPolicies(policy_service_.get());
-    PrefService* prefs = builder.Create();
+    PrefServiceSyncable* prefs = builder.CreateSyncable();
     chrome::RegisterUserPrefs(prefs);
     return prefs;
   }

@@ -48,6 +48,7 @@ class URLRequestContextGetter;
 
 class IOThread;
 class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace chrome_browser_net {
@@ -101,7 +102,7 @@ class Predictor {
   static Predictor* CreatePredictor(bool preconnect_enabled,
                                     bool simple_shutdown);
 
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
   // ------------- Start UI thread methods.
 

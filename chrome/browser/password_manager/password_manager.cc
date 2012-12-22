@@ -57,13 +57,13 @@ void ReportMetrics(bool password_manager_enabled) {
 }  // anonymous namespace
 
 // static
-void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
+void PasswordManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

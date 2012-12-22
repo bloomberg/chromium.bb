@@ -69,13 +69,13 @@ bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(GetInstantPrefName(profile));
 }
 
-void BrowserInstantController::RegisterUserPrefs(PrefService* prefs) {
+void BrowserInstantController::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kInstantExtendedEnabled, true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kInstantEnabled, false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {

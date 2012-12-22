@@ -19,10 +19,8 @@ namespace chromeos {
 
 namespace device_settings_cache {
 
-void RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterStringPref(prefs::kDeviceSettingsCache,
-                                  "invalid",
-                                  PrefService::UNSYNCABLE_PREF);
+void RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterStringPref(prefs::kDeviceSettingsCache, "invalid");
 }
 
 bool Store(const em::PolicyData& policy, PrefService* local_state) {

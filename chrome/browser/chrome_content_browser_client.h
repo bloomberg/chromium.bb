@@ -26,7 +26,7 @@ namespace extensions {
 class Extension;
 }
 
-class PrefService;
+class PrefServiceSyncable;
 
 namespace chrome {
 
@@ -35,7 +35,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   ChromeContentBrowserClient();
   virtual ~ChromeContentBrowserClient();
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;

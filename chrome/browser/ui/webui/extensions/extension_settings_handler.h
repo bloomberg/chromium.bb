@@ -28,7 +28,7 @@
 
 class ExtensionService;
 class FilePath;
-class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
@@ -69,7 +69,7 @@ class ExtensionSettingsHandler
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Extension Detail JSON Struct for page. |pages| is injected for unit
   // testing.

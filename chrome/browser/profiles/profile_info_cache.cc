@@ -823,6 +823,6 @@ std::vector<string16> ProfileInfoCache::GetProfileNames() {
 }
 
 // static
-void ProfileInfoCache::RegisterPrefs(PrefService* prefs) {
+void ProfileInfoCache::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }

@@ -16,7 +16,7 @@
 
 class GURL;
 class PageUsageData;
-class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class ListValue;
@@ -65,7 +65,7 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   // SuggestionsCombiner::Delegate implementation.
   virtual void OnSuggestionsReady() OVERRIDE;
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
  private:
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).

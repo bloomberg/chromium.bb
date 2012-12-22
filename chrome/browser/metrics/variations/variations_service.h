@@ -21,6 +21,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
+class PrefServiceSimple;
 
 namespace chrome_variations {
 
@@ -49,7 +50,7 @@ class VariationsService
   void StartRepeatedVariationsSeedFetch();
 
   // Register Variations related prefs in Local State.
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Exposed for testing.
   void SetCreateTrialsFromSeedCalledForTesting(bool called);

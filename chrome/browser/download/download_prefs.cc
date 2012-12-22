@@ -67,26 +67,26 @@ DownloadPrefs::~DownloadPrefs() {
 }
 
 // static
-void DownloadPrefs::RegisterUserPrefs(PrefServiceBase* prefs) {
+void DownloadPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kPromptForDownload,
                              false,
-                             PrefServiceBase::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen,
                             "",
-                            PrefServiceBase::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded,
                              false,
-                             PrefServiceBase::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kSaveFileType,
                              content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                             PrefServiceBase::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.
   const FilePath& default_download_path =
       download_util::GetDefaultDownloadDirectory();
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path,
-                              PrefServiceBase::UNSYNCABLE_PREF);
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.

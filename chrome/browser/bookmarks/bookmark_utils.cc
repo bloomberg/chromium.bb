@@ -11,7 +11,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -436,13 +436,13 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
   return node;
 }
 
-void RegisterUserPrefs(PrefServiceBase* prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kShowBookmarkBar,
                              false,
-                             PrefServiceBase::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEditBookmarksEnabled,
                              true,
-                             PrefServiceBase::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 const BookmarkNode* GetParentForNewNodes(

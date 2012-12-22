@@ -22,6 +22,8 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 
+class PrefServiceSyncable;
+
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
 // instance of this class, which is initialized on browser start through
@@ -191,7 +193,7 @@ class ProtocolHandlerRegistry : public ProfileKeyedService {
   virtual void Shutdown() OVERRIDE;
 
   // Registers the preferences that we store registered protocol handlers in.
-  static void RegisterPrefs(PrefService* prefService);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefService);
 
   bool enabled() const { return enabled_; }
 

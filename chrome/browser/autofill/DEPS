@@ -12,6 +12,8 @@ include_rules = [
   # Components-like DEPS above go here.
   "+third_party/libphonenumber",  # For phone number i18n.
 
+  "+chrome/browser/prefs",
+
   # TODO(joi): May be able to remove this if PKS is moved to c/b/api.
   "!chrome/browser/profiles/profile_keyed_service.h",
 

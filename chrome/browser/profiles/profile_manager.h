@@ -185,7 +185,7 @@ class ProfileManager : public base::NonThreadSafe,
       bool is_managed);
 
   // Register multi-profile related preferences in Local State.
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.

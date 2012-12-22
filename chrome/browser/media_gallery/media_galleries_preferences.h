@@ -14,7 +14,7 @@
 #include "base/string16.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace base {
@@ -115,7 +115,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns true if the media gallery preferences system has ever been used
   // for this profile. To be exact, it checks if a gallery has ever been added

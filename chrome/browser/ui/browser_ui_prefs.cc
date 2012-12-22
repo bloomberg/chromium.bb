@@ -11,26 +11,26 @@
 
 namespace chrome {
 
-void RegisterBrowserPrefs(PrefService* prefs) {
+void RegisterBrowserPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   prefs->RegisterIntegerPref(prefs::kShowFirstRunBubbleOption,
                              first_run::FIRST_RUN_BUBBLE_DONT_SHOW);
 }
 
-void RegisterBrowserUserPrefs(PrefService* prefs) {
+void RegisterBrowserUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kHomePageChanged,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kShowHomeButton,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kExtensionsSideloadWipeoutBubbleShown,
                              0,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created
@@ -42,126 +42,132 @@ void RegisterBrowserUserPrefs(PrefService* prefs) {
   // that use this preference.
   prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeleteCache,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeleteCookies,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeletePasswords,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeleteFormData,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDeleteHostedAppsData,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
                              0,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #if defined(OS_WIN)
   // As with Mac-spacific code above, it should be in a platform-specific
   // section somewhere, but there is no good place for it.
   prefs->RegisterBooleanPref(prefs::kSuppressSwitchToMetroModeOnSetDefault,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail,
                             std::string(),
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kCloudPrintSubmitEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDevToolsHSplitLocation,
                              -1,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDevToolsVSplitLocation,
                              -1,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportBookmarks,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportHistory,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportHomepage,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportSearchEngine,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableDoNotTrack,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 
   // Dictionaries to keep track of default tasks in the file browser.
   prefs->RegisterDictionaryPref(prefs::kDefaultTasksByMimeType,
-                                PrefService::SYNCABLE_PREF);
+                                PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kDefaultTasksBySuffix,
-                                PrefService::SYNCABLE_PREF);
+                                PrefServiceSyncable::SYNCABLE_PREF);
 
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.
   prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void RegisterAppPrefs(const std::string& app_name, Profile* profile) {
   // We need to register the window position pref.
+  //
+  // TODO(mnissler): Use a separate pref name pointing to a single
+  // dictionary instead. Also tracked as http://crbug.com/167256
   std::string window_pref(prefs::kBrowserWindowPlacement);
   window_pref.append("_");
   window_pref.append(app_name);
-  PrefService* prefs = profile->GetPrefs();
+  PrefServiceSyncable* prefs = profile->GetPrefs();
   if (!prefs->FindPreference(window_pref.c_str())) {
+    // TODO(joi): Switch to official way of registering local prefs
+    // for this class, i.e. in a function called from
+    // browser_prefs::RegisterUserPrefs.
     prefs->RegisterDictionaryPref(window_pref.c_str(),
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 

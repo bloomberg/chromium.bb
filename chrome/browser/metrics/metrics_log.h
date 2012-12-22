@@ -19,6 +19,7 @@
 
 struct AutocompleteLog;
 class PrefService;
+class PrefServiceSimple;
 
 namespace base {
 class DictionaryValue;
@@ -63,7 +64,7 @@ class MetricsLog : public MetricsLogBase {
   MetricsLog(const std::string& client_id, int session_id);
   virtual ~MetricsLog();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Get the amount of uptime in seconds since this function was last called.
   // This updates the cumulative uptime metric for uninstall as a side effect.

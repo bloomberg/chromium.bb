@@ -155,13 +155,11 @@ void NetworkProfileBubble::SetNotificationShown(bool shown) {
 }
 
 // static
-void NetworkProfileBubble::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft,
-                             kMaxWarnings,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime,
-                           0,
-                           PrefService::UNSYNCABLE_PREF);
+void NetworkProfileBubble::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+  prefs->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft, kMaxWarnings,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime, 0,
+                           PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -12,9 +12,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/syncable_service.h"
+
+class PrefServiceSyncable;
 
 namespace sync_pb {
 class PreferenceSpecifics;
@@ -72,7 +73,7 @@ class PrefModelAssociator
   // sent to the syncer.
   virtual void ProcessPrefChange(const std::string& name);
 
-  void SetPrefService(PrefService* pref_service);
+  void SetPrefService(PrefServiceSyncable* pref_service);
 
   // Merges the local_value into the supplied server_value and returns
   // the result (caller takes ownership). If there is a conflict, the server
@@ -143,7 +144,7 @@ class PrefModelAssociator
   PreferenceSet synced_preferences_;
 
   // The PrefService we are syncing to.
-  PrefService* pref_service_;
+  PrefServiceSyncable* pref_service_;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;

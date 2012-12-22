@@ -472,7 +472,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   CloudPrintProxyServiceFactory::GetInstance()->
       SetTestingFactory(profile, CloudPrintProxyServiceFactoryForPolicyTest);
 
-  TestingPrefService* prefs = profile->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile->GetTestingPrefService();
   prefs->SetUserPref(prefs::kCloudPrintEmail,
                      Value::CreateStringValue(
                          MockServiceIPCServer::EnabledUserId()));
@@ -512,7 +512,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
   CloudPrintProxyServiceFactory::GetInstance()->
       SetTestingFactory(profile, CloudPrintProxyServiceFactoryForPolicyTest);
 
-  TestingPrefService* prefs = profile->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile->GetTestingPrefService();
   prefs->SetUserPref(prefs::kCloudPrintEmail,
                      Value::CreateStringValue(
                          MockServiceIPCServer::EnabledUserId()));

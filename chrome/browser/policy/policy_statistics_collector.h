@@ -11,6 +11,7 @@
 #include "base/time.h"
 
 class PrefService;
+class PrefServiceSimple;
 
 namespace base {
 class TaskRunner;
@@ -36,7 +37,7 @@ class PolicyStatisticsCollector {
   // Completes initialization and starts periodical statistic updates.
   void Initialize();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
  protected:
   // protected virtual for mocking.

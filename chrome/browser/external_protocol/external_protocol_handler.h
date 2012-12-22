@@ -10,7 +10,7 @@
 #include "chrome/browser/shell_integration.h"
 
 class GURL;
-class PrefService;
+class PrefServiceSimple;
 
 namespace base {
 class DictionaryValue;
@@ -78,7 +78,7 @@ class ExternalProtocolHandler {
                                         int routing_id);
 
   // Register the ExcludedSchemes preference.
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Starts a url using the external protocol handler with the help
   // of shellexecute. Should only be called if the protocol is whitelisted

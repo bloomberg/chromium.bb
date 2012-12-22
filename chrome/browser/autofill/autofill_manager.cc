@@ -39,6 +39,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -225,28 +226,28 @@ AutofillManager::~AutofillManager() {
 }
 
 // static
-void AutofillManager::RegisterUserPrefs(PrefServiceBase* prefs) {
+void AutofillManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutofillEnabled,
                              true,
-                             PrefServiceBase::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
                              true,
-                             PrefServiceBase::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
                              true,
-                             PrefServiceBase::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 #else
   prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
                              false,
-                             PrefServiceBase::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
                             kAutofillPositiveUploadRateDefaultValue,
-                            PrefServiceBase::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
                             kAutofillNegativeUploadRateDefaultValue,
-                            PrefServiceBase::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void AutofillManager::RegisterWithSyncService() {

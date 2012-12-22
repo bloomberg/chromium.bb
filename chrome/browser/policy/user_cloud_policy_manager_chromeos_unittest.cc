@@ -88,7 +88,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   PolicyBundle expected_bundle_;
 
   // Policy infrastructure.
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
   MockConfigurationPolicyObserver observer_;
   MockDeviceManagementService device_management_service_;
   MockCloudPolicyStore* store_;

@@ -18,7 +18,7 @@ namespace browser_sync {
 
 SyncPrefObserver::~SyncPrefObserver() {}
 
-SyncPrefs::SyncPrefs(PrefService* pref_service)
+SyncPrefs::SyncPrefs(PrefServiceSyncable* pref_service)
     : pref_service_(pref_service) {
   RegisterPrefGroups();
   // TODO(tim): Create a Mock instead of maintaining the if(!pref_service_) case
@@ -307,15 +307,18 @@ void SyncPrefs::RegisterPreferences() {
     return;
   }
 
+  // TODO(joi): Switch to official way of registering user prefs for
+  // this class, i.e. in a function called from
+  // browser_prefs::RegisterUserPrefs.
   pref_service_->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
                                      false,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service_->RegisterBooleanPref(prefs::kSyncSuppressStart,
                                      false,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service_->RegisterInt64Pref(prefs::kSyncLastSyncedTime,
                                    0,
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // If you've never synced before, or if you're using Chrome OS or Android,
   // all datatypes are on by default.
@@ -330,7 +333,7 @@ void SyncPrefs::RegisterPreferences() {
 
   pref_service_->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced,
                                      enable_by_default,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
 
   syncer::ModelTypeSet user_types = syncer::UserTypes();
 
@@ -345,18 +348,18 @@ void SyncPrefs::RegisterPreferences() {
 
   pref_service_->RegisterBooleanPref(prefs::kSyncManaged,
                                      false,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service_->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                     "",
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service_->RegisterStringPref(
       prefs::kSyncKeystoreEncryptionBootstrapToken,
       "",
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   pref_service_->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
                                     "",
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
 
   // We will start prompting people about new data types after the launch of
@@ -377,7 +380,7 @@ void SyncPrefs::RegisterPreferences() {
   model_set.Put(syncer::SESSIONS);
   pref_service_->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                                   syncer::ModelTypeSetToValue(model_set),
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPrefs::RegisterDataTypePreferredPref(syncer::ModelType type,
@@ -390,7 +393,7 @@ void SyncPrefs::RegisterDataTypePreferredPref(syncer::ModelType type,
     return;
   }
   pref_service_->RegisterBooleanPref(pref_name, is_preferred,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {

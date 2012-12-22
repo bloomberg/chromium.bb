@@ -19,7 +19,8 @@ class ScopedUserPrefUpdateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    prefs_.RegisterDictionaryPref(kPref, PrefService::UNSYNCABLE_PREF);
+    prefs_.RegisterDictionaryPref(kPref,
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, observer_.GetCallback());
   }
@@ -28,7 +29,7 @@ class ScopedUserPrefUpdateTest : public testing::Test {
   static const char kKey[];
   static const char kValue[];
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSyncable prefs_;
   MockPrefChangeCallback observer_;
   PrefChangeRegistrar registrar_;
 };

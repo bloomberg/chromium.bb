@@ -7,13 +7,16 @@
 
 #include "chrome/browser/web_resource/web_resource_service.h"
 
+class PrefService;
+class PrefServiceSimple;
+
 // This resource service periodically fetches plug-in metadata
 // from a remote server and updates local state and PluginFinder.
 class PluginsResourceService : public WebResourceService {
  public:
   explicit PluginsResourceService(PrefService* local_state);
 
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
  private:
   virtual ~PluginsResourceService();

@@ -133,12 +133,14 @@ TEST_F(PrefProviderTest, Incognito) {
       new OverlayUserPrefStore(user_prefs);
 
   PrefServiceMockBuilder builder;
-  PrefService* regular_prefs = builder.WithUserPrefs(user_prefs).Create();
+  builder.WithUserPrefs(user_prefs);
+  PrefServiceSyncable* regular_prefs = builder.CreateSyncable();
 
   Profile::RegisterUserPrefs(regular_prefs);
   chrome::RegisterUserPrefs(regular_prefs);
 
-  PrefService* otr_prefs = builder.WithUserPrefs(otr_user_prefs).Create();
+  builder.WithUserPrefs(otr_user_prefs);
+  PrefServiceSyncable* otr_prefs = builder.CreateSyncable();
 
   Profile::RegisterUserPrefs(otr_prefs);
   chrome::RegisterUserPrefs(otr_prefs);
@@ -331,7 +333,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
 
 TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
   TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   GURL primary_url("https://www.example.com");
   GURL secondary_url("https://www.sample.com");
 
@@ -365,7 +367,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterUserPrefs(&prefs);
 
   // Chain of events: a preference changes, |PrefProvider| notices it, and reads

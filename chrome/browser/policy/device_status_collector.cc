@@ -152,7 +152,7 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 }
 
 // static
-void DeviceStatusCollector::RegisterPrefs(PrefService* local_state) {
+void DeviceStatusCollector::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
                                       new base::DictionaryValue);
   local_state->RegisterDictionaryPref(prefs::kDeviceLocation,

@@ -70,7 +70,7 @@ class ChromeSpeechRecognitionPreferences
     // ProfileKeyedServiceFactory methods:
     virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile)
         const OVERRIDE;
-    virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
+    virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
     virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;

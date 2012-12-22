@@ -9,7 +9,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 namespace gfx {
 class Rect;
@@ -17,7 +17,7 @@ class Rect;
 
 namespace chrome {
 
-void RegisterScreenshotPrefs(PrefService* service);
+void RegisterScreenshotPrefs(PrefServiceSimple* service);
 
 // Grabs a snapshot of the rectangle area |snapshot_bounds| with respect to the
 // top left corner of the designated window and stores a PNG representation

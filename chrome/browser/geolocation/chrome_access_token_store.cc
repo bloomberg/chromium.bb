@@ -98,7 +98,7 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
 
 }  // namespace
 
-void ChromeAccessTokenStore::RegisterPrefs(PrefService* prefs) {
+void ChromeAccessTokenStore::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
 

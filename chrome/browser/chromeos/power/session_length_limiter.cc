@@ -65,13 +65,9 @@ SessionLengthLimiter::Delegate::~Delegate() {
 }
 
 // static
-void SessionLengthLimiter::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterInt64Pref(prefs::kSessionStartTime,
-                                 0,
-                                 PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterIntegerPref(prefs::kSessionLengthLimit,
-                                   0,
-                                   PrefService::UNSYNCABLE_PREF);
+void SessionLengthLimiter::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterInt64Pref(prefs::kSessionStartTime, 0);
+  local_state->RegisterIntegerPref(prefs::kSessionLengthLimit, 0);
 }
 
 SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,

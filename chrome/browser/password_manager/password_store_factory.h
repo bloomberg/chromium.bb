@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 class PasswordStore;
+class PrefServiceSyncable;
 class Profile;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
@@ -44,7 +45,7 @@ class PasswordStoreFactory : public RefcountedProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

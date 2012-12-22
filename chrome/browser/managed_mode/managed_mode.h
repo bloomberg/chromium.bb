@@ -24,7 +24,8 @@ struct DefaultSingletonTraits;
 class ManagedModeSiteList;
 class ManagedModeURLFilter;
 class PrefChangeRegistrar;
-class PrefService;
+class PrefServiceSimple;
+class PrefServiceSyncable;
 class Profile;
 
 // Managed mode allows one person to manage the Chrome experience for another
@@ -38,8 +39,8 @@ class ManagedMode : public chrome::BrowserListObserver,
  public:
   typedef base::Callback<void(bool)> EnterCallback;
 
-  static void RegisterPrefs(PrefService* prefs);
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Initializes the singleton, setting the managed_profile_. Must be called
   // after g_browser_process and the LocalState have been created.

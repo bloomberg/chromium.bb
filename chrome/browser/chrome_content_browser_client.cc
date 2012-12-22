@@ -413,16 +413,16 @@ ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 }
 
 // static
-void ChromeContentBrowserClient::RegisterUserPrefs(PrefService* prefs) {
+void ChromeContentBrowserClient::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableMemoryInfo,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(

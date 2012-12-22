@@ -26,7 +26,7 @@ class DeviceSettingsCacheTest : public testing::Test {
     device_settings_cache::RegisterPrefs(&local_state_);
   }
 
-  TestingPrefService local_state_;
+  TestingPrefServiceSimple local_state_;
   em::PolicyData policy_;
 };
 

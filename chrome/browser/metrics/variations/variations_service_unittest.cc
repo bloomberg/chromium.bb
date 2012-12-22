@@ -338,7 +338,7 @@ TEST(VariationsServiceTest, IsStudyExpired) {
 }
 
 TEST(VariationsServiceTest, LoadSeed) {
-  TestingPrefService pref_service;
+  TestingPrefServiceSimple pref_service;
 
   VariationsService::RegisterPrefs(&pref_service);
 
@@ -378,7 +378,7 @@ TEST(VariationsServiceTest, LoadSeed) {
 }
 
 TEST(VariationsServiceTest, StoreSeed) {
-  TestingPrefService pref_service;
+  TestingPrefServiceSimple pref_service;
 
   VariationsService::RegisterPrefs(&pref_service);
   const base::Time now = base::Time::Now();

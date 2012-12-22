@@ -15,7 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
-class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
@@ -34,7 +34,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no setter
   // methods should be called. Does not own |pref_service|.
-  explicit InvalidatorStorage(PrefService* pref_service);
+  explicit InvalidatorStorage(PrefServiceSyncable* pref_service);
   virtual ~InvalidatorStorage();
 
   // Erases invalidation versions and state stored on disk.
@@ -94,7 +94,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
                              syncer::InvalidationStateMap* map);
 
   // May be NULL.
-  PrefService* const pref_service_;
+  PrefServiceSyncable* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorStorage);
 };

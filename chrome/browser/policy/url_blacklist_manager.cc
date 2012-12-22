@@ -355,11 +355,11 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
 }
 
 // static
-void URLBlacklistManager::RegisterPrefs(PrefService* pref_service) {
+void URLBlacklistManager::RegisterUserPrefs(PrefServiceSyncable* pref_service) {
   pref_service->RegisterListPref(prefs::kUrlBlacklist,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service->RegisterListPref(prefs::kUrlWhitelist,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace policy

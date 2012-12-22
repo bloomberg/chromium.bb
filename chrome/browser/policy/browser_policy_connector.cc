@@ -25,6 +25,7 @@
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -702,10 +703,11 @@ void BrowserPolicyConnector::CompleteInitialization() {
 
   // TODO: Do not use g_browser_process once policy service is moved to
   // BrowserPolicyConnector (http://crbug.com/128999).
-  policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
-      g_browser_process->policy_service(),
-      g_browser_process->local_state(),
-      MessageLoop::current()->message_loop_proxy()));
+  policy_statistics_collector_.reset(
+      new policy::PolicyStatisticsCollector(
+          g_browser_process->policy_service(),
+          g_browser_process->local_state(),
+          MessageLoop::current()->message_loop_proxy()));
   policy_statistics_collector_->Initialize();
 }
 

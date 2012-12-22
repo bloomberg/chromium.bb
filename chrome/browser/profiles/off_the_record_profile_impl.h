@@ -46,8 +46,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual policy::ManagedModePolicyProvider*
       GetManagedModePolicyProvider() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
+  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
@@ -129,7 +129,7 @@ class OffTheRecordProfileImpl : public Profile,
   Profile* profile_;
 
   // Weak pointer owned by |profile_|.
-  PrefService* prefs_;
+  PrefServiceSyncable* prefs_;
 
   OffTheRecordProfileIOData::Handle io_data_;
 

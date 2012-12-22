@@ -28,7 +28,7 @@
 #include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-class Prefservice;
+class PrefServiceSyncable;
 class Profile;
 class ProfileSyncService;
 
@@ -415,7 +415,7 @@ class SessionModelAssociator
   Profile* const profile_;
 
   // Pref service. Used to persist the session sync guid. Weak pointer.
-  PrefService* const pref_service_;
+  PrefServiceSyncable* const pref_service_;
 
   DataTypeErrorHandler* error_handler_;
 

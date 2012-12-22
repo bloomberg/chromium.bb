@@ -16,7 +16,7 @@ class ChromeGeolocationPermissionContextFactory {
   ChromeGeolocationPermissionContextFactory() {}
   ~ChromeGeolocationPermissionContextFactory() {}
   static ChromeGeolocationPermissionContext* Create(Profile* profile);
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
  private:
 

@@ -38,11 +38,11 @@ class SpecialStoragePolicy;
 class CommandLine;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
-class PrefService;
+class PrefServiceSyncable;
 class ProfileDependencyManager;
 class ProfileSyncService;
 class TemplateURLService;
-class TestingPrefService;
+class TestingPrefServiceSyncable;
 
 class TestingProfile : public Profile {
  public:
@@ -82,7 +82,7 @@ class TestingProfile : public Profile {
     void SetPath(const FilePath& path);
 
     // Sets the PrefService to be used by this profile.
-    void SetPrefService(scoped_ptr<PrefService> prefs);
+    void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
 
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
@@ -92,7 +92,7 @@ class TestingProfile : public Profile {
     bool build_called_;
 
     // Various staging variables where values are held until Build() is invoked.
-    scoped_ptr<PrefService> pref_service_;
+    scoped_ptr<PrefServiceSyncable> pref_service_;
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
     FilePath path_;
     Delegate* delegate_;
@@ -118,7 +118,7 @@ class TestingProfile : public Profile {
   TestingProfile(const FilePath& path,
                  Delegate* delegate,
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-                 scoped_ptr<PrefService> prefs);
+                 scoped_ptr<PrefServiceSyncable> prefs);
 
   virtual ~TestingProfile();
 
@@ -168,7 +168,7 @@ class TestingProfile : public Profile {
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
 
-  TestingPrefService* GetTestingPrefService();
+  TestingPrefServiceSyncable* GetTestingPrefService();
 
   // content::BrowserContext
   virtual FilePath GetPath() OVERRIDE;
@@ -221,8 +221,8 @@ class TestingProfile : public Profile {
   // set GetPrefs creates one, so normally you need not invoke this. If you need
   // to set a pref service you must invoke this before GetPrefs.
   // TestingPrefService takes ownership of |prefs|.
-  void SetPrefService(PrefService* prefs);
-  virtual PrefService* GetPrefs() OVERRIDE;
+  void SetPrefService(PrefServiceSyncable* prefs);
+  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
 
@@ -291,13 +291,13 @@ class TestingProfile : public Profile {
       const base::Closure& completion) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
 
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
 
  protected:
   base::Time start_time_;
-  scoped_ptr<PrefService> prefs_;
+  scoped_ptr<PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
-  TestingPrefService* testing_prefs_;
+  TestingPrefServiceSyncable* testing_prefs_;
 
  private:
   // Creates a temporary directory for use by this profile.

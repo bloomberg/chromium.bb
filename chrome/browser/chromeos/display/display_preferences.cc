@@ -132,28 +132,22 @@ void NotifyDisplayOverscans() {
 
 }  // namespace
 
-void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
+void RegisterDisplayLocalStatePrefs(PrefServiceSimple* local_state) {
   // The default secondary display layout.
   local_state->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
-                                   static_cast<int>(ash::DisplayLayout::RIGHT),
-                                   PrefService::UNSYNCABLE_PREF);
+                                   static_cast<int>(ash::DisplayLayout::RIGHT));
   // The default offset of the secondary display position from the primary
   // display.
-  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayOffset,
-                                   0,
-                                   PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayOffset, 0);
   // Per-display preference.
-  local_state->RegisterDictionaryPref(prefs::kSecondaryDisplays,
-                                      PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(prefs::kSecondaryDisplays);
 
   // Primary output name.
   local_state->RegisterInt64Pref(prefs::kPrimaryDisplayID,
-                                 gfx::Display::kInvalidDisplayID,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 gfx::Display::kInvalidDisplayID);
 
   // Display overscan preference.
-  local_state->RegisterDictionaryPref(prefs::kDisplayOverscans,
-                                      PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(prefs::kDisplayOverscans);
 }
 
 void SetDisplayLayoutPref(const gfx::Display& display,

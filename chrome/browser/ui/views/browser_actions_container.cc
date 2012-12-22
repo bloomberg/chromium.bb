@@ -46,10 +46,10 @@ const int kItemSpacing = ToolbarView::kStandardSpacing;
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = kItemSpacing - 2;
 
-void RegisterUserPrefs(PrefService* prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
                              0,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace
@@ -118,6 +118,9 @@ BrowserActionsContainer::~BrowserActionsContainer() {
 void BrowserActionsContainer::Init() {
   LoadImages();
 
+  // TODO(joi): Switch to official way of registering user prefs for
+  // this class, i.e. in a function called from
+  // browser_prefs::RegisterUserPrefs.
   if (!profile_->GetPrefs()->FindPreference(
           prefs::kBrowserActionContainerWidth))
     RegisterUserPrefs(profile_->GetPrefs());

@@ -92,13 +92,9 @@ AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
 AutoEnrollmentClient::~AutoEnrollmentClient() {}
 
 // static
-void AutoEnrollmentClient::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll,
-                                   false,
-                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit,
-                                   -1,
-                                   PrefService::UNSYNCABLE_PREF);
+void AutoEnrollmentClient::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll, false);
+  local_state->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit, -1);
 }
 
 // static

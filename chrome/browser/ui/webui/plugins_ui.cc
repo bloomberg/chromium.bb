@@ -491,10 +491,10 @@ base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
 }
 
 // static
-void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
+void PluginsUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kContentSettingsPluginWhitelist,
-                                PrefService::SYNCABLE_PREF);
+                                PrefServiceSyncable::SYNCABLE_PREF);
 }

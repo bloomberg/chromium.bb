@@ -47,29 +47,29 @@ PluginPrefsFactory::BuildServiceInstanceFor(Profile* profile) const {
   return plugin_prefs;
 }
 
-void PluginPrefsFactory::RegisterUserPrefs(PrefService* prefs) {
+void PluginPrefsFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                               internal_dir,
-                              PrefService::UNSYNCABLE_PREF);
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsMigratedToPepperFlash,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsPluginsList,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool PluginPrefsFactory::ServiceRedirectedInIncognito() const {

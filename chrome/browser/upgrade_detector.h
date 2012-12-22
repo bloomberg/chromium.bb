@@ -9,7 +9,7 @@
 #include "chrome/browser/idle.h"
 #include "ui/gfx/image/image.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 ///////////////////////////////////////////////////////////////////////////////
 // UpgradeDetector
@@ -44,7 +44,7 @@ class UpgradeDetector {
 
   virtual ~UpgradeDetector();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Whether the user should be notified about an upgrade.
   bool notify_upgrade() const { return notify_upgrade_; }

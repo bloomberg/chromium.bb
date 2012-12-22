@@ -24,7 +24,6 @@ class BrowserMainTest : public testing::Test {
   }
 
  protected:
-  TestingPrefService pref_service_;
   CommandLine command_line_;
 };
 

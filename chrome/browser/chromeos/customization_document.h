@@ -17,7 +17,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class FilePath;
-class PrefService;
+class PrefServiceSimple;
 
 namespace base {
 class DictionaryValue;
@@ -119,7 +119,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static ServicesCustomizationDocument* GetInstance();
 
   // Registers preferences.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   // Return true if the customization was applied. Customization is applied only
   // once per machine.

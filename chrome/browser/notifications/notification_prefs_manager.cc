@@ -8,7 +8,7 @@
 #include "chrome/common/pref_names.h"
 
 // static
-void NotificationPrefsManager::RegisterPrefs(PrefService* prefs) {
+void NotificationPrefsManager::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
                              BalloonCollection::DEFAULT_POSITION);
 #if defined(OS_CHROMEOS)

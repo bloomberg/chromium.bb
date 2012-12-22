@@ -77,7 +77,7 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
       : ui_thread_(BrowserThread::UI, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {}
 
-  virtual void Init(PrefService* pref_service) {
+  virtual void Init(PrefServiceSimple* pref_service) {
     ASSERT_TRUE(pref_service);
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service);
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
@@ -117,11 +117,11 @@ class PrefProxyConfigTrackerImplTest
     : public PrefProxyConfigTrackerImplTestBase<testing::Test> {
  protected:
   virtual void SetUp() {
-    pref_service_.reset(new TestingPrefService());
+    pref_service_.reset(new TestingPrefServiceSimple());
     Init(pref_service_.get());
   }
 
-  scoped_ptr<TestingPrefService> pref_service_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
 TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
@@ -339,13 +339,14 @@ class PrefProxyConfigTrackerImplCommandLineTest
         command_line_.AppendSwitch(name);
     }
     pref_service_.reset(
-        PrefServiceMockBuilder().WithCommandLine(&command_line_).Create());
+        PrefServiceMockBuilder().WithCommandLine(
+            &command_line_).CreateSimple());
     Init(pref_service_.get());
   }
 
  private:
   CommandLine command_line_;
-  scoped_ptr<PrefService> pref_service_;
+  scoped_ptr<PrefServiceSimple> pref_service_;
 };
 
 TEST_P(PrefProxyConfigTrackerImplCommandLineTest, CommandLine) {

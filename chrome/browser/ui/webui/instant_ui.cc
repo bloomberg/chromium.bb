@@ -102,7 +102,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-void InstantUI::RegisterUserPrefs(PrefService* user_prefs) {
+void InstantUI::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix, "",
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }

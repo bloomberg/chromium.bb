@@ -94,14 +94,12 @@ class PrefNotifierTest : public testing::Test {
  protected:
   virtual void SetUp() {
     pref_service_.RegisterBooleanPref(kChangedPref,
-                                      true,
-                                      PrefService::UNSYNCABLE_PREF);
+                                      true);
     pref_service_.RegisterBooleanPref(kUnchangedPref,
-                                      true,
-                                      PrefService::UNSYNCABLE_PREF);
+                                      true);
   }
 
-  TestingPrefService pref_service_;
+  TestingPrefServiceSimple pref_service_;
 
   PrefObserverMock obs1_;
   PrefObserverMock obs2_;

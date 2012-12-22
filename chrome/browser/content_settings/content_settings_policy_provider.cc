@@ -117,61 +117,61 @@ const PrefsForManagedContentSettingsMapEntry
 namespace content_settings {
 
 // static
-void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
+void PolicyProvider::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedCookiesAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedCookiesBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedCookiesSessionOnlyForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedImagesAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedImagesBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedPluginsAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedPluginsBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedPopupsAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedPopupsBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultMediaStreamSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {

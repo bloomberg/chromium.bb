@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace extensions {
@@ -34,7 +34,7 @@ enum InstallState {
 
 // Register preference properties used by default apps to maintain
 // install state.
-void RegisterUserPrefs(PrefService* prefs);
+void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
 // A specialization of the ExternalProviderImpl that conditionally installs apps
 // from the chrome::DIR_DEFAULT_APPS location based on a preference in the

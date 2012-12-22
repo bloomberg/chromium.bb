@@ -59,9 +59,9 @@ const char kQuickOfficeViewerServiceURL[] =
 const char kQuickOfficeViewerDevServiceURL[] =
     "chrome-extension://ionpfmkccalenbmnddpbmocokhaknphg/views/appEditor.html";
 
-void RegisterUserPrefs(PrefService* user_prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kWebIntentsEnabled, true,
-                                  PrefService::SYNCABLE_PREF);
+                                  PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 bool IsWebIntentsEnabled(PrefService* prefs) {

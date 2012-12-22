@@ -89,9 +89,10 @@ void HttpServerPropertiesManager::ShutdownOnUIThread() {
 }
 
 // static
-void HttpServerPropertiesManager::RegisterPrefs(PrefService* prefs) {
+void HttpServerPropertiesManager::RegisterUserPrefs(
+    PrefServiceSyncable* prefs) {
   prefs->RegisterDictionaryPref(prefs::kHttpServerProperties,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // This is required for conformance with the HttpServerProperties interface.

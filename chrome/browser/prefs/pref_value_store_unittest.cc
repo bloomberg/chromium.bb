@@ -106,8 +106,9 @@ class PrefValueStoreTest : public testing::Test {
         user_pref_store_,
         recommended_pref_store_,
         default_pref_store_,
-        sync_associator_.get(),
         &pref_notifier_));
+
+    pref_value_store_->set_sync_associator(sync_associator_.get());
   }
 
   void CreateManagedPrefs() {

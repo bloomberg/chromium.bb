@@ -17,7 +17,7 @@
 class BookmarkModel;
 class BookmarkNode;
 class Browser;
-class PrefServiceBase;
+class PrefServiceSyncable;
 class Profile;
 
 namespace content {
@@ -164,7 +164,7 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
     const GURL& new_url);
 
 // Register user preferences for BookmarksBar.
-void RegisterUserPrefs(PrefServiceBase* prefs);
+void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise

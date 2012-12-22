@@ -15,7 +15,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
-class PrefService;
+class PrefServiceSyncable;
 
 namespace browser_sync {
 
@@ -48,7 +48,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // |pref_service| may be NULL (for unit tests), but in that case no
   // setter methods should be called.  Does not take ownership of
   // |pref_service|.
-  explicit SyncPrefs(PrefService* pref_service);
+  explicit SyncPrefs(PrefServiceSyncable* pref_service);
 
   virtual ~SyncPrefs();
 
@@ -137,7 +137,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void OnSyncManagedPrefChanged();
 
   // May be NULL.
-  PrefService* const pref_service_;
+  PrefServiceSyncable* const pref_service_;
 
   ObserverList<SyncPrefObserver> sync_pref_observers_;
 

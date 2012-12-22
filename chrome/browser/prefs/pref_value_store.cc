@@ -52,9 +52,8 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs,
                                PrefStore* default_prefs,
-                               PrefModelAssociator* pref_sync_associator,
                                PrefNotifier* pref_notifier)
-    : pref_sync_associator_(pref_sync_associator),
+    : pref_sync_associator_(NULL),
       pref_notifier_(pref_notifier),
       initialization_failed_(false) {
   InitPrefStore(MANAGED_STORE, managed_prefs);
@@ -76,7 +75,6 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
     PrefStore* user_prefs,
     PrefStore* recommended_prefs,
     PrefStore* default_prefs,
-    PrefModelAssociator* pref_sync_associator,
     PrefNotifier* pref_notifier) {
   DCHECK(pref_notifier);
   if (!managed_prefs)
@@ -94,7 +92,11 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
 
   return new PrefValueStore(
       managed_prefs, extension_prefs, command_line_prefs, user_prefs,
-      recommended_prefs, default_prefs, pref_sync_associator, pref_notifier);
+      recommended_prefs, default_prefs, pref_notifier);
+}
+
+void PrefValueStore::set_sync_associator(PrefModelAssociator* sync_associator) {
+  pref_sync_associator_ = sync_associator;
 }
 
 bool PrefValueStore::GetValue(const std::string& name,

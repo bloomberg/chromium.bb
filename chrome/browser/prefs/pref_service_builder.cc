@@ -9,6 +9,7 @@
 #include "base/prefs/json_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_simple.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 
 namespace {
@@ -19,8 +20,7 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {
 
 }  // namespace
 
-PrefServiceBuilder::PrefServiceBuilder()
-    : sync_associator_(NULL) {
+PrefServiceBuilder::PrefServiceBuilder() {
   ResetDefaultState();
 }
 
@@ -53,12 +53,6 @@ PrefServiceBuilder& PrefServiceBuilder::WithRecommendedPrefs(PrefStore* store) {
   return *this;
 }
 
-PrefServiceBuilder& PrefServiceBuilder::WithSyncAssociator(
-    PrefModelAssociator* associator) {
-  sync_associator_ = associator;
-  return *this;
-}
-
 PrefServiceBuilder& PrefServiceBuilder::WithReadErrorCallback(
     const base::Callback<void(PersistentPrefStore::PrefReadError)>&
     read_error_callback) {
@@ -78,38 +72,33 @@ PrefServiceBuilder& PrefServiceBuilder::WithAsync(bool async) {
   return *this;
 }
 
-PrefService* PrefServiceBuilder::Create() {
+PrefServiceSimple* PrefServiceBuilder::CreateSimple() {
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  PrefService* pref_service =
-      new PrefService(
-          pref_notifier,
-          new PrefValueStore(
-              managed_prefs_.get(),
-              extension_prefs_.get(),
-              command_line_prefs_.get(),
-              user_prefs_.get(),
-              recommended_prefs_.get(),
-              default_pref_store,
-              sync_associator_,
-              pref_notifier),
+  PrefServiceSimple* pref_service = new PrefServiceSimple(
+      pref_notifier,
+      new PrefValueStore(
+          managed_prefs_.get(),
+          extension_prefs_.get(),
+          command_line_prefs_.get(),
           user_prefs_.get(),
+          recommended_prefs_.get(),
           default_pref_store,
-          sync_associator_,
-          read_error_callback_,
-          async_);
+          pref_notifier),
+      user_prefs_.get(),
+      default_pref_store,
+      read_error_callback_,
+      async_);
+  ResetDefaultState();
+  return pref_service;
+}
+
+void PrefServiceBuilder::ResetDefaultState() {
   managed_prefs_ = NULL;
   extension_prefs_ = NULL;
   command_line_prefs_ = NULL;
   user_prefs_ = NULL;
   recommended_prefs_ = NULL;
-  sync_associator_ = NULL;
-  ResetDefaultState();
-
-  return pref_service;
-}
-
-void PrefServiceBuilder::ResetDefaultState() {
   read_error_callback_ = base::Bind(&DoNothingHandleReadError);
   async_ = false;
 }

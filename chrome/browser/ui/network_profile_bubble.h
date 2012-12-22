@@ -9,7 +9,7 @@
 
 class Browser;
 class FilePath;
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // This class will try to detect if the profile is on a network share and if
@@ -55,7 +55,7 @@ class NetworkProfileBubble {
   static void SetNotificationShown(bool shown);
 
   // Register the pref that controls whether the bubble should be shown anymore.
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Helper function wrapping the UMA_HISTOGRAM_ENUMERATION macro.
   static void RecordUmaEvent(MetricNetworkedProfileCheck event);

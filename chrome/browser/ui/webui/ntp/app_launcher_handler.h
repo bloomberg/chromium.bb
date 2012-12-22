@@ -22,6 +22,7 @@
 
 class ExtensionService;
 class PrefChangeRegistrar;
+class PrefServiceSyncable;
 class Profile;
 
 namespace extensions {
@@ -102,7 +103,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   void HandleSetNotificationsDisabled(const base::ListValue* args);
 
   // Register app launcher preferences.
-  static void RegisterUserPrefs(PrefServiceBase* pref_service);
+  static void RegisterUserPrefs(PrefServiceSyncable* pref_service);
 
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket);

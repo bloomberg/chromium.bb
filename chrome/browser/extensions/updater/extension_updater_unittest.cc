@@ -222,7 +222,7 @@ class MockService : public TestExtensionService {
 
   ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
 
-  PrefService* pref_service() { return prefs_->pref_service(); }
+  PrefServiceSyncable* pref_service() { return prefs_->pref_service(); }
 
   Blacklist* blacklist() { return &blacklist_; }
 

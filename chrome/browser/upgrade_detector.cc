@@ -32,7 +32,7 @@ bool UseTestingIntervals() {
 }
 
 // static
-void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
+void UpgradeDetector::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
   prefs->RegisterBooleanPref(prefs::kWasRestarted, false);
 }

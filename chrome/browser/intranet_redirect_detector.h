@@ -17,7 +17,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 // This object is responsible for determining whether the user is on a network
 // that redirects requests for intranet hostnames to another site, and if so,
@@ -52,7 +52,7 @@ class IntranetRedirectDetector
   // is in place.
   static GURL RedirectOrigin();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // The number of characters the fetcher will use for its randomly-generated
   // hostnames.

@@ -35,13 +35,14 @@ AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
   return Singleton<AboutSigninInternalsFactory>::get();
 }
 
-void AboutSigninInternalsFactory::RegisterUserPrefs(PrefService* user_prefs) {
+void AboutSigninInternalsFactory::RegisterUserPrefs(
+    PrefServiceSyncable* user_prefs) {
   // SigninManager information for about:signin-internals.
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
     const std::string pref_path = SigninStatusFieldToString(
         static_cast<UntimedSigninStatusField>(i));
     user_prefs->RegisterStringPref(pref_path.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
     const std::string value = SigninStatusFieldToString(
@@ -49,9 +50,9 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(PrefService* user_prefs) {
     const std::string time = SigninStatusFieldToString(
         static_cast<TimedSigninStatusField>(i)) + ".time";
     user_prefs->RegisterStringPref(value.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
     user_prefs->RegisterStringPref(time.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   // TokenService information for about:signin-internals.
   for (size_t i = 0; i < kNumTokenPrefs; i++) {
@@ -60,11 +61,11 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(PrefService* user_prefs) {
     const std::string status = pref + ".status";
     const std::string time = pref + ".time";
     user_prefs->RegisterStringPref(value.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
     user_prefs->RegisterStringPref(status.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
     user_prefs->RegisterStringPref(time.c_str(), "",
-                                   PrefService::UNSYNCABLE_PREF);
+                                   PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 

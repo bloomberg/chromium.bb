@@ -708,13 +708,14 @@ void ProtocolHandlerRegistry::Shutdown() {
 }
 
 // static
-void ProtocolHandlerRegistry::RegisterPrefs(PrefService* pref_service) {
+void ProtocolHandlerRegistry::RegisterUserPrefs(
+    PrefServiceSyncable* pref_service) {
   pref_service->RegisterListPref(prefs::kRegisteredProtocolHandlers,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service->RegisterListPref(prefs::kIgnoredProtocolHandlers,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   pref_service->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {

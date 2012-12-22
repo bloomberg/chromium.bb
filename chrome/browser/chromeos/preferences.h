@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service_observer.h"
 
 class PrefService;
+class PrefServiceSyncable;
 
 namespace chromeos {
 namespace input_method {
@@ -32,17 +33,17 @@ class Preferences : public PrefServiceObserver {
   virtual ~Preferences();
 
   // This method will register the prefs associated with Chrome OS settings.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // This method will initialize Chrome OS settings to values in user prefs.
-  void Init(PrefService* prefs);
+  void Init(PrefServiceSyncable* prefs);
 
-  void InitUserPrefsForTesting(PrefService* prefs);
+  void InitUserPrefsForTesting(PrefServiceSyncable* prefs);
   void SetInputMethodListForTesting();
 
  private:
   // Initializes all member prefs.
-  void InitUserPrefs(PrefService* prefs);
+  void InitUserPrefs(PrefServiceSyncable* prefs);
 
   // Callback method for preference changes.
   void OnPreferenceChanged(const std::string& pref_name);
@@ -98,7 +99,7 @@ class Preferences : public PrefServiceObserver {
   // PrefServiceObserver implementation.
   virtual void OnIsSyncingChanged() OVERRIDE;
 
-  PrefService* prefs_;
+  PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
 

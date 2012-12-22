@@ -4,7 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 
-#include "base/prefs/public/pref_service_base.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -36,11 +36,11 @@ bool BookmarkPromptPrefs::IsBookmarkPromptEnabled() const {
 }
 
 // static
-void BookmarkPromptPrefs::RegisterUserPrefs(PrefServiceBase* user_prefs) {
+void BookmarkPromptPrefs::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   // We always register preferences without checking FieldTrial, because
   // we may not receive field trial list from the server yet.
   user_prefs->RegisterBooleanPref(prefs::kBookmarkPromptEnabled, true,
-                                  PrefServiceBase::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterIntegerPref(prefs::kBookmarkPromptImpressionCount, 0,
-                                  PrefServiceBase::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
 }

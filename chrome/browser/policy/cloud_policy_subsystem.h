@@ -9,7 +9,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "net/base/network_change_notifier.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 namespace policy {
 
@@ -100,7 +100,7 @@ class CloudPolicySubsystem
   void RefreshPolicies(bool wait_for_auth_token);
 
   // Registers cloud policy related prefs.
-  static void RegisterPrefs(PrefService* pref_service);
+  static void RegisterPrefs(PrefServiceSimple* pref_service);
 
   // Schedule initialization of the policy backend service.
   void ScheduleServiceInitialization(int64 delay_milliseconds);

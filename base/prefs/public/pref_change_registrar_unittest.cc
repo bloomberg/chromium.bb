@@ -21,7 +21,7 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 const char kApplicationLocale[] = "intl.app_locale";
 
 // A mock provider that allows us to capture pref observer changes.
-class MockPrefService : public TestingPrefService {
+class MockPrefService : public TestingPrefServiceSimple {
  public:
   MockPrefService() {}
   virtual ~MockPrefService() {}
@@ -127,16 +127,10 @@ TEST_F(PrefChangeRegistrarTest, RemoveAll) {
 class ObserveSetOfPreferencesTest : public testing::Test {
  public:
   virtual void SetUp() {
-    pref_service_.reset(new TestingPrefService);
-    pref_service_->RegisterStringPref(kHomePage,
-                                      "http://google.com",
-                                      PrefService::UNSYNCABLE_PREF);
-    pref_service_->RegisterBooleanPref(kHomePageIsNewTabPage,
-                                       false,
-                                       PrefService::UNSYNCABLE_PREF);
-    pref_service_->RegisterStringPref(kApplicationLocale,
-                                      "",
-                                      PrefService::UNSYNCABLE_PREF);
+    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_->RegisterStringPref(kHomePage, "http://google.com");
+    pref_service_->RegisterBooleanPref(kHomePageIsNewTabPage, false);
+    pref_service_->RegisterStringPref(kApplicationLocale, "");
   }
 
   PrefChangeRegistrar* CreatePrefChangeRegistrar() {
@@ -150,7 +144,7 @@ class ObserveSetOfPreferencesTest : public testing::Test {
 
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
-  scoped_ptr<TestingPrefService> pref_service_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
 TEST_F(ObserveSetOfPreferencesTest, IsObserved) {

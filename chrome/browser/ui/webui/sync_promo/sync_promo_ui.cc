@@ -147,13 +147,13 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 }
 
 // static
-void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(
-      prefs::kSyncPromoStartupCount, 0, PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(
-      prefs::kSyncPromoUserSkipped, false, PrefService::UNSYNCABLE_PREF);
+void SyncPromoUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+  prefs->RegisterIntegerPref(prefs::kSyncPromoStartupCount, 0,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSyncPromoUserSkipped, false,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSyncPromoShowOnFirstRunAllowed, true,
-      PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   SyncPromoHandler::RegisterUserPrefs(prefs);
 }

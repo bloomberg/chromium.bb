@@ -39,9 +39,9 @@ ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
 }
 
 void BackgroundContentsServiceFactory::RegisterUserPrefs(
-    PrefService* user_prefs) {
+    PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool

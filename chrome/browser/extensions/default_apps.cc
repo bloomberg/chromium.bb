@@ -48,9 +48,9 @@ bool IsLocaleSupported() {
 
 namespace default_apps {
 
-void RegisterUserPrefs(PrefService* prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool Provider::ShouldInstallInProfile() {

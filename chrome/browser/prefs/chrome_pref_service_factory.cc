@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/chrome_pref_service_builder.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -50,21 +51,8 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
   }
 }
 
-}  // namespace
-
-// TODO(joi): Find a better home for this.
-PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
-  return static_cast<Profile*>(context)->GetPrefs();
-}
-
-ChromePrefServiceBuilder::ChromePrefServiceBuilder() {
-  ResetDefaultState();
-}
-
-ChromePrefServiceBuilder::~ChromePrefServiceBuilder() {
-}
-
-PrefService* ChromePrefServiceBuilder::CreateChromePrefs(
+void PrepareBuilder(
+    PrefServiceSyncableBuilder* builder,
     const FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
@@ -85,26 +73,61 @@ PrefService* ChromePrefServiceBuilder::CreateChromePrefs(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   using policy::ConfigurationPolicyPrefStore;
-  WithManagedPrefs(
+  builder->WithManagedPrefs(
       ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore(
           policy_service));
-  WithRecommendedPrefs(
+  builder->WithRecommendedPrefs(
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
           policy_service));
 #endif  // ENABLE_CONFIGURATION_POLICY
 
-  WithAsync(async);
-  WithExtensionPrefs(extension_prefs);
-  WithCommandLinePrefs(
+  builder->WithAsync(async);
+  builder->WithExtensionPrefs(extension_prefs);
+  builder->WithCommandLinePrefs(
       new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
-  WithUserPrefs(new JsonPrefStore(pref_filename, pref_io_task_runner));
-
-  PrefService* pref_service = Create();
-  ResetDefaultState();
-  return pref_service;
+  builder->WithReadErrorCallback(base::Bind(&HandleReadError));
+  builder->WithUserPrefs(new JsonPrefStore(pref_filename, pref_io_task_runner));
 }
 
-void ChromePrefServiceBuilder::ResetDefaultState() {
-  WithReadErrorCallback(base::Bind(&HandleReadError));
-  WithSyncAssociator(new PrefModelAssociator());
+}  // namespace
+
+// TODO(joi): Find a better home for this.
+PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
+  return static_cast<Profile*>(context)->GetPrefs();
 }
+
+namespace chrome_prefs {
+
+PrefServiceSimple* CreateLocalState(
+    const FilePath& pref_filename,
+    base::SequencedTaskRunner* pref_io_task_runner,
+    policy::PolicyService* policy_service,
+    PrefStore* extension_prefs,
+    bool async) {
+  PrefServiceSyncableBuilder builder;
+  PrepareBuilder(&builder,
+                 pref_filename,
+                 pref_io_task_runner,
+                 policy_service,
+                 extension_prefs,
+                 async);
+  return builder.CreateSimple();
+}
+
+PrefServiceSyncable* CreateProfilePrefs(
+    const FilePath& pref_filename,
+    base::SequencedTaskRunner* pref_io_task_runner,
+    policy::PolicyService* policy_service,
+    PrefStore* extension_prefs,
+    bool async) {
+  PrefServiceSyncableBuilder builder;
+  PrepareBuilder(&builder,
+                 pref_filename,
+                 pref_io_task_runner,
+                 policy_service,
+                 extension_prefs,
+                 async);
+  return builder.CreateSyncable();
+}
+
+}  // namespace chrome_prefs

@@ -206,7 +206,7 @@ TestingProfile::TestingProfile(
     const FilePath& path,
     Delegate* delegate,
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-    scoped_ptr<PrefService> prefs)
+    scoped_ptr<PrefServiceSyncable> prefs)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
       testing_prefs_(NULL),
@@ -474,7 +474,7 @@ scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
   return MessageLoop::current()->message_loop_proxy();
 }
 
-TestingPrefService* TestingProfile::GetTestingPrefService() {
+TestingPrefServiceSyncable* TestingProfile::GetTestingPrefService() {
   if (!prefs_.get())
     CreateTestingPrefService();
   DCHECK(testing_prefs_);
@@ -553,19 +553,19 @@ policy::PolicyService* TestingProfile::GetPolicyService() {
   return policy_service_.get();
 }
 
-void TestingProfile::SetPrefService(PrefService* prefs) {
+void TestingProfile::SetPrefService(PrefServiceSyncable* prefs) {
   prefs_.reset(prefs);
 }
 
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
-  testing_prefs_ = new TestingPrefService();
+  testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
   Profile::RegisterUserPrefs(prefs_.get());
   chrome::RegisterUserPrefs(prefs_.get());
 }
 
-PrefService* TestingProfile::GetPrefs() {
+PrefServiceSyncable* TestingProfile::GetPrefs() {
   if (!prefs_.get()) {
     CreateTestingPrefService();
   }
@@ -751,7 +751,7 @@ GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }
 
-PrefService* TestingProfile::GetOffTheRecordPrefs() {
+PrefServiceSyncable* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }
 
@@ -793,7 +793,8 @@ void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
   extension_policy_ = policy;
 }
 
-void TestingProfile::Builder::SetPrefService(scoped_ptr<PrefService> prefs) {
+void TestingProfile::Builder::SetPrefService(
+    scoped_ptr<PrefServiceSyncable> prefs) {
   pref_service_ = prefs.Pass();
 }
 

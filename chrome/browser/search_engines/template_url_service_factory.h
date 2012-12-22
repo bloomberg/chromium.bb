@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 class TemplateURLService;
 
@@ -31,7 +31,7 @@ class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual void ProfileShutdown(Profile* profile) OVERRIDE;

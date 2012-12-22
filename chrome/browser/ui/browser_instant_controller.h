@@ -17,7 +17,7 @@
 
 class Browser;
 struct InstantSuggestion;
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 class ThemeService;
 
@@ -41,7 +41,7 @@ class BrowserInstantController : public content::NotificationObserver,
   static bool IsInstantEnabled(Profile* profile);
 
   // Registers Instant related preferences.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.

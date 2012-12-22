@@ -173,10 +173,10 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
 }
 
 // static
-void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
+void NewTabPageHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   // TODO(estade): should be syncable.
   prefs->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

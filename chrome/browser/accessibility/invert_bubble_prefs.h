@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_ACCESSIBILITY_INVERT_BUBBLE_PREFS_H_
 #define CHROME_BROWSER_ACCESSIBILITY_INVERT_BUBBLE_PREFS_H_
 
-class PrefService;
+class PrefServiceSyncable;
 
 namespace chrome {
 
-void RegisterInvertBubbleUserPrefs(PrefService* prefs);
+void RegisterInvertBubbleUserPrefs(PrefServiceSyncable* prefs);
 
 }  // namespace chrome
 

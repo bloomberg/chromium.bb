@@ -57,7 +57,7 @@ class UserManagerTest : public testing::Test {
     SetDeviceSettings(false, "");
 
     // Register an in-memory local settings instance.
-    local_state_.reset(new TestingPrefService);
+    local_state_.reset(new TestingPrefServiceSimple);
     reinterpret_cast<TestingBrowserProcess*>(g_browser_process)
         ->SetLocalState(local_state_.get());
     UserManager::RegisterPrefs(local_state_.get());
@@ -141,7 +141,7 @@ class UserManagerTest : public testing::Test {
   CrosSettings* cros_settings_;
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
-  scoped_ptr<TestingPrefService> local_state_;
+  scoped_ptr<TestingPrefServiceSimple> local_state_;
 
   // Initializes / shuts down a stub CrosLibrary.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;

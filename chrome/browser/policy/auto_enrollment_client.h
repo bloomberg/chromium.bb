@@ -16,6 +16,7 @@
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 class PrefService;
+class PrefServiceSimple;
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -46,7 +47,7 @@ class AutoEnrollmentClient {
   virtual ~AutoEnrollmentClient();
 
   // Registers preferences in local state.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   // Returns true if auto-enrollment is disabled in this device. In that case,
   // instances returned by Create() fail immediately once Start() is invoked.

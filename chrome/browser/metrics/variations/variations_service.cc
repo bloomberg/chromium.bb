@@ -160,7 +160,7 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 }
 
 // static
-void VariationsService::RegisterPrefs(PrefService* prefs) {
+void VariationsService::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
   prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
                            base::Time().ToInternalValue());

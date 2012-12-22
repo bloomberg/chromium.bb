@@ -87,15 +87,15 @@ const int kMinDevToolsWidth = 150;
 const int kMinContentsSize = 50;
 
 // static
-void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
+void DevToolsWindow::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kDevToolsDockSide,
                             kDockSideBottom,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -372,9 +372,10 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   wp_key.append("_");
   wp_key.append(kDevToolsApp);
 
-  PrefService* prefs = profile_->GetPrefs();
+  PrefServiceSyncable* prefs = profile_->GetPrefs();
   if (!prefs->FindPreference(wp_key.c_str())) {
-    prefs->RegisterDictionaryPref(wp_key.c_str(), PrefService::UNSYNCABLE_PREF);
+    prefs->RegisterDictionaryPref(wp_key.c_str(),
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());

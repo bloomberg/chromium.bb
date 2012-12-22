@@ -6,120 +6,90 @@
 
 #include "base/bind.h"
 #include "base/prefs/default_pref_store.h"
-#include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
-// Do-nothing implementation for PrefService.
+// Do-nothing implementation for TestingPrefService.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
 }  // namespace
 
-TestingPrefServiceBase::TestingPrefServiceBase(
+template<>
+TestingPrefServiceBase<PrefServiceSimple>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     DefaultPrefStore* default_store,
-    PrefModelAssociator* pref_sync_associator,
     PrefNotifierImpl* pref_notifier)
-    : PrefService(pref_notifier,
-                  new PrefValueStore(
-                      managed_prefs,
-                      NULL,
-                      NULL,
-                      user_prefs,
-                      recommended_prefs,
-                      default_store,
-                      pref_sync_associator,
-                      pref_notifier),
-                  user_prefs,
-                  default_store,
-                  pref_sync_associator,
-                  base::Bind(&HandleReadError),
-                  false),
+    : PrefServiceSimple(pref_notifier,
+                        new PrefValueStore(
+                            managed_prefs,
+                            NULL,
+                            NULL,
+                            user_prefs,
+                            recommended_prefs,
+                            default_store,
+                            pref_notifier),
+                        user_prefs,
+                        default_store,
+                        base::Bind(&HandleReadError),
+                        false),
       managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),
       recommended_prefs_(recommended_prefs) {
 }
 
-TestingPrefServiceBase::~TestingPrefServiceBase() {
+template<>
+TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
+    TestingPrefStore* managed_prefs,
+    TestingPrefStore* user_prefs,
+    TestingPrefStore* recommended_prefs,
+    DefaultPrefStore* default_store,
+    PrefNotifierImpl* pref_notifier)
+    : PrefServiceSyncable(pref_notifier,
+                          new PrefValueStore(
+                              managed_prefs,
+                              NULL,
+                              NULL,
+                              user_prefs,
+                              recommended_prefs,
+                              default_store,
+                              pref_notifier),
+                          user_prefs,
+                          default_store,
+                          base::Bind(&HandleReadError),
+                          false),
+      managed_prefs_(managed_prefs),
+      user_prefs_(user_prefs),
+      recommended_prefs_(recommended_prefs) {
 }
 
-const Value* TestingPrefServiceBase::GetManagedPref(const char* path) const {
-  return GetPref(managed_prefs_, path);
+TestingPrefServiceSimple::TestingPrefServiceSimple()
+    : TestingPrefServiceBase<PrefServiceSimple>(new TestingPrefStore(),
+                                                new TestingPrefStore(),
+                                                new TestingPrefStore(),
+                                                new DefaultPrefStore(),
+                                                new PrefNotifierImpl()) {
 }
 
-void TestingPrefServiceBase::SetManagedPref(const char* path, Value* value) {
-  SetPref(managed_prefs_, path, value);
+TestingPrefServiceSimple::~TestingPrefServiceSimple() {
 }
 
-void TestingPrefServiceBase::RemoveManagedPref(const char* path) {
-  RemovePref(managed_prefs_, path);
+TestingPrefServiceSyncable::TestingPrefServiceSyncable()
+    : TestingPrefServiceBase<PrefServiceSyncable>(new TestingPrefStore(),
+                                                  new TestingPrefStore(),
+                                                  new TestingPrefStore(),
+                                                  new DefaultPrefStore(),
+                                                  new PrefNotifierImpl()) {
 }
 
-const Value* TestingPrefServiceBase::GetUserPref(const char* path) const {
-  return GetPref(user_prefs_, path);
-}
-
-void TestingPrefServiceBase::SetUserPref(const char* path, Value* value) {
-  SetPref(user_prefs_, path, value);
-}
-
-void TestingPrefServiceBase::RemoveUserPref(const char* path) {
-  RemovePref(user_prefs_, path);
-}
-
-const Value* TestingPrefServiceBase::GetRecommendedPref(
-    const char* path) const {
-  return GetPref(recommended_prefs_, path);
-}
-
-void TestingPrefServiceBase::SetRecommendedPref(
-    const char* path, Value* value) {
-  SetPref(recommended_prefs_, path, value);
-}
-
-void TestingPrefServiceBase::RemoveRecommendedPref(const char* path) {
-  RemovePref(recommended_prefs_, path);
-}
-
-const Value* TestingPrefServiceBase::GetPref(TestingPrefStore* pref_store,
-                                             const char* path) const {
-  const Value* res;
-  return pref_store->GetValue(path, &res) ? res : NULL;
-}
-
-void TestingPrefServiceBase::SetPref(TestingPrefStore* pref_store,
-                                     const char* path,
-                                     Value* value) {
-  pref_store->SetValue(path, value);
-}
-
-void TestingPrefServiceBase::RemovePref(TestingPrefStore* pref_store,
-                                        const char* path) {
-  pref_store->RemoveValue(path);
-}
-
-TestingPrefService::TestingPrefService()
-    : TestingPrefServiceBase(new TestingPrefStore(),
-                             new TestingPrefStore(),
-                             new TestingPrefStore(),
-                             new DefaultPrefStore(),
-                             new PrefModelAssociator(),
-                             new PrefNotifierImpl()) {
-}
-
-TestingPrefService::~TestingPrefService() {
+TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
 }
 
 ScopedTestingLocalState::ScopedTestingLocalState(

@@ -19,16 +19,12 @@ const char kDoublePref[] = "double";
 const char kStringPref[] = "string";
 const char kStringListPref[] = "string_list";
 
-void RegisterTestPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(kBoolPref, false, PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kIntPref, 0, PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(kDoublePref, 0.0, PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(kStringPref,
-                            "default",
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(kStringListPref,
-                          new ListValue(),
-                          PrefService::UNSYNCABLE_PREF);
+void RegisterTestPrefs(PrefServiceSimple* prefs) {
+  prefs->RegisterBooleanPref(kBoolPref, false);
+  prefs->RegisterIntegerPref(kIntPref, 0);
+  prefs->RegisterDoublePref(kDoublePref, 0.0);
+  prefs->RegisterStringPref(kStringPref, "default");
+  prefs->RegisterListPref(kStringListPref, new ListValue());
 }
 
 class GetPrefValueHelper
@@ -104,7 +100,7 @@ class PrefMemberTestClass {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -250,7 +246,7 @@ TEST(PrefMemberTest, InvalidList) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two DoublePrefMembers stay in sync.
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   RegisterTestPrefs(&prefs);
 
   DoublePrefMember pref1;
@@ -270,7 +266,7 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);
@@ -302,7 +298,7 @@ TEST(PrefMemberTest, NoInit) {
 }
 
 TEST(PrefMemberTest, MoveToThread) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   scoped_refptr<GetPrefValueHelper> helper(new GetPrefValueHelper());
   RegisterTestPrefs(&prefs);
   helper->Init(kBoolPref, &prefs);

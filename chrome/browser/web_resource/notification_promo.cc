@@ -316,10 +316,10 @@ void NotificationPromo::OnNewNotification() {
 }
 
 // static
-void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
+void NotificationPromo::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterDictionaryPref(kPrefPromoObject,
                                 new base::DictionaryValue,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void NotificationPromo::WritePrefs() {

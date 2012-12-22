@@ -217,7 +217,8 @@ void SearchProviderInstallDataTest::TearDown() {
 void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
     const std::string& url) {
   ASSERT_FALSE(url.empty());
-  TestingPrefService* service = util_.profile()->GetTestingPrefService();
+  TestingPrefServiceSyncable* service =
+      util_.profile()->GetTestingPrefService();
   service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                           Value::CreateBooleanValue(true));
   service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,

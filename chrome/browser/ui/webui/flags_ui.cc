@@ -173,6 +173,6 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
 }
 
 // static
-void FlagsUI::RegisterPrefs(PrefService* prefs) {
+void FlagsUI::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterListPref(prefs::kEnabledLabsExperiments);
 }

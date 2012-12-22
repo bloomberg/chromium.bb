@@ -189,9 +189,9 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   return true;
 }
 
-void RegisterAutolaunchPrefs(PrefService* prefs) {
+void RegisterAutolaunchUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(
-      prefs::kShownAutoLaunchInfobar, 0, PrefService::UNSYNCABLE_PREF);
+      prefs::kShownAutoLaunchInfobar, 0, PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace chrome

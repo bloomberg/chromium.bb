@@ -56,9 +56,9 @@ ForeignSessionHandler::ForeignSessionHandler() {
 }
 
 // static
-void ForeignSessionHandler::RegisterUserPrefs(PrefService* prefs) {
+void ForeignSessionHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

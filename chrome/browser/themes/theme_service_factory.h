@@ -42,7 +42,7 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);

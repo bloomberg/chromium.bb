@@ -53,7 +53,7 @@ Preferences::~Preferences() {
 }
 
 // static
-void Preferences::RegisterUserPrefs(PrefService* prefs) {
+void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
   if (base::chromeos::IsRunningOnChromeOS()) {
@@ -69,102 +69,102 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kTapDraggingEnabled,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerSwipe,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(
       prefs::kNaturalScroll,
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault),
-      PrefService::SYNCABLE_PREF);
+      PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   // Check if the accessibility pref is already registered, which can happen
   // in WizardController::RegisterPrefs. We still want to try to register
   // the pref here in case of Chrome/Linux with ChromeOS=1.
   if (prefs->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
                                false,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kHighContrastEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kHighContrastEnabled,
                                false,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
                                false,
-                               PrefService::SYNCABLE_PREF);
+                               PrefServiceSyncable::SYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kScreenMagnifierScale) == NULL) {
     prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
                               std::numeric_limits<double>::min(),
-                              PrefService::UNSYNCABLE_PREF);
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kShouldAlwaysShowAccessibilityMenu) ==
       NULL) {
     prefs->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
                                false,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                false,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   prefs->RegisterIntegerPref(prefs::kMouseSensitivity,
                              3,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity,
                              3,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
                              base::GetHourClockType() == base::k24HourClock,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableDrive,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableDriveOverCellular,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableDriveHostedFiles,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod,
                             "",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod,
                             "",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   // We don't sync the list of input methods and preferred languages since a
   // user might use two or more devices with different hardware keyboards.
   // crosbug.com/15181
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                             kFallbackInputMethodLocale,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             hardware_keyboard_id,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageFilteredExtensionImes,
                             "",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
@@ -191,11 +191,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
       language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id,
-      PrefService::SYNCABLE_PREF);
+      PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHangulHanjaBindingKeys,
                             language_prefs::kHangulHanjaBindingKeys,
                             // Don't sync the pref as it's not user-configurable
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kPinyinBooleanPrefs[i].pref_name,
@@ -211,7 +211,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(
       language_prefs::kPinyinDoublePinyinSchema.pref_name,
       language_prefs::kPinyinDoublePinyinSchema.default_pref_value,
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
 
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
@@ -233,69 +233,69 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   }
   prefs->RegisterIntegerPref(prefs::kLanguageRemapSearchKeyTo,
                              input_method::kSearchKey,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageRemapControlKeyTo,
                              input_method::kControlKey,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageRemapAltKeyTo,
                              input_method::kAltKey,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageRemapCapsLockKeyTo,
                              input_method::kCapsLockKey,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatDelay,
                              language_prefs::kXkbAutoRepeatDelayInMs,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatInterval,
                              language_prefs::kXkbAutoRepeatIntervalInMs,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Screen lock default to off.
   prefs->RegisterBooleanPref(prefs::kEnableScreenLock,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 
   // Mobile plan notifications default to on.
   prefs->RegisterBooleanPref(prefs::kShowPlanNotifications,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 
   // 3G first-time usage promo will be shown at least once.
   prefs->RegisterBooleanPref(prefs::kShow3gPromoNotification,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Initially all existing users would see "What's new"
   // for current version after update.
   prefs->RegisterStringPref(prefs::kChromeOSReleaseNotesVersion,
                             "0.0.0.0",
-                            PrefService::SYNCABLE_PREF);
+                            PrefServiceSyncable::SYNCABLE_PREF);
 
   // OAuth1 all access token and secret pair.
   prefs->RegisterStringPref(prefs::kOAuth1Token,
                             "",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kOAuth1Secret,
                             "",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // TODO(wad): Once UI is connected, a final default can be set. At that point
   // change this pref from UNSYNCABLE to SYNCABLE.
   prefs->RegisterBooleanPref(prefs::kEnableCrosDRM,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   prefs->RegisterBooleanPref(prefs::kExternalStorageDisabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
-void Preferences::InitUserPrefs(PrefService* prefs) {
+void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   prefs_ = prefs;
 
   BooleanPrefMember::NamedChangeCallback callback =
@@ -386,7 +386,7 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   enable_drm_.Init(prefs::kEnableCrosDRM, prefs, callback);
 }
 
-void Preferences::Init(PrefService* prefs) {
+void Preferences::Init(PrefServiceSyncable* prefs) {
   InitUserPrefs(prefs);
 
   // This causes OnIsSyncingChanged to be called when the value of
@@ -403,7 +403,7 @@ void Preferences::Init(PrefService* prefs) {
   }
 }
 
-void Preferences::InitUserPrefsForTesting(PrefService* prefs) {
+void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs) {
   InitUserPrefs(prefs);
 }
 

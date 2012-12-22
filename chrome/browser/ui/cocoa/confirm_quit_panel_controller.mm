@@ -45,7 +45,7 @@ void RecordHistogram(ConfirmQuitMetric sample) {
   UMA_HISTOGRAM_ENUMERATION("OSX.ConfirmToQuit", sample, kSampleCount);
 }
 
-void RegisterLocalState(PrefService* local_state) {
+void RegisterLocalState(PrefServiceSimple* local_state) {
   local_state->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
 }
 

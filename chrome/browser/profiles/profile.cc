@@ -47,41 +47,41 @@ TestingProfile* Profile::AsTestingProfile() {
 const char* const Profile::kProfileKey = "__PROFILE__";
 
 // static
-void Profile::RegisterUserPrefs(PrefService* prefs) {
+void Profile::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSessionExitedCleanly,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kSessionExitType,
                             std::string(),
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kExtensionAlertsInitializedPref,
-                             false, PrefService::UNSYNCABLE_PREF);
+                             false, PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kSelectFileLastDirectory,
                             std::string(),
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(prefs::kDefaultZoomLevel,
                             0.0,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kDefaultApps,
                             "install",
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   // TODO(dilmah): For OS_CHROMEOS we maintain kApplicationLocale in both
   // local state and user's profile.  For other platforms we maintain
@@ -90,22 +90,22 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   // in user's profile for other platforms as well.
   prefs->RegisterStringPref(prefs::kApplicationLocale,
                             std::string(),
-                            PrefService::SYNCABLE_PREF);
+                            PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kApplicationLocaleBackup,
                             std::string(),
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kApplicationLocaleAccepted,
                             std::string(),
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
 
 #if defined(OS_ANDROID)
   prefs->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSpdyProxyEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
 
 }

@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   pref_path += extension->id();
   pref_path += ".manifest.version";
   extension_prefs->pref_service()->RegisterStringPref(
-      pref_path.c_str(), std::string(), PrefServiceBase::UNSYNCABLE_PREF);
+      pref_path.c_str(), std::string(), PrefServiceSyncable::UNSYNCABLE_PREF);
   extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
 }
 

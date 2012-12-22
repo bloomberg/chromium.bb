@@ -779,9 +779,9 @@ void AppLauncherHandler::OnPreferenceChanged() {
 }
 
 // static
-void AppLauncherHandler::RegisterUserPrefs(PrefServiceBase* pref_service) {
+void AppLauncherHandler::RegisterUserPrefs(PrefServiceSyncable* pref_service) {
   pref_service->RegisterListPref(prefs::kNtpAppPageNames,
-                                 PrefService::SYNCABLE_PREF);
+                                 PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {

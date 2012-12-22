@@ -41,7 +41,7 @@ using testing::_;
 using testing::Mock;
 
 TEST(PrefServiceTest, NoObserverFire) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
 
   const char pref_name[] = "homepage";
   prefs.RegisterStringPref(pref_name, std::string());
@@ -77,7 +77,7 @@ TEST(PrefServiceTest, NoObserverFire) {
 }
 
 TEST(PrefServiceTest, HasPrefPath) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
 
   const char path[] = "fake.path";
 
@@ -97,7 +97,7 @@ TEST(PrefServiceTest, HasPrefPath) {
 TEST(PrefServiceTest, Observers) {
   const char pref_name[] = "homepage";
 
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   prefs.SetUserPref(pref_name, Value::CreateStringValue("http://www.cnn.com"));
   prefs.RegisterStringPref(pref_name, std::string());
 
@@ -152,7 +152,7 @@ TEST(PrefServiceTest, Observers) {
 // the user pref file, it uses the correct fallback value instead.
 TEST(PrefServiceTest, GetValueChangedType) {
   const int kTestValue = 10;
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kTestValue);
 
   // Check falling back to a recommended value.
@@ -170,7 +170,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
 }
 
 TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   prefs.RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, false);
 
   // Check to make sure the value is as expected.
@@ -189,7 +189,7 @@ TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   cmd_line.AppendSwitch(switches::kEnableCloudPrintProxy);
 
   // Call UpdateCommandLinePrefStore and check to see if the value has changed.
-  prefs.UpdateCommandLinePrefStore(&cmd_line);
+  prefs.UpdateCommandLinePrefStore(new CommandLinePrefStore(&cmd_line));
   pref = prefs.FindPreference(prefs::kCloudPrintProxyEnabled);
   ASSERT_TRUE(pref);
   value = pref->GetValue();
@@ -204,7 +204,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   const int kDefaultValue = 5;
   const int kUserValue = 10;
   const int kRecommendedValue = 15;
-  TestingPrefService prefs;
+  TestingPrefServiceSimple prefs;
   prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kDefaultValue);
 
   // Create pref with a default value only.
@@ -319,25 +319,25 @@ TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
 
   PrefServiceMockBuilder builder;
   builder.WithUserFilePrefs(pref_file, message_loop_.message_loop_proxy());
-  scoped_ptr<PrefService> prefs(builder.Create());
+  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable());
 
   // Register testing prefs.
   prefs->RegisterListPref("list",
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref("dict",
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 
   base::ListValue* non_empty_list = new base::ListValue;
   non_empty_list->Append(base::Value::CreateStringValue("test"));
   prefs->RegisterListPref("list_needs_empty_value",
                           non_empty_list,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
 
   base::DictionaryValue* non_empty_dict = new base::DictionaryValue;
   non_empty_dict->SetString("dummy", "whatever");
   prefs->RegisterDictionaryPref("dict_needs_empty_value",
                                 non_empty_dict,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Set all testing prefs to empty.
   ClearListValue(prefs.get(), "list");
@@ -363,7 +363,7 @@ class PrefServiceSetValueTest : public testing::Test {
 
   PrefServiceSetValueTest() : observer_(&prefs_) {}
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
   MockPrefChangeCallback observer_;
 };
 
@@ -458,7 +458,8 @@ class PrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     // harness is not supposed to overwrite a profile if it's already created.
 
     // Set some (WebKit) user preferences.
-    TestingPrefService* pref_services = profile()->GetTestingPrefService();
+    TestingPrefServiceSyncable* pref_services =
+        profile()->GetTestingPrefService();
 #if defined(TOOLKIT_GTK)
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
                                Value::CreateBooleanValue(false));

@@ -75,7 +75,7 @@ class ComponentLoaderTest : public testing::Test {
   ComponentLoaderTest() :
       // Note: we pass the same pref service here, to stand in for both
       // user prefs and local state.
-      component_loader_(&extension_service_, &prefs_, &prefs_) {
+      component_loader_(&extension_service_, &prefs_, &local_state_) {
   }
 
   void SetUp() {
@@ -91,18 +91,23 @@ class ComponentLoaderTest : public testing::Test {
                                &manifest_contents_));
 
     // Register the user prefs that ComponentLoader will read.
-    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreURL, std::string());
-    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreName, std::string());
+    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreURL,
+                              std::string(),
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
+    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreName,
+                              std::string(),
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
 
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
-    prefs_.RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
+    local_state_.RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
 #endif
   }
 
  protected:
   MockExtensionService extension_service_;
-  TestingPrefService prefs_;
+  TestingPrefServiceSyncable prefs_;
+  TestingPrefServiceSimple local_state_;
   ComponentLoader component_loader_;
 
   // The root directory of the text extension.

@@ -357,7 +357,7 @@ IOThread::Globals::~Globals() {}
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
 IOThread::IOThread(
-    PrefService* local_state,
+    PrefServiceSimple* local_state,
     policy::PolicyService* policy_service,
     ChromeNetLog* net_log,
     extensions::EventRouterForwarder* extension_event_router_forwarder)
@@ -369,6 +369,9 @@ IOThread::IOThread(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
+  //
+  // TODO(joi): See if we can fix so it does get registered from
+  // browser_prefs::RegisterLocalState.
   RegisterPrefs(local_state);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(
@@ -718,7 +721,7 @@ void IOThread::EnableSpdy(const std::string& mode) {
 }
 
 // static
-void IOThread::RegisterPrefs(PrefService* local_state) {
+void IOThread::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterStringPref(prefs::kAuthSchemes,
                                   "basic,digest,ntlm,negotiate,"
                                   "spdyproxy");

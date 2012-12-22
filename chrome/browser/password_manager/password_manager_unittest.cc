@@ -348,7 +348,8 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
 TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
   // Test that saving passwords depends on the password manager enabled
   // preference.
-  TestingPrefService* prefService = testing_profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefService =
+      testing_profile_->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            Value::CreateBooleanValue(true));
   EXPECT_TRUE(manager()->IsSavingEnabled());
@@ -363,7 +364,8 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   std::vector<PasswordForm*> result;
   PasswordForm* existing = new PasswordForm(MakeSimpleForm());
   result.push_back(existing);
-  TestingPrefService* prefService = testing_profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefService =
+      testing_profile_->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            Value::CreateBooleanValue(false));
   EXPECT_CALL(delegate_, FillPasswordForm(_));

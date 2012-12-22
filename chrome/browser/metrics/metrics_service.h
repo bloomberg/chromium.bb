@@ -34,6 +34,7 @@ class BookmarkModel;
 class BookmarkNode;
 class MetricsReportingScheduler;
 class PrefService;
+class PrefServiceSimple;
 class Profile;
 class TemplateURLService;
 
@@ -123,7 +124,7 @@ class MetricsService
 
   // At startup, prefs needs to be called with a list of all the pref names and
   // types we'll be using.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   // Set up notifications which indicate that a user is performing work. This is
   // useful to allow some features to sleep, until the machine becomes active,

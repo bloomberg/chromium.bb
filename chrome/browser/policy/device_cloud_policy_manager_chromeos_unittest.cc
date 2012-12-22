@@ -55,7 +55,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
   EnterpriseInstallAttributes install_attributes_;
 
-  TestingPrefService local_state_;
+  TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
 
   DeviceCloudPolicyStoreChromeOS* store_;

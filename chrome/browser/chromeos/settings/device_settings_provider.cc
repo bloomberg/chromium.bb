@@ -23,6 +23,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"

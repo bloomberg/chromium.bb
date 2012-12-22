@@ -95,7 +95,7 @@ TEST(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // override the built-in ones.
 TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
                      Value::CreateIntegerValue(1));
   ListValue* overrides = new ListValue;

@@ -45,23 +45,24 @@ ProfileKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
   return spellcheck;
 }
 
-void SpellcheckServiceFactory::RegisterUserPrefs(PrefService* user_prefs) {
+void SpellcheckServiceFactory::RegisterUserPrefs(
+    PrefServiceSyncable* user_prefs) {
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   user_prefs->RegisterLocalizedStringPref(prefs::kSpellCheckDictionary,
                                           IDS_SPELLCHECK_DICTIONARY,
-                                          PrefService::UNSYNCABLE_PREF);
+                                          PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kSpellCheckConfirmDialogShown,
                                   false,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService,
                                   false,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck,
                                   true,
-                                  PrefService::SYNCABLE_PREF);
+                                  PrefServiceSyncable::SYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
                                   false,
-                                  PrefService::SYNCABLE_PREF);
+                                  PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 bool SpellcheckServiceFactory::ServiceRedirectedInIncognito() const {

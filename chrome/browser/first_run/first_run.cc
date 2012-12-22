@@ -401,10 +401,10 @@ std::string GetPingDelayPrefName() {
                             installer::master_preferences::kDistroPingDelay);
 }
 
-void RegisterUserPrefs(PrefService* prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(GetPingDelayPrefName().c_str(),
                              0,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool RemoveSentinel() {
@@ -429,9 +429,10 @@ bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
 }
 
 bool SetShowWelcomePagePref() {
-  PrefService* local_state = g_browser_process->local_state();
+  PrefServiceSimple* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
+  // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
   if (!local_state->FindPreference(prefs::kShouldShowWelcomePage)) {
     local_state->RegisterBooleanPref(prefs::kShouldShowWelcomePage, false);
     local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
@@ -440,11 +441,12 @@ bool SetShowWelcomePagePref() {
 }
 
 bool SetPersonalDataManagerFirstRunPref() {
-  PrefService* local_state = g_browser_process->local_state();
+  PrefServiceSimple* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
   if (!local_state->FindPreference(
           prefs::kAutofillPersonalDataManagerFirstRun)) {
+    // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
     local_state->RegisterBooleanPref(
         prefs::kAutofillPersonalDataManagerFirstRun, false);
     local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);

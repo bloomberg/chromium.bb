@@ -144,7 +144,7 @@ enum MigratedPreferences {
 
 namespace chrome {
 
-void RegisterLocalState(PrefService* local_state) {
+void RegisterLocalState(PrefServiceSimple* local_state) {
   // Prefs in Local State.
   local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
 
@@ -218,7 +218,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 }
 
-void RegisterUserPrefs(PrefService* user_prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
@@ -227,7 +227,8 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BrowserInstantController::RegisterUserPrefs(user_prefs);
   ChromeContentBrowserClient::RegisterUserPrefs(user_prefs);
   ChromeVersionService::RegisterUserPrefs(user_prefs);
-  chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
+  chrome_browser_net::HttpServerPropertiesManager::RegisterUserPrefs(
+      user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
@@ -240,21 +241,21 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   InstantUI::RegisterUserPrefs(user_prefs);
   MediaCaptureDevicesDispatcher::RegisterUserPrefs(user_prefs);
   MediaStreamDevicesController::RegisterUserPrefs(user_prefs);
-  NetPrefObserver::RegisterPrefs(user_prefs);
+  NetPrefObserver::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
-  PrefProxyConfigTrackerImpl::RegisterPrefs(user_prefs);
+  PrefProxyConfigTrackerImpl::RegisterUserPrefs(user_prefs);
   PrefsTabHelper::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
-  ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
+  ProtocolHandlerRegistry::RegisterUserPrefs(user_prefs);
   RegisterBrowserUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::URLBlacklistManager::RegisterPrefs(user_prefs);
+  policy::URLBlacklistManager::RegisterUserPrefs(user_prefs);
 #endif
 
 #if defined(ENABLE_WEB_INTENTS)
@@ -287,7 +288,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   printing::StickySettings::RegisterUserPrefs(user_prefs);
-  RegisterAutolaunchPrefs(user_prefs);
+  RegisterAutolaunchUserPrefs(user_prefs);
   SyncPromoUI::RegisterUserPrefs(user_prefs);
 #endif
 
@@ -297,37 +298,35 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
-  chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
+  chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(user_prefs);
 #endif
 
 #if defined(OS_WIN)
-  NetworkProfileBubble::RegisterPrefs(user_prefs);
+  NetworkProfileBubble::RegisterUserPrefs(user_prefs);
 #endif
 }
 
 void MigrateUserPrefs(Profile* profile) {
   // Cleanup old prefs.
   static const char kBackupPref[] = "backup";
-  PrefService* prefs = profile->GetPrefs();
+  PrefServiceSyncable* prefs = profile->GetPrefs();
   prefs->RegisterDictionaryPref(kBackupPref, new DictionaryValue(),
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->ClearPref(kBackupPref);
   prefs->UnregisterPreference(kBackupPref);
 }
 
-void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
+void MigrateBrowserPrefs(Profile* profile, PrefServiceSimple* local_state) {
   // Copy pref values which have been migrated to user_prefs from local_state,
   // or remove them from local_state outright, if copying is not required.
   int current_version =
       local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
 
   if (!(current_version & DNS_PREFS)) {
-    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList,
-                                  PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList);
     local_state->ClearPref(prefs::kDnsStartupPrefetchList);
 
-    local_state->RegisterListPref(prefs::kDnsHostReferralList,
-                                  PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterListPref(prefs::kDnsHostReferralList);
     local_state->ClearPref(prefs::kDnsHostReferralList);
 
     current_version |= DNS_PREFS;
@@ -335,11 +334,12 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
                             current_version);
   }
 
-  PrefService* user_prefs = profile->GetPrefs();
+  PrefServiceSyncable* user_prefs = profile->GetPrefs();
   if (!(current_version & WINDOWS_PREFS)) {
     local_state->RegisterIntegerPref(prefs::kDevToolsHSplitLocation, -1);
     if (local_state->HasPrefPath(prefs::kDevToolsHSplitLocation)) {
-      user_prefs->SetInteger(prefs::kDevToolsHSplitLocation,
+      user_prefs->SetInteger(
+          prefs::kDevToolsHSplitLocation,
           local_state->GetInteger(prefs::kDevToolsHSplitLocation));
     }
     local_state->ClearPref(prefs::kDevToolsHSplitLocation);
@@ -349,7 +349,8 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
       const PrefService::Preference* pref =
           local_state->FindPreference(prefs::kBrowserWindowPlacement);
       DCHECK(pref);
-      user_prefs->Set(prefs::kBrowserWindowPlacement, *(pref->GetValue()));
+      user_prefs->Set(prefs::kBrowserWindowPlacement,
+                      *(pref->GetValue()));
     }
     local_state->ClearPref(prefs::kBrowserWindowPlacement);
 
@@ -364,14 +365,15 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
                                     GoogleURLTracker::kDefaultGoogleHomepage);
     if (local_state->HasPrefPath(prefs::kLastKnownGoogleURL)) {
       user_prefs->SetString(prefs::kLastKnownGoogleURL,
-          local_state->GetString(prefs::kLastKnownGoogleURL));
+                            local_state->GetString(prefs::kLastKnownGoogleURL));
     }
     local_state->ClearPref(prefs::kLastKnownGoogleURL);
 
     local_state->RegisterStringPref(prefs::kLastPromptedGoogleURL,
                                     std::string());
     if (local_state->HasPrefPath(prefs::kLastPromptedGoogleURL)) {
-      user_prefs->SetString(prefs::kLastPromptedGoogleURL,
+      user_prefs->SetString(
+          prefs::kLastPromptedGoogleURL,
           local_state->GetString(prefs::kLastPromptedGoogleURL));
     }
     local_state->ClearPref(prefs::kLastPromptedGoogleURL);

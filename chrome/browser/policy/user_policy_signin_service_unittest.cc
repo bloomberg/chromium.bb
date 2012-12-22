@@ -75,20 +75,21 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     g_browser_process->browser_policy_connector()->Init();
 
-    local_state_.reset(new TestingPrefService);
+    local_state_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(local_state_.get());
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
         local_state_.get());
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
-    scoped_ptr<TestingPrefService> prefs(new TestingPrefService());
+    scoped_ptr<TestingPrefServiceSyncable> prefs(
+        new TestingPrefServiceSyncable());
     Profile::RegisterUserPrefs(prefs.get());
     chrome::RegisterUserPrefs(prefs.get());
     prefs->SetUserPref(prefs::kLoadCloudPolicyOnSignin,
                        Value::CreateBooleanValue(true));
     TestingProfile::Builder builder;
-    builder.SetPrefService(scoped_ptr<PrefService>(prefs.Pass()));
+    builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     profile_ = builder.Build().Pass();
     profile_->CreateRequestContext();
 
@@ -231,7 +232,7 @@ class UserPolicySigninServiceTest : public testing::Test {
   // BrowserPolicyConnector).
   MockDeviceManagementService* device_management_service_;
 
-  scoped_ptr<TestingPrefService> local_state_;
+  scoped_ptr<TestingPrefServiceSimple> local_state_;
 };
 
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {

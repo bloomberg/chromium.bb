@@ -21,10 +21,11 @@ void GLStringManager::Initialize() {
   // We never remove this observer from GpuDataManager.
   content::GpuDataManager::GetInstance()->AddObserver(this);
 
-  PrefService* local_state = g_browser_process->local_state();
+  PrefServiceSimple* local_state = g_browser_process->local_state();
   if (!local_state)
     return;
 
+  // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
   local_state->RegisterStringPref(prefs::kGLVendorString, gl_vendor_);
   local_state->RegisterStringPref(prefs::kGLRendererString, gl_renderer_);
   local_state->RegisterStringPref(prefs::kGLVersionString, gl_version_);

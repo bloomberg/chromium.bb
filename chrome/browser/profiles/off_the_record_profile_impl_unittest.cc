@@ -6,6 +6,7 @@
 
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
@@ -39,7 +40,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
     return off_the_record_profile_.get();
   }
 
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE {
+  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE {
     return GetPrefs();
   }
 
@@ -84,7 +85,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
   virtual ~OffTheRecordProfileImplTest() {}
 
   virtual void SetUp() OVERRIDE {
-    prefs_.reset(new TestingPrefService);
+    prefs_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(prefs_.get());
 
     browser_process()->SetLocalState(prefs_.get());
@@ -104,7 +105,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
     return static_cast<TestingBrowserProcess*>(g_browser_process);
   }
 
-  scoped_ptr<PrefService> prefs_;
+  scoped_ptr<PrefServiceSimple> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImplTest);
 };

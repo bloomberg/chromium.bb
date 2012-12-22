@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "sync/api/sync_change.h"
@@ -452,7 +453,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
       sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void PrefModelAssociator::SetPrefService(PrefService* pref_service) {
+void PrefModelAssociator::SetPrefService(PrefServiceSyncable* pref_service) {
   DCHECK(pref_service_ == NULL);
   pref_service_ = pref_service;
 }

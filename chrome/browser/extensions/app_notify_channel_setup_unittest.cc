@@ -182,9 +182,7 @@ class AppNotifyChannelSetupTest : public testing::Test {
   virtual ~AppNotifyChannelSetupTest() {}
 
   virtual void SetLoggedInUser(const std::string username) {
-    TestingPrefService* prefs = profile_.GetTestingPrefService();
-    prefs->SetUserPref(prefs::kGoogleServicesUsername,
-                       new StringValue(username));
+    profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   }
 
   virtual AppNotifyChannelSetup* CreateInstance() {

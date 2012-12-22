@@ -192,12 +192,12 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
   return ps;
 }
 
-void PasswordStoreFactory::RegisterUserPrefs(PrefService* prefs) {
+void PasswordStoreFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID) \
   && defined(OS_POSIX)
   prefs->RegisterIntegerPref(prefs::kLocalProfileId,
                              kInvalidLocalProfileId,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in CreatePasswordStore() below.

@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 
 class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
@@ -59,7 +60,7 @@ class TranslatePrefs {
       const std::string& original_language, const GURL& url);
   static bool ShouldAutoTranslate(PrefService* user_prefs,
       const std::string& original_language, std::string* target_language);
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
  private:
   static void MigrateTranslateWhitelists(PrefService* user_prefs);

@@ -1496,7 +1496,7 @@ GtkWidget* BrowserWindowGtk::titlebar_widget() const {
 }
 
 // static
-void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
+void BrowserWindowGtk::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   bool custom_frame_default = false;
   // Avoid checking the window manager if we're not connected to an X server (as
   // is the case in Valgrind tests).
@@ -1506,7 +1506,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
   }
   prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                              custom_frame_default,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 WebContents* BrowserWindowGtk::GetDisplayedTab() {

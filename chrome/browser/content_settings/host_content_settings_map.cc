@@ -130,14 +130,14 @@ void HostContentSettingsMap::RegisterExtensionService(
 #endif
 
 // static
-void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
+void HostContentSettingsMap::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
                              0,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kContentSettingsDefaultWhitelistVersion,
-                             0, PrefService::SYNCABLE_PREF);
+                             0, PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kContentSettingsClearOnExitMigrated,
-                             false, PrefService::SYNCABLE_PREF);
+                             false, PrefServiceSyncable::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterUserPrefs(prefs);

@@ -278,7 +278,7 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
 MetricsLog::~MetricsLog() {}
 
 // static
-void MetricsLog::RegisterPrefs(PrefService* local_state) {
+void MetricsLog::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterListPref(prefs::kStabilityPluginStats);
 }
 

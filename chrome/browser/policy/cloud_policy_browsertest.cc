@@ -19,6 +19,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/chrome_settings.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"

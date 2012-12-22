@@ -14,6 +14,7 @@
 
 class GURL;
 class PrefService;
+class PrefServiceSyncable;
 class Profile;
 class TemplateURL;
 
@@ -35,7 +36,7 @@ void InitCountryCode(const std::string& country_code);
 
 #endif
 
-void RegisterUserPrefs(PrefService* prefs);
+void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
 // Returns the current version of the prepopulate data, so callers can know when
 // they need to re-merge. If the prepopulate data comes from the preferences

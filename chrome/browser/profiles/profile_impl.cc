@@ -53,7 +53,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/chrome_pref_service_builder.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -269,29 +269,29 @@ int ProfileImpl::create_readme_delay_ms = 60000;
 const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
 
 // static
-void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
+void ProfileImpl::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kForceSafeSearch,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kProfileAvatarIndex,
                              -1,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kProfileName,
                             "",
-                            PrefService::SYNCABLE_PREF);
+                            PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kProfileIsManaged,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kHomePage,
                             std::string(),
-                            PrefService::SYNCABLE_PREF);
+                            PrefServiceSyncable::SYNCABLE_PREF);
 #if defined(ENABLE_PRINTING)
   prefs->RegisterBooleanPref(prefs::kPrintingEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
 #if defined(GOOGLE_CHROME_BUILD)
@@ -299,23 +299,23 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
 #else
                              true,
 #endif
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Initialize the cache prefs.
   prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
                               FilePath(),
-                              PrefService::UNSYNCABLE_PREF);
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
                              0,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kMediaCacheSize,
                              0,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // Deprecated. Kept around for migration.
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 ProfileImpl::ProfileImpl(
@@ -353,9 +353,9 @@ ProfileImpl::ProfileImpl(
 
   // TODO(atwilson): Change |cloud_policy_manager_| and
   // |managed_mode_policy_provider_| to proper ProfileKeyedServices once
-  // PrefService is a ProfileKeyedService (policy must be initialized before
-  // PrefService because PrefService depends on policy loading to get overridden
-  // pref values).
+  // PrefServiceSyncable is a ProfileKeyedService (policy must be initialized
+  // before PrefServiceSyncable because PrefServiceSyncable depends on policy
+  // loading to get overridden pref values).
 #if !defined(OS_CHROMEOS)
   if (command_line->HasSwitch(switches::kLoadCloudPolicyOnSignin)) {
     cloud_policy_manager_ =
@@ -378,7 +378,7 @@ ProfileImpl::ProfileImpl(
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
-  prefs_.reset(ChromePrefServiceBuilder().CreateChromePrefs(
+  prefs_.reset(chrome_prefs::CreateProfilePrefs(
       GetPrefFilePath(),
       sequenced_task_runner,
       policy_service_.get(),
@@ -775,12 +775,12 @@ policy::PolicyService* ProfileImpl::GetPolicyService() {
   return policy_service_.get();
 }
 
-PrefService* ProfileImpl::GetPrefs() {
+PrefServiceSyncable* ProfileImpl::GetPrefs() {
   DCHECK(prefs_.get());  // Should explicitly be initialized.
   return prefs_.get();
 }
 
-PrefService* ProfileImpl::GetOffTheRecordPrefs() {
+PrefServiceSyncable* ProfileImpl::GetOffTheRecordPrefs() {
   if (!otr_prefs_.get()) {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.

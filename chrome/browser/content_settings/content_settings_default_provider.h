@@ -16,6 +16,7 @@
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 
 class PrefService;
+class PrefServiceSyncable;
 
 namespace content_settings {
 
@@ -24,7 +25,7 @@ namespace content_settings {
 // default values.
 class DefaultProvider : public ObservableProvider {
  public:
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   DefaultProvider(PrefService* prefs,
                   bool incognito);

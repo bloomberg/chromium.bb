@@ -17,7 +17,7 @@ class Browser;
 class ExtensionToolbarModel;
 class ExtensionServiceObserverBridge;
 @class MenuButton;
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace extensions {
@@ -106,7 +106,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 - (BOOL)chevronIsHidden;
 
 // Registers the user preferences used by this class.
-+ (void)registerUserPrefs:(PrefService*)prefs;
++ (void)registerUserPrefs:(PrefServiceSyncable*)prefs;
 
 @end  // @interface BrowserActionsController
 

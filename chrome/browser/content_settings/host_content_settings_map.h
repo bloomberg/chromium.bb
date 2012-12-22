@@ -33,6 +33,7 @@ class ProviderInterface;
 class ExtensionService;
 class GURL;
 class PrefService;
+class PrefServiceSyncable;
 
 class HostContentSettingsMap
     : public content_settings::Observer,
@@ -47,8 +48,7 @@ class HostContentSettingsMap
     NUM_PROVIDER_TYPES,
   };
 
-  HostContentSettingsMap(PrefService* prefs,
-                         bool incognito);
+  HostContentSettingsMap(PrefService* prefs, bool incognito);
 
 #if defined(ENABLE_EXTENSIONS)
   // In some cases, the ExtensionService is not available at the time the
@@ -57,7 +57,7 @@ class HostContentSettingsMap
   void RegisterExtensionService(ExtensionService* extension_service);
 #endif
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns the default setting for a particular content type. If |provider_id|
   // is not NULL, the id of the provider which provided the default setting is

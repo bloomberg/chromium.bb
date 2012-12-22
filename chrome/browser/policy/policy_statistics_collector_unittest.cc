@@ -109,7 +109,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   base::TimeDelta last_delay_;
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
   MockPolicyService policy_service_;
   PolicyMap policy_map_;
 

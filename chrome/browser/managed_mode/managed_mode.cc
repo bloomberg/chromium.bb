@@ -82,15 +82,15 @@ ManagedMode* ManagedMode::GetInstance() {
 }
 
 // static
-void ManagedMode::RegisterPrefs(PrefService* prefs) {
+void ManagedMode::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
 }
 
 // static
-void ManagedMode::RegisterUserPrefs(PrefService* prefs) {
+void ManagedMode::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
                              2,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -12,14 +12,13 @@
 #include "base/prefs/pref_store.h"
 
 class FilePath;
-class PrefModelAssociator;
-class PrefService;
+class PrefServiceSimple;
 
 namespace base {
 class SequencedTaskRunner;
 }
 
-// A class that allows convenient building of custom PrefServices.
+// A class that allows convenient building of PrefService.
 class PrefServiceBuilder {
  public:
   PrefServiceBuilder();
@@ -32,9 +31,6 @@ class PrefServiceBuilder {
   PrefServiceBuilder& WithCommandLinePrefs(PrefStore* store);
   PrefServiceBuilder& WithUserPrefs(PersistentPrefStore* store);
   PrefServiceBuilder& WithRecommendedPrefs(PrefStore* store);
-
-  // Takes ownership of the associator.
-  PrefServiceBuilder& WithSyncAssociator(PrefModelAssociator* associator);
 
   // Sets up error callback for the PrefService.  A do-nothing default
   // is provided if this is not called.
@@ -49,19 +45,18 @@ class PrefServiceBuilder {
 
   PrefServiceBuilder& WithAsync(bool async);
 
-  // Creates the PrefService, invalidating the entire builder configuration.
-  virtual PrefService* Create();
+  // Creates a PrefServiceSimple object initialized with the
+  // parameters from this builder.
+  virtual PrefServiceSimple* CreateSimple();
 
  protected:
+  virtual void ResetDefaultState();
+
   scoped_refptr<PrefStore> managed_prefs_;
   scoped_refptr<PrefStore> extension_prefs_;
   scoped_refptr<PrefStore> command_line_prefs_;
   scoped_refptr<PersistentPrefStore> user_prefs_;
   scoped_refptr<PrefStore> recommended_prefs_;
-
-  // TODO(joi): Would be nice to switch the various places that deal
-  // with this pointer to using scoped_ptr::Pass semantics.
-  PrefModelAssociator* sync_associator_;
 
   base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
 
@@ -69,8 +64,6 @@ class PrefServiceBuilder {
   bool async_;
 
  private:
-  void ResetDefaultState();
-
   DISALLOW_COPY_AND_ASSIGN(PrefServiceBuilder);
 };
 

@@ -1088,19 +1088,19 @@ const LogoURLs google_logos = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RegisterUserPrefs(PrefService* prefs) {
+void RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall,
                              kCountryIDUnknown,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kSearchProviderOverrides,
-                          PrefService::UNSYNCABLE_PREF);
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion,
                              -1,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
   // Obsolete pref, for migration.
   prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall,
                              -1,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 int GetDataVersion(PrefService* prefs) {

@@ -22,7 +22,7 @@ class AlternateErrorPageTabObserver
  public:
   virtual ~AlternateErrorPageTabObserver();
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
  private:
   explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);

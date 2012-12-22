@@ -27,7 +27,7 @@ class WindowSizeAutosaverTest : public CocoaProfileTest {
                                         defer:NO];
     profile()->GetPrefs()->RegisterDictionaryPref(
         path_,
-        PrefService::UNSYNCABLE_PREF);
+        PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {

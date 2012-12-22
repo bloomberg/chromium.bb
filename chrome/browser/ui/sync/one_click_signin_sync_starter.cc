@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PREFS_H_
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PREFS_H_
 
-class PrefService;
+class PrefServiceSimple;
+class PrefServiceSyncable;
 
 namespace geolocation {
-void RegisterPrefs(PrefService* prefs);
-void RegisterUserPrefs(PrefService* user_prefs);
+void RegisterPrefs(PrefServiceSimple* prefs);
+void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 }
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PREFS_H_

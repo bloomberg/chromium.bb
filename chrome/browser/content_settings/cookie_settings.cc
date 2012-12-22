@@ -64,10 +64,11 @@ CookieSettings::Factory::Factory()
 
 CookieSettings::Factory::~Factory() {}
 
-void CookieSettings::Factory::RegisterUserPrefs(PrefService* user_prefs) {
+void CookieSettings::Factory::RegisterUserPrefs(
+    PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
                                   false,
-                                  PrefService::SYNCABLE_PREF);
+                                  PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 bool CookieSettings::Factory::ServiceRedirectedInIncognito() const {

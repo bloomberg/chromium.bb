@@ -41,29 +41,29 @@ extern const char kShelfAlignmentBottom[] = "Bottom";
 extern const char kShelfAlignmentLeft[] = "Left";
 extern const char kShelfAlignmentRight[] = "Right";
 
-void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
+void RegisterChromeLauncherUserPrefs(PrefServiceSyncable* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
                                CreateDefaultPinnedAppsList(),
-                               PrefService::SYNCABLE_PREF);
+                               PrefServiceSyncable::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorNever,
-                                 PrefService::SYNCABLE_PREF);
+                                 PrefServiceSyncable::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehaviorLocal,
                                  std::string(),
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAlignment,
                                  kShelfAlignmentBottom,
-                                 PrefService::SYNCABLE_PREF);
+                                 PrefServiceSyncable::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAlignmentLocal,
                                  std::string(),
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kShowLogoutButtonInTray,
                                   false,
-                                  PrefService::UNSYNCABLE_PREF);
+                                  PrefServiceSyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterDictionaryPref(prefs::kShelfPreferences,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id) {

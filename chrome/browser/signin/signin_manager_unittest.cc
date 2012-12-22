@@ -45,7 +45,7 @@ const char kGetTokenPairValidResponse[] =
 class SigninManagerTest : public TokenServiceTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
-    prefs_.reset(new TestingPrefService);
+    prefs_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(prefs_.get());
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
         prefs_.get());
@@ -187,7 +187,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
   scoped_ptr<SigninManager> manager_;
   content::TestNotificationTracker google_login_success_;
   content::TestNotificationTracker google_login_failure_;
-  scoped_ptr<TestingPrefService> prefs_;
+  scoped_ptr<TestingPrefServiceSimple> prefs_;
 };
 
 // NOTE: ClientLogin's "StartSignin" is called after collecting credentials

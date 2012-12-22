@@ -115,7 +115,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
   }
 
   virtual void SetUp() {
-    prefs_.reset(new TestingPrefService);
+    prefs_.reset(new TestingPrefServiceSimple);
     CloudPolicySubsystem::RegisterPrefs(prefs_.get());
     ((TestingBrowserProcess*) g_browser_process)->SetLocalState(prefs_.get());
 
@@ -255,7 +255,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
   scoped_ptr<EventLogger> logger_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
   scoped_ptr<CloudPolicySubsystem> cloud_policy_subsystem_;
-  scoped_ptr<PrefService> prefs_;
+  scoped_ptr<PrefServiceSimple> prefs_;
   CloudPolicyCacheBase* cache_;
 
   scoped_ptr<TestingPolicyURLFetcherFactory> factory_;

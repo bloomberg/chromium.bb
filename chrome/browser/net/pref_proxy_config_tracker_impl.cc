@@ -196,11 +196,19 @@ net::ProxyConfigService::ConfigAvailability
 }
 
 // static
-void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefService* pref_service) {
+void PrefProxyConfigTrackerImpl::RegisterPrefs(
+    PrefServiceSimple* local_state) {
+  DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
+  local_state->RegisterDictionaryPref(prefs::kProxy, default_settings);
+}
+
+// static
+void PrefProxyConfigTrackerImpl::RegisterUserPrefs(
+    PrefServiceSyncable* pref_service) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
   pref_service->RegisterDictionaryPref(prefs::kProxy,
                                        default_settings,
-                                       PrefService::UNSYNCABLE_PREF);
+                                       PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::GetProxyConfig(

@@ -117,7 +117,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  TestingPrefService pref_service_;
+  TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
 
  private:

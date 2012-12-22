@@ -19,7 +19,7 @@
 
 class Browser;
 class CommandLine;
-class PrefService;
+class PrefServiceSimple;
 class Profile;
 class ProfileInfoCache;
 class StatusIcon;
@@ -53,7 +53,7 @@ class BackgroundModeManager
                         ProfileInfoCache* profile_cache);
   virtual ~BackgroundModeManager();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   virtual void RegisterProfile(Profile* profile);
 

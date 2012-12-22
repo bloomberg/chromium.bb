@@ -242,11 +242,11 @@ policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
   return profile_->GetPolicyService();
 }
 
-PrefService* OffTheRecordProfileImpl::GetPrefs() {
+PrefServiceSyncable* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }
 
-PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
+PrefServiceSyncable* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
   return prefs_;
 }
 

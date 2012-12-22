@@ -20,7 +20,7 @@ using ::testing::StrictMock;
 
 class SyncPrefsTest : public testing::Test {
  protected:
-  TestingPrefService pref_service_;
+  TestingPrefServiceSyncable pref_service_;
 
  private:
   MessageLoop loop_;

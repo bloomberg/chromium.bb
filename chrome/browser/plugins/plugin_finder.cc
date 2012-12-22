@@ -135,7 +135,7 @@ PluginMetadata* CreatePluginMetadata(
 }  // namespace
 
 // static
-void PluginFinder::RegisterPrefs(PrefService* local_state) {
+void PluginFinder::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
 }
 

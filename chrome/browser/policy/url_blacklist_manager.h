@@ -19,6 +19,7 @@
 
 class GURL;
 class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class ListValue;
@@ -130,7 +131,7 @@ class URLBlacklistManager {
   virtual void SetBlacklist(scoped_ptr<URLBlacklist> blacklist);
 
   // Registers the preferences related to blacklisting in the given PrefService.
-  static void RegisterPrefs(PrefService* pref_service);
+  static void RegisterUserPrefs(PrefServiceSyncable* pref_service);
 
  protected:
   // Used to delay updating the blacklist while the preferences are

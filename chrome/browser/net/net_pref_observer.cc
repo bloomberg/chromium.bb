@@ -47,11 +47,11 @@ void NetPrefObserver::ApplySettings() {
 }
 
 // static
-void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
+void NetPrefObserver::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kNetworkPredictionEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableSpdy,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }

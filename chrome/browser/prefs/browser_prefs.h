@@ -6,16 +6,18 @@
 #define CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 
 class PrefService;
+class PrefServiceSimple;
+class PrefServiceSyncable;
 class Profile;
 
 namespace chrome {
 
 // Makes the PrefService objects aware of all the prefs.
-void RegisterLocalState(PrefService* local_state);
-void RegisterUserPrefs(PrefService* user_prefs);
+void RegisterLocalState(PrefServiceSimple* local_state);
+void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
 // Migrates prefs from |local_state| to |profile|'s pref store.
-void MigrateBrowserPrefs(Profile* profile, PrefService* local_state);
+void MigrateBrowserPrefs(Profile* profile, PrefServiceSimple* local_state);
 
 // Migrates prefs in |profile|'s pref store.
 void MigrateUserPrefs(Profile* profile);

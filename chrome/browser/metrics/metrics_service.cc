@@ -436,7 +436,7 @@ class MetricsMemoryDetails : public MemoryDetails {
 };
 
 // static
-void MetricsService::RegisterPrefs(PrefService* local_state) {
+void MetricsService::RegisterPrefs(PrefServiceSimple* local_state) {
   DCHECK(IsSingleThreaded());
   local_state->RegisterStringPref(prefs::kMetricsClientID, "");
   local_state->RegisterIntegerPref(prefs::kMetricsLowEntropySource,

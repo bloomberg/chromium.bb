@@ -148,24 +148,24 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
   return prefs.IsLanguageWhitelisted(original_language, target_language);
 }
 
-void TranslatePrefs::RegisterUserPrefs(PrefService* user_prefs) {
+void TranslatePrefs::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   if (!user_prefs->FindPreference(kPrefTranslateLanguageBlacklist))
     user_prefs->RegisterListPref(kPrefTranslateLanguageBlacklist,
-                                 PrefService::SYNCABLE_PREF);
+                                 PrefServiceSyncable::SYNCABLE_PREF);
   if (!user_prefs->FindPreference(kPrefTranslateSiteBlacklist))
     user_prefs->RegisterListPref(kPrefTranslateSiteBlacklist,
-                                 PrefService::SYNCABLE_PREF);
+                                 PrefServiceSyncable::SYNCABLE_PREF);
   if (!user_prefs->FindPreference(kPrefTranslateWhitelists)) {
     user_prefs->RegisterDictionaryPref(kPrefTranslateWhitelists,
-                                       PrefService::SYNCABLE_PREF);
+                                       PrefServiceSyncable::SYNCABLE_PREF);
     MigrateTranslateWhitelists(user_prefs);
   }
   if (!user_prefs->FindPreference(kPrefTranslateDeniedCount))
     user_prefs->RegisterDictionaryPref(kPrefTranslateDeniedCount,
-                                       PrefService::SYNCABLE_PREF);
+                                       PrefServiceSyncable::SYNCABLE_PREF);
   if (!user_prefs->FindPreference(kPrefTranslateAcceptedCount))
     user_prefs->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
-                                       PrefService::SYNCABLE_PREF);
+                                       PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 // TranslatePrefs: private, static: --------------------------------------------

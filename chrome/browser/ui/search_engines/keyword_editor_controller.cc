@@ -28,7 +28,7 @@ KeywordEditorController::~KeywordEditorController() {
 // static
 // TODO(rsesek): Other platforms besides Mac should remember window
 // placement. http://crbug.com/22269
-void KeywordEditorController::RegisterPrefs(PrefService* prefs) {
+void KeywordEditorController::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterDictionaryPref(prefs::kKeywordEditorWindowPlacement);
 }
 

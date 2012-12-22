@@ -124,7 +124,7 @@ class ProfileSyncServicePreferenceTest
 
     prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),
                                not_synced_preference_default_value_,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {
@@ -241,7 +241,7 @@ class ProfileSyncServicePreferenceTest
   }
 
   scoped_ptr<TestingProfile> profile_;
-  TestingPrefService* prefs_;
+  TestingPrefServiceSyncable* prefs_;
 
   UIDataTypeController* dtc_;
   PrefModelAssociator* pref_sync_service_;

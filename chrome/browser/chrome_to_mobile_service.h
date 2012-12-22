@@ -31,7 +31,7 @@ class OAuth2AccessTokenFetcher;
 class Browser;
 class CloudPrintURL;
 class MockChromeToMobileService;
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 namespace net {
@@ -98,7 +98,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   static bool UpdateAndGetCommandState(Browser* browser);
 
   // Register the user prefs associated with this service.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();

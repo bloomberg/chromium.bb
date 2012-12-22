@@ -271,7 +271,7 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
     const std::string& suggest_url,
     const std::string& icon_url,
     const std::string& encodings) {
-  TestingPrefService* pref_service = profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                                Value::CreateBooleanValue(enabled));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderName,
@@ -292,7 +292,7 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
 }
 
 void TemplateURLServiceTestUtil::RemoveManagedDefaultSearchPreferences() {
-  TestingPrefService* pref_service = profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderEnabled);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderName);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderKeyword);

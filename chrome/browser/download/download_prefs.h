@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/prefs/public/pref_member.h"
 
+class PrefServiceSyncable;
 class Profile;
 
 namespace content {
@@ -23,7 +24,7 @@ class DownloadPrefs {
   explicit DownloadPrefs(Profile* profile);
   ~DownloadPrefs();
 
-  static void RegisterUserPrefs(PrefServiceBase* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Returns the DownloadPrefs corresponding to the given DownloadManager
   // or BrowserContext.

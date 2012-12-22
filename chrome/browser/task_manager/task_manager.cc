@@ -1221,7 +1221,7 @@ content::WebContents* TaskManager::Resource::GetWebContents() const {
 bool TaskManager::Resource::IsBackground() const { return false; }
 
 // static
-void TaskManager::RegisterPrefs(PrefService* prefs) {
+void TaskManager::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
 }
 

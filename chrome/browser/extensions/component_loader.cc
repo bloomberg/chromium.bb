@@ -69,12 +69,12 @@ ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
 }
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
-                                 PrefService* prefs,
-                                 PrefService* local_state)
-    : prefs_(prefs),
+                                 PrefServiceBase* profile_prefs,
+                                 PrefServiceBase* local_state)
+    : profile_prefs_(profile_prefs),
       local_state_(local_state),
       extension_service_(extension_service) {
-  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Init(profile_prefs);
 
   // This pref is set by policy. We have to watch it for change because on
   // ChromeOS, policy isn't loaded until after the browser process is started.
@@ -294,7 +294,7 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
   Remove(path);
 
   std::string enterprise_webstore_url =
-      prefs_->GetString(prefs::kEnterpriseWebStoreURL);
+      profile_prefs_->GetString(prefs::kEnterpriseWebStoreURL);
 
   // Load the extension only if the URL preference is set.
   if (!enterprise_webstore_url.empty()) {
@@ -305,7 +305,8 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
     // The manifest is missing some values that are provided by policy.
     DictionaryValue* manifest = ParseManifest(manifest_contents);
     if (manifest) {
-      std::string name = prefs_->GetString(prefs::kEnterpriseWebStoreName);
+      std::string name =
+          profile_prefs_->GetString(prefs::kEnterpriseWebStoreName);
       manifest->SetString("app.launch.web_url", enterprise_webstore_url);
       manifest->SetString("name", name);
       Add(manifest, path);
@@ -448,13 +449,13 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
 }
 
 // static
-void ComponentLoader::RegisterUserPrefs(PrefService* prefs) {
+void ComponentLoader::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterStringPref(prefs::kEnterpriseWebStoreURL,
                             std::string() /* default_value */,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kEnterpriseWebStoreName,
                             std::string() /* default_value */,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions

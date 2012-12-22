@@ -106,10 +106,10 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
 }
 
 // static
-void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
+void ExtensionSettingsHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceSyncable::SYNCABLE_PREF);
 }
 
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(

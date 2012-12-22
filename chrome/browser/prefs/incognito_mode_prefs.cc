@@ -52,11 +52,11 @@ void IncognitoModePrefs::SetAvailability(PrefService* prefs,
 }
 
 // static
-void IncognitoModePrefs::RegisterUserPrefs(PrefService* pref_service) {
+void IncognitoModePrefs::RegisterUserPrefs(PrefServiceSyncable* pref_service) {
   DCHECK(pref_service);
   pref_service->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
                                     IncognitoModePrefs::ENABLED,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

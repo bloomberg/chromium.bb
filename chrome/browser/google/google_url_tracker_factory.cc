@@ -34,11 +34,14 @@ ProfileKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
   return new GoogleURLTracker(profile, GoogleURLTracker::NORMAL_MODE);
 }
 
-void GoogleURLTrackerFactory::RegisterUserPrefs(PrefService* user_prefs) {
+void GoogleURLTrackerFactory::RegisterUserPrefs(
+    PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
-      GoogleURLTracker::kDefaultGoogleHomepage, PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL, std::string(),
-                                 PrefService::UNSYNCABLE_PREF);
+                                 GoogleURLTracker::kDefaultGoogleHomepage,
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL,
+                                 std::string(),
+                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool GoogleURLTrackerFactory::ServiceRedirectedInIncognito() const {

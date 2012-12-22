@@ -100,7 +100,7 @@ class DesktopNotificationsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 
   // Local state mock.
-  TestingPrefService local_state_;
+  TestingPrefServiceSimple local_state_;
 
   // Test profile.
   scoped_ptr<TestingProfile> profile_;

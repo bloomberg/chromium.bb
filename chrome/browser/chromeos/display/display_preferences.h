@@ -7,7 +7,8 @@
 
 #include "base/basictypes.h"
 
-class PrefService;
+class PrefServiceSimple;
+
 namespace gfx {
 class Display;
 class Insets;
@@ -17,7 +18,7 @@ namespace chromeos {
 
 // Registers the prefs associated with display settings and stored
 // into Local State.
-void RegisterDisplayLocalStatePrefs(PrefService* local_state);
+void RegisterDisplayLocalStatePrefs(PrefServiceSimple* local_state);
 
 // Sets or updates the display layout data to the specified |display| and
 // |pref_service|.

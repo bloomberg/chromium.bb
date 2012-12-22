@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 
 class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
@@ -28,10 +29,9 @@ namespace content_settings {
 // preference.
 class PrefProvider : public ObservableProvider {
  public:
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
-  PrefProvider(PrefService* prefs,
-               bool incognito);
+  PrefProvider(PrefService* prefs, bool incognito);
   virtual ~PrefProvider();
 
   // ProviderInterface implementations.

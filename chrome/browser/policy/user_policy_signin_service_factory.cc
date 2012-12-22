@@ -49,9 +49,9 @@ bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() const {
 }
 
 void UserPolicySigninServiceFactory::RegisterUserPrefs(
-    PrefService* user_prefs) {
+    PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kLoadCloudPolicyOnSignin,
-                                  false, PrefService::UNSYNCABLE_PREF);
+                                  false, PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace policy

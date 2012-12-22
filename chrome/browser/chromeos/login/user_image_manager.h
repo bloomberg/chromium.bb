@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 
 class FilePath;
-class PrefService;
+class PrefServiceSimple;
 
 namespace gfx {
 class ImageSkia;
@@ -24,7 +24,7 @@ class UserImage;
 class UserImageManager {
  public:
   // Registers user image manager preferences.
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   virtual ~UserImageManager();
 

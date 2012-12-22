@@ -222,7 +222,7 @@ ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
 }
 
 void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
-    PrefService* prefs) {
+    PrefServiceSyncable* prefs) {
   const OverscrollPref* overscroll_prefs =
       GesturePrefsObserver::GetOverscrollPrefs();
 
@@ -230,114 +230,115 @@ void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
     prefs->RegisterDoublePref(
         overscroll_prefs[i].pref_name,
         content::GetOverscrollConfig(overscroll_prefs[i].config),
-        PrefService::UNSYNCABLE_PREF);
+        PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 
-void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
+void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
+    PrefServiceSyncable* prefs) {
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient0,
       GestureConfiguration::fling_acceleration_curve_coefficients(0),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient1,
       GestureConfiguration::fling_acceleration_curve_coefficients(1),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient2,
       GestureConfiguration::fling_acceleration_curve_coefficients(2),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient3,
       GestureConfiguration::fling_acceleration_curve_coefficients(3),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kFlingVelocityCap,
       GestureConfiguration::fling_velocity_cap(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,
       GestureConfiguration::long_press_time_in_seconds(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kSemiLongPressTimeInSeconds,
       GestureConfiguration::semi_long_press_time_in_seconds(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxDistanceForTwoFingerTapInPixels,
       GestureConfiguration::max_distance_for_two_finger_tap_in_pixels(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxSecondsBetweenDoubleClick,
       GestureConfiguration::max_seconds_between_double_click(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxSeparationForGestureTouchesInPixels,
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxSwipeDeviationRatio,
       GestureConfiguration::max_swipe_deviation_ratio(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxTouchDownDurationInSecondsForClick,
       GestureConfiguration::max_touch_down_duration_in_seconds_for_click(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxTouchMoveInPixelsForClick,
       GestureConfiguration::max_touch_move_in_pixels_for_click(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxDistanceBetweenTapsForDoubleTap,
       GestureConfiguration::max_distance_between_taps_for_double_tap(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinDistanceForPinchScrollInPixels,
       GestureConfiguration::min_distance_for_pinch_scroll_in_pixels(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinFlickSpeedSquared,
       GestureConfiguration::min_flick_speed_squared(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinPinchUpdateDistanceInPixels,
       GestureConfiguration::min_pinch_update_distance_in_pixels(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinRailBreakVelocity,
       GestureConfiguration::min_rail_break_velocity(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinScrollDeltaSquared,
       GestureConfiguration::min_scroll_delta_squared(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinSwipeSpeed,
       GestureConfiguration::min_swipe_speed(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinTouchDownDurationInSecondsForClick,
       GestureConfiguration::min_touch_down_duration_in_seconds_for_click(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(
       prefs::kPointsBufferedForVelocity,
       GestureConfiguration::points_buffered_for_velocity(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kRailBreakProportion,
       GestureConfiguration::rail_break_proportion(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kRailStartProportion,
       GestureConfiguration::rail_start_proportion(),
-      PrefService::UNSYNCABLE_PREF);
+      PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // TODO(rjkroege): Remove this in M29. http://crbug.com/160243.
   const char kTouchScreenFlingAccelerationAdjustment[] =
       "gesture.touchscreen_fling_acceleration_adjustment";
   prefs->RegisterDoublePref(kTouchScreenFlingAccelerationAdjustment,
                             0.0,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 
   RegisterOverscrollPrefs(prefs);

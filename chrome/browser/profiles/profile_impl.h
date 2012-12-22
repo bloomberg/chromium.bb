@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class NetPrefObserver;
-class PrefService;
+class PrefServiceSyncable;
 class PrefServiceBase;
 class PromoResourceService;
 class SSLConfigServiceManager;
@@ -59,7 +59,7 @@ class ProfileImpl : public Profile,
 
   virtual ~ProfileImpl();
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // content::BrowserContext implementation:
   virtual FilePath GetPath() OVERRIDE;
@@ -102,8 +102,8 @@ class ProfileImpl : public Profile,
   virtual policy::ManagedModePolicyProvider*
       GetManagedModePolicyProvider() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
+  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
@@ -222,8 +222,8 @@ class ProfileImpl : public Profile,
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |promo_resource_service_|, |io_data_| an others store
   // pointers to |prefs_| and shall be destructed first.
-  scoped_ptr<PrefService> prefs_;
-  scoped_ptr<PrefService> otr_prefs_;
+  scoped_ptr<PrefServiceSyncable> prefs_;
+  scoped_ptr<PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;

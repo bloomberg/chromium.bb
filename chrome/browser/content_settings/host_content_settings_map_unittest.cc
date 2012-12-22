@@ -824,7 +824,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
@@ -862,7 +862,7 @@ TEST_F(HostContentSettingsMapTest,
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Set pattern for JavaScript setting.
   ContentSettingsPattern pattern =
@@ -898,7 +898,7 @@ TEST_F(HostContentSettingsMapTest,
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Block all JavaScript.
   host_content_settings_map->SetDefaultContentSetting(
@@ -943,7 +943,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Set user defined default-content-setting for Cookies.
   host_content_settings_map->SetDefaultContentSetting(
@@ -973,7 +973,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
@@ -1049,7 +1049,7 @@ TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
 
 TEST_F(HostContentSettingsMapTest, MigrateClearOnExit) {
   TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   prefs->SetBoolean(prefs::kClearSiteDataOnExit, true);
 

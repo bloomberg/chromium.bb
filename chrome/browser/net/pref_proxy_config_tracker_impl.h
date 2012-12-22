@@ -15,6 +15,8 @@
 #include "net/proxy/proxy_config_service.h"
 
 class PrefService;
+class PrefServiceSimple;
+class PrefServiceSyncable;
 
 // A net::ProxyConfigService implementation that applies preference proxy
 // settings (pushed from PrefProxyConfigTrackerImpl) as overrides to the proxy
@@ -116,8 +118,10 @@ class PrefProxyConfigTrackerImpl {
   static bool PrefConfigToNetConfig(const ProxyConfigDictionary& proxy_dict,
                                     net::ProxyConfig* config);
 
-  // Registers the proxy preference.
-  static void RegisterPrefs(PrefService* user_prefs);
+  // Registers the proxy preferences. These are actually registered
+  // the same way in local state and in user prefs.
+  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
  protected:
   // Get the proxy configuration currently defined by preferences.

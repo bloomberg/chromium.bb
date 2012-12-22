@@ -58,9 +58,9 @@ void StickySettings::RestoreFromPrefs(PrefService* prefs) {
   }
 }
 
-void StickySettings::RegisterUserPrefs(PrefService* prefs) {
+void StickySettings::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterDictionaryPref(prefs::kPrintPreviewStickySettings,
-                                PrefService::UNSYNCABLE_PREF);
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 std::string* StickySettings::printer_app_state() {

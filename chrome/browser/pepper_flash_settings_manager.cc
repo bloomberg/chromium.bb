@@ -927,14 +927,14 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
 }
 
 // static
-void PepperFlashSettingsManager::RegisterUserPrefs(PrefService* prefs) {
+void PepperFlashSettingsManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kDeauthorizeContentLicenses,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 
   prefs->RegisterBooleanPref(prefs::kPepperFlashSettingsEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses() {

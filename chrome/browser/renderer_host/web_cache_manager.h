@@ -23,14 +23,14 @@
 
 template<typename Type>
 struct DefaultSingletonTraits;
-class PrefService;
+class PrefServiceSimple;
 
 class WebCacheManager : public content::NotificationObserver {
   friend class WebCacheManagerTest;
   FRIEND_TEST_ALL_PREFIXES(WebCacheManagerBrowserTest, CrashOnceOnly);
 
  public:
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefServiceSimple* prefs);
 
   // Gets the singleton WebCacheManager object.  The first time this method
   // is called, a WebCacheManager object is constructed and returned.

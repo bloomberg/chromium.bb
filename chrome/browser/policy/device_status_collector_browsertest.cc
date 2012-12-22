@@ -231,7 +231,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
   chromeos::system::MockStatisticsProvider statistics_provider_;
   scoped_ptr<TestingDeviceStatusCollector> status_collector_;
   em::DeviceStatusReportRequest status_;

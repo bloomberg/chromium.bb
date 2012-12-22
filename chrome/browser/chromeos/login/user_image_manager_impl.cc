@@ -169,11 +169,9 @@ int UserImageManagerImpl::user_image_migration_delay_sec =
     kUserImageMigrationDelaySec;
 
 // static
-void UserImageManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterDictionaryPref(kUserImages,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserImageProperties,
-                                      PrefService::UNSYNCABLE_PREF);
+void UserImageManager::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterDictionaryPref(kUserImages);
+  local_state->RegisterDictionaryPref(kUserImageProperties);
 }
 
 UserImageManagerImpl::UserImageManagerImpl()

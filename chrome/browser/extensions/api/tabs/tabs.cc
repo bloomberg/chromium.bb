@@ -1640,7 +1640,7 @@ bool CaptureVisibleTabFunction::GetTabToCapture(WebContents** web_contents) {
 };
 
 bool CaptureVisibleTabFunction::RunImpl() {
-  PrefService* service = profile()->GetPrefs();
+  PrefServiceBase* service = profile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
     error_ = keys::kScreenshotsDisabled;
     return false;
@@ -1801,9 +1801,10 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
   SendResponse(true);
 }
 
-void CaptureVisibleTabFunction::RegisterUserPrefs(PrefService* service) {
+void CaptureVisibleTabFunction::RegisterUserPrefs(
+    PrefServiceSyncable* service) {
   service->RegisterBooleanPref(prefs::kDisableScreenshots, false,
-                               PrefService::UNSYNCABLE_PREF);
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool DetectTabLanguageFunction::RunImpl() {

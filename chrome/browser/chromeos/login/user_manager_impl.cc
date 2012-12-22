@@ -148,17 +148,13 @@ bool ParseUserList(const ListValue& users_list,
 }  // namespace
 
 // static
-void UserManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterListPref(kRegularUsers, PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterListPref(kPublicAccounts, PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterStringPref(kPublicAccountPendingDataRemoval, "",
-                                  PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserDisplayName,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserDisplayEmail,
-                                      PrefService::UNSYNCABLE_PREF);
+void UserManager::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterListPref(kRegularUsers);
+  local_state->RegisterListPref(kPublicAccounts);
+  local_state->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
+  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus);
+  local_state->RegisterDictionaryPref(kUserDisplayName);
+  local_state->RegisterDictionaryPref(kUserDisplayEmail);
   SessionLengthLimiter::RegisterPrefs(local_state);
 }
 

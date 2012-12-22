@@ -281,7 +281,7 @@ void NewTabUI::InitializeCSSCaches() {
 }
 
 // static
-void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
+void NewTabUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RegisterUserPrefs(prefs);
   NewTabPageHandler::RegisterUserPrefs(prefs);

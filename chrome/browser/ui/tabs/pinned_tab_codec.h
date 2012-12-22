@@ -14,7 +14,7 @@ namespace base {
 class Value;
 }
 
-class PrefService;
+class PrefServiceSyncable;
 class Profile;
 
 // PinnedTabCodec is used to read and write the set of pinned tabs to
@@ -27,7 +27,7 @@ class Profile;
 class PinnedTabCodec {
  public:
   // Registers the preference used by this class.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // Resets the preferences state.
   static void WritePinnedTabs(Profile* profile);

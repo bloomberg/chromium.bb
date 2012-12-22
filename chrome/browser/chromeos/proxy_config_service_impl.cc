@@ -580,12 +580,18 @@ bool ProxyConfigServiceImpl::ParseProxyConfig(const Network* network,
 }
 
 // static
-void ProxyConfigServiceImpl::RegisterPrefs(PrefService* pref_service) {
+void ProxyConfigServiceImpl::RegisterPrefs(PrefServiceSimple* pref_service) {
   // Use shared proxies default to off.  GetUseSharedProxies will return the
   // correct value based on pre-login and login.
+  pref_service->RegisterBooleanPref(prefs::kUseSharedProxies, true);
+}
+
+// static
+void ProxyConfigServiceImpl::RegisterUserPrefs(
+    PrefServiceSyncable* pref_service) {
   pref_service->RegisterBooleanPref(prefs::kUseSharedProxies,
                                     true,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------

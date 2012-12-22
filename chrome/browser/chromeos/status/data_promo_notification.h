@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 
-class PrefService;
+class PrefServiceSimple;
 
 namespace ash {
 class NetworkTrayDelegate;
@@ -26,7 +26,7 @@ class DataPromoNotification {
   DataPromoNotification();
   virtual ~DataPromoNotification();
 
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterPrefs(PrefServiceSimple* local_state);
 
   const std::string& deal_info_url() const { return deal_info_url_; }
   const std::string& deal_topup_url() const { return deal_topup_url_; }

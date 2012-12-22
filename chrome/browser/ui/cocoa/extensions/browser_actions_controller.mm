@@ -440,10 +440,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   return YES;
 }
 
-+ (void)registerUserPrefs:(PrefService*)prefs {
++ (void)registerUserPrefs:(PrefServiceSyncable*)prefs {
   prefs->RegisterDoublePref(prefs::kBrowserActionContainerWidth,
                             0,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 #pragma mark -

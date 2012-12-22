@@ -754,16 +754,18 @@ class PageLoadTest : public UITest {
   // Get a PrefService whose contents correspond to the Local State file
   // that was saved by the app as it closed.  The caller takes ownership of the
   // returned PrefService object.
-  PrefService* GetLocalState() {
+  PrefServiceSimple* GetLocalState() {
     FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
-    return PrefServiceMockBuilder().WithUserFilePrefs(
-        path, MessageLoop::current()->message_loop_proxy()).Create();
+    PrefServiceMockBuilder builder;
+    builder.WithUserFilePrefs(path,
+                              MessageLoop::current()->message_loop_proxy());
+    return builder.CreateSimple();
   }
 
   void GetStabilityMetrics(NavigationMetrics* metrics) {
     if (!metrics)
       return;
-    scoped_ptr<PrefService> local_state(GetLocalState());
+    scoped_ptr<PrefServiceSimple> local_state(GetLocalState());
     if (!local_state.get())
       return;
     local_state->RegisterBooleanPref(prefs::kStabilityExitedCleanly, false);

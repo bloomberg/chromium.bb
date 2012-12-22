@@ -68,7 +68,7 @@ class KeywordEditorControllerTest : public testing::Test,
 
   void SimulateDefaultSearchIsManaged(const std::string& url) {
     ASSERT_FALSE(url.empty());
-    TestingPrefService* service = profile_->GetTestingPrefService();
+    TestingPrefServiceSyncable* service = profile_->GetTestingPrefService();
     service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                             new base::FundamentalValue(true));
     service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,

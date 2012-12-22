@@ -26,16 +26,16 @@ const char kTestPageURL[] =
 
 void CloudPrintURL::RegisterPreferences() {
   DCHECK(profile_);
-  PrefService* pref_service = profile_->GetPrefs();
+  PrefServiceSyncable* pref_service = profile_->GetPrefs();
   if (!pref_service->FindPreference(prefs::kCloudPrintServiceURL)) {
     pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
                                      kDefaultCloudPrintServiceURL,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
   }
   if (!pref_service->FindPreference(prefs::kCloudPrintSigninURL)) {
     pref_service->RegisterStringPref(prefs::kCloudPrintSigninURL,
                                      kDefaultCloudPrintSigninURL,
-                                     PrefService::UNSYNCABLE_PREF);
+                                     PrefServiceSyncable::UNSYNCABLE_PREF);
   }
 }
 

@@ -93,7 +93,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   builder.WithUserFilePrefs(preferences_file_, task_runner_);
   builder.WithExtensionPrefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
-  pref_service_.reset(builder.Create());
+  pref_service_.reset(builder.CreateSyncable());
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
 
   prefs_ = ExtensionPrefs::Create(
@@ -156,7 +156,7 @@ std::string TestExtensionPrefs::AddExtensionAndReturnId(std::string name) {
   return extension->id();
 }
 
-PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
+PrefServiceSyncable* TestExtensionPrefs::CreateIncognitoPrefService() const {
   return pref_service_->CreateIncognitoPrefService(
       new ExtensionPrefStore(extension_pref_value_map_.get(), true));
 }

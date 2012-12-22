@@ -97,7 +97,7 @@ class TestMetricsLog : public MetricsLog {
     return kScreenCount;
   }
 
-  TestingPrefService prefs_;
+  TestingPrefServiceSimple prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };

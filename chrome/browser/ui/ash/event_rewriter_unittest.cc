@@ -331,7 +331,7 @@ TEST_F(EventRewriterTest, TestDeviceAddedOrRemoved) {
 #if defined(OS_CHROMEOS)
 TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test with a PC keyboard.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   EventRewriter rewriter;
   rewriter.DeviceAddedForTesting(0, "PC Keyboard");
   rewriter.set_last_device_id_for_testing(0);
@@ -485,7 +485,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
 // For crbug.com/133896.
 TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   // Remap Control to Alt.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapControlKeyTo, &prefs);
@@ -546,7 +546,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
@@ -875,7 +875,7 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
 
 // Tests if the rewriter can handle a Command + Num Pad event.
 TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   EventRewriter rewriter;
   rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
   rewriter.set_last_device_id_for_testing(0);
@@ -913,7 +913,7 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
@@ -1004,7 +1004,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
@@ -1085,7 +1085,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   // Disable Search and Control keys.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
@@ -1223,7 +1223,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   // Remap Search to Control.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
@@ -1343,7 +1343,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   // Remap Search to Alt.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
@@ -1455,7 +1455,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   // Remap Search to Caps Lock.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
@@ -1571,7 +1571,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
   // support F16 (i.e. 'XKeysymToKeycode(display_, XF86XK_Launch7)' call).
   // TODO(yusukes): Reenable the test once build servers are upgraded.
 
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
 
   chromeos::input_method::MockXKeyboard xkeyboard;
@@ -1598,7 +1598,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
 
 TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockWithFlag) {
   // TODO(yusukes): Reenable the test once build servers are upgraded.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
 
   chromeos::input_method::MockXKeyboard xkeyboard;
@@ -1630,7 +1630,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockWithFlag) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapCapsLockKeyTo, &prefs);
@@ -1685,7 +1685,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
 
 TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockToControlWithFlag) {
   // TODO(yusukes): Reenable the test once build servers are upgraded.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapCapsLockKeyTo, &prefs);
@@ -1731,7 +1731,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockToControlWithFlag) {
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   // Remap CapsLock to Control.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapCapsLockKeyTo, &prefs);
@@ -1760,7 +1760,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
@@ -1904,7 +1904,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
@@ -2123,7 +2123,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
 
   // Remap Search to Control.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
@@ -2168,7 +2168,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   // Remap Control to Alt.
-  TestingPrefService prefs;
+  TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapControlKeyTo, &prefs);

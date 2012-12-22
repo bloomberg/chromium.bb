@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 
 class ExtensionPrefValueMap;
-class PrefService;
+class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
@@ -33,7 +33,7 @@ class TestExtensionPrefs {
   const ExtensionPrefs& const_prefs() const {
       return *prefs_.get();
   }
-  PrefService* pref_service() { return pref_service_.get(); }
+  PrefServiceSyncable* pref_service() { return pref_service_.get(); }
   const FilePath& temp_dir() const { return temp_dir_.path(); }
   const FilePath& extensions_dir() const { return extensions_dir_; }
 
@@ -65,7 +65,7 @@ class TestExtensionPrefs {
   // assigned.
   std::string AddExtensionAndReturnId(std::string name);
 
-  PrefService* CreateIncognitoPrefService() const;
+  PrefServiceSyncable* CreateIncognitoPrefService() const;
 
   // Allows disabling the loading of preferences of extensions. Becomes
   // active after calling RecreateExtensionPrefs(). Defaults to false.
@@ -75,7 +75,7 @@ class TestExtensionPrefs {
   base::ScopedTempDir temp_dir_;
   FilePath preferences_file_;
   FilePath extensions_dir_;
-  scoped_ptr<PrefService> pref_service_;
+  scoped_ptr<PrefServiceSyncable> pref_service_;
   scoped_ptr<ExtensionPrefs> prefs_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

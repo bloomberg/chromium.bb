@@ -143,13 +143,11 @@ void CloudPolicySubsystem::RefreshPolicies(bool wait_for_auth_token) {
 }
 
 // static
-void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
+void CloudPolicySubsystem::RegisterPrefs(PrefServiceSimple* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
-                                    kDefaultPolicyRefreshRateMs,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    kDefaultPolicyRefreshRateMs);
   pref_service->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
-                                    kDefaultPolicyRefreshRateMs,
-                                    PrefService::UNSYNCABLE_PREF);
+                                    kDefaultPolicyRefreshRateMs);
 }
 
 void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {

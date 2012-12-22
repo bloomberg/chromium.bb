@@ -148,7 +148,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
 
 TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   ASSERT_TRUE(g_browser_process);
-  TestingPrefService testing_pref_service;
+  TestingPrefServiceSimple testing_pref_service;
   testing_pref_service.RegisterBooleanPref(prefs::kWasRestarted, false);
   testing_pref_service.RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown,
                                            false);
