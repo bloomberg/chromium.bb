@@ -51,6 +51,8 @@ MEDIA_EXPORT extern const char kEnableEncryptedMedia[];
 
 MEDIA_EXPORT extern const char kEnableOpusPlayback[];
 
+MEDIA_EXPORT extern const char kEnableVp9Playback[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_
