@@ -1000,10 +1000,3 @@
   fun:media::MockMediaSource::AppendAtTime
   fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
 }
-{
-  bug_166996
-  ThreadSanitizer:Race
-  fun:base::subtle::NoBarrier_Store
-  fun:base::LazyInstance::OnExit
-  fun:base::internal::RunnableAdapter::Run
-}
