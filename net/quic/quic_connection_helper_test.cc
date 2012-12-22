@@ -109,7 +109,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
         new MockUDPClientSocket(socket_data_.get(), net_log_.net_log());
     socket->Connect(IPEndPoint());
     runner_ = new TestTaskRunner(&clock_);
-    helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_, socket));
+    helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
+                                           &random_generator_, socket));
     scheduler_ = new testing::StrictMock<MockScheduler>();
     EXPECT_CALL(*scheduler_, TimeUntilSend(_)).
         WillRepeatedly(testing::Return(QuicTime::Delta()));
@@ -169,6 +170,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
   scoped_ptr<QuicConnectionHelper> helper_;
   scoped_array<MockWrite> mock_writes_;
   MockClock clock_;
+  MockRandom random_generator_;
   scoped_ptr<TestConnection> connection_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
 
@@ -201,6 +203,10 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
 TEST_F(QuicConnectionHelperTest, GetClock) {
   EXPECT_EQ(&clock_, helper_->GetClock());
+}
+
+TEST_F(QuicConnectionHelperTest, GetRandomGenerator) {
+  EXPECT_EQ(&random_generator_, helper_->GetRandomGenerator());
 }
 
 TEST_F(QuicConnectionHelperTest, IsSendAlarmSet) {

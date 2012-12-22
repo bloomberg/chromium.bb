@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_stream_factory.h"
 
-#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/string_util.h"
 #include "net/base/mock_host_resolver.h"
@@ -13,6 +12,7 @@
 #include "net/http/http_util.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
  protected:
   QuicStreamFactoryTest()
       : factory_(&host_resolver_, &socket_factory_,
-                 base::Bind(&QuicStreamFactoryTest::GenerateGuid),
+                 &random_generator_,
                  new MockClock()),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),
                               ProxyServer::Direct()) {
@@ -105,15 +105,11 @@ class QuicStreamFactoryTest : public ::testing::Test {
 
   MockHostResolver host_resolver_;
   MockClientSocketFactory socket_factory_;
+  MockRandom random_generator_;
   QuicStreamFactory factory_;
   HostPortProxyPair host_port_proxy_pair_;
   BoundNetLog net_log_;
   TestCompletionCallback callback_;
-
- private:
-  static uint64 GenerateGuid() {
-    return 0xDEADBEEF;
-  }
 };
 
 TEST_F(QuicStreamFactoryTest, CreateIfSessionExists) {

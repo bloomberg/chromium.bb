@@ -14,7 +14,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 #include "net/udp/datagram_client_socket.h"
@@ -25,11 +24,15 @@ class TaskRunner;
 
 namespace net {
 
+class QuicClock;
+class QuicRandom;
+
 class NET_EXPORT_PRIVATE QuicConnectionHelper
     : public QuicConnectionHelperInterface {
  public:
   QuicConnectionHelper(base::TaskRunner* task_runner,
                        const QuicClock* clock,
+                       QuicRandom* random_generator,
                        DatagramClientSocket* socket);
 
   virtual ~QuicConnectionHelper();
@@ -37,6 +40,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   // QuicConnectionHelperInterface
   virtual void SetConnection(QuicConnection* connection) OVERRIDE;
   virtual const QuicClock* GetClock() const OVERRIDE;
+  virtual QuicRandom* GetRandomGenerator() OVERRIDE;
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE;
   virtual void SetResendAlarm(QuicPacketSequenceNumber sequence_number,
@@ -47,6 +51,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual void UnregisterSendAlarmIfRegistered() OVERRIDE;
 
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  // TODO(wtc): these two methods should be able to report a failure.
   void GetLocalAddress(IPEndPoint* local_address);
   void GetPeerAddress(IPEndPoint* peer_address);
 
@@ -70,6 +75,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   scoped_ptr<DatagramClientSocket> socket_;
   QuicConnection* connection_;
   const QuicClock* clock_;
+  QuicRandom* random_generator_;
   bool send_alarm_registered_;
   bool timeout_alarm_registered_;
 

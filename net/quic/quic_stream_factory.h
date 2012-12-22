@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
@@ -23,6 +22,7 @@ class HostResolver;
 class ClientSocketFactory;
 class QuicClock;
 class QuicClientSession;
+class QuicRandom;
 class QuicStreamFactory;
 
 // Encapsulates a pending request for a QuicHttpStream.
@@ -61,11 +61,9 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 // QuicClientSessions.
 class NET_EXPORT_PRIVATE QuicStreamFactory {
  public:
-  typedef base::Callback<uint64()> RandomUint64Callback;
-
   QuicStreamFactory(HostResolver* host_resolver,
                     ClientSocketFactory* client_socket_factory,
-                    const RandomUint64Callback& random_uint64_callback,
+                    QuicRandom* random_generator,
                     QuicClock* clock);
   virtual ~QuicStreamFactory();
 
@@ -114,7 +112,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory {
 
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
-  RandomUint64Callback random_uint64_callback_;
+  QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;
 
   // Contains owning pointers to all sessions that currently exist.

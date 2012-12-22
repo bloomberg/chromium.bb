@@ -162,7 +162,8 @@ class QuicHttpStreamTest : public ::testing::Test {
     collector_ = new TestCollector(NULL);
     EXPECT_CALL(*scheduler_, TimeUntilSend(_)).
         WillRepeatedly(testing::Return(QuicTime::Delta()));
-    helper_ = new QuicConnectionHelper(runner_.get(), &clock_, socket);
+    helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
+                                       &random_generator_, socket);
     connection_ = new TestQuicConnection(guid_, peer_addr_, helper_);
     connection_->set_visitor(&visitor_);
     connection_->SetScheduler(scheduler_);
@@ -202,6 +203,7 @@ class QuicHttpStreamTest : public ::testing::Test {
   scoped_refptr<TestTaskRunner> runner_;
   scoped_array<MockWrite> mock_writes_;
   MockClock clock_;
+  MockRandom random_generator_;
   TestQuicConnection* connection_;
   QuicConnectionHelper* helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;

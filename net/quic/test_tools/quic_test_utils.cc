@@ -57,6 +57,10 @@ const QuicClock* MockHelper::GetClock() const {
   return &clock_;
 }
 
+QuicRandom* MockHelper::GetRandomGenerator() {
+  return &random_generator_;
+}
+
 MockConnectionVisitor::MockConnectionVisitor() {
 }
 

@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -18,6 +17,7 @@
 #include "net/http/http_stream_factory_impl.h"
 #include "net/http/url_security_manager.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_factory.h"
@@ -99,7 +99,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           CreateSocketPoolManager(WEBSOCKET_SOCKET_POOL, params)),
       quic_stream_factory_(params.host_resolver,
                            net::ClientSocketFactory::GetDefaultFactory(),
-                           base::Bind(&base::RandUint64),
+                           QuicRandom::GetInstance(),
                            new QuicClock()),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,

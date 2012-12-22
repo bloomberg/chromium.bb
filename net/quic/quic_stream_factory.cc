@@ -13,7 +13,9 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_client_session.h"
+#include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_http_stream.h"
@@ -215,11 +217,11 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
 QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
-    const RandomUint64Callback& random_uint64_callback,
+    QuicRandom* random_generator,
     QuicClock* clock)
     : host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
-      random_uint64_callback_(random_uint64_callback),
+      random_generator_(random_generator),
       clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
@@ -331,7 +333,7 @@ bool QuicStreamFactory::HasActiveSession(
 QuicClientSession* QuicStreamFactory::CreateSession(
     const AddressList& address_list_,
     const BoundNetLog& net_log) {
-  QuicGuid guid = random_uint64_callback_.Run();
+  QuicGuid guid = random_generator_->RandUint64();
   IPEndPoint addr = *address_list_.begin();
   DatagramClientSocket* socket =
       client_socket_factory_->CreateDatagramClientSocket(
@@ -342,7 +344,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
 
   QuicConnectionHelper* helper = new QuicConnectionHelper(
       MessageLoop::current()->message_loop_proxy(),
-      clock_.get(), socket);
+      clock_.get(), random_generator_, socket);
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper);
   QuicClientSession* session = new QuicClientSession(connection, helper, this);

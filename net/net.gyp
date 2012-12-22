@@ -1470,6 +1470,8 @@
         'quic/crypto/quic_random_test.cc',
         'quic/test_tools/mock_clock.cc',
         'quic/test_tools/mock_clock.h',
+        'quic/test_tools/mock_random.cc',
+        'quic/test_tools/mock_random.h',
         'quic/test_tools/quic_test_utils.cc',
         'quic/test_tools/quic_test_utils.h',
         'quic/test_tools/test_task_runner.cc',

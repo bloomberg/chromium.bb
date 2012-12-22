@@ -83,8 +83,9 @@ class TestCollector : public QuicReceiptMetricsCollector {
 
 class TestConnectionHelper : public QuicConnectionHelperInterface {
  public:
-  explicit TestConnectionHelper(MockClock* clock)
+  TestConnectionHelper(MockClock* clock, MockRandom* random_generator)
       : clock_(clock),
+        random_generator_(random_generator),
         blocked_(false) {
   }
 
@@ -93,6 +94,10 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   virtual const QuicClock* GetClock() const {
     return clock_;
+  }
+
+  virtual QuicRandom* GetRandomGenerator() {
+    return random_generator_;
   }
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
@@ -153,6 +158,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
  private:
   MockClock* clock_;
+  MockRandom* random_generator_;
   map<QuicPacketSequenceNumber, QuicTime> resend_alarms_;
   QuicTime send_alarm_;
   QuicTime timeout_alarm_;
@@ -204,7 +210,7 @@ class QuicConnectionTest : public ::testing::Test {
         framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
         creator_(guid_, &framer_),
         scheduler_(new StrictMock<MockScheduler>),
-        helper_(new TestConnectionHelper(&clock_)),
+        helper_(new TestConnectionHelper(&clock_, &random_generator_)),
         connection_(guid_, IPEndPoint(), helper_.get()),
         frame1_(1, false, 0, data1),
         frame2_(1, false, 3, data2),
@@ -349,6 +355,7 @@ class QuicConnectionTest : public ::testing::Test {
   MockScheduler* scheduler_;
   TestCollector* collector_;
   MockClock clock_;
+  MockRandom random_generator_;
   scoped_ptr<TestConnectionHelper> helper_;
   TestConnection connection_;
   testing::StrictMock<MockConnectionVisitor> visitor_;

@@ -12,6 +12,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -130,6 +131,7 @@ class MockHelper : public QuicConnectionHelperInterface {
 
   MOCK_METHOD1(SetConnection, void(QuicConnection* connection));
   const QuicClock* GetClock() const;
+  QuicRandom* GetRandomGenerator();
   MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
                                       int* error));
   MOCK_METHOD2(SetResendAlarm, void(QuicPacketSequenceNumber sequence_number,
@@ -140,6 +142,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   MOCK_METHOD0(UnregisterSendAlarmIfRegistered, void());
  private:
   const MockClock clock_;
+  MockRandom random_generator_;
 };
 
 class MockConnection : public QuicConnection {

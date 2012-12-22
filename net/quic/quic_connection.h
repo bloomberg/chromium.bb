@@ -33,6 +33,7 @@ class QuicClock;
 class QuicConnection;
 class QuicEncrypter;
 class QuicFecGroup;
+class QuicRandom;
 class QuicReceiptMetricsCollector;
 class QuicSendScheduler;
 
@@ -77,6 +78,9 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 
   // Returns a QuicClock to be used for all time related functions.
   virtual const QuicClock* GetClock() const = 0;
+
+  // Returns a QuicRandom to be used for all random number related functions.
+  virtual QuicRandom* GetRandomGenerator() = 0;
 
   // Sends the packet out to the peer, possibly simulating packet
   // loss if FLAGS_fake_packet_loss_percentage is set.  If the write failed
@@ -169,6 +173,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   const IPEndPoint& peer_address() const { return peer_address_; }
   QuicGuid guid() const { return guid_; }
   const QuicClock* clock() const { return clock_; }
+  QuicRandom* random_generator() const { return random_generator_; }
 
   // Updates the internal state concerning which packets have been acked, and
   // sends an ack if new data frames have been received.
@@ -288,6 +293,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicConnectionHelperInterface* helper_;
   QuicFramer framer_;
   const QuicClock* clock_;
+  QuicRandom* random_generator_;
 
   const QuicGuid guid_;
   IPEndPoint self_address_;
