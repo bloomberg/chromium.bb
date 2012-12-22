@@ -56,6 +56,8 @@ class TabAndroid {
   virtual void AddShortcutToBookmark(
       const GURL& url, const string16& title, const SkBitmap& skbitmap,
       int r_value, int g_value, int b_value) = 0;
+  // TODO(tedchoc): Make pure virtual once all derived classes can be updated.
+  virtual void EditBookmark(int64 node_id, bool is_folder) {}
 
   // Called when the common ExternalProtocolHandler wants to
   // run the external protocol dialog.

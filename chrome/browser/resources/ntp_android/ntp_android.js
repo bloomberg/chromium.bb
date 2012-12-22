@@ -485,22 +485,6 @@ cr.define('ntp', function() {
   }
 
   /**
-   * Triggers the edit bookmark prompt for a given bookmark.
-   *
-   * @param {Object} item Object containing information for the selected
-   *     bookmark node.
-   */
-  function editBookmark(item) {
-    if (item['editable'] !== true)
-      return;
-    var editBookmarkUrl = 'chrome://editbookmark/' +
-        '?id=' + item.id;
-    if (item['folder'])
-      editBookmarkUrl += '&isfolder=true';
-    window.location = editBookmarkUrl;
-  }
-
-  /**
    * The default click handler for created item shortcuts.
    *
    * @param {Object} item The item specification.
@@ -1189,7 +1173,7 @@ cr.define('ntp', function() {
 
       case ContextMenuItemIds.BOOKMARK_EDIT:
         if (contextMenuItem != null)
-          editBookmark(contextMenuItem);
+          chrome.send('editBookmark', [contextMenuItem.id]);
         break;
 
       case ContextMenuItemIds.BOOKMARK_DELETE:

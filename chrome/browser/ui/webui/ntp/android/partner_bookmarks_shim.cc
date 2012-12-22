@@ -67,7 +67,7 @@ bool PartnerBookmarksShim::IsPartnerBookmark(const BookmarkNode* node) {
 }
 
 bool PartnerBookmarksShim::IsBookmarkEditable(const BookmarkNode* node) {
-  return !IsPartnerBookmark(node) &&
+  return node && !IsPartnerBookmark(node) &&
       (node->type() == BookmarkNode::FOLDER ||
           node->type() == BookmarkNode::URL);
 }

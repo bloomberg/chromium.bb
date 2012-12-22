@@ -58,6 +58,8 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   void HandleGetBookmarks(const ListValue* args);
   // Callback for the "deleteBookmark" message.
   void HandleDeleteBookmark(const ListValue* args);
+  // Callback for the "editBookmark" message.
+  void HandleEditBookmark(const ListValue* args);
   // Callback for the "createHomeScreenBookmarkShortcut" message.  Used when
   // creating a shortcut on the home screen that should open the bookmark
   // specified in |args|.

@@ -67,6 +67,10 @@ void TabBaseAndroidImpl::AddShortcutToBookmark(
   NOTIMPLEMENTED();
 }
 
+void TabBaseAndroidImpl::EditBookmark(int64 node_id, bool is_folder) {
+  NOTIMPLEMENTED();
+}
+
 void TabBaseAndroidImpl::RunExternalProtocolDialog(const GURL& url) {
   NOTIMPLEMENTED();
 }

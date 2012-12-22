@@ -37,6 +37,9 @@ static const char* kNodeIdParam = "node_id";
 bool ParseNtpBookmarkId(const ListValue* args,
                         int64* out_id,
                         bool* out_is_partner) {
+  if (!args || args->empty())
+    return false;
+
   std::string string_id;
   if (!args->GetString(0, &string_id))
     return false;
@@ -127,6 +130,9 @@ void BookmarksHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("deleteBookmark",
       base::Bind(&BookmarksHandler::HandleDeleteBookmark,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("editBookmark",
+        base::Bind(&BookmarksHandler::HandleEditBookmark,
+                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback("createHomeScreenBookmarkShortcut",
       base::Bind(&BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut,
                  base::Unretained(this)));
@@ -153,7 +159,7 @@ void BookmarksHandler::HandleGetBookmarks(const ListValue* args) {
 
   int64 id;
   bool is_partner;
-  if (args && !args->empty() && ParseNtpBookmarkId(args, &id, &is_partner))
+  if (ParseNtpBookmarkId(args, &id, &is_partner))
     QueryBookmarkFolder(id, is_partner);
   else
     QueryInitialBookmarks();
@@ -163,14 +169,37 @@ void BookmarksHandler::HandleDeleteBookmark(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int64 id;
   bool is_partner;
-  if (args && !args->empty() && ParseNtpBookmarkId(args, &id, &is_partner)) {
-    DCHECK(!is_partner);
-    const BookmarkNode* node = bookmark_model_->GetNodeByID(id);
-    if (node && node->parent()) {
-      const BookmarkNode* parent_node = node->parent();
-      bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
-    }
+  if (!ParseNtpBookmarkId(args, &id, &is_partner))
+    return;
+
+  const BookmarkNode* node =
+      partner_bookmarks_shim_->GetNodeByID(id, is_partner);
+  if (!partner_bookmarks_shim_->IsBookmarkEditable(node)) {
+    NOTREACHED();
+    return;
   }
+
+  const BookmarkNode* parent_node = node->parent();
+  bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
+}
+
+void BookmarksHandler::HandleEditBookmark(const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int64 id;
+  bool is_partner;
+  if (!ParseNtpBookmarkId(args, &id, &is_partner))
+    return;
+
+  const BookmarkNode* node =
+      partner_bookmarks_shim_->GetNodeByID(id, is_partner);
+  if (!partner_bookmarks_shim_->IsBookmarkEditable(node)) {
+    NOTREACHED();
+    return;
+  }
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
+  if (tab)
+    tab->EditBookmark(node->id(), node->is_folder());
 }
 
 std::string BookmarksHandler::GetBookmarkIdForNtp(const BookmarkNode* node) {
@@ -345,27 +374,28 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
   int64 id;
   bool is_partner;
-  if (args && !args->empty() && ParseNtpBookmarkId(args, &id, &is_partner)) {
-    DCHECK(partner_bookmarks_shim_ != NULL);
-    const BookmarkNode* node =
-        partner_bookmarks_shim_->GetNodeByID(id, is_partner);
-    if (!node)
-      return;
+  if (!ParseNtpBookmarkId(args, &id, &is_partner))
+    return;
 
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile, Profile::EXPLICIT_ACCESS);
-    favicon_service->GetRawFaviconForURL(
-        FaviconService::FaviconForURLParams(
-            profile,
-            node->url(),
-            history::FAVICON | history::TOUCH_ICON,
-            gfx::kFaviconSize),
-        ui::SCALE_FACTOR_100P,
-        base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
-                   base::Unretained(this),
-                   node),
-        &cancelable_task_tracker_);
-  }
+  DCHECK(partner_bookmarks_shim_ != NULL);
+  const BookmarkNode* node =
+      partner_bookmarks_shim_->GetNodeByID(id, is_partner);
+  if (!node)
+    return;
+
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
+  favicon_service->GetRawFaviconForURL(
+      FaviconService::FaviconForURLParams(
+          profile,
+          node->url(),
+          history::FAVICON | history::TOUCH_ICON,
+          gfx::kFaviconSize),
+      ui::SCALE_FACTOR_100P,
+      base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
+                 base::Unretained(this),
+                 node),
+      &cancelable_task_tracker_);
 }
 
 void BookmarksHandler::OnShortcutFaviconDataAvailable(
@@ -379,8 +409,7 @@ void BookmarksHandler::OnShortcutFaviconDataAvailable(
                           bitmap_result.bitmap_data->size(),
                           &favicon_bitmap);
   }
-  TabAndroid* tab = TabAndroid::FromWebContents(
-      web_ui()->GetWebContents());
+  TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
   if (tab) {
     tab->AddShortcutToBookmark(node->url(), node->GetTitle(),
                                favicon_bitmap, SkColorGetR(color),

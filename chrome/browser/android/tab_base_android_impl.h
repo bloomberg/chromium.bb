@@ -58,6 +58,7 @@ class TabBaseAndroidImpl : public TabAndroid {
                                      int r_value,
                                      int g_value,
                                      int b_value) OVERRIDE;
+  virtual void EditBookmark(int64 node_id, bool is_folder) OVERRIDE;
 
   virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
 
