@@ -5,16 +5,9 @@
 #ifndef WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_
 #define WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_
 
-#include <list>
-#include <string>
-#include <vector>
-
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "media/base/decryptor_client.h"
 #include "media/base/pipeline.h"
-#include "media/filters/chunk_demuxer.h"
-#include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "webkit/media/buffered_data_source.h"
 
@@ -40,8 +33,7 @@ class WebMediaPlayerImpl;
 // Acts as a thread proxy between the various threads used for multimedia and
 // the render thread that WebMediaPlayerImpl is running on.
 class WebMediaPlayerProxy
-    : public base::RefCountedThreadSafe<WebMediaPlayerProxy>,
-      public media::DecryptorClient {
+    : public base::RefCountedThreadSafe<WebMediaPlayerProxy> {
  public:
   WebMediaPlayerProxy(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
@@ -71,52 +63,12 @@ class WebMediaPlayerProxy
 
   void AbortDataSource();
 
-  // DecryptorClient implementation.
-  virtual void KeyAdded(const std::string& key_system,
-                        const std::string& session_id) OVERRIDE;
-  virtual void KeyError(const std::string& key_system,
-                        const std::string& session_id,
-                        media::Decryptor::KeyError error_code,
-                        int system_code) OVERRIDE;
-  virtual void KeyMessage(const std::string& key_system,
-                          const std::string& session_id,
-                          const std::string& message,
-                          const std::string& default_url) OVERRIDE;
-  virtual void NeedKey(const std::string& key_system,
-                       const std::string& session_id,
-                       const std::string& type,
-                       scoped_array<uint8> init_data,
-                       int init_data_size) OVERRIDE;
-
  private:
   friend class base::RefCountedThreadSafe<WebMediaPlayerProxy>;
   virtual ~WebMediaPlayerProxy();
 
   // Invoke |webmediaplayer_| to perform a repaint.
   void RepaintTask();
-
-  // Notify |webmediaplayer_| that a key has been added.
-  void KeyAddedTask(const std::string& key_system,
-                    const std::string& session_id);
-
-  // Notify |webmediaplayer_| that a key error occurred.
-  void KeyErrorTask(const std::string& key_system,
-                    const std::string& session_id,
-                    media::Decryptor::KeyError error_code,
-                    int system_code);
-
-  // Notify |webmediaplayer_| that a key message has been generated.
-  void KeyMessageTask(const std::string& key_system,
-                      const std::string& session_id,
-                      const std::string& message,
-                      const std::string& default_url);
-
-  // Notify |webmediaplayer_| that a key is needed for decryption.
-  void NeedKeyTask(const std::string& key_system,
-                   const std::string& session_id,
-                   const std::string& type,
-                   scoped_array<uint8> init_data,
-                   int init_data_size);
 
   // The render message loop where WebKit lives.
   scoped_refptr<base::MessageLoopProxy> render_loop_;

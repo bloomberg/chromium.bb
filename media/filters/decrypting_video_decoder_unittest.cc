@@ -106,7 +106,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
         .Times(AtMost(1))
         .WillOnce(RunCallback<1>(true));
-    EXPECT_CALL(*decryptor_, RegisterKeyAddedCB(Decryptor::kVideo, _))
+    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     config_.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
@@ -218,8 +218,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
   }
 
   void Stop() {
-    EXPECT_CALL(*decryptor_, RegisterKeyAddedCB(Decryptor::kVideo,
-                                                IsNullCallback()))
+    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo,
+                                              IsNullCallback()))
         .Times(AtMost(1));
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo))
         .WillRepeatedly(InvokeWithoutArgs(
@@ -243,7 +243,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
   Decryptor::DecoderInitCB pending_init_cb_;
-  Decryptor::KeyAddedCB key_added_cb_;
+  Decryptor::NewKeyCB key_added_cb_;
   Decryptor::VideoDecodeCB pending_video_decode_cb_;
 
   // Constant buffer/frames to be returned by the |demuxer_| and |decryptor_|.

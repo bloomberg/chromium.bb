@@ -191,7 +191,7 @@ void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
       return;
   }
 
-  decryptor_->RegisterKeyAddedCB(
+  decryptor_->RegisterNewKeyCB(
       GetDecryptorStreamType(),
       BIND_TO_LOOP(&DecryptingDemuxerStream::OnKeyAdded));
 

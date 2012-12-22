@@ -14,7 +14,6 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/decryptor_client.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
@@ -125,8 +124,14 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(DecryptorClient* client)
-    : client_(client) {
+AesDecryptor::AesDecryptor(const KeyAddedCB& key_added_cb,
+                           const KeyErrorCB& key_error_cb,
+                           const KeyMessageCB& key_message_cb,
+                           const NeedKeyCB& need_key_cb)
+    : key_added_cb_(key_added_cb),
+      key_error_cb_(key_error_cb),
+      key_message_cb_(key_message_cb),
+      need_key_cb_(need_key_cb) {
 }
 
 AesDecryptor::~AesDecryptor() {
@@ -147,7 +152,7 @@ bool AesDecryptor::GenerateKeyRequest(const std::string& key_system,
                           init_data_length);
   }
 
-  client_->KeyMessage(key_system, session_id_string, message, "");
+  key_message_cb_.Run(key_system, session_id_string, message, "");
   return true;
 }
 
@@ -164,7 +169,7 @@ void AesDecryptor::AddKey(const std::string& key_system,
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16550
   if (key_length != DecryptConfig::kDecryptionKeySize) {
     DVLOG(1) << "Invalid key length: " << key_length;
-    client_->KeyError(key_system, session_id, Decryptor::kUnknownError, 0);
+    key_error_cb_.Run(key_system, session_id, Decryptor::kUnknownError, 0);
     return;
   }
 
@@ -184,39 +189,39 @@ void AesDecryptor::AddKey(const std::string& key_system,
   scoped_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
   if (!decryption_key.get()) {
     DVLOG(1) << "Could not create key.";
-    client_->KeyError(key_system, session_id, Decryptor::kUnknownError, 0);
+    key_error_cb_.Run(key_system, session_id, Decryptor::kUnknownError, 0);
     return;
   }
 
   if (!decryption_key->Init()) {
     DVLOG(1) << "Could not initialize decryption key.";
-    client_->KeyError(key_system, session_id, Decryptor::kUnknownError, 0);
+    key_error_cb_.Run(key_system, session_id, Decryptor::kUnknownError, 0);
     return;
   }
 
   SetKey(key_id_string, decryption_key.Pass());
 
-  if (!audio_key_added_cb_.is_null())
-    audio_key_added_cb_.Run();
+  if (!new_audio_key_cb_.is_null())
+    new_audio_key_cb_.Run();
 
-  if (!video_key_added_cb_.is_null())
-    video_key_added_cb_.Run();
+  if (!new_video_key_cb_.is_null())
+    new_video_key_cb_.Run();
 
-  client_->KeyAdded(key_system, session_id);
+  key_added_cb_.Run(key_system, session_id);
 }
 
 void AesDecryptor::CancelKeyRequest(const std::string& key_system,
                                     const std::string& session_id) {
 }
 
-void AesDecryptor::RegisterKeyAddedCB(StreamType stream_type,
-                                      const KeyAddedCB& key_added_cb) {
+void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
+                                    const NewKeyCB& new_key_cb) {
   switch (stream_type) {
     case kAudio:
-      audio_key_added_cb_ = key_added_cb;
+      new_audio_key_cb_ = new_key_cb;
       break;
     case kVideo:
-      video_key_added_cb_ = key_added_cb;
+      new_video_key_cb_ = new_key_cb;
       break;
     default:
       NOTREACHED();

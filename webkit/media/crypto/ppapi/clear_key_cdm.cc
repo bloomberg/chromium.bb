@@ -190,7 +190,10 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
 }
 
 ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::Host* host)
-    : decryptor_(&client_),
+    : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
+                 base::Bind(&Client::KeyError, base::Unretained(&client_)),
+                 base::Bind(&Client::KeyMessage, base::Unretained(&client_)),
+                 base::Bind(&Client::NeedKey, base::Unretained(&client_))),
       allocator_(allocator),
       host_(host),
       timer_delay_ms_(kInitialTimerDelayMs),

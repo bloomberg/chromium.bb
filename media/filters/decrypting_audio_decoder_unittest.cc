@@ -105,7 +105,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(RunCallback<1>(true));
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
-    EXPECT_CALL(*decryptor_, RegisterKeyAddedCB(Decryptor::kAudio, _))
+    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     AudioDecoderConfig config(kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100,
@@ -224,7 +224,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
   Decryptor::DecoderInitCB pending_init_cb_;
-  Decryptor::KeyAddedCB key_added_cb_;
+  Decryptor::NewKeyCB key_added_cb_;
   Decryptor::AudioDecodeCB pending_audio_decode_cb_;
 
   // Constant buffer/frames to be returned by the |demuxer_| and |decryptor_|.

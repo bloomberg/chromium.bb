@@ -22,15 +22,14 @@ class SymmetricKey;
 
 namespace media {
 
-class DecryptorClient;
-
 // Decrypts an AES encrypted buffer into an unencrypted buffer. The AES
 // encryption must be CTR with a key size of 128bits.
 class MEDIA_EXPORT AesDecryptor : public Decryptor {
  public:
-  // The AesDecryptor does not take ownership of the |client|. The |client|
-  // must be valid throughout the lifetime of the AesDecryptor.
-  explicit AesDecryptor(DecryptorClient* client);
+  AesDecryptor(const KeyAddedCB& key_added_cb,
+               const KeyErrorCB& key_error_cb,
+               const KeyMessageCB& key_message_cb,
+               const NeedKeyCB& need_key_cb);
   virtual ~AesDecryptor();
 
   // Decryptor implementation.
@@ -46,8 +45,8 @@ class MEDIA_EXPORT AesDecryptor : public Decryptor {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
-  virtual void RegisterKeyAddedCB(StreamType stream_type,
-                                  const KeyAddedCB& key_added_cb) OVERRIDE;
+  virtual void RegisterNewKeyCB(StreamType stream_type,
+                                const NewKeyCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,
                        const scoped_refptr<DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
@@ -96,6 +95,12 @@ class MEDIA_EXPORT AesDecryptor : public Decryptor {
   // the key. Returns NULL if no key is associated with |key_id|.
   DecryptionKey* GetKey(const std::string& key_id) const;
 
+  // Callbacks for firing key events.
+  KeyAddedCB key_added_cb_;
+  KeyErrorCB key_error_cb_;
+  KeyMessageCB key_message_cb_;
+  NeedKeyCB need_key_cb_;
+
   // KeyMap owns the DecryptionKey* and must delete them when they are
   // not needed any more.
   typedef base::hash_map<std::string, DecryptionKey*> KeyMap;
@@ -111,10 +116,8 @@ class MEDIA_EXPORT AesDecryptor : public Decryptor {
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16739#c0
   static uint32 next_session_id_;
 
-  DecryptorClient* const client_;
-
-  KeyAddedCB audio_key_added_cb_;
-  KeyAddedCB video_key_added_cb_;
+  NewKeyCB new_audio_key_cb_;
+  NewKeyCB new_video_key_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AesDecryptor);
 };

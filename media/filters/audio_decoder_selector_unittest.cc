@@ -108,7 +108,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   AudioDecoderConfig encrypted_audio_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
-  // RegisterKeyAddedCB().
+  // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockAudioDecoder> > decoder_1_;
   scoped_refptr<StrictMock<MockAudioDecoder> > decoder_2_;

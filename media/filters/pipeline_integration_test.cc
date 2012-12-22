@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/decryptor_client.h"
 #include "media/base/test_data_util.h"
 #include "media/crypto/aes_decryptor.h"
 
@@ -31,6 +30,76 @@ static const uint8 kSecretKey[] = {
 };
 
 static const int kAppendWholeFile = -1;
+
+class FakeEncryptedMedia {
+ public:
+  FakeEncryptedMedia()
+      : decryptor_(base::Bind(&FakeEncryptedMedia::KeyAdded,
+                              base::Unretained(this)),
+                   base::Bind(&FakeEncryptedMedia::KeyError,
+                              base::Unretained(this)),
+                   base::Bind(&FakeEncryptedMedia::KeyMessage,
+                              base::Unretained(this)),
+                   base::Bind(&FakeEncryptedMedia::NeedKey,
+                              base::Unretained(this))) {
+  }
+
+  AesDecryptor* decryptor() {
+    return &decryptor_;
+  }
+
+  // Callbacks for firing key events.
+  void KeyAdded(const std::string& key_system, const std::string& session_id) {
+    EXPECT_EQ(kClearKeySystem, key_system);
+    EXPECT_FALSE(session_id.empty());
+  }
+
+  void KeyError(const std::string& key_system,
+                const std::string& session_id,
+                AesDecryptor::KeyError error_code,
+                int system_code) {
+    FAIL() << "Unexpected Key Error";
+  }
+
+  void KeyMessage(const std::string& key_system,
+                  const std::string& session_id,
+                  const std::string& message,
+                  const std::string& default_url) {
+    EXPECT_EQ(kClearKeySystem, key_system);
+    EXPECT_FALSE(session_id.empty());
+    EXPECT_FALSE(message.empty());
+
+    current_key_system_ = key_system;
+    current_session_id_ = session_id;
+  }
+
+  void NeedKey(const std::string& key_system,
+               const std::string& session_id,
+               const std::string& type,
+               scoped_array<uint8> init_data, int init_data_length) {
+    current_key_system_ = key_system;
+    current_session_id_ = session_id;
+
+    // When NeedKey is called from the demuxer, the |key_system| will be empty.
+    // In this case, we need to call GenerateKeyRequest() to initialize a
+    // session (which will call KeyMessage).
+    if (current_key_system_.empty()) {
+      EXPECT_TRUE(current_session_id_.empty());
+      EXPECT_TRUE(decryptor_.GenerateKeyRequest(
+          kClearKeySystem, type, kInitData, arraysize(kInitData)));
+    }
+
+    EXPECT_FALSE(current_key_system_.empty());
+    EXPECT_FALSE(current_session_id_.empty());
+    decryptor_.AddKey(current_key_system_, kSecretKey, arraysize(kSecretKey),
+                      init_data.get(), init_data_length, current_session_id_);
+  }
+
+ private:
+  AesDecryptor decryptor_;
+  std::string current_key_system_;
+  std::string current_session_id_;
+};
 
 // Helper class that emulates calls made on the ChunkDemuxer by the
 // Media Source API.
@@ -59,8 +128,9 @@ class MockMediaSource {
   virtual ~MockMediaSource() {}
 
   const scoped_refptr<ChunkDemuxer>& demuxer() const { return chunk_demuxer_; }
-  void set_decryptor_client(DecryptorClient* decryptor_client) {
-    decryptor_client_ = decryptor_client;
+
+  void set_need_key_cb(const NeedKeyCB& need_key_cb) {
+    need_key_cb_ = need_key_cb;
   }
 
   void Seek(int new_position, int seek_append_size) {
@@ -125,8 +195,7 @@ class MockMediaSource {
                       scoped_array<uint8> init_data, int init_data_size) {
     DCHECK(init_data.get());
     DCHECK_GT(init_data_size, 0);
-    DCHECK(decryptor_client_);
-    decryptor_client_->NeedKey("", "", type, init_data.Pass(), init_data_size);
+    need_key_cb_.Run("", "", type, init_data.Pass(), init_data_size);
   }
 
  private:
@@ -136,70 +205,7 @@ class MockMediaSource {
   int initial_append_size_;
   std::string mimetype_;
   scoped_refptr<ChunkDemuxer> chunk_demuxer_;
-  DecryptorClient* decryptor_client_;
-};
-
-class FakeDecryptorClient : public DecryptorClient {
- public:
-  FakeDecryptorClient() : decryptor_(this) {}
-
-  AesDecryptor* decryptor() {
-    return &decryptor_;
-  }
-
-  // DecryptorClient implementation.
-  virtual void KeyAdded(const std::string& key_system,
-                        const std::string& session_id) {
-    EXPECT_EQ(kClearKeySystem, key_system);
-    EXPECT_FALSE(session_id.empty());
-  }
-
-  virtual void KeyError(const std::string& key_system,
-                        const std::string& session_id,
-                        AesDecryptor::KeyError error_code,
-                        int system_code) {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void KeyMessage(const std::string& key_system,
-                          const std::string& session_id,
-                          const std::string& message,
-                          const std::string& default_url) {
-    EXPECT_EQ(kClearKeySystem, key_system);
-    EXPECT_FALSE(session_id.empty());
-    EXPECT_FALSE(message.empty());
-
-    current_key_system_ = key_system;
-    current_session_id_ = session_id;
-  }
-
-  virtual void NeedKey(const std::string& key_system,
-                       const std::string& session_id,
-                       const std::string& type,
-                       scoped_array<uint8> init_data,
-                       int init_data_length) {
-    current_key_system_ = key_system;
-    current_session_id_ = session_id;
-
-    // When NeedKey is called from the demuxer, the |key_system| will be empty.
-    // In this case, we need to call GenerateKeyRequest() to initialize a
-    // session (which will call KeyMessage).
-    if (current_key_system_.empty()) {
-      DCHECK(current_session_id_.empty());
-      EXPECT_TRUE(decryptor_.GenerateKeyRequest(
-          kClearKeySystem, type, kInitData, arraysize(kInitData)));
-    }
-
-    EXPECT_FALSE(current_key_system_.empty());
-    EXPECT_FALSE(current_session_id_.empty());
-    decryptor_.AddKey(current_key_system_, kSecretKey, arraysize(kSecretKey),
-                      init_data.get(), init_data_length, current_session_id_);
-  }
-
- private:
-  AesDecryptor decryptor_;
-  std::string current_key_system_;
-  std::string current_session_id_;
+  NeedKeyCB need_key_cb_;
 };
 
 class PipelineIntegrationTest
@@ -224,7 +230,7 @@ class PipelineIntegrationTest
 
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
-      FakeDecryptorClient* encrypted_media) {
+      FakeEncryptedMedia* encrypted_media) {
     EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
         .Times(AtMost(1));
     EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
@@ -237,7 +243,8 @@ class PipelineIntegrationTest
         base::Bind(&PipelineIntegrationTest::OnBufferingState,
                    base::Unretained(this)));
 
-    source->set_decryptor_client(encrypted_media);
+    source->set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
+                                       base::Unretained(encrypted_media)));
 
     message_loop_.Run();
   }
@@ -273,7 +280,6 @@ class PipelineIntegrationTest
     return true;
   }
 };
-
 
 TEST_F(PipelineIntegrationTest, BasicPlayback) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
@@ -372,7 +378,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
 
 TEST_F(PipelineIntegrationTest, EncryptedPlayback) {
   MockMediaSource source("bear-320x240-encrypted.webm", kWebM, 219816);
-  FakeDecryptorClient encrypted_media;
+  FakeEncryptedMedia encrypted_media;
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   source.EndOfStream();

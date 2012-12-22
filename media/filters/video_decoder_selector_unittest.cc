@@ -129,7 +129,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   VideoDecoderConfig encrypted_video_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
-  // RegisterKeyAddedCB().
+  // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockVideoDecoder> > decoder_1_;
   scoped_refptr<StrictMock<MockVideoDecoder> > decoder_2_;

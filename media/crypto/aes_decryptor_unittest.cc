@@ -227,7 +227,11 @@ static scoped_refptr<DecoderBuffer> CreateSubsampleEncryptedBuffer(
 class AesDecryptorTest : public testing::Test {
  public:
   AesDecryptorTest()
-      : decryptor_(&client_),
+      : decryptor_(
+            base::Bind(&AesDecryptorTest::KeyAdded, base::Unretained(this)),
+            base::Bind(&AesDecryptorTest::KeyError, base::Unretained(this)),
+            base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this)),
+            NeedKeyCB()),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
         subsample_entries_(kSubsampleEntries,
@@ -238,8 +242,8 @@ class AesDecryptorTest : public testing::Test {
   void GenerateKeyRequest(const uint8* key_id, int key_id_size) {
     std::string key_id_string(reinterpret_cast<const char*>(key_id),
                               key_id_size);
-    EXPECT_CALL(client_, KeyMessage(kClearKeySystem,
-                                    StrNe(""), StrEq(key_id_string), ""))
+    EXPECT_CALL(*this, KeyMessage(kClearKeySystem,
+                                  StrNe(""), StrEq(key_id_string), ""))
         .WillOnce(SaveArg<1>(&session_id_string_));
     EXPECT_TRUE(decryptor_.GenerateKeyRequest(kClearKeySystem, "",
                                               key_id, key_id_size));
@@ -247,15 +251,15 @@ class AesDecryptorTest : public testing::Test {
 
   void AddKeyAndExpectToSucceed(const uint8* key_id, int key_id_size,
                                 const uint8* key, int key_size) {
-    EXPECT_CALL(client_, KeyAdded(kClearKeySystem, session_id_string_));
+    EXPECT_CALL(*this, KeyAdded(kClearKeySystem, session_id_string_));
     decryptor_.AddKey(kClearKeySystem, key, key_size, key_id, key_id_size,
                       session_id_string_);
   }
 
   void AddKeyAndExpectToFail(const uint8* key_id, int key_id_size,
                              const uint8* key, int key_size) {
-    EXPECT_CALL(client_, KeyError(kClearKeySystem, session_id_string_,
-                                  Decryptor::kUnknownError, 0));
+    EXPECT_CALL(*this, KeyError(kClearKeySystem, session_id_string_,
+                                Decryptor::kUnknownError, 0));
     decryptor_.AddKey(kClearKeySystem, key, key_size, key_id, key_id_size,
                       session_id_string_);
   }
@@ -306,7 +310,14 @@ class AesDecryptorTest : public testing::Test {
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
   }
 
-  MockDecryptorClient client_;
+  MOCK_METHOD2(KeyAdded, void(const std::string&, const std::string&));
+  MOCK_METHOD4(KeyError, void(const std::string&, const std::string&,
+                              Decryptor::KeyError, int));
+  MOCK_METHOD4(KeyMessage, void(const std::string& key_system,
+                                const std::string& session_id,
+                                const std::string& message,
+                                const std::string& default_url));
+
   AesDecryptor decryptor_;
   std::string session_id_string_;
   AesDecryptor::DecryptCB decrypt_cb_;
@@ -314,7 +325,7 @@ class AesDecryptorTest : public testing::Test {
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
-  EXPECT_CALL(client_, KeyMessage(kClearKeySystem, StrNe(""), "", ""));
+  EXPECT_CALL(*this, KeyMessage(kClearKeySystem, StrNe(""), "", ""));
   EXPECT_TRUE(decryptor_.GenerateKeyRequest(kClearKeySystem, "", NULL, 0));
 }
 

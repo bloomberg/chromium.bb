@@ -242,7 +242,7 @@ class WebMediaPlayerImpl
   void OnKeyMessage(const std::string& key_system,
                     const std::string& session_id,
                     const std::string& message,
-                    const GURL& default_url);
+                    const std::string& default_url);
   void OnNeedKey(const std::string& key_system,
                  const std::string& type,
                  const std::string& session_id,

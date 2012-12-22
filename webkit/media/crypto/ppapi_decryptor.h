@@ -16,10 +16,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace media {
-class DecryptorClient;
-}
-
 namespace webkit {
 namespace ppapi {
 class ContentDecryptorDelegate;
@@ -35,8 +31,11 @@ namespace webkit_media {
 class PpapiDecryptor : public media::Decryptor {
  public:
   PpapiDecryptor(
-      media::DecryptorClient* client,
-      const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance);
+      const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
+      const media::KeyAddedCB& key_added_cb,
+      const media::KeyErrorCB& key_error_cb,
+      const media::KeyMessageCB& key_message_cb,
+      const media::NeedKeyCB& need_key_cb);
   virtual ~PpapiDecryptor();
 
   // media::Decryptor implementation.
@@ -52,8 +51,8 @@ class PpapiDecryptor : public media::Decryptor {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
-  virtual void RegisterKeyAddedCB(StreamType stream_type,
-                                  const KeyAddedCB& key_added_cb) OVERRIDE;
+  virtual void RegisterNewKeyCB(StreamType stream_type,
+                                const NewKeyCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,
                        const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
@@ -79,12 +78,31 @@ class PpapiDecryptor : public media::Decryptor {
 
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
-  media::DecryptorClient* client_;
+  // Callbacks for |plugin_cdm_delegate_| to fire key events.
+  void KeyAdded(const std::string& key_system, const std::string& session_id);
+  void KeyError(const std::string& key_system,
+                const std::string& session_id,
+                media::Decryptor::KeyError error_code,
+                int system_code);
+  void KeyMessage(const std::string& key_system,
+                  const std::string& session_id,
+                  const std::string& message,
+                  const std::string& default_url);
+  void NeedKey(const std::string& key_system,
+               const std::string& session_id,
+               const std::string& type,
+               scoped_array<uint8> init_data, int init_data_size);
 
   // Hold a reference of the plugin instance to make sure the plugin outlives
   // the |plugin_cdm_delegate_|. This is needed because |plugin_cdm_delegate_|
   // is owned by the |plugin_instance_|.
   scoped_refptr<webkit::ppapi::PluginInstance> plugin_instance_;
+
+  // Callbacks for firing key events.
+  media::KeyAddedCB key_added_cb_;
+  media::KeyErrorCB key_error_cb_;
+  media::KeyMessageCB key_message_cb_;
+  media::NeedKeyCB need_key_cb_;
 
   webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate_;
 
@@ -92,8 +110,8 @@ class PpapiDecryptor : public media::Decryptor {
 
   DecoderInitCB audio_decoder_init_cb_;
   DecoderInitCB video_decoder_init_cb_;
-  KeyAddedCB audio_key_added_cb_;
-  KeyAddedCB video_key_added_cb_;
+  NewKeyCB new_audio_key_cb_;
+  NewKeyCB new_video_key_cb_;
 
   base::WeakPtrFactory<PpapiDecryptor> weak_ptr_factory_;
   base::WeakPtr<PpapiDecryptor> weak_this_;

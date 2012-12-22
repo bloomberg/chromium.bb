@@ -90,16 +90,16 @@ class MEDIA_EXPORT Decryptor {
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) = 0;
 
-  // Indicates that a key has been added to the Decryptor.
-  typedef base::Callback<void()> KeyAddedCB;
+  // Indicates that a new key has been added to the Decryptor.
+  typedef base::Callback<void()> NewKeyCB;
 
-  // Registers a KeyAddedCB which should be called when a key is added to the
-  // decryptor. Only one KeyAddedCB can be registered for one |stream_type|.
+  // Registers a NewKeyCB which should be called when a new key is added to the
+  // decryptor. Only one NewKeyCB can be registered for one |stream_type|.
   // If this function is called multiple times for the same |stream_type|, the
   // previously registered callback will be replaced. In other words,
   // registering a null callback cancels the originally registered callback.
-  virtual void RegisterKeyAddedCB(StreamType stream_type,
-                                  const KeyAddedCB& key_added_cb) = 0;
+  virtual void RegisterNewKeyCB(StreamType stream_type,
+                                const NewKeyCB& key_added_cb) = 0;
 
   // Indicates completion of a decryption operation.
   //
@@ -215,6 +215,28 @@ typedef base::Callback<void(Decryptor*)> DecryptorReadyCB;
 // decryptor ready notification. Any previously provided callback will be
 // fired immediately with NULL.
 typedef base::Callback<void(const DecryptorReadyCB&)> SetDecryptorReadyCB;
+
+
+// Key event callbacks. See the spec for details:
+// http://dvcs.w3.org/hg/html-media/raw-file/eme-v0.1b/encrypted-media/encrypted-media.html#event-summary
+typedef base::Callback<void(const std::string& key_system,
+                            const std::string& session_id)> KeyAddedCB;
+
+typedef base::Callback<void(const std::string& key_system,
+                            const std::string& session_id,
+                            media::Decryptor::KeyError error_code,
+                            int system_code)> KeyErrorCB;
+
+typedef base::Callback<void(const std::string& key_system,
+                            const std::string& session_id,
+                            const std::string& message,
+                            const std::string& default_url)> KeyMessageCB;
+
+typedef base::Callback<void(const std::string& key_system,
+                            const std::string& session_id,
+                            const std::string& type,
+                            scoped_array<uint8> init_data,
+                            int init_data_size)> NeedKeyCB;
 
 }  // namespace media
 

@@ -56,18 +56,6 @@ void MockDecryptor::InitializeVideoDecoder(
   InitializeVideoDecoderMock(*config, init_cb);
 }
 
-MockDecryptorClient::MockDecryptorClient() {}
-
-MockDecryptorClient::~MockDecryptorClient() {}
-
-void MockDecryptorClient::NeedKey(const std::string& key_system,
-                                  const std::string& session_id,
-                                  const std::string& type,
-                                  scoped_array<uint8> init_data,
-                                  int init_data_length) {
-  NeedKeyMock(key_system, session_id, type, init_data.get(), init_data_length);
-}
-
 MockFilterCollection::MockFilterCollection()
     : demuxer_(new MockDemuxer()),
       video_decoder_(new MockVideoDecoder()),

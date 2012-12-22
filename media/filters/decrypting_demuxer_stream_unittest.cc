@@ -115,7 +115,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void Initialize() {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
-    EXPECT_CALL(*decryptor_, RegisterKeyAddedCB(Decryptor::kAudio, _))
+    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     AudioDecoderConfig input_config(
@@ -222,7 +222,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   scoped_refptr<StrictMock<MockDemuxerStream> > input_video_stream_;
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
-  Decryptor::KeyAddedCB key_added_cb_;
+  Decryptor::NewKeyCB key_added_cb_;
   Decryptor::DecryptCB pending_decrypt_cb_;
 
   // Constant buffers to be returned by the input demuxer streams and the
@@ -257,7 +257,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_InvalidAudioConfig) {
 TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
-  EXPECT_CALL(*decryptor_, RegisterKeyAddedCB(Decryptor::kVideo, _))
+  EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
   VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,

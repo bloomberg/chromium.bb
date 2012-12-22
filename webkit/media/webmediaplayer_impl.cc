@@ -111,13 +111,6 @@ static WebKit::WebTimeRanges ConvertToWebTimeRanges(
   return result;
 }
 
-// TODO(acolwell): Investigate whether the key_system & session_id parameters
-// are really necessary.
-typedef base::Callback<void(const std::string&,
-                            const std::string&,
-                            scoped_array<uint8>,
-                            int)> OnNeedKeyCB;
-
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
                                 const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
@@ -180,7 +173,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media::SetDecryptorReadyCB set_decryptor_ready_cb;
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    decryptor_.reset(new ProxyDecryptor(proxy_.get(), client, frame));
+    decryptor_.reset(new ProxyDecryptor(
+        client,
+        frame,
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage),
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey)));
     set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
                                         base::Unretained(decryptor_.get()));
   }
@@ -1088,14 +1087,18 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
 void WebMediaPlayerImpl::OnKeyMessage(const std::string& key_system,
                                       const std::string& session_id,
                                       const std::string& message,
-                                      const GURL& default_url) {
+                                      const std::string& default_url) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  const GURL default_url_gurl(default_url);
+  DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
+      << "Invalid URL in default_url: " << default_url;
 
   GetClient()->keyMessage(WebString::fromUTF8(key_system),
                           WebString::fromUTF8(session_id),
                           reinterpret_cast<const uint8*>(message.data()),
                           message.size(),
-                          default_url);
+                          default_url_gurl);
 }
 
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {

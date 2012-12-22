@@ -4,9 +4,9 @@
 
 #include "webkit/media/crypto/proxy_decryptor.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "media/base/decryptor_client.h"
 #include "media/crypto/aes_decryptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -42,12 +42,19 @@ static scoped_refptr<webkit::ppapi::PluginInstance> CreatePluginInstance(
 }
 
 ProxyDecryptor::ProxyDecryptor(
-    media::DecryptorClient* decryptor_client,
     WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame)
-    : client_(decryptor_client),
-      web_media_player_client_(web_media_player_client),
-      web_frame_(web_frame) {
+    WebKit::WebFrame* web_frame,
+    const media::KeyAddedCB& key_added_cb,
+    const media::KeyErrorCB& key_error_cb,
+    const media::KeyMessageCB& key_message_cb,
+    const media::NeedKeyCB& need_key_cb)
+    : web_media_player_client_(web_media_player_client),
+      web_frame_(web_frame),
+      key_added_cb_(key_added_cb),
+      key_error_cb_(key_error_cb),
+      key_message_cb_(key_message_cb),
+      need_key_cb_(need_key_cb),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 ProxyDecryptor::~ProxyDecryptor() {
@@ -91,7 +98,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
   if (!decryptor_) {
     decryptor_ = CreateDecryptor(key_system);
     if (!decryptor_) {
-      client_->KeyError(key_system, "", media::Decryptor::kUnknownError, 0);
+      key_error_cb_.Run(key_system, "", media::Decryptor::kUnknownError, 0);
       return false;
     }
   }
@@ -131,7 +138,6 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
     const std::string& key_system) {
-  DCHECK(client_);
   DCHECK(web_media_player_client_);
   DCHECK(web_frame_);
 
@@ -144,21 +150,55 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
     return scoped_ptr<media::Decryptor>();
   }
 
-  return scoped_ptr<media::Decryptor>(new PpapiDecryptor(client_,
-                                                         plugin_instance));
+  return scoped_ptr<media::Decryptor>(new PpapiDecryptor(
+      plugin_instance,
+      base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
 }
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
     const std::string& key_system) {
-  DCHECK(client_);
-
   if (CanUseAesDecryptor(key_system))
-    return scoped_ptr<media::Decryptor>(new media::AesDecryptor(client_));
+    return scoped_ptr<media::Decryptor>(new media::AesDecryptor(
+        base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
 
   // We only support AesDecryptor and PpapiDecryptor. So if we cannot
   // use the AesDecryptor, then we'll try to create a PpapiDecryptor for given
   // |key_system|.
   return CreatePpapiDecryptor(key_system);
+}
+
+void ProxyDecryptor::KeyAdded(const std::string& key_system,
+                              const std::string& session_id) {
+  key_added_cb_.Run(key_system, session_id);
+}
+
+void ProxyDecryptor::KeyError(const std::string& key_system,
+                              const std::string& session_id,
+                              media::Decryptor::KeyError error_code,
+                              int system_code) {
+  key_error_cb_.Run(key_system, session_id, error_code, system_code);
+}
+
+void ProxyDecryptor::KeyMessage(const std::string& key_system,
+                                const std::string& session_id,
+                                const std::string& message,
+                                const std::string& default_url) {
+  key_message_cb_.Run(key_system, session_id, message, default_url);
+}
+
+void ProxyDecryptor::NeedKey(const std::string& key_system,
+                             const std::string& session_id,
+                             const std::string& type,
+                             scoped_array<uint8> init_data,
+                             int init_data_size) {
+  need_key_cb_.Run(key_system, session_id, type,
+                   init_data.Pass(), init_data_size);
 }
 
 }  // namespace webkit_media

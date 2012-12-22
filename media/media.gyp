@@ -212,7 +212,6 @@
         'base/decoder_buffer_queue.h',
         'base/decryptor.cc',
         'base/decryptor.h',
-        'base/decryptor_client.h',
         'base/decrypt_config.cc',
         'base/decrypt_config.h',
         'base/demuxer.cc',

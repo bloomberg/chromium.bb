@@ -199,7 +199,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   bytes_per_sample_ = ChannelLayoutToChannelCount(channel_layout_) *
       bits_per_channel_ / kBitsPerByte;
 
-  decryptor_->RegisterKeyAddedCB(
+  decryptor_->RegisterNewKeyCB(
       Decryptor::kAudio, BIND_TO_LOOP(&DecryptingAudioDecoder::OnKeyAdded));
 
   state_ = kIdle;
