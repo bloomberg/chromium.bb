@@ -14,13 +14,11 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
-#include "content/public/test/test_browser_thread.h"
+#include "chrome/browser/chromeos/input_method/mock_sequenced_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"
 
 #include <X11/Xlib.h>
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace input_method {
@@ -31,11 +29,11 @@ class XKeyboardTest : public testing::Test {
  public:
   XKeyboardTest()
       : util_(&delegate_, whitelist_.GetSupportedInputMethods()),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+        mock_task_runner_(new MockSequencedTaskRunner) {
   }
 
   virtual void SetUp() {
-    xkey_.reset(XKeyboard::Create(util_));
+    xkey_.reset(XKeyboard::Create(util_, mock_task_runner_));
   }
 
   virtual void TearDown() {
@@ -45,10 +43,8 @@ class XKeyboardTest : public testing::Test {
   MockInputMethodDelegate delegate_;
   InputMethodWhitelist whitelist_;
   InputMethodUtil util_;
+  scoped_refptr<MockSequencedTaskRunner> mock_task_runner_;
   scoped_ptr<XKeyboard> xkey_;
-
-  MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
 };
 
 // Returns true if X display is available.
@@ -189,10 +185,10 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
     return;
   }
   const bool state = XKeyboard::GetAutoRepeatEnabledForTesting();
-  XKeyboard::SetAutoRepeatEnabled(!state);
+  xkey_->SetAutoRepeatEnabled(!state);
   EXPECT_EQ(!state, XKeyboard::GetAutoRepeatEnabledForTesting());
   // Restore the initial state.
-  XKeyboard::SetAutoRepeatEnabled(state);
+  xkey_->SetAutoRepeatEnabled(state);
   EXPECT_EQ(state, XKeyboard::GetAutoRepeatEnabledForTesting());
 }
 
@@ -207,13 +203,13 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
   AutoRepeatRate tmp(rate);
   ++tmp.initial_delay_in_ms;
   ++tmp.repeat_interval_in_ms;
-  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(tmp));
+  EXPECT_TRUE(xkey_->SetAutoRepeatRate(tmp));
   EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms + 1, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms + 1, tmp.repeat_interval_in_ms);
 
   // Restore the initial state.
-  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(rate));
+  EXPECT_TRUE(xkey_->SetAutoRepeatRate(rate));
   EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms, tmp.repeat_interval_in_ms);

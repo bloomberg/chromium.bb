@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
@@ -579,8 +580,9 @@ void InputMethodManagerImpl::OnDisconnected() {
 void InputMethodManagerImpl::Init() {
   DCHECK(!ibus_controller_.get());
 
-  ibus_controller_.reset(IBusController::Create());
-  xkeyboard_.reset(XKeyboard::Create(util_));
+  ibus_controller_.reset(IBusController::Create(
+      delegate_->GetDefaultTaskRunner(), delegate_->GetWorkerTaskRunner()));
+  xkeyboard_.reset(XKeyboard::Create(util_, delegate_->GetDefaultTaskRunner()));
   ibus_controller_->AddObserver(this);
 }
 

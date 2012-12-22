@@ -14,18 +14,16 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
 // These includes conflict with base/tracked_objects.h so must come last.
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <glib.h>
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace input_method {
@@ -62,7 +60,9 @@ bool CheckLayoutName(const std::string& layout_name) {
 
 class XKeyboardImpl : public XKeyboard {
  public:
-  explicit XKeyboardImpl(const InputMethodUtil& util);
+  explicit XKeyboardImpl(
+      const InputMethodUtil& util,
+      const scoped_refptr<base::SequencedTaskRunner>& default_task_runner);
   virtual ~XKeyboardImpl() {}
 
   // Overridden from XKeyboard:
@@ -80,6 +80,8 @@ class XKeyboardImpl : public XKeyboard {
   virtual unsigned int GetNumLockMask() OVERRIDE;
   virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
                                   bool* out_num_lock_enabled) OVERRIDE;
+  virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
+  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 
  private:
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
@@ -110,11 +112,16 @@ class XKeyboardImpl : public XKeyboard {
   // A queue for executing setxkbmap one by one.
   std::queue<std::string> execute_queue_;
 
+  scoped_refptr<base::SequencedTaskRunner> default_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
 };
 
-XKeyboardImpl::XKeyboardImpl(const InputMethodUtil& util)
-    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()) {
+XKeyboardImpl::XKeyboardImpl(
+    const InputMethodUtil& util,
+    const scoped_refptr<base::SequencedTaskRunner>& default_task_runner)
+    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
+      default_task_runner_(default_task_runner) {
   num_lock_mask_ = GetNumLockMask();
 
   // web_input_event_aurax11.cc seems to assume that Mod2Mask is always assigned
@@ -317,14 +324,14 @@ bool XKeyboardImpl::CurrentlyOnUIThread() const {
   // TODO(yusukes): Stop special-casing browser_tests and remove this function.
   if (!is_running_on_chrome_os_)
     return true;
-  return BrowserThread::CurrentlyOn(BrowserThread::UI);
+  return default_task_runner_->RunsTasksOnCurrentThread();
 }
 
 // static
 void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
                                       int status,
                                       XKeyboardImpl* self) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(self->default_task_runner_->RunsTasksOnCurrentThread());
   DVLOG(1) << "OnSetLayoutFinish: pid=" << pid;
   if (self->execute_queue_.empty()) {
     DVLOG(1) << "OnSetLayoutFinish: execute_queue_ is empty. "
@@ -335,11 +342,8 @@ void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
   self->MaybeExecuteSetLayoutCommand();
 }
 
-}  // namespace
-
-// static
-bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
+  CHECK(default_task_runner_->RunsTasksOnCurrentThread());
   if (enabled)
     XAutoRepeatOn(ui::GetXDisplay());
   else
@@ -348,9 +352,8 @@ bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
   return true;
 }
 
-// static
-bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
+  CHECK(default_task_runner_->RunsTasksOnCurrentThread());
   DVLOG(1) << "Set auto-repeat rate to: "
            << rate.initial_delay_in_ms << " ms delay, "
            << rate.repeat_interval_in_ms << " ms interval";
@@ -362,6 +365,8 @@ bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   }
   return true;
 }
+
+}  // namespace
 
 // static
 bool XKeyboard::GetAutoRepeatEnabledForTesting() {
@@ -383,8 +388,10 @@ bool XKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
 }
 
 // static
-XKeyboard* XKeyboard::Create(const InputMethodUtil& util) {
-  return new XKeyboardImpl(util);
+XKeyboard* XKeyboard::Create(
+    const InputMethodUtil& util,
+    const scoped_refptr<base::SequencedTaskRunner>& default_task_runner) {
+  return new XKeyboardImpl(util, default_task_runner);
 }
 
 }  // namespace input_method

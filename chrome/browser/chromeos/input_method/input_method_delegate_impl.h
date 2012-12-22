@@ -23,6 +23,10 @@ class InputMethodDelegateImpl : public InputMethodDelegate {
   // InputMethodDelegate implementation.
   virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
   virtual std::string GetActiveLocale() const OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner>
+      GetDefaultTaskRunner() const OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner>
+      GetWorkerTaskRunner() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodDelegateImpl);

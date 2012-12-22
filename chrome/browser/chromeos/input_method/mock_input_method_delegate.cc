@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 
+#include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+
 namespace chromeos {
 namespace input_method {
 
@@ -20,6 +23,18 @@ std::string MockInputMethodDelegate::GetHardwareKeyboardLayout() const {
 
 std::string MockInputMethodDelegate::GetActiveLocale() const {
   return active_locale_;
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+MockInputMethodDelegate::GetDefaultTaskRunner() const {
+  NOTREACHED();
+  return NULL;
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+MockInputMethodDelegate::GetWorkerTaskRunner() const {
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace input_method
