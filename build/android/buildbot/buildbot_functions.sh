@@ -278,8 +278,7 @@ function bb_run_webkit_layout_tests {
 
 # Run experimental unittest bundles.
 function bb_run_experimental_unit_tests {
-  echo "@@@BUILD_STEP run experimental unit tests@@@"
-  _bb_android_run_tests -s android_webview_unittests
+  echo
 }
 
 # Run findbugs.

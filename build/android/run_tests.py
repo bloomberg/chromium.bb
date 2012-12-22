@@ -69,6 +69,7 @@ _TEST_SUITES = ['base_unittests',
                 'ui_unittests',
                 'unit_tests',
                 'webkit_compositor_bindings_unittests',
+                'android_webview_unittests',
                ]
 
 
