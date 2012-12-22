@@ -236,9 +236,6 @@ static int NaClDescIoDescExternalize(struct NaClDesc           *vself,
 #if NACL_WINDOWS
   HANDLE  h = (HANDLE) _get_osfhandle(self->hd->d);
 
-  NaClLog(LOG_WARNING, "NaClDescIoDescExternalize is EXPERIMENTAL\n");
-  NaClLog(LOG_WARNING, "handle 0x%x\n", (uintptr_t) h);
-
   *xfer->next_handle++ = (NaClHandle) h;
 #else
   *xfer->next_handle++ = self->hd->d;
