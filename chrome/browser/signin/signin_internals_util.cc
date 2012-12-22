@@ -6,12 +6,14 @@
 
 #include <sstream>
 
-#include "base/hash.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace signin_internals_util {
@@ -46,14 +48,35 @@ const char* kTokenPrefsArray[] = {
 
 const size_t kNumTokenPrefs = arraysize(kTokenPrefsArray);
 
-TokenInfo::TokenInfo(const std::string& tok,
-                     const std::string& stat,
-                     const std::string & tstamp,
-                     const std::string srvice)
-    : token(tok)
-    , status(stat)
-    , time(tstamp)
-    , service(srvice) {
+
+namespace {
+
+// Gets the first 6 hex characters of the SHA256 hash of the passed in string.
+// These are enough to perform equality checks across a single users tokens,
+// while preventing outsiders from reverse-engineering the actual token from
+// the displayed value.
+// Note that for readability (in about:signin-internals), an empty string
+// is not hashed, but simply returned as an empty string.
+const size_t kTruncateSize = 3;
+std::string GetTruncatedHash(const std::string& str) {
+  if (str.empty())
+    return str;
+
+  char hash_val[kTruncateSize];
+  crypto::SHA256HashString(str, &hash_val[0], kTruncateSize);
+  return StringToLowerASCII(base::HexEncode(&hash_val[0], kTruncateSize));
+}
+
+} // namespace
+
+TokenInfo::TokenInfo(const std::string& token,
+                     const std::string& status,
+                     const std::string& time,
+                     const std::string& service)
+    : token(token),
+      status(status),
+      time(time),
+      service(service) {
 }
 
 TokenInfo::TokenInfo() {
@@ -65,7 +88,7 @@ TokenInfo::~TokenInfo() {
 DictionaryValue* TokenInfo::ToValue() {
   scoped_ptr<DictionaryValue> token_info(new DictionaryValue());
   token_info->SetString("service", service);
-  token_info->SetInteger("token", base::Hash(token));
+  token_info->SetString("token", GetTruncatedHash(token));
   token_info->SetString("status", status);
   token_info->SetString("time", time);
 
@@ -236,7 +259,7 @@ scoped_ptr<DictionaryValue> SigninStatus::ToValue() {
       AddSectionEntry(
           basic_info,
           field,
-          base::Hash(untimed_signin_fields[i - UNTIMED_FIELDS_BEGIN]));
+          GetTruncatedHash(untimed_signin_fields[i - UNTIMED_FIELDS_BEGIN]));
     } else {
       AddSectionEntry(
           basic_info,

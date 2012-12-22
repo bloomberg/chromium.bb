@@ -65,15 +65,15 @@ enum {
 // values, we replicate the service name within this struct for a cleaner
 // serialization (with ToValue()).
 struct TokenInfo {
-  std::string token; // The actual token.
-  std::string status; // Status of the last token fetch.
-  std::string time; // Timestamp of the last token fetch.
-  std::string service; // The service that this token is for.
+  std::string token;  // The actual token.
+  std::string status;  // Status of the last token fetch.
+  std::string time;  // Timestamp of the last token fetch.
+  std::string service;  // The service that this token is for.
 
-  TokenInfo(const std::string& tok,
-            const std::string& stat,
-            const std::string & tstamp,
-            const std::string srvice);
+  TokenInfo(const std::string& token,
+            const std::string& status,
+            const std::string& time,
+            const std::string& service);
   TokenInfo();
   ~TokenInfo();
 
