@@ -37,6 +37,10 @@ class QuicRandom;
 class QuicReceiptMetricsCollector;
 class QuicSendScheduler;
 
+namespace test {
+class QuicConnectionPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
  public:
   typedef std::set<QuicPacketSequenceNumber> AckedPackets;
@@ -238,7 +242,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicConnectionHelperInterface* helper() { return helper_; }
 
  private:
-  friend class QuicConnectionPeer;
+  friend class test::QuicConnectionPeer;
   // Packets which have not been written to the wire.
   struct QueuedPacket {
     QueuedPacket(QuicPacketSequenceNumber sequence_number,

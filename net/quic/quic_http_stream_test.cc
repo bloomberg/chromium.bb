@@ -15,6 +15,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
@@ -24,22 +25,7 @@
 using testing::_;
 
 namespace net {
-
-class QuicConnectionPeer {
- public:
-  static void SetScheduler(QuicConnection* connection,
-                           QuicSendScheduler* scheduler) {
-    connection->scheduler_.reset(scheduler);
-  }
-
-  static void SetCollector(QuicConnection* connection,
-                           QuicReceiptMetricsCollector* collector) {
-    connection->collector_.reset(collector);
-  }
-};
-
 namespace test {
-
 namespace {
 
 const char kUploadData[] = "hello world!";

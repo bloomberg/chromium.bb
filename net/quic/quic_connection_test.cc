@@ -11,6 +11,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/quic_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,31 +25,6 @@ using testing::Return;
 using testing::StrictMock;
 
 namespace net {
-
-// Peer to make public a number of otherwise private QuicConnection methods.
-class QuicConnectionPeer {
- public:
-  static void SendAck(QuicConnection* connection) {
-    connection->SendAck();
-  }
-
-  static void SetCollector(QuicConnection* connection,
-                           QuicReceiptMetricsCollector* collector) {
-    connection->collector_.reset(collector);
-  }
-
-  static void SetScheduler(QuicConnection* connection,
-                           QuicSendScheduler* scheduler) {
-    connection->scheduler_.reset(scheduler);
-  }
-  static QuicAckFrame* GetOutgoingAck(QuicConnection* connection) {
-    return &connection->outgoing_ack_;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
-};
-
 namespace test {
 namespace {
 

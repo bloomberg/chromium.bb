@@ -8,6 +8,7 @@
 
 #include "net/base/net_errors.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
@@ -17,19 +18,6 @@
 using testing::_;
 
 namespace net {
-
-class QuicConnectionPeer {
- public:
-  static void SendAck(QuicConnection* connection) {
-    connection->SendAck();
-  }
-
-  static void SetScheduler(QuicConnection* connection,
-                           QuicSendScheduler* scheduler) {
-    connection->scheduler_.reset(scheduler);
-  }
-};
-
 namespace test {
 
 const char kData[] = "foo";
@@ -342,5 +330,4 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
 }
 
 }  // namespace test
-
 }  // namespace net

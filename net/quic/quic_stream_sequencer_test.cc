@@ -23,6 +23,7 @@ using testing::Return;
 using testing::StrEq;
 
 namespace net {
+namespace test {
 
 class QuicStreamSequencerPeer : public QuicStreamSequencer {
  public:
@@ -403,5 +404,5 @@ TEST_F(QuicSequencerRandomTest, RandomFramesDroppingNoBackup) {
 }
 
 }  // namespace
-
+}  // namespace test
 }  // namespace net

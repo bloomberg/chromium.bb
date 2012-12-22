@@ -27,6 +27,10 @@ namespace net {
 class QuicClock;
 class QuicRandom;
 
+namespace test {
+class QuicConnectionHelperPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicConnectionHelper
     : public QuicConnectionHelperInterface {
  public:
@@ -56,7 +60,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   void GetPeerAddress(IPEndPoint* peer_address);
 
  private:
-  friend class QuicConnectionHelperPeer;
+  friend class test::QuicConnectionHelperPeer;
 
   // An alarm is scheduled for each data-bearing packet as it is sent out.
   // When the alarm goes off, the connection checks to see if the packet has

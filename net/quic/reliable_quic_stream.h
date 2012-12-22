@@ -15,6 +15,10 @@
 
 namespace net {
 
+namespace test {
+class ReliableQuicStreamPeer;
+}  // namespace test
+
 class IPEndPoint;
 class QuicSession;
 
@@ -88,7 +92,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   int WriteDataInternal(base::StringPiece data, bool fin);
 
  private:
-  friend class ReliableQuicStreamPeer;
+  friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
 
   std::list<string> queued_data_;

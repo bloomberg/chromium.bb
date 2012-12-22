@@ -16,6 +16,10 @@ using std::string;
 
 namespace net {
 
+namespace test {
+class QuicStreamSequencerPeer;
+}  // namespace test
+
 class QuicSession;
 class ReliableQuicStream;
 
@@ -60,7 +64,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   bool IsClosed() const;
 
  private:
-  friend class QuicStreamSequencerPeer;
+  friend class test::QuicStreamSequencerPeer;
 
   // TODO(alyssar) use something better than strings.
   typedef map<QuicStreamOffset, string> FrameMap;

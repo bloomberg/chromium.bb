@@ -23,6 +23,10 @@ namespace net {
 class QuicCryptoStream;
 class ReliableQuicStream;
 
+namespace test {
+class QuicSessionPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
  public:
   QuicSession(QuicConnection* connection, bool is_server);
@@ -106,7 +110,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   }
 
  private:
-  friend class QuicSessionPeer;
+  friend class test::QuicSessionPeer;
 
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
