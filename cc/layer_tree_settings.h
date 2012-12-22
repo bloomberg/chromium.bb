@@ -29,6 +29,7 @@ class CC_EXPORT LayerTreeSettings {
   bool showOverdrawInTracing;
   bool canUseLCDText;
   bool shouldClearRootRenderPass;
+  bool useLinearFadeScrollbarAnimator;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;

@@ -82,6 +82,8 @@
       'test/fake_picture_layer_tiling_client.h',
       'test/fake_proxy.cc',
       'test/fake_proxy.h',
+      'test/fake_scrollbar_layer.cc',
+      'test/fake_scrollbar_layer.h',
       'test/fake_scrollbar_theme_painter.h',
       'test/fake_scrollbar_theme_painter.cc',
       'test/fake_tile_manager_client.h',

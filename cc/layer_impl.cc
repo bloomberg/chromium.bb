@@ -17,6 +17,7 @@
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
+#include "cc/scrollbar_animation_controller_linear_fade.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -790,8 +791,15 @@ const ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
 
 void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
-    if (!m_scrollbarAnimationController)
-        m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+    if (!m_scrollbarAnimationController) {
+        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator) {
+            double fadeoutDelay = 0.3;
+            double fadeoutLength = 0.3;
+            m_scrollbarAnimationController = ScrollbarAnimationControllerLinearFade::create(this, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
+        } else {
+            m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+        }
+    }
     m_scrollbarAnimationController->setHorizontalScrollbarLayer(scrollbarLayer);
     m_scrollbarAnimationController->updateScrollOffset(this);
 }

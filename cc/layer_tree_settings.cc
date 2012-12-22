@@ -26,6 +26,7 @@ LayerTreeSettings::LayerTreeSettings()
     , showOverdrawInTracing(false)
     , canUseLCDText(true)
     , shouldClearRootRenderPass(true)
+    , useLinearFadeScrollbarAnimator(false)
     , refreshRate(0)
     , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
     , numRasterThreads(1)
@@ -44,6 +45,16 @@ LayerTreeSettings::LayerTreeSettings()
 // Platforms that need to disable LCD text must explicitly set this value.
 #if defined(OS_ANDROID)
     canUseLCDText = false;
+#endif
+
+#if defined(OS_ANDROID)
+    // TODO(danakj): Move this out to the android code.
+    maxPartialTextureUpdates = 0;
+#endif
+
+#if defined(OS_ANDROID)
+    // TODO(danakj): Move this out to the android code.
+    useLinearFadeScrollbarAnimator = true;
 #endif
 
     initialDebugState.showPropertyChangedRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowPropertyChangedRects);

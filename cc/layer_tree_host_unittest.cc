@@ -12,10 +12,12 @@
 #include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/resource_update_queue.h"
@@ -995,49 +997,64 @@ TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread
 class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
 public:
     LayerTreeHostTestAtomicCommit()
-        : m_layer(ContentLayerWithUpdateTracking::create(&m_client))
     {
         // Make sure partial texture updates are turned off.
         m_settings.maxPartialTextureUpdates = 0;
+        // Linear fade animator prevents scrollbars from drawing immediately.
+        m_settings.useLinearFadeScrollbarAnimator = false;
+    }
+
+    virtual void setupTree() OVERRIDE
+    {
+        m_layer = FakeContentLayer::Create(&m_client);
+        m_layer->setBounds(gfx::Size(10, 20));
+
+        m_scrollbar = FakeScrollbarLayer::Create(true, m_layer->id());
+        m_scrollbar->setPosition(gfx::Point(0, 10));
+        m_scrollbar->setBounds(gfx::Size(10, 10));
+
+        m_layer->addChild(m_scrollbar);
+
+        m_layerTreeHost->setRootLayer(m_layer);
+        LayerTreeHostTest::setupTree();
     }
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setRootLayer(m_layer);
-        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
-
-        ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
-        ResourceUpdateQueue queue;
-        m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        ASSERT_EQ(0u, m_layerTreeHost->settings().maxPartialTextureUpdates);
+
         FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
-            // Number of textures should be one.
-            ASSERT_EQ(1, context->NumTextures());
-            // Number of textures used for commit should be one.
-            EXPECT_EQ(1, context->NumUsedTextures());
+            // Number of textures should be one for each layer
+            ASSERT_EQ(2, context->NumTextures());
+            // Number of textures used for commit should be one for each layer.
+            EXPECT_EQ(2, context->NumUsedTextures());
             // Verify that used texture is correct.
             EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
 
             context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
         case 1:
-            // Number of textures should be two as the first texture
-            // is used by impl thread and cannot by used for update.
-            ASSERT_EQ(2, context->NumTextures());
-            // Number of textures used for commit should still be one.
-            EXPECT_EQ(1, context->NumUsedTextures());
-            // First texture should not have been used.
+            // Number of textures should be doubled as the first textures
+            // are used by impl thread and cannot by used for update.
+            ASSERT_EQ(4, context->NumTextures());
+            // Number of textures used for commit should still be one for each layer.
+            EXPECT_EQ(2, context->NumUsedTextures());
+            // First textures should not have been used.
             EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-            // New texture should have been used.
-            EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+            // New textures should have been used.
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
 
             context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
@@ -1055,14 +1072,15 @@ public:
     {
         FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
-        // Number of textures used for draw should always be one.
-        EXPECT_EQ(1, context->NumUsedTextures());
+        // Number of textures used for draw should always be one for each layer.
+        EXPECT_EQ(2, context->NumUsedTextures());
         context->ResetUsedTextures();
     }
 
     virtual void layout() OVERRIDE
     {
         m_layer->setNeedsDisplay();
+        m_scrollbar->setNeedsDisplay();
     }
 
     virtual void afterTest() OVERRIDE
@@ -1071,7 +1089,8 @@ public:
 
 private:
     FakeContentLayerClient m_client;
-    scoped_refptr<ContentLayerWithUpdateTracking> m_layer;
+    scoped_refptr<FakeContentLayer> m_layer;
+    scoped_refptr<FakeScrollbarLayer> m_scrollbar;
 };
 
 TEST_F(LayerTreeHostTestAtomicCommit, runMultiThread)
@@ -1094,62 +1113,104 @@ static void setLayerPropertiesForTesting(Layer* layer, Layer* parent, const gfx:
 class LayerTreeHostTestAtomicCommitWithPartialUpdate : public LayerTreeHostTest {
 public:
     LayerTreeHostTestAtomicCommitWithPartialUpdate()
-        : m_parent(ContentLayerWithUpdateTracking::create(&m_client))
-        , m_child(ContentLayerWithUpdateTracking::create(&m_client))
-        , m_numCommits(0)
+        : m_numCommits(0)
     {
         // Allow one partial texture update.
         m_settings.maxPartialTextureUpdates = 1;
+        // Linear fade animator prevents scrollbars from drawing immediately.
+        m_settings.useLinearFadeScrollbarAnimator = false;
+    }
+
+    virtual void setupTree() OVERRIDE
+    {
+        m_parent = FakeContentLayer::Create(&m_client);
+        m_parent->setBounds(gfx::Size(10, 20));
+
+        m_child = FakeContentLayer::Create(&m_client);
+        m_child->setPosition(gfx::Point(0, 10));
+        m_child->setBounds(gfx::Size(3, 10));
+
+        m_scrollbarWithPaints =
+                FakeScrollbarLayer::Create(true, m_parent->id());
+        m_scrollbarWithPaints->setPosition(gfx::Point(3, 10));
+        m_scrollbarWithPaints->setBounds(gfx::Size(3, 10));
+
+        m_scrollbarWithoutPaints =
+                FakeScrollbarLayer::Create(false, m_parent->id());
+        m_scrollbarWithoutPaints->setPosition(gfx::Point(6, 10));
+        m_scrollbarWithoutPaints->setBounds(gfx::Size(3, 10));
+
+        m_parent->addChild(m_child);
+        m_parent->addChild(m_scrollbarWithPaints);
+        m_parent->addChild(m_scrollbarWithoutPaints);
+
+        m_layerTreeHost->setRootLayer(m_parent);
+        LayerTreeHostTest::setupTree();
     }
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setRootLayer(m_parent);
-        m_layerTreeHost->setViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
-
-        gfx::Transform identityMatrix;
-        setLayerPropertiesForTesting(m_parent.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 20), true);
-        setLayerPropertiesForTesting(m_child.get(), m_parent.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 10), gfx::Size(10, 10), false);
-
-        ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
-        ResourceUpdateQueue queue;
-        m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         postSetNeedsCommitToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
+        ASSERT_EQ(1u, m_layerTreeHost->settings().maxPartialTextureUpdates);
+
         FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
-            // Number of textures should be two.
-            ASSERT_EQ(2, context->NumTextures());
-            // Number of textures used for commit should be two.
-            EXPECT_EQ(2, context->NumUsedTextures());
+            // Number of textures should be one for each layer.
+            ASSERT_EQ(4, context->NumTextures());
+            // Number of textures used for commit should be one for each layer.
+            EXPECT_EQ(4, context->NumUsedTextures());
             // Verify that used textures are correct.
             EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
             EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-
-            context->ResetUsedTextures();
-            postSetNeedsCommitToMainThread();
-            break;
-        case 1:
-            // Number of textures used for commit should still be two.
-            EXPECT_EQ(2, context->NumUsedTextures());
-            // First two textures should not have been used.
-            EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-            EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
-            // New textures should have been used.
             EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
             EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
 
             context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
             break;
+        case 1:
+            // Number of textures should be two for each content layer and one
+            // for each scrollbar, since they always do a partial update.
+            ASSERT_EQ(6, context->NumTextures());
+            // Number of textures used for commit should be one for each content
+            // layer, and one for the scrollbar layer that paints.
+            EXPECT_EQ(3, context->NumUsedTextures());
+
+            // First content textures should not have been used.
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+            // The non-painting scrollbar's texture wasn't updated.
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(2)));
+            // The painting scrollbar's partial update texture was used.
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+            // New textures should have been used.
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(4)));
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(5)));
+
+            context->ResetUsedTextures();
+            postSetNeedsCommitToMainThread();
+            break;
         case 2:
-            // Number of textures used for commit should still be two.
-            EXPECT_EQ(2, context->NumUsedTextures());
+            // Number of textures should be two for each content layer and one
+            // for each scrollbar, since they always do a partial update.
+            ASSERT_EQ(6, context->NumTextures());
+            // Number of textures used for commit should be one for each content
+            // layer, and one for the scrollbar layer that paints.
+            EXPECT_EQ(3, context->NumUsedTextures());
+
+            // The non-painting scrollbar's texture wasn't updated.
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(2)));
+            // The painting scrollbar does a partial update.
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+            // One content layer does a partial update also.
+            EXPECT_TRUE(context->UsedTexture(context->TextureAt(4)));
+            EXPECT_FALSE(context->UsedTexture(context->TextureAt(5)));
 
             context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
@@ -1162,8 +1223,10 @@ public:
             postSetNeedsCommitToMainThread();
             break;
         case 4:
-            // Number of textures used for commit should be one.
-            EXPECT_EQ(1, context->NumUsedTextures());
+            // Number of textures used for commit should be two. One for the
+            // content layer, and one for the painting scrollbar. The
+            // non-painting scrollbar doesn't update its texture.
+            EXPECT_EQ(2, context->NumUsedTextures());
 
             context->ResetUsedTextures();
             postSetNeedsCommitToMainThread();
@@ -1181,12 +1244,12 @@ public:
     {
         FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
-        // Number of textures used for drawing should two except for frame 4
-        // where the viewport only contains one layer.
+        // Number of textures used for drawing should one per layer except for
+        // frame 3 where the viewport only contains one layer.
         if (impl->activeTree()->source_frame_number() == 3)
             EXPECT_EQ(1, context->NumUsedTextures());
         else
-            EXPECT_EQ(2, context->NumUsedTextures());
+            EXPECT_EQ(4, context->NumUsedTextures());
 
         context->ResetUsedTextures();
     }
@@ -1198,14 +1261,20 @@ public:
         case 1:
             m_parent->setNeedsDisplay();
             m_child->setNeedsDisplay();
+            m_scrollbarWithPaints->setNeedsDisplay();
+            m_scrollbarWithoutPaints->setNeedsDisplay();
             break;
         case 2:
             // Damage part of layers.
             m_parent->setNeedsDisplayRect(gfx::RectF(0, 0, 5, 5));
             m_child->setNeedsDisplayRect(gfx::RectF(0, 0, 5, 5));
+            m_scrollbarWithPaints->setNeedsDisplayRect(gfx::RectF(0, 0, 5, 5));
+            m_scrollbarWithoutPaints->setNeedsDisplayRect(gfx::RectF(0, 0, 5, 5));
             break;
         case 3:
             m_child->setNeedsDisplay();
+            m_scrollbarWithPaints->setNeedsDisplay();
+            m_scrollbarWithoutPaints->setNeedsDisplay();
             m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
             break;
         case 4:
@@ -1225,8 +1294,10 @@ public:
 
 private:
     FakeContentLayerClient m_client;
-    scoped_refptr<ContentLayerWithUpdateTracking> m_parent;
-    scoped_refptr<ContentLayerWithUpdateTracking> m_child;
+    scoped_refptr<FakeContentLayer> m_parent;
+    scoped_refptr<FakeContentLayer> m_child;
+    scoped_refptr<FakeScrollbarLayer> m_scrollbarWithPaints;
+    scoped_refptr<FakeScrollbarLayer> m_scrollbarWithoutPaints;
     int m_numCommits;
 };
 

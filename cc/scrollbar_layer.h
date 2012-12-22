@@ -58,6 +58,8 @@ private:
     void createUpdaterIfNeeded();
     gfx::Rect scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const;
 
+    bool isDirty() const { return !m_dirtyRect.IsEmpty(); }
+
     int maxTextureSize();
     float clampScaleToMaxTextureSize(float scale);
 
@@ -67,6 +69,8 @@ private:
     int m_scrollLayerId;
 
     GLenum m_textureFormat;
+
+    gfx::RectF m_dirtyRect;
 
     scoped_refptr<CachingBitmapContentLayerUpdater> m_backTrackUpdater;
     scoped_refptr<CachingBitmapContentLayerUpdater> m_foreTrackUpdater;

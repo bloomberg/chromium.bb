@@ -9,25 +9,12 @@
 #include "build/build_config.h"
 #include "cc/scrollbar_layer_impl.h"
 
-#if defined(OS_ANDROID)
-#include "cc/scrollbar_animation_controller_linear_fade.h"
-#endif
-
 namespace cc {
 
-#if defined(OS_ANDROID)
-scoped_ptr<ScrollbarAnimationController> ScrollbarAnimationController::create(LayerImpl* scrollLayer)
-{
-    static const double fadeoutDelay = 0.3;
-    static const double fadeoutLength = 0.3;
-    return ScrollbarAnimationControllerLinearFade::create(scrollLayer, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
-}
-#else
 scoped_ptr<ScrollbarAnimationController> ScrollbarAnimationController::create(LayerImpl* scrollLayer)
 {
     return make_scoped_ptr(new ScrollbarAnimationController(scrollLayer));
 }
-#endif
 
 ScrollbarAnimationController::ScrollbarAnimationController(LayerImpl* scrollLayer)
     : m_horizontalScrollbarLayer(0)

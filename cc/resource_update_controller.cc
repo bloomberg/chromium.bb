@@ -23,11 +23,7 @@ using WebKit::WebSharedGraphicsContext3D;
 namespace {
 
 // Number of partial updates we allow.
-#if defined(OS_ANDROID)
-const size_t partialTextureUpdatesMax = 0;
-#else
 const size_t partialTextureUpdatesMax = 12;
-#endif
 
 // Measured in seconds.
 const double textureUpdateTickRate = 0.004;

@@ -249,7 +249,7 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
     // we already have valid texture data.
     if (resource->texture()->haveBackingTexture() &&
         resource->texture()->size() == rect.size() &&
-        m_updateRect.IsEmpty())
+        !isDirty())
         return;
 
     // We should always have enough memory for UI.
@@ -265,8 +265,12 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
         return;
     }
 
+    bool partialUpdatesAllowed = layerTreeHost()->settings().maxPartialTextureUpdates > 0;
+    if (!partialUpdatesAllowed)
+        resource->texture()->returnBackingTexture();
+
     gfx::Vector2d destOffset(0, 0);
-    resource->update(queue, rect, destOffset, false, stats);
+    resource->update(queue, rect, destOffset, partialUpdatesAllowed, stats);
 }
 
 gfx::Rect ScrollbarLayer::scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const
@@ -306,7 +310,12 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* 
 {
     ContentsScalingLayer::update(queue, occlusion, stats);
 
+    m_dirtyRect.Union(m_updateRect);
     if (contentBounds().IsEmpty())
+        return;
+    if (visibleContentRect().IsEmpty())
+        return;
+    if (!isDirty())
         return;
 
     createUpdaterIfNeeded();
@@ -317,10 +326,12 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* 
         updatePart(m_foreTrackUpdater.get(), m_foreTrack.get(), contentRect, queue, stats);
 
     // Consider the thumb to be at the origin when painting.
-    WebKit::WebRect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-    gfx::Rect originThumbRect = scrollbarLayerRectToContentRect(gfx::Rect(0, 0, thumbRect.width, thumbRect.height));
+    gfx::Rect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
+    gfx::Rect originThumbRect = scrollbarLayerRectToContentRect(gfx::Rect(thumbRect.size()));
     if (!originThumbRect.IsEmpty())
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
+
+    m_dirtyRect = gfx::RectF();
 }
 
 }  // namespace cc
