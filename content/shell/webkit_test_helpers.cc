@@ -60,6 +60,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->hyperlink_auditing_enabled = false;
   prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = true;
+  prefs->webgl_errors_to_console_enabled = false;
 }
 
 }  // namespace content
