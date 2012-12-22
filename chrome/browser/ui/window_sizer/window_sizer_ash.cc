@@ -119,13 +119,11 @@ bool MoveRect(const gfx::Rect& work_area,
 
 }  // namespace
 
-bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
-                                       gfx::Rect* bounds_in_screen,
+bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
                                        ui::WindowShowState* show_state) const {
   DCHECK(show_state);
   DCHECK(bounds_in_screen);
-  *bounds_in_screen = specified_bounds;
-  DCHECK(bounds_in_screen->IsEmpty());
+  bounds_in_screen->SetRect(0, 0, 0, 0);
 
   ui::WindowShowState passed_show_state = *show_state;
   if (!GetSavedWindowBounds(bounds_in_screen, show_state))

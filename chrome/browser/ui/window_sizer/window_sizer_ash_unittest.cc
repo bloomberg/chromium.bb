@@ -97,7 +97,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
   int grid = WindowSizer::kDesktopBorderSize;
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
                         WindowSizer::kDesktopBorderSize,
@@ -108,7 +108,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1024x768, taskbar on bottom
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_bottom_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_bottom_work_area, gfx::Rect(),
                     gfx::Rect(), gfx::Rect(), DEFAULT, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
@@ -122,7 +122,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1024x768, taskbar on right
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_right_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_right_work_area, gfx::Rect(),
                     gfx::Rect(), gfx::Rect(), DEFAULT, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
@@ -136,7 +136,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1024x768, taskbar on left
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_left_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_left_work_area, gfx::Rect(),
                     gfx::Rect(), gfx::Rect(), DEFAULT, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(gfx::Rect(taskbar_left_work_area.x() +
@@ -153,7 +153,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1024x768, taskbar on top
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_top_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_top_work_area, gfx::Rect(),
                     gfx::Rect(), gfx::Rect(), DEFAULT, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
@@ -168,7 +168,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1280x1024
     gfx::Rect window_bounds;
-    GetWindowBounds(twelveeighty, twelveeighty, gfx::Rect(), gfx::Rect(),
+    GetWindowBounds(p1280x1024, p1280x1024, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect((1280 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
@@ -179,7 +179,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 4:3 monitor case, 1600x1200
     gfx::Rect window_bounds;
-    GetWindowBounds(sixteenhundred, sixteenhundred, gfx::Rect(), gfx::Rect(),
+    GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect((1600 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
@@ -190,7 +190,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 16:10 monitor case, 1680x1050
     gfx::Rect window_bounds;
-    GetWindowBounds(sixteeneighty, sixteeneighty, gfx::Rect(), gfx::Rect(),
+    GetWindowBounds(p1680x1050, p1680x1050, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect((1680 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
@@ -203,7 +203,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
   { // 16:10 monitor case, 1920x1200
     gfx::Rect window_bounds;
-    GetWindowBounds(nineteentwenty, nineteentwenty, gfx::Rect(), gfx::Rect(),
+    GetWindowBounds(p1920x1200, p1920x1200, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect((1920 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
@@ -218,7 +218,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 TEST_F(WindowSizerTest, LastWindowBoundsCase) {
   { // normal, in the middle of the screen somewhere.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 500, 400),
                     gfx::Rect(), LAST_ACTIVE, NULL, gfx::Rect(),
@@ -231,7 +231,7 @@ TEST_F(WindowSizerTest, LastWindowBoundsCase) {
 
   { // taskbar on top.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_top_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_top_work_area, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 500, 400),
                     gfx::Rect(), LAST_ACTIVE, NULL, gfx::Rect(),
@@ -245,7 +245,7 @@ TEST_F(WindowSizerTest, LastWindowBoundsCase) {
 
   { // Too small to satisify the minimum visibility condition.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 29, 29),
                     gfx::Rect(), LAST_ACTIVE, NULL, gfx::Rect(),
@@ -260,7 +260,7 @@ TEST_F(WindowSizerTest, LastWindowBoundsCase) {
 
   { // Normal.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 500, 400),
                     gfx::Rect(), LAST_ACTIVE, NULL, gfx::Rect(),
@@ -279,7 +279,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
                              WindowSizer::kDesktopBorderSize, 500, 400);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), initial_bounds,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(), initial_bounds,
                     gfx::Rect(), PERSISTED, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(initial_bounds.ToString(), window_bounds.ToString());
   }
@@ -288,7 +288,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(0, 0, 1024, 768);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), initial_bounds,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(), initial_bounds,
                     gfx::Rect(), PERSISTED, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(initial_bounds.ToString(), window_bounds.ToString());
   }
@@ -297,7 +297,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(-600, 10, 500, 400);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, left_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, left_s1024x768,
                     initial_bounds, gfx::Rect(), PERSISTED, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(initial_bounds.ToString(), window_bounds.ToString());
@@ -307,7 +307,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(-1024, 0, 1024, 768);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, left_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, left_s1024x768,
                     initial_bounds, gfx::Rect(), PERSISTED, NULL, gfx::Rect(),
                     &window_bounds);
     EXPECT_EQ(initial_bounds.ToString(), window_bounds.ToString());
@@ -319,8 +319,8 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(1074, 50, 600, 500);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
-                    initial_bounds, right_nonprimary, PERSISTED, NULL,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, right_s1024x768, PERSISTED, NULL,
                     gfx::Rect(), &window_bounds);
     EXPECT_EQ(initial_bounds.ToString(), window_bounds.ToString());
   }
@@ -331,8 +331,8 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(1274, 50, 600, 500);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
-                    initial_bounds, right_nonprimary, PERSISTED,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, right_s1024x768, PERSISTED,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ("1224,50 600x500", window_bounds.ToString());
   }
@@ -343,15 +343,15 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect initial_bounds(1274, 50, 900, 700);
 
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
-                    initial_bounds, right_nonprimary, PERSISTED,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, right_s1024x768, PERSISTED,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ("1024,0 800x600", window_bounds.ToString());
   }
 
   { // width and height too small
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 29, 29),
                     gfx::Rect(), PERSISTED, NULL, gfx::Rect(), &window_bounds);
@@ -371,7 +371,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
 TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // taskbar on left.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, taskbar_left_work_area, gfx::Rect(),
+    GetWindowBounds(p1024x768, taskbar_left_work_area, gfx::Rect(),
                     gfx::Rect(WindowSizer::kDesktopBorderSize,
                               WindowSizer::kDesktopBorderSize, 500, 400),
                     gfx::Rect(), LAST_ACTIVE, NULL, gfx::Rect(),
@@ -385,7 +385,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // offset would put the new window offscreen at the bottom but the minimum
     // visibility condition is barely satisfied without relocation.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(10, 728, 500, 400), gfx::Rect(), LAST_ACTIVE,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(10 + kWindowTilePixels, 738, 500, 400).ToString(),
@@ -395,7 +395,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // offset would put the new window offscreen at the bottom and the minimum
     // visibility condition is satisified by relocation.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(10, 729, 500, 400), gfx::Rect(), LAST_ACTIVE,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(10 + kWindowTilePixels,
@@ -408,7 +408,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // offset would put the new window offscreen at the right but the minimum
     // visibility condition is barely satisfied without relocation.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(984, 10, 500, 400), gfx::Rect(), LAST_ACTIVE,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(994, 10 + kWindowTilePixels, 500, 400).ToString(),
@@ -418,7 +418,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // offset would put the new window offscreen at the right and the minimum
     // visibility condition is satisified by relocation.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(985, 10, 500, 400), gfx::Rect(), LAST_ACTIVE,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */,
@@ -431,7 +431,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // offset would put the new window offscreen at the bottom right and the
     // minimum visibility condition is satisified by relocation.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(985, 729, 500, 400), gfx::Rect(), LAST_ACTIVE,
                     NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */,
@@ -487,8 +487,8 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   window->Show();
   { // With a shown window it's size should get returned.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_s1024x768,
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     // The position should be right flush.
     EXPECT_EQ("384,32 640x320", window_bounds.ToString());
@@ -499,8 +499,8 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
     // side and inside the screen.
     window->SetBounds(gfx::Rect(350, 600, 640, 320));
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_s1024x768,
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     // The position should be left & bottom flush.
     EXPECT_EQ("0,448 640x320", window_bounds.ToString());
@@ -510,8 +510,8 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
     // screen, it will not move back into the screen.
     window->SetBounds(gfx::Rect(1000, 600, 640, 320));
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_s1024x768,
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     // The position should be left & bottom flush.
     EXPECT_EQ("0,448 640x320", window_bounds.ToString());
@@ -522,8 +522,8 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
 
   { // Make sure that popups do not get changed.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_s1024x768,
                     PERSISTED, popup_owning_browser.get(),
                     gfx::Rect(), &window_bounds);
     EXPECT_EQ("50,100 300x150", window_bounds.ToString());
@@ -532,16 +532,16 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   window->Hide();
   { // If a window is there but not shown the persisted default should be used.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_s1024x768,
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     EXPECT_EQ("50,100 300x150", window_bounds.ToString());
   }
 
   { // If a window is there but not shown the default should be returned.
     gfx::Rect window_bounds;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(), bottom_nonprimary,
+    GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
+                    gfx::Rect(), bottom_s1024x768,
                     DEFAULT, browser.get(), gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
                         WindowSizer::kDesktopBorderSize,

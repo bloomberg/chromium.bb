@@ -198,16 +198,23 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   *show_state = GetWindowDefaultShowState();
   *bounds = specified_bounds;
   if (bounds->IsEmpty()) {
-    if (GetBoundsOverride(specified_bounds, bounds, show_state))
+#if defined(USE_ASH)
+    // See if ash should decide the window placement.
+    // TODO(beng): insufficient but currently necessary.
+    // http://crbug.com/133312
+    if (chrome::ShouldOpenAshOnStartup() &&
+        GetBoundsOverrideAsh(bounds, show_state))
+      return;
+#endif
+    // See if there's last active window's placement information.
+    if (GetLastWindowBounds(bounds, show_state))
       return;
     // See if there's saved placement information.
-    if (!GetLastWindowBounds(bounds, show_state)) {
-      if (!GetSavedWindowBounds(bounds, show_state)) {
-        // No saved placement, figure out some sensible default size based on
-        // the user's screen size.
-        GetDefaultWindowBounds(bounds);
-      }
-    }
+    if (GetSavedWindowBounds(bounds, show_state))
+      return;
+    // No saved placement, figure out some sensible default size based on
+    // the user's screen size.
+    GetDefaultWindowBounds(bounds);
   } else {
     // In case that there was a bound given we need to make sure that it is
     // visible and fits on the screen.
@@ -364,18 +371,6 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
   bounds->set_y(std::max(min_y, std::min(max_y, bounds->y())));
   bounds->set_x(std::max(min_x, std::min(max_x, bounds->x())));
 #endif  // defined(OS_MACOSX)
-}
-
-bool WindowSizer::GetBoundsOverride(
-    const gfx::Rect& specified_bounds,
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
-#if defined(USE_ASH)
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (chrome::ShouldOpenAshOnStartup())
-    return GetBoundsOverrideAsh(specified_bounds, bounds, show_state);
-#endif
-  return false;
 }
 
 ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {

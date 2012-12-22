@@ -14,28 +14,28 @@
 #include "content/public/test/test_browser_thread.h"
 #include "ui/gfx/rect.h"
 
-// Some standard monitor sizes (no task bar).
-static const gfx::Rect tentwentyfour(0, 0, 1024, 768);
-static const gfx::Rect twelveeighty(0, 0, 1280, 1024);
-static const gfx::Rect sixteenhundred(0, 0, 1600, 1200);
-static const gfx::Rect sixteeneighty(0, 0, 1680, 1050);
-static const gfx::Rect nineteentwenty(0, 0, 1920, 1200);
+// Some standard primary monitor sizes (no task bar).
+static const gfx::Rect p1024x768(0, 0, 1024, 768);
+static const gfx::Rect p1280x1024(0, 0, 1280, 1024);
+static const gfx::Rect p1600x1200(0, 0, 1600, 1200);
+static const gfx::Rect p1680x1050(0, 0, 1680, 1050);
+static const gfx::Rect p1920x1200(0, 0, 1920, 1200);
 
-// Represents a 1024x768 monitor that is not the primary monitor, arranged to
+// Represents a 1024x768 monitor that is the secondary monitor, arranged to
 // the immediate left of the primary 1024x768 monitor.
-static const gfx::Rect left_nonprimary(-1024, 0, 1024, 768);
+static const gfx::Rect left_s1024x768(-1024, 0, 1024, 768);
 
-// Represents a 1024x768 monitor that is not the primary monitor, arranged to
+// Represents a 1024x768 monitor that is the secondary monitor, arranged to
 // the immediate right of the primary 1024x768 monitor.
-static const gfx::Rect right_nonprimary(1024, 0, 1024, 768);
+static const gfx::Rect right_s1024x768(1024, 0, 1024, 768);
 
-// Represents a 1024x768 monitor that is not the primary monitor, arranged to
+// Represents a 1024x768 monitor that is the secondary monitor, arranged to
 // the immediate top of the primary 1024x768 monitor.
-static const gfx::Rect top_nonprimary(0, -768, 1024, 768);
+static const gfx::Rect top_s1024x768(0, -768, 1024, 768);
 
-// Represents a 1024x768 monitor that is not the primary monitor, arranged to
+// Represents a 1024x768 monitor that is the secondary monitor, arranged to
 // the immediate bottom of the primary 1024x768 monitor.
-static const gfx::Rect bottom_nonprimary(0, 768, 1024, 768);
+static const gfx::Rect bottom_s1024x768(0, 768, 1024, 768);
 
 // The work area for 1024x768 monitors with different taskbar orientations.
 static const gfx::Rect taskbar_bottom_work_area(0, 0, 1024, 734);
