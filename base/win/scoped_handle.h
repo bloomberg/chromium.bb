@@ -42,7 +42,7 @@ class GenericScopedHandle {
  public:
   typedef typename Traits::Handle Handle;
 
-  // Helper object to contain the effect of Receive() to the funtion that needs
+  // Helper object to contain the effect of Receive() to the function that needs
   // a pointer, and allow proper tracking of the handle.
   class Receiver {
    public:
