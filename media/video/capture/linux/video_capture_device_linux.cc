@@ -71,6 +71,34 @@ static VideoCaptureCapability::Format V4l2ColorToVideoCaptureColorFormat(
   return result;
 }
 
+static void GetListOfUsableFourCCs(bool favour_mjpeg, std::list<int>* fourccs) {
+  for (size_t i = 0; i < arraysize(kV4l2RawFmts); ++i)
+    fourccs->push_back(kV4l2RawFmts[i]);
+  if (favour_mjpeg)
+    fourccs->push_front(V4L2_PIX_FMT_MJPEG);
+  else
+    fourccs->push_back(V4L2_PIX_FMT_MJPEG);
+}
+
+static bool HasUsableFormats(int fd) {
+  v4l2_fmtdesc fmtdesc;
+  std::list<int> usable_fourccs;
+
+  GetListOfUsableFourCCs(false, &usable_fourccs);
+
+  memset(&fmtdesc, 0, sizeof(v4l2_fmtdesc));
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+  while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
+    if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
+                  fmtdesc.pixelformat) != usable_fourccs.end())
+      return true;
+
+    fmtdesc.index++;
+  }
+  return false;
+}
+
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   int fd = -1;
 
@@ -97,8 +125,12 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
         (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
       // This is a V4L2 video capture device
-      name.device_name = StringPrintf("%s", cap.card);
-      device_names->push_back(name);
+      if (HasUsableFormats(fd)) {
+        name.device_name = StringPrintf("%s", cap.card);
+        device_names->push_back(name);
+      } else {
+        DVLOG(1) << "No usable formats reported by " << info.filename;
+      }
     }
     close(fd);
   }
@@ -232,16 +264,12 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
   // Some device failed in first VIDIOC_TRY_FMT with EBUSY or EIO.
   // But second VIDIOC_TRY_FMT succeeds.
   // See http://crbug.com/94134.
-  // For large resolutions, favour mjpeg over raw formats.
   bool format_match = false;
   std::list<int> v4l2_formats;
 
-  if (width > kMjpegWidth || height > kMjpegHeight) {
-    v4l2_formats.push_back(V4L2_PIX_FMT_MJPEG);
-  }
-  for (size_t i = 0; i < arraysize(kV4l2RawFmts); ++i) {
-    v4l2_formats.push_back(kV4l2RawFmts[i]);
-  }
+  // For large resolutions, favour mjpeg over raw formats.
+  GetListOfUsableFourCCs(width > kMjpegWidth || height > kMjpegHeight,
+                         &v4l2_formats);
 
   for (std::list<int>::const_iterator it = v4l2_formats.begin();
        it != v4l2_formats.end() && !format_match; ++it) {
