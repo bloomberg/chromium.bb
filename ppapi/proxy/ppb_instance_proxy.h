@@ -9,7 +9,6 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
@@ -79,8 +78,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                               uint32_t event_classes) OVERRIDE;
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) OVERRIDE;
-  virtual void ClosePendingUserGesture(PP_Instance instance,
-                                       PP_TimeTicks timestamp) OVERRIDE;
   virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
@@ -187,8 +184,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                    uint32_t event_classes);
   void OnHostMsgClearInputEvents(PP_Instance instance,
                                  uint32_t event_classes);
-  void OnMsgHandleInputEventAck(PP_Instance instance,
-                                PP_TimeTicks timestamp);
   void OnHostMsgPostMessage(PP_Instance instance,
                             SerializedVarReceiveInput message);
   void OnHostMsgLockMouse(PP_Instance instance);

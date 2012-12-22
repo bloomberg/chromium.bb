@@ -1765,8 +1765,7 @@ bool PluginInstance::IsFullPagePlugin() const {
 bool PluginInstance::IsProcessingUserGesture() {
   PP_TimeTicks now =
       ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-  // Give a lot of slack so tests won't be flaky. Well behaved plugins will
-  // close the user gesture.
+  // Give a lot of slack so tests won't be flaky.
   const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
   return (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
 }
@@ -1870,13 +1869,6 @@ ContentDecryptorDelegate* PluginInstance::GetContentDecryptorDelegate() {
   content_decryptor_delegate_.reset(
       new ContentDecryptorDelegate(pp_instance_, plugin_decryption_interface));
   return content_decryptor_delegate_.get();
-}
-
-void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
-                                             PP_TimeTicks timestamp) {
-  // Do nothing so that the pending user gesture will stay open for
-  // kUserGestureDurationInSeconds.
-  // TODO(yzshen): remove the code for closing pending user gesture.
 }
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,

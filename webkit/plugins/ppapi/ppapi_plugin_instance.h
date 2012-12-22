@@ -381,8 +381,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                               uint32_t event_classes) OVERRIDE;
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) OVERRIDE;
-  virtual void ClosePendingUserGesture(PP_Instance instance,
-                                       PP_TimeTicks timestamp);
   virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
