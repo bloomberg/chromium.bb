@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   size_t num_constrained_windows =
-      constrained_window_tab_helper->constrained_window_count();
+      constrained_window_tab_helper->dialog_count();
   EXPECT_EQ(1u, num_constrained_windows);
 
   // Navigate away from the page (this is when the test usually crashes).
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
 
   // The dialog should've been closed.
   num_constrained_windows =
-      constrained_window_tab_helper->constrained_window_count();
+      constrained_window_tab_helper->dialog_count();
   EXPECT_EQ(0u, num_constrained_windows);
 }
 

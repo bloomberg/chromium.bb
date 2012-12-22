@@ -22,14 +22,14 @@ class ConstrainedWindowTabHelperDelegate {
   // blocked while displaying a tab modal dialog. During that time renderer host
   // will ignore any UI interaction within WebContents outside of the
   // currently displaying dialog.
-  virtual void SetTabContentBlocked(content::WebContents* web_contents,
-                                    bool blocked);
+  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
+                                     bool blocked);
 
   // Fills in |point| with the coordinates for positioning chrome style
   // constrained windows. The constrained window should position itself such
   // that its top center is at |point|. Return false if the default position
   // should be used.
-  virtual bool GetConstrainedWindowTopCenter(gfx::Point* point);
+  virtual bool GetDialogTopCenter(gfx::Point* point);
 
  protected:
   virtual ~ConstrainedWindowTabHelperDelegate();

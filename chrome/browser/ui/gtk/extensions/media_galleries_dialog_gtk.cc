@@ -154,11 +154,11 @@ void MediaGalleriesDialogGtk::OnAddFolder(GtkWidget* widget) {
 
 void MediaGalleriesDialogGtk::OnConfirm(GtkWidget* widget) {
   accepted_ = true;
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void MediaGalleriesDialogGtk::OnCancel(GtkWidget* widget) {
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 // MediaGalleriesDialogController ----------------------------------------------

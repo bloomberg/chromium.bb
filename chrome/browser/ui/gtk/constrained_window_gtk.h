@@ -54,9 +54,9 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual ~ConstrainedWindowGtk();
 
   // Overridden from ConstrainedWindow:
-  virtual void ShowConstrainedWindow() OVERRIDE;
-  virtual void CloseConstrainedWindow() OVERRIDE;
-  virtual void FocusConstrainedWindow() OVERRIDE;
+  virtual void ShowWebContentsModalDialog() OVERRIDE;
+  virtual void CloseWebContentsModalDialog() OVERRIDE;
+  virtual void FocusWebContentsModalDialog() OVERRIDE;
 
   // Called when the result of GetBackgroundColor may have changed.
   void BackgroundColorChanged();
@@ -88,7 +88,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   // Delegate that provides the contents of this constrained window.
   ConstrainedWindowGtkDelegate* delegate_;
 
-  // Stores if |ShowConstrainedWindow()| has been called.
+  // Stores if |ShowWebContentsModalDialog()| has been called.
   bool visible_;
 
   base::WeakPtrFactory<ConstrainedWindowGtk> weak_factory_;

@@ -121,7 +121,7 @@ void ShowSSLClientCertificateSelector(
   observer_->CertificateSelected(cert);
 
   if (!closePending_)
-    constrainedWindow_->CloseConstrainedWindow();
+    constrainedWindow_->CloseWebContentsModalDialog();
 }
 
 - (void)displayForWebContents:(content::WebContents*)webContents {

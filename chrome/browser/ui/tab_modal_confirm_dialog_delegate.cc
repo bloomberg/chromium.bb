@@ -97,5 +97,5 @@ void TabModalConfirmDialogDelegate::OnCanceled() {
 
 void TabModalConfirmDialogDelegate::CloseDialog() {
   if (window_)
-    window_->CloseConstrainedWindow();
+    window_->CloseWebContentsModalDialog();
 }

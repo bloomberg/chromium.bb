@@ -117,11 +117,11 @@ MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {
 
 void MediaGalleriesDialogCocoa::OnAcceptClicked() {
   accepted_ = true;
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void MediaGalleriesDialogCocoa::OnCancelClicked() {
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void MediaGalleriesDialogCocoa::OnAddFolderClicked() {

@@ -681,9 +681,9 @@ class Browser : public TabStripModelObserver,
                                         Profile* profile) OVERRIDE;
 
   // Overridden from ConstrainedWindowTabHelperDelegate:
-  virtual void SetTabContentBlocked(content::WebContents* web_contents,
-                                    bool blocked) OVERRIDE;
-  virtual bool GetConstrainedWindowTopCenter(gfx::Point* point) OVERRIDE;
+  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
+                                     bool blocked) OVERRIDE;
+  virtual bool GetDialogTopCenter(gfx::Point* point) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
   virtual content::WebContents* GetConstrainingWebContents(

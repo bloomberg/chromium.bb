@@ -379,7 +379,7 @@ void LoginHandler::CloseContentsDeferred() {
 
   // The hosting ConstrainedWindow may have been freed.
   if (dialog_)
-    dialog_->CloseConstrainedWindow();
+    dialog_->CloseWebContentsModalDialog();
 }
 
 // Helper to create a PasswordForm and stuff it into a vector as input

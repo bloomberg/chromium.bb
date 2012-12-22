@@ -51,7 +51,7 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
   size_t GetConstrainedWindowCount(WebContents* web_contents) const {
     ConstrainedWindowTabHelper* constrained_window_tab_helper =
         ConstrainedWindowTabHelper::FromWebContents(web_contents);
-    return constrained_window_tab_helper->constrained_window_count();
+    return constrained_window_tab_helper->dialog_count();
   }
 };
 

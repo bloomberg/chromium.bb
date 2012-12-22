@@ -38,7 +38,7 @@ base::RefCountedBytes* CreateTestData() {
 size_t GetConstrainedWindowCount(WebContents* tab) {
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(tab);
-  return constrained_window_tab_helper->constrained_window_count();
+  return constrained_window_tab_helper->dialog_count();
 }
 
 }  // namespace

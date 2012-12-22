@@ -59,13 +59,13 @@ ExtensionInstallDialogController::~ExtensionInstallDialogController() {
 void ExtensionInstallDialogController::InstallUIProceed() {
   delegate_->InstallUIProceed();
   delegate_ = NULL;
-  constrained_window_->CloseConstrainedWindow();
+  constrained_window_->CloseWebContentsModalDialog();
 }
 
 void ExtensionInstallDialogController::InstallUIAbort(bool user_initiated) {
   delegate_->InstallUIAbort(user_initiated);
   delegate_ = NULL;
-  constrained_window_->CloseConstrainedWindow();
+  constrained_window_->CloseWebContentsModalDialog();
 }
 
 void ExtensionInstallDialogController::OnConstrainedWindowClosed(

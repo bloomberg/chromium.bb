@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
 
   net::X509Certificate* cert = NULL;
   int count = 0;
@@ -49,11 +49,11 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE([selector panel]);
-  EXPECT_EQ(1u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
 
-  constrained_window_tab_helper->CloseConstrainedWindows();
+  constrained_window_tab_helper->CloseAllDialogs();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
 
   EXPECT_EQ(NULL, cert);
   EXPECT_EQ(1, count);

@@ -25,52 +25,52 @@ ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(
 }
 
 ConstrainedWindowTabHelper::~ConstrainedWindowTabHelper() {
-  DCHECK(child_windows_.empty());
+  DCHECK(child_dialogs_.empty());
 }
 
-void ConstrainedWindowTabHelper::AddConstrainedDialog(
+void ConstrainedWindowTabHelper::AddDialog(
     ConstrainedWindow* window) {
-  child_windows_.push_back(window);
+  child_dialogs_.push_back(window);
 
-  if (child_windows_.size() == 1 && window->CanShowConstrainedWindow()) {
-    window->ShowConstrainedWindow();
-    BlockTabContent(true);
+  if (child_dialogs_.size() == 1 && window->CanShowWebContentsModalDialog()) {
+    window->ShowWebContentsModalDialog();
+    BlockWebContentsInteraction(true);
   }
 }
 
-void ConstrainedWindowTabHelper::CloseConstrainedWindows() {
-  // Clear out any constrained windows since we are leaving this page entirely.
-  // To ensure that we iterate over every element in child_windows_ we
-  // need to use a copy of child_windows_. Otherwise if
-  // window->CloseConstrainedWindow() modifies child_windows_ we could end up
-  // skipping some elements.
-  ConstrainedWindowList child_windows_copy(child_windows_);
-  for (ConstrainedWindowList::iterator it = child_windows_copy.begin();
-       it != child_windows_copy.end(); ++it) {
+void ConstrainedWindowTabHelper::CloseAllDialogs() {
+  // Clear out any web contents modal dialogs since we are leaving this page
+  // entirely.  To ensure that we iterate over every element in child_dialogs_
+  // we need to use a copy of child_dialogs_. Otherwise if
+  // window->CloseWebContentsModalDialog() modifies child_dialogs_ we could end
+  // up skipping some elements.
+  WebContentsModalDialogList child_dialogs_copy(child_dialogs_);
+  for (WebContentsModalDialogList::iterator it = child_dialogs_copy.begin();
+       it != child_dialogs_copy.end(); ++it) {
     ConstrainedWindow* window = *it;
     if (window) {
-      window->CloseConstrainedWindow();
-      BlockTabContent(false);
+      window->CloseWebContentsModalDialog();
+      BlockWebContentsInteraction(false);
     }
   }
 }
 
 void ConstrainedWindowTabHelper::WillClose(ConstrainedWindow* window) {
-  ConstrainedWindowList::iterator i(
-      std::find(child_windows_.begin(), child_windows_.end(), window));
-  bool removed_topmost_window = i == child_windows_.begin();
-  if (i != child_windows_.end())
-    child_windows_.erase(i);
-  if (child_windows_.empty()) {
-    BlockTabContent(false);
+  WebContentsModalDialogList::iterator i(
+      std::find(child_dialogs_.begin(), child_dialogs_.end(), window));
+  bool removed_topmost_window = i == child_dialogs_.begin();
+  if (i != child_dialogs_.end())
+    child_dialogs_.erase(i);
+  if (child_dialogs_.empty()) {
+    BlockWebContentsInteraction(false);
   } else {
     if (removed_topmost_window)
-      child_windows_[0]->ShowConstrainedWindow();
-    BlockTabContent(true);
+      child_dialogs_[0]->ShowWebContentsModalDialog();
+    BlockWebContentsInteraction(true);
   }
 }
 
-void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
+void ConstrainedWindowTabHelper::BlockWebContentsInteraction(bool blocked) {
   WebContents* contents = web_contents();
   if (!contents) {
     // The WebContents has already disconnected.
@@ -85,7 +85,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
         host->GetRoutingID(), blocked));
   }
   if (delegate_)
-    delegate_->SetTabContentBlocked(contents, blocked);
+    delegate_->SetWebContentsBlocked(contents, blocked);
 }
 
 void ConstrainedWindowTabHelper::DidNavigateMainFrame(
@@ -94,13 +94,13 @@ void ConstrainedWindowTabHelper::DidNavigateMainFrame(
   // Close constrained windows if necessary.
   if (!net::RegistryControlledDomainService::SameDomainOrHost(
           details.previous_url, details.entry->GetURL()))
-    CloseConstrainedWindows();
+    CloseAllDialogs();
 }
 
 void ConstrainedWindowTabHelper::DidGetIgnoredUIEvent() {
-  if (constrained_window_count()) {
-    ConstrainedWindow* window = *constrained_window_begin();
-    window->FocusConstrainedWindow();
+  if (dialog_count()) {
+    ConstrainedWindow* window = *dialog_begin();
+    window->FocusWebContentsModalDialog();
   }
 }
 
@@ -109,5 +109,5 @@ void ConstrainedWindowTabHelper::WebContentsDestroyed(WebContents* tab) {
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
   // some of these to close.  CloseWindows is async, so it might get called
   // twice before it runs.
-  CloseConstrainedWindows();
+  CloseAllDialogs();
 }

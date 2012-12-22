@@ -63,7 +63,7 @@ WebDialogDelegate*
 
 void ConstrainedWebDialogDelegateBase::OnDialogCloseFromWebUI() {
   closed_via_webui_ = true;
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void ConstrainedWebDialogDelegateBase::set_window(ConstrainedWindow* window) {

@@ -38,12 +38,12 @@ class ConstrainedWindowMac : public ConstrainedWindow,
   virtual ~ConstrainedWindowMac();
 
   // ConstrainedWindow implementation.
-  virtual void ShowConstrainedWindow() OVERRIDE;
+  virtual void ShowWebContentsModalDialog() OVERRIDE;
   // Closes the constrained window and deletes this instance.
-  virtual void CloseConstrainedWindow() OVERRIDE;
-  virtual void PulseConstrainedWindow() OVERRIDE;
+  virtual void CloseWebContentsModalDialog() OVERRIDE;
+  virtual void PulseWebContentsModalDialog() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
-  virtual bool CanShowConstrainedWindow() OVERRIDE;
+  virtual bool CanShowWebContentsModalDialog() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

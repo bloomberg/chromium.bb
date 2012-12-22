@@ -75,14 +75,14 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->AddConstrainedDialog(this);
+  constrained_window_tab_helper->AddDialog(this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
   border_.Destroy();
 }
 
-void ConstrainedWindowGtk::ShowConstrainedWindow() {
+void ConstrainedWindowGtk::ShowWebContentsModalDialog() {
   gtk_widget_show_all(border_.get());
 
   // We collaborate with WebContentsView and stick ourselves in the
@@ -92,7 +92,7 @@ void ConstrainedWindowGtk::ShowConstrainedWindow() {
   visible_ = true;
 }
 
-void ConstrainedWindowGtk::CloseConstrainedWindow() {
+void ConstrainedWindowGtk::CloseWebContentsModalDialog() {
   if (visible_)
     ContainingView()->RemoveConstrainedWindow(this);
   delegate_->DeleteDelegate();
@@ -103,7 +103,7 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   delete this;
 }
 
-void ConstrainedWindowGtk::FocusConstrainedWindow() {
+void ConstrainedWindowGtk::FocusWebContentsModalDialog() {
   GtkWidget* focus_widget = delegate_->GetFocusWidget();
   if (!focus_widget)
     return;
@@ -142,7 +142,7 @@ gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
     // on widget().
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&ConstrainedWindowGtk::CloseConstrainedWindow,
+        base::Bind(&ConstrainedWindowGtk::CloseWebContentsModalDialog,
                    weak_factory_.GetWeakPtr()));
     return TRUE;
   }
@@ -156,5 +156,5 @@ void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
   if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(widget())))
     return;
 
-  FocusConstrainedWindow();
+  FocusWebContentsModalDialog();
 }

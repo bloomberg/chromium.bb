@@ -1829,8 +1829,8 @@ void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ConstrainedWindowTabHelperDelegate implementation:
 
-void Browser::SetTabContentBlocked(content::WebContents* web_contents,
-                                   bool blocked) {
+void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
+                                    bool blocked) {
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED();
@@ -1841,7 +1841,7 @@ void Browser::SetTabContentBlocked(content::WebContents* web_contents,
     web_contents->Focus();
 }
 
-bool Browser::GetConstrainedWindowTopCenter(gfx::Point* point) {
+bool Browser::GetDialogTopCenter(gfx::Point* point) {
   int y = 0;
   if (window_->GetConstrainedWindowTopY(&y)) {
     *point = gfx::Point(window_->GetBounds().width() / 2, y);

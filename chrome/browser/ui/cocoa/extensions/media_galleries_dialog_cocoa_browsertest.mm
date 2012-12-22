@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  constrained_window_tab_helper->CloseConstrainedWindows();
+  constrained_window_tab_helper->CloseAllDialogs();
   EXPECT_FALSE([window isVisible]);
 }
 

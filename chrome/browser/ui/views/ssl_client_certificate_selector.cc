@@ -163,7 +163,7 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(window_);
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,7 +247,7 @@ void SSLClientCertificateSelector::OnSelectionChanged() {
 
 void SSLClientCertificateSelector::OnDoubleClick() {
   if (Accept())
-    window_->CloseConstrainedWindow();
+    window_->CloseWebContentsModalDialog();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

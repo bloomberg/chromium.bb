@@ -26,17 +26,17 @@ class ConstrainedWindowTabHelperTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
 };
 
-class ConstrainedWindowCloseTest : public ConstrainedWindow {
+class WebContentsModalDialogCloseTest : public ConstrainedWindow {
  public:
-  explicit ConstrainedWindowCloseTest(content::WebContents* web_contents)
+  explicit WebContentsModalDialogCloseTest(content::WebContents* web_contents)
       : web_contents_(web_contents) {
   }
 
-  virtual void ShowConstrainedWindow() {}
-  virtual void FocusConstrainedWindow() {}
-  virtual ~ConstrainedWindowCloseTest() {}
+  virtual void ShowWebContentsModalDialog() {}
+  virtual void FocusWebContentsModalDialog() {}
+  virtual ~WebContentsModalDialogCloseTest() {}
 
-  virtual void CloseConstrainedWindow() {
+  virtual void CloseWebContentsModalDialog() {
     ConstrainedWindowTabHelper* constrained_window_tab_helper =
         ConstrainedWindowTabHelper::FromWebContents(web_contents_);
     constrained_window_tab_helper->WillClose(this);
@@ -48,16 +48,16 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
 };
 
 TEST_F(ConstrainedWindowTabHelperTest, ConstrainedWindows) {
-  ConstrainedWindowCloseTest window(web_contents());
+  WebContentsModalDialogCloseTest window(web_contents());
   window.close_count = 0;
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents());
 
   const int kWindowCount = 4;
   for (int i = 0; i < kWindowCount; i++)
-    constrained_window_tab_helper->AddConstrainedDialog(&window);
+    constrained_window_tab_helper->AddDialog(&window);
   EXPECT_EQ(window.close_count, 0);
 
-  constrained_window_tab_helper->CloseConstrainedWindows();
+  constrained_window_tab_helper->CloseAllDialogs();
   EXPECT_EQ(window.close_count, kWindowCount);
 }

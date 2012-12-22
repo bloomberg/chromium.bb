@@ -29,7 +29,7 @@ ConstrainedWindowMac::ConstrainedWindowMac(
   DCHECK(sheet_.get());
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  constrained_window_tab_helper->AddConstrainedDialog(this);
+  constrained_window_tab_helper->AddDialog(this);
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
@@ -40,7 +40,7 @@ ConstrainedWindowMac::~ConstrainedWindowMac() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void ConstrainedWindowMac::ShowConstrainedWindow() {
+void ConstrainedWindowMac::ShowWebContentsModalDialog() {
   NSWindow* parent_window = GetParentWindow();
   NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
   if (!parent_window || !parent_view) {
@@ -54,7 +54,7 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   [controller showSheet:sheet_ forParentView:parent_view];
 }
 
-void ConstrainedWindowMac::CloseConstrainedWindow() {
+void ConstrainedWindowMac::CloseWebContentsModalDialog() {
   // This function may be called even if the constrained window was never shown.
   // Unset |pending_show_| to prevent the window from being reshown.
   pending_show_ = false;
@@ -68,7 +68,7 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
     delegate_->OnConstrainedWindowClosed(this);
 }
 
-void ConstrainedWindowMac::PulseConstrainedWindow() {
+void ConstrainedWindowMac::PulseWebContentsModalDialog() {
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       pulseSheet:sheet_];
 }
@@ -78,7 +78,7 @@ gfx::NativeWindow ConstrainedWindowMac::GetNativeWindow() {
   return nil;
 }
 
-bool ConstrainedWindowMac::CanShowConstrainedWindow() {
+bool ConstrainedWindowMac::CanShowWebContentsModalDialog() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return true;
@@ -96,7 +96,7 @@ void ConstrainedWindowMac::Observe(
 
   if (pending_show_) {
     pending_show_ = false;
-    ShowConstrainedWindow();
+    ShowWebContentsModalDialog();
   }
 }
 

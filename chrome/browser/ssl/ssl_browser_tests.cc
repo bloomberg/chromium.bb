@@ -216,7 +216,7 @@ class SSLUITest : public InProcessBrowserTest {
 
   size_t GetConstrainedWindowCount() const {
     return ConstrainedWindowTabHelper::FromWebContents(
-        chrome::GetActiveWebContents(browser()))->constrained_window_count();
+        chrome::GetActiveWebContents(browser()))->dialog_count();
   }
 
   static bool GetFilePathWithHostAndPortReplacement(

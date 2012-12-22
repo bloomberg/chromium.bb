@@ -46,7 +46,7 @@ class ConstrainedWebDialogDelegateViews
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
-    GetWindow()->CloseConstrainedWindow();
+    GetWindow()->CloseWebContentsModalDialog();
   }
 
   // contents::WebContentsDelegate
@@ -151,7 +151,7 @@ class ConstrainedWebDialogDelegateViewViews
       const ui::Accelerator& accelerator) OVERRIDE {
     // Pressing ESC closes the dialog.
     DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-    GetWindow()->CloseConstrainedWindow();
+    GetWindow()->CloseWebContentsModalDialog();
     return true;
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {

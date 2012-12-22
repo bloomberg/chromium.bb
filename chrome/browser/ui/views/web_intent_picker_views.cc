@@ -1143,7 +1143,7 @@ void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void WebIntentPickerViews::Close() {
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void WebIntentPickerViews::SetActionString(const string16& action) {

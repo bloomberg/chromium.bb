@@ -96,11 +96,11 @@ void CollectedCookiesMac::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void CollectedCookiesMac::PerformClose() {
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }
 
 void CollectedCookiesMac::OnConstrainedWindowClosed(

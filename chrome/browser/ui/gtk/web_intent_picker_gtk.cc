@@ -238,7 +238,7 @@ WebIntentPickerGtk::~WebIntentPickerGtk() {
 }
 
 void WebIntentPickerGtk::Close() {
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
   if (inline_disposition_web_contents_.get())
     inline_disposition_web_contents_->OnCloseStarted();
 }

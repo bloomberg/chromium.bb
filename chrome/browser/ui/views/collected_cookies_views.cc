@@ -528,5 +528,5 @@ void CollectedCookiesViews::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN, type);
-  window_->CloseConstrainedWindow();
+  window_->CloseWebContentsModalDialog();
 }

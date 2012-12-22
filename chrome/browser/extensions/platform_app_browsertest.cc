@@ -772,12 +772,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   // Verify that the shell window has a constrained window attached.
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(1u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
 
   // Close the constrained window and wait for the reply to the permission
   // request.
   ExtensionTestMessageListener listener("PermissionRequestDone", false);
-  constrained_window_tab_helper->CloseConstrainedWindows();
+  constrained_window_tab_helper->CloseAllDialogs();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
 

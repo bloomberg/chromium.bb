@@ -25,30 +25,30 @@ class ConstrainedWindowTabHelper
 
   // Adds the given window to the list of child windows. The window will notify
   // via WillClose() when it is being destroyed.
-  void AddConstrainedDialog(ConstrainedWindow* window);
+  void AddDialog(ConstrainedWindow* window);
 
-  // Closes all constrained windows.
-  void CloseConstrainedWindows();
+  // Closes all WebContentsModalDialogs.
+  void CloseAllDialogs();
 
-  // Called when a ConstrainedWindow we own is about to be closed.
+  // Called when a WebContentsModalDialogs we own is about to be closed.
   void WillClose(ConstrainedWindow* window);
 
   // Blocks/unblocks interaction with renderer process.
-  void BlockTabContent(bool blocked);
+  void BlockWebContentsInteraction(bool blocked);
 
   // Returns the number of constrained windows in this tab.
-  size_t constrained_window_count() { return child_windows_.size(); }
+  size_t dialog_count() { return child_dialogs_.size(); }
 
-  typedef std::deque<ConstrainedWindow*> ConstrainedWindowList;
+  typedef std::deque<ConstrainedWindow*> WebContentsModalDialogList;
 
   // Return an iterator for the first constrained window in this web contents.
-  ConstrainedWindowList::iterator constrained_window_begin() {
-    return child_windows_.begin();
+  WebContentsModalDialogList::iterator dialog_begin() {
+    return child_dialogs_.begin();
   }
 
   // Return an iterator for the last constrained window in this web contents.
-  ConstrainedWindowList::iterator constrained_window_end() {
-    return child_windows_.end();
+  WebContentsModalDialogList::iterator dialog_end() {
+    return child_dialogs_.end();
   }
 
  private:
@@ -66,7 +66,7 @@ class ConstrainedWindowTabHelper
   ConstrainedWindowTabHelperDelegate* delegate_;
 
   // All active constrained windows.
-  ConstrainedWindowList child_windows_;
+  WebContentsModalDialogList child_dialogs_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowTabHelper);
 };

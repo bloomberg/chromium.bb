@@ -180,7 +180,7 @@ bool HasConstrainedWindow(const Browser* browser) {
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  return constrained_window_tab_helper->constrained_window_count() > 0;
+  return constrained_window_tab_helper->dialog_count() > 0;
 }
 
 bool PrintPreviewShowing(const Browser* browser) {

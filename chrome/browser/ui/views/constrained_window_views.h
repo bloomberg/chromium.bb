@@ -67,9 +67,9 @@ class ConstrainedWindowViews : public views::Widget,
   content::WebContents* owner() const { return web_contents_; }
 
   // Overridden from ConstrainedWindow:
-  virtual void ShowConstrainedWindow() OVERRIDE;
-  virtual void CloseConstrainedWindow() OVERRIDE;
-  virtual void FocusConstrainedWindow() OVERRIDE;
+  virtual void ShowWebContentsModalDialog() OVERRIDE;
+  virtual void CloseWebContentsModalDialog() OVERRIDE;
+  virtual void FocusWebContentsModalDialog() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // Default insets for the dialog:

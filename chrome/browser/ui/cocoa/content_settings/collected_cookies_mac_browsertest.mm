@@ -15,16 +15,16 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Close) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
 
   // Deletes itself.
   CollectedCookiesMac* dialog =
       new CollectedCookiesMac(chrome::GetActiveWebContents(browser()));
-  EXPECT_EQ(1u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
 
   dialog->PerformClose();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, constrained_window_tab_helper->constrained_window_count());
+  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
 }
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Outlets) {

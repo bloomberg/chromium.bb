@@ -6,13 +6,13 @@
 
 #include "base/logging.h"
 
-void ConstrainedWindow::FocusConstrainedWindow() {
+void ConstrainedWindow::FocusWebContentsModalDialog() {
 }
 
-void ConstrainedWindow::PulseConstrainedWindow() {
+void ConstrainedWindow::PulseWebContentsModalDialog() {
 }
 
-bool ConstrainedWindow::CanShowConstrainedWindow() {
+bool ConstrainedWindow::CanShowWebContentsModalDialog() {
   return true;
 }
 

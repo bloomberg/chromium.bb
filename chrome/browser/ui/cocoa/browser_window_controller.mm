@@ -1510,7 +1510,7 @@ enum {
   if (!contents)
     return NO;
   return ConstrainedWindowTabHelper::FromWebContents(contents)->
-      constrained_window_count() == 0;
+      dialog_count() == 0;
 }
 
 // TabStripControllerDelegate protocol.

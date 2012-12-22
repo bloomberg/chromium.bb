@@ -383,7 +383,7 @@ void ConstrainedWindowFrameView::OnThemeChanged() {
 void ConstrainedWindowFrameView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   if (sender == close_button_)
-    container_->CloseConstrainedWindow();
+    container_->CloseWebContentsModalDialog();
 }
 
 int ConstrainedWindowFrameView::NonClientBorderThickness() const {
@@ -549,7 +549,7 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_button())
-      container_->CloseConstrainedWindow();
+      container_->CloseWebContentsModalDialog();
   }
 
  private:
@@ -586,7 +586,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->AddConstrainedDialog(this);
+  constrained_window_tab_helper->AddDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
   views::corewm::SetModalParent(GetNativeWindow(),
@@ -597,12 +597,12 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 ConstrainedWindowViews::~ConstrainedWindowViews() {
 }
 
-void ConstrainedWindowViews::ShowConstrainedWindow() {
+void ConstrainedWindowViews::ShowWebContentsModalDialog() {
   Show();
-  FocusConstrainedWindow();
+  FocusWebContentsModalDialog();
 }
 
-void ConstrainedWindowViews::CloseConstrainedWindow() {
+void ConstrainedWindowViews::CloseWebContentsModalDialog() {
 #if defined(USE_ASH)
   gfx::NativeView view = web_contents_->GetNativeView();
   // Allow the parent to animate again.
@@ -613,7 +613,7 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
   Close();
 }
 
-void ConstrainedWindowViews::FocusConstrainedWindow() {
+void ConstrainedWindowViews::FocusWebContentsModalDialog() {
   ConstrainedWindowTabHelper* helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   if ((!helper->delegate() ||

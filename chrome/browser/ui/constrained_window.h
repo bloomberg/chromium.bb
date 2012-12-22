@@ -16,23 +16,23 @@
 //
 class ConstrainedWindow {
  public:
-  // Makes the Constrained Window visible. Only one Constrained Window is shown
-  // at a time per tab.
-  virtual void ShowConstrainedWindow() = 0;
+  // Makes the web contents modal dialog visible. Only one web contents modal
+  // dialog is shown at a time per tab.
+  virtual void ShowWebContentsModalDialog() = 0;
 
-  // Closes the Constrained Window.
-  virtual void CloseConstrainedWindow() = 0;
+  // Closes the web contents modal dialog.
+  virtual void CloseWebContentsModalDialog() = 0;
 
-  // Sets focus on the Constrained Window.
-  virtual void FocusConstrainedWindow();
+  // Sets focus on the web contents modal dialog.
+  virtual void FocusWebContentsModalDialog();
 
-  // Runs a pulse animation for the constrained window.
-  virtual void PulseConstrainedWindow();
+  // Runs a pulse animation for the web contents modal dialog.
+  virtual void PulseWebContentsModalDialog();
 
-  // Checks if the constrained window can be shown.
-  virtual bool CanShowConstrainedWindow();
+  // Checks if the web contents modal dialog can be shown.
+  virtual bool CanShowWebContentsModalDialog();
 
-  // Returns the native window of the constrained window.
+  // Returns the native window of the web contents modal dialog.
   virtual gfx::NativeWindow GetNativeWindow();
 
  protected:

@@ -241,7 +241,7 @@ void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
   // on the original tab.
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->BlockTabContent(true);
+  constrained_window_tab_helper->BlockWebContentsInteraction(true);
   SetDialogState(kPickerSetup);
 
   pending_async_count_++;
@@ -705,7 +705,7 @@ void WebIntentPickerController::Reset() {
   DCHECK(web_contents_);
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->BlockTabContent(false);
+  constrained_window_tab_helper->BlockWebContentsInteraction(false);
 }
 
 void WebIntentPickerController::OnShowExtensionInstallDialog(

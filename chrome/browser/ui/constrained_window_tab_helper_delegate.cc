@@ -10,13 +10,12 @@ bool ConstrainedWindowTabHelperDelegate::ShouldFocusConstrainedWindow() {
   return true;
 }
 
-void ConstrainedWindowTabHelperDelegate::SetTabContentBlocked(
+void ConstrainedWindowTabHelperDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents, bool blocked) {
 }
 
 ConstrainedWindowTabHelperDelegate::~ConstrainedWindowTabHelperDelegate() {}
 
-bool ConstrainedWindowTabHelperDelegate::GetConstrainedWindowTopCenter(
-    gfx::Point* point) {
+bool ConstrainedWindowTabHelperDelegate::GetDialogTopCenter(gfx::Point* point) {
   return false;
 }

@@ -74,11 +74,11 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     // TODO(erg): WebContents used to own constrained windows, which is why
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
-    if (constrained_window_tab_helper->constrained_window_count() > 0) {
+    if (constrained_window_tab_helper->dialog_count() > 0) {
       ConstrainedWindow* window =
-          *constrained_window_tab_helper->constrained_window_begin();
+          *constrained_window_tab_helper->dialog_begin();
       DCHECK(window);
-      window->FocusConstrainedWindow();
+      window->FocusWebContentsModalDialog();
       return true;
     }
   }
