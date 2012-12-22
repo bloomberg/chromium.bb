@@ -15,7 +15,6 @@ size_t QuicUtils::StreamFramePacketOverhead(int num_frames) {
   return kPacketHeaderSize +
          1 +   // frame count
          (1 +  // 8 bit type
-          2 +  // 16 bit length
           kMinStreamFrameLength) * num_frames;
 }
 
