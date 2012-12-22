@@ -587,9 +587,12 @@ sudo "/usr/local/bin/${target%bit}" dpkg --assert-multi-arch >&/dev/null &&
   sudo sed -i 's/ / [arch=amd64,i386] /' \
               "/var/lib/chroot/${target}/etc/apt/sources.list"
   [ -d /var/lib/chroot/${target}/etc/dpkg/dpkg.cfg.d/ ] &&
-  echo foreign-architecture \
-       $([ "${arch}" = "32bit" ] && echo amd64 || echo i386) |
-    sudo sh -c "cat >'/var/lib/chroot/${target}/etc/dpkg/dpkg.cfg.d/multiarch'"
+  sudo "/usr/local/bin/${target%bit}" dpkg --add-architecture \
+      $([ "${arch}" = "32bit" ] && echo amd64 || echo i386) >&/dev/null ||
+    echo foreign-architecture \
+        $([ "${arch}" = "32bit" ] && echo amd64 || echo i386) |
+      sudo sh -c \
+        "cat >'/var/lib/chroot/${target}/etc/dpkg/dpkg.cfg.d/multiarch'"
 }
 
 # Configure "sudo" package
