@@ -39,7 +39,8 @@ class LayerTreeHostPerfTest : public ThreadedTest {
     if ((base::TimeTicks::HighResNow() - start_time_) >=
         base::TimeDelta::FromMilliseconds(kTimeLimitMillis))
       endTest();
-    impl->setNeedsRedraw();
+    else
+      impl->setNeedsRedraw();
   }
 
   virtual void buildTree() {}
