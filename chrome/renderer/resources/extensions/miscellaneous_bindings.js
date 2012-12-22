@@ -130,10 +130,10 @@
                              isExternal) {
     var isSendMessage = channelName == chromeHidden.kMessageChannel;
     var requestEvent = (isSendMessage ?
-       (isExternal ?
-           chrome.runtime.onMessageExternal : chrome.runtime.onMessage) :
-       (isExternal ?
-           chrome.extension.onRequestExternal : chrome.extension.onRequest));
+        (isExternal ?
+            chrome.runtime.onMessageExternal : chrome.runtime.onMessage) :
+        (isExternal ?
+            chrome.extension.onRequestExternal : chrome.extension.onRequest));
     if (requestEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       port.onMessage.addListener(function(request) {
@@ -146,8 +146,8 @@
           } else {
             // We nulled out port when sending the response, and now the page
             // is trying to send another response for the same request.
-              handleSendRequestError(isSendMessage, responseCallbackPreserved,
-                                     sourceExtensionId, targetExtensionId);
+            handleSendRequestError(isSendMessage, responseCallbackPreserved,
+                                   sourceExtensionId, targetExtensionId);
           }
         };
         // In case the extension never invokes the responseCallback, and also
@@ -160,19 +160,19 @@
             port = null;
           }
         });
-          if (!isSendMessage) {
-            requestEvent.dispatch(request, sender, responseCallback);
-          } else {
-            var rv = requestEvent.dispatch(request, sender, responseCallback);
-            responseCallbackPreserved =
-                rv && rv.results && rv.results.indexOf(true) > -1;
-            if (!responseCallbackPreserved && port) {
-              // If they didn't access the response callback, they're not
-              // going to send a response, so clean up the port immediately.
-              port.destroy_();
-              port = null;
-            }
+        if (!isSendMessage) {
+          requestEvent.dispatch(request, sender, responseCallback);
+        } else {
+          var rv = requestEvent.dispatch(request, sender, responseCallback);
+          responseCallbackPreserved =
+              rv && rv.results && rv.results.indexOf(true) > -1;
+          if (!responseCallbackPreserved && port) {
+            // If they didn't access the response callback, they're not
+            // going to send a response, so clean up the port immediately.
+            port.destroy_();
+            port = null;
           }
+        }
       });
       return true;
     }

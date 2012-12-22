@@ -293,6 +293,16 @@ scoped_ptr<WebRequestAction> CreateResponseCookieAction(
       new WebRequestResponseCookieAction(modification));
 }
 
+scoped_ptr<WebRequestAction> CreateSendMessageToExtensionAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  std::string message;
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kMessageKey, &message));
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestSendMessageToExtensionAction(message));
+}
+
 struct WebRequestActionFactory {
   // Factory methods for WebRequestAction instances. |dict| contains the json
   // dictionary that describes the action. |error| is used to return error
@@ -339,6 +349,8 @@ struct WebRequestActionFactory {
         &CreateRemoveResponseHeaderAction;
     factory_methods[keys::kIgnoreRulesType] =
         &CreateIgnoreRulesAction;
+    factory_methods[keys::kSendMessageToExtensionType] =
+        &CreateSendMessageToExtensionAction;
   }
 };
 
@@ -993,6 +1005,39 @@ LinkedPtrEventResponseDelta WebRequestResponseCookieAction::CreateDelta(
           extension_id, extension_install_time));
   result->response_cookie_modifications.push_back(
       response_cookie_modification_);
+  return result;
+}
+
+//
+// WebRequestSendMessageToExtensionAction
+//
+
+WebRequestSendMessageToExtensionAction::WebRequestSendMessageToExtensionAction(
+    const std::string& message)
+    : message_(message) {
+}
+
+WebRequestSendMessageToExtensionAction::
+~WebRequestSendMessageToExtensionAction() {}
+
+int WebRequestSendMessageToExtensionAction::GetStages() const {
+  return ON_BEFORE_REQUEST | ON_BEFORE_SEND_HEADERS | ON_HEADERS_RECEIVED |
+      ON_AUTH_REQUIRED;
+}
+
+WebRequestAction::Type WebRequestSendMessageToExtensionAction::GetType() const {
+  return WebRequestAction::ACTION_SEND_MESSAGE_TO_EXTENSION;
+}
+
+LinkedPtrEventResponseDelta WebRequestSendMessageToExtensionAction::CreateDelta(
+    const WebRequestRule::RequestData& request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_data.stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->messages_to_extension.insert(message_);
   return result;
 }
 

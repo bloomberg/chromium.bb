@@ -9,6 +9,7 @@ namespace declarative_webrequest_constants {
 
 // Signals to which WebRequestRulesRegistries are registered.
 const char kOnRequest[] = "declarativeWebRequest.onRequest";
+const char kOnMessage[] = "declarativeWebRequest.onMessage";
 
 // Keys of dictionaries.
 const char kAgeLowerBoundKey[] = "ageLowerBound";
@@ -26,6 +27,7 @@ const char kHttpOnlyKey[] = "httpOnly";
 const char kInstanceTypeKey[] = "instanceType";
 const char kLowerPriorityThanKey[] = "lowerPriorityThan";
 const char kMaxAgeKey[] = "maxAge";
+const char kMessageKey[] = "message";
 const char kModificationKey[] = "modification";
 const char kNameContainsKey[] = "nameContains";
 const char kNameEqualsKey[] = "nameEquals";
@@ -80,6 +82,8 @@ const char kRemoveResponseCookieType[] =
 const char kRemoveResponseHeaderType[] =
     "declarativeWebRequest.RemoveResponseHeader";
 const char kRequestMatcherType[] = "declarativeWebRequest.RequestMatcher";
+const char kSendMessageToExtensionType[] =
+    "declarativeWebRequest.SendMessageToExtension";
 const char kSetRequestHeaderType[] = "declarativeWebRequest.SetRequestHeader";
 
 }  // namespace declarative_webrequest_constants

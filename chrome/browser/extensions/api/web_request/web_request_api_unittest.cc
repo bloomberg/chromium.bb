@@ -213,7 +213,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   std::string extension1_id("1");
   std::string extension2_id("2");
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  const std::string kEventName(keys::kOnBeforeRequest);
+  const std::string kEventName(keys::kOnBeforeRequestEvent);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension1_id, extension1_id, kEventName, kEventName + "/1",
@@ -342,7 +342,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   std::string extension1_id("1");
   std::string extension2_id("2");
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  const std::string kEventName(keys::kOnBeforeRequest);
+  const std::string kEventName(keys::kOnBeforeRequestEvent);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
     &profile_, extension1_id, extension1_id, kEventName, kEventName + "/1",
@@ -409,8 +409,8 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   ExtensionWebRequestEventRouter::RequestFilter filter;
 
   // Subscribe to OnBeforeRequest and OnErrorOccurred.
-  const std::string kEventName(keys::kOnBeforeRequest);
-  const std::string kEventName2(keys::kOnErrorOccurred);
+  const std::string kEventName(keys::kOnBeforeRequestEvent);
+  const std::string kEventName2(keys::kOnErrorOccurredEvent);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
     &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
@@ -591,7 +591,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
 #undef kBoundary
 
   // Set up a dummy extension name.
-  const std::string kEventName(keys::kOnBeforeRequest);
+  const std::string kEventName(keys::kOnBeforeRequestEvent);
   ExtensionWebRequestEventRouter::RequestFilter filter;
   std::string extension_id("1");
   const std::string string_spec_post("blocking,requestBody");
@@ -697,7 +697,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   const char* kMethods[] = { "POST", "PUT", "GET" };
 
   // Set up a dummy extension name.
-  const std::string kEventName(keys::kOnBeforeRequest);
+  const std::string kEventName(keys::kOnBeforeRequestEvent);
   ExtensionWebRequestEventRouter::RequestFilter filter;
   const std::string extension_id("1");
   int extra_info_spec = 0;
@@ -813,7 +813,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   std::string extension2_id("2");
   std::string extension3_id("3");
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  const std::string kEventName(keys::kOnBeforeSendHeaders);
+  const std::string kEventName(keys::kOnBeforeSendHeadersEvent);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
 
   // Install two extensions that can modify headers. Extension 2 has
@@ -829,8 +829,8 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
   // Install one extension that observes the final headers.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension3_id, extension3_id, keys::kOnSendHeaders,
-      std::string(keys::kOnSendHeaders) + "/3", filter,
+      &profile_, extension3_id, extension3_id, keys::kOnSendHeadersEvent,
+      std::string(keys::kOnSendHeadersEvent) + "/3", filter,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_HEADERS,
       ipc_sender_factory.GetWeakPtr());
 
@@ -923,7 +923,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
     std::string event_name;
     if (!args.GetString(0, &event_name) ||
-        event_name !=  std::string(keys::kOnSendHeaders) + "/3") {
+        event_name !=  std::string(keys::kOnSendHeadersEvent) + "/3") {
       continue;
     }
 
@@ -957,7 +957,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension2_id, kEventName + "/2");
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension3_id, std::string(keys::kOnSendHeaders) + "/3");
+      &profile_, extension3_id, std::string(keys::kOnSendHeadersEvent) + "/3");
 };
 
 namespace {

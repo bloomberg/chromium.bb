@@ -152,6 +152,10 @@ struct EventResponseDelta {
   // Modifications to cookies in response headers.
   ResponseCookieModifications response_cookie_modifications;
 
+  // Messages that shall be sent to the background/event/... pages of the
+  // extension.
+  std::set<std::string> messages_to_extension;
+
   EventResponseDelta(const std::string& extension_id,
                      const base::Time& extension_install_time);
   ~EventResponseDelta();

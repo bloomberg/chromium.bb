@@ -63,6 +63,7 @@ class WebRequestAction {
     ACTION_IGNORE_RULES,
     ACTION_MODIFY_REQUEST_COOKIE,
     ACTION_MODIFY_RESPONSE_COOKIE,
+    ACTION_SEND_MESSAGE_TO_EXTENSION,
   };
 
   // Strategies for checking host permissions.
@@ -442,6 +443,26 @@ class WebRequestResponseCookieAction : public WebRequestAction {
  private:
   linked_ptr<ResponseCookieModification> response_cookie_modification_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestResponseCookieAction);
+};
+
+// Action that triggers the chrome.declarativeWebRequest.onMessage event in
+// the background/event/... pages of the extension.
+class WebRequestSendMessageToExtensionAction : public WebRequestAction {
+ public:
+  explicit WebRequestSendMessageToExtensionAction(const std::string& message);
+  virtual ~WebRequestSendMessageToExtensionAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      const WebRequestRule::RequestData& request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  std::string message_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestSendMessageToExtensionAction);
 };
 
 }  // namespace extensions

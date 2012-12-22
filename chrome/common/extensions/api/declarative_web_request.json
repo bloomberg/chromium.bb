@@ -285,6 +285,21 @@
         }
       },
       {
+        "id": "declarativeWebRequest.SendMessageToExtension",
+        "description": "Triggers the $ref:declarativeWebRequest.onMessage event.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.SendMessageToExtension"],
+            "nodoc": true
+          },
+          "message": {
+            "type": "string",
+            "description": "The value that will be passed in the <code>message</code> attribute of the dictionary that is passed to the event handler."
+          }
+        }
+      },
+      {
         "id": "declarativeWebRequest.RequestCookie",
         "description": "A filter or specification of a cookie in HTTP Requests.",
         "type": "object",
@@ -536,9 +551,35 @@
             "declarativeWebRequest.RemoveRequestHeader",
             "declarativeWebRequest.RemoveResponseHeader",
             "declarativeWebRequest.SetRequestHeader",
+            "declarativeWebRequest.SendMessageToExtension",
             "declarativeWebRequest.IgnoreRules"
           ]
         }
+      },
+      {
+        "name": "onMessage",
+        "type": "function",
+        "description": "Fired when a message is sent via $ref:declarativeWebRequest.SendMessageToExtension from an action of the declarative web request API.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "message": {"type": "string", "description": "The message sent by the calling script."},
+              "stage": {"type": "string",
+                        "enum": ["onBeforeRequest", "onBeforeSendHeaders", "onHeadersReceived", "onAuthRequired"],
+                        "description": "The stage of the network request during which the event was triggered."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."}
+            }
+          }
+        ]
       }
     ]
   }

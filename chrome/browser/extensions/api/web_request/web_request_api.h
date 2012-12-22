@@ -349,6 +349,11 @@ class ExtensionWebRequestEventRouter
       extensions::RequestStage request_stage,
       const net::HttpResponseHeaders* original_response_headers);
 
+  // If the BlockedRequest contains messages_to_extension entries in the event
+  // deltas, we send them to subscribers of
+  // chrome.declarativeWebRequest.onMessage.
+  void SendMessages(void* profile, const BlockedRequest& blocked_request);
+
   // Called when the RulesRegistry is ready to unblock a request that was
   // waiting for said event.
   void OnRulesRegistryReady(

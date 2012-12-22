@@ -42,13 +42,26 @@ extern const char kHeaderNameKey[];
 extern const char kHeaderValueKey[];
 extern const char kHeaderBinaryValueKey[];
 extern const char kIsProxyKey[];
+extern const char kMessageKey[];
 extern const char kSchemeKey[];
+extern const char kStageKey[];
 extern const char kRealmKey[];
 extern const char kAuthCredentialsKey[];
 extern const char kUsernameKey[];
 extern const char kPasswordKey[];
 
 // Events.
+extern const char kOnAuthRequiredEvent[];
+extern const char kOnBeforeRedirectEvent[];
+extern const char kOnBeforeRequestEvent[];
+extern const char kOnBeforeSendHeadersEvent[];
+extern const char kOnCompletedEvent[];
+extern const char kOnErrorOccurredEvent[];
+extern const char kOnHeadersReceivedEvent[];
+extern const char kOnResponseStartedEvent[];
+extern const char kOnSendHeadersEvent[];
+
+// Stages.
 extern const char kOnAuthRequired[];
 extern const char kOnBeforeRedirect[];
 extern const char kOnBeforeRequest[];

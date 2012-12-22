@@ -259,3 +259,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData2) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post2.html")) <<
       message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       DeclarativeSendMessage) {
+  ASSERT_TRUE(RunExtensionTest("webrequest_sendmessage")) << message_;
+}

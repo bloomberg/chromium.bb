@@ -86,4 +86,7 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   chrome.declarativeWebRequest.RemoveResponseCookie = function(parameters) {
     setupInstance(this, parameters, 'RemoveResponseCookie');
   };
+  chrome.declarativeWebRequest.SendMessageToExtension = function(parameters) {
+    setupInstance(this, parameters, 'SendMessageToExtension');
+  };
 });
