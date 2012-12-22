@@ -4,12 +4,16 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_manager.h"
 
 using sync_file_system::MockRemoteFileSyncService;
@@ -55,10 +59,14 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   int64 real_default_quota_;
 };
 
-}  // namespace
+ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
+  mock_remote_service->NotifyRemoteServiceStateUpdated(
+      sync_file_system::REMOTE_SERVICE_OK, "Test event description.");
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg1, fileapi::SYNC_STATUS_OK));
+}
 
-// TODO(calvinlo): Add Chrome OS support for syncable file system
-#if !defined(OS_CHROMEOS)
+}  // namespace
 
 // TODO(calvinlo): Add Chrome OS support for syncable file system
 // (http://crbug.com/160693)
@@ -74,6 +82,14 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnSyncStateChanged) {
+  EXPECT_CALL(*mock_remote_service(),
+              RegisterOriginForTrackingChanges(_, _))
+      .WillOnce(NotifyOkStateAndCallback(mock_remote_service()));
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_sync_state_changed"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
   EXPECT_CALL(*mock_remote_service(),
               RegisterOriginForTrackingChanges(_, _)).Times(1);
@@ -85,8 +101,6 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/write_file_then_get_usage"))
       << message_;
 }
-
-#endif  // !defined(OS_CHROMEOS)
 
 #endif  // !defined(OS_CHROMEOS)
 
