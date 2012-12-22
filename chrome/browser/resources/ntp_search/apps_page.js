@@ -240,18 +240,24 @@ cr.define('ntp', function() {
       this.appImg_ = this.appImgContainer_.querySelector('img');
       this.setIcon();
 
+      var appTitle;
       if (this.useSmallIcon_) {
+        this.classList.add('small-icon');
         this.imgDiv_ = this.querySelector('.app-icon-div');
         this.addLaunchClickTarget_(this.imgDiv_);
         this.imgDiv_.title = this.data_.title;
+        appTitle = formatTitle(this.data_.title);
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
+        this.classList.remove('small-icon');
         this.addLaunchClickTarget_(this.appImgContainer_);
         this.appImgContainer_.title = this.data_.title;
+        appTitle = this.data_.title;
       }
 
       var appSpan = this.appContents_.querySelector('.title');
-      appSpan.textContent = appSpan.title = this.data_.title;
+      appSpan.textContent = appTitle;
+      appSpan.title = this.data_.title;
       this.addLaunchClickTarget_(appSpan);
 
       var notification = this.data_.notification;
@@ -741,6 +747,16 @@ cr.define('ntp', function() {
     // The app might have been uninstalled, or notifications might be disabled.
     if (app && !app.data.notifications_disabled)
       app.setupNotification_(notification);
+  }
+
+  /**
+   * Formats titles by removing the leading 'http://www.' part of the URL,
+   * and the last slash, so 'http://www.test.com/' becomes 'test.com'.
+   * @param {string} title Page's title.
+   * @return {string} The formatted title.
+   */
+  function formatTitle(title) {
+    return title.replace(/^(https?\:\/\/)?(www\.)?|\/$/gi, '');
   }
 
   return {

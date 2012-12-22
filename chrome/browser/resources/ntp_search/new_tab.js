@@ -1058,6 +1058,21 @@ cr.define('ntp', function() {
     }
   }
 
+  /**
+   * Set the dominant color for a node. This will be called in response to
+   * getFaviconDominantColor. The node represented by |id| better have a setter
+   * for stripeColor.
+   * @param {string} id The ID of a node.
+   * @param {string} color The color represented as a CSS string.
+   */
+  function setFaviconDominantColor(id, color) {
+    var node = $(id);
+    var prop = Object.getOwnPropertyDescriptor(node.__proto__, 'stripeColor');
+    assert(prop && prop.set, 'Node doesn\'t have a stripeColor setter');
+    if (node)
+      node.stripeColor = color;
+  }
+
   function getThumbnailUrl(url) {
     return 'chrome://thumb/' + url;
   }
@@ -1151,6 +1166,7 @@ cr.define('ntp', function() {
     onLoad: onLoad,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
+    setFaviconDominantColor: setFaviconDominantColor,
     setForeignSessions: noop,
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: noop,
