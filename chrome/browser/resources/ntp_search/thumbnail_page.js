@@ -91,7 +91,7 @@ cr.define('ntp', function() {
       var favicon = this.querySelector('.thumbnail-favicon') ||
                     this.ownerDocument.createElement('div');
       favicon.className = 'thumbnail-favicon';
-      favicon.style.backgroundImage = url(getFaviconURL(dataUrl));
+      favicon.style.backgroundImage = url(getFaviconUrl(dataUrl));
       this.appendChild(favicon);
 
       var self = this;

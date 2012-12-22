@@ -233,7 +233,7 @@ function appendParam(url, key, value) {
  * @param {number=} opt_size Optional preferred size of the favicon.
  * @return {string} Updated URL for the favicon.
  */
-function getFaviconURL(url, opt_size) {
+function getFaviconUrl(url, opt_size) {
   var size = opt_size || 16;
   return 'chrome://favicon/size/' + size + '@' +
       window.devicePixelRatio + 'x/' + url;

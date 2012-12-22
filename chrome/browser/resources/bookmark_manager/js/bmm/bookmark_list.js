@@ -389,7 +389,7 @@ cr.define('bmm', function() {
       if (bmm.isFolder(bookmarkNode)) {
         this.className = 'folder';
       } else {
-        labelEl.style.backgroundImage = url(getFaviconURL(bookmarkNode.url));
+        labelEl.style.backgroundImage = url(getFaviconUrl(bookmarkNode.url));
         labelEl.style.backgroundSize = '16px';
         urlEl.textContent = bookmarkNode.url;
       }
