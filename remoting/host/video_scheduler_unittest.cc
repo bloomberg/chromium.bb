@@ -52,9 +52,6 @@ ACTION_P2(StopVideoScheduler, scheduler, task) {
 
 static const int kWidth = 640;
 static const int kHeight = 480;
-static const media::VideoFrame::Format kFormat = media::VideoFrame::RGB32;
-static const VideoPacketFormat::Encoding kEncoding =
-    VideoPacketFormat::ENCODING_VERBATIM;
 
 class MockVideoEncoder : public VideoEncoder {
  public:
@@ -126,16 +123,10 @@ void VideoSchedulerTest::GenerateOnCaptureCompleted() {
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(VideoSchedulerTest, StartAndStop) {
-  DataPlanes planes;
-  for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
-    planes.data[i] = reinterpret_cast<uint8*>(i);
-    planes.strides[i] = kWidth * 4;
-  }
-
   Expectation capturer_start = EXPECT_CALL(capturer_, Start(_));
 
   size_.set(kWidth, kHeight);
-  data_ = new CaptureData(planes, size_, kFormat);
+  data_ = new CaptureData(NULL, kWidth * CaptureData::kBytesPerPixel, size_);
 
   // Create a RunLoop through which to drive |message_loop_|.
   base::RunLoop run_loop;

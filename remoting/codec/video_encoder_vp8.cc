@@ -147,10 +147,6 @@ bool VideoEncoderVp8::Init(const SkISize& size) {
 
 void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
                                    SkRegion* updated_region) {
-  // Perform RGB->YUV conversion.
-  DCHECK_EQ(capture_data->pixel_format(), media::VideoFrame::RGB32)
-    << "Only RGB32 is supported";
-
   const SkRegion& region = capture_data->dirty_region();
   if (region.isEmpty()) {
     updated_region->setEmpty();
@@ -174,8 +170,8 @@ void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
                      SkRegion::kIntersect_Op);
 
   // Convert the updated region to YUV ready for encoding.
-  const uint8* rgb_data = capture_data->data_planes().data[0];
-  const int rgb_stride = capture_data->data_planes().strides[0];
+  const uint8* rgb_data = capture_data->data();
+  const int rgb_stride = capture_data->stride();
   const int y_stride = image_->stride[0];
   DCHECK_EQ(image_->stride[1], image_->stride[2]);
   const int uv_stride = image_->stride[1];

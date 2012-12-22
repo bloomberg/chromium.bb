@@ -149,9 +149,8 @@ void DesktopSessionAgent::OnCaptureCompleted(
   // Serialize CaptureData
   SerializedCapturedData serialized_data;
   serialized_data.shared_buffer_id = capture_data->shared_buffer()->id();
-  serialized_data.bytes_per_row = capture_data->data_planes().strides[0];
+  serialized_data.bytes_per_row = capture_data->stride();
   serialized_data.dimensions = capture_data->size();
-  serialized_data.pixel_format = capture_data->pixel_format();
   serialized_data.capture_time_ms = capture_data->capture_time_ms();
   serialized_data.client_sequence_number =
       capture_data->client_sequence_number();

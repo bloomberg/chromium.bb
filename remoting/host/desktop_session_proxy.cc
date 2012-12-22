@@ -287,13 +287,9 @@ void DesktopSessionProxy::OnCaptureCompleted(
       GetSharedBuffer(serialized_data.shared_buffer_id);
   CHECK(shared_buffer);
 
-  DataPlanes planes;
-  planes.data[0] = reinterpret_cast<uint8*>(shared_buffer->ptr());
-  planes.strides[0] = serialized_data.bytes_per_row;
-
-  capture_data = new CaptureData(
-      planes, serialized_data.dimensions,
-      static_cast<media::VideoFrame::Format>(serialized_data.pixel_format));
+  capture_data = new CaptureData(reinterpret_cast<uint8*>(shared_buffer->ptr()),
+                                 serialized_data.bytes_per_row,
+                                 serialized_data.dimensions);
   capture_data->set_capture_time_ms(serialized_data.capture_time_ms);
   capture_data->set_client_sequence_number(
       serialized_data.client_sequence_number);

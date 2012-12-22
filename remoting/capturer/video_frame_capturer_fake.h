@@ -23,7 +23,6 @@ class VideoFrameCapturerFake : public VideoFrameCapturer {
   // Overridden from VideoFrameCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -52,9 +51,6 @@ class VideoFrameCapturerFake : public VideoFrameCapturer {
 
   // The current buffer with valid data for reading.
   int current_buffer_;
-
-  // Format of pixels returned in buffer.
-  media::VideoFrame::Format pixel_format_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerFake);
 };

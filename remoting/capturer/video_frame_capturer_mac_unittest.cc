@@ -71,16 +71,11 @@ void VideoFrameCapturerMacTest::CaptureDoneCallback2(
   EXPECT_EQ(region_, capture_data->dirty_region());
   EXPECT_EQ(width, capture_data->size().width());
   EXPECT_EQ(height, capture_data->size().height());
-  const DataPlanes &planes = capture_data->data_planes();
-  EXPECT_TRUE(planes.data[0] != NULL);
-  EXPECT_TRUE(planes.data[1] == NULL);
-  EXPECT_TRUE(planes.data[2] == NULL);
+  EXPECT_TRUE(capture_data->data() != NULL);
   // Depending on the capture method, the screen may be flipped or not, so
   // the stride may be positive or negative.
   EXPECT_EQ(static_cast<int>(sizeof(uint32_t) * width),
-            abs(planes.strides[0]));
-  EXPECT_EQ(0, planes.strides[1]);
-  EXPECT_EQ(0, planes.strides[2]);
+            abs(capture_data->stride()));
 }
 
 TEST_F(VideoFrameCapturerMacTest, Capture) {

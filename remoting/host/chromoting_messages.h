@@ -148,9 +148,6 @@ IPC_STRUCT_BEGIN(SerializedCapturedData)
   // Dimentions of the buffer in pixels.
   IPC_STRUCT_MEMBER(SkISize, dimensions)
 
-  // Pixel format.
-  IPC_STRUCT_MEMBER(int32, pixel_format)
-
   // Time spent in capture. Unit is in milliseconds.
   IPC_STRUCT_MEMBER(int, capture_time_ms)
 

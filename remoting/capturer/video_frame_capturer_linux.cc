@@ -28,8 +28,6 @@ namespace remoting {
 
 namespace {
 
-static const int kBytesPerPixel = 4;
-
 // Default to false, since many systems have broken XDamage support - see
 // http://crbug.com/73423.
 static bool g_should_use_x_damage = false;
@@ -62,7 +60,6 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // Capturer interface.
   virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -143,9 +140,6 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // Queue of the frames buffers.
   VideoFrameQueue queue_;
 
-  // Format of pixels returned in buffer.
-  media::VideoFrame::Format pixel_format_;
-
   // Invalid region from the previous capture. This is used to synchronize the
   // current with the last buffer used.
   SkRegion last_invalid_region_;
@@ -157,7 +151,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
 };
 
 VideoFrameLinux::VideoFrameLinux(const SkISize& window_size) {
-  set_bytes_per_row(window_size.width() * kBytesPerPixel);
+  set_bytes_per_row(window_size.width() * CaptureData::kBytesPerPixel);
   set_dimensions(window_size);
 
   size_t buffer_size = bytes_per_row() * window_size.height();
@@ -181,8 +175,7 @@ VideoFrameCapturerLinux::VideoFrameCapturerLinux()
       damage_handle_(0),
       damage_event_base_(-1),
       damage_error_base_(-1),
-      damage_region_(0),
-      pixel_format_(media::VideoFrame::RGB32) {
+      damage_region_(0) {
   helper_.SetLogGridSize(4);
 }
 
@@ -288,10 +281,6 @@ void VideoFrameCapturerLinux::Start(Delegate* delegate) {
 void VideoFrameCapturerLinux::Stop() {
 }
 
-media::VideoFrame::Format VideoFrameCapturerLinux::pixel_format() const {
-  return pixel_format_;
-}
-
 void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
@@ -320,7 +309,7 @@ void VideoFrameCapturerLinux::CaptureFrame() {
       (differ_->bytes_per_row() != current_buffer->bytes_per_row()))) {
     differ_.reset(new Differ(current_buffer->dimensions().width(),
                              current_buffer->dimensions().height(),
-                             kBytesPerPixel,
+                             CaptureData::kBytesPerPixel,
                              current_buffer->bytes_per_row()));
   }
 
@@ -375,8 +364,8 @@ void VideoFrameCapturerLinux::CaptureCursor() {
   cursor->size.set(img->width, img->height);
   cursor->hotspot.set(img->xhot, img->yhot);
 
-  int total_bytes =
-      cursor->size.width() * cursor->size.height() * kBytesPerPixel;
+  int total_bytes = cursor->size.width() * cursor->size.height() *
+      CaptureData::kBytesPerPixel;
   cursor->data.resize(total_bytes);
 
   // Xlib stores 32-bit data in longs, even if longs are 64-bits long.
@@ -392,13 +381,9 @@ void VideoFrameCapturerLinux::CaptureCursor() {
 }
 
 scoped_refptr<CaptureData> VideoFrameCapturerLinux::CaptureScreen() {
-  VideoFrame* current = queue_.current_frame();
-  DataPlanes planes;
-  planes.data[0] = current->pixels();
-  planes.strides[0] = current->bytes_per_row();
-
-  scoped_refptr<CaptureData> capture_data(
-      new CaptureData(planes, current->dimensions(), media::VideoFrame::RGB32));
+  VideoFrame* frame = queue_.current_frame();
+  scoped_refptr<CaptureData> capture_data(new CaptureData(
+      frame->pixels(), frame->bytes_per_row(), frame->dimensions()));
 
   // Pass the screen size to the helper, so it can clip the invalid region if it
   // expands that region to a grid.
@@ -443,8 +428,8 @@ scoped_refptr<CaptureData> VideoFrameCapturerLinux::CaptureScreen() {
   } else {
     // Doing full-screen polling, or this is the first capture after a
     // screen-resolution change.  In either case, need a full-screen capture.
-    SkIRect screen_rect = SkIRect::MakeWH(current->dimensions().width(),
-                                          current->dimensions().height());
+    SkIRect screen_rect = SkIRect::MakeWH(frame->dimensions().width(),
+                                          frame->dimensions().height());
     CaptureRect(screen_rect, capture_data);
 
     if (queue_.previous_frame()) {
@@ -452,7 +437,7 @@ scoped_refptr<CaptureData> VideoFrameCapturerLinux::CaptureScreen() {
       // changed pixels between current and previous buffers.
       DCHECK(differ_ != NULL);
       differ_->CalcDirtyRegion(queue_.previous_frame()->pixels(),
-                               current->pixels(), &invalid_region);
+                               frame->pixels(), &invalid_region);
     } else {
       // No previous buffer, so always invalidate the whole screen, whether
       // or not DAMAGE is being used.  DAMAGE doesn't necessarily send a
@@ -493,11 +478,12 @@ void VideoFrameCapturerLinux::SynchronizeFrame() {
   DCHECK_NE(current, last);
   for (SkRegion::Iterator it(last_invalid_region_); !it.done(); it.next()) {
     const SkIRect& r = it.rect();
-    int offset = r.fTop * current->bytes_per_row() + r.fLeft * kBytesPerPixel;
+    int offset = r.fTop * current->bytes_per_row() +
+        r.fLeft * CaptureData::kBytesPerPixel;
     for (int i = 0; i < r.height(); ++i) {
       memcpy(current->pixels() + offset, last->pixels() + offset,
-             r.width() * kBytesPerPixel);
-      offset += current->dimensions().width() * kBytesPerPixel;
+             r.width() * CaptureData::kBytesPerPixel);
+      offset += current->dimensions().width() * CaptureData::kBytesPerPixel;
     }
   }
 }
@@ -543,27 +529,20 @@ void VideoFrameCapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
   int src_stride = x_server_pixel_buffer_.GetStride();
   int dst_x = rect.fLeft, dst_y = rect.fTop;
 
-  DataPlanes planes = capture_data->data_planes();
-  uint8* dst_buffer = planes.data[0];
+  uint8* dst_pos = capture_data->data() + capture_data->stride() * dst_y;
+  dst_pos += dst_x * CaptureData::kBytesPerPixel;
 
-  const int dst_stride = planes.strides[0];
-
-  uint8* dst_pos = dst_buffer + dst_stride * dst_y;
-  dst_pos += dst_x * kBytesPerPixel;
-
-  int height = rect.height(), row_bytes = rect.width() * kBytesPerPixel;
+  int height = rect.height();
+  int row_bytes = rect.width() * CaptureData::kBytesPerPixel;
   for (int y = 0; y < height; ++y) {
     memcpy(dst_pos, src_pos, row_bytes);
     src_pos += src_stride;
-    dst_pos += dst_stride;
+    dst_pos += capture_data->stride();
   }
 }
 
 void VideoFrameCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
                                        CaptureData* capture_data) {
-  DataPlanes planes = capture_data->data_planes();
-  uint8* dst_buffer = planes.data[0];
-  const int dst_stride = planes.strides[0];
   int src_stride = x_server_pixel_buffer_.GetStride();
   int dst_x = rect.fLeft, dst_y = rect.fTop;
   int width = rect.width(), height = rect.height();
@@ -581,9 +560,9 @@ void VideoFrameCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
 
   unsigned int bits_per_pixel = x_server_pixel_buffer_.GetBitsPerPixel();
 
-  uint8* dst_pos = dst_buffer + dst_stride * dst_y;
+  uint8* dst_pos = capture_data->data() + capture_data->stride() * dst_y;
   uint8* src_pos = image;
-  dst_pos += dst_x * kBytesPerPixel;
+  dst_pos += dst_x * CaptureData::kBytesPerPixel;
   // TODO(hclam): Optimize, perhaps using MMX code or by converting to
   // YUV directly
   for (int y = 0; y < height; y++) {
@@ -605,7 +584,7 @@ void VideoFrameCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
       // Write as 32-bit RGB.
       dst_pos_32[x] = r << 16 | g << 8 | b;
     }
-    dst_pos += dst_stride;
+    dst_pos += capture_data->stride();
     src_pos += src_stride;
   }
 }

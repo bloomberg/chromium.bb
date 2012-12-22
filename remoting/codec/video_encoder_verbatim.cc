@@ -29,9 +29,6 @@ void VideoEncoderVerbatim::Encode(
     scoped_refptr<CaptureData> capture_data,
     bool key_frame,
     const DataAvailableCallback& data_available_callback) {
-  CHECK(capture_data->pixel_format() == media::VideoFrame::RGB32)
-      << "RowBased VideoEncoder only works with RGB32. Got "
-      << capture_data->pixel_format();
   capture_data_ = capture_data;
   callback_ = data_available_callback;
   encode_start_time_ = base::Time::Now();
@@ -49,16 +46,15 @@ void VideoEncoderVerbatim::Encode(
 }
 
 void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
-  CHECK(capture_data_->data_planes().data[0]);
-  CHECK_EQ(capture_data_->pixel_format(), media::VideoFrame::RGB32);
-  const int strides = capture_data_->data_planes().strides[0];
+  CHECK(capture_data_->data());
+  const int stride = capture_data_->stride();
   const int bytes_per_pixel = 4;
   const int row_size = bytes_per_pixel * rect.width();
 
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   PrepareUpdateStart(rect, packet.get());
-  const uint8* in = capture_data_->data_planes().data[0] +
-      rect.fTop * strides + rect.fLeft * bytes_per_pixel;
+  const uint8* in = capture_data_->data() +
+      rect.fTop * stride + rect.fLeft * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
   uint8* out = GetOutputBuffer(packet.get(), max_packet_size_);
   int filled = 0;
@@ -82,7 +78,7 @@ void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
       // Jump to the next row when we've reached the end of the current row.
       if (row_pos == row_size) {
         row_pos = 0;
-        in += strides;
+        in += stride;
         ++row_y;
       }
     }

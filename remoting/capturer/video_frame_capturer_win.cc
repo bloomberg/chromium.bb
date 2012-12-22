@@ -84,7 +84,6 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // Overridden from VideoFrameCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -134,9 +133,6 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // Rectangle describing the bounds of the desktop device context.
   SkIRect desktop_dc_rect_;
 
-  // Format of pixels returned in buffer.
-  media::VideoFrame::Format pixel_format_;
-
   // Class to calculate the difference between two screen bitmaps.
   scoped_ptr<Differ> differ_;
 
@@ -148,8 +144,6 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 
 // 3780 pixels per meter is equivalent to 96 DPI, typical on desktop monitors.
 static const int kPixelsPerMeter = 3780;
-// 32 bit RGBA is 4 bytes per pixel.
-static const int kBytesPerPixel = 4;
 
 VideoFrameWin::VideoFrameWin(
     HDC desktop_dc,
@@ -157,7 +151,8 @@ VideoFrameWin::VideoFrameWin(
     SharedBufferFactory* shared_buffer_factory)
     : shared_buffer_factory_(shared_buffer_factory) {
   // Allocate a shared memory buffer.
-  uint32 buffer_size = size.width() * size.height() * kBytesPerPixel;
+  uint32 buffer_size =
+    size.width() * size.height() * CaptureData::kBytesPerPixel;
   if (shared_buffer_factory_) {
     scoped_refptr<SharedBuffer> shared_buffer =
         shared_buffer_factory_->CreateSharedBuffer(buffer_size);
@@ -178,7 +173,7 @@ HBITMAP VideoFrameWin::GetBitmap() {
 }
 
 void VideoFrameWin::AllocateBitmap(HDC desktop_dc, const SkISize& size) {
-  int bytes_per_row = size.width() * kBytesPerPixel;
+  int bytes_per_row = size.width() * CaptureData::kBytesPerPixel;
 
   // Describe a device independent bitmap (DIB) that is the size of the desktop.
   BITMAPINFO bmi;
@@ -186,7 +181,7 @@ void VideoFrameWin::AllocateBitmap(HDC desktop_dc, const SkISize& size) {
   bmi.bmiHeader.biHeight = -size.height();
   bmi.bmiHeader.biWidth = size.width();
   bmi.bmiHeader.biPlanes = 1;
-  bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;
+  bmi.bmiHeader.biBitCount = CaptureData::kBytesPerPixel * 8;
   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
   bmi.bmiHeader.biSizeImage = bytes_per_row * size.height();
   bmi.bmiHeader.biXPelsPerMeter = kPixelsPerMeter;
@@ -215,7 +210,6 @@ VideoFrameCapturerWin::VideoFrameCapturerWin()
     : shared_buffer_factory_(NULL),
       delegate_(NULL),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
-      pixel_format_(media::VideoFrame::RGB32),
       composition_func_(NULL) {
 }
 
@@ -224,15 +218,10 @@ VideoFrameCapturerWin::VideoFrameCapturerWin(
     : shared_buffer_factory_(shared_buffer_factory),
       delegate_(NULL),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
-      pixel_format_(media::VideoFrame::RGB32),
       composition_func_(NULL) {
 }
 
 VideoFrameCapturerWin::~VideoFrameCapturerWin() {
-}
-
-media::VideoFrame::Format VideoFrameCapturerWin::pixel_format() const {
-  return pixel_format_;
 }
 
 void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
@@ -262,7 +251,7 @@ void VideoFrameCapturerWin::CaptureFrame() {
         (differ_->bytes_per_row() != current_buffer->bytes_per_row())) {
       differ_.reset(new Differ(current_buffer->dimensions().width(),
                                current_buffer->dimensions().height(),
-                               kBytesPerPixel,
+                               CaptureData::kBytesPerPixel,
                                current_buffer->bytes_per_row()));
     }
 
@@ -370,13 +359,9 @@ void VideoFrameCapturerWin::CaptureRegion(
     const base::Time& capture_start_time) {
   const VideoFrame* current_buffer = queue_.current_frame();
 
-  DataPlanes planes;
-  planes.data[0] = current_buffer->pixels();
-  planes.strides[0] = current_buffer->bytes_per_row();
-
-  scoped_refptr<CaptureData> data(new CaptureData(planes,
-                                                  current_buffer->dimensions(),
-                                                  pixel_format_));
+  scoped_refptr<CaptureData> data(
+      new CaptureData(current_buffer->pixels(), current_buffer->bytes_per_row(),
+                      current_buffer->dimensions()));
   data->mutable_dirty_region() = region;
   data->set_shared_buffer(current_buffer->shared_buffer());
 
@@ -396,9 +381,6 @@ void VideoFrameCapturerWin::CaptureImage() {
   if (queue_.current_frame_needs_update()) {
     DCHECK(desktop_dc_.get() != NULL);
     DCHECK(memory_dc_.Get() != NULL);
-    // Windows requires DIB sections' rows to start DWORD-aligned, which is
-    // implicit when working with RGB32 pixels.
-    DCHECK_EQ(pixel_format_, media::VideoFrame::RGB32);
 
     SkISize size = SkISize::Make(desktop_dc_rect_.width(),
                                  desktop_dc_rect_.height());
@@ -501,7 +483,7 @@ void VideoFrameCapturerWin::CaptureCursor() {
   if (!color_bitmap) {
     height /= 2;
   }
-  int data_size = height * width * kBytesPerPixel;
+  int data_size = height * width * CaptureData::kBytesPerPixel;
 
   scoped_ptr<MouseCursorShape> cursor(new MouseCursorShape());
   cursor->data.resize(data_size);
@@ -529,10 +511,10 @@ void VideoFrameCapturerWin::CaptureCursor() {
         dst[1] = SkAlphaMul(src[1], src[3]);
         dst[2] = SkAlphaMul(src[2], src[3]);
         dst[3] = src[3];
-        dst += kBytesPerPixel;
-        src += kBytesPerPixel;
+        dst += CaptureData::kBytesPerPixel;
+        src += CaptureData::kBytesPerPixel;
       }
-      src -= row_bytes + (width * kBytesPerPixel);
+      src -= row_bytes + (width * CaptureData::kBytesPerPixel);
     }
   } else {
     if (bitmap.bmPlanes != 1 || bitmap.bmBitsPixel != 1) {

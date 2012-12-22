@@ -45,19 +45,15 @@ TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   VideoEncoderCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  DataPlanes planes;
-  planes.data[0] = &buffer.front();
-  planes.strides[0] = width;
-
   scoped_refptr<CaptureData> capture_data(new CaptureData(
-      planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
+      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height)));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderCallback::DataAvailable,
                             base::Unretained(&callback)));
 
   height /= 2;
-  capture_data = new CaptureData(planes, SkISize::Make(width, height),
-                                 media::VideoFrame::RGB32);
+  capture_data = new CaptureData(
+      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderCallback::DataAvailable,
                             base::Unretained(&callback)));
@@ -82,12 +78,8 @@ TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   VideoEncoderDpiCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  DataPlanes planes;
-  planes.data[0] = &buffer.front();
-  planes.strides[0] = width;
-
   scoped_refptr<CaptureData> capture_data(new CaptureData(
-      planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
+      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height)));
   capture_data->set_dpi(SkIPoint::Make(96, 97));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderDpiCallback::DataAvailable,

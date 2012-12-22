@@ -19,7 +19,6 @@ class MockVideoFrameCapturer : public VideoFrameCapturer {
 
   MOCK_METHOD1(Start, void(Delegate* delegate));
   MOCK_METHOD0(Stop, void());
-  MOCK_CONST_METHOD0(pixel_format, media::VideoFrame::Format());
   MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
   MOCK_METHOD0(CaptureFrame, void());
   MOCK_CONST_METHOD0(size_most_recent, const SkISize&());

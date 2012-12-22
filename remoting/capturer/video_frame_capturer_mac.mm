@@ -110,7 +110,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // Overridden from VideoFrameCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
@@ -167,9 +166,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // Contains an invalid region from the previous capture.
   SkRegion last_invalid_region_;
 
-  // Format of pixels returned in buffer.
-  media::VideoFrame::Format pixel_format_;
-
   // Used to ensure that frame captures do not take place while displays
   // are being reconfigured.
   base::WaitableEvent display_configuration_capture_event_;
@@ -216,7 +212,6 @@ VideoFrameMac::~VideoFrameMac() {
 VideoFrameCapturerMac::VideoFrameCapturerMac()
     : delegate_(NULL),
       cgl_context_(NULL),
-      pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true),
       power_assertion_id_display_(kIOPMNullAssertionID),
       power_assertion_id_user_(kIOPMNullAssertionID),
@@ -309,10 +304,6 @@ void VideoFrameCapturerMac::Stop() {
   }
 }
 
-media::VideoFrame::Format VideoFrameCapturerMac::pixel_format() const {
-  return pixel_format_;
-}
-
 void VideoFrameCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
@@ -363,16 +354,15 @@ void VideoFrameCapturerMac::CaptureFrame() {
     CgBlitPreLion(*current_buffer, region);
   }
 
-  DataPlanes planes;
-  planes.data[0] = current_buffer->pixels();
-  planes.strides[0] = current_buffer->bytes_per_row();
+  uint8* buffer = current_buffer->pixels();
+  int stride = current_buffer->bytes_per_row();
   if (flip) {
-    planes.strides[0] = -planes.strides[0];
-    planes.data[0] += (current_buffer->dimensions().height() - 1) *
+    stride = -stride;
+    buffer += (current_buffer->dimensions().height() - 1) *
         current_buffer->bytes_per_row();
   }
 
-  data = new CaptureData(planes, current_buffer->dimensions(), pixel_format());
+  data = new CaptureData(buffer, stride, current_buffer->dimensions());
   data->set_dpi(static_cast<VideoFrameMac*>(current_buffer)->dpi());
   data->mutable_dirty_region() = region;
 

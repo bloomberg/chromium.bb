@@ -23,8 +23,6 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
                (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
                sizes_must_be_multiple_of_kSpeed);
 
-static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
-
 VideoFrameCapturerFake::VideoFrameCapturerFake()
     : size_(SkISize::Make(0, 0)),
       bytes_per_row_(0),
@@ -32,8 +30,7 @@ VideoFrameCapturerFake::VideoFrameCapturerFake()
       box_pos_y_(0),
       box_speed_x_(kSpeed),
       box_speed_y_(kSpeed),
-      current_buffer_(0),
-      pixel_format_(media::VideoFrame::RGB32) {
+      current_buffer_(0) {
   ScreenConfigurationChanged();
 }
 
@@ -45,10 +42,6 @@ void VideoFrameCapturerFake::Start(Delegate* delegate) {
 }
 
 void VideoFrameCapturerFake::Stop() {
-}
-
-media::VideoFrame::Format VideoFrameCapturerFake::pixel_format() const {
-  return pixel_format_;
 }
 
 void VideoFrameCapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
@@ -64,14 +57,10 @@ void VideoFrameCapturerFake::CaptureFrame() {
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
 
-  DataPlanes planes;
-  planes.data[0] = buffers_[current_buffer_].get();
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
-  planes.strides[0] = bytes_per_row_;
 
-  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
-                                                          size_,
-                                                          pixel_format_));
+  scoped_refptr<CaptureData> capture_data(new CaptureData(
+      buffers_[current_buffer_].get(), bytes_per_row_, size_));
   capture_data->mutable_dirty_region() = invalid_region;
 
   helper_.set_size_most_recent(capture_data->size());
@@ -87,10 +76,10 @@ const SkISize& VideoFrameCapturerFake::size_most_recent() const {
 
 void VideoFrameCapturerFake::GenerateImage() {
   memset(buffers_[current_buffer_].get(), 0xff,
-         size_.width() * size_.height() * kBytesPerPixel);
+         size_.width() * size_.height() * CaptureData::kBytesPerPixel);
 
   uint8* row = buffers_[current_buffer_].get() +
-      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
+      (box_pos_y_ * size_.width() + box_pos_x_) * CaptureData::kBytesPerPixel;
 
   box_pos_x_ += box_speed_x_;
   if (box_pos_x_ + kBoxWidth >= size_.width() || box_pos_x_ == 0)
@@ -109,10 +98,10 @@ void VideoFrameCapturerFake::GenerateImage() {
       int r = x * 255 / kBoxWidth;
       int g = y * 255 / kBoxHeight;
       int b = 255 - (x * 255 / kBoxWidth);
-      row[x * kBytesPerPixel] = r;
-      row[x * kBytesPerPixel+1] = g;
-      row[x * kBytesPerPixel+2] = b;
-      row[x * kBytesPerPixel+3] = 0xff;
+      row[x * CaptureData::kBytesPerPixel] = r;
+      row[x * CaptureData::kBytesPerPixel + 1] = g;
+      row[x * CaptureData::kBytesPerPixel + 2] = b;
+      row[x * CaptureData::kBytesPerPixel + 3] = 0xff;
     }
     row += bytes_per_row_;
   }
@@ -120,8 +109,7 @@ void VideoFrameCapturerFake::GenerateImage() {
 
 void VideoFrameCapturerFake::ScreenConfigurationChanged() {
   size_ = SkISize::Make(kWidth, kHeight);
-  bytes_per_row_ = size_.width() * kBytesPerPixel;
-  pixel_format_ = media::VideoFrame::RGB32;
+  bytes_per_row_ = size_.width() * CaptureData::kBytesPerPixel;
 
   // Create memory for the buffers.
   int buffer_size = size_.height() * bytes_per_row_;

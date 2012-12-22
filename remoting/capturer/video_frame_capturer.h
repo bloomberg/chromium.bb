@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/shared_memory.h"
-#include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace remoting {
@@ -96,9 +95,6 @@ class VideoFrameCapturer {
 
   // Called at the end of a capturing session.
   virtual void Stop() = 0;
-
-  // Returns the pixel format of the screen.
-  virtual media::VideoFrame::Format pixel_format() const = 0;
 
   // Invalidates the specified region.
   virtual void InvalidateRegion(const SkRegion& invalid_region) = 0;

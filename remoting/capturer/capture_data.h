@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "media/base/video_frame.h"
 #include "remoting/capturer/shared_buffer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -17,33 +16,26 @@ namespace remoting {
 
 class SharedBuffer;
 
-struct DataPlanes {
-  DataPlanes();
-
-  static const int kPlaneCount = 3;
-  uint8* data[kPlaneCount];
-  int strides[kPlaneCount];
-};
-
 // Stores the data and information of a capture to pass off to the
 // encoding thread.
 class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
  public:
-  CaptureData(const DataPlanes &data_planes,
-              const SkISize& size,
-              media::VideoFrame::Format format);
+  // 32 bit RGB is 4 bytes per pixel.
+  static const int kBytesPerPixel = 4;
 
-  // Gets the data_planes data of the previous capture.
-  const DataPlanes& data_planes() const { return data_planes_; }
+  CaptureData(uint8* data, int stride, const SkISize& size);
+
+  // Data buffer.
+  uint8* data() const { return data_; }
+
+  // Distance in bytes between neighboring lines in the data buffer.
+  int stride() const { return stride_; }
 
   // Gets the dirty region from the previous capture.
   const SkRegion& dirty_region() const { return dirty_region_; }
 
   // Returns the size of the image captured.
   SkISize size() const { return size_; }
-
-  // Gets the pixel format of the image captured.
-  media::VideoFrame::Format pixel_format() const { return pixel_format_; }
 
   SkRegion& mutable_dirty_region() { return dirty_region_; }
 
@@ -65,10 +57,10 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
 
   void set_dpi(const SkIPoint& dpi) { dpi_ = dpi; }
 
-  // Returns the shared memory buffer pointed to by |data_planes_.data[0]|.
+  // Returns the shared memory buffer pointed to by |data|.
   scoped_refptr<SharedBuffer> shared_buffer() const { return shared_buffer_; }
 
-  // Sets the shared memory buffer pointed to by |data_planes_.data[0]|.
+  // Sets the shared memory buffer pointed to by |data|.
   void set_shared_buffer(scoped_refptr<SharedBuffer> shared_buffer) {
     shared_buffer_ = shared_buffer;
   }
@@ -77,10 +69,10 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   friend class base::RefCountedThreadSafe<CaptureData>;
   virtual ~CaptureData();
 
-  const DataPlanes data_planes_;
+  uint8* data_;
+  int stride_;
   SkRegion dirty_region_;
   SkISize size_;
-  media::VideoFrame::Format pixel_format_;
 
   // Time spent in capture. Unit is in milliseconds.
   int capture_time_ms_;

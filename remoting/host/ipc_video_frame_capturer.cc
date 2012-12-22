@@ -30,10 +30,6 @@ void IpcVideoFrameCapturer::Stop() {
   delegate_ = NULL;
 }
 
-media::VideoFrame::Format IpcVideoFrameCapturer::pixel_format() const {
-  return media::VideoFrame::RGB32;
-}
-
 void IpcVideoFrameCapturer::InvalidateRegion(const SkRegion& invalid_region) {
   desktop_session_proxy_->InvalidateRegion(invalid_region);
 }
