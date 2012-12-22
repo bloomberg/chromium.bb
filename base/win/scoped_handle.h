@@ -42,6 +42,22 @@ class GenericScopedHandle {
  public:
   typedef typename Traits::Handle Handle;
 
+  // Helper object to contain the effect of Receive() to the funtion that needs
+  // a pointer, and allow proper tracking of the handle.
+  class Receiver {
+   public:
+    explicit Receiver(GenericScopedHandle* owner)
+        : handle_(Traits::NullHandle()),
+          owner_(owner) {}
+    ~Receiver() { owner_->Set(handle_); }
+
+    operator Handle*() { return &handle_; }
+
+   private:
+    Handle handle_;
+    GenericScopedHandle* owner_;
+  };
+
   GenericScopedHandle() : handle_(Traits::NullHandle()) {}
 
   explicit GenericScopedHandle(Handle handle) : handle_(Traits::NullHandle()) {
@@ -89,13 +105,14 @@ class GenericScopedHandle {
     return handle_;
   }
 
-  Handle* Receive() {
+  // This method is intended to be used with functions that require a pointer to
+  // a destination handle, like so:
+  //    void CreateRequiredHandle(Handle* out_handle);
+  //    ScopedHandle a;
+  //    CreateRequiredHandle(a.Receive());
+  Receiver Receive() {
     DCHECK(!Traits::IsHandleValid(handle_)) << "Handle must be NULL";
-
-    // We cannot track this case :(. Just tell the verifier about it.
-    Verifier::StartTracking(INVALID_HANDLE_VALUE, this, BASE_WIN_GET_CALLER,
-                            tracked_objects::GetProgramCounter());
-    return &handle_;
+    return Receiver(this);
   }
 
   // Transfers ownership away from this object.

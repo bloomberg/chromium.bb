@@ -573,6 +573,7 @@
         'win/sampling_profiler_unittest.cc',
         'win/scoped_bstr_unittest.cc',
         'win/scoped_comptr_unittest.cc',
+        'win/scoped_handle_unittest.cc',
         'win/scoped_process_information_unittest.cc',
         'win/shortcut_unittest.cc',
         'win/startup_information_unittest.cc',

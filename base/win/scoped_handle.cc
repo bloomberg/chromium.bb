@@ -5,7 +5,6 @@
 #include "base/win/scoped_handle.h"
 
 #include <map>
-#include <set>
 
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
@@ -23,8 +22,6 @@ struct Info {
 typedef std::map<HANDLE, Info> HandleMap;
 
 base::LazyInstance<HandleMap>::Leaky g_handle_map = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<std::set<const void*> >::Leaky g_owner_set =
-    LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -39,12 +36,6 @@ void VerifierTraits::StartTracking(HANDLE handle, const void* owner,
   DWORD thread_id = GetCurrentThreadId();
 
   AutoLock lock(g_lock.Get());
-
-  if (handle == INVALID_HANDLE_VALUE) {
-    // Cannot track this handle.
-    g_owner_set.Get().insert(owner);
-    return;
-  }
 
   Info handle_info = { owner, pc1, pc2, thread_id };
   std::pair<HANDLE, Info> item(handle, handle_info);
@@ -61,14 +52,8 @@ void VerifierTraits::StopTracking(HANDLE handle, const void* owner,
                                   const void* pc1, const void* pc2) {
   AutoLock lock(g_lock.Get());
   HandleMap::iterator i = g_handle_map.Get().find(handle);
-  if (i == g_handle_map.Get().end()) {
-    std::set<const void*>::iterator j = g_owner_set.Get().find(owner);
-    if (j != g_owner_set.Get().end()) {
-      g_owner_set.Get().erase(j);
-      return;
-    }
+  if (i == g_handle_map.Get().end())
     CHECK(false);
-  }
 
   Info other = i->second;
   if (other.owner != owner) {
