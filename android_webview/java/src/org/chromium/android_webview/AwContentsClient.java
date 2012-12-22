@@ -12,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
 
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -218,6 +219,13 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
+
+    // TODO(kristianm): Make abstract when landed in Android
+    public void onGeolocationPermissionsShowPrompt(String origin,
+            GeolocationPermissions.Callback callback) {}
+
+    // TODO(kristianm): Make abstract when landed in Android
+    public void onGeolocationPermissionsHidePrompt() {}
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 
