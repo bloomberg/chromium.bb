@@ -71,6 +71,10 @@ bool QuicDataWriter::WriteStringPiece16(StringPiece val) {
 }
 
 char* QuicDataWriter::BeginWrite(size_t length) {
+  if (length_ > capacity_) {
+    return NULL;
+  }
+
   if (capacity_ - length_ < length) {
     return NULL;
   }

@@ -1488,6 +1488,7 @@
         'quic/quic_connection_test.cc',
         'quic/quic_crypto_client_stream_test.cc',
         'quic/quic_crypto_stream_test.cc',
+        'quic/quic_data_writer_test.cc',
         'quic/quic_fec_group_test.cc',
         'quic/quic_framer_test.cc',
         'quic/quic_http_stream_test.cc',
