@@ -23,6 +23,13 @@ namespace chrome_browser_net {
 
 namespace {
 
+// How long the DnsProbeService will cache the probe result for.
+// If it's older than this and we get a probe request, the service expires it
+// and starts a new probe.
+const int kMaxResultAgeMs = 5000;
+
+// The public DNS servers used by the DnsProbeService to verify internet
+// connectivity.
 const char kPublicDnsPrimary[]   = "8.8.8.8";
 const char kPublicDnsSecondary[] = "8.8.4.4";
 
@@ -33,7 +40,13 @@ IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   return IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
 }
 
-const int kMaxResultAgeMs = 5000;
+bool IsLocalhost(const IPAddressNumber& ip) {
+  return (ip.size() == net::kIPv4AddressSize)
+         && (ip[0] == 127) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 1);
+}
+
+// The maximum number of nameservers counted in histograms.
+const int kNameserverCountMax = 10;
 
 }  // namespace
 
@@ -167,6 +180,19 @@ void DnsProbeService::HistogramProbes() const {
   case PROBE_BAD_CONFIG:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultBadConfig.Elapsed",
                                elapsed);
+
+    // Histogram some extra data to see why BAD_CONFIG is happening.
+    UMA_HISTOGRAM_ENUMERATION(
+        "DnsProbe.Probe.ResultBadConfig.SystemJobResult",
+        system_result_,
+        DnsProbeJob::MAX_RESULT);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "DnsProbe.Probe.ResultBadConfig.SystemNameserverCount",
+        system_nameserver_count_,
+        0, kNameserverCountMax, kNameserverCountMax + 1);
+    UMA_HISTOGRAM_BOOLEAN(
+        "DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost",
+        system_is_localhost_);
     break;
   case PROBE_NXDOMAIN:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNxdomain.Elapsed",
@@ -254,6 +280,12 @@ void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
   NetworkChangeNotifier::GetDnsConfig(config);
   // DNS probes don't need or want the suffix search list populated
   config->search.clear();
+
+  // Take notes in case the config turns out to be bad, so we can histogram
+  // some useful data.
+  system_nameserver_count_ = config->nameservers.size();
+  system_is_localhost_ = (system_nameserver_count_ == 1)
+                         && IsLocalhost(config->nameservers[0].address());
 }
 
 void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
