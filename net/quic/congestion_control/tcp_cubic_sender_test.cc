@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 const uint32 kDefaultWindowTCP = 10 * net::kMaxPacketSize;
 const size_t kNoNBytesInFlight = 0;
@@ -198,5 +198,5 @@ TEST_F(QuicTcpCubicSenderTest, SlowStartPacketLoss) {
   EXPECT_EQ(expected_congestion_window, sender_->CongestionWindow());
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

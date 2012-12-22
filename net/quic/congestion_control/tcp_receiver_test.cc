@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class QuicTcpReceiverTest : public ::testing::Test {
  protected:
@@ -34,5 +34,5 @@ TEST_F(QuicTcpReceiverTest, SimpleReceiver) {
   EXPECT_EQ(1, feedback.tcp.accumulated_number_of_lost_packets);
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

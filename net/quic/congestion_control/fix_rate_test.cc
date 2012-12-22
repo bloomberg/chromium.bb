@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class FixRateTest : public ::testing::Test {
  protected:
@@ -93,5 +93,5 @@ TEST_F(FixRateTest, FixRatePacing) {
             acc_advance_time.ToMicroseconds());
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

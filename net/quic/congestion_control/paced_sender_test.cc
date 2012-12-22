@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 const int kHundredKBytesPerS = 100000;
 
@@ -79,5 +79,5 @@ TEST_F(PacedSenderTest, HighRate) {
             paced_sender_->AvailableWindow(kMaxPacketSize * 100));
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

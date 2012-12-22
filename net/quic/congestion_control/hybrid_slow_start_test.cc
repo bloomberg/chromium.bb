@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class HybridSlowStartTest : public ::testing::Test {
  protected:
@@ -104,5 +104,5 @@ TEST_F(HybridSlowStartTest, Delay) {
   EXPECT_TRUE(slowStart_->Exit());
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

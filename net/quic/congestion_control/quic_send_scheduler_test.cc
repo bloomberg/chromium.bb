@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class QuicSendSchedulerTest : public ::testing::Test {
  protected:
@@ -193,5 +193,5 @@ TEST_F(QuicSendSchedulerTest, Pacing) {
   EXPECT_EQ(QuicTime::FromMilliseconds(120), acc_advance_time);
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

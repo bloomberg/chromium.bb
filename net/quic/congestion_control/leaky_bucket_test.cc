@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class LeakyBucketTest : public ::testing::Test {
  protected:
@@ -71,5 +71,5 @@ TEST_F(LeakyBucketTest, ChangeDrainRate) {
             leaky_bucket_->TimeRemaining());
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

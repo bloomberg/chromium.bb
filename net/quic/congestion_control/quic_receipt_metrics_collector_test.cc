@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+namespace test {
 
 class QuicReceiptMetricsCollectorTest : public ::testing::Test {
  protected:
@@ -29,4 +30,5 @@ TEST_F(QuicReceiptMetricsCollectorTest, FixedRateReceiverAPI) {
   EXPECT_EQ(kFixRate, feedback.type);
 }
 
+}  // namespace test
 }  // namespace net
