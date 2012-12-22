@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
+#include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,6 +42,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webdropdata.h"
@@ -66,8 +70,25 @@ namespace {
 // destroyed.
 class OverscrollWindowDelegate : public aura::WindowDelegate {
  public:
-  explicit OverscrollWindowDelegate(aura::Window* web_contents_window)
-      : web_contents_window_(web_contents_window) {
+  OverscrollWindowDelegate(WebContentsImpl* web_contents,
+                           OverscrollMode overscroll_mode)
+      : web_contents_window_(web_contents->GetView()->GetContentNativeView()) {
+    const NavigationControllerImpl& controller = web_contents->GetController();
+    const NavigationEntryImpl* entry = NULL;
+    if (overscroll_mode == OVERSCROLL_WEST && controller.CanGoForward()) {
+      entry = NavigationEntryImpl::FromNavigationEntry(
+          controller.GetEntryAtOffset(1));
+    } else if (overscroll_mode == OVERSCROLL_EAST && controller.CanGoBack()) {
+      entry = NavigationEntryImpl::FromNavigationEntry(
+          controller.GetEntryAtOffset(-1));
+    }
+    if (!entry || !entry->screenshot())
+      return;
+
+    std::vector<gfx::ImagePNGRep> image_reps;
+    image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
+          ui::GetScaleFactorForNativeView(web_contents_window_)));
+    image_ = gfx::Image(image_reps);
   }
 
  private:
@@ -108,6 +129,10 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    if (image_.IsEmpty())
+      canvas->DrawColor(SK_ColorGRAY);
+    else
+      canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
@@ -140,6 +165,7 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   }
 
   aura::Window* web_contents_window_;
+  gfx::Image image_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollWindowDelegate);
 };
@@ -482,12 +508,12 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   }
 
   overscroll_window_.reset(new aura::Window(new OverscrollWindowDelegate(
-      GetContentNativeView())));
+      web_contents_,
+      current_overscroll_gesture_)));
   overscroll_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   overscroll_window_->SetTransparent(false);
-  overscroll_window_->Init(ui::LAYER_SOLID_COLOR);
+  overscroll_window_->Init(ui::LAYER_TEXTURED);
   overscroll_window_->layer()->SetMasksToBounds(true);
-  overscroll_window_->layer()->SetColor(SK_ColorGRAY);
   overscroll_window_->SetName("OverscrollOverlay");
 
   window_->AddChild(overscroll_window_.get());
