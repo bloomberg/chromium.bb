@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"  // Temporary
@@ -28,15 +29,20 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "skia/ext/platform_canvas.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/glue_serialize.h"
 
 namespace content {
@@ -470,6 +476,62 @@ int NavigationControllerImpl::GetIndexForOffset(int offset) const {
   return GetCurrentEntryIndex() + offset;
 }
 
+void NavigationControllerImpl::TakeScreenshot() {
+  static bool overscroll_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
+  if (!overscroll_enabled)
+    return;
+
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
+  if (!entry)
+    return;
+
+  RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
+  content::RenderWidgetHostView* view = render_view_host->GetView();
+  if (!view)
+    return;
+
+  skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
+  render_view_host->CopyFromBackingStore(gfx::Rect(),
+      view->GetViewBounds().size(),
+      base::Bind(&NavigationControllerImpl::OnScreenshotTaken,
+                 base::Unretained(this),
+                 entry->GetUniqueID(),
+                 base::Owned(temp_bitmap)),
+      temp_bitmap);
+}
+
+void NavigationControllerImpl::OnScreenshotTaken(
+    int unique_id,
+    skia::PlatformBitmap* bitmap,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Taking snapshot was unsuccessful for "
+               << unique_id;
+    return;
+  }
+
+  NavigationEntryImpl* entry = NULL;
+  for (NavigationEntries::iterator i = entries_.begin();
+       i != entries_.end();
+       ++i) {
+    if ((*i)->GetUniqueID() == unique_id) {
+      entry = (*i).get();
+      break;
+    }
+  }
+
+  if (!entry) {
+    LOG(ERROR) << "Invalid entry with unique id: " << unique_id;
+    return;
+  }
+
+  std::vector<unsigned char> data;
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap->GetBitmap(), true, &data))
+    entry->SetScreenshotPNGData(data);
+}
+
 bool NavigationControllerImpl::CanGoBack() const {
   return entries_.size() > 1 && GetCurrentEntryIndex() > 0;
 }
@@ -690,6 +752,11 @@ void NavigationControllerImpl::DocumentLoadedInFrame() {
 bool NavigationControllerImpl::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     LoadCommittedDetails* details) {
+  // When navigating away from the current page, take a screenshot of it in the
+  // current state so that it can be used during an overscroll-navigation
+  // gesture.
+  if (details->is_main_frame)
+    TakeScreenshot();
 
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {

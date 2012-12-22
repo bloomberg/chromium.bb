@@ -167,6 +167,11 @@ class CONTENT_EXPORT NavigationEntryImpl
     should_replace_entry_ = should_replace_entry;
   }
 
+  void SetScreenshotPNGData(const std::vector<unsigned char>& png_data);
+  const scoped_refptr<base::RefCountedBytes> screenshot() const {
+    return screenshot_;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -202,6 +207,15 @@ class CONTENT_EXPORT NavigationEntryImpl
   // information is stored in |content_state_| above. It is also only shallow
   // copied with compiler provided copy constructor.
   scoped_refptr<const base::RefCountedMemory> browser_initiated_post_data_;
+
+  // This is also a transient member (i.e. is not persisted with session
+  // restore). The screenshot of a page is taken when navigating away from the
+  // page. This screenshot is displayed during an overscroll-navigation
+  // gesture. |screenshot_| will be NULL when the screenshot is not available
+  // (e.g. after a session restore, or if taking the screenshot of a page
+  // failed). The UI is responsible for dealing with missing screenshots
+  // appropriately (e.g. display a placeholder image instead).
+  scoped_refptr<base::RefCountedBytes> screenshot_;
 
   // This member is not persisted with session restore.
   std::string extra_headers_;

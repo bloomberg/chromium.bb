@@ -17,6 +17,10 @@
 
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace skia {
+class PlatformBitmap;
+}
+
 namespace content {
 class NavigationEntryImpl;
 class WebContentsImpl;
@@ -307,6 +311,15 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Returns the navigation index that differs from the current entry by the
   // specified |offset|.  The index returned is not guaranteed to be valid.
   int GetIndexForOffset(int offset) const;
+
+  // Takes a screenshot of the page at the current state.
+  void TakeScreenshot();
+
+  // The callback invoked when taking the screenshot of the page is complete.
+  // This sets the screenshot on the navigation entry.
+  void OnScreenshotTaken(int unique_id,
+                         skia::PlatformBitmap* bitmap,
+                         bool success);
 
   // ---------------------------------------------------------------------------
 

@@ -271,4 +271,9 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() const {
   return can_load_local_resources_;
 }
 
+void NavigationEntryImpl::SetScreenshotPNGData(
+    const std::vector<unsigned char>& png_data) {
+  screenshot_ = new base::RefCountedBytes(png_data);
+}
+
 }  // namespace content
