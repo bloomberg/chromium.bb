@@ -8,7 +8,7 @@
     # Expected address for beginning of data in for the IRT.
     'NACL_IRT_DATA_START': '0x3ef00000',
     # Expected address for beginning of code in for the IRT.
-    'NACL_IRT_TEXT_START': '0x0fc00000',
+    'NACL_IRT_TEXT_START': '0x0fa00000',
     'nacl_enable_arm_gcc%': 0,
     # Default C compiler defines.
     'nacl_default_defines': [

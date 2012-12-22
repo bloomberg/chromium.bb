@@ -2642,7 +2642,7 @@ irt_compatible_rodata_addr = 0x10000000
 # irt_compatible_rodata so as to leave the maximum contiguous area
 # available for the dynamic code loading area that falls below it.
 # This can be adjusted as necessary for the actual size of the IRT code.
-irt_code_addr = irt_compatible_rodata_addr - (4 << 20) # max 4M IRT code
+irt_code_addr = irt_compatible_rodata_addr - (6 << 20) # max 6M IRT code
 # This is the address at which the IRT's own data will be located.  The
 # 32-bit sandboxes limit the address space to 1GB; the initial thread's
 # stack sits at the top of the address space and extends down for
