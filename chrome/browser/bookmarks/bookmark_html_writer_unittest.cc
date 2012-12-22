@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -13,15 +13,17 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -30,8 +32,8 @@ using content::BrowserThread;
 
 namespace {
 
-static const int kIconWidth = 16;
-static const int kIconHeight = 16;
+const int kIconWidth = 16;
+const int kIconHeight = 16;
 
 void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
   bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);

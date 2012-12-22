@@ -9,15 +9,19 @@
 #include <map>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/history.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/base/file_stream.h"
 
 class BookmarkNode;
-class FilePath;
 class Profile;
+
+namespace history {
+struct FaviconBitmapResult;
+}
 
 // Observer for bookmark html output. Used only in tests.
 class BookmarksExportObserver {
