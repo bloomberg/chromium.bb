@@ -41,10 +41,10 @@ class MockAutofillExternalDelegate :
   ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD4(ApplyAutofillSuggestions, void(
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids));
+      const std::vector<string16>& labels,
+      const std::vector<string16>& sub_labels,
+      const std::vector<string16>& icons,
+      const std::vector<int>& identifiers));
 
   MOCK_METHOD0(ClearPreviewedForm, void());
 
@@ -156,8 +156,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 
   // This should trigger a call to hide the popup since
   // we've selected an option.
-  external_delegate_->DidAcceptAutofillSuggestion(autofill_item[0],
-                                                  autofill_ids[0], 0);
+  external_delegate_->DidAcceptSuggestion(autofill_item[0], autofill_ids[0]);
 }
 
 // Test that data list elements for a node will appear in the Autofill popup.
@@ -221,28 +220,28 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestion(-1);
+  external_delegate_->DidSelectSuggestion(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
-  external_delegate_->DidAcceptAutofillSuggestion(string16(), -1, 0);
+  external_delegate_->DidAcceptSuggestion(string16(), -1);
 }
 
 // Test that the ClearPreview IPC is only sent the form was being previewed
 // (i.e. it isn't autofilling a password).
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
-  // Called by SelectAutofillSuggestion, add expectation to remove
+  // Called by DidSelectSuggestion, add expectation to remove
   // warning.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
 
   // Ensure selecting a new password entries or Autofill entries will
   // cause any previews to get cleared.
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestion(
+  external_delegate_->DidSelectSuggestion(
       WebAutofillClient::MenuItemIDPasswordEntry);
 
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestion(1);
+  external_delegate_->DidSelectSuggestion(1);
 }
 
 // Test that the popup is hidden once we are done editing the autofill field.
@@ -288,8 +287,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
 
   // This should trigger a call to hide the popup since
   // we've selected an option.
-  external_delegate_->DidAcceptAutofillSuggestion(
+  external_delegate_->DidAcceptSuggestion(
       suggestions[0],
-      WebAutofillClient::MenuItemIDPasswordEntry,
-      0);
+      WebAutofillClient::MenuItemIDPasswordEntry);
 }

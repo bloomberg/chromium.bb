@@ -127,12 +127,11 @@ class AutofillDialogController : public AutofillPopupDelegate {
   void FocusMoved();
 
   // AutofillPopupDelegate implementation.
-  virtual void SelectAutofillSuggestion(int unique_id) OVERRIDE;
-  virtual bool DidAcceptAutofillSuggestion(const string16& value,
-                                           int unique_id,
-                                           unsigned index) OVERRIDE;
-  virtual void RemoveAutocompleteEntry(const string16& value) OVERRIDE;
-  virtual void RemoveAutofillProfileOrCreditCard(int unique_id) OVERRIDE;
+  virtual void DidSelectSuggestion(int identifier) OVERRIDE;
+  virtual void DidAcceptSuggestion(const string16& value,
+                                   int identifier) OVERRIDE;
+  virtual void RemoveSuggestion(const string16& value,
+                                int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
   virtual void ControllerDestroyed() OVERRIDE;
 

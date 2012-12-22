@@ -396,20 +396,18 @@ void AutofillDialogController::FocusMoved() {
   }
 }
 
-void AutofillDialogController::SelectAutofillSuggestion(int unique_id) {
+void AutofillDialogController::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.
 }
 
-bool AutofillDialogController::DidAcceptAutofillSuggestion(
-    const string16& value,
-    int unique_id,
-    unsigned index) {
-  const PersonalDataManager::GUIDPair& pair = popup_guids_[unique_id];
+void AutofillDialogController::DidAcceptSuggestion(const string16& value,
+                                                   int identifier) {
+  const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
   // TODO(estade): need to use the variant, |pair.second|.
   AutofillProfile* profile = GetManager()->GetProfileByGUID(pair.first);
   // TODO(estade): we shouldn't let this happen.
   if (!profile)
-    return false;
+    return;
 
   // TODO(estade): implement for all sections.
   FillInputFromFormGroup(profile, &requested_billing_fields_);
@@ -418,15 +416,10 @@ bool AutofillDialogController::DidAcceptAutofillSuggestion(
   // TODO(estade): not sure why it's necessary to do this explicitly.
   popup_controller_->Hide();
   ControllerDestroyed();
-  return true;
 }
 
-void AutofillDialogController::RemoveAutocompleteEntry(const string16& value) {
-  // TODO(estade): implement.
-}
-
-void AutofillDialogController::RemoveAutofillProfileOrCreditCard(
-    int unique_id) {
+void AutofillDialogController::RemoveSuggestion(const string16& value,
+                                                int identifier) {
   // TODO(estade): implement.
 }
 

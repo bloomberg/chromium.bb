@@ -22,47 +22,42 @@ class AutofillPopupController {
   // Called when the view is going down.
   virtual void ViewDestroyed() = 0;
 
-  // Recalculate the height and width of the popup and trigger a redraw.
+  // Recalculates the height and width of the popup and triggers a redraw.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 
-  // Change which line is selected by the user, based on coordinates.
-  virtual void SetSelectedPosition(int x, int y) = 0;
+  // The user has moved the mouse within the popup.
+  virtual void MouseHovered(int x, int y) = 0;
 
-  // Accepts the described Autofill suggestion.
-  virtual bool AcceptAutofillSuggestion(const string16& value,
-                                        int unique_id,
-                                        unsigned index) = 0;
+  // The user clicked the mouse within the popup.
+  virtual void MouseClicked(int x, int y) = 0;
 
-  // Select the value at the given position.
-  virtual void AcceptSelectedPosition(int x, int y) = 0;
+  // The user has moved the mouse outside of the popup.
+  virtual void MouseExitedPopup() = 0;
 
-  // Clear the currently selected line so that nothing is selected.
-  virtual void ClearSelectedLine() = 0;
+  // Accepts the suggestion at |index|.
+  virtual void AcceptSuggestion(size_t index) = 0;
 
-  // Get the resource value for the given resource, returning -1 if the
+  // Gets the resource value for the given resource, returning -1 if the
   // resource isn't recognized.
   virtual int GetIconResourceID(const string16& resource_name) = 0;
 
-  // Returns true if the given id refers to an element that can be deleted.
-  virtual bool CanDelete(int id) = 0;
+  // Returns true if the given index refers to an element that can be deleted.
+  virtual bool CanDelete(size_t index) = 0;
 
 #if !defined(OS_ANDROID)
-  // Get width of popup needed by values.
+  // Calculates the width of the popup based on its contents.
   virtual int GetPopupRequiredWidth() = 0;
 
-  // Get height of popup needed by values.
+  // Calculates the height of the popup based on its contents.
   virtual int GetPopupRequiredHeight() = 0;
 #endif
 
   // Updates the bounds of the popup and initiates a redraw.
   virtual void SetPopupBounds(const gfx::Rect& bounds) = 0;
 
-  // Get the height of the given row.
-  virtual int GetRowHeightFromId(int unique_id) = 0;
-
-  // Returns the rectangle containing the item at position |row| in the popup.
-  // |row| is the index of the row, and |width| is its width.
-  virtual gfx::Rect GetRectForRow(size_t row, int width) = 0;
+  // Returns the bounds of the item at |index| in the popup, relative to
+  // the top left of the popup.
+  virtual gfx::Rect GetRowBounds(size_t index) = 0;
 
   // The actual bounds of the popup.
   virtual const gfx::Rect& popup_bounds() const = 0;
@@ -70,20 +65,31 @@ class AutofillPopupController {
   // The view that the form field element sits in.
   virtual gfx::NativeView container_view() const = 0;
 
-  // The bounds of the form field element (relative to |container_origin|).
+  // The bounds of the form field element (screen coordinates).
   virtual const gfx::Rect& element_bounds() const = 0;
 
-  virtual const std::vector<string16>& autofill_values() const = 0;
-  virtual const std::vector<string16>& autofill_labels() const = 0;
-  virtual const std::vector<string16>& autofill_icons() const = 0;
-  virtual const std::vector<int>& autofill_unique_ids() const = 0;
+  // The main labels for each autofill item.
+  virtual const std::vector<string16>& names() const = 0;
+
+  // Smaller labels for each autofill item.
+  virtual const std::vector<string16>& subtexts() const = 0;
+
+  // A string which identifies the icon to be shown for each autofill item.
+  virtual const std::vector<string16>& icons() const = 0;
+
+  // Identifier for the row.
+  virtual const std::vector<int>& identifiers() const = 0;
 
 #if !defined(OS_ANDROID)
-  virtual const gfx::Font& label_font() const = 0;
-  virtual const gfx::Font& value_font() const = 0;
+  virtual const gfx::Font& name_font() const = 0;
+  virtual const gfx::Font& subtext_font() const = 0;
 #endif
 
+  // Returns the index of the selected line. A line is "selected" when it is
+  // hovered or has keyboard focus.
   virtual int selected_line() const = 0;
+
+  // Returns true if the delete icon of the selected line is currently hovered.
   virtual bool delete_icon_hovered() const = 0;
 
  protected:

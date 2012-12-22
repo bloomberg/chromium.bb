@@ -24,7 +24,7 @@ namespace {
 
 const SkColor kBorderColor = SkColorSetARGB(0xFF, 0xC7, 0xCA, 0xCE);
 const SkColor kHoveredBackgroundColor = SkColorSetARGB(0xFF, 0xCD, 0xCD, 0xCD);
-const SkColor kLabelTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
+const SkColor kItemTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
 const SkColor kPopupBackground = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
 const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 
@@ -55,12 +55,12 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
 
-  for (size_t i = 0; i < controller_->autofill_values().size(); ++i) {
-    gfx::Rect line_rect = controller_->GetRectForRow(i, width());
+  for (size_t i = 0; i < controller_->names().size(); ++i) {
+    gfx::Rect line_rect = controller_->GetRowBounds(i);
 
-    if (controller_->autofill_unique_ids()[i] ==
+    if (controller_->identifiers()[i] ==
             WebAutofillClient::MenuItemIDSeparator) {
-      canvas->DrawRect(line_rect, kLabelTextColor);
+      canvas->DrawRect(line_rect, kItemTextColor);
     } else {
       DrawAutofillEntry(canvas, i, line_rect);
     }
@@ -68,12 +68,12 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AutofillPopupViewViews::OnMouseCaptureLost() {
-  controller_->ClearSelectedLine();
+  controller_->MouseExitedPopup();
 }
 
 bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
   if (HitTestPoint(gfx::Point(event.x(), event.y()))) {
-    controller_->SetSelectedPosition(event.x(), event.y());
+    controller_->MouseHovered(event.x(), event.y());
 
     // We must return true in order to get future OnMouseDragged and
     // OnMouseReleased events.
@@ -81,16 +81,16 @@ bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
   }
 
   // If we move off of the popup, we lose the selection.
-  controller_->ClearSelectedLine();
+  controller_->MouseExitedPopup();
   return false;
 }
 
 void AutofillPopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
-  controller_->ClearSelectedLine();
+  controller_->MouseExitedPopup();
 }
 
 void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
-  controller_->SetSelectedPosition(event.x(), event.y());
+  controller_->MouseHovered(event.x(), event.y());
 }
 
 bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
@@ -102,7 +102,7 @@ void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() &&
       HitTestPoint(gfx::Point(event.x(), event.y())))
-    controller_->AcceptSelectedPosition(event.x(), event.y());
+    controller_->MouseClicked(event.x(), event.y());
 }
 
 void AutofillPopupViewViews::OnWidgetBoundsChanged(
@@ -146,7 +146,7 @@ void AutofillPopupViewViews::Show() {
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
-  SchedulePaintInRect(controller_->GetRectForRow(row, width()));
+  SchedulePaintInRect(controller_->GetRowBounds(row));
 }
 
 void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
@@ -163,13 +163,13 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
   canvas->DrawStringInt(
-      controller_->autofill_values()[index],
-      controller_->value_font(),
+      controller_->names()[index],
+      controller_->name_font(),
       kValueTextColor,
       kEndPadding,
       entry_rect.y(),
-      canvas->GetStringWidth(controller_->autofill_values()[index],
-                             controller_->value_font()),
+      canvas->GetStringWidth(controller_->names()[index],
+                             controller_->name_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 
@@ -178,9 +178,8 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
   // Draw the delete icon, if one is needed.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int row_height = controller_->GetRowHeightFromId(
-      controller_->autofill_unique_ids()[index]);
-  if (controller_->CanDelete(controller_->autofill_unique_ids()[index])) {
+  int row_height = controller_->GetRowBounds(index).height();
+  if (controller_->CanDelete(index)) {
     x_align_left -= kDeleteIconWidth;
 
     // TODO(csharp): Create a custom resource for the delete icon.
@@ -188,15 +187,14 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     canvas->DrawImageInt(
         *rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
         x_align_left,
-        entry_rect.y() + ((row_height - kDeleteIconHeight) / 2));
+        entry_rect.y() + (row_height - kDeleteIconHeight) / 2);
 
     x_align_left -= kIconPadding;
   }
 
   // Draw the Autofill icon, if one exists
-  if (!controller_->autofill_icons()[index].empty()) {
-    int icon =
-        controller_->GetIconResourceID(controller_->autofill_icons()[index]);
+  if (!controller_->icons()[index].empty()) {
+    int icon = controller_->GetIconResourceID(controller_->icons()[index]);
     DCHECK_NE(-1, icon);
     int icon_y = entry_rect.y() + (row_height - kAutofillIconHeight) / 2;
 
@@ -207,18 +205,18 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     x_align_left -= kIconPadding;
   }
 
-  // Draw the label text.
-  x_align_left -= canvas->GetStringWidth(controller_->autofill_labels()[index],
-                                         controller_->label_font());
+  // Draw the name text.
+  x_align_left -= canvas->GetStringWidth(controller_->subtexts()[index],
+                                         controller_->subtext_font());
 
   canvas->DrawStringInt(
-      controller_->autofill_labels()[index],
-      controller_->label_font(),
-      kLabelTextColor,
+      controller_->subtexts()[index],
+      controller_->subtext_font(),
+      kItemTextColor,
       x_align_left + kEndPadding,
       entry_rect.y(),
-      canvas->GetStringWidth(controller_->autofill_labels()[index],
-                             controller_->label_font()),
+      canvas->GetStringWidth(controller_->subtexts()[index],
+                             controller_->subtext_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }

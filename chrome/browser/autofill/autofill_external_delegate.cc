@@ -68,14 +68,6 @@ AutofillExternalDelegate::~AutofillExternalDelegate() {
     controller_->Hide();
 }
 
-void AutofillExternalDelegate::SelectAutofillSuggestion(int unique_id) {
-  ClearPreviewedForm();
-
-  // Only preview the data if it is a profile.
-  if (unique_id > 0)
-    FillAutofillFormData(unique_id, true);
-}
-
 void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
                                        const FormFieldData& field,
@@ -205,60 +197,56 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
   data_list_unique_ids_ = data_list_unique_ids;
 }
 
-void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
-  if (web_contents_) {
-    autofill_manager_->RemoveAutocompleteEntry(
-        autofill_query_field_.name, value);
-  }
+void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
+  ClearPreviewedForm();
+
+  // Only preview the data if it is a profile.
+  if (identifier > 0)
+    FillAutofillFormData(identifier, true);
 }
 
-void AutofillExternalDelegate::RemoveAutofillProfileOrCreditCard(
-    int unique_id) {
-  autofill_manager_->RemoveAutofillProfileOrCreditCard(unique_id);
+void AutofillExternalDelegate::DidAcceptSuggestion(const string16& value,
+                                                   int identifier) {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+
+  if (identifier == WebAutofillClient::MenuItemIDAutofillOptions) {
+    // User selected 'Autofill Options'.
+    autofill_manager_->OnShowAutofillDialog();
+  } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
+    // User selected 'Clear form'.
+    host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+  } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry &&
+             password_autofill_manager_.DidAcceptAutofillSuggestion(
+                 autofill_query_field_, value)) {
+    // DidAcceptAutofillSuggestion has already handled the work to fill in
+    // the page as required.
+  } else if (identifier == WebAutofillClient::MenuItemIDDataListEntry) {
+    host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
+                                                        value));
+  } else if (identifier == WebAutofillClient::MenuItemIDAutocompleteEntry) {
+    // User selected an Autocomplete, so we fill directly.
+    host->Send(new AutofillMsg_SetNodeText(host->GetRoutingID(), value));
+  } else {
+    FillAutofillFormData(identifier, false);
+  }
+
+  HideAutofillPopup();
+}
+
+void AutofillExternalDelegate::RemoveSuggestion(const string16& value,
+                                                int identifier) {
+  if (identifier > 0) {
+    autofill_manager_->RemoveAutofillProfileOrCreditCard(identifier);
+  } else if (web_contents_) {
+    autofill_manager_->RemoveAutocompleteEntry(autofill_query_field_.name,
+                                               value);
+  }
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
   HideAutofillPopup();
 
   has_shown_autofill_popup_for_current_edit_ = false;
-}
-
-bool AutofillExternalDelegate::DidAcceptAutofillSuggestion(
-    const string16& value,
-    int unique_id,
-    unsigned index) {
-  // If the selected element is a warning we don't want to do anything.
-  if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
-    return false;
-
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-
-  if (unique_id == WebAutofillClient::MenuItemIDAutofillOptions) {
-    // User selected 'Autofill Options'.
-    autofill_manager_->OnShowAutofillDialog();
-  } else if (unique_id == WebAutofillClient::MenuItemIDClearForm) {
-    // User selected 'Clear form'.
-    host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
-  } else if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry &&
-             password_autofill_manager_.DidAcceptAutofillSuggestion(
-                 autofill_query_field_, value)) {
-    // DidAcceptAutofillSuggestion has already handled the work to fill in
-    // the page as required.
-  } else if (unique_id == WebAutofillClient::MenuItemIDDataListEntry) {
-    host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
-                                                        value));
-  } else if (unique_id == WebAutofillClient::MenuItemIDAutocompleteEntry) {
-    // User selected an Autocomplete, so we fill directly.
-    host->Send(new AutofillMsg_SetNodeText(
-        host->GetRoutingID(),
-        value));
-  } else {
-    FillAutofillFormData(unique_id, false);
-  }
-
-  HideAutofillPopup();
-
-  return true;
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
@@ -299,6 +287,10 @@ void AutofillExternalDelegate::AddPasswordFormMapping(
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                                                     bool is_preview) {
+  // If the selected element is a warning we don't want to do anything.
+  if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
+    return;
+
   RenderViewHost* host = web_contents_->GetRenderViewHost();
 
   if (is_preview) {

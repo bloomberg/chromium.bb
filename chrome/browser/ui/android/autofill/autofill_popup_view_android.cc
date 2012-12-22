@@ -55,22 +55,22 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
       base::android::GetClass(env,
           "org/chromium/chrome/browser/autofill/AutofillSuggestion");
   ScopedJavaLocalRef<jobjectArray> data_array(env,
-      env->NewObjectArray(controller_->autofill_values().size(),
+      env->NewObjectArray(controller_->names().size(),
                           autofill_suggestion_clazz.obj(), NULL));
   base::android::CheckException(env);
-  for (size_t i = 0; i < controller_->autofill_values().size(); ++i) {
-    ScopedJavaLocalRef<jstring> value =
+  for (size_t i = 0; i < controller_->names().size(); ++i) {
+    ScopedJavaLocalRef<jstring> name =
         base::android::ConvertUTF16ToJavaString(
-            env, controller_->autofill_values()[i]);
-    ScopedJavaLocalRef<jstring> label =
+            env, controller_->names()[i]);
+    ScopedJavaLocalRef<jstring> subtext =
         base::android::ConvertUTF16ToJavaString(
-            env, controller_->autofill_labels()[i]);
-    int unique_id = controller_->autofill_unique_ids()[i];
+            env, controller_->subtexts()[i]);
+    int identifier = controller_->identifiers()[i];
     ScopedJavaLocalRef<jobject> data =
         Java_AutofillPopupGlue_createAutofillSuggestion(env,
-                                                        value.obj(),
-                                                        label.obj(),
-                                                        unique_id);
+                                                        name.obj(),
+                                                        subtext.obj(),
+                                                        identifier);
     env->SetObjectArrayElement(data_array.obj(), i, data.obj());
     base::android::CheckException(env);
   }
@@ -81,12 +81,9 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
                                                   jobject obj,
                                                   jint list_index,
-                                                  jstring value,
-                                                  jint unique_id) {
-  string16 value_utf16 = base::android::ConvertJavaStringToUTF16(env, value);
-  controller_->AcceptAutofillSuggestion(value_utf16,
-                                        unique_id,
-                                        list_index);
+                                                  jstring /*name*/,
+                                                  jint /*identifier*/) {
+  controller_->AcceptSuggestion(list_index);
 }
 
 void AutofillPopupViewAndroid::Dismissed(JNIEnv* env, jobject obj) {

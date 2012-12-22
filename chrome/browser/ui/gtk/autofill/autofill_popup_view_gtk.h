@@ -58,7 +58,7 @@ class AutofillPopupViewGtk : public AutofillPopupView {
                        GdkEventMotion*);
 
   // Set up the pango layout to display the autofill results.
-  void SetupLayout(const gfx::Rect& window_rect);
+  void SetUpLayout();
 
   // Set up the pango layout to print the given text and have it's width match
   // the text's (this gives us better control when placing the text box).

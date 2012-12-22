@@ -35,10 +35,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
       const gfx::Rect& element_bounds);
 
   // Shows the popup, or updates the existing popup with the given values.
-  void Show(const std::vector<string16>& autofill_values,
-            const std::vector<string16>& autofill_labels,
-            const std::vector<string16>& autofill_icons,
-            const std::vector<int>& autofill_unique_ids);
+  void Show(const std::vector<string16>& names,
+            const std::vector<string16>& subtexts,
+            const std::vector<string16>& icons,
+            const std::vector<int>& identifiers);
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|. Virtual for testing.
@@ -56,31 +56,28 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // AutofillPopupController implementation.
   virtual void ViewDestroyed() OVERRIDE;
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
-  virtual void SetSelectedPosition(int x, int y) OVERRIDE;
-  virtual bool AcceptAutofillSuggestion(const string16& value,
-                                        int unique_id,
-                                        unsigned index) OVERRIDE;
-  virtual void AcceptSelectedPosition(int x, int y) OVERRIDE;
-  virtual void ClearSelectedLine() OVERRIDE;
+  virtual void MouseHovered(int x, int y) OVERRIDE;
+  virtual void MouseClicked(int x, int y) OVERRIDE;
+  virtual void MouseExitedPopup() OVERRIDE;
+  virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(const string16& resource_name) OVERRIDE;
-  virtual bool CanDelete(int id) OVERRIDE;
+  virtual bool CanDelete(size_t index) OVERRIDE;
 #if !defined(OS_ANDROID)
   virtual int GetPopupRequiredWidth() OVERRIDE;
   virtual int GetPopupRequiredHeight() OVERRIDE;
 #endif
-  virtual int GetRowHeightFromId(int unique_id) OVERRIDE;
-  virtual gfx::Rect GetRectForRow(size_t row, int width) OVERRIDE;
+  virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
   virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;
   virtual gfx::NativeView container_view() const OVERRIDE;
   virtual const gfx::Rect& element_bounds() const OVERRIDE;
-  virtual const std::vector<string16>& autofill_values() const OVERRIDE;
-  virtual const std::vector<string16>& autofill_labels() const OVERRIDE;
-  virtual const std::vector<string16>& autofill_icons() const OVERRIDE;
-  virtual const std::vector<int>& autofill_unique_ids() const OVERRIDE;
+  virtual const std::vector<string16>& names() const OVERRIDE;
+  virtual const std::vector<string16>& subtexts() const OVERRIDE;
+  virtual const std::vector<string16>& icons() const OVERRIDE;
+  virtual const std::vector<int>& identifiers() const OVERRIDE;
 #if !defined(OS_ANDROID)
-  virtual const gfx::Font& label_font() const OVERRIDE;
-  virtual const gfx::Font& value_font() const OVERRIDE;
+  virtual const gfx::Font& name_font() const OVERRIDE;
+  virtual const gfx::Font& subtext_font() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
   virtual bool delete_icon_hovered() const OVERRIDE;
@@ -111,6 +108,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // Convert a y-coordinate to the closest line.
   int LineFromY(int y);
 
+  // Returns the height of a row depending on its type.
+  int GetRowHeightFromId(int identifier);
+
   // Returns true if the given |x| and |y| coordinates refer to a point that
   // hits the delete icon in the current selected line.
   bool DeleteIconIsUnder(int x, int y);
@@ -139,15 +139,15 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   gfx::Rect popup_bounds_;
 
   // The current Autofill query values.
-  std::vector<string16> autofill_values_;
-  std::vector<string16> autofill_labels_;
-  std::vector<string16> autofill_icons_;
-  std::vector<int> autofill_unique_ids_;
+  std::vector<string16> names_;
+  std::vector<string16> subtexts_;
+  std::vector<string16> icons_;
+  std::vector<int> identifiers_;
 
 #if !defined(OS_ANDROID)
   // The fonts for the popup text.
-  gfx::Font value_font_;
-  gfx::Font label_font_;
+  gfx::Font name_font_;
+  gfx::Font subtext_font_;
 #endif
 
   // The line that is currently selected by the user.

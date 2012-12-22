@@ -35,7 +35,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
             AutofillManager::FromWebContents(web_contents)) {}
   ~MockAutofillExternalDelegate() {}
 
-  virtual void SelectAutofillSuggestion(int unique_id) OVERRIDE {}
+  virtual void DidSelectSuggestion(int unique_id) OVERRIDE {}
 
   virtual void ClearPreviewedForm() OVERRIDE {}
 

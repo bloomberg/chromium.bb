@@ -11,21 +11,15 @@
 // of events by the controller.
 class AutofillPopupDelegate {
  public:
-  // Called when the autofill suggestion indicated by |unique_id| has been
+  // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).
-  virtual void SelectAutofillSuggestion(int unique_id) = 0;
+  virtual void DidSelectSuggestion(int identifier) = 0;
 
   // Inform the delegate that a row in the popup has been chosen.
-  // TODO(estade): does this really need to return a value?
-  virtual bool DidAcceptAutofillSuggestion(const string16& value,
-                                           int unique_id,
-                                           unsigned index) = 0;
+  virtual void DidAcceptSuggestion(const string16& value, int identifier) = 0;
 
-  // Remove the given Autocomplete entry from the DB.
-  virtual void RemoveAutocompleteEntry(const string16& value) = 0;
-
-  // Remove the given Autofill profile or credit credit.
-  virtual void RemoveAutofillProfileOrCreditCard(int unique_id) = 0;
+  // Delete the described suggestion.
+  virtual void RemoveSuggestion(const string16& value, int identifier) = 0;
 
   // Informs the delegate that the Autofill previewed form should be cleared.
   virtual void ClearPreviewedForm() = 0;
