@@ -453,10 +453,9 @@ void TestingAutomationProvider::PickUserImage(DictionaryValue* args,
 
 void TestingAutomationProvider::SkipToLogin(DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
   bool skip_image_selection;
   if (!args->GetBoolean("skip_image_selection", &skip_image_selection)) {
+    AutomationJSONReply reply(this, reply_message);
     reply.SendError("Invalid or missing args.");
     return;
   }
@@ -465,6 +464,7 @@ void TestingAutomationProvider::SkipToLogin(DictionaryValue* args,
 
   WizardController* wizard_controller = WizardController::default_controller();
   if (!wizard_controller) {
+    AutomationJSONReply reply(this, reply_message);
     if (ExistingUserController::current_controller()) {
       // Already at login screen.
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
