@@ -143,6 +143,13 @@ class NET_EXPORT_PRIVATE QuicFramer {
                                        const QuicFrames& frames);
 
   // Returns a new QuicPacket, owned by the caller, populated with the fields
+  // in |header| and |fec|, or NULL if the packet could not be created.  Sets
+  // num_consumed to the number of frames consumed constructing the packet.
+  QuicPacket* ConstructMaxFrameDataPacket(const QuicPacketHeader& header,
+                                          const QuicFrames& frames,
+                                          size_t* num_consumed);
+
+  // Returns a new QuicPacket, owned by the caller, populated with the fields
   // in |header| and |fec|, or NULL if the packet could not be created.
   QuicPacket* ConstructFecPacket(const QuicPacketHeader& header,
                                  const QuicFecData& fec);

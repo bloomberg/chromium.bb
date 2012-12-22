@@ -69,8 +69,19 @@ class QuicStreamFactoryTest : public ::testing::Test {
 
     QuicAckFrame ack(largest_received, least_unacked);
 
-    return scoped_ptr<QuicEncryptedPacket>(
-        ConstructPacket(header, QuicFrame(&ack)));
+    QuicCongestionFeedbackFrame feedback;
+    feedback.type = kTCP;
+    feedback.tcp.accumulated_number_of_lost_packets = 0;
+    feedback.tcp.receive_window = 16000;
+
+    QuicFramer framer(QuicDecrypter::Create(kNULL),
+                      QuicEncrypter::Create(kNULL));
+    QuicFrames frames;
+    frames.push_back(QuicFrame(&ack));
+    frames.push_back(QuicFrame(&feedback));
+    scoped_ptr<QuicPacket> packet(
+        framer.ConstructFrameDataPacket(header, frames));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*packet));
   }
 
   // Returns a newly created packet to send congestion feedback data.
@@ -120,14 +131,12 @@ TEST_F(QuicStreamFactoryTest, CreateIfSessionExists) {
 TEST_F(QuicStreamFactoryTest, Create) {
   scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 1));
-  scoped_ptr<QuicEncryptedPacket> feedback(ConstructFeedbackPacket(3));
-  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(4, 3));
-  scoped_ptr<QuicEncryptedPacket> rst5(ConstructRstPacket(5, 5));
-  scoped_ptr<QuicEncryptedPacket> rst7(ConstructRstPacket(6, 7));
+  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(3, 3));
+  scoped_ptr<QuicEncryptedPacket> rst5(ConstructRstPacket(4, 5));
+  scoped_ptr<QuicEncryptedPacket> rst7(ConstructRstPacket(5, 7));
   MockWrite writes[] = {
     MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
     MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
-    MockWrite(SYNCHRONOUS, feedback->data(), feedback->length()),
     MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
     MockWrite(SYNCHRONOUS, rst5->data(), rst5->length()),
     MockWrite(SYNCHRONOUS, rst7->data(), rst7->length()),
@@ -183,13 +192,11 @@ TEST_F(QuicStreamFactoryTest, CreateError) {
 TEST_F(QuicStreamFactoryTest, CancelCreate) {
   scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 1));
-  scoped_ptr<QuicEncryptedPacket> feedback(ConstructFeedbackPacket(3));
-  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(4, 3));
+  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(3, 3));
 
   MockWrite writes[] = {
     MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
     MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
-    MockWrite(SYNCHRONOUS, feedback->data(), feedback->length()),
     MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
   };
   scoped_ptr<QuicEncryptedPacket> shlo(ConstructShlo());

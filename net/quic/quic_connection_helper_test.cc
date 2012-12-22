@@ -121,21 +121,18 @@ class QuicConnectionHelperTest : public ::testing::Test {
     InitializeHeader(sequence_number);
 
     QuicAckFrame ack(0, sequence_number);
-    return ConstructPacket(header_, QuicFrame(&ack));
-  }
 
+    QuicCongestionFeedbackFrame feedback;
+    feedback.type = kTCP;
+    feedback.tcp.accumulated_number_of_lost_packets = 0;
+    feedback.tcp.receive_window = 16000;
 
-  // Returns a newly created packet to send congestion feedback data.
-  QuicEncryptedPacket* ConstructFeedbackPacket(
-      QuicPacketSequenceNumber sequence_number) {
-    InitializeHeader(sequence_number);
-
-    QuicCongestionFeedbackFrame frame;
-    frame.type = kTCP;
-    frame.tcp.accumulated_number_of_lost_packets = 0;
-    frame.tcp.receive_window = 16000;
-
-    return ConstructPacket(header_, QuicFrame(&frame));
+    QuicFrames frames;
+    frames.push_back(QuicFrame(&ack));
+    frames.push_back(QuicFrame(&feedback));
+    scoped_ptr<QuicPacket> packet(
+        framer_.ConstructFrameDataPacket(header_, frames));
+    return framer_.EncryptPacket(*packet);
   }
 
   // Returns a newly created packet to send a connection close frame.
@@ -275,8 +272,7 @@ TEST_F(QuicConnectionHelperTest, WritePacketToWireAsync) {
 
 TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   AddWrite(SYNCHRONOUS, ConstructAckPacket(1));
-  AddWrite(SYNCHRONOUS, ConstructFeedbackPacket(2));
-  AddWrite(SYNCHRONOUS, ConstructClosePacket(3, 1));
+  AddWrite(SYNCHRONOUS, ConstructClosePacket(2, 1));
   Initialize();
 
   EXPECT_TRUE(connection_->connected());
@@ -286,7 +282,6 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(5000));
   EXPECT_EQ(5000u, clock_.Now().ToMicroseconds());
   EXPECT_CALL(*scheduler_, SentPacket(1, _, false));
-  EXPECT_CALL(*scheduler_, SentPacket(2, _, false));
 
   // Send an ack so we don't set the resend alarm.
   connection_->SendAck();
@@ -300,7 +295,7 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
 
   // This time, we should time out.
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
-  EXPECT_CALL(*scheduler_, SentPacket(3, _, false));
+  EXPECT_CALL(*scheduler_, SentPacket(2, _, false));
   runner_->RunNextTask();
   EXPECT_EQ(kDefaultTimeoutUs + 5000, clock_.Now().ToMicroseconds());
   EXPECT_FALSE(connection_->connected());
@@ -312,7 +307,7 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
   Initialize();
 
   // Test that if we send a packet with a delay, it ends up queued.
-  EXPECT_CALL(*scheduler_, TimeUntilSend(true)).WillOnce(testing::Return(
+  EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
       QuicTime::Delta::FromMicroseconds(1)));
 
   connection_->SendStreamData(1, kData, 0, false, NULL);
@@ -321,7 +316,7 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
 
   // Advance the clock to fire the alarm, and configure the scheduler
   // to permit the packet to be sent.
-  EXPECT_CALL(*scheduler_, TimeUntilSend(true)).WillOnce(testing::Return(
+  EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
       QuicTime::Delta()));
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(testing::Return(true));
   runner_->RunNextTask();

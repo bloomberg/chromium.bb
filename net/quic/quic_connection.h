@@ -195,7 +195,11 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
 
   size_t NumFecGroups() const { return group_map_.size(); }
 
+  // Testing only.
   size_t NumQueuedPackets() const { return queued_packets_.size(); }
+
+  // Returns true if the connection has queued packets or frames.
+  bool HasQueuedData() const;
 
   // If the connection has timed out, this will close the connection and return
   // true.  Otherwise, it will return false and will reset the timeout alarm.
@@ -279,6 +283,13 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
     return QuicTime::Delta::FromMilliseconds(500);
   }
 
+  // Checks if a packet can be written now, and sets the timer if necessary.
+  bool CanWrite(bool is_retransmit);
+
+  // Writes as much queued data as possible.  The connection must not be
+  // blocked when this is called.
+  bool WriteData();
+
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
 
@@ -307,8 +318,10 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   bool last_packet_revived_;  // True if the last packet was revived from FEC.
   size_t last_size_;  // Size of the last received packet.
   QuicPacketHeader last_header_;
-  std::vector<QuicStreamFrame> frames_;
+  std::vector<QuicStreamFrame> last_stream_frames_;
 
+  bool should_send_ack_;
+  bool should_send_congestion_feedback_;
   QuicAckFrame outgoing_ack_;
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 

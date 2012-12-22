@@ -34,6 +34,16 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
   }
 }
 
+QuicPacketCreator::PacketPair QuicPacketCreator::SerializeFrames(
+    const QuicFrames& frames, size_t* num_serialized) {
+  QuicPacketHeader header;
+  FillPacketHeader(0, PACKET_FLAGS_NONE, &header);
+
+  QuicPacket* packet = framer_->ConstructMaxFrameDataPacket(
+      header, frames, num_serialized);
+  return make_pair(header.packet_sequence_number, packet);
+}
+
 size_t QuicPacketCreator::DataToStream(QuicStreamId id,
                                        StringPiece data,
                                        QuicStreamOffset offset,
@@ -164,32 +174,6 @@ QuicPacketCreator::PacketPair QuicPacketCreator::CloseConnection(
 
   QuicFrames frames;
   frames.push_back(QuicFrame(close_frame));
-  QuicPacket* packet = framer_->ConstructFrameDataPacket(header, frames);
-  DCHECK(packet);
-  return make_pair(header.packet_sequence_number, packet);
-}
-
-QuicPacketCreator::PacketPair QuicPacketCreator::AckPacket(
-    QuicAckFrame* ack_frame) {
-
-  QuicPacketHeader header;
-  FillPacketHeader(0, PACKET_FLAGS_NONE, &header);
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(ack_frame));
-  QuicPacket* packet = framer_->ConstructFrameDataPacket(header, frames);
-  DCHECK(packet);
-  return make_pair(header.packet_sequence_number, packet);
-}
-
-QuicPacketCreator::PacketPair QuicPacketCreator::CongestionFeedbackPacket(
-    QuicCongestionFeedbackFrame* feedback_frame) {
-
-  QuicPacketHeader header;
-  FillPacketHeader(0, PACKET_FLAGS_NONE, &header);
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(feedback_frame));
   QuicPacket* packet = framer_->ConstructFrameDataPacket(header, frames);
   DCHECK(packet);
   return make_pair(header.packet_sequence_number, packet);

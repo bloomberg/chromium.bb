@@ -29,10 +29,9 @@ QuicFramer::QuicFramer(QuicDecrypter* decrypter, QuicEncrypter* encrypter)
 
 QuicFramer::~QuicFramer() {}
 
-bool CanTruncate(const QuicFrames& frames) {
-  if (frames.size() == 1 && (
-      frames[0].type == ACK_FRAME ||
-      frames[0].type == CONNECTION_CLOSE_FRAME)) {
+bool CanTruncate(const QuicFrame& frame) {
+  if (frame.type == ACK_FRAME ||
+      frame.type == CONNECTION_CLOSE_FRAME) {
     return true;
   }
   return false;
@@ -41,27 +40,46 @@ bool CanTruncate(const QuicFrames& frames) {
 QuicPacket* QuicFramer::ConstructFrameDataPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames) {
+  size_t num_consumed = 0;
+  QuicPacket* packet =
+      ConstructMaxFrameDataPacket(header, frames, &num_consumed);
+  DCHECK_EQ(frames.size(), num_consumed);
+  return packet;
+}
+
+QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
+    const QuicPacketHeader& header,
+    const QuicFrames& frames,
+    size_t* num_consumed) {
   // Compute the length of the packet.  We use "magic numbers" here because
   // sizeof(member_) is not necessarily the same as sizeof(member_wire_format).
+  const size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
   size_t len = kPacketHeaderSize;
   len += 1;  // frame count
-  for (size_t i = 0; i < frames.size(); ++i) {
-    len += 1;  // space for the 8 bit type
-    len += ComputeFramePayloadLength(frames[i]);
-  }
-
   bool truncating = false;
-  size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
-  if (len > max_plaintext_size) {
-    if (CanTruncate(frames)) {
-      // Truncate the ack frame so the packet will not exceed kMaxPacketSize.
-      // Note that we may not use every byte of the writer in this case.
-      len = max_plaintext_size;
-      truncating = true;
-      DLOG(INFO) << "Truncating large ack";
-    } else {
-      return NULL;
+  for (size_t i = 0; i < frames.size(); ++i) {
+    size_t frame_len = 1;  // Space for the 8 bit type.
+    frame_len += ComputeFramePayloadLength(frames[i]);
+    if (len + frame_len > max_plaintext_size) {
+      // Only truncate the first frame in a packet, so if subsequent ones go
+      // over, stop including more frames.
+      if (i > 0) {
+        break;
+      }
+      if (CanTruncate(frames[0])) {
+        // Truncate the frame so the packet will not exceed kMaxPacketSize.
+        // Note that we may not use every byte of the writer in this case.
+        len = max_plaintext_size;
+        *num_consumed = 1;
+        truncating = true;
+        DLOG(INFO) << "Truncating large frame";
+        break;
+      } else {
+        return NULL;
+      }
     }
+    len += frame_len;
+    *num_consumed = i + 1;
   }
 
   QuicDataWriter writer(len);
@@ -74,11 +92,11 @@ QuicPacket* QuicFramer::ConstructFrameDataPacket(
   if (frames.size() > 256u) {
     return NULL;
   }
-  if (!writer.WriteUInt8(frames.size())) {
+  if (!writer.WriteUInt8(*num_consumed)) {
     return NULL;
   }
 
-  for (size_t i = 0; i < frames.size(); ++i) {
+  for (size_t i = 0; i < *num_consumed; ++i) {
     const QuicFrame& frame = frames[i];
     if (!writer.WriteUInt8(frame.type)) {
           return NULL;

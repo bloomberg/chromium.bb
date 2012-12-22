@@ -80,7 +80,7 @@ bool QuicSession::OnCanWrite() {
   // may be modifying the list as we loop.
   int remaining_writes = write_blocked_streams_.size();
 
-  while (connection_->NumQueuedPackets() == 0 &&
+  while (!connection_->HasQueuedData() &&
          remaining_writes > 0) {
     DCHECK(!write_blocked_streams_.empty());
     ReliableQuicStream* stream = GetStream(write_blocked_streams_.front());

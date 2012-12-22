@@ -71,6 +71,8 @@ QuicConnection::QuicConnection(QuicGuid guid,
       random_generator_(helper->GetRandomGenerator()),
       guid_(guid),
       peer_address_(address),
+      should_send_ack_(false),
+      should_send_congestion_feedback_(false),
       largest_seen_packet_with_ack_(0),
       least_packet_awaiting_ack_(0),
       write_blocked_(false),
@@ -156,7 +158,7 @@ void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
 }
 
 void QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
-  frames_.push_back(frame);
+  last_stream_frames_.push_back(frame);
 }
 
 void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
@@ -363,27 +365,28 @@ void QuicConnection::OnConnectionCloseFrame(
 void QuicConnection::OnPacketComplete() {
   if (!last_packet_revived_) {
     DLOG(INFO) << "Got packet " << last_header_.packet_sequence_number
-               << " with " << frames_.size()
+               << " with " << last_stream_frames_.size()
                << " frames for " << last_header_.guid;
     collector_->RecordIncomingPacket(last_size_,
                                      last_header_.packet_sequence_number,
                                      clock_->Now(),
                                      last_packet_revived_);
   } else {
-    DLOG(INFO) << "Got revived packet with " << frames_.size() << " frames.";
+    DLOG(INFO) << "Got revived packet with " << last_stream_frames_.size()
+               << " frames.";
   }
 
-  if (frames_.size()) {
+  if (last_stream_frames_.size()) {
     // If there's data, pass it to the visitor and send out an ack.
     bool accepted = visitor_->OnPacket(self_address_, peer_address_,
-                                       last_header_, frames_);
+                                       last_header_, last_stream_frames_);
     if (accepted) {
       AckPacket(last_header_);
     } else {
       // Send an ack without changing our state.
       SendAck();
     }
-    frames_.clear();
+    last_stream_frames_.clear();
   } else {
     // If there was no data, still make sure we update our internal state.
     // AckPacket will not send an ack on the wire in this case.
@@ -435,6 +438,8 @@ size_t QuicConnection::SendStreamData(
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicErrorCode error,
                                    QuicStreamOffset offset) {
+  // TODO(ianswett): Queue the frame and use WriteData instead of SendPacket
+  // once we support re-sending frames instead of packets.
   PacketPair packetpair = packet_creator_.ResetStream(id, offset, error);
 
   SendPacket(packetpair.first, packetpair.second, true, false, false);
@@ -454,18 +459,8 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 
 bool QuicConnection::OnCanWrite() {
   write_blocked_ = false;
-  size_t num_queued_packets = queued_packets_.size() + 1;
-  while (!write_blocked_ && !helper_->IsSendAlarmSet() &&
-         !queued_packets_.empty()) {
-    // Ensure that from one iteration of this loop to the next we
-    // succeeded in sending a packet so we don't infinitely loop.
-    // TODO(rch): clean up and close the connection if we really hit this.
-    DCHECK_LT(queued_packets_.size(), num_queued_packets);
-    num_queued_packets = queued_packets_.size();
-    QueuedPacket p = queued_packets_.front();
-    queued_packets_.pop_front();
-    SendPacket(p.sequence_number, p.packet, p.resend, false, p.retransmit);
-  }
+
+  WriteData();
 
   // If we've sent everything we had queued and we're still not blocked, let the
   // visitor know it can write more.
@@ -487,13 +482,49 @@ bool QuicConnection::OnCanWrite() {
   return !write_blocked_;
 }
 
+bool QuicConnection::WriteData() {
+  DCHECK_EQ(false, write_blocked_);
+  // Serialize the ack and congestion frames before draining the pending queue.
+  QuicFrames frames;
+  if (should_send_ack_) {
+    frames.push_back(QuicFrame(&outgoing_ack_));
+  }
+  if (should_send_congestion_feedback_) {
+    frames.push_back(QuicFrame(&outgoing_congestion_feedback_));
+  }
+  while (!frames.empty()) {
+    size_t num_serialized;
+    PacketPair pair = packet_creator_.SerializeFrames(frames, &num_serialized);
+    queued_packets_.push_back(QueuedPacket(
+        pair.first, pair.second, false, false));
+    frames.erase(frames.begin(), frames.begin() + num_serialized);
+  }
+  should_send_ack_ = false;
+  should_send_congestion_feedback_ = false;
+
+  size_t num_queued_packets = queued_packets_.size() + 1;
+  while (!write_blocked_ && !helper_->IsSendAlarmSet() &&
+         !queued_packets_.empty()) {
+    // Ensure that from one iteration of this loop to the next we
+    // succeeded in sending a packet so we don't infinitely loop.
+    // TODO(rch): clean up and close the connection if we really hit this.
+    DCHECK_LT(queued_packets_.size(), num_queued_packets);
+    num_queued_packets = queued_packets_.size();
+    QueuedPacket p = queued_packets_.front();
+    queued_packets_.pop_front();
+    SendPacket(p.sequence_number, p.packet, p.resend, false, p.retransmit);
+  }
+
+  return !write_blocked_;
+}
+
 void QuicConnection::AckPacket(const QuicPacketHeader& header) {
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(outgoing_ack_.received_info.IsAwaitingPacket(sequence_number));
   outgoing_ack_.received_info.RecordReceived(sequence_number);
 
   // TODO(alyssar) delay sending until we have data, or enough time has elapsed.
-  if (frames_.size() > 0) {
+  if (last_stream_frames_.size() > 0) {
     SendAck();
   }
 }
@@ -530,6 +561,22 @@ void QuicConnection::MaybeResendPacket(
   }
 }
 
+bool QuicConnection::CanWrite(bool is_retransmit) {
+  // TODO(ianswett): If the packet is a retransmit, the current send alarm may
+  // be too long.
+  if (write_blocked_ || helper_->IsSendAlarmSet()) {
+    return false;
+  }
+  QuicTime::Delta delay = scheduler_->TimeUntilSend(is_retransmit);
+  // If the scheduler requires a delay, then we can not send this packet now.
+  if (!delay.IsZero() && !delay.IsInfinite()) {
+    // TODO(pwestin): we need to handle delay.IsInfinite() seperately.
+    helper_->SetSendAlarm(delay);
+    return false;
+  }
+  return true;
+}
+
 bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
                                 QuicPacket* packet,
                                 bool should_resend,
@@ -539,17 +586,7 @@ bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
   // write, just write.
   if (!force) {
     // If we can't write, then simply queue the packet.
-    if (write_blocked_ || helper_->IsSendAlarmSet()) {
-      queued_packets_.push_back(
-          QueuedPacket(sequence_number, packet, should_resend, is_retransmit));
-      return false;
-    }
-
-    QuicTime::Delta delay = scheduler_->TimeUntilSend(should_resend);
-    // If the scheduler requires a delay, then we can not send this packet now.
-    if (!delay.IsZero() && !delay.IsInfinite()) {
-      // TODO(pwestin): we need to handle delay.IsInfinite() seperately.
-      helper_->SetSendAlarm(delay);
+    if (!CanWrite(is_retransmit)) {
       queued_packets_.push_back(
           QueuedPacket(sequence_number, packet, should_resend, is_retransmit));
       return false;
@@ -618,14 +655,15 @@ void QuicConnection::SendAck() {
 
   DVLOG(1) << "Sending ack " << outgoing_ack_;
 
-  PacketPair packetpair = packet_creator_.AckPacket(&outgoing_ack_);
-  SendPacket(packetpair.first, packetpair.second, false, false, false);
+  should_send_ack_ = true;
 
   if (collector_->GenerateCongestionFeedback(&outgoing_congestion_feedback_)) {
     DVLOG(1) << "Sending feedback " << outgoing_congestion_feedback_;
-    PacketPair packetpair = packet_creator_.CongestionFeedbackPacket(
-        &outgoing_congestion_feedback_);
-    SendPacket(packetpair.first, packetpair.second, false, false, false);
+    should_send_congestion_feedback_ = true;
+  }
+  // Try to write immediately if possible.
+  if (CanWrite(false)) {
+    WriteData();
   }
 }
 
@@ -692,6 +730,11 @@ void QuicConnection::CloseFecGroupsBefore(
     delete fec_group;
     it = next;
   }
+}
+
+bool QuicConnection::HasQueuedData() const {
+  return !queued_packets_.empty() || should_send_ack_ ||
+      should_send_congestion_feedback_;
 }
 
 bool QuicConnection::CheckForTimeout() {
