@@ -2236,7 +2236,8 @@ void BrowserView::Init() {
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
   if (JumpList::Enabled()) {
-    load_complete_listener_.reset(new LoadCompleteListener(this));
+    jumplist_ = new JumpList();
+    jumplist_->AddObserver(browser_->profile());
   }
 #endif
 
@@ -2267,14 +2268,6 @@ void BrowserView::LoadingAnimationCallback() {
     // through LoadingAnimationCallback.
     frame_->UpdateThrobber(web_contents && web_contents->IsLoading());
   }
-}
-
-void BrowserView::OnLoadCompleted() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  DCHECK(!jumplist_);
-  jumplist_ = new JumpList();
-  jumplist_->AddObserver(browser_->profile());
-#endif
 }
 
 // BrowserView, private --------------------------------------------------------
