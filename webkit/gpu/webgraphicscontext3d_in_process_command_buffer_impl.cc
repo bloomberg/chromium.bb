@@ -169,6 +169,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
   Error last_error_;
+  bool context_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
 };
@@ -242,11 +243,15 @@ static base::LazyInstance<base::Lock> g_decoder_lock =
     LAZY_INSTANCE_INITIALIZER;
 
 void GLInProcessContext::PumpCommands() {
-  base::AutoLock lock(g_decoder_lock.Get());
-  decoder_->MakeCurrent();
-  gpu_scheduler_->PutChanged();
-  ::gpu::CommandBuffer::State state = command_buffer_->GetState();
-  CHECK(state.error == ::gpu::error::kNoError);
+  if (!context_lost_) {
+    base::AutoLock lock(g_decoder_lock.Get());
+    decoder_->MakeCurrent();
+    gpu_scheduler_->PutChanged();
+    ::gpu::CommandBuffer::State state = command_buffer_->GetState();
+    if (::gpu::error::IsError(state.error)) {
+      context_lost_ = true;
+    }
+  }
 }
 
 bool GLInProcessContext::GetBufferChanged(int32 transfer_buffer_id) {
@@ -304,6 +309,7 @@ bool GLInProcessContext::SwapBuffers() {
 GLInProcessContext::Error GLInProcessContext::GetError() {
   CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == ::gpu::error::kNoError) {
+    // TODO(gman): Figure out and document what this logic is for.
     Error old_error = last_error_;
     last_error_ = SUCCESS;
     return old_error;
@@ -315,11 +321,11 @@ GLInProcessContext::Error GLInProcessContext::GetError() {
 }
 
 bool GLInProcessContext::IsCommandBufferContextLost() {
-  if (!command_buffer_.get()) {
+  if (context_lost_ || !command_buffer_.get()) {
     return true;
   }
   CommandBuffer::State state = command_buffer_->GetState();
-  return state.error == ::gpu::error::kLostContext;
+  return ::gpu::error::IsError(state.error);
 }
 
 CommandBufferService* GLInProcessContext::GetCommandBufferService() {
@@ -339,7 +345,8 @@ GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
     : parent_(parent ?
           parent->AsWeakPtr() : base::WeakPtr<GLInProcessContext>()),
       parent_texture_id_(0),
-      last_error_(SUCCESS) {
+      last_error_(SUCCESS),
+      context_lost_(false) {
 }
 
 bool GLInProcessContext::Initialize(const gfx::Size& size,
@@ -471,6 +478,8 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
   command_buffer_->SetGetBufferChangeCallback(
       base::Bind(
           &GLInProcessContext::GetBufferChanged, base::Unretained(this)));
+  command_buffer_->SetParseErrorCallback(
+      base::Bind(&GLInProcessContext::OnContextLost, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
