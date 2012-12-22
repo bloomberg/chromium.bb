@@ -23,6 +23,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   dropData->url = GURL("javascript:%");
 
   WebContentsImpl* contentsImpl = static_cast<WebContentsImpl*>(contents.get());
+  // This init call shouldn't throw any exceptions. http://crbug.com/128371
   scoped_nsobject<WebDragSource> source(
       [[WebDragSource alloc]
         initWithContents:contentsImpl
@@ -32,11 +33,6 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
                   offset:NSMakePoint(0, 0)
               pasteboard:[NSPasteboard pasteboardWithUniqueName]
         dragOperationMask:NSDragOperationCopy]);
-
-  // Test that this call doesn't throw any exceptions: http://crbug.com/128371
-  scoped_nsobject<NSPasteboard> pasteboard(
-      [NSPasteboard pasteboardWithUniqueName]);
-  [source lazyWriteToPasteboard:pasteboard forType:NSURLPboardType];
 }
 
 }  // namespace content
