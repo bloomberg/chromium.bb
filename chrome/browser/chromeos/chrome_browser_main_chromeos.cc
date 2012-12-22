@@ -85,6 +85,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/display/output_configurator.h"
+#include "chromeos/network/network_change_notifier_chromeos.h"
+#include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
@@ -254,7 +256,10 @@ class DBusServices {
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
     // the network manager.
-    CrosNetworkChangeNotifierFactory::GetInstance()->Init();
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkHandlers)) {
+      CrosNetworkChangeNotifierFactory::GetInstance()->Init();
+    }
 
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
@@ -287,6 +292,9 @@ class DBusServices {
     chromeos::NetworkStateHandler::Initialize();
     chromeos::NetworkConfigurationHandler::Initialize();
     network_handlers_initialized_ = true;
+    // TODO(gauravsh): This needs re-factoring. NetworkChangeNotifier choice
+    // needs to be made before about:flags are processed.
+    NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
   }
 
   ~DBusServices() {
@@ -382,9 +390,18 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
   // implementation. This must be done before BrowserMainLoop calls
   // net::NetworkChangeNotifier::Create() in MainMessageLoopStart().
-  net::NetworkChangeNotifier::SetFactory(
-      new CrosNetworkChangeNotifierFactory());
-
+  net::NetworkChangeNotifierFactory* network_change_factory;
+  // Note: At the time this is called, we have not processed about:flags
+  // so this requires that the network handler flag was passed in at the command
+  // line.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableNewNetworkHandlers)) {
+    network_change_factory = new CrosNetworkChangeNotifierFactory();
+  } else {
+    LOG(WARNING) << "Using new connection change notifier.";
+    network_change_factory = new NetworkChangeNotifierFactoryChromeos();
+  }
+  net::NetworkChangeNotifier::SetFactory(network_change_factory);
   ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
 }
 
@@ -399,7 +416,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
-
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Must be called after about_flags settings are applied (see note above).
   dbus_services_->InitializeNetworkHandlers();
@@ -641,6 +657,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // the network manager.
   if (CrosNetworkChangeNotifierFactory::GetInstance())
     CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
+  if (NetworkChangeNotifierFactoryChromeos::GetInstance())
+    NetworkChangeNotifierFactoryChromeos::GetInstance()->Shutdown();
 
   if (chromeos::NetworkPortalDetector::IsEnabled() &&
       chromeos::NetworkPortalDetector::GetInstance()) {

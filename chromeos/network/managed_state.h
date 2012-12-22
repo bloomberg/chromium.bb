@@ -71,6 +71,8 @@ class ManagedState {
                       std::string* out_value);
 
  private:
+  friend class NetworkChangeNotifierChromeosUpdateTest;
+
   ManagedType managed_type_;
 
   // The path (e.g. service path or device path) of the managed state object.
