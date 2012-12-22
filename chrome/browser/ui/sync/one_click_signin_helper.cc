@@ -10,12 +10,14 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/field_trial.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +53,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/escape.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,6 +67,16 @@ namespace {
 // Set to true if this chrome instance is in the blue-button-on-white-bar
 // experimental group.
 bool use_blue_on_white = false;
+
+// Add a specific email to the list of emails rejected for one-click
+// sign-in, for this profile.
+void AddEmailToOneClickRejectedList(Profile* profile,
+                                    const std::string& email) {
+  PrefService* pref_service = profile->GetPrefs();
+  ListPrefUpdate updater(pref_service,
+                         prefs::kReverseAutologinRejectedEmailList);
+  updater->AppendIfNotPresent(new base::StringValue(email));
+}
 
 // Start syncing with the given user information.
 void StartSync(Browser* browser,
@@ -83,13 +94,13 @@ void StartSync(Browser* browser,
     case OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT:
       action = one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS;
       break;
-    case OneClickSigninHelper::AUTO_ACCEPT:
+    case OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED:
       action =
           start_mode == OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS ?
               one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS :
               one_click_signin::HISTOGRAM_AUTO_WITH_ADVANCED;
       break;
-    case OneClickSigninHelper::NO_AUTO_ACCEPT:
+    case OneClickSigninHelper::AUTO_ACCEPT_NONE:
       action =
           start_mode == OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS ?
               one_click_signin::HISTOGRAM_WITH_DEFAULTS :
@@ -108,25 +119,62 @@ void StartSync(Browser* browser,
                             one_click_signin::HISTOGRAM_MAX);
 }
 
-// Determines the source of the sign in.  Its either one of the known sign in
-// access point (first run, NTP, menu, settings) or its an implicit sign in
-// via another Google property.  In the former case, "service" is also
-// checked to make sure its "chromiumsync".
-SyncPromoUI::Source GetSigninSource(const GURL& url) {
+// Determines the source of the sign in and the continue URL.  Its either one
+// of the known sign in access point (first run, NTP, menu, settings) or its
+// an implicit sign in via another Google property.  In the former case,
+// "service" is also checked to make sure its "chromiumsync".
+SyncPromoUI::Source GetSigninSource(const GURL& url, GURL* continue_url) {
   std::string value;
   chrome_common_net::GetValueForKeyInQuery(url, "service", &value);
-  bool is_explicit_signin = value == "chromiumsync";
+  bool possibly_an_explicit_signin = value == "chromiumsync";
 
-  chrome_common_net::GetValueForKeyInQuery(url, "continue", &value);
-  SyncPromoUI::Source source =
-      SyncPromoUI::GetSourceForSyncPromoURL(GURL(
-          net::UnescapeURLComponent(value,
-                                    net::UnescapeRule::URL_SPECIAL_CHARS)));
+  // Find the final continue URL for this sign in.  In some cases, Gaia can
+  // continue to itself, with the original continue URL buried under a couple
+  // of layers of indirection.  Peel those layers away.
+  GURL local_continue_url = url;
+  do {
+    local_continue_url =
+        SyncPromoUI::GetNextPageURLForSyncPromoURL(local_continue_url);
+  } while (gaia::IsGaiaSignonRealm(local_continue_url.GetOrigin()));
 
-  if (!is_explicit_signin)
-    source = SyncPromoUI::SOURCE_UNKNOWN;
+  if (continue_url && local_continue_url.is_valid()) {
+    DCHECK(!continue_url->is_valid() || *continue_url == local_continue_url);
+    *continue_url = local_continue_url;
+  }
 
-  return source;
+  return possibly_an_explicit_signin ?
+      SyncPromoUI::GetSourceForSyncPromoURL(local_continue_url) :
+      SyncPromoUI::SOURCE_UNKNOWN;
+}
+
+// Returns true if |url| is a valid URL that can occur during the sign in
+// process.  Valid URLs are of the form:
+//
+//    https://accounts.google.{TLD}/...
+//    https://accounts.youtube.com/...
+//    https://accounts.blogger.com/...
+//
+// All special headers used by one click sign in occur on
+// https://accounts.google.com URLs.  However, the sign in process may redirect
+// to intermediate Gaia URLs that do not end with .com.  For example, an account
+// that uses SMS 2-factor outside the US may redirect to country specific URLs.
+//
+// The sign in process may also redirect to youtube and blogger account URLs
+// so that Gaia acts as a single signon service.
+bool IsValidGaiaSigninRedirectOrResponseURL(const GURL& url) {
+  std::string hostname = url.host();
+  if (google_util::IsGoogleHostname(hostname, google_util::ALLOW_SUBDOMAIN)) {
+    // Also using IsGaiaSignonRealm() to handle overriding with command line.
+    return gaia::IsGaiaSignonRealm(url.GetOrigin()) ||
+        StartsWithASCII(hostname, "accounts.", false);
+  }
+
+  GURL origin = url.GetOrigin();
+  if (origin == GURL("https://accounts.youtube.com") ||
+      origin == GURL("https://accounts.blogger.com"))
+    return true;
+
+  return false;
 }
 
 // This class is associated as user data with a given URLRequest object, in
@@ -208,10 +256,6 @@ class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
   // OneClickSigninInfoBarDelegate overrides.
   virtual void GetAlternateColors(AlternateColors* alt_colors) OVERRIDE;
 
-  // Add a specific email to the list of emails rejected for one-click
-  // sign-in, for this profile.
-  void AddEmailToOneClickRejectedList(const std::string& email);
-
   // Record the specified action in the histogram for one-click sign in.
   void RecordHistogramAction(int action);
 
@@ -275,25 +319,27 @@ string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
 }
 
 bool OneClickInfoBarDelegateImpl::Accept() {
-  // User has accepted one-click sign-in for this account. Never ask again for
-  // this profile.
-  Profile* profile = Profile::FromBrowserContext(
-      owner()->GetWebContents()->GetBrowserContext());
-  SigninManager::DisableOneClickSignIn(profile);
-
   content::WebContents* web_contents = owner()->GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents->GetBrowserContext());
+
+  // User has accepted one-click sign-in for this account. Never ask again for
+  // this profile.
+  SigninManager::DisableOneClickSignIn(profile);
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   chrome::FindBrowserWithWebContents(web_contents)->window()->
-      ShowOneClickSigninBubble(base::Bind(&StartSync, browser,
-                                          OneClickSigninHelper::NO_AUTO_ACCEPT,
-                                          session_index_, email_, password_));
+      ShowOneClickSigninBubble(
+          base::Bind(&StartSync, browser,
+                     OneClickSigninHelper::AUTO_ACCEPT_NONE, session_index_,
+                     email_, password_));
   button_pressed_ = true;
   return true;
 }
 
 bool OneClickInfoBarDelegateImpl::Cancel() {
-  AddEmailToOneClickRejectedList(email_);
+  AddEmailToOneClickRejectedList(Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext()), email_);
   RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
@@ -328,16 +374,6 @@ void OneClickInfoBarDelegateImpl::GetAlternateColors(
   return OneClickSigninInfoBarDelegate::GetAlternateColors(alt_colors);
 }
 
-void OneClickInfoBarDelegateImpl::AddEmailToOneClickRejectedList(
-    const std::string& email) {
-  Profile* profile = Profile::FromBrowserContext(
-      owner()->GetWebContents()->GetBrowserContext());
-  PrefService* pref_service = profile->GetPrefs();
-  ListPrefUpdate updater(pref_service,
-                         prefs::kReverseAutologinRejectedEmailList);
-  updater->AppendIfNotPresent(new base::StringValue(email));
-}
-
 void OneClickInfoBarDelegateImpl::RecordHistogramAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
@@ -345,7 +381,7 @@ void OneClickInfoBarDelegateImpl::RecordHistogramAction(int action) {
 
 OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      auto_accept_(NO_AUTO_ACCEPT),
+      auto_accept_(AUTO_ACCEPT_NONE),
       source_(SyncPromoUI::SOURCE_UNKNOWN) {
 }
 
@@ -365,6 +401,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
                                     const std::string& email,
                                     int* error_message_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    VLOG(1) << "OneClickSigninHelper::CanOffer";
 
   if (error_message_id)
     *error_message_id = 0;
@@ -457,6 +494,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     }
   }
 
+  VLOG(1) << "OneClickSigninHelper::CanOffer: yes we can";
   return true;
 }
 
@@ -482,13 +520,6 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
 
   if (!SyncPromoUI::UseWebBasedSigninFlow())
     return DONT_OFFER;
-
-  // Don't offer if the source is known, as that means it's an explicit sign
-  // in request.
-  if (GetSigninSource(url) != SyncPromoUI::SOURCE_UNKNOWN ||
-      GetSigninSource(GURL(referrer)) != SyncPromoUI::SOURCE_UNKNOWN) {
-    return DONT_OFFER;
-  }
 
   if (!ProfileSyncService::IsSyncEnabled())
     return DONT_OFFER;
@@ -567,9 +598,12 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   request->GetResponseHeaderByName("Google-Accounts-SignIn",
                                    &google_accounts_signin_value);
 
-  VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
-          << " g-a-s='" << google_accounts_signin_value << "'"
-          << " g-c-s='" << google_chrome_signin_value << "'";
+  if (!google_accounts_signin_value.empty() ||
+      !google_chrome_signin_value.empty()) {
+    VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
+            << " g-a-s='" << google_accounts_signin_value << "'"
+            << " g-c-s='" << google_chrome_signin_value << "'";
+  }
 
   if (!SyncPromoUI::UseWebBasedSigninFlow() &&
       google_accounts_signin_value.empty()) {
@@ -602,54 +636,58 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   if (SyncPromoUI::UseWebBasedSigninFlow() && !email.empty())
     OneClickSigninRequestUserData::AssociateWithRequest(request, email);
 
-  VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
-          << " email=" << email
-          << " sessionindex=" << session_index;
+  if (!email.empty() || !session_index.empty()) {
+    VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
+            << " email=" << email
+            << " sessionindex=" << session_index;
+  }
 
   // Parse Google-Chrome-SignIn.
-  AutoAccept auto_accept = NO_AUTO_ACCEPT;
+  AutoAccept auto_accept = AUTO_ACCEPT_NONE;
   SyncPromoUI::Source source = SyncPromoUI::SOURCE_UNKNOWN;
+  GURL continue_url;
   if (SyncPromoUI::UseWebBasedSigninFlow()) {
     std::vector<std::string> tokens;
     base::SplitString(google_chrome_signin_value, ',', &tokens);
     for (size_t i = 0; i < tokens.size(); ++i) {
       const std::string& token = tokens[i];
       if (token == "accepted") {
-        auto_accept = AUTO_ACCEPT;
+        auto_accept = AUTO_ACCEPT_ACCEPTED;
       } else if (token == "configure") {
         auto_accept = AUTO_ACCEPT_CONFIGURE;
       } else if (token == "rejected-for-profile") {
-        auto_accept = REJECTED_FOR_PROFILE;
+        auto_accept = AUTO_ACCEPT_REJECTED_FOR_PROFILE;
       }
     }
 
     // If this is an explicit sign in (i.e., first run, NTP, menu,settings)
     // then force the auto accept type to explicit.
-    source = GetSigninSource(request->original_url());
-    if (source == SyncPromoUI::SOURCE_UNKNOWN)
-      source = GetSigninSource(GURL(request->referrer()));
-
+    source = GetSigninSource(request->original_url(), &continue_url);
     if (source != SyncPromoUI::SOURCE_UNKNOWN)
       auto_accept = AUTO_ACCEPT_EXPLICIT;
   }
 
-  VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
-          << " auto_accept=" << auto_accept;
+  if (auto_accept != AUTO_ACCEPT_NONE) {
+    VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
+            << " auto_accept=" << auto_accept;
+  }
 
-  // If |session_index|, |email|, and |auto_accept| all have their default
-  // value, don't bother posting a task to the UI thread.  It will be a noop
-  // anyway.
+  // If |session_index|, |email|, |auto_accept|, and |continue_url| all have
+  // their default value, don't bother posting a task to the UI thread.
+  // It will be a noop anyway.
   //
   // The two headers above may (but not always) come in different http requests
   // so a post to the UI thread is still needed if |auto_accept| is not its
   // default value, but |email| and |session_index| are.
-  if (session_index.empty() && email.empty() && auto_accept == NO_AUTO_ACCEPT)
+  if (session_index.empty() && email.empty() &&
+      auto_accept == AUTO_ACCEPT_NONE && !continue_url.is_valid()) {
     return;
+  }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&OneClickSigninHelper::ShowInfoBarUIThread, session_index,
-                 email, auto_accept, source, child_id, route_id));
+                 email, auto_accept, source, continue_url, child_id, route_id));
 }
 
 // static
@@ -658,6 +696,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     const std::string& email,
     AutoAccept auto_accept,
     SyncPromoUI::Source source,
+    const GURL& continue_url,
     int child_id,
     int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -697,13 +736,24 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!email.empty())
     helper->email_ = email;
 
-  if (auto_accept != NO_AUTO_ACCEPT) {
+  if (auto_accept != AUTO_ACCEPT_NONE) {
     helper->auto_accept_ = auto_accept;
     helper->source_ = source;
+  }
+
+  if (continue_url.is_valid()) {
+    // When Gaia finally redirects to the continue URL, Gaia will add some
+    // extra query parameters.  So ignore the parameters when checking to see
+    // if the user has continued.
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    helper->continue_url_ = continue_url.ReplaceComponents(replacements);
   }
 }
 
 void OneClickSigninHelper::RedirectToNTP() {
+  VLOG(1) << "OneClickSigninHelper::RedirectToNTP";
+
   // Redirect to NTP with sign in bubble visible.
   content::WebContents* contents = web_contents();
   Profile* profile =
@@ -722,10 +772,12 @@ void OneClickSigninHelper::RedirectToNTP() {
 }
 
 void OneClickSigninHelper::CleanTransientState() {
+  VLOG(1) << "OneClickSigninHelper::CleanTransientState";
   email_.clear();
   password_.clear();
-  auto_accept_ = NO_AUTO_ACCEPT;
+  auto_accept_ = AUTO_ACCEPT_NONE;
   source_ = SyncPromoUI::SOURCE_UNKNOWN;
+  continue_url_ = GURL();
 }
 
 void OneClickSigninHelper::DidNavigateAnyFrame(
@@ -745,6 +797,8 @@ void OneClickSigninHelper::DidStopLoading(
   // If the user left the sign in process, clear all members.
   // TODO(rogerta): might need to allow some youtube URLs.
   content::WebContents* contents = web_contents();
+  const GURL url = contents->GetURL();
+  VLOG(1) << "OneClickSigninHelper::DidStopLoading: url=" << url.spec();
 
   // If an error has already occured during the sign in flow, make sure to
   // display it to the user and abort the process.  Do this only for
@@ -759,22 +813,87 @@ void OneClickSigninHelper::DidStopLoading(
   if (email_.empty() || password_.empty())
     return;
 
+  // When the user use the firt-run, ntp, or hotdog menu to sign in, then have
+  // the option of checking the the box "Let me choose what to sync".  When the
+  // sign in process started, the source parameter in the continue URL may have
+  // indicated one of the three options above.  However, once this box is
+  // checked, the source parameter will indicate settings.  This will only be
+  // comminucated back to chrome when Gaia redirects to the continue URL, and
+  // this is considered here a last minute change to the source.  See a little
+  // further below for when this variable is set to true.
+  bool last_minute_source_change = false;
+
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
+    if (IsValidGaiaSigninRedirectOrResponseURL(url))
+      return;
+
+    // During an explicit sign in, if the user has not yet reached the final
+    // continue URL, wait for it to arrive. Note that Gaia will add some extra
+    // query parameters to the continue URL.  Ignore them when checking to
+    // see if the user has continued.
+    //
+    // If this is not an explicit sign in, we don't need to check if we landed
+    // on the right continue URL.  This is important because the continue URL
+    // may itself lead to a redirect, which means this function will never see
+    // the continue URL go by.
+    if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
+      DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
+      GURL::Replacements replacements;
+      replacements.ClearQuery();
+      const bool continue_url_match =
+          url.ReplaceComponents(replacements) == continue_url_;
+      if (!continue_url_match) {
+        VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
+                << url.spec()
+                << "' expected continue url=" << continue_url_;
+        CleanTransientState();
+        return;
+      }
+
+      // In explicit sign ins, the user may have checked the box
+      // "Let me choose what to sync".  This is reflected as a change in the
+      // source of the continue URL.  Make one last check of the current URL
+      // to see if there is a valid source and its set to settings.  If so,
+      // it overrides the current source.
+      SyncPromoUI::Source source =
+          SyncPromoUI::GetSourceForSyncPromoURL(url);
+      if (source == SyncPromoUI::SOURCE_SETTINGS) {
+        source_ = SyncPromoUI::SOURCE_SETTINGS;
+        last_minute_source_change = true;
+      }
+    }
+  }
+
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  InfoBarService* infobar_service =
+  Profile* profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext());
+  InfoBarService* infobar_tab_helper =
       InfoBarService::FromWebContents(contents);
 
+  VLOG(1) << "OneClickSigninHelper::DidStopLoading: signin is go."
+          << " auto_accept=" << auto_accept_
+          << " source=" << source_;
+
   switch (auto_accept_) {
-    case AUTO_ACCEPT:
+    case AUTO_ACCEPT_NONE:
+      if (SyncPromoUI::UseWebBasedSigninFlow()) {
+        UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse",
+                                  one_click_signin::HISTOGRAM_DISMISSED,
+                                  one_click_signin::HISTOGRAM_MAX);
+      } else {
+        infobar_tab_helper->AddInfoBar(
+            new OneClickInfoBarDelegateImpl(infobar_tab_helper, session_index_,
+                                            email_, password_));
+      }
+      break;
+    case AUTO_ACCEPT_ACCEPTED:
+      SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
           base::Bind(&StartSync, browser, auto_accept_, session_index_,
                      email_, password_));
       break;
-    case NO_AUTO_ACCEPT:
-      infobar_service->AddInfoBar(
-          new OneClickInfoBarDelegateImpl(infobar_service, session_index_,
-                                          email_, password_));
-      break;
     case AUTO_ACCEPT_CONFIGURE:
+      SigninManager::DisableOneClickSignIn(profile);
       StartSync(browser, auto_accept_, session_index_, email_, password_,
                 OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
@@ -783,8 +902,20 @@ void OneClickSigninHelper::DidStopLoading(
                 source_ == SyncPromoUI::SOURCE_SETTINGS ?
                     OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
                     OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+      // If this was a last minute switch to the settings page, this means the
+      // started with first-run/NTP/wrench menu, and checked the "configure
+      // first" checkbox.  Replace the default blank continue page with an
+      // about:blank page, so that when the settings page is displayed, it
+      // reuses the tab.
+      if (last_minute_source_change) {
+        contents->GetController().LoadURL(
+            GURL("about:blank"), content::Referrer(),
+            content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+      }
       break;
-    case REJECTED_FOR_PROFILE:
+    case AUTO_ACCEPT_REJECTED_FOR_PROFILE:
+      AddEmailToOneClickRejectedList(profile, email_);
       UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse",
                                 one_click_signin::HISTOGRAM_REJECTED,
                                 one_click_signin::HISTOGRAM_MAX);
@@ -799,8 +930,6 @@ void OneClickSigninHelper::DidStopLoading(
   // by SyncSetupHandler.
   if (auto_accept_ == AUTO_ACCEPT_EXPLICIT &&
       source_ != SyncPromoUI::SOURCE_SETTINGS) {
-    Profile* profile =
-        Profile::FromBrowserContext(contents->GetBrowserContext());
     signin_tracker_.reset(new SigninTracker(profile, this));
   }
 

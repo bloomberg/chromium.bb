@@ -35,11 +35,26 @@ class OneClickSigninHelper
       public content::WebContentsUserData<OneClickSigninHelper>,
       public SigninTracker::Observer {
  public:
+  // Represents user's decision about sign in process.
   enum AutoAccept {
-    AUTO_ACCEPT,
-    NO_AUTO_ACCEPT,
+    // User decision not yet known.  Assume cancel.
+    AUTO_ACCEPT_NONE,
+
+    // User has explicitly accepted to sign in.  A bubble is shown with the
+    // option to start sync, configure it first, or abort.
+    AUTO_ACCEPT_ACCEPTED,
+
+    // User has explicitly accepted to sign in, but wants to configure sync
+    // settings before turing it on.
     AUTO_ACCEPT_CONFIGURE,
-    REJECTED_FOR_PROFILE,
+
+    // User has explicitly rejected to sign in.  Furthermore, the user does
+    // not want to be prompted to see the interstitial again in this profile.
+    AUTO_ACCEPT_REJECTED_FOR_PROFILE,
+
+    // This is an explicit sign in from either first run, NTP, wrench menu,
+    // or settings page.  The user will be signed in automatically with sync
+    // enabled using default settings.
     AUTO_ACCEPT_EXPLICIT
   };
 
@@ -53,7 +68,7 @@ class OneClickSigninHelper
   // Argument to CanOffer().
   enum CanOfferFor {
     CAN_OFFER_FOR_ALL,
-    CAN_OFFER_FOR_INTERSTITAL_ONLY,
+    CAN_OFFER_FOR_INTERSTITAL_ONLY
   };
 
   virtual ~OneClickSigninHelper();
@@ -137,10 +152,21 @@ class OneClickSigninHelper
                                       ProfileIOData* io_data);
 
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
+  // |session_index| and |email| are extracted from the Google-Accounts-SignIn
+  // header.  |auto_accept| is extracted from the Google-Chrome-SignIn header.
+  // |source| is used to determine which of the explicit sign in mechanism is
+  // being used.
+  //
+  // |continue_url| is where Gaia will continue to when the sign in process is
+  // done.  For explicit sign ins, this is a URL chrome controls. For one-click
+  // sign in, this could be any google property.  This URL is used to know
+  // when the sign process is over and to collect infomation from the user
+  // entered on the Gaia sign in page (for explicit sign ins).
   static void ShowInfoBarUIThread(const std::string& session_index,
                                   const std::string& email,
                                   AutoAccept auto_accept,
                                   SyncPromoUI::Source source,
+                                  const GURL& continue_url,
                                   int child_id,
                                   int route_id);
 
@@ -167,6 +193,7 @@ class OneClickSigninHelper
   std::string password_;
   AutoAccept auto_accept_;
   SyncPromoUI::Source source_;
+  GURL continue_url_;
   std::string error_message_;
 
   scoped_ptr<SigninTracker> signin_tracker_;

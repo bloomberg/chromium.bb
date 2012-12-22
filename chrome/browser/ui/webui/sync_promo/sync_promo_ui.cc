@@ -50,9 +50,10 @@ const char kSyncPromoQueryKeyContinue[] = "continue";
 const char kSyncPromoQueryKeyNextPage[] = "next_page";
 const char kSyncPromoQueryKeySource[] = "source";
 
-// TODO(rogerta): It would be better to use about:blank, but until that is
-// supported by Gaia this blank continue URL will be used.
-const char kContinueUrl[] = "http://www.google.com/gen_204";
+// Gaia cannot support about:blank as a continue URL, so using a hosted blank
+// page instead.
+const char kContinueUrl[] =
+    "https://www.google.com/intl/%s/chrome/blank.html?%s=%d";
 
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaximum = 10;
@@ -240,10 +241,11 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
     // which of the chrome sign in access points was used to sign the userr in.
     // See OneClickSigninHelper for details.
     url_string = GaiaUrls::GetInstance()->service_login_url();
-    url_string.append("?service=chromiumsync");
+    url_string.append("?service=chromiumsync&sarp=1&rm=hide");
 
-    std::string continue_url = base::StringPrintf("%s?%s=%d",
-        kContinueUrl, kSyncPromoQueryKeySource, static_cast<int>(source));
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    std::string continue_url = base::StringPrintf(kContinueUrl, locale.c_str(),
+        kSyncPromoQueryKeySource, static_cast<int>(source));
 
     base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyContinue,
                         net::EscapeQueryParamValue(
@@ -268,9 +270,10 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
 
 // static
 GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
+  const char* key_name = UseWebBasedSigninFlow() ? kSyncPromoQueryKeyContinue :
+      kSyncPromoQueryKeyNextPage;
   std::string value;
-  if (chrome_common_net::GetValueForKeyInQuery(
-          url, kSyncPromoQueryKeyNextPage, &value)) {
+  if (chrome_common_net::GetValueForKeyInQuery(url, key_name, &value)) {
     return GURL(value);
   }
   return GURL();

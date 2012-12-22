@@ -1051,6 +1051,9 @@ void SyncSetupHandler::CloseSyncSetup() {
     }
 
     // Let the various services know that we're no longer active.
+    if (SyncPromoUI::UseWebBasedSigninFlow())
+      CloseGaiaSigninPage();
+
     GetLoginUIService()->LoginUIClosed(this);
   }
 

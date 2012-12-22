@@ -527,11 +527,10 @@ TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
       OneClickSigninHelper::FromWebContents(web_contents());
   EXPECT_EQ(NULL, helper);
 
-  OneClickSigninHelper::ShowInfoBarUIThread("session_index", "email",
-                                            OneClickSigninHelper::AUTO_ACCEPT,
-                                            SyncPromoUI::SOURCE_UNKNOWN,
-                                            process()->GetID(),
-                                            rvh()->GetRoutingID());
+  OneClickSigninHelper::ShowInfoBarUIThread(
+      "session_index", "email", OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED,
+      SyncPromoUI::SOURCE_UNKNOWN, GURL(), process()->GetID(),
+      rvh()->GetRoutingID());
 }
 
 // I/O thread tests
