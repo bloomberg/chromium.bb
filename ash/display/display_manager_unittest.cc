@@ -407,6 +407,8 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
             FindDisplayForId(10).bounds_in_pixel().ToString());
+  EXPECT_EQ("100x100",
+            ash::Shell::GetPrimaryRootWindow()->GetHostSize().ToString());
 }
 
 TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {

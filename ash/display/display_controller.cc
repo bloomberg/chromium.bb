@@ -475,6 +475,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         internal::kDisplayIdKey, display.id());
     primary_root_window_for_replace_ = NULL;
     UpdateDisplayBoundsForLayout();
+    root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
   } else {
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);
