@@ -137,10 +137,6 @@ void TableExample::OnMiddleClick() {}
 
 void TableExample::OnKeyDown(ui::KeyboardCode virtual_keycode) {}
 
-void TableExample::OnTableViewDelete(TableView* table_view) {}
-
-void TableExample::OnTableView2Delete(TableView2* table_view) {}
-
 void TableExample::ButtonPressed(Button* sender, const ui::Event& event) {
   int index = 0;
   bool show = true;

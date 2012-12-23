@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/table/table_view_views.h"
 
+#include <map>
+
 #include "base/i18n/rtl.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -11,9 +13,12 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/table/group_table_model.h"
+#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/controls/table/table_view_row_background_painter.h"
 
 // Padding around the text (on each side).
 static const int kTextVerticalPadding = 3;
@@ -38,17 +43,52 @@ int SwapCompareResult(int result, bool ascending) {
   return ascending ? result : -result;
 }
 
+// Populates |model_index_to_range_start| based on the |grouper|.
+void GetModelIndexToRangeStart(TableGrouper* grouper,
+                               int row_count,
+                               std::map<int, int>* model_index_to_range_start) {
+  for (int model_index = 0; model_index < row_count;) {
+    GroupRange range;
+    grouper->GetGroupRange(model_index, &range);
+    DCHECK_GT(range.length, 0);
+    for (int range_counter = 0; range_counter < range.length; range_counter++)
+      (*model_index_to_range_start)[range_counter + model_index] = model_index;
+    model_index += range.length;
+  }
+}
+
 } // namespace
 
 // Used as the comparator to sort the contents of the table.
 struct TableView::SortHelper {
   explicit SortHelper(TableView* table) : table(table) {}
 
-  bool operator()(int model_index_1, int model_index_2) {
-    return table->CompareRows(model_index_1, model_index_2) < 0;
+  bool operator()(int model_index1, int model_index2) {
+    return table->CompareRows( model_index1, model_index2) < 0;
   }
 
   TableView* table;
+};
+
+// Used as the comparator to sort the contents of the table when a TableGrouper
+// is present. When groups are present we sort the groups based on the first row
+// in the group and within the groups we keep the same order as the model.
+struct TableView::GroupSortHelper {
+  explicit GroupSortHelper(TableView* table) : table(table) {}
+
+  bool operator()(int model_index1, int model_index2) {
+    const int range1 = model_index_to_range_start[model_index1];
+    const int range2 = model_index_to_range_start[model_index2];
+    if (range1 == range2) {
+      // The two rows are in the same group, sort so that items in the same
+      // group always appear in the same order.
+      return model_index1 < model_index2;
+    }
+    return table->CompareRows(range1, range2) < 0;
+  }
+
+  TableView* table;
+  std::map<int, int> model_index_to_range_start;
 };
 
 TableView::VisibleColumn::VisibleColumn() : x(0), width(0) {}
@@ -76,9 +116,9 @@ TableView::TableView(ui::TableModel* model,
       header_(NULL),
       table_type_(table_type),
       table_view_observer_(NULL),
-      selected_row_(-1),
       row_height_(font_.GetHeight() + kTextVerticalPadding * 2),
-      last_parent_width_(0) {
+      last_parent_width_(0),
+      grouper_(NULL) {
   for (size_t i = 0; i < columns.size(); ++i) {
     VisibleColumn visible_column;
     visible_column.column = columns[i];
@@ -103,8 +143,7 @@ void TableView::SetModel(ui::TableModel* model) {
   if (model_)
     model_->SetObserver(NULL);
   model_ = model;
-  if (RowCount())
-    selected_row_ = 0;
+  selection_model_.Clear();
   if (model_)
     model_->SetObserver(this);
 }
@@ -118,12 +157,22 @@ View* TableView::CreateParentIfNecessary() {
   return scroll_view;
 }
 
+void TableView::SetRowBackgroundPainter(
+    scoped_ptr<TableViewRowBackgroundPainter> painter) {
+  row_background_painter_ = painter.Pass();
+}
+
+void TableView::SetGrouper(TableGrouper* grouper) {
+  grouper_ = grouper;
+  SortItemsAndUpdateMapping();
+}
+
 int TableView::RowCount() const {
   return model_ ? model_->RowCount() : 0;
 }
 
 int TableView::SelectedRowCount() {
-  return selected_row_ != -1 ? 1 : 0;
+  return static_cast<int>(selection_model_.size());
 }
 
 void TableView::Select(int model_row) {
@@ -134,7 +183,7 @@ void TableView::Select(int model_row) {
 }
 
 int TableView::FirstSelectedRow() {
-  return selected_row_ == -1 ? -1 : ViewToModel(selected_row_);
+  return SelectedRowCount() == 0 ? -1 : selection_model_.selected_indices()[0];
 }
 
 void TableView::SetColumnVisibility(int id, bool is_visible) {
@@ -251,25 +300,29 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   switch (event.key_code()) {
-    case ui::VKEY_UP:
-      if (selected_row_ > 0)
-        SelectByViewIndex(selected_row_ - 1);
-      else if (selected_row_ == -1 && RowCount())
+    case ui::VKEY_HOME:
+      if (RowCount())
+        SelectByViewIndex(0);
+      return true;
+
+    case ui::VKEY_END:
+      if (RowCount())
         SelectByViewIndex(RowCount() - 1);
       return true;
 
+    case ui::VKEY_UP:
+      AdvanceSelection(ADVANCE_DECREMENT);
+      return true;
+
     case ui::VKEY_DOWN:
-      if (selected_row_ == -1) {
-        if (RowCount())
-          SelectByViewIndex(0);
-      } else if (selected_row_ + 1 < RowCount()) {
-        SelectByViewIndex(selected_row_ + 1);
-      }
+      AdvanceSelection(ADVANCE_INCREMENT);
       return true;
 
     default:
       break;
   }
+  if (table_view_observer_)
+    table_view_observer_->OnKeyDown(event.key_code());
   return false;
 }
 
@@ -292,10 +345,7 @@ bool TableView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TableView::OnModelChanged() {
-  if (RowCount())
-    selected_row_ = 0;
-  else
-    selected_row_ = -1;
+  selection_model_.Clear();
   NumRowsChanged();
 }
 
@@ -304,27 +354,31 @@ void TableView::OnItemsChanged(int start, int length) {
 }
 
 void TableView::OnItemsAdded(int start, int length) {
-  if (selected_row_ >= start)
-    selected_row_ += length;
+  for (int i = 0; i < length; ++i)
+    selection_model_.IncrementFrom(start);
   NumRowsChanged();
 }
 
 void TableView::OnItemsRemoved(int start, int length) {
-  bool notify_selection_changed = false;
-  if (selected_row_ >= (start + length)) {
-    selected_row_ -= length;
-    if (selected_row_ == 0 && RowCount() == 0) {
-      selected_row_ = -1;
-      notify_selection_changed = true;
-    }
-  } else if (selected_row_ >= start) {
-    selected_row_ = start;
-    if (selected_row_ == RowCount())
-      selected_row_--;
-    notify_selection_changed = true;
-  }
+  // Determine the currently selected index in terms of the view. We inline the
+  // implementation here since ViewToModel() has DCHECKs that fail since the
+  // model has changed but |model_to_view_| has not been updated yet.
+  const int previously_selected_model_index = FirstSelectedRow();
+  int previously_selected_view_index = previously_selected_model_index;
+  if (previously_selected_model_index != -1 && is_sorted())
+    previously_selected_view_index =
+        model_to_view_[previously_selected_model_index];
+  for (int i = 0; i < length; ++i)
+    selection_model_.DecrementFrom(start);
   NumRowsChanged();
-  if (table_view_observer_ && notify_selection_changed)
+  // If the selection was empty and is no longer empty select the same visual
+  // index.
+  if (selection_model_.empty() && previously_selected_view_index != -1 &&
+      RowCount()) {
+    selection_model_.SetSelectedIndex(
+        ViewToModel(std::min(RowCount() - 1, previously_selected_view_index)));
+  }
+  if (table_view_observer_)
     table_view_observer_->OnSelectionChanged();
 }
 
@@ -359,13 +413,17 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 
   const int icon_index = GetIconIndex();
   for (int i = region.min_row; i < region.max_row; ++i) {
-    if (i == selected_row_) {
+    const int model_index = ViewToModel(i);
+    if (selection_model_.IsSelected(model_index)) {
       const gfx::Rect row_bounds(GetRowBounds(i));
       canvas->FillRect(row_bounds, kSelectedBackgroundColor);
       if (HasFocus() && !header_)
         canvas->DrawFocusRect(row_bounds);
+    } else if (row_background_painter_) {
+      row_background_painter_->PaintRowBackground(model_index,
+                                                  GetRowBounds(i),
+                                                  canvas);
     }
-    const int model_index = ViewToModel(i);
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = kTextHorizontalPadding + cell_bounds.x();
@@ -395,13 +453,11 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TableView::OnFocus() {
-  if (selected_row_ != -1)
-    SchedulePaintInRect(GetRowBounds(selected_row_));
+  SchedulePaintForSelection();
 }
 
 void TableView::OnBlur() {
-  if (selected_row_ != -1)
-    SchedulePaintInRect(GetRowBounds(selected_row_));
+  SchedulePaintForSelection();
 }
 
 void TableView::NumRowsChanged() {
@@ -425,7 +481,14 @@ void TableView::SortItemsAndUpdateMapping() {
     model_to_view_.resize(row_count);
     for (int i = 0; i < row_count; ++i)
       view_to_model_[i] = i;
-    std::sort(view_to_model_.begin(), view_to_model_.end(), SortHelper(this));
+    if (grouper_) {
+      GroupSortHelper sort_helper(this);
+      GetModelIndexToRangeStart(grouper_, RowCount(),
+                                &sort_helper.model_index_to_range_start);
+      std::sort(view_to_model_.begin(), view_to_model_.end(), sort_helper);
+    } else {
+      std::sort(view_to_model_.begin(), view_to_model_.end(), SortHelper(this));
+    }
     for (int i = 0; i < row_count; ++i)
       model_to_view_[view_to_model_[i]] = i;
     model_->ClearCollator();
@@ -434,14 +497,7 @@ void TableView::SortItemsAndUpdateMapping() {
 }
 
 int TableView::CompareRows(int model_row1, int model_row2) {
-  // TODO: I suspect HasGroups() isn't used anymore.
-  if (model_->HasGroups()) {
-    const int g1 = model_->GetGroupID(model_row1);
-    const int g2 = model_->GetGroupID(model_row2);
-    if (g1 != g2)
-      return g1 - g2;
-  }
-  int sort_result = model_->CompareValues(
+  const int sort_result = model_->CompareValues(
       model_row1, model_row2, sort_descriptors_[0].column_id);
   if (sort_result == 0 && sort_descriptors_.size() > 1) {
     // Try the secondary sort.
@@ -533,6 +589,13 @@ gfx::Rect TableView::GetPaintBounds(gfx::Canvas* canvas) const {
   return GetVisibleBounds();
 }
 
+void TableView::SchedulePaintForSelection() {
+  if (selection_model_.size() == 1)
+    SchedulePaintInRect(GetRowBounds(ModelToView(FirstSelectedRow())));
+  else if (selection_model_.size() > 1)
+    SchedulePaint();
+}
+
 int TableView::GetIconIndex() {
   if (table_type_ != ICON_AND_TEXT || columns_.empty())
     return -1;
@@ -556,20 +619,69 @@ ui::TableColumn TableView::FindColumnByID(int id) const {
 }
 
 void TableView::SelectByViewIndex(int view_index) {
-  if (view_index == selected_row_)
+  ui::ListSelectionModel new_selection;
+  if (view_index != -1) {
+    const GroupRange range(GetGroupRange(ViewToModel(view_index)));
+    new_selection.SetSelectedIndex(range.start);
+    for (int i = 1; i < range.length; ++i)
+      new_selection.AddIndexToSelection(range.start + i);
+  }
+
+  SetSelectionModel(new_selection);
+}
+
+void TableView::SetSelectionModel(const ui::ListSelectionModel& new_selection) {
+  if (new_selection.Equals(selection_model_))
     return;
 
-  selected_row_ = view_index;
-  if (selected_row_ != -1) {
+  SchedulePaintForSelection();
+  selection_model_.Copy(new_selection);
+  SchedulePaintForSelection();
+
+  // Scroll the group for the active item to visible.
+  if (selection_model_.active() != -1) {
     gfx::Rect vis_rect(GetVisibleBounds());
-    const gfx::Rect row_bounds(GetRowBounds(selected_row_));
-    vis_rect.set_y(row_bounds.y());
-    vis_rect.set_height(row_bounds.height());
+    const GroupRange range(GetGroupRange(selection_model_.active()));
+    const int start_y = GetRowBounds(ModelToView(range.start)).y();
+    const int end_y =
+        GetRowBounds(ModelToView(range.start + range.length - 1)).bottom();
+    vis_rect.set_y(start_y);
+    vis_rect.set_height(end_y - start_y);
     ScrollRectToVisible(vis_rect);
   }
-  SchedulePaint();
+
   if (table_view_observer_)
     table_view_observer_->OnSelectionChanged();
+}
+
+void TableView::AdvanceSelection(AdvanceDirection direction) {
+  if (selection_model_.active() == -1) {
+    SelectByViewIndex(0);
+    return;
+  }
+  const GroupRange range(GetGroupRange(selection_model_.active()));
+  int view_index = ModelToView(selection_model_.active());
+  if (direction == ADVANCE_DECREMENT) {
+    view_index = std::max(0, view_index -
+                          (selection_model_.active() - range.start + 1));
+  } else {
+    view_index =
+        std::min(RowCount() - 1,
+                 view_index + (selection_model_.active() - range.start +
+                               range.length));
+  }
+  SelectByViewIndex(view_index);
+}
+
+GroupRange TableView::GetGroupRange(int model_index) const {
+  GroupRange range;
+  if (grouper_) {
+    grouper_->GetGroupRange(model_index, &range);
+  } else {
+    range.start = model_index;
+    range.length = 1;
+  }
+  return range;
 }
 
 }  // namespace views

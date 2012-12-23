@@ -49,8 +49,6 @@ class TableExample : public ExampleBase,
   virtual void OnDoubleClick() OVERRIDE;
   virtual void OnMiddleClick() OVERRIDE;
   virtual void OnKeyDown(ui::KeyboardCode virtual_keycode) OVERRIDE;
-  virtual void OnTableViewDelete(TableView* table_view) OVERRIDE;
-  virtual void OnTableView2Delete(TableView2* table_view) OVERRIDE;
 
   // ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;

@@ -587,9 +587,6 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
         // And make the first row focused.
         ListView_SetItemState(window, 0, LVIS_FOCUSED, LVIS_FOCUSED);
         return 0;
-      } else if (w_param == VK_DELETE && table_view->table_view_observer_) {
-        table_view->table_view_observer_->OnTableViewDelete(table_view);
-        return 0;
       }
       // else case: fall through to default processing.
       break;

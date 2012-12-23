@@ -7,7 +7,10 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/table/group_table_model.h"
+#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
+#include "ui/views/controls/table/table_view_observer.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.
@@ -147,6 +150,23 @@ std::string GetModelToViewAsString(TableView* table) {
   return result;
 }
 
+class TestTableView : public TableView {
+ public:
+  TestTableView(ui::TableModel* model,
+                const std::vector<ui::TableColumn>& columns)
+      : TableView(model, columns, TEXT_ONLY, true, true, true) {
+  }
+
+  // View overrides:
+  virtual bool HasFocus() const {
+    // Overriden so key processing works.
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTableView);
+};
+
 }  // namespace
 
 class TableViewTest : public testing::Test {
@@ -161,11 +181,33 @@ class TableViewTest : public testing::Test {
     columns[1].title = ASCIIToUTF16("Title Column 1");
     columns[1].id = 1;
     columns[1].sortable = true;
-    table_ = new TableView(model_.get(), columns, TEXT_ONLY, true, true, true);
+    table_ = new TestTableView(model_.get(), columns);
     parent_.reset(table_->CreateParentIfNecessary());
     parent_->SetBounds(0, 0, 10000, 10000);
     parent_->Layout();
     helper_.reset(new TableViewTestHelper(table_));
+  }
+
+  // Returns the state of the selection model as a string. The format is:
+  // 'active=X anchor=X selection=X X X...'.
+  std::string SelectionStateAsString() const {
+    const ui::ListSelectionModel& model(table_->selection_model());
+    std::string result = "active=" + base::IntToString(model.active()) +
+        " anchor=" + base::IntToString(model.anchor()) +
+        " selection=";
+    const ui::ListSelectionModel::SelectedIndices& selection(
+        model.selected_indices());
+    for (size_t i = 0; i < selection.size(); ++i) {
+      if (i != 0)
+        result += " ";
+      result += base::IntToString(selection[i]);
+    }
+    return result;
+  }
+
+  void PressKey(ui::KeyboardCode code) {
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, code, 0, false);
+    table_->OnKeyPressed(event);
   }
 
  protected:
@@ -242,7 +284,7 @@ TEST_F(TableViewTest, Resize) {
   EXPECT_EQ(x - 1, table_->visible_columns()[1].x);
 }
 
-// Assertions for a sorted table.
+// Assertions for table sorting.
 TEST_F(TableViewTest, Sort) {
   // Toggle the sort order of the first column, shouldn't change anything.
   table_->ToggleSortOrder(0);
@@ -293,4 +335,297 @@ TEST_F(TableViewTest, Sort) {
   EXPECT_EQ("3 1 2 0", GetModelToViewAsString(table_));
 }
 
+namespace {
+
+class TableGrouperImpl : public TableGrouper {
+ public:
+  TableGrouperImpl() {}
+
+  void SetRanges(const std::vector<int>& ranges) {
+    ranges_ = ranges;
+  }
+
+  // TableGrouper overrides:
+  virtual void GetGroupRange(int model_index, GroupRange* range) OVERRIDE {
+    int offset = 0;
+    size_t range_index = 0;
+    for (; range_index < ranges_.size() && offset < model_index; ++range_index)
+      offset += ranges_[range_index];
+
+    if (offset == model_index) {
+      range->start = model_index;
+      range->length = ranges_[range_index];
+    } else {
+      range->start = offset - ranges_[range_index - 1];
+      range->length = ranges_[range_index - 1];
+    }
+  }
+
+ private:
+  std::vector<int> ranges_;
+
+  DISALLOW_COPY_AND_ASSIGN(TableGrouperImpl);
+};
+
+}  // namespace
+
+// Assertions around grouping.
+TEST_F(TableViewTest, Grouping) {
+  // Configure the grouper so that there are two groups:
+  // A 0
+  //   1
+  // B 2
+  //   3
+  TableGrouperImpl grouper;
+  std::vector<int> ranges;
+  ranges.push_back(2);
+  ranges.push_back(2);
+  grouper.SetRanges(ranges);
+  table_->SetGrouper(&grouper);
+
+  // Toggle the sort order of the first column, shouldn't change anything.
+  table_->ToggleSortOrder(0);
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_TRUE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("0 1 2 3", GetViewToModelAsString(table_));
+  EXPECT_EQ("0 1 2 3", GetModelToViewAsString(table_));
+
+  // Sort descending, resulting:
+  // B 2
+  //   3
+  // A 0
+  //   1
+  table_->ToggleSortOrder(0);
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_FALSE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("2 3 0 1", GetViewToModelAsString(table_));
+  EXPECT_EQ("2 3 0 1", GetModelToViewAsString(table_));
+
+  // Change the entry in the 4th row to -1. The model now becomes:
+  // A 0
+  //   1
+  // B 2
+  //   -1
+  // Since the first entry in the range didn't change the sort isn't impacted.
+  model_->ChangeRow(3, -1, 0);
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_FALSE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("2 3 0 1", GetViewToModelAsString(table_));
+  EXPECT_EQ("2 3 0 1", GetModelToViewAsString(table_));
+
+  // Change the entry in the 3rd row to -1. The model now becomes:
+  // A 0
+  //   1
+  // B -1
+  //   -1
+  model_->ChangeRow(2, -1, 0);
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_FALSE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("0 1 2 3", GetViewToModelAsString(table_));
+  EXPECT_EQ("0 1 2 3", GetModelToViewAsString(table_));
+
+  // Toggle to ascending sort.
+  table_->ToggleSortOrder(0);
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_TRUE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("2 3 0 1", GetViewToModelAsString(table_));
+  EXPECT_EQ("2 3 0 1", GetModelToViewAsString(table_));
+}
+
+namespace {
+
+class TableViewObserverImpl : public TableViewObserver {
+ public:
+  TableViewObserverImpl() : selection_changed_count_(0) {}
+
+  int GetChangedCountAndClear() {
+    const int count = selection_changed_count_;
+    selection_changed_count_ = 0;
+    return count;
+  }
+
+  // TableViewObserver overrides:
+  virtual void OnSelectionChanged() OVERRIDE {
+    selection_changed_count_++;
+  }
+
+ private:
+  int selection_changed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TableViewObserverImpl);
+};
+
+}  // namespace
+
+// Assertions around changing the selection.
+TEST_F(TableViewTest, Selection) {
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  // Select the last row.
+  table_->Select(3);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+
+  // Change sort, shouldn't notify of change (toggle twice so that order
+  // actually changes).
+  table_->ToggleSortOrder(0);
+  table_->ToggleSortOrder(0);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+
+  // Remove the selected row, this should notify of a change and update the
+  // selection.
+  model_->RemoveRow(3);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  // Insert a row, since the selection in terms of the original model hasn't
+  // changed the observer is not notified.
+  model_->AddRow(0, 1, 2);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
+
+// Verifies up/down correctly navigates through groups.
+TEST_F(TableViewTest, KeyUpDown) {
+  // Configure the grouper so that there are three groups:
+  // A 0
+  //   1
+  // B 5
+  // C 2
+  //   3
+  model_->AddRow(2, 5, 0);
+  TableGrouperImpl grouper;
+  std::vector<int> ranges;
+  ranges.push_back(2);
+  ranges.push_back(1);
+  ranges.push_back(2);
+  grouper.SetRanges(ranges);
+  table_->SetGrouper(&grouper);
+
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  // Sort the table descending by column 1, view now looks like:
+  // B 5   model: 2
+  // C 2          3
+  //   3          4
+  // A 0          0
+  //   1          1
+  table_->ToggleSortOrder(0);
+  table_->ToggleSortOrder(0);
+
+  EXPECT_EQ("2 3 4 0 1", GetViewToModelAsString(table_));
+
+  table_->Select(-1);
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  observer.GetChangedCountAndClear();
+  // Up with nothing selected selects the first row.
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
+
+// Verifies home/end do the right thing.
+TEST_F(TableViewTest, HomeEnd) {
+  // Configure the grouper so that there are three groups:
+  // A 0
+  //   1
+  // B 5
+  // C 2
+  //   3
+  model_->AddRow(2, 5, 0);
+  TableGrouperImpl grouper;
+  std::vector<int> ranges;
+  ranges.push_back(2);
+  ranges.push_back(1);
+  ranges.push_back(2);
+  grouper.SetRanges(ranges);
+  table_->SetGrouper(&grouper);
+
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  PressKey(ui::VKEY_HOME);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  PressKey(ui::VKEY_END);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
 }  // namespace views

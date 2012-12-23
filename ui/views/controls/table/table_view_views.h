@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/font.h"
@@ -30,8 +32,11 @@
 // sort by way of overriding TableModel::CompareValues().
 namespace views {
 
+struct GroupRange;
+class TableGrouper;
 class TableHeader;
 class TableViewObserver;
+class TableViewRowBackgroundPainter;
 class TableViewTestHelper;
 
 // The cells in the first column of a table can contain:
@@ -107,13 +112,21 @@ class VIEWS_EXPORT TableView
   void SetModel(ui::TableModel* model);
   ui::TableModel* model() const { return model_; }
 
-  // Returns a new ScrollPane that contains the receiver.
+  // Returns a new ScrollView that contains the receiver.
   View* CreateParentIfNecessary();
+
+  void SetRowBackgroundPainter(
+      scoped_ptr<TableViewRowBackgroundPainter> painter);
+
+  // Sets the TableGrouper. TableView does not own |grouper| (common use case is
+  // to have TableModel implement TableGrouper).
+  void SetGrouper(TableGrouper* grouper);
 
   // Returns the number of rows in the TableView.
   int RowCount() const;
 
   // Returns the number of selected rows.
+  // TODO(sky): remove this and force callers to use selection_model().
   int SelectedRowCount();
 
   // Selects the specified item, making sure it's visible.
@@ -122,10 +135,15 @@ class VIEWS_EXPORT TableView
   // Returns the first selected row in terms of the model.
   int FirstSelectedRow();
 
+  const ui::ListSelectionModel& selection_model() const {
+    return selection_model_;
+  }
+
   // Changes the visibility of the specified column (by id).
   void SetColumnVisibility(int id, bool is_visible);
   bool IsColumnVisible(int id) const;
 
+  // TODO(sky): rename to set_observer().
   void SetObserver(TableViewObserver* observer) {
     table_view_observer_ = observer;
   }
@@ -172,6 +190,7 @@ class VIEWS_EXPORT TableView
 
  private:
   friend class TableViewTestHelper;
+  struct GroupSortHelper;
   struct SortHelper;
 
   // Used during painting to determine the range of cells that need to be
@@ -186,6 +205,13 @@ class VIEWS_EXPORT TableView
     int max_row;
     int min_column;
     int max_column;
+  };
+
+  // Used by AdvanceSelection() to determine the direction to change the
+  // selection.
+  enum AdvanceDirection {
+    ADVANCE_DECREMENT,
+    ADVANCE_INCREMENT,
   };
 
   // Invoked when the number of rows changes in some way.
@@ -224,6 +250,9 @@ class VIEWS_EXPORT TableView
   // |canvas|.
   gfx::Rect GetPaintBounds(gfx::Canvas* canvas) const;
 
+  // Invokes SchedulePaint() for the selected rows.
+  void SchedulePaintForSelection();
+
   // Returns the index into |visible_columns_| to draw the icon at, or -1 if no
   // icon is to be drawn.
   int GetIconIndex();
@@ -233,6 +262,17 @@ class VIEWS_EXPORT TableView
 
   // Sets the selection to the specified index (in terms of the view).
   void SelectByViewIndex(int view_index);
+
+  // Sets the selection model to |new_selection|.
+  void SetSelectionModel(const ui::ListSelectionModel& new_selection);
+
+  // Advances the selection (from the active index) in the specified direction.
+  void AdvanceSelection(AdvanceDirection direction);
+
+  // Returns the range of the specified model index. If a TableGrouper has not
+  // been set this returns a group with a start of |model_index| and length of
+  // 1.
+  GroupRange GetGroupRange(int model_index) const;
 
   ui::TableModel* model_;
 
@@ -248,10 +288,11 @@ class VIEWS_EXPORT TableView
 
   const TableTypes table_type_;
 
+  // TODO(sky): rename to observer_.
   TableViewObserver* table_view_observer_;
 
-  // The selected row, in terms of the view.
-  int selected_row_;
+  // The selection, in terms of the model.
+  ui::ListSelectionModel selection_model_;
 
   gfx::Font font_;
 
@@ -267,6 +308,10 @@ class VIEWS_EXPORT TableView
   // Mappings used when sorted.
   std::vector<int> view_to_model_;
   std::vector<int> model_to_view_;
+
+  scoped_ptr<TableViewRowBackgroundPainter> row_background_painter_;
+
+  TableGrouper* grouper_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };

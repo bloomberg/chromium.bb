@@ -9,6 +9,7 @@
 
 namespace views {
 
+// TODO(sky): move GroupRange into TableGrouper and remove this file.
 struct GroupRange {
   int start;
   int length;
