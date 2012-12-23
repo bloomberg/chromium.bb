@@ -399,10 +399,10 @@ Event_Sync_State(EvdevPtr device)
     Event_Clear_Ev_Rel_State(device);
 
     LOG_WARNING(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
-                device->before_sync_time.tv_sec,
-                device->before_sync_time.tv_usec,
-                device->after_sync_time.tv_sec,
-                device->after_sync_time.tv_usec);
+                (long)device->before_sync_time.tv_sec,
+                (long)device->before_sync_time.tv_usec,
+                (long)device->after_sync_time.tv_sec,
+                (long)device->after_sync_time.tv_usec);
 }
 
 static void
@@ -413,26 +413,26 @@ Event_Print(EvdevPtr device, struct input_event* ev)
         switch (ev->code) {
         case SYN_REPORT:
             LOG_DEBUG(device, "@ %ld.%06ld  ---------- SYN_REPORT -------\n",
-                ev->time.tv_sec, ev->time.tv_usec);
+                (long)ev->time.tv_sec, (long)ev->time.tv_usec);
             return;
         case SYN_MT_REPORT:
             LOG_DEBUG(device, "@ %ld.%06ld  ........ SYN_MT_REPORT ......\n",
-                ev->time.tv_sec, ev->time.tv_usec);
+                (long)ev->time.tv_sec, (long)ev->time.tv_usec);
             return;
         case SYN_DROPPED:
             LOG_WARNING(device, "@ %ld.%06ld  ++++++++ SYN_DROPPED ++++++++\n",
-                ev->time.tv_sec, ev->time.tv_usec);
+                (long)ev->time.tv_sec, (long)ev->time.tv_usec);
             return;
         default:
             LOG_WARNING(device, "@ %ld.%06ld  ?????? SYN_UNKNOWN (%d) ?????\n",
-                ev->time.tv_sec, ev->time.tv_usec, ev->code);
+                (long)ev->time.tv_sec, (long)ev->time.tv_usec, ev->code);
             return;
         }
         break;
     case EV_ABS:
         if (ev->code == ABS_MT_SLOT) {
             LOG_DEBUG(device, "@ %ld.%06ld  .......... MT SLOT %d ........\n",
-                ev->time.tv_sec, ev->time.tv_usec, ev->value);
+                (long)ev->time.tv_sec, (long)ev->time.tv_usec, ev->value);
             return;
         }
         break;
@@ -441,8 +441,9 @@ Event_Print(EvdevPtr device, struct input_event* ev)
     }
 
     LOG_DEBUG(device, "@ %ld.%06ld %s[%d] (%s) = %d\n",
-        ev->time.tv_sec, ev->time.tv_usec, Event_Type_To_String(ev->type),
-        ev->code, Event_To_String(ev->type, ev->code), ev->value);
+        (long)ev->time.tv_sec, (long)ev->time.tv_usec,
+        Event_Type_To_String(ev->type), ev->code,
+        Event_To_String(ev->type, ev->code), ev->value);
 }
 
 /**
@@ -497,8 +498,8 @@ Event_Dump_Debug_Log(void* vinfo)
         if (ev->time.tv_sec == 0 && ev->time.tv_usec == 0)
             continue;
         rc = fprintf(fp, "E: %ld.%06ld %04x %04x %d\n",
-                            ev->time.tv_sec,
-                            ev->time.tv_usec,
+                            (long)ev->time.tv_sec,
+                            (long)ev->time.tv_usec,
                             ev->type,
                             ev->code,
                             ev->value);
