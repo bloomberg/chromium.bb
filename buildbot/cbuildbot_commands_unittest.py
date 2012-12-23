@@ -129,7 +129,7 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
-  def testGenerateMinidumpStackTraces(self):
+  def testGenerateStackTraces(self):
     """Test if we can generate stack traces for minidumps."""
     os.makedirs(os.path.join(self._chroot, 'tmp'))
     dump_file = os.path.join(self._chroot, 'tmp', 'test.dmp')
@@ -139,8 +139,8 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     ret = [(dump_file_dir, [''], [dump_file_name])]
     with mock.patch('os.walk', return_value=ret):
       gzipped_test_tarball = os.path.join(self.tempdir, 'test_results.tgz')
-      commands.GenerateMinidumpStackTraces(self._buildroot, self._board,
-                                           gzipped_test_tarball, self.tempdir)
+      commands.GenerateStackTraces(self._buildroot, self._board,
+                                   gzipped_test_tarball, self.tempdir, True)
       self.assertCommandContains([gzipped_test_tarball])
       self.assertCommandContains(['tar', 'xf', tarfile, '*.dmp'])
       self.assertCommandContains(['minidump_stackwalk'])
