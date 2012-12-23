@@ -341,7 +341,5 @@ def TempFileDecorator(func):
 
 def SetEnvironment(env):
   """Restore the environment variables to that of passed in dictionary."""
-  for var in set(os.environ).difference(env):
-    del os.environ[var]
-  # Just brute force overwrite what's there with the passed in copy.
+  os.environ.clear()
   os.environ.update(env)

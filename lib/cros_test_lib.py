@@ -367,6 +367,10 @@ class TestCase(unittest.TestCase):
 
   __metaclass__ = StackedSetup
 
+  # List of vars chromite is globally sensitive to and that should
+  # be suppressed for tests.
+  ENVIRON_VARIABLE_SUPPRESSIONS = ('CROS_CACHEDIR',)
+
   def __init__(self, *args, **kwds):
     unittest.TestCase.__init__(self, *args, **kwds)
     # This is set to keep pylint from complaining.
@@ -376,6 +380,8 @@ class TestCase(unittest.TestCase):
     self.__saved_env__ = os.environ.copy()
     self.__saved_cwd__ = os.getcwd()
     self.__saved_umask__ = os.umask(022)
+    for x in self.ENVIRON_VARIABLE_SUPPRESSIONS:
+      os.environ.pop(x, None)
 
   def tearDown(self):
     osutils.SetEnvironment(self.__saved_env__)
