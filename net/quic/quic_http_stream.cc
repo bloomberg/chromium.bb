@@ -160,7 +160,9 @@ int QuicHttpStream::ReadResponseBody(
 void QuicHttpStream::Close(bool not_reusable) {
   // Note: the not_reusable flag has no meaning for SPDY streams.
   if (stream_) {
+    stream_->SetDelegate(NULL);
     stream_->Close(QUIC_NO_ERROR);
+    stream_ = NULL;
   }
 }
 
@@ -210,8 +212,7 @@ bool QuicHttpStream::IsSpdyHttpStream() const {
 }
 
 void QuicHttpStream::Drain(HttpNetworkSession* session) {
-  if (stream_)
-    stream_->Close(QUIC_NO_ERROR);
+  Close(false);
   delete this;
 }
 

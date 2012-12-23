@@ -16,6 +16,9 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       id_(id),
       offset_(0),
       session_(session),
+      visitor_(NULL),
+      stream_bytes_read_(0),
+      stream_bytes_written_(0),
       error_(QUIC_NO_ERROR),
       read_side_closed_(false),
       write_side_closed_(false),
@@ -177,6 +180,16 @@ void ReliableQuicStream::CloseWriteSide() {
   if (read_side_closed_) {
     DLOG(INFO) << "Closing stream: " << id();
     session_->CloseStream(id());
+  }
+}
+
+void ReliableQuicStream::OnClose() {
+  if (visitor_) {
+    Visitor* visitor = visitor_;
+    // Calling Visitor::OnClose() may result the destruction of the visitor,
+    // so we need to ensure we don't call it again.
+    visitor_ = NULL;
+    visitor->OnClose(this);
   }
 }
 

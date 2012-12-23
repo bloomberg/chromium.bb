@@ -51,15 +51,12 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
       QuicStreamId id) OVERRIDE;
 
  private:
-  typedef base::hash_map<QuicStreamId, ReliableQuicStream*> StreamMap;
-
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
   QuicCryptoClientStream crypto_stream_;
   scoped_ptr<QuicConnectionHelper> helper_;
-  StreamMap streams_;
   QuicStreamFactory* stream_factory_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   bool read_pending_;

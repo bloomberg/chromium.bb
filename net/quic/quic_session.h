@@ -110,6 +110,20 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return max_open_streams_;
   }
 
+ protected:
+  // This is called after every call other than OnConnectionClose from the
+  // QuicConnectionVisitor to allow post-processing once the work has been done.
+  // In this case, it deletes streams given that it's safe to do so (no other
+  // opterations are being done on the streams at this time)
+  virtual void PostProcessAfterData();
+
+  base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() {
+    return &stream_map_;
+  }
+  std::vector<ReliableQuicStream*>* closed_streams() {
+    return &closed_streams_;
+  }
+
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
@@ -117,12 +131,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
-
-  // This is called after every call other than OnConnectionClose from the
-  // QuicConnectionVisitor to allow post-processing once the work has been done.
-  // In this case, it deletes streams given that it's safe to do so (no other
-  // opterations are being done on the streams at this time)
-  void PostProcessAfterData();
 
   scoped_ptr<QuicConnection> connection_;
 

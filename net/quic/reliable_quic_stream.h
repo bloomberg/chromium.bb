@@ -25,6 +25,21 @@ class QuicSession;
 // All this does right now is send data to subclasses via the sequencer.
 class NET_EXPORT_PRIVATE ReliableQuicStream {
  public:
+  // Visitor receives callbacks from the stream.
+  class Visitor {
+   public:
+    Visitor() {}
+
+    // Called when the stream is closed.
+    virtual void OnClose(ReliableQuicStream* stream) = 0;
+
+   protected:
+    virtual ~Visitor() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Visitor);
+  };
+
   ReliableQuicStream(QuicStreamId id,
                      QuicSession* session);
 
@@ -34,6 +49,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   virtual bool OnStreamFrame(const QuicStreamFrame& frame);
 
   virtual void OnCanWrite();
+
+  // Called by the session just before the stream is deleted.
+  virtual void OnClose();
 
   // Called when we get a stream reset from the client.
   // The rst will be passed through the sequencer, which will call
@@ -68,6 +86,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   const IPEndPoint& GetPeerAddress() const;
 
+  Visitor* visitor() { return visitor_; }
+  void set_visitor(Visitor* visitor) { visitor_ = visitor; }
+
  protected:
   // TODO(alyssar): document the return value -- whether it can be negative and
   // how a failure is reported.
@@ -101,6 +122,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   QuicStreamId id_;
   QuicStreamOffset offset_;
   QuicSession* session_;
+  // Optional visitor of this stream to be notified when the stream is closed.
+  Visitor* visitor_;
   // Bytes read and written refer to payload bytes only: they do not include
   // framing, encryption overhead etc.
   uint64 stream_bytes_read_;

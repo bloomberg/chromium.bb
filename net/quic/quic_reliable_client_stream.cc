@@ -24,7 +24,9 @@ QuicReliableClientStream::~QuicReliableClientStream() {
 uint32 QuicReliableClientStream::ProcessData(const char* data,
                                              uint32 data_len) {
   // TODO(rch): buffer data if we don't have a delegate.
-  DCHECK(delegate_);
+  if (!delegate_) {
+    return ERR_ABORTED;
+  }
   int rv = delegate_->OnDataReceived(data, data_len);
   if (rv != OK) {
     DLOG(ERROR) << "Delegate refused data, rv: " << rv;
@@ -39,6 +41,7 @@ void QuicReliableClientStream::TerminateFromPeer(bool half_close) {
     delegate_->OnClose(error());
     delegate_ = NULL;
   }
+  ReliableQuicStream::TerminateFromPeer(half_close);
 }
 
 void QuicReliableClientStream::SetDelegate(

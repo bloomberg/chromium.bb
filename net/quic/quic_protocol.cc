@@ -91,6 +91,7 @@ ostream& operator<<(ostream& os, const ReceivedPacketInfo& r) {
        it != r.missing_packets.end(); ++it) {
     os << *it << " ";
   }
+  os << " ] ";
   return os;
 }
 
