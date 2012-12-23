@@ -155,7 +155,7 @@ bool ThreadProxy::initializeOutputSurface()
     if (!context.get())
         return false;
 
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeOutputSurfaceOnImplThread, m_implThreadWeakPtr, base::Passed(context.Pass())));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeOutputSurfaceOnImplThread, m_implThreadWeakPtr, base::Passed(&context)));
     return true;
 }
 
@@ -234,7 +234,7 @@ bool ThreadProxy::recreateOutputSurface()
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateOutputSurfaceOnImplThread,
                                              m_implThreadWeakPtr,
                                              &completion,
-                                             base::Passed(outputSurface.Pass()),
+                                             base::Passed(&outputSurface),
                                              &recreateSucceeded,
                                              &capabilities));
     completion.wait();
@@ -368,7 +368,7 @@ void ThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<Animati
 {
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::postAnimationEventsToMainThreadOnImplThread");
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::setAnimationEvents, base::Unretained(this), base::Passed(events.Pass()), wallClockTime));
+    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::setAnimationEvents, base::Unretained(this), base::Passed(&events), wallClockTime));
 }
 
 bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff)
@@ -423,7 +423,7 @@ void ThreadProxy::setDeferCommits(bool deferCommits)
         TRACE_EVENT_ASYNC_END0("cc", "ThreadProxy::setDeferCommits", this);
 
     if (!m_deferCommits && m_pendingDeferredCommit)
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(m_pendingDeferredCommit.Pass())));
+        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(&m_pendingDeferredCommit)));
 }
 
 bool ThreadProxy::commitRequested() const
@@ -528,7 +528,7 @@ void ThreadProxy::scheduledActionBeginFrame()
     beginFrameState->implTransform = m_layerTreeHostImpl->implTransform();
     DCHECK_GT(m_layerTreeHostImpl->memoryAllocationLimitBytes(), 0u);
     beginFrameState->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(beginFrameState.Pass())));
+    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(&beginFrameState)));
 
     if (m_beginFrameCompletionEventOnImplThread) {
         m_beginFrameCompletionEventOnImplThread->signal();
