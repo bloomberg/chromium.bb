@@ -1203,6 +1203,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kHistoryEnableFullHistorySync)
   },
+  {
+    "enable-data-channels",
+    IDS_FLAGS_RTC_DATACHANNELS,
+    IDS_FLAGS_RTC_DATACHANNELS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDataChannels)
+  },
 };
 
 const Experiment* experiments = kExperiments;

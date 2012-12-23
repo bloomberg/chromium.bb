@@ -6963,6 +6963,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION" desc="Description for the flag to enable full history sync.">
         If tab sync is enabled, this feature allows you to see and delete history entries from your synced devices at chrome://history.
       </message>
+      <message name="IDS_FLAGS_RTC_DATACHANNELS" desc="Name of the flag to enable RTCDataChannel.">
+        Enable RTCDataChannel.
+      </message>
+      <message name="IDS_FLAGS_RTC_DATACHANNELS_DESCRIPTION" desc="Description for the flag to enable RTCDataChannel.">
+        Enable experimental RTCDataChannel for peer-to-peer data communications.
+      </message>
       <message name="IDS_FLAGS_OLD_CHECKBOX_STYLE_DESCRIPTION" desc="Description of the flag to turn off the new checkbox style.">
         Disables new appearance and sizing behavior for checkboxes and radio buttons.
       </message>
