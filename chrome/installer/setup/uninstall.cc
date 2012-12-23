@@ -197,6 +197,84 @@ void ClearRlzProductState() {
   }
 }
 
+// Decides whether setup.exe and the installer archive should be removed based
+// on the original and installer states:
+// * non-multi product being uninstalled: remove both
+// * any multi product left besides App Host: keep both
+// * only App Host left: keep setup.exe
+void CheckShouldRemoveSetupAndArchive(
+    const installer::InstallationState& original_state,
+    const installer::InstallerState& installer_state,
+    bool* remove_setup,
+    bool* remove_archive) {
+  *remove_setup = true;
+  *remove_archive = true;
+
+  // If any multi-install product is left (other than App Host) we must leave
+  // the installer and archive. For the App Host, we only leave the installer.
+  if (!installer_state.is_multi_install()) {
+    VLOG(1) << "Removing all installer files for a non-multi installation.";
+  } else {
+    for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
+      BrowserDistribution::Type dist_type =
+          static_cast<BrowserDistribution::Type>(i);
+      const installer::ProductState* product_state =
+          original_state.GetProductState(
+              installer_state.system_install(), dist_type);
+      if (product_state && product_state->is_multi_install() &&
+          !installer_state.FindProduct(dist_type)) {
+        // setup.exe will not be removed as there is a remaining multi-install
+        // product.
+        *remove_setup = false;
+        // As a special case, we can still remove the actual archive if the
+        // only remaining product is the App Host.
+        if (dist_type != BrowserDistribution::CHROME_APP_HOST) {
+          VLOG(1) << "Keeping all installer files due to a remaining "
+                  << "multi-install product.";
+          *remove_archive = false;
+          return;
+        }
+        VLOG(1) << "Keeping setup.exe due to a remaining "
+                << "app-host installation.";
+      }
+    }
+    VLOG(1) << "Removing the installer archive.";
+    if (remove_setup)
+      VLOG(1) << "Removing setup.exe.";
+  }
+}
+
+// Removes all files from the installer directory, leaving setup.exe iff
+// |remove_setup| is false.
+// Returns false in case of an error.
+bool RemoveInstallerFiles(const FilePath& install_directory,
+                          bool remove_setup) {
+  using file_util::FileEnumerator;
+  FileEnumerator file_enumerator(
+      install_directory,
+      false,
+      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
+  bool success = true;
+
+  FilePath setup_exe_base_name(installer::kSetupExe);
+
+  while (true) {
+    FilePath to_delete(file_enumerator.Next());
+    if (to_delete.empty())
+      break;
+    if (!remove_setup && to_delete.BaseName() == setup_exe_base_name)
+      continue;
+
+    VLOG(1) << "Deleting install path " << to_delete.value();
+    if (!file_util::Delete(to_delete, true)) {
+      LOG(ERROR) << "Failed to delete path: " << to_delete.value();
+      success = false;
+    }
+  }
+
+  return success;
+}
+
 }  // namespace
 
 namespace installer {
@@ -399,11 +477,8 @@ DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
 }
 
 bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
-                                 const FilePath& setup_path,
-                                 const Version& installed_version) {
+                                 const FilePath& setup_exe) {
   bool ret = false;
-  FilePath setup_exe(installer_state.GetInstallerDirectory(installed_version)
-      .Append(setup_path.BaseName()));
   FilePath temp_file;
   if (!file_util::CreateTemporaryFile(&temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
@@ -460,15 +535,13 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
   if (!file_util::Delete(app_host_exe, false)) {
     result = DELETE_FAILED;
     LOG(ERROR) << "Failed to delete path: " << app_host_exe.value();
-  } else {
-    result = DeleteApplicationProductAndVendorDirectories(target_path);
   }
 
   return result;
 }
 
 DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
-                                         const Version& installed_version) {
+                                         const FilePath& installer_path) {
   const FilePath& target_path = installer_state.target_path();
   if (target_path.empty()) {
     LOG(ERROR) << "DeleteChromeFilesAndFolders: no installation destination "
@@ -480,15 +553,30 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
+  FilePath installer_directory;
+  if (target_path.IsParent(installer_path))
+    installer_directory = installer_path.DirName();
+
+  // Enumerate all the files in target_path recursively (breadth-first).
+  // We delete a file or folder unless it is a parent/child of the installer
+  // directory. For parents of the installer directory, we will later recurse
+  // and delete all the children (that are not also parents/children of the
+  // installer directory).
   using file_util::FileEnumerator;
-  FileEnumerator file_enumerator(target_path, false,
-      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
+  FileEnumerator file_enumerator(
+      target_path, true, FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   while (true) {
     FilePath to_delete(file_enumerator.Next());
     if (to_delete.empty())
       break;
     if (to_delete.BaseName().value() == installer::kChromeAppHostExe)
       continue;
+    if (!installer_directory.empty() &&
+        (to_delete == installer_directory ||
+         installer_directory.IsParent(to_delete) ||
+         to_delete.IsParent(installer_directory))) {
+      continue;
+    }
 
     VLOG(1) << "Deleting install path " << to_delete.value();
     if (!file_util::Delete(to_delete, true)) {
@@ -518,17 +606,6 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
     }
   }
 
-  if (result == DELETE_REQUIRES_REBOOT) {
-    // Delete the Application directory at reboot if empty.
-    ScheduleFileSystemEntityForDeletion(target_path.value().c_str());
-
-    // If we need a reboot to continue, schedule the parent directories for
-    // deletion unconditionally. If they are not empty, the session manager
-    // will not delete them on reboot.
-    ScheduleParentAndGrandparentForDeletion(target_path);
-  } else {
-    result = DeleteApplicationProductAndVendorDirectories(target_path);
-  }
   return result;
 }
 
@@ -1223,30 +1300,21 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   GetLocalStateFolders(product, &local_state_folders);
   FilePath backup_state_file(BackupLocalStateFile(local_state_folders));
 
-  DeleteResult delete_result = DELETE_SUCCEEDED;
-
   if (product.is_chrome_app_host()) {
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
   } else if (!installer_state.is_multi_install() ||
              product.is_chrome_binaries()) {
-
-    // In order to be able to remove the folder in which we're running, we
-    // need to move setup.exe out of the install folder.
-    // TODO(tommi): What if the temp folder is on a different volume?
-    MoveSetupOutOfInstallFolder(installer_state, setup_path,
-                                product_state->version());
-    delete_result = DeleteChromeFilesAndFolders(installer_state,
-                                                product_state->version());
+    DeleteResult delete_result = DeleteChromeFilesAndFolders(
+        installer_state, cmd_line.GetProgram());
+    if (delete_result == DELETE_FAILED) {
+      ret = installer::UNINSTALL_FAILED;
+    } else if (delete_result == DELETE_REQUIRES_REBOOT) {
+      ret = installer::UNINSTALL_REQUIRES_REBOOT;
+    }
   }
 
   if (delete_profile)
     DeleteLocalState(local_state_folders, product.is_chrome_frame());
-
-  if (delete_result == DELETE_FAILED) {
-    ret = installer::UNINSTALL_FAILED;
-  } else if (delete_result == DELETE_REQUIRES_REBOOT) {
-    ret = installer::UNINSTALL_REQUIRES_REBOOT;
-  }
 
   if (!force_uninstall) {
     VLOG(1) << "Uninstallation complete. Launching post-uninstall operations.";
@@ -1268,6 +1336,83 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   }
 
   return ret;
+}
+
+void CleanUpInstallationDirectoryAfterUninstall(
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
+    const CommandLine& cmd_line,
+    installer::InstallStatus* uninstall_status) {
+  if (*uninstall_status != installer::UNINSTALL_SUCCESSFUL &&
+      *uninstall_status != installer::UNINSTALL_REQUIRES_REBOOT) {
+    return;
+  }
+  const FilePath target_path(installer_state.target_path());
+  if (target_path.empty()) {
+    LOG(ERROR) << "No installation destination path.";
+    *uninstall_status = installer::UNINSTALL_FAILED;
+    return;
+  }
+  FilePath setup_exe(cmd_line.GetProgram());
+  file_util::AbsolutePath(&setup_exe);
+  if (!target_path.IsParent(setup_exe)) {
+    LOG(INFO) << "setup.exe is not in target path. Skipping installer cleanup.";
+    return;
+  }
+  FilePath install_directory(setup_exe.DirName());
+
+  bool remove_setup = true;
+  bool remove_archive = true;
+  CheckShouldRemoveSetupAndArchive(original_state, installer_state,
+                                   &remove_setup, &remove_archive);
+  if (!remove_archive)
+    return;
+
+  if (remove_setup) {
+    // In order to be able to remove the folder in which we're running, we
+    // need to move setup.exe out of the install folder.
+    // TODO(tommi): What if the temp folder is on a different volume?
+    MoveSetupOutOfInstallFolder(installer_state, setup_exe);
+  }
+
+  // Remove files from "...\<product>\Application\<version>\Installer"
+  if (!RemoveInstallerFiles(install_directory, remove_setup)) {
+    *uninstall_status = installer::UNINSTALL_FAILED;
+    return;
+  }
+
+  if (!remove_setup)
+    return;
+
+  // Try to remove the empty directory hierarchy.
+
+  // Delete "...\<product>\Application\<version>\Installer"
+  if (DeleteEmptyDir(install_directory) != DELETE_SUCCEEDED) {
+    *uninstall_status = installer::UNINSTALL_FAILED;
+    return;
+  }
+
+  // Delete "...\<product>\Application\<version>"
+  DeleteResult delete_result = DeleteEmptyDir(install_directory.DirName());
+  if (delete_result == DELETE_FAILED ||
+      (delete_result == DELETE_NOT_EMPTY &&
+       *uninstall_status != installer::UNINSTALL_REQUIRES_REBOOT)) {
+    *uninstall_status = installer::UNINSTALL_FAILED;
+    return;
+  }
+
+  if (*uninstall_status == installer::UNINSTALL_REQUIRES_REBOOT) {
+    // Delete the Application directory at reboot if empty.
+    ScheduleFileSystemEntityForDeletion(target_path.value().c_str());
+
+    // If we need a reboot to continue, schedule the parent directories for
+    // deletion unconditionally. If they are not empty, the session manager
+    // will not delete them on reboot.
+    ScheduleParentAndGrandparentForDeletion(target_path);
+  } else if (DeleteApplicationProductAndVendorDirectories(target_path) ==
+             installer::DELETE_FAILED) {
+    *uninstall_status = installer::UNINSTALL_FAILED;
+  }
 }
 
 }  // namespace installer

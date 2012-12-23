@@ -1032,6 +1032,9 @@ installer::InstallStatus UninstallProducts(
       install_status = prod_status;
   }
 
+  installer::CleanUpInstallationDirectoryAfterUninstall(
+      original_state, installer_state, cmd_line, &install_status);
+
   // Tell Google Update that an uninstall has taken place.
   // Ignore the return value: success or failure of Google Update
   // has no bearing on the success or failure of Chrome's uninstallation.

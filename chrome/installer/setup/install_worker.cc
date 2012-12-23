@@ -162,32 +162,42 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   install_list->AddCreateDirWorkItem(installer_dir);
 
   FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
-  FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
 
   if (exe_dst != setup_path) {
     install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
                                       temp_path.value(), WorkItem::ALWAYS);
   }
 
-  if (archive_path != archive_dst) {
-    // In the past, we copied rather than moved for system level installs so
-    // that the permissions of %ProgramFiles% would be picked up.  Now that
-    // |temp_path| is in %ProgramFiles% for system level installs (and in
-    // %LOCALAPPDATA% otherwise), there is no need to do this for the archive.
-    // Setup.exe, on the other hand, is created elsewhere so it must always be
-    // copied.
+  // If only the App Host (not even the Chrome Binaries) is being installed,
+  // this must be a user-level App Host piggybacking on system-level Chrome
+  // Binaries. Only setup.exe is required, and only for uninstall.
+  if (installer_state.products().size() != 1 ||
+      !installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
+    FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
+    if (archive_path != archive_dst) {
+      // In the past, we copied rather than moved for system level installs so
+      // that the permissions of %ProgramFiles% would be picked up.  Now that
+      // |temp_path| is in %ProgramFiles% for system level installs (and in
+      // %LOCALAPPDATA% otherwise), there is no need to do this for the archive.
+      // Setup.exe, on the other hand, is created elsewhere so it must always be
+      // copied.
 #if !defined(COMPONENT_BUILD)
-    install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value(), WorkItem::ALWAYS_MOVE);
+      install_list->AddMoveTreeWorkItem(archive_path.value(),
+                                        archive_dst.value(),
+                                        temp_path.value(),
+                                        WorkItem::ALWAYS_MOVE);
 #else  // COMPONENT_BUILD
-    // The archive is usually extracted in |temp_path| in which case we want to
-    // move it as mentioned above; however in the component build, setup.exe
-    // uses chrome.7z directly from the build output, moving it means that
-    // setup.exe cannot be run again without regenerating the archive, so copy
-    // it instead in this case to save developer time.
-    install_list->AddCopyTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value(), WorkItem::ALWAYS);
+      // The archive is usually extracted in |temp_path| in which case we want
+      // to move it as mentioned above; however in the component build,
+      // setup.exe uses chrome.7z directly from the build output, moving it
+      // means that setup.exe cannot be run again without regenerating the
+      // archive, so copy it instead in this case to save developer time.
+      install_list->AddCopyTreeWorkItem(archive_path.value(),
+                                        archive_dst.value(),
+                                        temp_path.value(),
+                                        WorkItem::ALWAYS);
 #endif  // COMPONENT_BUILD
+    }
   }
 }
 
@@ -409,11 +419,6 @@ void AddChromeWorkItems(const InstallationState& original_state,
   install_list->AddDeleteTreeWorkItem(
       target_path.Append(installer::kChromeOldExe), temp_path)->
           set_ignore_failure(true);
-
-  // Copy installer in install directory and
-  // add shortcut in Control Panel->Add/Remove Programs.
-  AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_path,
-                        new_version, install_list);
 }
 
 // Probes COM machinery to get an instance of delegate_execute.exe's
@@ -1082,6 +1087,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
         WorkItem::ALWAYS,
         L"");
   }
+
+  // Copy installer in install directory
+  AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_path,
+                        new_version, install_list);
 
   const HKEY root = installer_state.root_key();
   // Only set "lang" for user-level installs since for system-level, the install
