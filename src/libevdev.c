@@ -325,8 +325,8 @@ int EvdevWriteInfoToFile(FILE* fp, const EvdevInfoPtr info) {
 }
 
 int EvdevWriteEventToFile(FILE* fp, const struct input_event* ev) {
-  return fprintf(fp, "E: %lu.%06u %04x %04x %d\n",
-                 ev->time.tv_sec, (unsigned)ev->time.tv_usec,
+  return fprintf(fp, "E: %ld.%06u %04x %04x %d\n",
+                 (long)ev->time.tv_sec, (unsigned)ev->time.tv_usec,
                  ev->type, ev->code, ev->value);
 }
 
