@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_session.h"
 
+#include "base/stl_util.h"
 #include "net/quic/quic_connection.h"
 
 using base::StringPiece;
@@ -13,13 +14,59 @@ using std::vector;
 
 namespace net {
 
+// We want to make sure we delete any closed streams in a safe manner.
+// To avoid deleting a stream in mid-operation, we have a simple shim between
+// us and the stream, so we can delete any streams when we return from
+// processing.
+//
+// We could just override the base methods, but this makes it easier to make
+// sure we don't miss any.
+class VisitorShim : public QuicConnectionVisitorInterface {
+ public:
+  explicit VisitorShim(QuicSession* session) : session_(session) {}
+
+  virtual bool OnPacket(const IPEndPoint& self_address,
+                        const IPEndPoint& peer_address,
+                        const QuicPacketHeader& header,
+                        const vector<QuicStreamFrame>& frame) {
+    bool accepted = session_->OnPacket(self_address, peer_address, header,
+                                       frame);
+    session_->PostProcessAfterData();
+    return accepted;
+  }
+  virtual void OnRstStream(const QuicRstStreamFrame& frame) {
+    session_->OnRstStream(frame);
+    session_->PostProcessAfterData();
+  }
+
+  virtual void OnAck(AckedPackets acked_packets) {
+    session_->OnAck(acked_packets);
+    session_->PostProcessAfterData();
+  }
+
+  virtual bool OnCanWrite() {
+    bool rc = session_->OnCanWrite();
+    session_->PostProcessAfterData();
+    return rc;
+  }
+
+  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) {
+    session_->ConnectionClose(error, from_peer);
+    // The session will go away, so don't bother with cleanup.
+  }
+
+ private:
+  QuicSession* session_;
+};
+
 QuicSession::QuicSession(QuicConnection* connection, bool is_server)
     : connection_(connection),
+      visitor_shim_(new VisitorShim(this)),
       max_open_streams_(kDefaultMaxStreamsPerConnection),
       next_stream_id_(is_server ? 2 : 3),
       is_server_(is_server),
       largest_peer_created_stream_id_(0) {
-  connection_->set_visitor(this);
+  connection->set_visitor(visitor_shim_.get());
 }
 
 QuicSession::~QuicSession() {
@@ -222,6 +269,11 @@ size_t QuicSession::GetNumOpenStreams() {
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id) {
   write_blocked_streams_.push_back(id);
+}
+
+void QuicSession::PostProcessAfterData() {
+  STLDeleteElements(&closed_streams_);
+  closed_streams_.clear();
 }
 
 }  // namespace net

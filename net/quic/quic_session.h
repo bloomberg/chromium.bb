@@ -22,6 +22,7 @@ namespace net {
 
 class QuicCryptoStream;
 class ReliableQuicStream;
+class VisitorShim;
 
 namespace test {
 class QuicSessionPeer;
@@ -111,12 +112,25 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
  private:
   friend class test::QuicSessionPeer;
+  friend class VisitorShim;
 
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
+  // This is called after every call other than OnConnectionClose from the
+  // QuicConnectionVisitor to allow post-processing once the work has been done.
+  // In this case, it deletes streams given that it's safe to do so (no other
+  // opterations are being done on the streams at this time)
+  void PostProcessAfterData();
+
   scoped_ptr<QuicConnection> connection_;
+
+  // A shim to stand between the connection and the session, to handle stream
+  // deletions.
+  scoped_ptr<VisitorShim> visitor_shim_;
+
+  std::vector<ReliableQuicStream*> closed_streams_;
 
   // Returns the maximum number of streams this connection can open.
   const size_t max_open_streams_;
