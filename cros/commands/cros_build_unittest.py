@@ -7,7 +7,6 @@
 """This module tests the cros image command."""
 
 import os
-import mock
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../../..' % __file__))
@@ -17,6 +16,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 class MockBuildCommand(init_unittest.MockCommand):

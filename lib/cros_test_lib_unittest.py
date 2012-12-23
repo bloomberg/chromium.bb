@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 import functools
-import mock
 import os
 import sys
 
@@ -14,6 +13,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import partial_mock
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 # pylint: disable=W0212,W0233
 

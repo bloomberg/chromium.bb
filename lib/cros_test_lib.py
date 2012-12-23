@@ -11,7 +11,6 @@ import collections
 import contextlib
 import cStringIO
 import exceptions
-import mock
 import mox
 import os
 import re
@@ -21,6 +20,18 @@ import unittest
 import osutils
 import terminal
 import cros_build_lib
+
+if 'chromite' not in sys.modules:
+  # TODO(build): Finish test wrapper (http://crosbug.com/37517).
+  # Until then, we detect the chromite manipulation not yet having
+  # occurred, and inject it ourselves.
+  # We cannot just import chromite since this module is still accessed
+  # from non chromite.lib.cros_test_lib pathways (which will be resolved
+  # implicitly via 37517).
+  sys.path.insert(0, os.path.join(
+      os.path.dirname(os.path.abspath(__file__)), '../third_party'))
+
+import mock
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])

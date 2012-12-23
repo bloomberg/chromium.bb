@@ -6,7 +6,6 @@
 
 """Unittests for commands."""
 
-import mock
 import os
 import sys
 
@@ -19,6 +18,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 # pylint: disable=W0212

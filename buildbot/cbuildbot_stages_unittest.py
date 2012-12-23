@@ -7,7 +7,6 @@
 """Unittests for build stages."""
 
 import json
-import mock
 import mox
 import os
 import shutil
@@ -34,6 +33,10 @@ from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cbuildbot
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 # pylint: disable=E1111,E1120,W0212,R0904

@@ -6,7 +6,6 @@
 
 """Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
 
-import mock
 import mox
 import os
 import sys
@@ -24,6 +23,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 # pylint: disable=E1120,W0212,R0904

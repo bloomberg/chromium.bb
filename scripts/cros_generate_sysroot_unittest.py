@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mock
 import os
 import sys
 
@@ -16,6 +15,10 @@ from chromite.lib import cros_test_lib
 from chromite.scripts import cros_generate_sysroot as cros_gen
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 Dir = cros_test_lib.Directory
