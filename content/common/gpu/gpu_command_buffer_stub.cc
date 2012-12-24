@@ -47,23 +47,21 @@ namespace {
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
   GpuCommandBufferMemoryTracker(GpuChannel* channel) :
-    gpu_memory_manager_tracking_group_(new GpuMemoryTrackingGroup(
-        channel->renderer_pid(),
-        this,
-        channel->gpu_channel_manager()->gpu_memory_manager())) {
+      tracking_group_(channel->gpu_channel_manager()->gpu_memory_manager()->
+          CreateTrackingGroup(channel->renderer_pid(), this)) {
   }
 
   void TrackMemoryAllocatedChange(size_t old_size,
                                   size_t new_size,
                                   gpu::gles2::MemoryTracker::Pool pool) {
-    gpu_memory_manager_tracking_group_->TrackMemoryAllocatedChange(
+    tracking_group_->TrackMemoryAllocatedChange(
         old_size, new_size, pool);
   }
 
  private:
   ~GpuCommandBufferMemoryTracker() {
   }
-  scoped_ptr<GpuMemoryTrackingGroup> gpu_memory_manager_tracking_group_;
+  scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };
@@ -302,7 +300,7 @@ void GpuCommandBufferStub::Destroy() {
         active_url_));
   }
 
-  GetMemoryManager()->RemoveClient(this);
+  memory_manager_client_state_.reset();
 
   while (!sync_points_.empty())
     OnRetireSyncPoint(sync_points_.front());
@@ -721,8 +719,8 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
-  GetMemoryManager()->
-      SetClientVisible(this, visible);
+  if (memory_manager_client_state_.get())
+    memory_manager_client_state_->SetVisible(visible);
 }
 
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
@@ -800,8 +798,8 @@ void GpuCommandBufferStub::OnReceivedClientManagedMemoryStats(
   TRACE_EVENT0(
       "gpu",
       "GpuCommandBufferStub::OnReceivedClientManagedMemoryStats");
-  GetMemoryManager()->
-      SetClientManagedMemoryStats(this, stats);
+  if (memory_manager_client_state_.get())
+    memory_manager_client_state_->SetManagedMemoryStats(stats);
 }
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
@@ -809,10 +807,14 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
   TRACE_EVENT0(
       "gpu",
       "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
-  if (has_callback)
-    GetMemoryManager()->AddClient(this, surface_id_ != 0, true);
-  else
-    GetMemoryManager()->RemoveClient(this);
+  if (has_callback) {
+    if (!memory_manager_client_state_.get()) {
+      memory_manager_client_state_.reset(GetMemoryManager()->CreateClientState(
+          this, surface_id_ != 0, true));
+    }
+  } else {
+    memory_manager_client_state_.reset();
+  }
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

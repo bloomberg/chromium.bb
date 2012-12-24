@@ -8,7 +8,7 @@
 #if defined(ENABLE_GPU)
 
 #include <list>
-#include <set>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
@@ -19,26 +19,12 @@
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "ui/gfx/size.h"
 
 namespace content {
+
 class GpuChannelManager;
 class GpuMemoryManagerClient;
-}
-
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<content::GpuMemoryManagerClient*> {
-  size_t operator()(content::GpuMemoryManagerClient* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-} // namespace BASE_HASH_NAMESPACE
-#endif // COMPILER
-
-namespace content {
-class GpuMemoryManagerClient;
+class GpuMemoryManagerClientState;
 class GpuMemoryTrackingGroup;
 
 class CONTENT_EXPORT GpuMemoryManager :
@@ -62,27 +48,17 @@ class CONTENT_EXPORT GpuMemoryManager :
       content::GPUVideoMemoryUsageStats* video_memory_usage_stats) const;
   void SetWindowCount(uint32 count);
 
-  // Add and remove clients
-  void AddClient(GpuMemoryManagerClient* client,
-                 bool has_surface,
-                 bool visible);
-  void RemoveClient(GpuMemoryManagerClient* client);
-  void SetClientVisible(GpuMemoryManagerClient* client, bool visible);
-  void SetClientManagedMemoryStats(GpuMemoryManagerClient* client,
-                                   const GpuManagedMemoryStats& stats);
+  GpuMemoryManagerClientState* CreateClientState(
+      GpuMemoryManagerClient* client, bool has_surface, bool visible);
 
-  // Add and remove structures to track context groups' memory consumption
-  void AddTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-  void RemoveTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-
-  // Track a change in memory allocated by any context
-  void TrackMemoryAllocatedChange(
-      size_t old_size,
-      size_t new_size,
-      gpu::gles2::MemoryTracker::Pool tracking_pool);
+  GpuMemoryTrackingGroup* CreateTrackingGroup(
+      base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);
 
  private:
   friend class GpuMemoryManagerTest;
+  friend class GpuMemoryTrackingGroup;
+  friend class GpuMemoryManagerClientState;
+
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            ComparatorTests);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
@@ -112,44 +88,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestBackgroundMru);
 
-  struct ClientState {
-    ClientState(GpuMemoryManagerClient* client,
-                GpuMemoryTrackingGroup* tracking_group,
-                bool has_surface,
-                bool visible);
-
-    // The client to send allocations to.
-    GpuMemoryManagerClient* client;
-
-    // The tracking group for this client.
-    GpuMemoryTrackingGroup* tracking_group;
-
-    // Offscreen commandbuffers will not have a surface.
-    const bool has_surface;
-
-    // Whether or not this client is visible.
-    bool visible;
-
-    // If the client has a surface, then this is an iterator in the
-    // clients_visible_mru_ if this client is visible and
-    // clients_nonvisible_mru_ if this is non-visible. Otherwise this is an
-    // iterator in clients_nonsurface_.
-    std::list<ClientState*>::iterator list_iterator;
-    bool list_iterator_valid;
-
-    // Statistics about memory usage.
-    GpuManagedMemoryStats managed_memory_stats;
-
-    // Set to disable allocating a frontbuffer or to disable allocations
-    // for clients that don't have surfaces.
-    bool hibernated;
-  };
-
-  typedef std::map<GpuMemoryManagerClient*, ClientState*> ClientMap;
   typedef std::map<gpu::gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
       TrackingGroupMap;
 
-  typedef std::list<ClientState*> ClientStateList;
+  typedef std::list<GpuMemoryManagerClientState*> ClientStateList;
 
   void Manage();
   void SetClientsHibernatedState() const;
@@ -188,11 +130,27 @@ class CONTENT_EXPORT GpuMemoryManager :
         bytes_allocated_unmanaged_current_;
   }
 
+  // GpuMemoryTrackingGroup interface
+  void TrackMemoryAllocatedChange(
+      GpuMemoryTrackingGroup* tracking_group,
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool tracking_pool);
+  void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
+
+  // GpuMemoryManagerClientState interface
+  void SetClientStateVisible(
+      GpuMemoryManagerClientState* client_state, bool visible);
+  void SetClientStateManagedMemoryStats(
+      GpuMemoryManagerClientState* client_state,
+      const GpuManagedMemoryStats& stats);
+  void OnDestroyClientState(GpuMemoryManagerClientState* client);
+
   // Add or remove a client from its clients list (visible, nonvisible, or
   // nonsurface). When adding the client, add it to the front of the list.
-  void AddClientToList(ClientState* client_state);
-  void RemoveClientFromList(ClientState* client_state);
-  ClientStateList* GetClientList(ClientState* client_state);
+  void AddClientToList(GpuMemoryManagerClientState* client_state);
+  void RemoveClientFromList(GpuMemoryManagerClientState* client_state);
+  ClientStateList* GetClientList(GpuMemoryManagerClientState* client_state);
 
   // Interfaces for testing
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
@@ -206,10 +164,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   }
 
   GpuChannelManager* channel_manager_;
-
-  // All clients of this memory manager which have callbacks we
-  // can use to adjust memory usage
-  ClientMap clients_;
 
   // A list of all visible and nonvisible clients, in most-recently-used
   // order (most recently used is first).
@@ -252,26 +206,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   bool disable_schedule_manage_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
-};
-
-class CONTENT_EXPORT GpuMemoryManagerClient {
- public:
-  virtual ~GpuMemoryManagerClient() {}
-
-  // Returns surface size.
-  virtual gfx::Size GetSurfaceSize() const = 0;
-
-  // Returns the memory tracker for this stub.
-  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const = 0;
-
-  // Sets buffer usage depending on Memory Allocation
-  virtual void SetMemoryAllocation(
-      const GpuMemoryAllocation& allocation) = 0;
-
-  // Returns in bytes the total amount of GPU memory for the GPU which this
-  // context is currently rendering on. Returns false if no extension exists
-  // to get the exact amount of GPU memory.
-  virtual bool GetTotalGpuMemory(size_t* bytes) = 0;
 };
 
 }  // namespace content

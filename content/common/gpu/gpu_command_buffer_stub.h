@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "content/common/gpu/gpu_memory_manager_client.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -45,7 +46,6 @@ namespace content {
 class GpuChannel;
 class GpuVideoDecodeAccelerator;
 class GpuWatchdog;
-class GpuMemoryManagerClient;
 
 class GpuCommandBufferStub
     : public GpuMemoryManagerClient,
@@ -218,6 +218,8 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
+
+  scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;
 
   // SetParent may be called before Initialize, in which case we need to keep
   // around the parent stub, so that Initialize can set the parent correctly.
