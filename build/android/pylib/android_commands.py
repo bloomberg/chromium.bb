@@ -482,7 +482,7 @@ class AndroidCommands(object):
     if status_pos == 0:
       lines = lines[:-1]
     else:
-      lines = lines[:-1] + last_line[:status_pos]
+      lines = lines[:-1] + [last_line[:status_pos]]
     return (status, lines)
 
   def KillAll(self, process):
