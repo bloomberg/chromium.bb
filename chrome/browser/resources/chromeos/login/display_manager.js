@@ -634,7 +634,8 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.updateAddUserButtonStatus = function(disable) {
     $('add-user-button').disabled = disable;
-    $('add-user-button').classList.add('button-restricted');
+    $('add-user-button').classList[
+        disable ? 'add' : 'remove']('button-restricted');
     $('add-user-button').title = disable ?
         localStrings.getString('disabledAddUserTooltip') : '';
   }

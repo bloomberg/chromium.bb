@@ -91,7 +91,6 @@ cr.define('login', function() {
         return;
       }
 
-      $('login-header-bar').signinUIActive = false;
       $('pod-row').loadLastWallpaper();
 
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
@@ -160,12 +159,13 @@ cr.define('login', function() {
      * @private
      */
     updateUI_: function() {
-      $('add-user-header-bar-item').hidden = false;
       $('add-user-button').hidden = this.signinUIActive_;
       $('cancel-add-user-button').hidden =
           !this.signinUIActive_ || !this.allowCancel_;
       $('guest-user-header-bar-item').hidden =
           this.signinUIActive_ || !this.showGuest_;
+      $('add-user-header-bar-item').hidden =
+          $('add-user-button').hidden && $('cancel-add-user-button').hidden;
     },
 
     /**
