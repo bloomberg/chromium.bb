@@ -72,6 +72,12 @@ class RLZTracker : public content::NotificationObserver {
   // Invoked during shutdown to clean up any state created by RLZTracker.
   static void CleanupRlz();
 
+#if defined(OS_CHROMEOS)
+  // Clears all product state. Should be called when turning RLZ off. On other
+  // platforms, this is done by product uninstaller.
+  static void ClearRlzState();
+#endif
+
   // This method is public for use by the Singleton class.
   static RLZTracker* GetInstance();
 
@@ -162,6 +168,15 @@ class RLZTracker : public content::NotificationObserver {
   virtual bool SendFinancialPing(const std::string& brand,
                                  const string16& lang,
                                  const string16& referral);
+
+#if defined(OS_CHROMEOS)
+  // Implementation called from ClearRlzState static method.
+  void ClearRlzStateImpl();
+
+  // Schedules a call to ClearRlzStateImpl(). This method is virtual
+  // to allow tests to override how the scheduling is done.
+  virtual bool ScheduleClearRlzState();
+#endif
 
   // Tracker used for testing purposes only. If this value is non-NULL, it
   // will be returned from GetInstance() instead of the regular singleton.

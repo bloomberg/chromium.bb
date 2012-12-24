@@ -405,6 +405,7 @@ void WizardController::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
   local_state->RegisterStringPref(prefs::kRLZBrand, std::string());
+  local_state->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
