@@ -6434,3 +6434,19 @@
    fun:_ZN16BrowserWindowGtk4InitEv
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
 }
+{
+   bug_164781a
+   Memcheck:Uninitialized
+   ...
+   fun:vp8cx_encode_*_macroblock
+   fun:thread_encoding_proc
+}
+{
+   bug_167481b
+   Memcheck:Uninitialized
+   ...
+   fun:encode_frame_to_data_rate
+   fun:vp8_get_compressed_data
+   fun:vp8e_encode
+   fun:vpx_codec_encode
+}
