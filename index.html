@@ -130,6 +130,7 @@ that the canvas element does not use ClearType fonts even though
 on the system.  However, in our case, we are explicitly requesting it in the
 document, so this change makes Chromium honor the
 <code>-webkit-font-smoothing</code> setting if it is requested explicitly.</p>
+<p>Note that there are two distinct changes introduced by this branch:</p>
 <ul>
 <li><p>The <code>-webkit-font-smoothing</code> setting has no effect in Windows for Skia.
 This is the change that is being tracked upstream by WebKit bug
