@@ -655,9 +655,15 @@ void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
 
 void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
 #if defined(ENABLE_RLZ)
+  PrefService* local_state = g_browser_process->local_state();
   if (disabled) {
     // Empty brand code turns financial pings off.
     google_util::chromeos::ClearBrandForCurrentSession();
+  }
+  if (disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
+    // When switching to RLZ enabled/disabled state, clear all recorded events.
+    RLZTracker::ClearRlzState();
+    local_state->SetBoolean(prefs::kRLZDisabled, disabled);
   }
   // Init the RLZ library.
   int ping_delay = user_profile->GetPrefs()->GetInteger(

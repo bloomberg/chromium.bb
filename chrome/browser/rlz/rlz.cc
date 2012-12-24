@@ -331,10 +331,6 @@ void RLZTracker::DelayedInit() {
     ScheduleFinancialPing();
 }
 
-void RLZTracker::EnableZeroDelayForTesting() {
-  GetInstance()->min_delay_ = 0;
-}
-
 void RLZTracker::ScheduleFinancialPing() {
   BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
       worker_pool_token_,
@@ -544,8 +540,38 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
   return true;
 }
 
+#if defined(OS_CHROMEOS)
+// static
+void RLZTracker::ClearRlzState() {
+  GetInstance()->ClearRlzStateImpl();
+}
+
+void RLZTracker::ClearRlzStateImpl() {
+  if (ScheduleClearRlzState())
+    return;
+  rlz_lib::ClearAllProductEvents(rlz_lib::CHROME);
+}
+
+bool RLZTracker::ScheduleClearRlzState() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
+    return false;
+
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
+      FROM_HERE,
+      base::Bind(&RLZTracker::ClearRlzStateImpl,
+                 base::Unretained(this)));
+  return true;
+}
+#endif
+
 // static
 void RLZTracker::CleanupRlz() {
   GetInstance()->rlz_cache_.clear();
   GetInstance()->registrar_.RemoveAll();
+}
+
+// static
+void RLZTracker::EnableZeroDelayForTesting() {
+  GetInstance()->min_delay_ = 0;
 }
