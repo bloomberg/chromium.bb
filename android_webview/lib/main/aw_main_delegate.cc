@@ -8,15 +8,13 @@
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
-#include "base/lazy_instance.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/common/content_switches.h"
 
 namespace android_webview {
-
-base::LazyInstance<AwContentRendererClient>
-    g_webview_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 AwMainDelegate::AwMainDelegate() {
 }
@@ -26,6 +24,10 @@ AwMainDelegate::~AwMainDelegate() {
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // Set the command line to enable synchronous API compatibility.
+  command_line->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
 
   return false;
 }
