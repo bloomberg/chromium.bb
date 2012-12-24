@@ -9,6 +9,7 @@
 BB_DIR="$(dirname $0)"
 BB_SRC_ROOT="$(cd  "$BB_DIR/../../.."; pwd)"
 . "$BB_DIR/buildbot_functions.sh"
+EXTRA_RUN_TESTS_FLAGS="--tool=asan"
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_spawn_logcat_monitor_and_status

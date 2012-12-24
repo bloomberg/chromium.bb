@@ -100,7 +100,7 @@ function _bb_android_run_tests () {
   if [[ ${BUILDTYPE} == Release ]]; then
     FLAGS="${FLAGS} --release"
   fi
-  build/android/run_tests.py ${FLAGS} "$@"
+  build/android/run_tests.py ${FLAGS} ${EXTRA_RUN_TESTS_FLAGS} "$@"
 }
 
 function bb_compile_setup {
@@ -342,7 +342,8 @@ function bb_run_all_instrumentation_tests_for_apk {
     FLAGS="${FLAGS} --release"
   fi
   bb_run_step python build/android/run_instrumentation_tests.py \
-      ${FLAGS} --test-apk ${TEST_APK} -I --test_data ${TEST_DATA}
+      ${FLAGS} ${EXTRA_RUN_TESTS_FLAGS} --test-apk ${TEST_APK} -I \
+      --test_data ${TEST_DATA}
 }
 
 # Run instrumentation tests for all relevant APKs on device.
