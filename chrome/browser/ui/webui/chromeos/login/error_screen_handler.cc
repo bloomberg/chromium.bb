@@ -20,49 +20,15 @@
 
 namespace chromeos {
 
-namespace {
-
-// Timeout to delay first notification about offline state for a
-// current network.
-const int kOfflineTimeoutSec = 5;
-
-// Timeout used to prevent infinite connecting to a flaky network.
-const int kConnectingTimeoutSec = 60;
-
-bool IsProxyError(const std::string& reason) {
-  return reason == ErrorScreenHandler::kErrorReasonProxyAuthCancelled ||
-      reason == ErrorScreenHandler::kErrorReasonProxyConnectionFailed;
-}
-
-}  // namespace
-
-// static
-const char ErrorScreenHandler::kErrorReasonProxyAuthCancelled[] =
-    "frame error:111";
-const char ErrorScreenHandler::kErrorReasonProxyConnectionFailed[] =
-    "frame error:130";
-const char ErrorScreenHandler::kErrorReasonProxyConfigChanged[] =
-    "proxy changed";
-const char ErrorScreenHandler::kErrorReasonLoadingTimeout[] = "loading timeout";
-const char ErrorScreenHandler::kErrorReasonPortalDetected[] = "portal detected";
-const char ErrorScreenHandler::kErrorReasonNetworkChanged[] = "network changed";
-const char ErrorScreenHandler::kErrorReasonUpdate[] = "update";
-
 ErrorScreenHandler::ErrorScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
-    : is_shown_(false),
-      is_first_update_state_call_(true),
-      state_(STATE_UNKNOWN),
-      gaia_is_local_(false),
-      last_network_state_(NetworkStateInformer::UNKNOWN),
-      network_state_informer_(network_state_informer),
-      native_window_delegate_(NULL) {
-  DCHECK(network_state_informer_);
-  network_state_informer_->AddObserver(this);
+    : network_state_informer_(network_state_informer),
+      native_window_delegate_(NULL),
+      show_on_init_(false) {
+  DCHECK(network_state_informer_.get());
 }
 
 ErrorScreenHandler::~ErrorScreenHandler() {
-  network_state_informer_->RemoveObserver(this);
 }
 
 void ErrorScreenHandler::SetNativeWindowDelegate(
@@ -70,172 +36,22 @@ void ErrorScreenHandler::SetNativeWindowDelegate(
   native_window_delegate_ = native_window_delegate;
 }
 
-void ErrorScreenHandler::Show() {
-  ShowOfflineMessage(true);
-  set_is_shown(true);
+void ErrorScreenHandler::Show(OobeUI::Screen parent_screen) {
+  if (!page_is_ready()) {
+    show_on_init_ = true;
+    return;
+  }
+  parent_screen_ = parent_screen;
+  ShowScreen(OobeUI::kScreenErrorMessage, NULL);
   NetworkErrorShown();
 }
 
 void ErrorScreenHandler::Hide() {
-  ShowOfflineMessage(false);
-  set_is_shown(false);
-}
-
-void ErrorScreenHandler::UpdateState(NetworkStateInformer::State state,
-                                     const std::string& network_name,
-                                     const std::string& reason,
-                                     ConnectionType last_network_type) {
-  UpdateStateInternal(state, network_name, reason, last_network_type, false);
-}
-
-void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
-                                             std::string network_name,
-                                             std::string reason,
-                                             ConnectionType last_network_type,
-                                             bool force_update) {
-  // TODO (ygorshenin@): crbug.com/166433
-  LOG(WARNING) << "ErrorScreenHandler::UpdateStateInternal(): "
-               << "state=" << state << ", "
-               << "network_name=" << network_name << ", "
-               << "reason=" << reason << ", "
-               << "last_network_type=" << last_network_type;
-  update_state_closure_.Cancel();
-  if (state == NetworkStateInformer::OFFLINE && is_first_update_state_call()) {
-    set_is_first_update_state_call(false);
-    update_state_closure_.Reset(
-        base::Bind(
-            &ErrorScreenHandler::UpdateStateInternal,
-            base::Unretained(this),
-            state, network_name, reason, last_network_type, force_update));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        update_state_closure_.callback(),
-        base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
-    return;
+  if (parent_screen_ != OobeUI::SCREEN_UNKNOWN) {
+    std::string screen_name;
+    if (GetScreenName(parent_screen_, &screen_name))
+      ShowScreen(screen_name.c_str(), NULL);
   }
-  set_is_first_update_state_call(false);
-
-  // Don't show or hide error screen if we're in connecting state.
-  if (state == NetworkStateInformer::CONNECTING && !force_update) {
-    if (connecting_closure_.IsCancelled()) {
-      // First notification about CONNECTING state.
-      connecting_closure_.Reset(
-          base::Bind(&ErrorScreenHandler::UpdateStateInternal,
-                     base::Unretained(this),
-                     state, network_name, reason, last_network_type, true));
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          connecting_closure_.callback(),
-          base::TimeDelta::FromSeconds(kConnectingTimeoutSec));
-    }
-    return;
-  }
-  connecting_closure_.Cancel();
-
-  bool is_online = (state == NetworkStateInformer::ONLINE);
-  bool is_under_captive_portal =
-      (state == NetworkStateInformer::CAPTIVE_PORTAL);
-  bool is_proxy_error = IsProxyError(reason);
-  bool is_timeout = false;
-  bool is_gaia_signin = (GetCurrentScreen() == OobeUI::SCREEN_GAIA_SIGNIN);
-  bool is_gaia_reloaded = false;
-  bool should_overlay = is_gaia_signin && !gaia_is_local();
-
-  // Reload frame if network is changed.
-  if (reason == kErrorReasonNetworkChanged) {
-    if (is_online &&
-        last_network_state() != NetworkStateInformer::ONLINE &&
-        is_gaia_signin && !is_gaia_reloaded) {
-      LOG(WARNING) << "Retry page load since network has been changed.";
-      ReloadGaiaScreen();
-      is_gaia_reloaded = true;
-    }
-  }
-  set_last_network_state(state);
-
-  if (reason == kErrorReasonProxyConfigChanged && should_overlay &&
-      is_gaia_signin && !is_gaia_reloaded) {
-    // Schedules a immediate retry.
-    LOG(WARNING) << "Retry page load since proxy settings has been changed.";
-    ReloadGaiaScreen();
-    is_gaia_reloaded = true;
-  }
-
-  // Fake portal state for loading timeout.
-  if (reason == kErrorReasonLoadingTimeout) {
-    is_online = false;
-    is_under_captive_portal = true;
-    is_timeout = true;
-  }
-
-  // Portal was detected via generate_204 redirect on Chrome side.
-  // Subsequent call to show dialog if it's already shown does nothing.
-  if (reason == kErrorReasonPortalDetected) {
-    is_online = false;
-    is_under_captive_portal = true;
-  }
-
-  if (!is_online && should_overlay) {
-    LOG(WARNING) << "Show offline message: state=" << state << ", "
-                 << "network_name=" << network_name << ", "
-                 << "reason=" << reason << ", "
-                 << "is_under_captive_portal=" << is_under_captive_portal;
-    ClearOobeErrors();
-    OnBeforeShow(last_network_type);
-
-    if (is_under_captive_portal && !is_proxy_error) {
-      // Do not bother a user with obsessive captive portal showing. This
-      // check makes captive portal being shown only once: either when error
-      // screen is shown for the first time or when switching from another
-      // error screen (offline, proxy).
-      if (!is_shown() || get_state() != STATE_CAPTIVE_PORTAL_ERROR) {
-        // In case of timeout we're suspecting that network might be
-        // a captive portal but would like to check that first.
-        // Otherwise (signal from shill / generate_204 got redirected)
-        // show dialog right away.
-        if (is_timeout)
-          FixCaptivePortal();
-        else
-          ShowCaptivePortal();
-      }
-    } else {
-      HideCaptivePortal();
-    }
-
-    if (is_under_captive_portal) {
-      if (is_proxy_error)
-        ShowProxyError();
-      else
-        ShowCaptivePortalError(network_name);
-    } else {
-      ShowOfflineError();
-    }
-    Show();
-  } else {
-    HideCaptivePortal();
-
-    if (is_shown()) {
-      LOG(WARNING) << "Hide offline message. state=" << state << ", "
-                   << "network_name=" << network_name << ", reason=" << reason;
-      OnBeforeHide();
-      Hide();
-
-      // Forces a reload for Gaia screen on hiding error message.
-      if (is_gaia_signin && !is_gaia_reloaded) {
-        ReloadGaiaScreen();
-        is_gaia_reloaded = true;
-      }
-    }
-  }
-}
-
-void ErrorScreenHandler::ReloadGaiaScreen() {
-  LOG(WARNING) << "Reload auth extension frame.";
-  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.doReload");
-}
-
-void ErrorScreenHandler::ClearOobeErrors() {
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
 }
 
 void ErrorScreenHandler::OnBeforeShow(ConnectionType last_network_type) {
@@ -251,9 +67,6 @@ void ErrorScreenHandler::OnBeforeHide() {
 void ErrorScreenHandler::FixCaptivePortal() {
   if (!native_window_delegate_)
     return;
-  // TODO (ygorshenin): move error page and captive portal window
-  // showing logic to C++ (currenly most of it is done on the JS
-  // side).
   if (!captive_portal_window_proxy_.get()) {
     captive_portal_window_proxy_.reset(
         new CaptivePortalWindowProxy(network_state_informer_.get(),
@@ -274,6 +87,29 @@ void ErrorScreenHandler::HideCaptivePortal() {
     captive_portal_window_proxy_->Close();
 }
 
+void ErrorScreenHandler::ShowProxyError() {
+  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.showProxyError");
+  state_ = STATE_PROXY_ERROR;
+}
+
+void ErrorScreenHandler::ShowCaptivePortalError(const std::string& network) {
+  base::StringValue network_value(network);
+  web_ui()->CallJavascriptFunction(
+      "login.ErrorMessageScreen.showCaptivePortalError", network_value);
+  state_ = STATE_CAPTIVE_PORTAL_ERROR;
+}
+
+void ErrorScreenHandler::ShowOfflineError() {
+  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.showOfflineError");
+  state_ = STATE_OFFLINE_ERROR;
+}
+
+void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
+  base::FundamentalValue allowed_value(allowed);
+  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.allowOfflineLogin",
+                                   allowed_value);
+}
+
 void ErrorScreenHandler::NetworkErrorShown() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
@@ -281,39 +117,13 @@ void ErrorScreenHandler::NetworkErrorShown() {
       content::NotificationService::NoDetails());
 }
 
-void ErrorScreenHandler::ShowProxyError() {
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.showProxyError");
-  set_state(STATE_PROXY_ERROR);
-}
-
-void ErrorScreenHandler::ShowCaptivePortalError(const std::string& network) {
-  base::StringValue network_value(network);
-  web_ui()->CallJavascriptFunction(
-      "login.ErrorMessageScreen.showCaptivePortalError", network_value);
-  set_state(STATE_CAPTIVE_PORTAL_ERROR);
-}
-
-void ErrorScreenHandler::ShowOfflineError() {
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.showOfflineError");
-  set_state(STATE_OFFLINE_ERROR);
-}
-
-void ErrorScreenHandler::ShowOfflineMessage(bool visible) {
-  base::FundamentalValue visible_value(visible);
-  web_ui()->CallJavascriptFunction(
-      "login.ErrorMessageScreen.showOfflineMessage", visible_value);
-}
-
-OobeUI::Screen ErrorScreenHandler::GetCurrentScreen() {
-  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
+bool ErrorScreenHandler::GetScreenName(OobeUI::Screen screen,
+                                       std::string* name) const {
   OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
-  if (oobe_ui)
-    screen = oobe_ui->current_screen();
-  return screen;
-}
-
-void ErrorScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
-  FixCaptivePortal();
+  if (!oobe_ui)
+    return false;
+  *name = oobe_ui->GetScreenName(screen);
+  return true;
 }
 
 void ErrorScreenHandler::HandleShowCaptivePortal(const base::ListValue* args) {
@@ -324,50 +134,12 @@ void ErrorScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {
   HideCaptivePortal();
 }
 
-void ErrorScreenHandler::HandleErrorScreenUpdate(const base::ListValue* args) {
-  UpdateStateInternal(network_state_informer_->state(),
-                      network_state_informer_->network_name(),
-                      kErrorReasonUpdate,
-                      network_state_informer_->last_network_type(),
-                      false);
-}
-
-void ErrorScreenHandler::HandleShowLoadingTimeoutError(
-    const base::ListValue* args) {
-  UpdateStateInternal(network_state_informer_->state(),
-                      network_state_informer_->network_name(),
-                      kErrorReasonLoadingTimeout,
-                      network_state_informer_->last_network_type(),
-                      false);
-}
-
-void ErrorScreenHandler::HandleUpdateGaiaIsLocal(const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 1);
-
-  bool gaia_is_local = false;
-  if (!args->GetBoolean(0, &gaia_is_local))
-    return;
-  set_gaia_is_local(gaia_is_local);
-}
-
 void ErrorScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("fixCaptivePortal",
-      base::Bind(&ErrorScreenHandler::HandleFixCaptivePortal,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("showCaptivePortal",
       base::Bind(&ErrorScreenHandler::HandleShowCaptivePortal,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("hideCaptivePortal",
       base::Bind(&ErrorScreenHandler::HandleHideCaptivePortal,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("errorScreenUpdate",
-      base::Bind(&ErrorScreenHandler::HandleErrorScreenUpdate,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showLoadingTimeoutError",
-      base::Bind(&ErrorScreenHandler::HandleShowLoadingTimeoutError,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("updateGaiaIsLocal",
-      base::Bind(&ErrorScreenHandler::HandleUpdateGaiaIsLocal,
                  base::Unretained(this)));
 }
 
@@ -390,6 +162,12 @@ void ErrorScreenHandler::GetLocalizedStrings(
 }
 
 void ErrorScreenHandler::Initialize() {
+  if (!page_is_ready())
+    return;
+  if (show_on_init_) {
+    Show(parent_screen_);
+    show_on_init_ = false;
+  }
 }
 
 gfx::NativeWindow ErrorScreenHandler::GetNativeWindow() {

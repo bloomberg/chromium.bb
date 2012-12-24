@@ -46,8 +46,9 @@ class OobeUI : public OobeDisplay,
     SCREEN_OOBE_ENROLLMENT,
     SCREEN_GAIA_SIGNIN,
     SCREEN_ACCOUNT_PICKER,
+    SCREEN_ERROR_MESSAGE,
     SCREEN_USER_IMAGE_PICKER,
-    SCREEN_TMP_ERROR,
+    SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
     SCREEN_UNKNOWN
   };
@@ -59,6 +60,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenOobeEnrollment[];
   static const char kScreenGaiaSignin[];
   static const char kScreenAccountPicker[];
+  static const char kScreenErrorMessage[];
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
   static const char kScreenPasswordChanged[];
@@ -100,11 +102,13 @@ class OobeUI : public OobeDisplay,
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
 
-  Screen current_screen() { return current_screen_; }
+  Screen current_screen() const { return current_screen_; }
+
+  const std::string& GetScreenName(Screen screen) const;
 
  private:
-  // Initializes |screen_map_| structure.
-  void InitializeScreenMap();
+  // Initializes |screen_ids_| and |screen_names_| structures.
+  void InitializeScreenMaps();
 
   void AddScreenHandler(BaseScreenHandler* handler);
 
@@ -139,8 +143,11 @@ class OobeUI : public OobeDisplay,
   // Id of the current oobe/login screen.
   Screen current_screen_;
 
-  // Maps JS screens names to screen id.
-  std::map<std::string, Screen> screen_map_;
+  // Maps JS screen names to screen ids.
+  std::map<std::string, Screen> screen_ids_;
+
+  // Maps screen ids to JS screen names.
+  std::vector<std::string> screen_names_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

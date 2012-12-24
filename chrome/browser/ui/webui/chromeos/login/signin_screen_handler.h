@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_ui.h"
 
@@ -31,6 +32,7 @@ class ListValue;
 namespace chromeos {
 
 class CaptivePortalWindowProxy;
+class ErrorScreenActor;
 class NativeWindowDelegate;
 class User;
 
@@ -142,10 +144,12 @@ class SigninScreenHandler
       public BrowsingDataRemover::Observer,
       public SystemKeyEventListener::CapsLockObserver,
       public content::NotificationObserver,
-      public NetworkStateInformerDelegate {
+      public NetworkStateInformerDelegate,
+      public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
-      const scoped_refptr<NetworkStateInformer>& network_state_informer);
+      const scoped_refptr<NetworkStateInformer>& network_state_informer,
+      ErrorScreenActor* error_screen_actor);
   virtual ~SigninScreenHandler();
 
   // Shows the sign in screen. |oobe_ui| indicates whether the signin
@@ -164,10 +168,35 @@ class SigninScreenHandler
   // NetworkStateInformerDelegate implementation:
   virtual void OnNetworkReady() OVERRIDE;
 
+  // NetworkStateInformer::NetworkStateInformerObserver implementation:
+  virtual void UpdateState(NetworkStateInformer::State state,
+                           const std::string& network_name,
+                           const std::string& reason,
+                           ConnectionType last_network_type) OVERRIDE;
+
  private:
+  enum UIState {
+    UI_STATE_UNKNOWN = 0,
+    UI_STATE_GAIA_SIGNIN,
+    UI_STATE_ACCOUNT_PICKER
+  };
+
   typedef base::hash_set<std::string> WebUIObservers;
 
   friend class ReportDnsCacheClearedOnUIThread;
+
+  // Updates current UI of the signin screen according to |ui_state|
+  // argument.  Optionally it can pass screen initialization data via
+  // |params| argument.
+  void UpdateUIState(UIState ui_state, DictionaryValue* params);
+
+  void UpdateStateInternal(NetworkStateInformer::State state,
+                           const std::string network_name,
+                           const std::string reason,
+                           ConnectionType last_network_type,
+                           bool force_update);
+  void ReloadGaiaScreen();
+  void ScheduleGaiaFrameReload();
 
   // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(
@@ -252,6 +281,10 @@ class SigninScreenHandler
   void HandleResyncUserData(const base::ListValue* args);
   void HandleLoginUIStateChanged(const base::ListValue* args);
   void HandleUnlockOnLoginSuccess(const base::ListValue* args);
+  void HandleLoginScreenUpdate(const base::ListValue* args);
+  void HandleShowGaiaFrameError(const base::ListValue* args);
+  void HandleShowLoadingTimeoutError(const base::ListValue* args);
+  void HandleUpdateOfflineLogin(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);
@@ -282,6 +315,18 @@ class SigninScreenHandler
   // Cancels password changed flow - switches back to login screen.
   // Called as a callback after cookies are cleared.
   void CancelPasswordChangedFlowInternal();
+
+  // Returns current visible screen.
+  OobeUI::Screen GetCurrentScreen() const;
+
+  // Returns true if current visible screen is the Gaia sign-in page.
+  bool IsGaiaLogin() const;
+
+  // Returns true if current screen is the error screen over signin
+  // screen.
+  bool IsSigninScreenHiddenByError() const;
+
+  UIState ui_state_;
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
@@ -341,6 +386,15 @@ class SigninScreenHandler
 
   // True when signin UI is shown to user (either sign in form or user pods).
   bool login_ui_active_;
+
+  ErrorScreenActor* error_screen_actor_;
+
+  bool is_first_update_state_call_;
+  bool offline_login_active_;
+  NetworkStateInformer::State last_network_state_;
+
+  base::CancelableClosure update_state_closure_;
+  base::CancelableClosure connecting_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

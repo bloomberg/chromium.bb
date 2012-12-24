@@ -94,12 +94,6 @@ cr.define('login', function() {
       $('login-header-bar').signinUIActive = false;
       $('pod-row').loadLastWallpaper();
 
-      // TODO(ygorshenin@): workaround for crbug.com/164832.
-      // Must be deleted as a part of
-      // https://codereview.chromium.org/11565011/.
-      $('error-message').onBeforeHide();
-      $('error-message').showOfflineMessage(false);
-
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       Oobe.resetSigninUI(true);
     },

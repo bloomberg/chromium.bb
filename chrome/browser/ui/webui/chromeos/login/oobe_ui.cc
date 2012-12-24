@@ -128,6 +128,7 @@ const char OobeUI::kScreenOobeUpdate[]      = "update";
 const char OobeUI::kScreenOobeEnrollment[]  = "oauth-enrollment";
 const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
 const char OobeUI::kScreenAccountPicker[]   = "account-picker";
+const char OobeUI::kScreenErrorMessage[]    = "error-message";
 const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
 const char OobeUI::kScreenPasswordChanged[] = "password-changed";
@@ -142,7 +143,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       signin_screen_handler_(NULL),
       user_image_screen_actor_(NULL),
       current_screen_(SCREEN_UNKNOWN) {
-  InitializeScreenMap();
+  InitializeScreenMaps();
 
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
@@ -181,13 +182,14 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   user_image_screen_actor_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
 
-  signin_screen_handler_ = new SigninScreenHandler(network_state_informer_);
+  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
+  AddScreenHandler(error_screen_handler_);
+
+  signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,
+                                                   error_screen_handler_);
   AddScreenHandler(signin_screen_handler_);
 
   network_state_informer_->SetDelegate(signin_screen_handler_);
-
-  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
-  AddScreenHandler(error_screen_handler_);
 
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
@@ -300,17 +302,22 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("screenType", "lock");
 }
 
-void OobeUI::InitializeScreenMap() {
-  screen_map_.clear();
-  screen_map_[kScreenOobeNetwork] = SCREEN_OOBE_NETWORK;
-  screen_map_[kScreenOobeEula] = SCREEN_OOBE_EULA;
-  screen_map_[kScreenOobeUpdate] = SCREEN_OOBE_UPDATE;
-  screen_map_[kScreenOobeEnrollment] = SCREEN_OOBE_ENROLLMENT;
-  screen_map_[kScreenGaiaSignin] = SCREEN_GAIA_SIGNIN;
-  screen_map_[kScreenAccountPicker] = SCREEN_ACCOUNT_PICKER;
-  screen_map_[kScreenUserImagePicker] = SCREEN_USER_IMAGE_PICKER;
-  screen_map_[kScreenTpmError] = SCREEN_TMP_ERROR;
-  screen_map_[kScreenPasswordChanged] = SCREEN_PASSWORD_CHANGED;
+void OobeUI::InitializeScreenMaps() {
+  screen_names_.resize(SCREEN_UNKNOWN);
+  screen_names_[SCREEN_OOBE_NETWORK] = kScreenOobeNetwork;
+  screen_names_[SCREEN_OOBE_EULA] = kScreenOobeEula;
+  screen_names_[SCREEN_OOBE_UPDATE] = kScreenOobeUpdate;
+  screen_names_[SCREEN_OOBE_ENROLLMENT] = kScreenOobeEnrollment;
+  screen_names_[SCREEN_GAIA_SIGNIN] = kScreenGaiaSignin;
+  screen_names_[SCREEN_ACCOUNT_PICKER] = kScreenAccountPicker;
+  screen_names_[SCREEN_ERROR_MESSAGE] = kScreenErrorMessage;
+  screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
+  screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
+  screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
+
+  screen_ids_.clear();
+  for (size_t i = 0; i < screen_names_.size(); ++i)
+    screen_ids_[screen_names_[i]] = static_cast<Screen>(i);
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
@@ -346,11 +353,16 @@ void OobeUI::ResetSigninScreenHandlerDelegate() {
   error_screen_handler_->SetNativeWindowDelegate(NULL);
 }
 
+const std::string& OobeUI::GetScreenName(Screen screen) const {
+  DCHECK(screen >= 0 && screen < SCREEN_UNKNOWN);
+  return screen_names_[static_cast<size_t>(screen)];
+}
+
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
-  if (screen_map_.count(screen)) {
-    current_screen_ = screen_map_[screen];
+  if (screen_ids_.count(screen)) {
+    current_screen_ = screen_ids_[screen];
   } else {
-    NOTREACHED() << "Screen should be registered in InitializeScreenMap()";
+    NOTREACHED() << "Screen should be registered in InitializeScreenMaps()";
     current_screen_ = SCREEN_UNKNOWN;
   }
 }

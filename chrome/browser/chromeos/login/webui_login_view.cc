@@ -81,7 +81,7 @@ class SnifferObserver : public content::RenderViewHostObserver {
  private:
   void OnError(int error) {
     base::FundamentalValue error_value(error);
-    webui_->CallJavascriptFunction("login.ErrorMessageScreen.onFrameError",
+    webui_->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",
                                    error_value);
   }
 
