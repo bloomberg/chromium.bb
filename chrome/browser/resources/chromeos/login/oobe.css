@@ -119,6 +119,7 @@ html[oobe=new] #oobe.connect #inner-container,
 html[oobe=new] #oobe.enrollment #inner-container,
 html[oobe=new] #oobe.eula #inner-container,
 html[oobe=new] #oobe.gaia-signin #inner-container,
+html[oobe=new] #oobe.error-message #inner-container,
 html[oobe=new] #oobe.oauth-enrollment #inner-container,
 html[oobe=new] #oobe.reset #inner-container,
 html[oobe=new] #oobe.update #inner-container,
@@ -869,6 +870,7 @@ html[oobe=old] .step-controls {
 #enrollment-dot,
 #oauth-enrollment-dot,
 #reset-dot,
+#error-message-dot,
 #tpm-error-message-dot,
 #password-changed-dot {
   display: none;
@@ -1394,8 +1396,6 @@ span.bold {
 
 .error-message {
   -webkit-padding-start: 30px;
-  background: url('chrome://theme/IDR_WARNING') left top no-repeat;
-  background-size: 24px;
 }
 
 .error-message-padding {
