@@ -2210,8 +2210,6 @@ const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
 #if defined(OS_CHROMEOS)
 // The RLZ brand code, if enabled.
 const char kRLZBrand[] = "rlz.brand";
-// Whether RLZ pings are disabled.
-const char kRLZDisabled[] = "rlz.disabled";
 #endif
 
 }  // namespace prefs

@@ -142,10 +142,6 @@ class TestRLZTracker : public RLZTracker {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool ScheduleClearRlzState() OVERRIDE {
-    return !assume_not_ui_thread_;
-  }
-
   virtual bool SendFinancialPing(const std::string& brand,
                                  const string16& lang,
                                  const string16& referral) OVERRIDE {
@@ -776,16 +772,3 @@ TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
   ExpectReactivationRlzPingSent(false);
 }
 #endif  // defined(OS_WIN)
-
-#if defined(OS_CHROMEOS)
-TEST_F(RlzLibTest, ClearRlzState) {
-  RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::CHROME_OMNIBOX,
-                                 rlz_lib::FIRST_SEARCH);
-
-  ExpectEventRecorded(kOmniboxFirstSearch, true);
-
-  RLZTracker::ClearRlzState();
-
-  ExpectEventRecorded(kOmniboxFirstSearch, false);
-}
-#endif  // defined(OS_CHROMEOS)
