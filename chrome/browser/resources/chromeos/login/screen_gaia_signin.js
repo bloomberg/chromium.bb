@@ -13,20 +13,6 @@ cr.define('login', function() {
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
-  // Network state constants.
-  /** @const */ var NET_STATE = {
-    OFFLINE: 0,
-    ONLINE: 1,
-    PORTAL: 2,
-    CONNECTING: 3,
-    UNKNOWN: 4
-  };
-
-  // Frame loading errors.
-  /** @const */ var NET_ERROR = {
-    ABORTED_BY_USER: 3
-  };
-
   /**
    * Creates a new sign in screen div.
    * @constructor
@@ -67,6 +53,10 @@ cr.define('login', function() {
     // @type {boolean}
     isLocal_: false,
 
+    // Whether offline login is allowed.
+    // @type {boolean}
+    isOfflineAllowed: false,
+
     // Email of the user, which is logging in using offline mode.
     // @type {string}
     email: '',
@@ -103,7 +93,7 @@ cr.define('login', function() {
      */
     set isLocal(value) {
       this.isLocal_ = value;
-      chrome.send('updateOfflineLogin', [value]);
+      chrome.send('updateGaiaIsLocal', [value]);
     },
 
     /**
@@ -125,7 +115,7 @@ cr.define('login', function() {
     onLoadingSuspiciouslyLong_: function() {
       if (this != Oobe.getInstance().currentScreen)
         return;
-      chrome.send('showLoadingTimeoutError');
+      chrome.send('fixCaptivePortal');
       this.loadingTimer_ = window.setTimeout(
           this.onLoadingTimeOut_.bind(this),
           (MAX_GAIA_LOADING_TIME_SEC - GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC) *
@@ -184,7 +174,7 @@ cr.define('login', function() {
      *                      page.
      */
     onBeforeShow: function(data) {
-      chrome.send('loginUIStateChanged', ['gaia-signin', true]);
+      chrome.send('loginUIStateChanged', ['gaia', true]);
       // Announce the name of the screen, if accessibility is on.
       $('gaia-signin-aria-label').setAttribute(
           'aria-label', localStrings.getString('signinScreenTitle'));
@@ -198,7 +188,7 @@ cr.define('login', function() {
      * Event handler that is invoked just before the screen is hidden.
      */
     onBeforeHide: function() {
-      chrome.send('loginUIStateChanged', ['gaia-signin', false]);
+      chrome.send('loginUIStateChanged', ['gaia', false]);
     },
 
     /**
@@ -210,6 +200,11 @@ cr.define('login', function() {
       this.silentLoad_ = data.silentLoad;
       this.isLocal = data.isLocal;
       this.email = '';
+
+      // Offline sign-in is only allowed for the case when users aren't shown
+      // because there is no other way for an user to enter when device is
+      // offline.
+      this.isOfflineAllowed = !data.isShowUsers;
 
       this.updateAuthExtension_(data);
 
@@ -321,7 +316,7 @@ cr.define('login', function() {
         Oobe.clearErrors();
       } else if (msg.method == 'loginUILoaded') {
         this.loading = false;
-        chrome.send('loginScreenUpdate');
+        chrome.send('errorScreenUpdate');
         this.clearLoadingTimer_();
         // Show deferred error bubble.
         if (this.errorBubble_) {
@@ -330,7 +325,7 @@ cr.define('login', function() {
         }
         this.clearRetry_();
         chrome.send('loginWebuiReady');
-        chrome.send('loginVisible', ['gaia-signin']);
+        chrome.send('loginVisible', ['gaia']);
         // Warm up the user images screen.
         window.setTimeout(function() {
             Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
@@ -475,23 +470,6 @@ cr.define('login', function() {
 
   GaiaSigninScreen.doReload = function() {
     $('gaia-signin').doReload();
-  };
-
-  /**
-   * Handler for iframe's error notification coming from the outside.
-   * For more info see C++ class 'SnifferObserver' which calls this method.
-   * @param {number} error Error code.
-   */
-  GaiaSigninScreen.onFrameError = function(error) {
-    console.log('Gaia frame error = ' + error);
-    if (error == NET_ERROR.ABORTED_BY_USER) {
-      // Gaia frame was reloaded. Nothing to do here.
-      return;
-    }
-    // Check current network state if currentScreen is a Gaia signin.
-    var currentScreen = Oobe.getInstance().currentScreen;
-    if (currentScreen.id == SCREEN_GAIA_SIGNIN)
-      chrome.send('showGaiaFrameError', [error]);
   };
 
   return {

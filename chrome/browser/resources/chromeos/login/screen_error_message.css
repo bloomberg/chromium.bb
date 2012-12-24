@@ -34,15 +34,13 @@ html[oobe=new] #error-message {
 
 .show-with-offline-message,
 .show-with-captive-portal,
-.show-with-proxy-error,
-.offline-login {
+.show-with-proxy-error {
   display: none;
 }
 
 .show-offline-message .show-with-offline-message,
 .show-captive-portal .show-with-captive-portal,
-.show-proxy-error .show-with-proxy-error,
-.allow-offline-login .offline-login {
+.show-proxy-error .show-with-proxy-error {
   display: block;
 }
 

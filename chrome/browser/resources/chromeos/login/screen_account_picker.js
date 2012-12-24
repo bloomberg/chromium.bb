@@ -74,7 +74,7 @@ cr.define('login', function() {
      * @param {string} data Screen init payload.
      */
     onBeforeShow: function(data) {
-      chrome.send('loginUIStateChanged', ['account-picker', true]);
+      chrome.send('loginUIStateChanged', ['pod-row', true]);
       chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
       podRow.handleBeforeShow();
@@ -101,14 +101,14 @@ cr.define('login', function() {
       // $('pod-row').startInitAnimation();
 
       chrome.send('accountPickerReady');
-      chrome.send('loginVisible', ['account-picker']);
+      chrome.send('loginVisible', ['pod-row']);
     },
 
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
     onBeforeHide: function() {
-      chrome.send('loginUIStateChanged', ['account-picker', false]);
+      chrome.send('loginUIStateChanged', ['pod-row', false]);
       $('pod-row').handleHide();
     },
 
