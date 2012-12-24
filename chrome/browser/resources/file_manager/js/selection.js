@@ -299,6 +299,31 @@ SelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
   var self = this;
   var fm = this.fileManager_;
 
+  var stopHidingAndShow = function() {
+    clearTimeout(self.hidingTimeout_);
+    self.hidingTimeout_ = 0;
+    setVisibility('visible');
+  };
+
+  var startHiding = function() {
+    setVisibility('hiding');
+    self.hidingTimeout_ = setTimeout(function() {
+        self.hidingTimeout_ = 0;
+        setVisibility('hidden');
+        fm.onResize_();
+      }, 250);
+  };
+
+  var show = function() {
+    setVisibility('visible');
+    self.previewThumbnails_.textContent = '';
+    fm.onResize_();
+  };
+
+  var setVisibility = function(visibility) {
+    panel.setAttribute('visibility', visibility);
+  };
+
   switch (state) {
     case 'visible':
       if (!mustBeVisible)
@@ -314,31 +339,14 @@ SelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
       if (mustBeVisible)
         show();
   }
+};
 
-  function stopHidingAndShow() {
-    clearTimeout(self.hidingTimeout_);
-    self.hidingTimeout_ = 0;
-    setVisibility('visible');
-  }
-
-  function startHiding() {
-    setVisibility('hiding');
-    self.hidingTimeout_ = setTimeout(function() {
-        self.hidingTimeout_ = 0;
-        setVisibility('hidden');
-        fm.onResize_();
-      }, 250);
-  }
-
-  function show() {
-    setVisibility('visible');
-    self.previewThumbnails_.textContent = '';
-    fm.onResize_();
-  }
-
-  function setVisibility(visibility) {
-    panel.setAttribute('visibility', visibility);
-  }
+/**
+ * @return {boolean} True if space reserverd for the preview panel.
+ * @private
+ */
+SelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
+  return this.previewPanel_.getAttribute('visibility') != 'hidden';
 };
 
 /**
@@ -443,9 +451,14 @@ SelectionHandler.prototype.updateSelectionAsync = function(selection) {
   }
 
   // Update the UI.
+  var wasVisible = this.isPreviewPanelVisibile_();
   this.updatePreviewPanelVisibility_();
   this.updateSearchBreadcrumbs_();
   this.fileManager_.updateContextMenuActionItems(null, false);
+  if (!wasVisible && this.selection.totalCount == 1) {
+    var list = this.fileManager_.getCurrentList();
+    list.scrollIndexIntoView(list.selectionModel.selectedIndex);
+  }
 
   // Sync the commands availability.
   var commands = this.fileManager_.dialogDom_.querySelectorAll('command');
