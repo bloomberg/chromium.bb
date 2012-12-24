@@ -313,6 +313,7 @@ class MsvsSettings(object):
        map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O')
     cl('InlineFunctionExpansion', prefix='/Ob')
     cl('OmitFramePointers', map={'false': '-', 'true': ''}, prefix='/Oy')
+    cl('EnableIntrinsicFunctions', map={'false': '-', 'true': ''}, prefix='/Oi')
     cl('FavorSizeOrSpeed', map={'1': 't', '2': 's'}, prefix='/O')
     cl('WholeProgramOptimization', map={'true': '/GL'})
     cl('WarningLevel', prefix='/W')

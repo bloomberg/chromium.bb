@@ -47,6 +47,15 @@ if sys.platform == 'win32':
   ninja_file = test.built_file_path('obj/test_opt_fpo_off.ninja', chdir=CHDIR)
   test.must_contain(ninja_file, '/Oy-')
 
+  ninja_file = test.built_file_path('obj/test_opt_intrinsic.ninja',
+      chdir=CHDIR)
+  test.must_contain(ninja_file, '/Oi')
+  test.must_not_contain(ninja_file, '/Oi-')
+
+  ninja_file = test.built_file_path('obj/test_opt_intrinsic_off.ninja',
+      chdir=CHDIR)
+  test.must_contain(ninja_file, '/Oi-')
+
   ninja_file = test.built_file_path('obj/test_opt_inline_off.ninja',
       chdir=CHDIR)
   test.must_contain(ninja_file, '/Ob0')
