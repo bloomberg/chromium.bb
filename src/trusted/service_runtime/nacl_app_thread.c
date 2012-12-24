@@ -92,6 +92,17 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClLog(3, "NaClAppThreadTeardown(0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) natp);
   nap = natp->nap;
+  if (NULL != nap->debug_stub_callbacks) {
+    NaClLog(3, " notifying the debug stub of the thread exit\n");
+    /*
+     * This must happen before deallocating the ID natp->thread_num.
+     * We have the invariant that debug stub lock should be acquired before
+     * nap->threads_mu lock. Hence we must not hold threads_mu lock while
+     * calling debug stub hooks.
+     */
+    nap->debug_stub_callbacks->thread_exit_hook(natp);
+  }
+
   NaClLog(3, " getting thread table lock\n");
   NaClXMutexLock(&nap->threads_mu);
   NaClLog(3, " getting thread lock\n");
@@ -114,11 +125,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = 0;
 #endif
-  if (NULL != nap->debug_stub_callbacks) {
-    NaClLog(3, " notifying the debug stub of the thread exit\n");
-    /* This must happen before deallocating the ID natp->thread_num. */
-    nap->debug_stub_callbacks->thread_exit_hook(natp);
-  }
+
   NaClLog(3, " removing thread from thread table\n");
   /* Deallocate the ID natp->thread_num. */
   NaClRemoveThreadMu(nap, natp->thread_num);
