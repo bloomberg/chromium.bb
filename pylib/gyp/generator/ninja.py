@@ -908,10 +908,6 @@ class NinjaWriter:
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
     elif self.flavor == 'win':
-      libflags = self.msvs_settings.GetLibFlags(config_name,
-                                                self.GypPathToNinja)
-      self.WriteVariableList(
-          'libflags', gyp.common.uniquer(map(self.ExpandSpecial, libflags)))
       is_executable = spec['type'] == 'executable'
       manifest_name = self.GypPathToUniqueOutput(
           self.ComputeOutputFileName(spec))
@@ -975,6 +971,10 @@ class NinjaWriter:
         self.ninja.build(self.target.binary, 'alink_thin', link_deps,
                          order_only=compile_deps, variables=variables)
       else:
+        if self.msvs_settings:
+          libflags = self.msvs_settings.GetLibFlags(config_name,
+                                                    self.GypPathToNinja)
+          variables.append(('libflags', libflags))
         self.ninja.build(self.target.binary, 'alink', link_deps,
                          order_only=compile_deps, variables=variables)
     else:
