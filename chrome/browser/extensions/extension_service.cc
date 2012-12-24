@@ -121,7 +121,6 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::PluginService;
 using extensions::CrxInstaller;
@@ -734,11 +733,8 @@ void ExtensionService::ReloadExtensionWithEvents(
     if (host && DevToolsAgentHostRegistry::HasDevToolsAgentHost(
             host->render_view_host())) {
       // Look for an open inspector for the background page.
-      DevToolsAgentHost* agent =
-          DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-              host->render_view_host());
-      int devtools_cookie =
-          content::DevToolsManager::GetInstance()->DetachClientHost(agent);
+      int devtools_cookie = DevToolsAgentHostRegistry::DisconnectRenderViewHost(
+          host->render_view_host());
       if (devtools_cookie >= 0)
         orphaned_dev_tools_[extension_id] = devtools_cookie;
     }
@@ -2666,10 +2662,8 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
   if (iter == orphaned_dev_tools_.end())
     return;
 
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      host->render_view_host());
-  content::DevToolsManager::GetInstance()->AttachClientHost(iter->second,
-                                                            agent);
+  DevToolsAgentHostRegistry::ConnectRenderViewHost(iter->second,
+                                                   host->render_view_host());
   orphaned_dev_tools_.erase(iter);
 }
 

@@ -54,15 +54,6 @@ class CONTENT_EXPORT DevToolsManager {
   virtual void UnregisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) = 0;
 
-  // Detaches client from |from_agent| and returns a cookie that allows to
-  // reattach that client to another agent later. Returns -1 if there is no
-  // client attached to |from_agent|.
-  virtual int DetachClientHost(DevToolsAgentHost* from_agent) = 0;
-  // Reattaches client host detached with DetachClientHost method above
-  // to |to_agent|.
-  virtual void AttachClientHost(int client_host_cookie,
-                                DevToolsAgentHost* to_agent) = 0;
-
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the
   // DevToolsClientHost. Called by closing client.

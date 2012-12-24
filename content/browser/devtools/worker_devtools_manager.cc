@@ -88,7 +88,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
 
   virtual void Detach() {
     DevToolsAgentHost::Detach();
-    SelfDestruct();
+    Destroy();
   }
 
   void SaveAgentRuntimeState(const std::string& state) {
@@ -100,10 +100,10 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
     // self-destruct.
     if (NotifyCloseListener())
       return;  // Detach will delete this instance.
-    SelfDestruct();
+    Destroy();
   }
 
-  void SelfDestruct() {
+  void Destroy() {
     delete this;
   }
 
@@ -183,7 +183,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
     if (!client_host) {
       // Agent has no client hosts -> delete it.
       RemovePendingWorkerData(id);
-      agent->SelfDestruct();
+      agent->Destroy();
       return;
     }
 

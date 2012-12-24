@@ -9,7 +9,13 @@
 
 namespace content {
 
-DevToolsAgentHost::DevToolsAgentHost() : close_listener_(NULL) {
+namespace {
+static int g_next_agent_host_id = 0;
+}  // namespace
+
+DevToolsAgentHost::DevToolsAgentHost()
+    : close_listener_(NULL),
+      id_(++g_next_agent_host_id) {
 }
 
 void DevToolsAgentHost::Attach() {
@@ -49,8 +55,9 @@ void DevToolsAgentHost::AddMessageToConsole(ConsoleMessageLevel level,
 
 bool DevToolsAgentHost::NotifyCloseListener() {
   if (close_listener_) {
-    close_listener_->AgentHostClosing(this);
+    CloseListener* close_listener = close_listener_;
     close_listener_ = NULL;
+    close_listener->AgentHostClosing(this);
     return true;
   }
   return false;

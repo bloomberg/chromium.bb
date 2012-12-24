@@ -9,32 +9,50 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/devtools_agent_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 
 class RenderViewHost;
 
+class DevToolsAgentHostRvhObserver;
+
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public DevToolsAgentHost,
-      private RenderViewHostObserver {
+      private WebContentsObserver {
  public:
+  static void OnCancelPendingNavigation(RenderViewHost* pending,
+                                        RenderViewHost* current);
+
   RenderViewDevToolsAgentHost(RenderViewHost*);
 
+  RenderViewHost* render_view_host() { return render_view_host_; }
+
  private:
+  friend class DevToolsAgentHostRegistry;
+  friend class DevToolsAgentHostRvhObserver;
+
   virtual ~RenderViewDevToolsAgentHost();
 
   // DevToolsAgentHost implementation.
+  virtual void Detach() OVERRIDE;
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
   virtual void NotifyClientAttaching() OVERRIDE;
   virtual void NotifyClientDetaching() OVERRIDE;
   virtual int GetRenderProcessId() OVERRIDE;
 
-  // RenderViewHostObserver overrides.
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // WebContentsObserver overrides.
+  virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) OVERRIDE;
+
+  void ConnectRenderViewHost(RenderViewHost* rvh, bool reattach);
+  void DisconnectRenderViewHost();
+
+  void RenderViewHostDestroyed(RenderViewHost* rvh);
+  bool OnRvhMessageReceived(const IPC::Message& message);
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
   void OnSaveAgentRuntimeState(const std::string& state);
@@ -43,7 +61,11 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   bool CaptureScreenshot(std::string* base_64_data);
 
+  void Destroy();
+
   RenderViewHost* render_view_host_;
+  scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
+  std::string state_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
 };

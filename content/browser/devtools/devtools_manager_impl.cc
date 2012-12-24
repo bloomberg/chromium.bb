@@ -30,16 +30,12 @@ DevToolsManagerImpl* DevToolsManagerImpl::GetInstance() {
   return Singleton<DevToolsManagerImpl>::get();
 }
 
-DevToolsManagerImpl::DevToolsManagerImpl()
-    : last_orphan_cookie_(0) {
+DevToolsManagerImpl::DevToolsManagerImpl() {
 }
 
 DevToolsManagerImpl::~DevToolsManagerImpl() {
   DCHECK(agent_to_client_host_.empty());
   DCHECK(client_to_agent_host_.empty());
-  // By the time we destroy devtools manager, all orphan client hosts should
-  // have been deleted; no need to notify them upon contents closing.
-  DCHECK(orphan_client_hosts_.empty());
 }
 
 DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(
@@ -88,11 +84,6 @@ void DevToolsManagerImpl::DispatchOnInspectorFrontend(
   client_host->DispatchOnInspectorFrontend(message);
 }
 
-void DevToolsManagerImpl::SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
-                                                const std::string& state) {
-  agent_runtime_states_[agent_host] = state;
-}
-
 void DevToolsManagerImpl::InspectElement(DevToolsAgentHost* agent_host,
                                          int x, int y) {
   agent_host->InspectElement(x, y);
@@ -106,17 +97,8 @@ void DevToolsManagerImpl::AddMessageToConsole(DevToolsAgentHost* agent_host,
 
 void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
   DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(client_host);
-  if (!agent_host) {
-    // It might be in the list of orphan client hosts, remove it from there.
-    for (OrphanClientHosts::iterator it = orphan_client_hosts_.begin();
-         it != orphan_client_hosts_.end(); ++it) {
-      if (it->second.first == client_host) {
-        orphan_client_hosts_.erase(it->first);
-        return;
-      }
-    }
+  if (!agent_host)
     return;
-  }
 
   UnbindClientHost(agent_host, client_host);
 }
@@ -132,70 +114,6 @@ void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
     return;
   UnbindClientHost(agent_host, client_host);
   client_host->InspectedContentsClosing();
-}
-
-void DevToolsManagerImpl::OnNavigatingToPendingEntry(
-    RenderViewHost* rvh,
-    RenderViewHost* dest_rvh,
-    const GURL& gurl) {
-  if (rvh == dest_rvh && static_cast<RenderViewHostImpl*>(
-          rvh)->render_view_termination_status() ==
-              base::TERMINATION_STATUS_STILL_RUNNING)
-    return;
-  int cookie = DetachClientHost(rvh);
-  if (cookie != -1)
-    AttachClientHost(cookie, dest_rvh);
-}
-
-void DevToolsManagerImpl::OnCancelPendingNavigation(
-    RenderViewHost* pending,
-    RenderViewHost* current) {
-  int cookie = DetachClientHost(pending);
-  if (cookie != -1)
-    AttachClientHost(cookie, current);
-}
-
-int DevToolsManagerImpl::DetachClientHost(RenderViewHost* from_rvh) {
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(from_rvh);
-  return DetachClientHost(agent_host);
-}
-
-int DevToolsManagerImpl::DetachClientHost(DevToolsAgentHost* agent_host) {
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
-  if (!client_host)
-    return -1;
-
-  int cookie = last_orphan_cookie_++;
-  orphan_client_hosts_[cookie] =
-      std::pair<DevToolsClientHost*, std::string>(
-          client_host, agent_runtime_states_[agent_host]);
-
-  UnbindClientHost(agent_host, client_host);
-  return cookie;
-}
-
-void DevToolsManagerImpl::AttachClientHost(int client_host_cookie,
-                                           RenderViewHost* to_rvh) {
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(to_rvh);
-  AttachClientHost(client_host_cookie, agent_host);
-}
-
-void DevToolsManagerImpl::AttachClientHost(int client_host_cookie,
-                                           DevToolsAgentHost* agent_host) {
-  OrphanClientHosts::iterator it = orphan_client_hosts_.find(
-      client_host_cookie);
-  if (it == orphan_client_hosts_.end())
-    return;
-
-  DevToolsClientHost* client_host = (*it).second.first;
-  const std::string& state = (*it).second.second;
-  BindClientHost(agent_host, client_host);
-  agent_host->Reattach(state);
-  agent_runtime_states_[agent_host] = state;
-
-  orphan_client_hosts_.erase(it);
 }
 
 void DevToolsManagerImpl::BindClientHost(
@@ -233,7 +151,6 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
 
   agent_to_client_host_.erase(agent_host);
   client_to_agent_host_.erase(client_host);
-  agent_runtime_states_.erase(agent_host);
 
   if (client_to_agent_host_.empty()) {
     BrowserThread::PostTask(
@@ -242,22 +159,23 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
   int process_id = agent_host->GetRenderProcessId();
+  bool process_has_agents = false;
+  for (AgentToClientHostMap::iterator it = agent_to_client_host_.begin();
+       !process_has_agents && it != agent_to_client_host_.end();
+       ++it) {
+    if (it->first->GetRenderProcessId() == process_id)
+      process_has_agents = true;
+  }
 
   // Lazy agent hosts can be deleted from within detach.
   // Do not access agent_host below this line.
   agent_host->Detach();
 
-  if (process_id == -1)
-    return;
-  for (AgentToClientHostMap::iterator it = agent_to_client_host_.begin();
-       it != agent_to_client_host_.end();
-       ++it) {
-    if (it->first->GetRenderProcessId() == process_id)
-      return;
+  // We are the last to disconnect from the renderer -> revoke permissions.
+  if (!process_has_agents) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
+        process_id);
   }
-  // We've disconnected from the last renderer -> revoke cookie permissions.
-  ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-      process_id);
 }
 
 void DevToolsManagerImpl::CloseAllClientHosts() {

@@ -1594,12 +1594,6 @@ bool WebContentsImpl::NavigateToEntry(
     CHECK(0);
   }
 
-  // Tell DevTools agent that it is attached prior to the navigation.
-  DevToolsManagerImpl::GetInstance()->OnNavigatingToPendingEntry(
-      GetRenderViewHost(),
-      dest_render_view_host,
-      entry.GetURL());
-
   // Notify observers that we will navigate in this RV.
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,

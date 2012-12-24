@@ -41,6 +41,8 @@ class CONTENT_EXPORT DevToolsAgentHost {
     close_listener_ = listener;
   }
 
+  int id() { return id_; }
+
  protected:
   DevToolsAgentHost();
   virtual ~DevToolsAgentHost() {}
@@ -52,6 +54,9 @@ class CONTENT_EXPORT DevToolsAgentHost {
   bool NotifyCloseListener();
 
   CloseListener* close_listener_;
+
+ private:
+  int id_;
 };
 
 }  // namespace content

@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -907,7 +907,7 @@ void RenderViewHostManager::CancelPending() {
   RenderViewHostImpl* pending_render_view_host = pending_render_view_host_;
   pending_render_view_host_ = NULL;
 
-  DevToolsManagerImpl::GetInstance()->OnCancelPendingNavigation(
+  RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
       pending_render_view_host,
       render_view_host_);
 

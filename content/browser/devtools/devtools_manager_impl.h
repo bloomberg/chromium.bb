@@ -46,23 +46,10 @@ class CONTENT_EXPORT DevToolsManagerImpl
   void DispatchOnInspectorFrontend(DevToolsAgentHost* agent_host,
                                    const std::string& message);
 
-  void SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
-                             const std::string& state);
-
-  // Sends 'Attach' message to the agent using |dest_rvh| in case
-  // there is a DevToolsClientHost registered for the |inspected_rvh|.
-  void OnNavigatingToPendingEntry(RenderViewHost* inspected_rvh,
-                                  RenderViewHost* dest_rvh,
-                                  const GURL& gurl);
-  void OnCancelPendingNavigation(RenderViewHost* pending,
-                                 RenderViewHost* current);
-
   // DevToolsManager implementation
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) OVERRIDE;
   virtual void CloseAllClientHosts() OVERRIDE;
-  virtual void AttachClientHost(int client_host_cookie,
-                                DevToolsAgentHost* to_agent) OVERRIDE;
   virtual DevToolsClientHost* GetDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) OVERRIDE;
   virtual DevToolsAgentHost* GetDevToolsAgentHostFor(
@@ -72,7 +59,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
       DevToolsClientHost* client_host) OVERRIDE;
   virtual void UnregisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) OVERRIDE;
-  virtual int DetachClientHost(DevToolsAgentHost* from_agent) OVERRIDE;
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
   virtual void InspectElement(DevToolsAgentHost* agent_host,
                               int x, int y) OVERRIDE;
@@ -91,14 +77,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
   void UnbindClientHost(DevToolsAgentHost* agent_host,
                         DevToolsClientHost* client_host);
 
-  // Detaches client host and returns cookie that can be used in
-  // AttachClientHost.
-  int DetachClientHost(RenderViewHost* from_rvh);
-
-  // Attaches orphan client host to new render view host.
-  void AttachClientHost(int client_host_cookie,
-                        RenderViewHost* to_rvh);
-
   // These two maps are for tracking dependencies between inspected contents and
   // their DevToolsClientHosts. They are useful for routing devtools messages
   // and allow us to have at most one devtools client host per contents.
@@ -112,14 +90,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
   typedef std::map<DevToolsClientHost*, DevToolsAgentHost*>
       ClientToAgentHostMap;
   ClientToAgentHostMap client_to_agent_host_;
-
-  typedef std::map<DevToolsAgentHost*, std::string> AgentRuntimeStates;
-  AgentRuntimeStates agent_runtime_states_;
-
-  typedef std::map<int, std::pair<DevToolsClientHost*, std::string> >
-      OrphanClientHosts;
-  OrphanClientHosts orphan_client_hosts_;
-  int last_orphan_cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerImpl);
 };

@@ -34,6 +34,16 @@ class CONTENT_EXPORT DevToolsAgentHostRegistry {
       int worker_route_id);
 
   static bool IsDebuggerAttached(WebContents* web_contents);
+
+  // Detaches given |rvh| from the agent host temporarily and returns a cookie
+  // that allows to reattach another rvh to that agen thost later. Returns -1 if
+  // there is no agent host associated with the |rvh|.
+  static int DisconnectRenderViewHost(RenderViewHost* rvh);
+
+  // Reattaches agent host detached with DisconnectRenderViewHost method above
+  // to |rvh|.
+  static void ConnectRenderViewHost(int agent_host_cookie,
+                                    RenderViewHost* rvh);
 };
 
 }  // namespace content
