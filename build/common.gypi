@@ -3374,9 +3374,7 @@
             ['asan==1', {
               'conditions': [
                 ['mac_want_real_dsym=="default"', {
-                  # TODO(glider): use real dSYM files for ASan once
-                  # http://crbug.com/166857 is fixed.
-                  'mac_real_dsym': 0,
+                  'mac_real_dsym': 1,
                 }, {
                   'mac_real_dsym': '<(mac_want_real_dsym)'
                 }],
