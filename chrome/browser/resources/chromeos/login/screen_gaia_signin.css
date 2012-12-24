@@ -83,6 +83,11 @@ html[oobe=new] #signin-frame {
   border-right: 1px solid lightgray;
 }
 
+html[dir=rtl][oobe=new] #signin-frame {
+  border-left: 1px solid lightgray;
+  border-right: none;
+}
+
 html[oobe=new] .no-right-panel #signin-frame {
   border: none;
 }
