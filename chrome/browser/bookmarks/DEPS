@@ -19,16 +19,11 @@ include_rules = [
   "!chrome/browser/history/history_types.h",
   "!chrome/browser/history/query_parser.h",
   "!chrome/browser/history/snippet.h",
-  "!chrome/browser/importer/importer_data_types.h",
-  "!chrome/browser/importer/importer_host.h",
   "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",
   "!chrome/browser/profiles/profile_keyed_service_factory.h",
-  "!chrome/browser/ui/bookmarks/bookmark_tab_helper.h",
-  "!chrome/browser/ui/chrome_select_file_policy.h",
-  "!chrome/browser/ui/webui/chrome_url_data_manager.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
@@ -40,6 +35,5 @@ specific_include_rules = {
   '.*_[a-z]*test\.cc': [
     "!chrome/browser/history/in_memory_database.h",
     "!chrome/browser/importer/firefox2_importer.h",
-    "!chrome/browser/ui/browser.h",
   ]
 }
