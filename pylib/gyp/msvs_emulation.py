@@ -423,6 +423,7 @@ class MsvsSettings(object):
       ldflags.append('/PDB:' + pdb)
     ld('AdditionalOptions', prefix='')
     ld('SubSystem', map={'1': 'CONSOLE', '2': 'WINDOWS'}, prefix='/SUBSYSTEM:')
+    ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')
     ld('FixedBaseAddress', map={'1': ':NO', '2': ''}, prefix='/FIXED')
     ld('RandomizedBaseAddress',
