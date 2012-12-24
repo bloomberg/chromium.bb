@@ -23,6 +23,7 @@ Call tool.CleanUpEnvironment().
 
 import os.path
 import sys
+from glob import glob
 
 from constants import CHROME_DIR
 
@@ -94,9 +95,9 @@ class AddressSanitizerTool(BaseTool):
 
   def CopyFiles(self):
     """Copies ASan tools to the device."""
-    files = ['tools/android/asan/asanwrapper.sh',
-             'third_party/llvm-build/Release+Asserts/lib/clang/3.2/lib/linux/' +
-                 'libclang_rt.asan-arm-android.so']
+    files = (['tools/android/asan/asanwrapper.sh'] +
+              glob('third_party/llvm-build/Release+Asserts/lib/clang/*/lib/'
+                   'linux/libclang_rt.asan-arm-android.so'))
     for f in files:
       self._adb.PushIfNeeded(os.path.join(CHROME_DIR, f),
                              os.path.join(AddressSanitizerTool.TMP_DIR,
