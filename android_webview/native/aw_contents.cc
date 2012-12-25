@@ -15,6 +15,7 @@
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/state_serializer.h"
+#include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -35,6 +36,9 @@
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/base/x509_certificate.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -77,6 +81,8 @@ static void DrawGLFunction(int view_context,
 namespace android_webview {
 
 namespace {
+
+AwDrawSWFunctionTable* g_draw_sw_functions = NULL;
 
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
@@ -410,6 +416,43 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   // ---------------------------------------------------------------------------
 }
 
+bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
+  AwPixelInfo* pixels;
+  if (!g_draw_sw_functions ||
+      (pixels = g_draw_sw_functions->access_pixels(env, java_canvas)) == NULL) {
+    // TODO(joth): Fall back to slow path rendering via temporary bitmap.
+    return false;
+  }
+
+  {
+    SkBitmap bitmap;
+    bitmap.setConfig(static_cast<SkBitmap::Config>(pixels->config),
+                     pixels->width,
+                     pixels->height,
+                     pixels->row_bytes);
+    bitmap.setPixels(pixels->pixels);
+    SkDevice device(bitmap);
+    SkCanvas canvas(&device);
+    SkMatrix matrix;
+    for (int i = 0; i < 9; i++) {
+      matrix.set(i, pixels->matrix[i]);
+    }
+    canvas.setMatrix(matrix);
+    SkRegion clip;
+    if (pixels->clip_region_size) {
+      size_t bytes_read = clip.readFromMemory(pixels->clip_region);
+      DCHECK_EQ(pixels->clip_region_size, bytes_read);
+      canvas.setClipRegion(clip);
+    }
+
+    // TODO(joth): Implement real drawing. For now, fill the view in blue.
+    canvas.drawARGB(128, 1, 30, 250);
+  }
+
+  g_draw_sw_functions->release_pixels(pixels);
+  return true;
+}
+
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(web_contents_.get());
 }
@@ -444,6 +487,12 @@ void AwContents::AttachLayerTree() {
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+// static
+void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
+  g_draw_sw_functions =
+      reinterpret_cast<AwDrawSWFunctionTable*>(function_table);
 }
 
 // static

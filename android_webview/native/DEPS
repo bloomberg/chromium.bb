@@ -3,4 +3,7 @@ include_rules = [
   "+content/public/browser",
   "+ui/gfx",
   "+ui/gl",
+
+  # TODO(joth): Remove if we can move the compositor driver into ../browser/
+  "+third_party/skia/include",
 ]

@@ -51,6 +51,7 @@ class AwContents : public FindHelper::Listener,
   virtual ~AwContents();
 
   void DrawGL(AwDrawGLInfo* draw_info);
+  bool DrawSW(JNIEnv* env, jobject obj, jobject canvas);
 
   void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

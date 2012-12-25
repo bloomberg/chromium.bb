@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
@@ -330,6 +331,10 @@ public class AwContents {
         mNativeAwContents = 0;
     }
 
+    public static void setAwDrawSWFunctionTable(int functionTablePointer) {
+        nativeSetAwDrawSWFunctionTable(functionTablePointer);
+    }
+
     public static int getAwDrawGLFunction() {
         return nativeGetAwDrawGLFunction();
     }
@@ -349,8 +354,11 @@ public class AwContents {
     }
 
     public void onDraw(Canvas canvas) {
-        // TODO(joth): Implement. For now, just clear the canvas to red.
-        canvas.drawRGB(200, 1, 4);
+        if (!nativeDrawSW(mNativeAwContents, canvas)) {
+            Log.w(TAG, "Native DrawSW failed; clearing to background color.");
+            int c = mContentViewCore.getBackgroundColor();
+            canvas.drawRGB(Color.red(c), Color.green(c), Color.blue(c));
+        }
     }
 
     public int findAllSync(String searchString) {
@@ -929,6 +937,7 @@ public class AwContents {
     private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
             boolean privateBrowsing);
     private static native void nativeDestroy(int nativeAwContents);
+    private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
 
     private native int nativeGetWebContents(int nativeAwContents);
@@ -944,6 +953,7 @@ public class AwContents {
     private native void nativeSetInterceptNavigationDelegate(int nativeAwContents,
             InterceptNavigationDelegate navigationInterceptionDelegate);
 
+    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas);
     private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
     private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
