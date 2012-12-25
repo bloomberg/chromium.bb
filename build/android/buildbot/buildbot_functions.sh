@@ -64,9 +64,6 @@ function bb_baseline_setup {
     unset CXX_target
   fi
 
-  adb kill-server
-  adb start-server
-
   local build_path="${SRC_ROOT}/out/${BUILDTYPE}"
   local landmines_triggered_path="$build_path/.landmines_triggered"
   python "$SRC_ROOT/build/landmines.py"
@@ -406,6 +403,11 @@ function bb_extract_build {
 # Does not break build if a phone fails to restart
 function bb_reboot_phones {
   echo "@@@BUILD_STEP Rebooting phones@@@"
+  # Restart adb to work around bugs, sleep to wait for usb discovery.
+  adb kill-server
+  adb start-server
+  sleep .5
+
   (
   set +e
   cd $CHROME_SRC/build/android/pylib;

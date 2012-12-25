@@ -6,6 +6,7 @@
 import json
 import logging
 import os
+import re
 import time
 import traceback
 
@@ -133,7 +134,8 @@ class TestResults(object):
                                  build_type, 'test_logs')
     if not os.path.exists(log_file_path):
       os.mkdir(log_file_path)
-    full_file_name = os.path.join(log_file_path, test_type)
+    full_file_name = os.path.join(
+        log_file_path, re.sub('\W', '_', test_type).lower() + '.log')
     if not os.path.exists(full_file_name):
       with open(full_file_name, 'w') as log_file:
         print >> log_file, '\n%s results for %s build %s:' % (
