@@ -106,8 +106,10 @@ const NSTimeInterval kTearDuration = 0.333;
   dragOrigin_ = [NSEvent mouseLocation];
 
   // When spinning the event loop, a tab can get detached, which could lead to
-  // our own destruction. Keep ourselves around while spinning the loop.
+  // our own destruction. Keep ourselves around while spinning the loop as well
+  // as the tab controller being dragged.
   scoped_nsobject<TabStripDragController> keepAlive([self retain]);
+  scoped_nsobject<TabController> keepAliveTab([tab retain]);
 
   // Because we move views between windows, we need to handle the event loop
   // ourselves. Ideally we should use the standard event loop.
@@ -258,7 +260,7 @@ const NSTimeInterval kTearDuration = 0.333;
       sourceWindow_ = dragWindow_;
     }
 
-    // Disable window animation before calling |orderFront:| when detatching
+    // Disable window animation before calling |orderFront:| when detaching
     // to a new window.
     NSWindowAnimationBehavior savedAnimationBehavior =
         NSWindowAnimationBehaviorDefault;
@@ -387,7 +389,8 @@ const NSTimeInterval kTearDuration = 0.333;
 
   // We are now free to re-display the new tab button in the window we're
   // dragging. It will show when the next call to -layoutTabs (which happens
-  // indrectly by several of the calls below, such as removing the placeholder).
+  // indirectly by several of the calls below, such as removing the
+  // placeholder).
   [draggedController_ showNewTabButton:YES];
 
   if (draggingWithinTabStrip_) {

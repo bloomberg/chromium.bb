@@ -634,7 +634,7 @@ private:
   NSInteger i = 0;
   for (TabController* controller in tabArray_.get()) {
     if ([closingControllers_ containsObject:controller]) {
-      DCHECK([(TabView*)[controller view] isClosing]);
+      DCHECK([[controller tabView] isClosing]);
       ++index;
     }
     if (i == index)  // No need to check anything after, it has no effect.
@@ -1358,7 +1358,7 @@ private:
 
   // Mark the tab as closing. This prevents it from generating any drags or
   // selections while it's animating closed.
-  [(TabView*)[closingTab view] setClosing:YES];
+  [[closingTab tabView] setClosing:YES];
 
   // Register delegate (owned by the animation system).
   NSView* tabView = [closingTab view];
@@ -1400,7 +1400,7 @@ private:
     // Don't remove the tab, as that makes the window look jarring without any
     // tabs. Instead, simply mark it as closing to prevent the tab from
     // generating any drags or selections.
-    [(TabView*)[tab view] setClosing:YES];
+    [[tab tabView] setClosing:YES];
   }
 
   [delegate_ onTabDetachedWithContents:contents];

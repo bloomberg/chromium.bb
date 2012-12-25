@@ -176,6 +176,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)selectTab:(id)sender {
+  if ([[self tabView] isClosing])
+    return;
   if ([[self target] respondsToSelector:[self action]]) {
     [[self target] performSelector:[self action]
                         withObject:[self view]];
