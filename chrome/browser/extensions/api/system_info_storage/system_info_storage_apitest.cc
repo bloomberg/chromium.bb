@@ -23,9 +23,6 @@ class MockStorageInfoProvider : public StorageInfoProvider {
  public:
   MockStorageInfoProvider() : is_watching_(false) {
   }
-  virtual ~MockStorageInfoProvider() {
-    Stop();
-  }
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
     info->clear();
@@ -66,6 +63,10 @@ class MockStorageInfoProvider : public StorageInfoProvider {
   }
 
  private:
+  virtual ~MockStorageInfoProvider() {
+    Stop();
+  }
+
   void OnTimeoutEvent() {
     static int count;
     SystemInfoEventRouter::GetInstance()->
@@ -100,7 +101,8 @@ class SystemInfoStorageApiTest: public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, Storage) {
   ResultCatcher catcher;
-  MockStorageInfoProvider* provider = new MockStorageInfoProvider();
+  scoped_refptr<MockStorageInfoProvider> provider =
+      new MockStorageInfoProvider();
   StorageInfoProvider::InitializeForTesting(provider);
 
   ExtensionTestMessageListener listener("ready", true);

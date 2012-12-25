@@ -19,7 +19,6 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
     // Set sampling interval to 200ms for testing.
     sampling_interval_ = 200;
   }
-  ~MockCpuInfoProviderImpl() {}
 
   virtual bool QueryInfo(CpuInfo* info) OVERRIDE {
     if (!info) return false;
@@ -32,6 +31,8 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   }
 
  private:
+  ~MockCpuInfoProviderImpl() {}
+
   virtual bool QueryCpuTimePerProcessor(std::vector<CpuTime>* times) OVERRIDE {
     DCHECK(times);
 

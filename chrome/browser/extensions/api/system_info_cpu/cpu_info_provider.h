@@ -23,8 +23,6 @@ class CpuInfoProvider
       void(scoped_ptr<api::experimental_system_info_cpu::CpuUpdateInfo>)>
           SamplingCallback;
 
-  virtual ~CpuInfoProvider();
-
   // Overriden from SystemInfoProvider<CpuInfo>.
   virtual bool QueryInfo(
       api::experimental_system_info_cpu::CpuInfo* info) OVERRIDE;
@@ -55,6 +53,8 @@ class CpuInfoProvider
   };
 
   CpuInfoProvider();
+
+  virtual ~CpuInfoProvider();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

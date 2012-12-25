@@ -47,8 +47,6 @@ class StorageInfoProvider
                                            double new_value) = 0;
   };
 
-  virtual ~StorageInfoProvider();
-
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
 
@@ -70,6 +68,7 @@ class StorageInfoProvider
 
  protected:
   StorageInfoProvider();
+  virtual ~StorageInfoProvider();
 
  private:
   typedef std::map<std::string, double> StorageIDToSizeMap;

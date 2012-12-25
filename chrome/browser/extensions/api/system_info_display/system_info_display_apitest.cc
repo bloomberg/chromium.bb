@@ -37,6 +37,9 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     }
     return true;
   }
+ private:
+  virtual ~MockDisplayInfoProvider() {}
+
 };
 
 class SystemInfoDisplayApiTest: public ExtensionApiTest {
@@ -60,7 +63,8 @@ class SystemInfoDisplayApiTest: public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, Display) {
   // The |provider| will be owned by the singleton instance.
-  MockDisplayInfoProvider* provider = new MockDisplayInfoProvider();
+  scoped_refptr<MockDisplayInfoProvider> provider =
+      new MockDisplayInfoProvider();
   DisplayInfoProvider::InitializeForTesting(provider);
   ASSERT_TRUE(RunPlatformAppTest("systeminfo/display")) << message_;
 }

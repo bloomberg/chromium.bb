@@ -61,6 +61,8 @@ class StorageInfoProviderLinuxWrapper : public StorageInfoProviderLinux {
  private:
   friend class StorageInfoProviderLinuxTest;
 
+  virtual ~StorageInfoProviderLinuxWrapper() {}
+
   virtual bool QueryUnitInfo(const std::string& mount_path,
                              StorageUnitInfo* info) OVERRIDE {
     std::string type;
@@ -100,15 +102,15 @@ class StorageInfoProviderLinuxTest : public testing::Test {
     int bytes = file_util::WriteFile(mtab_file_, mtab_test_data,
                                      strlen(mtab_test_data));
     ASSERT_EQ(static_cast<int>(strlen(mtab_test_data)), bytes);
-    storage_info_provider_.reset(
-        new StorageInfoProviderLinuxWrapper(mtab_file_));
+    storage_info_provider_ =
+        new StorageInfoProviderLinuxWrapper(mtab_file_);
   }
 
   virtual void TearDown() OVERRIDE {
     file_util::Delete(mtab_file_, false);
   }
 
-  scoped_ptr<StorageInfoProviderLinuxWrapper> storage_info_provider_;
+  scoped_refptr<StorageInfoProviderLinuxWrapper> storage_info_provider_;
   FilePath mtab_file_;
 };
 
@@ -130,8 +132,8 @@ TEST_F(StorageInfoProviderLinuxTest, QueryInfo) {
 }
 
 TEST_F(StorageInfoProviderLinuxTest, QueryInfoFailed) {
-  storage_info_provider_.reset(
-      new StorageInfoProviderLinuxWrapper(FilePath("/invalid/file/path")));
+  storage_info_provider_ =
+      new StorageInfoProviderLinuxWrapper(FilePath("/invalid/file/path"));
   StorageInfo info;
   ASSERT_FALSE(QueryInfo(&info));
   EXPECT_EQ(0u, info.size());

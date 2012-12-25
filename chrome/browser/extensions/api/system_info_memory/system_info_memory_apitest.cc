@@ -17,13 +17,14 @@ using api::experimental_system_info_memory::MemoryInfo;
 class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
   MockMemoryInfoProviderImpl() {}
-  ~MockMemoryInfoProviderImpl() {}
 
   virtual bool QueryInfo(MemoryInfo* info) OVERRIDE {
     info->capacity = 4096;
     info->available_capacity = 1024;
     return true;
   }
+ private:
+  ~MockMemoryInfoProviderImpl() {}
 };
 
 class SystemInfoMemoryApiTest: public ExtensionApiTest {
@@ -46,7 +47,7 @@ class SystemInfoMemoryApiTest: public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SystemInfoMemoryApiTest, Memory) {
-  MemoryInfoProvider* provider = new MockMemoryInfoProviderImpl();
+  scoped_refptr<MemoryInfoProvider> provider = new MockMemoryInfoProviderImpl();
   // The provider is owned by the single MemoryInfoProvider instance.
   MemoryInfoProvider::InitializeForTesting(provider);
   ASSERT_TRUE(RunExtensionTest("systeminfo/memory")) << message_;

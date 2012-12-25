@@ -56,9 +56,10 @@ class MockStorageObserver : public StorageInfoProvider::Observer {
 class TestStorageInfoProvider : public StorageInfoProvider {
  public:
   TestStorageInfoProvider() {}
-  virtual ~TestStorageInfoProvider() {}
 
  private:
+  virtual ~TestStorageInfoProvider() {}
+
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
     info->clear();
 
