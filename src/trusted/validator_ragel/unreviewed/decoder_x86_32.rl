@@ -22,8 +22,6 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.h"
-
 /*
  * These prefixes are not useful in IA32 mode, but they will “cleaned up” by
  * decoder's cleanup procedure anyway.  Do nothing when that happens.

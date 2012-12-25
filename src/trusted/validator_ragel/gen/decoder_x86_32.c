@@ -21,8 +21,6 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.h"
-
 /*
  * These prefixes are not useful in IA32 mode, but they will “cleaned up” by
  * decoder's cleanup procedure anyway.  Do nothing when that happens.
@@ -9892,7 +9890,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	95u, 96u, 103u, 104u, 111u, 112u, 119u, 120u, 
 	127u, 128u, 135u, 136u, 143u, 144u, 151u, 152u, 
 	159u, 160u, 167u, 168u, 175u, 176u, 183u, 184u, 
-	191u, 200u, 207u, 208u, 215u, 216u, 223u, 224u, 
+	191u, 192u, 199u, 200u, 207u, 208u, 215u, 224u, 
 	231u, 232u, 239u, 240u, 247u, 248u, 255u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
 	37u, 44u, 45u, 52u, 53u, 60u, 61u, 68u, 
@@ -9903,8 +9901,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	71u, 72u, 79u, 80u, 87u, 88u, 95u, 96u, 
 	103u, 104u, 111u, 112u, 119u, 120u, 127u, 128u, 
 	135u, 136u, 143u, 144u, 151u, 152u, 159u, 160u, 
-	167u, 168u, 175u, 176u, 183u, 184u, 191u, 200u, 
-	207u, 208u, 215u, 216u, 223u, 224u, 231u, 232u, 
+	167u, 168u, 175u, 176u, 183u, 184u, 191u, 192u, 
+	199u, 200u, 207u, 208u, 215u, 224u, 231u, 232u, 
 	239u, 240u, 247u, 248u, 255u, 4u, 5u, 12u, 
 	13u, 20u, 21u, 28u, 29u, 36u, 37u, 44u, 
 	45u, 52u, 53u, 60u, 61u, 68u, 76u, 84u, 
@@ -9916,8 +9914,8 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	111u, 112u, 119u, 120u, 127u, 128u, 135u, 136u, 
 	143u, 144u, 151u, 152u, 159u, 160u, 167u, 168u, 
 	175u, 176u, 183u, 184u, 191u, 192u, 199u, 200u, 
-	207u, 208u, 215u, 216u, 223u, 224u, 231u, 232u, 
-	239u, 240u, 247u, 4u, 5u, 12u, 13u, 20u, 
+	207u, 208u, 215u, 224u, 231u, 232u, 239u, 240u, 
+	247u, 248u, 255u, 4u, 5u, 12u, 13u, 20u, 
 	21u, 28u, 29u, 36u, 37u, 44u, 45u, 68u, 
 	76u, 84u, 92u, 100u, 108u, 132u, 140u, 148u, 
 	156u, 164u, 172u, 0u, 47u, 64u, 111u, 128u, 
@@ -12970,7 +12968,7 @@ static const unsigned char _x86_32_decoder_trans_keys[] = {
 	104u, 111u, 112u, 119u, 120u, 127u, 128u, 135u, 
 	136u, 143u, 144u, 151u, 152u, 159u, 160u, 167u, 
 	168u, 175u, 176u, 183u, 184u, 191u, 192u, 199u, 
-	200u, 207u, 208u, 215u, 224u, 231u, 232u, 239u, 
+	200u, 207u, 216u, 223u, 224u, 231u, 232u, 239u, 
 	240u, 247u, 248u, 255u, 4u, 5u, 20u, 21u, 
 	28u, 29u, 36u, 37u, 44u, 45u, 52u, 53u, 
 	60u, 61u, 68u, 84u, 92u, 100u, 108u, 116u, 
@@ -15537,24 +15535,24 @@ static const short _x86_32_decoder_indicies[] = {
 	3918, 3863, 3866, 3869, 3872, 3875, 3878, 3881, 
 	3884, 3887, 3889, 3891, 3893, 3895, 3897, 3899, 
 	3901, 3903, 3905, 3907, 3909, 3911, 3913, 3915, 
-	3917, 3920, 3921, 3922, 3923, 3924, 3925, 3926, 
-	3919, 3928, 3929, 3931, 3932, 3934, 3935, 3937, 
+	3917, 3919, 3920, 3921, 3923, 3924, 3925, 3926, 
+	3922, 3928, 3929, 3931, 3932, 3934, 3935, 3937, 
 	3938, 3940, 3941, 3943, 3944, 3946, 3947, 3949, 
 	3950, 3952, 3954, 3956, 3958, 3960, 3962, 3964, 
 	3966, 3968, 3970, 3972, 3974, 3976, 3978, 3980, 
 	3982, 3927, 3930, 3933, 3936, 3939, 3942, 3945, 
 	3948, 3951, 3953, 3955, 3957, 3959, 3961, 3963, 
 	3965, 3967, 3969, 3971, 3973, 3975, 3977, 3979, 
-	3981, 3984, 3985, 3986, 3987, 3988, 3989, 3990, 
-	3983, 3992, 3993, 3995, 3996, 3998, 3999, 4001, 
+	3981, 3983, 3984, 3985, 3987, 3988, 3989, 3990, 
+	3986, 3992, 3993, 3995, 3996, 3998, 3999, 4001, 
 	4002, 4004, 4005, 4007, 4008, 4010, 4011, 4013, 
 	4014, 4016, 4018, 4020, 4022, 4024, 4026, 4028, 
 	4030, 4032, 4034, 4036, 4038, 4040, 4042, 4044, 
 	4046, 3991, 3994, 3997, 4000, 4003, 4006, 4009, 
 	4012, 4015, 4017, 4019, 4021, 4023, 4025, 4027, 
 	4029, 4031, 4033, 4035, 4037, 4039, 4041, 4043, 
-	4045, 4047, 4048, 4049, 4050, 4051, 4052, 4053, 
-	4054, 4056, 4057, 4056, 4057, 4056, 4057, 4056, 
+	4045, 4047, 4048, 4049, 4051, 4052, 4053, 4054, 
+	4050, 4056, 4057, 4056, 4057, 4056, 4057, 4056, 
 	4057, 4056, 4057, 4056, 4057, 4059, 4059, 4059, 
 	4059, 4059, 4059, 4061, 4061, 4061, 4061, 4061, 
 	4061, 4055, 4058, 4060, 4062, 34, 4064, 4065, 
@@ -18449,7 +18447,7 @@ static const short _x86_32_decoder_indicies[] = {
 	10235, 10238, 10241, 10244, 10247, 10250, 10253, 10255, 
 	10257, 10259, 10261, 10263, 10265, 10267, 10269, 10271, 
 	10273, 10275, 10277, 10279, 10281, 10283, 10285, 10286, 
-	10287, 10289, 10290, 10291, 10292, 10288, 10294, 10295, 
+	10288, 10289, 10290, 10291, 10292, 10287, 10294, 10295, 
 	10297, 10298, 10300, 10301, 10303, 10304, 10306, 10307, 
 	10309, 10310, 10312, 10313, 10315, 10317, 10319, 10321, 
 	10323, 10325, 10327, 10329, 10331, 10333, 10335, 10337, 
@@ -22838,3544 +22836,3544 @@ _match:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	break;
 	case 202:
-	{ SET_INSTRUCTION_NAME(instruction_names + 0); }
+	{ SET_INSTRUCTION_NAME("adc"); }
 	break;
 	case 203:
-	{ SET_INSTRUCTION_NAME(instruction_names + 578); }
+	{ SET_INSTRUCTION_NAME("add"); }
 	break;
 	case 204:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2059); }
+	{ SET_INSTRUCTION_NAME("addpd"); }
 	break;
 	case 205:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2066); }
+	{ SET_INSTRUCTION_NAME("addps"); }
 	break;
 	case 206:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2073); }
+	{ SET_INSTRUCTION_NAME("addsd"); }
 	break;
 	case 207:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2080); }
+	{ SET_INSTRUCTION_NAME("addss"); }
 	break;
 	case 208:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2087); }
+	{ SET_INSTRUCTION_NAME("addsubpd"); }
 	break;
 	case 209:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2097); }
+	{ SET_INSTRUCTION_NAME("addsubps"); }
 	break;
 	case 210:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2107); }
+	{ SET_INSTRUCTION_NAME("aesdec"); }
 	break;
 	case 211:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2115); }
+	{ SET_INSTRUCTION_NAME("aesdeclast"); }
 	break;
 	case 212:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2127); }
+	{ SET_INSTRUCTION_NAME("aesenc"); }
 	break;
 	case 213:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2135); }
+	{ SET_INSTRUCTION_NAME("aesenclast"); }
 	break;
 	case 214:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2147); }
+	{ SET_INSTRUCTION_NAME("aesimc"); }
 	break;
 	case 215:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2155); }
+	{ SET_INSTRUCTION_NAME("aeskeygenassist"); }
 	break;
 	case 216:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5655); }
+	{ SET_INSTRUCTION_NAME("and"); }
 	break;
 	case 217:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5661); }
+	{ SET_INSTRUCTION_NAME("andn"); }
 	break;
 	case 218:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2172); }
+	{ SET_INSTRUCTION_NAME("andnpd"); }
 	break;
 	case 219:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2180); }
+	{ SET_INSTRUCTION_NAME("andnps"); }
 	break;
 	case 220:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2188); }
+	{ SET_INSTRUCTION_NAME("andpd"); }
 	break;
 	case 221:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2195); }
+	{ SET_INSTRUCTION_NAME("andps"); }
 	break;
 	case 222:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4); }
+	{ SET_INSTRUCTION_NAME("bextr"); }
 	break;
 	case 223:
-	{ SET_INSTRUCTION_NAME(instruction_names + 10); }
+	{ SET_INSTRUCTION_NAME("blcfill"); }
 	break;
 	case 224:
-	{ SET_INSTRUCTION_NAME(instruction_names + 18); }
+	{ SET_INSTRUCTION_NAME("blci"); }
 	break;
 	case 225:
-	{ SET_INSTRUCTION_NAME(instruction_names + 23); }
+	{ SET_INSTRUCTION_NAME("blcic"); }
 	break;
 	case 226:
-	{ SET_INSTRUCTION_NAME(instruction_names + 29); }
+	{ SET_INSTRUCTION_NAME("blcmsk"); }
 	break;
 	case 227:
-	{ SET_INSTRUCTION_NAME(instruction_names + 36); }
+	{ SET_INSTRUCTION_NAME("blcs"); }
 	break;
 	case 228:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2202); }
+	{ SET_INSTRUCTION_NAME("blendpd"); }
 	break;
 	case 229:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2211); }
+	{ SET_INSTRUCTION_NAME("blendps"); }
 	break;
 	case 230:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2220); }
+	{ SET_INSTRUCTION_NAME("blendvpd"); }
 	break;
 	case 231:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2230); }
+	{ SET_INSTRUCTION_NAME("blendvps"); }
 	break;
 	case 232:
-	{ SET_INSTRUCTION_NAME(instruction_names + 41); }
+	{ SET_INSTRUCTION_NAME("blsfill"); }
 	break;
 	case 233:
-	{ SET_INSTRUCTION_NAME(instruction_names + 49); }
+	{ SET_INSTRUCTION_NAME("blsi"); }
 	break;
 	case 234:
-	{ SET_INSTRUCTION_NAME(instruction_names + 54); }
+	{ SET_INSTRUCTION_NAME("blsic"); }
 	break;
 	case 235:
-	{ SET_INSTRUCTION_NAME(instruction_names + 60); }
+	{ SET_INSTRUCTION_NAME("blsmsk"); }
 	break;
 	case 236:
-	{ SET_INSTRUCTION_NAME(instruction_names + 67); }
+	{ SET_INSTRUCTION_NAME("blsr"); }
 	break;
 	case 237:
-	{ SET_INSTRUCTION_NAME(instruction_names + 72); }
+	{ SET_INSTRUCTION_NAME("bsf"); }
 	break;
 	case 238:
-	{ SET_INSTRUCTION_NAME(instruction_names + 76); }
+	{ SET_INSTRUCTION_NAME("bsr"); }
 	break;
 	case 239:
-	{ SET_INSTRUCTION_NAME(instruction_names + 80); }
+	{ SET_INSTRUCTION_NAME("bswap"); }
 	break;
 	case 240:
-	{ SET_INSTRUCTION_NAME(instruction_names + 86); }
+	{ SET_INSTRUCTION_NAME("bt"); }
 	break;
 	case 241:
-	{ SET_INSTRUCTION_NAME(instruction_names + 89); }
+	{ SET_INSTRUCTION_NAME("btc"); }
 	break;
 	case 242:
-	{ SET_INSTRUCTION_NAME(instruction_names + 93); }
+	{ SET_INSTRUCTION_NAME("btr"); }
 	break;
 	case 243:
-	{ SET_INSTRUCTION_NAME(instruction_names + 97); }
+	{ SET_INSTRUCTION_NAME("bts"); }
 	break;
 	case 244:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1154); }
+	{ SET_INSTRUCTION_NAME("call"); }
 	break;
 	case 245:
-	{ SET_INSTRUCTION_NAME(instruction_names + 101); }
+	{ SET_INSTRUCTION_NAME("cbtw"); }
 	break;
 	case 246:
-	{ SET_INSTRUCTION_NAME(instruction_names + 106); }
+	{ SET_INSTRUCTION_NAME("clc"); }
 	break;
 	case 247:
-	{ SET_INSTRUCTION_NAME(instruction_names + 110); }
+	{ SET_INSTRUCTION_NAME("cld"); }
 	break;
 	case 248:
-	{ SET_INSTRUCTION_NAME(instruction_names + 114); }
+	{ SET_INSTRUCTION_NAME("clflush"); }
 	break;
 	case 249:
-	{ SET_INSTRUCTION_NAME(instruction_names + 122); }
+	{ SET_INSTRUCTION_NAME("clgi"); }
 	break;
 	case 250:
-	{ SET_INSTRUCTION_NAME(instruction_names + 127); }
+	{ SET_INSTRUCTION_NAME("cli"); }
 	break;
 	case 251:
-	{ SET_INSTRUCTION_NAME(instruction_names + 131); }
+	{ SET_INSTRUCTION_NAME("cltd"); }
 	break;
 	case 252:
-	{ SET_INSTRUCTION_NAME(instruction_names + 136); }
+	{ SET_INSTRUCTION_NAME("clts"); }
 	break;
 	case 253:
-	{ SET_INSTRUCTION_NAME(instruction_names + 141); }
+	{ SET_INSTRUCTION_NAME("cmc"); }
 	break;
 	case 254:
-	{ SET_INSTRUCTION_NAME(instruction_names + 145); }
+	{ SET_INSTRUCTION_NAME("cmova"); }
 	break;
 	case 255:
-	{ SET_INSTRUCTION_NAME(instruction_names + 151); }
+	{ SET_INSTRUCTION_NAME("cmovae"); }
 	break;
 	case 256:
-	{ SET_INSTRUCTION_NAME(instruction_names + 435); }
+	{ SET_INSTRUCTION_NAME("cmovb"); }
 	break;
 	case 257:
-	{ SET_INSTRUCTION_NAME(instruction_names + 442); }
+	{ SET_INSTRUCTION_NAME("cmovbe"); }
 	break;
 	case 258:
-	{ SET_INSTRUCTION_NAME(instruction_names + 450); }
+	{ SET_INSTRUCTION_NAME("cmove"); }
 	break;
 	case 259:
-	{ SET_INSTRUCTION_NAME(instruction_names + 158); }
+	{ SET_INSTRUCTION_NAME("cmovg"); }
 	break;
 	case 260:
-	{ SET_INSTRUCTION_NAME(instruction_names + 164); }
+	{ SET_INSTRUCTION_NAME("cmovge"); }
 	break;
 	case 261:
-	{ SET_INSTRUCTION_NAME(instruction_names + 171); }
+	{ SET_INSTRUCTION_NAME("cmovl"); }
 	break;
 	case 262:
-	{ SET_INSTRUCTION_NAME(instruction_names + 177); }
+	{ SET_INSTRUCTION_NAME("cmovle"); }
 	break;
 	case 263:
-	{ SET_INSTRUCTION_NAME(instruction_names + 474); }
+	{ SET_INSTRUCTION_NAME("cmovne"); }
 	break;
 	case 264:
-	{ SET_INSTRUCTION_NAME(instruction_names + 184); }
+	{ SET_INSTRUCTION_NAME("cmovno"); }
 	break;
 	case 265:
-	{ SET_INSTRUCTION_NAME(instruction_names + 191); }
+	{ SET_INSTRUCTION_NAME("cmovnp"); }
 	break;
 	case 266:
-	{ SET_INSTRUCTION_NAME(instruction_names + 198); }
+	{ SET_INSTRUCTION_NAME("cmovns"); }
 	break;
 	case 267:
-	{ SET_INSTRUCTION_NAME(instruction_names + 205); }
+	{ SET_INSTRUCTION_NAME("cmovo"); }
 	break;
 	case 268:
-	{ SET_INSTRUCTION_NAME(instruction_names + 211); }
+	{ SET_INSTRUCTION_NAME("cmovp"); }
 	break;
 	case 269:
-	{ SET_INSTRUCTION_NAME(instruction_names + 217); }
+	{ SET_INSTRUCTION_NAME("cmovs"); }
 	break;
 	case 270:
-	{ SET_INSTRUCTION_NAME(instruction_names + 223); }
+	{ SET_INSTRUCTION_NAME("cmp"); }
 	break;
 	case 271:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2425); }
+	{ SET_INSTRUCTION_NAME("cmpeqpd"); }
 	break;
 	case 272:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2434); }
+	{ SET_INSTRUCTION_NAME("cmpeqps"); }
 	break;
 	case 273:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2443); }
+	{ SET_INSTRUCTION_NAME("cmpeqsd"); }
 	break;
 	case 274:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2452); }
+	{ SET_INSTRUCTION_NAME("cmpeqss"); }
 	break;
 	case 275:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2785); }
+	{ SET_INSTRUCTION_NAME("cmplepd"); }
 	break;
 	case 276:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2794); }
+	{ SET_INSTRUCTION_NAME("cmpleps"); }
 	break;
 	case 277:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2803); }
+	{ SET_INSTRUCTION_NAME("cmplesd"); }
 	break;
 	case 278:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2812); }
+	{ SET_INSTRUCTION_NAME("cmpless"); }
 	break;
 	case 279:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2869); }
+	{ SET_INSTRUCTION_NAME("cmpltpd"); }
 	break;
 	case 280:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2878); }
+	{ SET_INSTRUCTION_NAME("cmpltps"); }
 	break;
 	case 281:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2887); }
+	{ SET_INSTRUCTION_NAME("cmpltsd"); }
 	break;
 	case 282:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2896); }
+	{ SET_INSTRUCTION_NAME("cmpltss"); }
 	break;
 	case 283:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3061); }
+	{ SET_INSTRUCTION_NAME("cmpneqpd"); }
 	break;
 	case 284:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3071); }
+	{ SET_INSTRUCTION_NAME("cmpneqps"); }
 	break;
 	case 285:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3081); }
+	{ SET_INSTRUCTION_NAME("cmpneqsd"); }
 	break;
 	case 286:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3091); }
+	{ SET_INSTRUCTION_NAME("cmpneqss"); }
 	break;
 	case 287:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3337); }
+	{ SET_INSTRUCTION_NAME("cmpnlepd"); }
 	break;
 	case 288:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3347); }
+	{ SET_INSTRUCTION_NAME("cmpnleps"); }
 	break;
 	case 289:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3357); }
+	{ SET_INSTRUCTION_NAME("cmpnlesd"); }
 	break;
 	case 290:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3367); }
+	{ SET_INSTRUCTION_NAME("cmpnless"); }
 	break;
 	case 291:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3429); }
+	{ SET_INSTRUCTION_NAME("cmpnltpd"); }
 	break;
 	case 292:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3439); }
+	{ SET_INSTRUCTION_NAME("cmpnltps"); }
 	break;
 	case 293:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3449); }
+	{ SET_INSTRUCTION_NAME("cmpnltsd"); }
 	break;
 	case 294:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3459); }
+	{ SET_INSTRUCTION_NAME("cmpnltss"); }
 	break;
 	case 295:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3517); }
+	{ SET_INSTRUCTION_NAME("cmpordpd"); }
 	break;
 	case 296:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3527); }
+	{ SET_INSTRUCTION_NAME("cmpordps"); }
 	break;
 	case 297:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3537); }
+	{ SET_INSTRUCTION_NAME("cmpordsd"); }
 	break;
 	case 298:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3547); }
+	{ SET_INSTRUCTION_NAME("cmpordss"); }
 	break;
 	case 299:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3557); }
+	{ SET_INSTRUCTION_NAME("cmppd"); }
 	break;
 	case 300:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3564); }
+	{ SET_INSTRUCTION_NAME("cmpps"); }
 	break;
 	case 301:
-	{ SET_INSTRUCTION_NAME(instruction_names + 227); }
+	{ SET_INSTRUCTION_NAME("cmps"); }
 	break;
 	case 302:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3571); }
+	{ SET_INSTRUCTION_NAME("cmpsd"); }
 	break;
 	case 303:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3578); }
+	{ SET_INSTRUCTION_NAME("cmpss"); }
 	break;
 	case 304:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3741); }
+	{ SET_INSTRUCTION_NAME("cmpunordpd"); }
 	break;
 	case 305:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3753); }
+	{ SET_INSTRUCTION_NAME("cmpunordps"); }
 	break;
 	case 306:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3765); }
+	{ SET_INSTRUCTION_NAME("cmpunordsd"); }
 	break;
 	case 307:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3777); }
+	{ SET_INSTRUCTION_NAME("cmpunordss"); }
 	break;
 	case 308:
-	{ SET_INSTRUCTION_NAME(instruction_names + 232); }
+	{ SET_INSTRUCTION_NAME("cmpxchg"); }
 	break;
 	case 309:
-	{ SET_INSTRUCTION_NAME(instruction_names + 240); }
+	{ SET_INSTRUCTION_NAME("cmpxchg8b"); }
 	break;
 	case 310:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3789); }
+	{ SET_INSTRUCTION_NAME("comisd"); }
 	break;
 	case 311:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3797); }
+	{ SET_INSTRUCTION_NAME("comiss"); }
 	break;
 	case 312:
-	{ SET_INSTRUCTION_NAME(instruction_names + 250); }
+	{ SET_INSTRUCTION_NAME("cpuid"); }
 	break;
 	case 313:
-	{ SET_INSTRUCTION_NAME(instruction_names + 256); }
+	{ SET_INSTRUCTION_NAME("crc32"); }
 	break;
 	case 314:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3805); }
+	{ SET_INSTRUCTION_NAME("cvtdq2pd"); }
 	break;
 	case 315:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3815); }
+	{ SET_INSTRUCTION_NAME("cvtdq2ps"); }
 	break;
 	case 316:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3825); }
+	{ SET_INSTRUCTION_NAME("cvtpd2dq"); }
 	break;
 	case 317:
-	{ SET_INSTRUCTION_NAME(instruction_names + 262); }
+	{ SET_INSTRUCTION_NAME("cvtpd2pi"); }
 	break;
 	case 318:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3835); }
+	{ SET_INSTRUCTION_NAME("cvtpd2ps"); }
 	break;
 	case 319:
-	{ SET_INSTRUCTION_NAME(instruction_names + 271); }
+	{ SET_INSTRUCTION_NAME("cvtpi2pd"); }
 	break;
 	case 320:
-	{ SET_INSTRUCTION_NAME(instruction_names + 280); }
+	{ SET_INSTRUCTION_NAME("cvtpi2ps"); }
 	break;
 	case 321:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3855); }
+	{ SET_INSTRUCTION_NAME("cvtps2dq"); }
 	break;
 	case 322:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3865); }
+	{ SET_INSTRUCTION_NAME("cvtps2pd"); }
 	break;
 	case 323:
-	{ SET_INSTRUCTION_NAME(instruction_names + 289); }
+	{ SET_INSTRUCTION_NAME("cvtps2pi"); }
 	break;
 	case 324:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3885); }
+	{ SET_INSTRUCTION_NAME("cvtsd2si"); }
 	break;
 	case 325:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3895); }
+	{ SET_INSTRUCTION_NAME("cvtsd2ss"); }
 	break;
 	case 326:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3905); }
+	{ SET_INSTRUCTION_NAME("cvtsi2sd"); }
 	break;
 	case 327:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3915); }
+	{ SET_INSTRUCTION_NAME("cvtsi2ss"); }
 	break;
 	case 328:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3925); }
+	{ SET_INSTRUCTION_NAME("cvtss2sd"); }
 	break;
 	case 329:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3935); }
+	{ SET_INSTRUCTION_NAME("cvtss2si"); }
 	break;
 	case 330:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3945); }
+	{ SET_INSTRUCTION_NAME("cvttpd2dq"); }
 	break;
 	case 331:
-	{ SET_INSTRUCTION_NAME(instruction_names + 298); }
+	{ SET_INSTRUCTION_NAME("cvttpd2pi"); }
 	break;
 	case 332:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3956); }
+	{ SET_INSTRUCTION_NAME("cvttps2dq"); }
 	break;
 	case 333:
-	{ SET_INSTRUCTION_NAME(instruction_names + 308); }
+	{ SET_INSTRUCTION_NAME("cvttps2pi"); }
 	break;
 	case 334:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3967); }
+	{ SET_INSTRUCTION_NAME("cvttsd2si"); }
 	break;
 	case 335:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3978); }
+	{ SET_INSTRUCTION_NAME("cvttss2si"); }
 	break;
 	case 336:
-	{ SET_INSTRUCTION_NAME(instruction_names + 318); }
+	{ SET_INSTRUCTION_NAME("cwtd"); }
 	break;
 	case 337:
-	{ SET_INSTRUCTION_NAME(instruction_names + 323); }
+	{ SET_INSTRUCTION_NAME("cwtl"); }
 	break;
 	case 338:
-	{ SET_INSTRUCTION_NAME(instruction_names + 328); }
+	{ SET_INSTRUCTION_NAME("data32 data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 339:
-	{ SET_INSTRUCTION_NAME(instruction_names + 335); }
+	{ SET_INSTRUCTION_NAME("data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 340:
-	{ SET_INSTRUCTION_NAME(instruction_names + 342); }
+	{ SET_INSTRUCTION_NAME("data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 341:
-	{ SET_INSTRUCTION_NAME(instruction_names + 349); }
+	{ SET_INSTRUCTION_NAME("data32 data32 nopw %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 342:
-	{ SET_INSTRUCTION_NAME(instruction_names + 356); }
+	{ SET_INSTRUCTION_NAME("data32 nopw %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 343:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2110); }
+	{ SET_INSTRUCTION_NAME("dec"); }
 	break;
 	case 344:
-	{ SET_INSTRUCTION_NAME(instruction_names + 541); }
+	{ SET_INSTRUCTION_NAME("div"); }
 	break;
 	case 345:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3989); }
+	{ SET_INSTRUCTION_NAME("divpd"); }
 	break;
 	case 346:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3996); }
+	{ SET_INSTRUCTION_NAME("divps"); }
 	break;
 	case 347:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4003); }
+	{ SET_INSTRUCTION_NAME("divsd"); }
 	break;
 	case 348:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4010); }
+	{ SET_INSTRUCTION_NAME("divss"); }
 	break;
 	case 349:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4017); }
+	{ SET_INSTRUCTION_NAME("dppd"); }
 	break;
 	case 350:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4023); }
+	{ SET_INSTRUCTION_NAME("dpps"); }
 	break;
 	case 351:
-	{ SET_INSTRUCTION_NAME(instruction_names + 565); }
+	{ SET_INSTRUCTION_NAME("emms"); }
 	break;
 	case 352:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2014); }
+	{ SET_INSTRUCTION_NAME("enter"); }
 	break;
 	case 353:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4052); }
+	{ SET_INSTRUCTION_NAME("extractps"); }
 	break;
 	case 354:
-	{ SET_INSTRUCTION_NAME(instruction_names + 389); }
+	{ SET_INSTRUCTION_NAME("extrq"); }
 	break;
 	case 355:
-	{ SET_INSTRUCTION_NAME(instruction_names + 395); }
+	{ SET_INSTRUCTION_NAME("f2xm1"); }
 	break;
 	case 356:
-	{ SET_INSTRUCTION_NAME(instruction_names + 401); }
+	{ SET_INSTRUCTION_NAME("fabs"); }
 	break;
 	case 357:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1529); }
+	{ SET_INSTRUCTION_NAME("fadd"); }
 	break;
 	case 358:
-	{ SET_INSTRUCTION_NAME(instruction_names + 406); }
+	{ SET_INSTRUCTION_NAME("faddp"); }
 	break;
 	case 359:
-	{ SET_INSTRUCTION_NAME(instruction_names + 412); }
+	{ SET_INSTRUCTION_NAME("fbld"); }
 	break;
 	case 360:
-	{ SET_INSTRUCTION_NAME(instruction_names + 417); }
+	{ SET_INSTRUCTION_NAME("fbstp"); }
 	break;
 	case 361:
-	{ SET_INSTRUCTION_NAME(instruction_names + 423); }
+	{ SET_INSTRUCTION_NAME("fchs"); }
 	break;
 	case 362:
-	{ SET_INSTRUCTION_NAME(instruction_names + 428); }
+	{ SET_INSTRUCTION_NAME("fclex"); }
 	break;
 	case 363:
-	{ SET_INSTRUCTION_NAME(instruction_names + 434); }
+	{ SET_INSTRUCTION_NAME("fcmovb"); }
 	break;
 	case 364:
-	{ SET_INSTRUCTION_NAME(instruction_names + 441); }
+	{ SET_INSTRUCTION_NAME("fcmovbe"); }
 	break;
 	case 365:
-	{ SET_INSTRUCTION_NAME(instruction_names + 449); }
+	{ SET_INSTRUCTION_NAME("fcmove"); }
 	break;
 	case 366:
-	{ SET_INSTRUCTION_NAME(instruction_names + 456); }
+	{ SET_INSTRUCTION_NAME("fcmovnb"); }
 	break;
 	case 367:
-	{ SET_INSTRUCTION_NAME(instruction_names + 464); }
+	{ SET_INSTRUCTION_NAME("fcmovnbe"); }
 	break;
 	case 368:
-	{ SET_INSTRUCTION_NAME(instruction_names + 473); }
+	{ SET_INSTRUCTION_NAME("fcmovne"); }
 	break;
 	case 369:
-	{ SET_INSTRUCTION_NAME(instruction_names + 481); }
+	{ SET_INSTRUCTION_NAME("fcmovnu"); }
 	break;
 	case 370:
-	{ SET_INSTRUCTION_NAME(instruction_names + 489); }
+	{ SET_INSTRUCTION_NAME("fcmovu"); }
 	break;
 	case 371:
-	{ SET_INSTRUCTION_NAME(instruction_names + 496); }
+	{ SET_INSTRUCTION_NAME("fcom"); }
 	break;
 	case 372:
-	{ SET_INSTRUCTION_NAME(instruction_names + 501); }
+	{ SET_INSTRUCTION_NAME("fcomi"); }
 	break;
 	case 373:
-	{ SET_INSTRUCTION_NAME(instruction_names + 507); }
+	{ SET_INSTRUCTION_NAME("fcomip"); }
 	break;
 	case 374:
-	{ SET_INSTRUCTION_NAME(instruction_names + 514); }
+	{ SET_INSTRUCTION_NAME("fcomp"); }
 	break;
 	case 375:
-	{ SET_INSTRUCTION_NAME(instruction_names + 520); }
+	{ SET_INSTRUCTION_NAME("fcompp"); }
 	break;
 	case 376:
-	{ SET_INSTRUCTION_NAME(instruction_names + 527); }
+	{ SET_INSTRUCTION_NAME("fcos"); }
 	break;
 	case 377:
-	{ SET_INSTRUCTION_NAME(instruction_names + 532); }
+	{ SET_INSTRUCTION_NAME("fdecstp"); }
 	break;
 	case 378:
-	{ SET_INSTRUCTION_NAME(instruction_names + 540); }
+	{ SET_INSTRUCTION_NAME("fdiv"); }
 	break;
 	case 379:
-	{ SET_INSTRUCTION_NAME(instruction_names + 545); }
+	{ SET_INSTRUCTION_NAME("fdivp"); }
 	break;
 	case 380:
-	{ SET_INSTRUCTION_NAME(instruction_names + 551); }
+	{ SET_INSTRUCTION_NAME("fdivr"); }
 	break;
 	case 381:
-	{ SET_INSTRUCTION_NAME(instruction_names + 557); }
+	{ SET_INSTRUCTION_NAME("fdivrp"); }
 	break;
 	case 382:
-	{ SET_INSTRUCTION_NAME(instruction_names + 564); }
+	{ SET_INSTRUCTION_NAME("femms"); }
 	break;
 	case 383:
-	{ SET_INSTRUCTION_NAME(instruction_names + 570); }
+	{ SET_INSTRUCTION_NAME("ffree"); }
 	break;
 	case 384:
-	{ SET_INSTRUCTION_NAME(instruction_names + 576); }
+	{ SET_INSTRUCTION_NAME("fiadd"); }
 	break;
 	case 385:
-	{ SET_INSTRUCTION_NAME(instruction_names + 582); }
+	{ SET_INSTRUCTION_NAME("ficom"); }
 	break;
 	case 386:
-	{ SET_INSTRUCTION_NAME(instruction_names + 588); }
+	{ SET_INSTRUCTION_NAME("ficomp"); }
 	break;
 	case 387:
-	{ SET_INSTRUCTION_NAME(instruction_names + 595); }
+	{ SET_INSTRUCTION_NAME("fidiv"); }
 	break;
 	case 388:
-	{ SET_INSTRUCTION_NAME(instruction_names + 601); }
+	{ SET_INSTRUCTION_NAME("fidivr"); }
 	break;
 	case 389:
-	{ SET_INSTRUCTION_NAME(instruction_names + 608); }
+	{ SET_INSTRUCTION_NAME("fild"); }
 	break;
 	case 390:
-	{ SET_INSTRUCTION_NAME(instruction_names + 613); }
+	{ SET_INSTRUCTION_NAME("fimul"); }
 	break;
 	case 391:
-	{ SET_INSTRUCTION_NAME(instruction_names + 619); }
+	{ SET_INSTRUCTION_NAME("fincstp"); }
 	break;
 	case 392:
-	{ SET_INSTRUCTION_NAME(instruction_names + 627); }
+	{ SET_INSTRUCTION_NAME("finit"); }
 	break;
 	case 393:
-	{ SET_INSTRUCTION_NAME(instruction_names + 633); }
+	{ SET_INSTRUCTION_NAME("fist"); }
 	break;
 	case 394:
-	{ SET_INSTRUCTION_NAME(instruction_names + 638); }
+	{ SET_INSTRUCTION_NAME("fistp"); }
 	break;
 	case 395:
-	{ SET_INSTRUCTION_NAME(instruction_names + 644); }
+	{ SET_INSTRUCTION_NAME("fisttp"); }
 	break;
 	case 396:
-	{ SET_INSTRUCTION_NAME(instruction_names + 651); }
+	{ SET_INSTRUCTION_NAME("fisub"); }
 	break;
 	case 397:
-	{ SET_INSTRUCTION_NAME(instruction_names + 657); }
+	{ SET_INSTRUCTION_NAME("fisubr"); }
 	break;
 	case 398:
-	{ SET_INSTRUCTION_NAME(instruction_names + 664); }
+	{ SET_INSTRUCTION_NAME("fld"); }
 	break;
 	case 399:
-	{ SET_INSTRUCTION_NAME(instruction_names + 668); }
+	{ SET_INSTRUCTION_NAME("fld1"); }
 	break;
 	case 400:
-	{ SET_INSTRUCTION_NAME(instruction_names + 673); }
+	{ SET_INSTRUCTION_NAME("fldcw"); }
 	break;
 	case 401:
-	{ SET_INSTRUCTION_NAME(instruction_names + 679); }
+	{ SET_INSTRUCTION_NAME("fldenv"); }
 	break;
 	case 402:
-	{ SET_INSTRUCTION_NAME(instruction_names + 686); }
+	{ SET_INSTRUCTION_NAME("fldenvs"); }
 	break;
 	case 403:
-	{ SET_INSTRUCTION_NAME(instruction_names + 694); }
+	{ SET_INSTRUCTION_NAME("fldl2e"); }
 	break;
 	case 404:
-	{ SET_INSTRUCTION_NAME(instruction_names + 701); }
+	{ SET_INSTRUCTION_NAME("fldl2t"); }
 	break;
 	case 405:
-	{ SET_INSTRUCTION_NAME(instruction_names + 708); }
+	{ SET_INSTRUCTION_NAME("fldlg2"); }
 	break;
 	case 406:
-	{ SET_INSTRUCTION_NAME(instruction_names + 715); }
+	{ SET_INSTRUCTION_NAME("fldln2"); }
 	break;
 	case 407:
-	{ SET_INSTRUCTION_NAME(instruction_names + 722); }
+	{ SET_INSTRUCTION_NAME("fldpi"); }
 	break;
 	case 408:
-	{ SET_INSTRUCTION_NAME(instruction_names + 728); }
+	{ SET_INSTRUCTION_NAME("fldz"); }
 	break;
 	case 409:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1571); }
+	{ SET_INSTRUCTION_NAME("fmul"); }
 	break;
 	case 410:
-	{ SET_INSTRUCTION_NAME(instruction_names + 733); }
+	{ SET_INSTRUCTION_NAME("fmulp"); }
 	break;
 	case 411:
-	{ SET_INSTRUCTION_NAME(instruction_names + 739); }
+	{ SET_INSTRUCTION_NAME("fnclex"); }
 	break;
 	case 412:
-	{ SET_INSTRUCTION_NAME(instruction_names + 746); }
+	{ SET_INSTRUCTION_NAME("fninit"); }
 	break;
 	case 413:
-	{ SET_INSTRUCTION_NAME(instruction_names + 753); }
+	{ SET_INSTRUCTION_NAME("fnop"); }
 	break;
 	case 414:
-	{ SET_INSTRUCTION_NAME(instruction_names + 758); }
+	{ SET_INSTRUCTION_NAME("fnsave"); }
 	break;
 	case 415:
-	{ SET_INSTRUCTION_NAME(instruction_names + 765); }
+	{ SET_INSTRUCTION_NAME("fnsaves"); }
 	break;
 	case 416:
-	{ SET_INSTRUCTION_NAME(instruction_names + 773); }
+	{ SET_INSTRUCTION_NAME("fnstcw"); }
 	break;
 	case 417:
-	{ SET_INSTRUCTION_NAME(instruction_names + 780); }
+	{ SET_INSTRUCTION_NAME("fnstenv"); }
 	break;
 	case 418:
-	{ SET_INSTRUCTION_NAME(instruction_names + 788); }
+	{ SET_INSTRUCTION_NAME("fnstenvs"); }
 	break;
 	case 419:
-	{ SET_INSTRUCTION_NAME(instruction_names + 797); }
+	{ SET_INSTRUCTION_NAME("fnstsw"); }
 	break;
 	case 420:
-	{ SET_INSTRUCTION_NAME(instruction_names + 804); }
+	{ SET_INSTRUCTION_NAME("fpatan"); }
 	break;
 	case 421:
-	{ SET_INSTRUCTION_NAME(instruction_names + 811); }
+	{ SET_INSTRUCTION_NAME("fprem"); }
 	break;
 	case 422:
-	{ SET_INSTRUCTION_NAME(instruction_names + 817); }
+	{ SET_INSTRUCTION_NAME("fprem1"); }
 	break;
 	case 423:
-	{ SET_INSTRUCTION_NAME(instruction_names + 824); }
+	{ SET_INSTRUCTION_NAME("fptan"); }
 	break;
 	case 424:
-	{ SET_INSTRUCTION_NAME(instruction_names + 830); }
+	{ SET_INSTRUCTION_NAME("frndint"); }
 	break;
 	case 425:
-	{ SET_INSTRUCTION_NAME(instruction_names + 838); }
+	{ SET_INSTRUCTION_NAME("frstor"); }
 	break;
 	case 426:
-	{ SET_INSTRUCTION_NAME(instruction_names + 845); }
+	{ SET_INSTRUCTION_NAME("frstors"); }
 	break;
 	case 427:
-	{ SET_INSTRUCTION_NAME(instruction_names + 853); }
+	{ SET_INSTRUCTION_NAME("fsave"); }
 	break;
 	case 428:
-	{ SET_INSTRUCTION_NAME(instruction_names + 859); }
+	{ SET_INSTRUCTION_NAME("fsaves"); }
 	break;
 	case 429:
-	{ SET_INSTRUCTION_NAME(instruction_names + 866); }
+	{ SET_INSTRUCTION_NAME("fscale"); }
 	break;
 	case 430:
-	{ SET_INSTRUCTION_NAME(instruction_names + 873); }
+	{ SET_INSTRUCTION_NAME("fsin"); }
 	break;
 	case 431:
-	{ SET_INSTRUCTION_NAME(instruction_names + 878); }
+	{ SET_INSTRUCTION_NAME("fsincos"); }
 	break;
 	case 432:
-	{ SET_INSTRUCTION_NAME(instruction_names + 886); }
+	{ SET_INSTRUCTION_NAME("fsqrt"); }
 	break;
 	case 433:
-	{ SET_INSTRUCTION_NAME(instruction_names + 892); }
+	{ SET_INSTRUCTION_NAME("fst"); }
 	break;
 	case 434:
-	{ SET_INSTRUCTION_NAME(instruction_names + 896); }
+	{ SET_INSTRUCTION_NAME("fstcw"); }
 	break;
 	case 435:
-	{ SET_INSTRUCTION_NAME(instruction_names + 902); }
+	{ SET_INSTRUCTION_NAME("fstenv"); }
 	break;
 	case 436:
-	{ SET_INSTRUCTION_NAME(instruction_names + 909); }
+	{ SET_INSTRUCTION_NAME("fstenvs"); }
 	break;
 	case 437:
-	{ SET_INSTRUCTION_NAME(instruction_names + 917); }
+	{ SET_INSTRUCTION_NAME("fstp"); }
 	break;
 	case 438:
-	{ SET_INSTRUCTION_NAME(instruction_names + 922); }
+	{ SET_INSTRUCTION_NAME("fstsw"); }
 	break;
 	case 439:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1633); }
+	{ SET_INSTRUCTION_NAME("fsub"); }
 	break;
 	case 440:
-	{ SET_INSTRUCTION_NAME(instruction_names + 928); }
+	{ SET_INSTRUCTION_NAME("fsubp"); }
 	break;
 	case 441:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1639); }
+	{ SET_INSTRUCTION_NAME("fsubr"); }
 	break;
 	case 442:
-	{ SET_INSTRUCTION_NAME(instruction_names + 934); }
+	{ SET_INSTRUCTION_NAME("fsubrp"); }
 	break;
 	case 443:
-	{ SET_INSTRUCTION_NAME(instruction_names + 941); }
+	{ SET_INSTRUCTION_NAME("ftst"); }
 	break;
 	case 444:
-	{ SET_INSTRUCTION_NAME(instruction_names + 946); }
+	{ SET_INSTRUCTION_NAME("fucom"); }
 	break;
 	case 445:
-	{ SET_INSTRUCTION_NAME(instruction_names + 952); }
+	{ SET_INSTRUCTION_NAME("fucomi"); }
 	break;
 	case 446:
-	{ SET_INSTRUCTION_NAME(instruction_names + 959); }
+	{ SET_INSTRUCTION_NAME("fucomip"); }
 	break;
 	case 447:
-	{ SET_INSTRUCTION_NAME(instruction_names + 967); }
+	{ SET_INSTRUCTION_NAME("fucomp"); }
 	break;
 	case 448:
-	{ SET_INSTRUCTION_NAME(instruction_names + 974); }
+	{ SET_INSTRUCTION_NAME("fucompp"); }
 	break;
 	case 449:
-	{ SET_INSTRUCTION_NAME(instruction_names + 982); }
+	{ SET_INSTRUCTION_NAME("fwait"); }
 	break;
 	case 450:
-	{ SET_INSTRUCTION_NAME(instruction_names + 988); }
+	{ SET_INSTRUCTION_NAME("fxam"); }
 	break;
 	case 451:
-	{ SET_INSTRUCTION_NAME(instruction_names + 993); }
+	{ SET_INSTRUCTION_NAME("fxch"); }
 	break;
 	case 452:
-	{ SET_INSTRUCTION_NAME(instruction_names + 998); }
+	{ SET_INSTRUCTION_NAME("fxrstor"); }
 	break;
 	case 453:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1006); }
+	{ SET_INSTRUCTION_NAME("fxsave"); }
 	break;
 	case 454:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1013); }
+	{ SET_INSTRUCTION_NAME("fxtract"); }
 	break;
 	case 455:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1021); }
+	{ SET_INSTRUCTION_NAME("fyl2x"); }
 	break;
 	case 456:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1027); }
+	{ SET_INSTRUCTION_NAME("fyl2xp1"); }
 	break;
 	case 457:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5075); }
+	{ SET_INSTRUCTION_NAME("haddpd"); }
 	break;
 	case 458:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5083); }
+	{ SET_INSTRUCTION_NAME("haddps"); }
 	break;
 	case 459:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1035); }
+	{ SET_INSTRUCTION_NAME("hlt"); }
 	break;
 	case 460:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5091); }
+	{ SET_INSTRUCTION_NAME("hsubpd"); }
 	break;
 	case 461:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5099); }
+	{ SET_INSTRUCTION_NAME("hsubps"); }
 	break;
 	case 462:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1039); }
+	{ SET_INSTRUCTION_NAME("icebp"); }
 	break;
 	case 463:
-	{ SET_INSTRUCTION_NAME(instruction_names + 596); }
+	{ SET_INSTRUCTION_NAME("idiv"); }
 	break;
 	case 464:
-	{ SET_INSTRUCTION_NAME(instruction_names + 614); }
+	{ SET_INSTRUCTION_NAME("imul"); }
 	break;
 	case 465:
-	{ SET_INSTRUCTION_NAME(instruction_names + 875); }
+	{ SET_INSTRUCTION_NAME("in"); }
 	break;
 	case 466:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1045); }
+	{ SET_INSTRUCTION_NAME("inc"); }
 	break;
 	case 467:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1265); }
+	{ SET_INSTRUCTION_NAME("ins"); }
 	break;
 	case 468:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5119); }
+	{ SET_INSTRUCTION_NAME("insertps"); }
 	break;
 	case 469:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1049); }
+	{ SET_INSTRUCTION_NAME("insertq"); }
 	break;
 	case 470:
-	{ SET_INSTRUCTION_NAME(instruction_names + 834); }
+	{ SET_INSTRUCTION_NAME("int"); }
 	break;
 	case 471:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1057); }
+	{ SET_INSTRUCTION_NAME("int3"); }
 	break;
 	case 472:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7341); }
+	{ SET_INSTRUCTION_NAME("invd"); }
 	break;
 	case 473:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1062); }
+	{ SET_INSTRUCTION_NAME("invlpg"); }
 	break;
 	case 474:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1069); }
+	{ SET_INSTRUCTION_NAME("invlpga"); }
 	break;
 	case 475:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1077); }
+	{ SET_INSTRUCTION_NAME("iret"); }
 	break;
 	case 476:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1082); }
+	{ SET_INSTRUCTION_NAME("ja"); }
 	break;
 	case 477:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1085); }
+	{ SET_INSTRUCTION_NAME("jae"); }
 	break;
 	case 478:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1089); }
+	{ SET_INSTRUCTION_NAME("jb"); }
 	break;
 	case 479:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1092); }
+	{ SET_INSTRUCTION_NAME("jbe"); }
 	break;
 	case 480:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1096); }
+	{ SET_INSTRUCTION_NAME("je"); }
 	break;
 	case 481:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1099); }
+	{ SET_INSTRUCTION_NAME("jecxz"); }
 	break;
 	case 482:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1105); }
+	{ SET_INSTRUCTION_NAME("jg"); }
 	break;
 	case 483:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1108); }
+	{ SET_INSTRUCTION_NAME("jge"); }
 	break;
 	case 484:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1112); }
+	{ SET_INSTRUCTION_NAME("jl"); }
 	break;
 	case 485:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1115); }
+	{ SET_INSTRUCTION_NAME("jle"); }
 	break;
 	case 486:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1205); }
+	{ SET_INSTRUCTION_NAME("jmp"); }
 	break;
 	case 487:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1119); }
+	{ SET_INSTRUCTION_NAME("jne"); }
 	break;
 	case 488:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1123); }
+	{ SET_INSTRUCTION_NAME("jno"); }
 	break;
 	case 489:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1127); }
+	{ SET_INSTRUCTION_NAME("jnp"); }
 	break;
 	case 490:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1131); }
+	{ SET_INSTRUCTION_NAME("jns"); }
 	break;
 	case 491:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1135); }
+	{ SET_INSTRUCTION_NAME("jo"); }
 	break;
 	case 492:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1138); }
+	{ SET_INSTRUCTION_NAME("jp"); }
 	break;
 	case 493:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1141); }
+	{ SET_INSTRUCTION_NAME("js"); }
 	break;
 	case 494:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1144); }
+	{ SET_INSTRUCTION_NAME("lahf"); }
 	break;
 	case 495:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1149); }
+	{ SET_INSTRUCTION_NAME("lar"); }
 	break;
 	case 496:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1153); }
+	{ SET_INSTRUCTION_NAME("lcall"); }
 	break;
 	case 497:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5129); }
+	{ SET_INSTRUCTION_NAME("lddqu"); }
 	break;
 	case 498:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5136); }
+	{ SET_INSTRUCTION_NAME("ldmxcsr"); }
 	break;
 	case 499:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1159); }
+	{ SET_INSTRUCTION_NAME("lds"); }
 	break;
 	case 500:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1163); }
+	{ SET_INSTRUCTION_NAME("lea"); }
 	break;
 	case 501:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1167); }
+	{ SET_INSTRUCTION_NAME("leave"); }
 	break;
 	case 502:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1173); }
+	{ SET_INSTRUCTION_NAME("les"); }
 	break;
 	case 503:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1177); }
+	{ SET_INSTRUCTION_NAME("lfence"); }
 	break;
 	case 504:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1184); }
+	{ SET_INSTRUCTION_NAME("lfs"); }
 	break;
 	case 505:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1188); }
+	{ SET_INSTRUCTION_NAME("lgdtl"); }
 	break;
 	case 506:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1194); }
+	{ SET_INSTRUCTION_NAME("lgs"); }
 	break;
 	case 507:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1198); }
+	{ SET_INSTRUCTION_NAME("lidtl"); }
 	break;
 	case 508:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1204); }
+	{ SET_INSTRUCTION_NAME("ljmp"); }
 	break;
 	case 509:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1209); }
+	{ SET_INSTRUCTION_NAME("lldt"); }
 	break;
 	case 510:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1214); }
+	{ SET_INSTRUCTION_NAME("llwpcb"); }
 	break;
 	case 511:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1221); }
+	{ SET_INSTRUCTION_NAME("lmsw"); }
 	break;
 	case 512:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1226); }
+	{ SET_INSTRUCTION_NAME("lods"); }
 	break;
 	case 513:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1231); }
+	{ SET_INSTRUCTION_NAME("loop"); }
 	break;
 	case 514:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1236); }
+	{ SET_INSTRUCTION_NAME("loope"); }
 	break;
 	case 515:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1242); }
+	{ SET_INSTRUCTION_NAME("loopne"); }
 	break;
 	case 516:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1249); }
+	{ SET_INSTRUCTION_NAME("lret"); }
 	break;
 	case 517:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1254); }
+	{ SET_INSTRUCTION_NAME("lsl"); }
 	break;
 	case 518:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5505); }
+	{ SET_INSTRUCTION_NAME("lss"); }
 	break;
 	case 519:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1258); }
+	{ SET_INSTRUCTION_NAME("ltr"); }
 	break;
 	case 520:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1262); }
+	{ SET_INSTRUCTION_NAME("lwpins"); }
 	break;
 	case 521:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1269); }
+	{ SET_INSTRUCTION_NAME("lwpval"); }
 	break;
 	case 522:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1276); }
+	{ SET_INSTRUCTION_NAME("lzcnt"); }
 	break;
 	case 523:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5145); }
+	{ SET_INSTRUCTION_NAME("maskmovdqu"); }
 	break;
 	case 524:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1282); }
+	{ SET_INSTRUCTION_NAME("maskmovq"); }
 	break;
 	case 525:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5179); }
+	{ SET_INSTRUCTION_NAME("maxpd"); }
 	break;
 	case 526:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5186); }
+	{ SET_INSTRUCTION_NAME("maxps"); }
 	break;
 	case 527:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5193); }
+	{ SET_INSTRUCTION_NAME("maxsd"); }
 	break;
 	case 528:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5200); }
+	{ SET_INSTRUCTION_NAME("maxss"); }
 	break;
 	case 529:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1291); }
+	{ SET_INSTRUCTION_NAME("mfence"); }
 	break;
 	case 530:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5207); }
+	{ SET_INSTRUCTION_NAME("minpd"); }
 	break;
 	case 531:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5214); }
+	{ SET_INSTRUCTION_NAME("minps"); }
 	break;
 	case 532:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5221); }
+	{ SET_INSTRUCTION_NAME("minsd"); }
 	break;
 	case 533:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5228); }
+	{ SET_INSTRUCTION_NAME("minss"); }
 	break;
 	case 534:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1298); }
+	{ SET_INSTRUCTION_NAME("monitor"); }
 	break;
 	case 535:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5769); }
+	{ SET_INSTRUCTION_NAME("mov"); }
 	break;
 	case 536:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5250); }
+	{ SET_INSTRUCTION_NAME("movapd"); }
 	break;
 	case 537:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5258); }
+	{ SET_INSTRUCTION_NAME("movaps"); }
 	break;
 	case 538:
-	{ SET_INSTRUCTION_NAME(instruction_names + 443); }
+	{ SET_INSTRUCTION_NAME("movbe"); }
 	break;
 	case 539:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5266); }
+	{ SET_INSTRUCTION_NAME("movd"); }
 	break;
 	case 540:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5272); }
+	{ SET_INSTRUCTION_NAME("movddup"); }
 	break;
 	case 541:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1306); }
+	{ SET_INSTRUCTION_NAME("movdq2q"); }
 	break;
 	case 542:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5281); }
+	{ SET_INSTRUCTION_NAME("movdqa"); }
 	break;
 	case 543:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5149); }
+	{ SET_INSTRUCTION_NAME("movdqu"); }
 	break;
 	case 544:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5297); }
+	{ SET_INSTRUCTION_NAME("movhlps"); }
 	break;
 	case 545:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5306); }
+	{ SET_INSTRUCTION_NAME("movhpd"); }
 	break;
 	case 546:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5314); }
+	{ SET_INSTRUCTION_NAME("movhps"); }
 	break;
 	case 547:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5322); }
+	{ SET_INSTRUCTION_NAME("movlhps"); }
 	break;
 	case 548:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5331); }
+	{ SET_INSTRUCTION_NAME("movlpd"); }
 	break;
 	case 549:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5339); }
+	{ SET_INSTRUCTION_NAME("movlps"); }
 	break;
 	case 550:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5347); }
+	{ SET_INSTRUCTION_NAME("movmskpd"); }
 	break;
 	case 551:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5357); }
+	{ SET_INSTRUCTION_NAME("movmskps"); }
 	break;
 	case 552:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5367); }
+	{ SET_INSTRUCTION_NAME("movntdq"); }
 	break;
 	case 553:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5376); }
+	{ SET_INSTRUCTION_NAME("movntdqa"); }
 	break;
 	case 554:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1314); }
+	{ SET_INSTRUCTION_NAME("movnti"); }
 	break;
 	case 555:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5386); }
+	{ SET_INSTRUCTION_NAME("movntpd"); }
 	break;
 	case 556:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5395); }
+	{ SET_INSTRUCTION_NAME("movntps"); }
 	break;
 	case 557:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1321); }
+	{ SET_INSTRUCTION_NAME("movntq"); }
 	break;
 	case 558:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1328); }
+	{ SET_INSTRUCTION_NAME("movntsd"); }
 	break;
 	case 559:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1336); }
+	{ SET_INSTRUCTION_NAME("movntss"); }
 	break;
 	case 560:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1286); }
+	{ SET_INSTRUCTION_NAME("movq"); }
 	break;
 	case 561:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1344); }
+	{ SET_INSTRUCTION_NAME("movq2dq"); }
 	break;
 	case 562:
-	{ SET_INSTRUCTION_NAME(instruction_names + 218); }
+	{ SET_INSTRUCTION_NAME("movs"); }
 	break;
 	case 563:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1352); }
+	{ SET_INSTRUCTION_NAME("movsbl"); }
 	break;
 	case 564:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1359); }
+	{ SET_INSTRUCTION_NAME("movsbw"); }
 	break;
 	case 565:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5410); }
+	{ SET_INSTRUCTION_NAME("movsd"); }
 	break;
 	case 566:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5417); }
+	{ SET_INSTRUCTION_NAME("movshdup"); }
 	break;
 	case 567:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5427); }
+	{ SET_INSTRUCTION_NAME("movsldup"); }
 	break;
 	case 568:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5437); }
+	{ SET_INSTRUCTION_NAME("movss"); }
 	break;
 	case 569:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1366); }
+	{ SET_INSTRUCTION_NAME("movswl"); }
 	break;
 	case 570:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1373); }
+	{ SET_INSTRUCTION_NAME("movsww"); }
 	break;
 	case 571:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5444); }
+	{ SET_INSTRUCTION_NAME("movupd"); }
 	break;
 	case 572:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5452); }
+	{ SET_INSTRUCTION_NAME("movups"); }
 	break;
 	case 573:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1380); }
+	{ SET_INSTRUCTION_NAME("movzbl"); }
 	break;
 	case 574:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1387); }
+	{ SET_INSTRUCTION_NAME("movzbw"); }
 	break;
 	case 575:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1394); }
+	{ SET_INSTRUCTION_NAME("movzwl"); }
 	break;
 	case 576:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1401); }
+	{ SET_INSTRUCTION_NAME("movzww"); }
 	break;
 	case 577:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5460); }
+	{ SET_INSTRUCTION_NAME("mpsadbw"); }
 	break;
 	case 578:
-	{ SET_INSTRUCTION_NAME(instruction_names + 615); }
+	{ SET_INSTRUCTION_NAME("mul"); }
 	break;
 	case 579:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5482); }
+	{ SET_INSTRUCTION_NAME("mulpd"); }
 	break;
 	case 580:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5489); }
+	{ SET_INSTRUCTION_NAME("mulps"); }
 	break;
 	case 581:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5496); }
+	{ SET_INSTRUCTION_NAME("mulsd"); }
 	break;
 	case 582:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5503); }
+	{ SET_INSTRUCTION_NAME("mulss"); }
 	break;
 	case 583:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1408); }
+	{ SET_INSTRUCTION_NAME("mwait"); }
 	break;
 	case 584:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1414); }
+	{ SET_INSTRUCTION_NAME("neg"); }
 	break;
 	case 585:
-	{ SET_INSTRUCTION_NAME(instruction_names + 754); }
+	{ SET_INSTRUCTION_NAME("nop"); }
 	break;
 	case 586:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1418); }
+	{ SET_INSTRUCTION_NAME("nop/reserved"); }
 	break;
 	case 587:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1431); }
+	{ SET_INSTRUCTION_NAME("nopw   %cs:0x0(%eax,%eax,1)"); }
 	break;
 	case 588:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1459); }
+	{ SET_INSTRUCTION_NAME("nopw   0x0(%eax,%eax,1)"); }
 	break;
 	case 589:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1483); }
+	{ SET_INSTRUCTION_NAME("not"); }
 	break;
 	case 590:
-	{ SET_INSTRUCTION_NAME(instruction_names + 842); }
+	{ SET_INSTRUCTION_NAME("or"); }
 	break;
 	case 591:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5510); }
+	{ SET_INSTRUCTION_NAME("orpd"); }
 	break;
 	case 592:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5516); }
+	{ SET_INSTRUCTION_NAME("orps"); }
 	break;
 	case 593:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1487); }
+	{ SET_INSTRUCTION_NAME("out"); }
 	break;
 	case 594:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1491); }
+	{ SET_INSTRUCTION_NAME("outs"); }
 	break;
 	case 595:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5522); }
+	{ SET_INSTRUCTION_NAME("pabsb"); }
 	break;
 	case 596:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5529); }
+	{ SET_INSTRUCTION_NAME("pabsd"); }
 	break;
 	case 597:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5536); }
+	{ SET_INSTRUCTION_NAME("pabsw"); }
 	break;
 	case 598:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5543); }
+	{ SET_INSTRUCTION_NAME("packssdw"); }
 	break;
 	case 599:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5553); }
+	{ SET_INSTRUCTION_NAME("packsswb"); }
 	break;
 	case 600:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5563); }
+	{ SET_INSTRUCTION_NAME("packusdw"); }
 	break;
 	case 601:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5573); }
+	{ SET_INSTRUCTION_NAME("packuswb"); }
 	break;
 	case 602:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5583); }
+	{ SET_INSTRUCTION_NAME("paddb"); }
 	break;
 	case 603:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5590); }
+	{ SET_INSTRUCTION_NAME("paddd"); }
 	break;
 	case 604:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5597); }
+	{ SET_INSTRUCTION_NAME("paddq"); }
 	break;
 	case 605:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5604); }
+	{ SET_INSTRUCTION_NAME("paddsb"); }
 	break;
 	case 606:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5612); }
+	{ SET_INSTRUCTION_NAME("paddsw"); }
 	break;
 	case 607:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5620); }
+	{ SET_INSTRUCTION_NAME("paddusb"); }
 	break;
 	case 608:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5629); }
+	{ SET_INSTRUCTION_NAME("paddusw"); }
 	break;
 	case 609:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5638); }
+	{ SET_INSTRUCTION_NAME("paddw"); }
 	break;
 	case 610:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5645); }
+	{ SET_INSTRUCTION_NAME("palignr"); }
 	break;
 	case 611:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5654); }
+	{ SET_INSTRUCTION_NAME("pand"); }
 	break;
 	case 612:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5660); }
+	{ SET_INSTRUCTION_NAME("pandn"); }
 	break;
 	case 613:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1496); }
+	{ SET_INSTRUCTION_NAME("pause"); }
 	break;
 	case 614:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5667); }
+	{ SET_INSTRUCTION_NAME("pavgb"); }
 	break;
 	case 615:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1502); }
+	{ SET_INSTRUCTION_NAME("pavgusb"); }
 	break;
 	case 616:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5674); }
+	{ SET_INSTRUCTION_NAME("pavgw"); }
 	break;
 	case 617:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5681); }
+	{ SET_INSTRUCTION_NAME("pblendvb"); }
 	break;
 	case 618:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5691); }
+	{ SET_INSTRUCTION_NAME("pblendw"); }
 	break;
 	case 619:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5700); }
+	{ SET_INSTRUCTION_NAME("pclmulhqhqdq"); }
 	break;
 	case 620:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5714); }
+	{ SET_INSTRUCTION_NAME("pclmulhqlqdq"); }
 	break;
 	case 621:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5728); }
+	{ SET_INSTRUCTION_NAME("pclmullqhqdq"); }
 	break;
 	case 622:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5742); }
+	{ SET_INSTRUCTION_NAME("pclmullqlqdq"); }
 	break;
 	case 623:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5756); }
+	{ SET_INSTRUCTION_NAME("pclmulqdq"); }
 	break;
 	case 624:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5774); }
+	{ SET_INSTRUCTION_NAME("pcmpeqb"); }
 	break;
 	case 625:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5783); }
+	{ SET_INSTRUCTION_NAME("pcmpeqd"); }
 	break;
 	case 626:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5792); }
+	{ SET_INSTRUCTION_NAME("pcmpeqq"); }
 	break;
 	case 627:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5801); }
+	{ SET_INSTRUCTION_NAME("pcmpeqw"); }
 	break;
 	case 628:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5810); }
+	{ SET_INSTRUCTION_NAME("pcmpestri"); }
 	break;
 	case 629:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5821); }
+	{ SET_INSTRUCTION_NAME("pcmpestrm"); }
 	break;
 	case 630:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5832); }
+	{ SET_INSTRUCTION_NAME("pcmpgtb"); }
 	break;
 	case 631:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5841); }
+	{ SET_INSTRUCTION_NAME("pcmpgtd"); }
 	break;
 	case 632:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5850); }
+	{ SET_INSTRUCTION_NAME("pcmpgtq"); }
 	break;
 	case 633:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5859); }
+	{ SET_INSTRUCTION_NAME("pcmpgtw"); }
 	break;
 	case 634:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5868); }
+	{ SET_INSTRUCTION_NAME("pcmpistri"); }
 	break;
 	case 635:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5879); }
+	{ SET_INSTRUCTION_NAME("pcmpistrm"); }
 	break;
 	case 636:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6003); }
+	{ SET_INSTRUCTION_NAME("pextrb"); }
 	break;
 	case 637:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6011); }
+	{ SET_INSTRUCTION_NAME("pextrd"); }
 	break;
 	case 638:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6019); }
+	{ SET_INSTRUCTION_NAME("pextrw"); }
 	break;
 	case 639:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1510); }
+	{ SET_INSTRUCTION_NAME("pf2id"); }
 	break;
 	case 640:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1516); }
+	{ SET_INSTRUCTION_NAME("pf2iw"); }
 	break;
 	case 641:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1522); }
+	{ SET_INSTRUCTION_NAME("pfacc"); }
 	break;
 	case 642:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1528); }
+	{ SET_INSTRUCTION_NAME("pfadd"); }
 	break;
 	case 643:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1534); }
+	{ SET_INSTRUCTION_NAME("pfcmpeq"); }
 	break;
 	case 644:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1542); }
+	{ SET_INSTRUCTION_NAME("pfcmpge"); }
 	break;
 	case 645:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1550); }
+	{ SET_INSTRUCTION_NAME("pfcmpgt"); }
 	break;
 	case 646:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1558); }
+	{ SET_INSTRUCTION_NAME("pfmax"); }
 	break;
 	case 647:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1564); }
+	{ SET_INSTRUCTION_NAME("pfmin"); }
 	break;
 	case 648:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1570); }
+	{ SET_INSTRUCTION_NAME("pfmul"); }
 	break;
 	case 649:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1576); }
+	{ SET_INSTRUCTION_NAME("pfnacc"); }
 	break;
 	case 650:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1583); }
+	{ SET_INSTRUCTION_NAME("pfpnacc"); }
 	break;
 	case 651:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1591); }
+	{ SET_INSTRUCTION_NAME("pfrcp"); }
 	break;
 	case 652:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1597); }
+	{ SET_INSTRUCTION_NAME("pfrcpit1"); }
 	break;
 	case 653:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1606); }
+	{ SET_INSTRUCTION_NAME("pfrcpit2"); }
 	break;
 	case 654:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1615); }
+	{ SET_INSTRUCTION_NAME("pfrsqit1"); }
 	break;
 	case 655:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1624); }
+	{ SET_INSTRUCTION_NAME("pfrsqrt"); }
 	break;
 	case 656:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1632); }
+	{ SET_INSTRUCTION_NAME("pfsub"); }
 	break;
 	case 657:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1638); }
+	{ SET_INSTRUCTION_NAME("pfsubr"); }
 	break;
 	case 658:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6054); }
+	{ SET_INSTRUCTION_NAME("phaddd"); }
 	break;
 	case 659:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6071); }
+	{ SET_INSTRUCTION_NAME("phaddsw"); }
 	break;
 	case 660:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6140); }
+	{ SET_INSTRUCTION_NAME("phaddw"); }
 	break;
 	case 661:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6166); }
+	{ SET_INSTRUCTION_NAME("phminposuw"); }
 	break;
 	case 662:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6187); }
+	{ SET_INSTRUCTION_NAME("phsubd"); }
 	break;
 	case 663:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6204); }
+	{ SET_INSTRUCTION_NAME("phsubsw"); }
 	break;
 	case 664:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6213); }
+	{ SET_INSTRUCTION_NAME("phsubw"); }
 	break;
 	case 665:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1645); }
+	{ SET_INSTRUCTION_NAME("pi2fd"); }
 	break;
 	case 666:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1651); }
+	{ SET_INSTRUCTION_NAME("pi2fw"); }
 	break;
 	case 667:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6230); }
+	{ SET_INSTRUCTION_NAME("pinsrb"); }
 	break;
 	case 668:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6238); }
+	{ SET_INSTRUCTION_NAME("pinsrd"); }
 	break;
 	case 669:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6246); }
+	{ SET_INSTRUCTION_NAME("pinsrw"); }
 	break;
 	case 670:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6374); }
+	{ SET_INSTRUCTION_NAME("pmaddubsw"); }
 	break;
 	case 671:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6385); }
+	{ SET_INSTRUCTION_NAME("pmaddwd"); }
 	break;
 	case 672:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6394); }
+	{ SET_INSTRUCTION_NAME("pmaxsb"); }
 	break;
 	case 673:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6402); }
+	{ SET_INSTRUCTION_NAME("pmaxsd"); }
 	break;
 	case 674:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6410); }
+	{ SET_INSTRUCTION_NAME("pmaxsw"); }
 	break;
 	case 675:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6418); }
+	{ SET_INSTRUCTION_NAME("pmaxub"); }
 	break;
 	case 676:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6426); }
+	{ SET_INSTRUCTION_NAME("pmaxud"); }
 	break;
 	case 677:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6434); }
+	{ SET_INSTRUCTION_NAME("pmaxuw"); }
 	break;
 	case 678:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6442); }
+	{ SET_INSTRUCTION_NAME("pminsb"); }
 	break;
 	case 679:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6450); }
+	{ SET_INSTRUCTION_NAME("pminsd"); }
 	break;
 	case 680:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6458); }
+	{ SET_INSTRUCTION_NAME("pminsw"); }
 	break;
 	case 681:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6466); }
+	{ SET_INSTRUCTION_NAME("pminub"); }
 	break;
 	case 682:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6474); }
+	{ SET_INSTRUCTION_NAME("pminud"); }
 	break;
 	case 683:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6482); }
+	{ SET_INSTRUCTION_NAME("pminuw"); }
 	break;
 	case 684:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6490); }
+	{ SET_INSTRUCTION_NAME("pmovmskb"); }
 	break;
 	case 685:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6500); }
+	{ SET_INSTRUCTION_NAME("pmovsxbd"); }
 	break;
 	case 686:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6510); }
+	{ SET_INSTRUCTION_NAME("pmovsxbq"); }
 	break;
 	case 687:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6520); }
+	{ SET_INSTRUCTION_NAME("pmovsxbw"); }
 	break;
 	case 688:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6530); }
+	{ SET_INSTRUCTION_NAME("pmovsxdq"); }
 	break;
 	case 689:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6540); }
+	{ SET_INSTRUCTION_NAME("pmovsxwd"); }
 	break;
 	case 690:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6550); }
+	{ SET_INSTRUCTION_NAME("pmovsxwq"); }
 	break;
 	case 691:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6560); }
+	{ SET_INSTRUCTION_NAME("pmovzxbd"); }
 	break;
 	case 692:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6570); }
+	{ SET_INSTRUCTION_NAME("pmovzxbq"); }
 	break;
 	case 693:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6580); }
+	{ SET_INSTRUCTION_NAME("pmovzxbw"); }
 	break;
 	case 694:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6590); }
+	{ SET_INSTRUCTION_NAME("pmovzxdq"); }
 	break;
 	case 695:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6600); }
+	{ SET_INSTRUCTION_NAME("pmovzxwd"); }
 	break;
 	case 696:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6610); }
+	{ SET_INSTRUCTION_NAME("pmovzxwq"); }
 	break;
 	case 697:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6620); }
+	{ SET_INSTRUCTION_NAME("pmuldq"); }
 	break;
 	case 698:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6628); }
+	{ SET_INSTRUCTION_NAME("pmulhrsw"); }
 	break;
 	case 699:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1657); }
+	{ SET_INSTRUCTION_NAME("pmulhrw"); }
 	break;
 	case 700:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6638); }
+	{ SET_INSTRUCTION_NAME("pmulhuw"); }
 	break;
 	case 701:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6647); }
+	{ SET_INSTRUCTION_NAME("pmulhw"); }
 	break;
 	case 702:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6655); }
+	{ SET_INSTRUCTION_NAME("pmulld"); }
 	break;
 	case 703:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6663); }
+	{ SET_INSTRUCTION_NAME("pmullw"); }
 	break;
 	case 704:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6671); }
+	{ SET_INSTRUCTION_NAME("pmuludq"); }
 	break;
 	case 705:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1665); }
+	{ SET_INSTRUCTION_NAME("pop"); }
 	break;
 	case 706:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1669); }
+	{ SET_INSTRUCTION_NAME("popcnt"); }
 	break;
 	case 707:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1676); }
+	{ SET_INSTRUCTION_NAME("popf"); }
 	break;
 	case 708:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6680); }
+	{ SET_INSTRUCTION_NAME("por"); }
 	break;
 	case 709:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1681); }
+	{ SET_INSTRUCTION_NAME("prefetch"); }
 	break;
 	case 710:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1690); }
+	{ SET_INSTRUCTION_NAME("prefetchnta"); }
 	break;
 	case 711:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1702); }
+	{ SET_INSTRUCTION_NAME("prefetcht0"); }
 	break;
 	case 712:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1713); }
+	{ SET_INSTRUCTION_NAME("prefetcht1"); }
 	break;
 	case 713:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1724); }
+	{ SET_INSTRUCTION_NAME("prefetcht2"); }
 	break;
 	case 714:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1735); }
+	{ SET_INSTRUCTION_NAME("prefetchw"); }
 	break;
 	case 715:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5461); }
+	{ SET_INSTRUCTION_NAME("psadbw"); }
 	break;
 	case 716:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6784); }
+	{ SET_INSTRUCTION_NAME("pshufb"); }
 	break;
 	case 717:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6792); }
+	{ SET_INSTRUCTION_NAME("pshufd"); }
 	break;
 	case 718:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6800); }
+	{ SET_INSTRUCTION_NAME("pshufhw"); }
 	break;
 	case 719:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6809); }
+	{ SET_INSTRUCTION_NAME("pshuflw"); }
 	break;
 	case 720:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1745); }
+	{ SET_INSTRUCTION_NAME("pshufw"); }
 	break;
 	case 721:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6818); }
+	{ SET_INSTRUCTION_NAME("psignb"); }
 	break;
 	case 722:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6826); }
+	{ SET_INSTRUCTION_NAME("psignd"); }
 	break;
 	case 723:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6834); }
+	{ SET_INSTRUCTION_NAME("psignw"); }
 	break;
 	case 724:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6842); }
+	{ SET_INSTRUCTION_NAME("pslld"); }
 	break;
 	case 725:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6849); }
+	{ SET_INSTRUCTION_NAME("pslldq"); }
 	break;
 	case 726:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6857); }
+	{ SET_INSTRUCTION_NAME("psllq"); }
 	break;
 	case 727:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6864); }
+	{ SET_INSTRUCTION_NAME("psllw"); }
 	break;
 	case 728:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6871); }
+	{ SET_INSTRUCTION_NAME("psrad"); }
 	break;
 	case 729:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6878); }
+	{ SET_INSTRUCTION_NAME("psraw"); }
 	break;
 	case 730:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6885); }
+	{ SET_INSTRUCTION_NAME("psrld"); }
 	break;
 	case 731:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6892); }
+	{ SET_INSTRUCTION_NAME("psrldq"); }
 	break;
 	case 732:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6900); }
+	{ SET_INSTRUCTION_NAME("psrlq"); }
 	break;
 	case 733:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6907); }
+	{ SET_INSTRUCTION_NAME("psrlw"); }
 	break;
 	case 734:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6914); }
+	{ SET_INSTRUCTION_NAME("psubb"); }
 	break;
 	case 735:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6921); }
+	{ SET_INSTRUCTION_NAME("psubd"); }
 	break;
 	case 736:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6928); }
+	{ SET_INSTRUCTION_NAME("psubq"); }
 	break;
 	case 737:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6935); }
+	{ SET_INSTRUCTION_NAME("psubsb"); }
 	break;
 	case 738:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6943); }
+	{ SET_INSTRUCTION_NAME("psubsw"); }
 	break;
 	case 739:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6951); }
+	{ SET_INSTRUCTION_NAME("psubusb"); }
 	break;
 	case 740:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6960); }
+	{ SET_INSTRUCTION_NAME("psubusw"); }
 	break;
 	case 741:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6969); }
+	{ SET_INSTRUCTION_NAME("psubw"); }
 	break;
 	case 742:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1752); }
+	{ SET_INSTRUCTION_NAME("pswapd"); }
 	break;
 	case 743:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6976); }
+	{ SET_INSTRUCTION_NAME("ptest"); }
 	break;
 	case 744:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6983); }
+	{ SET_INSTRUCTION_NAME("punpckhbw"); }
 	break;
 	case 745:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6994); }
+	{ SET_INSTRUCTION_NAME("punpckhdq"); }
 	break;
 	case 746:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7005); }
+	{ SET_INSTRUCTION_NAME("punpckhqdq"); }
 	break;
 	case 747:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7017); }
+	{ SET_INSTRUCTION_NAME("punpckhwd"); }
 	break;
 	case 748:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7028); }
+	{ SET_INSTRUCTION_NAME("punpcklbw"); }
 	break;
 	case 749:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7039); }
+	{ SET_INSTRUCTION_NAME("punpckldq"); }
 	break;
 	case 750:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7050); }
+	{ SET_INSTRUCTION_NAME("punpcklqdq"); }
 	break;
 	case 751:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7062); }
+	{ SET_INSTRUCTION_NAME("punpcklwd"); }
 	break;
 	case 752:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1759); }
+	{ SET_INSTRUCTION_NAME("push"); }
 	break;
 	case 753:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1764); }
+	{ SET_INSTRUCTION_NAME("pushf"); }
 	break;
 	case 754:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7073); }
+	{ SET_INSTRUCTION_NAME("pxor"); }
 	break;
 	case 755:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1770); }
+	{ SET_INSTRUCTION_NAME("rcl"); }
 	break;
 	case 756:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7079); }
+	{ SET_INSTRUCTION_NAME("rcpps"); }
 	break;
 	case 757:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7086); }
+	{ SET_INSTRUCTION_NAME("rcpss"); }
 	break;
 	case 758:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1774); }
+	{ SET_INSTRUCTION_NAME("rcr"); }
 	break;
 	case 759:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1778); }
+	{ SET_INSTRUCTION_NAME("rdmsr"); }
 	break;
 	case 760:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1784); }
+	{ SET_INSTRUCTION_NAME("rdpmc"); }
 	break;
 	case 761:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1790); }
+	{ SET_INSTRUCTION_NAME("rdtsc"); }
 	break;
 	case 762:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1796); }
+	{ SET_INSTRUCTION_NAME("rdtscp"); }
 	break;
 	case 763:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1078); }
+	{ SET_INSTRUCTION_NAME("ret"); }
 	break;
 	case 764:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1803); }
+	{ SET_INSTRUCTION_NAME("rol"); }
 	break;
 	case 765:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1807); }
+	{ SET_INSTRUCTION_NAME("ror"); }
 	break;
 	case 766:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7093); }
+	{ SET_INSTRUCTION_NAME("roundpd"); }
 	break;
 	case 767:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7102); }
+	{ SET_INSTRUCTION_NAME("roundps"); }
 	break;
 	case 768:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7111); }
+	{ SET_INSTRUCTION_NAME("roundsd"); }
 	break;
 	case 769:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7120); }
+	{ SET_INSTRUCTION_NAME("roundss"); }
 	break;
 	case 770:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1811); }
+	{ SET_INSTRUCTION_NAME("rsm"); }
 	break;
 	case 771:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7129); }
+	{ SET_INSTRUCTION_NAME("rsqrtps"); }
 	break;
 	case 772:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7138); }
+	{ SET_INSTRUCTION_NAME("rsqrtss"); }
 	break;
 	case 773:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1815); }
+	{ SET_INSTRUCTION_NAME("sahf"); }
 	break;
 	case 774:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1820); }
+	{ SET_INSTRUCTION_NAME("sar"); }
 	break;
 	case 775:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1824); }
+	{ SET_INSTRUCTION_NAME("sbb"); }
 	break;
 	case 776:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1828); }
+	{ SET_INSTRUCTION_NAME("scas"); }
 	break;
 	case 777:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1833); }
+	{ SET_INSTRUCTION_NAME("seta"); }
 	break;
 	case 778:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1838); }
+	{ SET_INSTRUCTION_NAME("setae"); }
 	break;
 	case 779:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1844); }
+	{ SET_INSTRUCTION_NAME("setb"); }
 	break;
 	case 780:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1849); }
+	{ SET_INSTRUCTION_NAME("setbe"); }
 	break;
 	case 781:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1855); }
+	{ SET_INSTRUCTION_NAME("sete"); }
 	break;
 	case 782:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1860); }
+	{ SET_INSTRUCTION_NAME("setg"); }
 	break;
 	case 783:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1865); }
+	{ SET_INSTRUCTION_NAME("setge"); }
 	break;
 	case 784:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1871); }
+	{ SET_INSTRUCTION_NAME("setl"); }
 	break;
 	case 785:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1876); }
+	{ SET_INSTRUCTION_NAME("setle"); }
 	break;
 	case 786:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1882); }
+	{ SET_INSTRUCTION_NAME("setne"); }
 	break;
 	case 787:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1888); }
+	{ SET_INSTRUCTION_NAME("setno"); }
 	break;
 	case 788:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1894); }
+	{ SET_INSTRUCTION_NAME("setnp"); }
 	break;
 	case 789:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1900); }
+	{ SET_INSTRUCTION_NAME("setns"); }
 	break;
 	case 790:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1906); }
+	{ SET_INSTRUCTION_NAME("seto"); }
 	break;
 	case 791:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1911); }
+	{ SET_INSTRUCTION_NAME("setp"); }
 	break;
 	case 792:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1916); }
+	{ SET_INSTRUCTION_NAME("sets"); }
 	break;
 	case 793:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1921); }
+	{ SET_INSTRUCTION_NAME("sfence"); }
 	break;
 	case 794:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1928); }
+	{ SET_INSTRUCTION_NAME("sgdtl"); }
 	break;
 	case 795:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1934); }
+	{ SET_INSTRUCTION_NAME("shl"); }
 	break;
 	case 796:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6764); }
+	{ SET_INSTRUCTION_NAME("shld"); }
 	break;
 	case 797:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1938); }
+	{ SET_INSTRUCTION_NAME("shr"); }
 	break;
 	case 798:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1942); }
+	{ SET_INSTRUCTION_NAME("shrd"); }
 	break;
 	case 799:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7147); }
+	{ SET_INSTRUCTION_NAME("shufpd"); }
 	break;
 	case 800:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7155); }
+	{ SET_INSTRUCTION_NAME("shufps"); }
 	break;
 	case 801:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1947); }
+	{ SET_INSTRUCTION_NAME("sidtl"); }
 	break;
 	case 802:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1953); }
+	{ SET_INSTRUCTION_NAME("skinit"); }
 	break;
 	case 803:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1960); }
+	{ SET_INSTRUCTION_NAME("sldt"); }
 	break;
 	case 804:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1965); }
+	{ SET_INSTRUCTION_NAME("slwpcb"); }
 	break;
 	case 805:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1972); }
+	{ SET_INSTRUCTION_NAME("smsw"); }
 	break;
 	case 806:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7163); }
+	{ SET_INSTRUCTION_NAME("sqrtpd"); }
 	break;
 	case 807:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7130); }
+	{ SET_INSTRUCTION_NAME("sqrtps"); }
 	break;
 	case 808:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7179); }
+	{ SET_INSTRUCTION_NAME("sqrtsd"); }
 	break;
 	case 809:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7139); }
+	{ SET_INSTRUCTION_NAME("sqrtss"); }
 	break;
 	case 810:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1977); }
+	{ SET_INSTRUCTION_NAME("stc"); }
 	break;
 	case 811:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1981); }
+	{ SET_INSTRUCTION_NAME("std"); }
 	break;
 	case 812:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1985); }
+	{ SET_INSTRUCTION_NAME("stgi"); }
 	break;
 	case 813:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1990); }
+	{ SET_INSTRUCTION_NAME("sti"); }
 	break;
 	case 814:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7195); }
+	{ SET_INSTRUCTION_NAME("stmxcsr"); }
 	break;
 	case 815:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1994); }
+	{ SET_INSTRUCTION_NAME("stos"); }
 	break;
 	case 816:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1999); }
+	{ SET_INSTRUCTION_NAME("str"); }
 	break;
 	case 817:
-	{ SET_INSTRUCTION_NAME(instruction_names + 653); }
+	{ SET_INSTRUCTION_NAME("sub"); }
 	break;
 	case 818:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2090); }
+	{ SET_INSTRUCTION_NAME("subpd"); }
 	break;
 	case 819:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2100); }
+	{ SET_INSTRUCTION_NAME("subps"); }
 	break;
 	case 820:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4635); }
+	{ SET_INSTRUCTION_NAME("subsd"); }
 	break;
 	case 821:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4644); }
+	{ SET_INSTRUCTION_NAME("subss"); }
 	break;
 	case 822:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2003); }
+	{ SET_INSTRUCTION_NAME("syscall"); }
 	break;
 	case 823:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2011); }
+	{ SET_INSTRUCTION_NAME("sysenter"); }
 	break;
 	case 824:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2020); }
+	{ SET_INSTRUCTION_NAME("sysexit"); }
 	break;
 	case 825:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2028); }
+	{ SET_INSTRUCTION_NAME("sysret"); }
 	break;
 	case 826:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2035); }
+	{ SET_INSTRUCTION_NAME("t1mskc"); }
 	break;
 	case 827:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6977); }
+	{ SET_INSTRUCTION_NAME("test"); }
 	break;
 	case 828:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2042); }
+	{ SET_INSTRUCTION_NAME("tzcnt"); }
 	break;
 	case 829:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2048); }
+	{ SET_INSTRUCTION_NAME("tzmsk"); }
 	break;
 	case 830:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7248); }
+	{ SET_INSTRUCTION_NAME("ucomisd"); }
 	break;
 	case 831:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7257); }
+	{ SET_INSTRUCTION_NAME("ucomiss"); }
 	break;
 	case 832:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2054); }
+	{ SET_INSTRUCTION_NAME("ud2"); }
 	break;
 	case 833:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7266); }
+	{ SET_INSTRUCTION_NAME("unpckhpd"); }
 	break;
 	case 834:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7276); }
+	{ SET_INSTRUCTION_NAME("unpckhps"); }
 	break;
 	case 835:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7286); }
+	{ SET_INSTRUCTION_NAME("unpcklpd"); }
 	break;
 	case 836:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7296); }
+	{ SET_INSTRUCTION_NAME("unpcklps"); }
 	break;
 	case 837:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2058); }
+	{ SET_INSTRUCTION_NAME("vaddpd"); }
 	break;
 	case 838:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2065); }
+	{ SET_INSTRUCTION_NAME("vaddps"); }
 	break;
 	case 839:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2072); }
+	{ SET_INSTRUCTION_NAME("vaddsd"); }
 	break;
 	case 840:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2079); }
+	{ SET_INSTRUCTION_NAME("vaddss"); }
 	break;
 	case 841:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2086); }
+	{ SET_INSTRUCTION_NAME("vaddsubpd"); }
 	break;
 	case 842:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2096); }
+	{ SET_INSTRUCTION_NAME("vaddsubps"); }
 	break;
 	case 843:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2106); }
+	{ SET_INSTRUCTION_NAME("vaesdec"); }
 	break;
 	case 844:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2114); }
+	{ SET_INSTRUCTION_NAME("vaesdeclast"); }
 	break;
 	case 845:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2126); }
+	{ SET_INSTRUCTION_NAME("vaesenc"); }
 	break;
 	case 846:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2134); }
+	{ SET_INSTRUCTION_NAME("vaesenclast"); }
 	break;
 	case 847:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2146); }
+	{ SET_INSTRUCTION_NAME("vaesimc"); }
 	break;
 	case 848:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2154); }
+	{ SET_INSTRUCTION_NAME("vaeskeygenassist"); }
 	break;
 	case 849:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2171); }
+	{ SET_INSTRUCTION_NAME("vandnpd"); }
 	break;
 	case 850:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2179); }
+	{ SET_INSTRUCTION_NAME("vandnps"); }
 	break;
 	case 851:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2187); }
+	{ SET_INSTRUCTION_NAME("vandpd"); }
 	break;
 	case 852:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2194); }
+	{ SET_INSTRUCTION_NAME("vandps"); }
 	break;
 	case 853:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2201); }
+	{ SET_INSTRUCTION_NAME("vblendpd"); }
 	break;
 	case 854:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2210); }
+	{ SET_INSTRUCTION_NAME("vblendps"); }
 	break;
 	case 855:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2219); }
+	{ SET_INSTRUCTION_NAME("vblendvpd"); }
 	break;
 	case 856:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2229); }
+	{ SET_INSTRUCTION_NAME("vblendvps"); }
 	break;
 	case 857:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2239); }
+	{ SET_INSTRUCTION_NAME("vbroadcastf128"); }
 	break;
 	case 858:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2254); }
+	{ SET_INSTRUCTION_NAME("vbroadcastsd"); }
 	break;
 	case 859:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2267); }
+	{ SET_INSTRUCTION_NAME("vbroadcastss"); }
 	break;
 	case 860:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2280); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_ospd"); }
 	break;
 	case 861:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2292); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_osps"); }
 	break;
 	case 862:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2304); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_ossd"); }
 	break;
 	case 863:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2316); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_osss"); }
 	break;
 	case 864:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2328); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_uqpd"); }
 	break;
 	case 865:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2340); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_uqps"); }
 	break;
 	case 866:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2352); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_uqsd"); }
 	break;
 	case 867:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2364); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_uqss"); }
 	break;
 	case 868:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2376); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_uspd"); }
 	break;
 	case 869:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2388); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_usps"); }
 	break;
 	case 870:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2400); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_ussd"); }
 	break;
 	case 871:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2412); }
+	{ SET_INSTRUCTION_NAME("vcmpeq_usss"); }
 	break;
 	case 872:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2424); }
+	{ SET_INSTRUCTION_NAME("vcmpeqpd"); }
 	break;
 	case 873:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2433); }
+	{ SET_INSTRUCTION_NAME("vcmpeqps"); }
 	break;
 	case 874:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2442); }
+	{ SET_INSTRUCTION_NAME("vcmpeqsd"); }
 	break;
 	case 875:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2451); }
+	{ SET_INSTRUCTION_NAME("vcmpeqss"); }
 	break;
 	case 876:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2460); }
+	{ SET_INSTRUCTION_NAME("vcmpfalse_ospd"); }
 	break;
 	case 877:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2475); }
+	{ SET_INSTRUCTION_NAME("vcmpfalse_osps"); }
 	break;
 	case 878:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2490); }
+	{ SET_INSTRUCTION_NAME("vcmpfalse_ossd"); }
 	break;
 	case 879:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2505); }
+	{ SET_INSTRUCTION_NAME("vcmpfalse_osss"); }
 	break;
 	case 880:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2520); }
+	{ SET_INSTRUCTION_NAME("vcmpfalsepd"); }
 	break;
 	case 881:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2532); }
+	{ SET_INSTRUCTION_NAME("vcmpfalseps"); }
 	break;
 	case 882:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2544); }
+	{ SET_INSTRUCTION_NAME("vcmpfalsesd"); }
 	break;
 	case 883:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2556); }
+	{ SET_INSTRUCTION_NAME("vcmpfalsess"); }
 	break;
 	case 884:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2568); }
+	{ SET_INSTRUCTION_NAME("vcmpge_oqpd"); }
 	break;
 	case 885:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2580); }
+	{ SET_INSTRUCTION_NAME("vcmpge_oqps"); }
 	break;
 	case 886:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2592); }
+	{ SET_INSTRUCTION_NAME("vcmpge_oqsd"); }
 	break;
 	case 887:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2604); }
+	{ SET_INSTRUCTION_NAME("vcmpge_oqss"); }
 	break;
 	case 888:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2616); }
+	{ SET_INSTRUCTION_NAME("vcmpgepd"); }
 	break;
 	case 889:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2625); }
+	{ SET_INSTRUCTION_NAME("vcmpgeps"); }
 	break;
 	case 890:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2634); }
+	{ SET_INSTRUCTION_NAME("vcmpgesd"); }
 	break;
 	case 891:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2643); }
+	{ SET_INSTRUCTION_NAME("vcmpgess"); }
 	break;
 	case 892:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2652); }
+	{ SET_INSTRUCTION_NAME("vcmpgt_oqpd"); }
 	break;
 	case 893:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2664); }
+	{ SET_INSTRUCTION_NAME("vcmpgt_oqps"); }
 	break;
 	case 894:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2676); }
+	{ SET_INSTRUCTION_NAME("vcmpgt_oqsd"); }
 	break;
 	case 895:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2688); }
+	{ SET_INSTRUCTION_NAME("vcmpgt_oqss"); }
 	break;
 	case 896:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2700); }
+	{ SET_INSTRUCTION_NAME("vcmpgtpd"); }
 	break;
 	case 897:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2709); }
+	{ SET_INSTRUCTION_NAME("vcmpgtps"); }
 	break;
 	case 898:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2718); }
+	{ SET_INSTRUCTION_NAME("vcmpgtsd"); }
 	break;
 	case 899:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2727); }
+	{ SET_INSTRUCTION_NAME("vcmpgtss"); }
 	break;
 	case 900:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2736); }
+	{ SET_INSTRUCTION_NAME("vcmple_oqpd"); }
 	break;
 	case 901:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2748); }
+	{ SET_INSTRUCTION_NAME("vcmple_oqps"); }
 	break;
 	case 902:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2760); }
+	{ SET_INSTRUCTION_NAME("vcmple_oqsd"); }
 	break;
 	case 903:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2772); }
+	{ SET_INSTRUCTION_NAME("vcmple_oqss"); }
 	break;
 	case 904:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2784); }
+	{ SET_INSTRUCTION_NAME("vcmplepd"); }
 	break;
 	case 905:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2793); }
+	{ SET_INSTRUCTION_NAME("vcmpleps"); }
 	break;
 	case 906:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2802); }
+	{ SET_INSTRUCTION_NAME("vcmplesd"); }
 	break;
 	case 907:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2811); }
+	{ SET_INSTRUCTION_NAME("vcmpless"); }
 	break;
 	case 908:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2820); }
+	{ SET_INSTRUCTION_NAME("vcmplt_oqpd"); }
 	break;
 	case 909:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2832); }
+	{ SET_INSTRUCTION_NAME("vcmplt_oqps"); }
 	break;
 	case 910:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2844); }
+	{ SET_INSTRUCTION_NAME("vcmplt_oqsd"); }
 	break;
 	case 911:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2856); }
+	{ SET_INSTRUCTION_NAME("vcmplt_oqss"); }
 	break;
 	case 912:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2868); }
+	{ SET_INSTRUCTION_NAME("vcmpltpd"); }
 	break;
 	case 913:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2877); }
+	{ SET_INSTRUCTION_NAME("vcmpltps"); }
 	break;
 	case 914:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2886); }
+	{ SET_INSTRUCTION_NAME("vcmpltsd"); }
 	break;
 	case 915:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2895); }
+	{ SET_INSTRUCTION_NAME("vcmpltss"); }
 	break;
 	case 916:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2904); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_oqpd"); }
 	break;
 	case 917:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2917); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_oqps"); }
 	break;
 	case 918:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2930); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_oqsd"); }
 	break;
 	case 919:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2943); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_oqss"); }
 	break;
 	case 920:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2956); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_ospd"); }
 	break;
 	case 921:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2969); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_osps"); }
 	break;
 	case 922:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2982); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_ossd"); }
 	break;
 	case 923:
-	{ SET_INSTRUCTION_NAME(instruction_names + 2995); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_osss"); }
 	break;
 	case 924:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3008); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_uspd"); }
 	break;
 	case 925:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3021); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_usps"); }
 	break;
 	case 926:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3034); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_ussd"); }
 	break;
 	case 927:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3047); }
+	{ SET_INSTRUCTION_NAME("vcmpneq_usss"); }
 	break;
 	case 928:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3060); }
+	{ SET_INSTRUCTION_NAME("vcmpneqpd"); }
 	break;
 	case 929:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3070); }
+	{ SET_INSTRUCTION_NAME("vcmpneqps"); }
 	break;
 	case 930:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3080); }
+	{ SET_INSTRUCTION_NAME("vcmpneqsd"); }
 	break;
 	case 931:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3090); }
+	{ SET_INSTRUCTION_NAME("vcmpneqss"); }
 	break;
 	case 932:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3100); }
+	{ SET_INSTRUCTION_NAME("vcmpnge_uqpd"); }
 	break;
 	case 933:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3113); }
+	{ SET_INSTRUCTION_NAME("vcmpnge_uqps"); }
 	break;
 	case 934:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3126); }
+	{ SET_INSTRUCTION_NAME("vcmpnge_uqsd"); }
 	break;
 	case 935:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3139); }
+	{ SET_INSTRUCTION_NAME("vcmpnge_uqss"); }
 	break;
 	case 936:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3152); }
+	{ SET_INSTRUCTION_NAME("vcmpngepd"); }
 	break;
 	case 937:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3162); }
+	{ SET_INSTRUCTION_NAME("vcmpngeps"); }
 	break;
 	case 938:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3172); }
+	{ SET_INSTRUCTION_NAME("vcmpngesd"); }
 	break;
 	case 939:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3182); }
+	{ SET_INSTRUCTION_NAME("vcmpngess"); }
 	break;
 	case 940:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3192); }
+	{ SET_INSTRUCTION_NAME("vcmpngt_uqpd"); }
 	break;
 	case 941:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3205); }
+	{ SET_INSTRUCTION_NAME("vcmpngt_uqps"); }
 	break;
 	case 942:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3218); }
+	{ SET_INSTRUCTION_NAME("vcmpngt_uqsd"); }
 	break;
 	case 943:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3231); }
+	{ SET_INSTRUCTION_NAME("vcmpngt_uqss"); }
 	break;
 	case 944:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3244); }
+	{ SET_INSTRUCTION_NAME("vcmpngtpd"); }
 	break;
 	case 945:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3254); }
+	{ SET_INSTRUCTION_NAME("vcmpngtps"); }
 	break;
 	case 946:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3264); }
+	{ SET_INSTRUCTION_NAME("vcmpngtsd"); }
 	break;
 	case 947:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3274); }
+	{ SET_INSTRUCTION_NAME("vcmpngtss"); }
 	break;
 	case 948:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3284); }
+	{ SET_INSTRUCTION_NAME("vcmpnle_uqpd"); }
 	break;
 	case 949:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3297); }
+	{ SET_INSTRUCTION_NAME("vcmpnle_uqps"); }
 	break;
 	case 950:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3310); }
+	{ SET_INSTRUCTION_NAME("vcmpnle_uqsd"); }
 	break;
 	case 951:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3323); }
+	{ SET_INSTRUCTION_NAME("vcmpnle_uqss"); }
 	break;
 	case 952:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3336); }
+	{ SET_INSTRUCTION_NAME("vcmpnlepd"); }
 	break;
 	case 953:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3346); }
+	{ SET_INSTRUCTION_NAME("vcmpnleps"); }
 	break;
 	case 954:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3356); }
+	{ SET_INSTRUCTION_NAME("vcmpnlesd"); }
 	break;
 	case 955:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3366); }
+	{ SET_INSTRUCTION_NAME("vcmpnless"); }
 	break;
 	case 956:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3376); }
+	{ SET_INSTRUCTION_NAME("vcmpnlt_uqpd"); }
 	break;
 	case 957:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3389); }
+	{ SET_INSTRUCTION_NAME("vcmpnlt_uqps"); }
 	break;
 	case 958:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3402); }
+	{ SET_INSTRUCTION_NAME("vcmpnlt_uqsd"); }
 	break;
 	case 959:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3415); }
+	{ SET_INSTRUCTION_NAME("vcmpnlt_uqss"); }
 	break;
 	case 960:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3428); }
+	{ SET_INSTRUCTION_NAME("vcmpnltpd"); }
 	break;
 	case 961:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3438); }
+	{ SET_INSTRUCTION_NAME("vcmpnltps"); }
 	break;
 	case 962:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3448); }
+	{ SET_INSTRUCTION_NAME("vcmpnltsd"); }
 	break;
 	case 963:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3458); }
+	{ SET_INSTRUCTION_NAME("vcmpnltss"); }
 	break;
 	case 964:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3468); }
+	{ SET_INSTRUCTION_NAME("vcmpord_spd"); }
 	break;
 	case 965:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3480); }
+	{ SET_INSTRUCTION_NAME("vcmpord_sps"); }
 	break;
 	case 966:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3492); }
+	{ SET_INSTRUCTION_NAME("vcmpord_ssd"); }
 	break;
 	case 967:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3504); }
+	{ SET_INSTRUCTION_NAME("vcmpord_sss"); }
 	break;
 	case 968:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3516); }
+	{ SET_INSTRUCTION_NAME("vcmpordpd"); }
 	break;
 	case 969:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3526); }
+	{ SET_INSTRUCTION_NAME("vcmpordps"); }
 	break;
 	case 970:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3536); }
+	{ SET_INSTRUCTION_NAME("vcmpordsd"); }
 	break;
 	case 971:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3546); }
+	{ SET_INSTRUCTION_NAME("vcmpordss"); }
 	break;
 	case 972:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3556); }
+	{ SET_INSTRUCTION_NAME("vcmppd"); }
 	break;
 	case 973:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3563); }
+	{ SET_INSTRUCTION_NAME("vcmpps"); }
 	break;
 	case 974:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3570); }
+	{ SET_INSTRUCTION_NAME("vcmpsd"); }
 	break;
 	case 975:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3577); }
+	{ SET_INSTRUCTION_NAME("vcmpss"); }
 	break;
 	case 976:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3584); }
+	{ SET_INSTRUCTION_NAME("vcmptrue_uspd"); }
 	break;
 	case 977:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3598); }
+	{ SET_INSTRUCTION_NAME("vcmptrue_usps"); }
 	break;
 	case 978:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3612); }
+	{ SET_INSTRUCTION_NAME("vcmptrue_ussd"); }
 	break;
 	case 979:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3626); }
+	{ SET_INSTRUCTION_NAME("vcmptrue_usss"); }
 	break;
 	case 980:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3640); }
+	{ SET_INSTRUCTION_NAME("vcmptruepd"); }
 	break;
 	case 981:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3651); }
+	{ SET_INSTRUCTION_NAME("vcmptrueps"); }
 	break;
 	case 982:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3662); }
+	{ SET_INSTRUCTION_NAME("vcmptruesd"); }
 	break;
 	case 983:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3673); }
+	{ SET_INSTRUCTION_NAME("vcmptruess"); }
 	break;
 	case 984:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3684); }
+	{ SET_INSTRUCTION_NAME("vcmpunord_spd"); }
 	break;
 	case 985:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3698); }
+	{ SET_INSTRUCTION_NAME("vcmpunord_sps"); }
 	break;
 	case 986:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3712); }
+	{ SET_INSTRUCTION_NAME("vcmpunord_ssd"); }
 	break;
 	case 987:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3726); }
+	{ SET_INSTRUCTION_NAME("vcmpunord_sss"); }
 	break;
 	case 988:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3740); }
+	{ SET_INSTRUCTION_NAME("vcmpunordpd"); }
 	break;
 	case 989:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3752); }
+	{ SET_INSTRUCTION_NAME("vcmpunordps"); }
 	break;
 	case 990:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3764); }
+	{ SET_INSTRUCTION_NAME("vcmpunordsd"); }
 	break;
 	case 991:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3776); }
+	{ SET_INSTRUCTION_NAME("vcmpunordss"); }
 	break;
 	case 992:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3788); }
+	{ SET_INSTRUCTION_NAME("vcomisd"); }
 	break;
 	case 993:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3796); }
+	{ SET_INSTRUCTION_NAME("vcomiss"); }
 	break;
 	case 994:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3804); }
+	{ SET_INSTRUCTION_NAME("vcvtdq2pd"); }
 	break;
 	case 995:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3814); }
+	{ SET_INSTRUCTION_NAME("vcvtdq2ps"); }
 	break;
 	case 996:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3824); }
+	{ SET_INSTRUCTION_NAME("vcvtpd2dq"); }
 	break;
 	case 997:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3834); }
+	{ SET_INSTRUCTION_NAME("vcvtpd2ps"); }
 	break;
 	case 998:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3844); }
+	{ SET_INSTRUCTION_NAME("vcvtph2ps"); }
 	break;
 	case 999:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3854); }
+	{ SET_INSTRUCTION_NAME("vcvtps2dq"); }
 	break;
 	case 1000:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3864); }
+	{ SET_INSTRUCTION_NAME("vcvtps2pd"); }
 	break;
 	case 1001:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3874); }
+	{ SET_INSTRUCTION_NAME("vcvtps2ph"); }
 	break;
 	case 1002:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3884); }
+	{ SET_INSTRUCTION_NAME("vcvtsd2si"); }
 	break;
 	case 1003:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3894); }
+	{ SET_INSTRUCTION_NAME("vcvtsd2ss"); }
 	break;
 	case 1004:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3904); }
+	{ SET_INSTRUCTION_NAME("vcvtsi2sd"); }
 	break;
 	case 1005:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3914); }
+	{ SET_INSTRUCTION_NAME("vcvtsi2ss"); }
 	break;
 	case 1006:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3924); }
+	{ SET_INSTRUCTION_NAME("vcvtss2sd"); }
 	break;
 	case 1007:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3934); }
+	{ SET_INSTRUCTION_NAME("vcvtss2si"); }
 	break;
 	case 1008:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3944); }
+	{ SET_INSTRUCTION_NAME("vcvttpd2dq"); }
 	break;
 	case 1009:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3955); }
+	{ SET_INSTRUCTION_NAME("vcvttps2dq"); }
 	break;
 	case 1010:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3966); }
+	{ SET_INSTRUCTION_NAME("vcvttsd2si"); }
 	break;
 	case 1011:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3977); }
+	{ SET_INSTRUCTION_NAME("vcvttss2si"); }
 	break;
 	case 1012:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3988); }
+	{ SET_INSTRUCTION_NAME("vdivpd"); }
 	break;
 	case 1013:
-	{ SET_INSTRUCTION_NAME(instruction_names + 3995); }
+	{ SET_INSTRUCTION_NAME("vdivps"); }
 	break;
 	case 1014:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4002); }
+	{ SET_INSTRUCTION_NAME("vdivsd"); }
 	break;
 	case 1015:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4009); }
+	{ SET_INSTRUCTION_NAME("vdivss"); }
 	break;
 	case 1016:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4016); }
+	{ SET_INSTRUCTION_NAME("vdppd"); }
 	break;
 	case 1017:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4022); }
+	{ SET_INSTRUCTION_NAME("vdpps"); }
 	break;
 	case 1018:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4028); }
+	{ SET_INSTRUCTION_NAME("verr"); }
 	break;
 	case 1019:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4033); }
+	{ SET_INSTRUCTION_NAME("verw"); }
 	break;
 	case 1020:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4038); }
+	{ SET_INSTRUCTION_NAME("vextractf128"); }
 	break;
 	case 1021:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4051); }
+	{ SET_INSTRUCTION_NAME("vextractps"); }
 	break;
 	case 1022:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4062); }
+	{ SET_INSTRUCTION_NAME("vfmadd132pd"); }
 	break;
 	case 1023:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4074); }
+	{ SET_INSTRUCTION_NAME("vfmadd132ps"); }
 	break;
 	case 1024:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4086); }
+	{ SET_INSTRUCTION_NAME("vfmadd132sd"); }
 	break;
 	case 1025:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4098); }
+	{ SET_INSTRUCTION_NAME("vfmadd132ss"); }
 	break;
 	case 1026:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4110); }
+	{ SET_INSTRUCTION_NAME("vfmadd213pd"); }
 	break;
 	case 1027:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4122); }
+	{ SET_INSTRUCTION_NAME("vfmadd213ps"); }
 	break;
 	case 1028:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4134); }
+	{ SET_INSTRUCTION_NAME("vfmadd213sd"); }
 	break;
 	case 1029:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4146); }
+	{ SET_INSTRUCTION_NAME("vfmadd213ss"); }
 	break;
 	case 1030:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4158); }
+	{ SET_INSTRUCTION_NAME("vfmadd231pd"); }
 	break;
 	case 1031:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4170); }
+	{ SET_INSTRUCTION_NAME("vfmadd231ps"); }
 	break;
 	case 1032:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4182); }
+	{ SET_INSTRUCTION_NAME("vfmadd231sd"); }
 	break;
 	case 1033:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4194); }
+	{ SET_INSTRUCTION_NAME("vfmadd231ss"); }
 	break;
 	case 1034:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4206); }
+	{ SET_INSTRUCTION_NAME("vfmaddpd"); }
 	break;
 	case 1035:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4215); }
+	{ SET_INSTRUCTION_NAME("vfmaddps"); }
 	break;
 	case 1036:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4224); }
+	{ SET_INSTRUCTION_NAME("vfmaddsd"); }
 	break;
 	case 1037:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4233); }
+	{ SET_INSTRUCTION_NAME("vfmaddss"); }
 	break;
 	case 1038:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4242); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub132pd"); }
 	break;
 	case 1039:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4257); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub132ps"); }
 	break;
 	case 1040:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4272); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub213pd"); }
 	break;
 	case 1041:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4287); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub213ps"); }
 	break;
 	case 1042:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4302); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub231pd"); }
 	break;
 	case 1043:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4317); }
+	{ SET_INSTRUCTION_NAME("vfmaddsub231ps"); }
 	break;
 	case 1044:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4332); }
+	{ SET_INSTRUCTION_NAME("vfmaddsubpd"); }
 	break;
 	case 1045:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4344); }
+	{ SET_INSTRUCTION_NAME("vfmaddsubps"); }
 	break;
 	case 1046:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4356); }
+	{ SET_INSTRUCTION_NAME("vfmsub132pd"); }
 	break;
 	case 1047:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4368); }
+	{ SET_INSTRUCTION_NAME("vfmsub132ps"); }
 	break;
 	case 1048:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4380); }
+	{ SET_INSTRUCTION_NAME("vfmsub132sd"); }
 	break;
 	case 1049:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4392); }
+	{ SET_INSTRUCTION_NAME("vfmsub132ss"); }
 	break;
 	case 1050:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4404); }
+	{ SET_INSTRUCTION_NAME("vfmsub213pd"); }
 	break;
 	case 1051:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4416); }
+	{ SET_INSTRUCTION_NAME("vfmsub213ps"); }
 	break;
 	case 1052:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4428); }
+	{ SET_INSTRUCTION_NAME("vfmsub213sd"); }
 	break;
 	case 1053:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4440); }
+	{ SET_INSTRUCTION_NAME("vfmsub213ss"); }
 	break;
 	case 1054:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4452); }
+	{ SET_INSTRUCTION_NAME("vfmsub231pd"); }
 	break;
 	case 1055:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4464); }
+	{ SET_INSTRUCTION_NAME("vfmsub231ps"); }
 	break;
 	case 1056:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4476); }
+	{ SET_INSTRUCTION_NAME("vfmsub231sd"); }
 	break;
 	case 1057:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4488); }
+	{ SET_INSTRUCTION_NAME("vfmsub231ss"); }
 	break;
 	case 1058:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4500); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd132pd"); }
 	break;
 	case 1059:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4515); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd132ps"); }
 	break;
 	case 1060:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4530); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd213pd"); }
 	break;
 	case 1061:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4545); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd213ps"); }
 	break;
 	case 1062:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4560); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd231pd"); }
 	break;
 	case 1063:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4575); }
+	{ SET_INSTRUCTION_NAME("vfmsubadd231ps"); }
 	break;
 	case 1064:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4590); }
+	{ SET_INSTRUCTION_NAME("vfmsubaddpd"); }
 	break;
 	case 1065:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4602); }
+	{ SET_INSTRUCTION_NAME("vfmsubaddps"); }
 	break;
 	case 1066:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4614); }
+	{ SET_INSTRUCTION_NAME("vfmsubpd"); }
 	break;
 	case 1067:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4623); }
+	{ SET_INSTRUCTION_NAME("vfmsubps"); }
 	break;
 	case 1068:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4632); }
+	{ SET_INSTRUCTION_NAME("vfmsubsd"); }
 	break;
 	case 1069:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4641); }
+	{ SET_INSTRUCTION_NAME("vfmsubss"); }
 	break;
 	case 1070:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4650); }
+	{ SET_INSTRUCTION_NAME("vfnmadd132pd"); }
 	break;
 	case 1071:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4663); }
+	{ SET_INSTRUCTION_NAME("vfnmadd132ps"); }
 	break;
 	case 1072:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4676); }
+	{ SET_INSTRUCTION_NAME("vfnmadd132sd"); }
 	break;
 	case 1073:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4689); }
+	{ SET_INSTRUCTION_NAME("vfnmadd132ss"); }
 	break;
 	case 1074:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4702); }
+	{ SET_INSTRUCTION_NAME("vfnmadd213pd"); }
 	break;
 	case 1075:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4715); }
+	{ SET_INSTRUCTION_NAME("vfnmadd213ps"); }
 	break;
 	case 1076:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4728); }
+	{ SET_INSTRUCTION_NAME("vfnmadd213sd"); }
 	break;
 	case 1077:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4741); }
+	{ SET_INSTRUCTION_NAME("vfnmadd213ss"); }
 	break;
 	case 1078:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4754); }
+	{ SET_INSTRUCTION_NAME("vfnmadd231pd"); }
 	break;
 	case 1079:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4767); }
+	{ SET_INSTRUCTION_NAME("vfnmadd231ps"); }
 	break;
 	case 1080:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4780); }
+	{ SET_INSTRUCTION_NAME("vfnmadd231sd"); }
 	break;
 	case 1081:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4793); }
+	{ SET_INSTRUCTION_NAME("vfnmadd231ss"); }
 	break;
 	case 1082:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4806); }
+	{ SET_INSTRUCTION_NAME("vfnmaddpd"); }
 	break;
 	case 1083:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4816); }
+	{ SET_INSTRUCTION_NAME("vfnmaddps"); }
 	break;
 	case 1084:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4826); }
+	{ SET_INSTRUCTION_NAME("vfnmaddsd"); }
 	break;
 	case 1085:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4836); }
+	{ SET_INSTRUCTION_NAME("vfnmaddss"); }
 	break;
 	case 1086:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4846); }
+	{ SET_INSTRUCTION_NAME("vfnmsub132pd"); }
 	break;
 	case 1087:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4859); }
+	{ SET_INSTRUCTION_NAME("vfnmsub132ps"); }
 	break;
 	case 1088:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4872); }
+	{ SET_INSTRUCTION_NAME("vfnmsub132sd"); }
 	break;
 	case 1089:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4885); }
+	{ SET_INSTRUCTION_NAME("vfnmsub132ss"); }
 	break;
 	case 1090:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4898); }
+	{ SET_INSTRUCTION_NAME("vfnmsub213pd"); }
 	break;
 	case 1091:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4911); }
+	{ SET_INSTRUCTION_NAME("vfnmsub213ps"); }
 	break;
 	case 1092:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4924); }
+	{ SET_INSTRUCTION_NAME("vfnmsub213sd"); }
 	break;
 	case 1093:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4937); }
+	{ SET_INSTRUCTION_NAME("vfnmsub213ss"); }
 	break;
 	case 1094:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4950); }
+	{ SET_INSTRUCTION_NAME("vfnmsub231pd"); }
 	break;
 	case 1095:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4963); }
+	{ SET_INSTRUCTION_NAME("vfnmsub231ps"); }
 	break;
 	case 1096:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4976); }
+	{ SET_INSTRUCTION_NAME("vfnmsub231sd"); }
 	break;
 	case 1097:
-	{ SET_INSTRUCTION_NAME(instruction_names + 4989); }
+	{ SET_INSTRUCTION_NAME("vfnmsub231ss"); }
 	break;
 	case 1098:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5002); }
+	{ SET_INSTRUCTION_NAME("vfnmsubpd"); }
 	break;
 	case 1099:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5012); }
+	{ SET_INSTRUCTION_NAME("vfnmsubps"); }
 	break;
 	case 1100:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5022); }
+	{ SET_INSTRUCTION_NAME("vfnmsubsd"); }
 	break;
 	case 1101:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5032); }
+	{ SET_INSTRUCTION_NAME("vfnmsubss"); }
 	break;
 	case 1102:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5042); }
+	{ SET_INSTRUCTION_NAME("vfrczpd"); }
 	break;
 	case 1103:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5050); }
+	{ SET_INSTRUCTION_NAME("vfrczps"); }
 	break;
 	case 1104:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5058); }
+	{ SET_INSTRUCTION_NAME("vfrczsd"); }
 	break;
 	case 1105:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5066); }
+	{ SET_INSTRUCTION_NAME("vfrczss"); }
 	break;
 	case 1106:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5074); }
+	{ SET_INSTRUCTION_NAME("vhaddpd"); }
 	break;
 	case 1107:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5082); }
+	{ SET_INSTRUCTION_NAME("vhaddps"); }
 	break;
 	case 1108:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5090); }
+	{ SET_INSTRUCTION_NAME("vhsubpd"); }
 	break;
 	case 1109:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5098); }
+	{ SET_INSTRUCTION_NAME("vhsubps"); }
 	break;
 	case 1110:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5106); }
+	{ SET_INSTRUCTION_NAME("vinsertf128"); }
 	break;
 	case 1111:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5118); }
+	{ SET_INSTRUCTION_NAME("vinsertps"); }
 	break;
 	case 1112:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5128); }
+	{ SET_INSTRUCTION_NAME("vlddqu"); }
 	break;
 	case 1113:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5135); }
+	{ SET_INSTRUCTION_NAME("vldmxcsr"); }
 	break;
 	case 1114:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5144); }
+	{ SET_INSTRUCTION_NAME("vmaskmovdqu"); }
 	break;
 	case 1115:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5156); }
+	{ SET_INSTRUCTION_NAME("vmaskmovpd"); }
 	break;
 	case 1116:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5167); }
+	{ SET_INSTRUCTION_NAME("vmaskmovps"); }
 	break;
 	case 1117:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5178); }
+	{ SET_INSTRUCTION_NAME("vmaxpd"); }
 	break;
 	case 1118:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5185); }
+	{ SET_INSTRUCTION_NAME("vmaxps"); }
 	break;
 	case 1119:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5192); }
+	{ SET_INSTRUCTION_NAME("vmaxsd"); }
 	break;
 	case 1120:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5199); }
+	{ SET_INSTRUCTION_NAME("vmaxss"); }
 	break;
 	case 1121:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5206); }
+	{ SET_INSTRUCTION_NAME("vminpd"); }
 	break;
 	case 1122:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5213); }
+	{ SET_INSTRUCTION_NAME("vminps"); }
 	break;
 	case 1123:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5220); }
+	{ SET_INSTRUCTION_NAME("vminsd"); }
 	break;
 	case 1124:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5227); }
+	{ SET_INSTRUCTION_NAME("vminss"); }
 	break;
 	case 1125:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5234); }
+	{ SET_INSTRUCTION_NAME("vmload"); }
 	break;
 	case 1126:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5241); }
+	{ SET_INSTRUCTION_NAME("vmmcall"); }
 	break;
 	case 1127:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5249); }
+	{ SET_INSTRUCTION_NAME("vmovapd"); }
 	break;
 	case 1128:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5257); }
+	{ SET_INSTRUCTION_NAME("vmovaps"); }
 	break;
 	case 1129:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5265); }
+	{ SET_INSTRUCTION_NAME("vmovd"); }
 	break;
 	case 1130:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5271); }
+	{ SET_INSTRUCTION_NAME("vmovddup"); }
 	break;
 	case 1131:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5280); }
+	{ SET_INSTRUCTION_NAME("vmovdqa"); }
 	break;
 	case 1132:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5288); }
+	{ SET_INSTRUCTION_NAME("vmovdqu"); }
 	break;
 	case 1133:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5296); }
+	{ SET_INSTRUCTION_NAME("vmovhlps"); }
 	break;
 	case 1134:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5305); }
+	{ SET_INSTRUCTION_NAME("vmovhpd"); }
 	break;
 	case 1135:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5313); }
+	{ SET_INSTRUCTION_NAME("vmovhps"); }
 	break;
 	case 1136:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5321); }
+	{ SET_INSTRUCTION_NAME("vmovlhps"); }
 	break;
 	case 1137:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5330); }
+	{ SET_INSTRUCTION_NAME("vmovlpd"); }
 	break;
 	case 1138:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5338); }
+	{ SET_INSTRUCTION_NAME("vmovlps"); }
 	break;
 	case 1139:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5346); }
+	{ SET_INSTRUCTION_NAME("vmovmskpd"); }
 	break;
 	case 1140:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5356); }
+	{ SET_INSTRUCTION_NAME("vmovmskps"); }
 	break;
 	case 1141:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5366); }
+	{ SET_INSTRUCTION_NAME("vmovntdq"); }
 	break;
 	case 1142:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5375); }
+	{ SET_INSTRUCTION_NAME("vmovntdqa"); }
 	break;
 	case 1143:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5385); }
+	{ SET_INSTRUCTION_NAME("vmovntpd"); }
 	break;
 	case 1144:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5394); }
+	{ SET_INSTRUCTION_NAME("vmovntps"); }
 	break;
 	case 1145:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5403); }
+	{ SET_INSTRUCTION_NAME("vmovq"); }
 	break;
 	case 1146:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5409); }
+	{ SET_INSTRUCTION_NAME("vmovsd"); }
 	break;
 	case 1147:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5416); }
+	{ SET_INSTRUCTION_NAME("vmovshdup"); }
 	break;
 	case 1148:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5426); }
+	{ SET_INSTRUCTION_NAME("vmovsldup"); }
 	break;
 	case 1149:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5436); }
+	{ SET_INSTRUCTION_NAME("vmovss"); }
 	break;
 	case 1150:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5443); }
+	{ SET_INSTRUCTION_NAME("vmovupd"); }
 	break;
 	case 1151:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5451); }
+	{ SET_INSTRUCTION_NAME("vmovups"); }
 	break;
 	case 1152:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5459); }
+	{ SET_INSTRUCTION_NAME("vmpsadbw"); }
 	break;
 	case 1153:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5468); }
+	{ SET_INSTRUCTION_NAME("vmrun"); }
 	break;
 	case 1154:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5474); }
+	{ SET_INSTRUCTION_NAME("vmsave"); }
 	break;
 	case 1155:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5481); }
+	{ SET_INSTRUCTION_NAME("vmulpd"); }
 	break;
 	case 1156:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5488); }
+	{ SET_INSTRUCTION_NAME("vmulps"); }
 	break;
 	case 1157:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5495); }
+	{ SET_INSTRUCTION_NAME("vmulsd"); }
 	break;
 	case 1158:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5502); }
+	{ SET_INSTRUCTION_NAME("vmulss"); }
 	break;
 	case 1159:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5509); }
+	{ SET_INSTRUCTION_NAME("vorpd"); }
 	break;
 	case 1160:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5515); }
+	{ SET_INSTRUCTION_NAME("vorps"); }
 	break;
 	case 1161:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5521); }
+	{ SET_INSTRUCTION_NAME("vpabsb"); }
 	break;
 	case 1162:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5528); }
+	{ SET_INSTRUCTION_NAME("vpabsd"); }
 	break;
 	case 1163:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5535); }
+	{ SET_INSTRUCTION_NAME("vpabsw"); }
 	break;
 	case 1164:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5542); }
+	{ SET_INSTRUCTION_NAME("vpackssdw"); }
 	break;
 	case 1165:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5552); }
+	{ SET_INSTRUCTION_NAME("vpacksswb"); }
 	break;
 	case 1166:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5562); }
+	{ SET_INSTRUCTION_NAME("vpackusdw"); }
 	break;
 	case 1167:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5572); }
+	{ SET_INSTRUCTION_NAME("vpackuswb"); }
 	break;
 	case 1168:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5582); }
+	{ SET_INSTRUCTION_NAME("vpaddb"); }
 	break;
 	case 1169:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5589); }
+	{ SET_INSTRUCTION_NAME("vpaddd"); }
 	break;
 	case 1170:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5596); }
+	{ SET_INSTRUCTION_NAME("vpaddq"); }
 	break;
 	case 1171:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5603); }
+	{ SET_INSTRUCTION_NAME("vpaddsb"); }
 	break;
 	case 1172:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5611); }
+	{ SET_INSTRUCTION_NAME("vpaddsw"); }
 	break;
 	case 1173:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5619); }
+	{ SET_INSTRUCTION_NAME("vpaddusb"); }
 	break;
 	case 1174:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5628); }
+	{ SET_INSTRUCTION_NAME("vpaddusw"); }
 	break;
 	case 1175:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5637); }
+	{ SET_INSTRUCTION_NAME("vpaddw"); }
 	break;
 	case 1176:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5644); }
+	{ SET_INSTRUCTION_NAME("vpalignr"); }
 	break;
 	case 1177:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5653); }
+	{ SET_INSTRUCTION_NAME("vpand"); }
 	break;
 	case 1178:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5659); }
+	{ SET_INSTRUCTION_NAME("vpandn"); }
 	break;
 	case 1179:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5666); }
+	{ SET_INSTRUCTION_NAME("vpavgb"); }
 	break;
 	case 1180:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5673); }
+	{ SET_INSTRUCTION_NAME("vpavgw"); }
 	break;
 	case 1181:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5680); }
+	{ SET_INSTRUCTION_NAME("vpblendvb"); }
 	break;
 	case 1182:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5690); }
+	{ SET_INSTRUCTION_NAME("vpblendw"); }
 	break;
 	case 1183:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5699); }
+	{ SET_INSTRUCTION_NAME("vpclmulhqhqdq"); }
 	break;
 	case 1184:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5713); }
+	{ SET_INSTRUCTION_NAME("vpclmulhqlqdq"); }
 	break;
 	case 1185:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5727); }
+	{ SET_INSTRUCTION_NAME("vpclmullqhqdq"); }
 	break;
 	case 1186:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5741); }
+	{ SET_INSTRUCTION_NAME("vpclmullqlqdq"); }
 	break;
 	case 1187:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5755); }
+	{ SET_INSTRUCTION_NAME("vpclmulqdq"); }
 	break;
 	case 1188:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5766); }
+	{ SET_INSTRUCTION_NAME("vpcmov"); }
 	break;
 	case 1189:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5773); }
+	{ SET_INSTRUCTION_NAME("vpcmpeqb"); }
 	break;
 	case 1190:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5782); }
+	{ SET_INSTRUCTION_NAME("vpcmpeqd"); }
 	break;
 	case 1191:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5791); }
+	{ SET_INSTRUCTION_NAME("vpcmpeqq"); }
 	break;
 	case 1192:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5800); }
+	{ SET_INSTRUCTION_NAME("vpcmpeqw"); }
 	break;
 	case 1193:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5809); }
+	{ SET_INSTRUCTION_NAME("vpcmpestri"); }
 	break;
 	case 1194:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5820); }
+	{ SET_INSTRUCTION_NAME("vpcmpestrm"); }
 	break;
 	case 1195:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5831); }
+	{ SET_INSTRUCTION_NAME("vpcmpgtb"); }
 	break;
 	case 1196:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5840); }
+	{ SET_INSTRUCTION_NAME("vpcmpgtd"); }
 	break;
 	case 1197:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5849); }
+	{ SET_INSTRUCTION_NAME("vpcmpgtq"); }
 	break;
 	case 1198:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5858); }
+	{ SET_INSTRUCTION_NAME("vpcmpgtw"); }
 	break;
 	case 1199:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5867); }
+	{ SET_INSTRUCTION_NAME("vpcmpistri"); }
 	break;
 	case 1200:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5878); }
+	{ SET_INSTRUCTION_NAME("vpcmpistrm"); }
 	break;
 	case 1201:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5889); }
+	{ SET_INSTRUCTION_NAME("vpcomb"); }
 	break;
 	case 1202:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5896); }
+	{ SET_INSTRUCTION_NAME("vpcomd"); }
 	break;
 	case 1203:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5903); }
+	{ SET_INSTRUCTION_NAME("vpcomq"); }
 	break;
 	case 1204:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5910); }
+	{ SET_INSTRUCTION_NAME("vpcomub"); }
 	break;
 	case 1205:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5918); }
+	{ SET_INSTRUCTION_NAME("vpcomud"); }
 	break;
 	case 1206:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5926); }
+	{ SET_INSTRUCTION_NAME("vpcomuq"); }
 	break;
 	case 1207:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5934); }
+	{ SET_INSTRUCTION_NAME("vpcomuw"); }
 	break;
 	case 1208:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5942); }
+	{ SET_INSTRUCTION_NAME("vpcomw"); }
 	break;
 	case 1209:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5949); }
+	{ SET_INSTRUCTION_NAME("vperm2f128"); }
 	break;
 	case 1210:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5960); }
+	{ SET_INSTRUCTION_NAME("vpermil2pd"); }
 	break;
 	case 1211:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5971); }
+	{ SET_INSTRUCTION_NAME("vpermil2ps"); }
 	break;
 	case 1212:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5982); }
+	{ SET_INSTRUCTION_NAME("vpermilpd"); }
 	break;
 	case 1213:
-	{ SET_INSTRUCTION_NAME(instruction_names + 5992); }
+	{ SET_INSTRUCTION_NAME("vpermilps"); }
 	break;
 	case 1214:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6002); }
+	{ SET_INSTRUCTION_NAME("vpextrb"); }
 	break;
 	case 1215:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6010); }
+	{ SET_INSTRUCTION_NAME("vpextrd"); }
 	break;
 	case 1216:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6018); }
+	{ SET_INSTRUCTION_NAME("vpextrw"); }
 	break;
 	case 1217:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6026); }
+	{ SET_INSTRUCTION_NAME("vphaddbd"); }
 	break;
 	case 1218:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6035); }
+	{ SET_INSTRUCTION_NAME("vphaddbq"); }
 	break;
 	case 1219:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6044); }
+	{ SET_INSTRUCTION_NAME("vphaddbw"); }
 	break;
 	case 1220:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6053); }
+	{ SET_INSTRUCTION_NAME("vphaddd"); }
 	break;
 	case 1221:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6061); }
+	{ SET_INSTRUCTION_NAME("vphadddq"); }
 	break;
 	case 1222:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6070); }
+	{ SET_INSTRUCTION_NAME("vphaddsw"); }
 	break;
 	case 1223:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6079); }
+	{ SET_INSTRUCTION_NAME("vphaddubd"); }
 	break;
 	case 1224:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6089); }
+	{ SET_INSTRUCTION_NAME("vphaddubq"); }
 	break;
 	case 1225:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6099); }
+	{ SET_INSTRUCTION_NAME("vphaddubw"); }
 	break;
 	case 1226:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6109); }
+	{ SET_INSTRUCTION_NAME("vphaddudq"); }
 	break;
 	case 1227:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6119); }
+	{ SET_INSTRUCTION_NAME("vphadduwd"); }
 	break;
 	case 1228:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6129); }
+	{ SET_INSTRUCTION_NAME("vphadduwq"); }
 	break;
 	case 1229:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6139); }
+	{ SET_INSTRUCTION_NAME("vphaddw"); }
 	break;
 	case 1230:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6147); }
+	{ SET_INSTRUCTION_NAME("vphaddwd"); }
 	break;
 	case 1231:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6156); }
+	{ SET_INSTRUCTION_NAME("vphaddwq"); }
 	break;
 	case 1232:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6165); }
+	{ SET_INSTRUCTION_NAME("vphminposuw"); }
 	break;
 	case 1233:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6177); }
+	{ SET_INSTRUCTION_NAME("vphsubbw"); }
 	break;
 	case 1234:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6186); }
+	{ SET_INSTRUCTION_NAME("vphsubd"); }
 	break;
 	case 1235:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6194); }
+	{ SET_INSTRUCTION_NAME("vphsubdq"); }
 	break;
 	case 1236:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6203); }
+	{ SET_INSTRUCTION_NAME("vphsubsw"); }
 	break;
 	case 1237:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6212); }
+	{ SET_INSTRUCTION_NAME("vphsubw"); }
 	break;
 	case 1238:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6220); }
+	{ SET_INSTRUCTION_NAME("vphsubwd"); }
 	break;
 	case 1239:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6229); }
+	{ SET_INSTRUCTION_NAME("vpinsrb"); }
 	break;
 	case 1240:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6237); }
+	{ SET_INSTRUCTION_NAME("vpinsrd"); }
 	break;
 	case 1241:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6245); }
+	{ SET_INSTRUCTION_NAME("vpinsrw"); }
 	break;
 	case 1242:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6253); }
+	{ SET_INSTRUCTION_NAME("vpmacsdd"); }
 	break;
 	case 1243:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6262); }
+	{ SET_INSTRUCTION_NAME("vpmacsdqh"); }
 	break;
 	case 1244:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6272); }
+	{ SET_INSTRUCTION_NAME("vpmacsdql"); }
 	break;
 	case 1245:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6282); }
+	{ SET_INSTRUCTION_NAME("vpmacssdd"); }
 	break;
 	case 1246:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6292); }
+	{ SET_INSTRUCTION_NAME("vpmacssdqh"); }
 	break;
 	case 1247:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6303); }
+	{ SET_INSTRUCTION_NAME("vpmacssdql"); }
 	break;
 	case 1248:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6314); }
+	{ SET_INSTRUCTION_NAME("vpmacsswd"); }
 	break;
 	case 1249:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6324); }
+	{ SET_INSTRUCTION_NAME("vpmacssww"); }
 	break;
 	case 1250:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6334); }
+	{ SET_INSTRUCTION_NAME("vpmacswd"); }
 	break;
 	case 1251:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6343); }
+	{ SET_INSTRUCTION_NAME("vpmacsww"); }
 	break;
 	case 1252:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6352); }
+	{ SET_INSTRUCTION_NAME("vpmadcsswd"); }
 	break;
 	case 1253:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6363); }
+	{ SET_INSTRUCTION_NAME("vpmadcswd"); }
 	break;
 	case 1254:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6373); }
+	{ SET_INSTRUCTION_NAME("vpmaddubsw"); }
 	break;
 	case 1255:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6384); }
+	{ SET_INSTRUCTION_NAME("vpmaddwd"); }
 	break;
 	case 1256:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6393); }
+	{ SET_INSTRUCTION_NAME("vpmaxsb"); }
 	break;
 	case 1257:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6401); }
+	{ SET_INSTRUCTION_NAME("vpmaxsd"); }
 	break;
 	case 1258:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6409); }
+	{ SET_INSTRUCTION_NAME("vpmaxsw"); }
 	break;
 	case 1259:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6417); }
+	{ SET_INSTRUCTION_NAME("vpmaxub"); }
 	break;
 	case 1260:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6425); }
+	{ SET_INSTRUCTION_NAME("vpmaxud"); }
 	break;
 	case 1261:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6433); }
+	{ SET_INSTRUCTION_NAME("vpmaxuw"); }
 	break;
 	case 1262:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6441); }
+	{ SET_INSTRUCTION_NAME("vpminsb"); }
 	break;
 	case 1263:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6449); }
+	{ SET_INSTRUCTION_NAME("vpminsd"); }
 	break;
 	case 1264:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6457); }
+	{ SET_INSTRUCTION_NAME("vpminsw"); }
 	break;
 	case 1265:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6465); }
+	{ SET_INSTRUCTION_NAME("vpminub"); }
 	break;
 	case 1266:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6473); }
+	{ SET_INSTRUCTION_NAME("vpminud"); }
 	break;
 	case 1267:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6481); }
+	{ SET_INSTRUCTION_NAME("vpminuw"); }
 	break;
 	case 1268:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6489); }
+	{ SET_INSTRUCTION_NAME("vpmovmskb"); }
 	break;
 	case 1269:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6499); }
+	{ SET_INSTRUCTION_NAME("vpmovsxbd"); }
 	break;
 	case 1270:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6509); }
+	{ SET_INSTRUCTION_NAME("vpmovsxbq"); }
 	break;
 	case 1271:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6519); }
+	{ SET_INSTRUCTION_NAME("vpmovsxbw"); }
 	break;
 	case 1272:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6529); }
+	{ SET_INSTRUCTION_NAME("vpmovsxdq"); }
 	break;
 	case 1273:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6539); }
+	{ SET_INSTRUCTION_NAME("vpmovsxwd"); }
 	break;
 	case 1274:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6549); }
+	{ SET_INSTRUCTION_NAME("vpmovsxwq"); }
 	break;
 	case 1275:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6559); }
+	{ SET_INSTRUCTION_NAME("vpmovzxbd"); }
 	break;
 	case 1276:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6569); }
+	{ SET_INSTRUCTION_NAME("vpmovzxbq"); }
 	break;
 	case 1277:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6579); }
+	{ SET_INSTRUCTION_NAME("vpmovzxbw"); }
 	break;
 	case 1278:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6589); }
+	{ SET_INSTRUCTION_NAME("vpmovzxdq"); }
 	break;
 	case 1279:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6599); }
+	{ SET_INSTRUCTION_NAME("vpmovzxwd"); }
 	break;
 	case 1280:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6609); }
+	{ SET_INSTRUCTION_NAME("vpmovzxwq"); }
 	break;
 	case 1281:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6619); }
+	{ SET_INSTRUCTION_NAME("vpmuldq"); }
 	break;
 	case 1282:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6627); }
+	{ SET_INSTRUCTION_NAME("vpmulhrsw"); }
 	break;
 	case 1283:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6637); }
+	{ SET_INSTRUCTION_NAME("vpmulhuw"); }
 	break;
 	case 1284:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6646); }
+	{ SET_INSTRUCTION_NAME("vpmulhw"); }
 	break;
 	case 1285:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6654); }
+	{ SET_INSTRUCTION_NAME("vpmulld"); }
 	break;
 	case 1286:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6662); }
+	{ SET_INSTRUCTION_NAME("vpmullw"); }
 	break;
 	case 1287:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6670); }
+	{ SET_INSTRUCTION_NAME("vpmuludq"); }
 	break;
 	case 1288:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6679); }
+	{ SET_INSTRUCTION_NAME("vpor"); }
 	break;
 	case 1289:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6684); }
+	{ SET_INSTRUCTION_NAME("vpperm"); }
 	break;
 	case 1290:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6691); }
+	{ SET_INSTRUCTION_NAME("vprotb"); }
 	break;
 	case 1291:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6698); }
+	{ SET_INSTRUCTION_NAME("vprotd"); }
 	break;
 	case 1292:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6705); }
+	{ SET_INSTRUCTION_NAME("vprotq"); }
 	break;
 	case 1293:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6712); }
+	{ SET_INSTRUCTION_NAME("vprotw"); }
 	break;
 	case 1294:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6719); }
+	{ SET_INSTRUCTION_NAME("vpsadbw"); }
 	break;
 	case 1295:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6727); }
+	{ SET_INSTRUCTION_NAME("vpshab"); }
 	break;
 	case 1296:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6734); }
+	{ SET_INSTRUCTION_NAME("vpshad"); }
 	break;
 	case 1297:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6741); }
+	{ SET_INSTRUCTION_NAME("vpshaq"); }
 	break;
 	case 1298:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6748); }
+	{ SET_INSTRUCTION_NAME("vpshaw"); }
 	break;
 	case 1299:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6755); }
+	{ SET_INSTRUCTION_NAME("vpshlb"); }
 	break;
 	case 1300:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6762); }
+	{ SET_INSTRUCTION_NAME("vpshld"); }
 	break;
 	case 1301:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6769); }
+	{ SET_INSTRUCTION_NAME("vpshlq"); }
 	break;
 	case 1302:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6776); }
+	{ SET_INSTRUCTION_NAME("vpshlw"); }
 	break;
 	case 1303:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6783); }
+	{ SET_INSTRUCTION_NAME("vpshufb"); }
 	break;
 	case 1304:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6791); }
+	{ SET_INSTRUCTION_NAME("vpshufd"); }
 	break;
 	case 1305:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6799); }
+	{ SET_INSTRUCTION_NAME("vpshufhw"); }
 	break;
 	case 1306:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6808); }
+	{ SET_INSTRUCTION_NAME("vpshuflw"); }
 	break;
 	case 1307:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6817); }
+	{ SET_INSTRUCTION_NAME("vpsignb"); }
 	break;
 	case 1308:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6825); }
+	{ SET_INSTRUCTION_NAME("vpsignd"); }
 	break;
 	case 1309:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6833); }
+	{ SET_INSTRUCTION_NAME("vpsignw"); }
 	break;
 	case 1310:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6841); }
+	{ SET_INSTRUCTION_NAME("vpslld"); }
 	break;
 	case 1311:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6848); }
+	{ SET_INSTRUCTION_NAME("vpslldq"); }
 	break;
 	case 1312:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6856); }
+	{ SET_INSTRUCTION_NAME("vpsllq"); }
 	break;
 	case 1313:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6863); }
+	{ SET_INSTRUCTION_NAME("vpsllw"); }
 	break;
 	case 1314:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6870); }
+	{ SET_INSTRUCTION_NAME("vpsrad"); }
 	break;
 	case 1315:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6877); }
+	{ SET_INSTRUCTION_NAME("vpsraw"); }
 	break;
 	case 1316:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6884); }
+	{ SET_INSTRUCTION_NAME("vpsrld"); }
 	break;
 	case 1317:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6891); }
+	{ SET_INSTRUCTION_NAME("vpsrldq"); }
 	break;
 	case 1318:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6899); }
+	{ SET_INSTRUCTION_NAME("vpsrlq"); }
 	break;
 	case 1319:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6906); }
+	{ SET_INSTRUCTION_NAME("vpsrlw"); }
 	break;
 	case 1320:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6913); }
+	{ SET_INSTRUCTION_NAME("vpsubb"); }
 	break;
 	case 1321:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6920); }
+	{ SET_INSTRUCTION_NAME("vpsubd"); }
 	break;
 	case 1322:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6927); }
+	{ SET_INSTRUCTION_NAME("vpsubq"); }
 	break;
 	case 1323:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6934); }
+	{ SET_INSTRUCTION_NAME("vpsubsb"); }
 	break;
 	case 1324:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6942); }
+	{ SET_INSTRUCTION_NAME("vpsubsw"); }
 	break;
 	case 1325:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6950); }
+	{ SET_INSTRUCTION_NAME("vpsubusb"); }
 	break;
 	case 1326:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6959); }
+	{ SET_INSTRUCTION_NAME("vpsubusw"); }
 	break;
 	case 1327:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6968); }
+	{ SET_INSTRUCTION_NAME("vpsubw"); }
 	break;
 	case 1328:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6975); }
+	{ SET_INSTRUCTION_NAME("vptest"); }
 	break;
 	case 1329:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6982); }
+	{ SET_INSTRUCTION_NAME("vpunpckhbw"); }
 	break;
 	case 1330:
-	{ SET_INSTRUCTION_NAME(instruction_names + 6993); }
+	{ SET_INSTRUCTION_NAME("vpunpckhdq"); }
 	break;
 	case 1331:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7004); }
+	{ SET_INSTRUCTION_NAME("vpunpckhqdq"); }
 	break;
 	case 1332:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7016); }
+	{ SET_INSTRUCTION_NAME("vpunpckhwd"); }
 	break;
 	case 1333:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7027); }
+	{ SET_INSTRUCTION_NAME("vpunpcklbw"); }
 	break;
 	case 1334:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7038); }
+	{ SET_INSTRUCTION_NAME("vpunpckldq"); }
 	break;
 	case 1335:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7049); }
+	{ SET_INSTRUCTION_NAME("vpunpcklqdq"); }
 	break;
 	case 1336:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7061); }
+	{ SET_INSTRUCTION_NAME("vpunpcklwd"); }
 	break;
 	case 1337:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7072); }
+	{ SET_INSTRUCTION_NAME("vpxor"); }
 	break;
 	case 1338:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7078); }
+	{ SET_INSTRUCTION_NAME("vrcpps"); }
 	break;
 	case 1339:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7085); }
+	{ SET_INSTRUCTION_NAME("vrcpss"); }
 	break;
 	case 1340:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7092); }
+	{ SET_INSTRUCTION_NAME("vroundpd"); }
 	break;
 	case 1341:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7101); }
+	{ SET_INSTRUCTION_NAME("vroundps"); }
 	break;
 	case 1342:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7110); }
+	{ SET_INSTRUCTION_NAME("vroundsd"); }
 	break;
 	case 1343:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7119); }
+	{ SET_INSTRUCTION_NAME("vroundss"); }
 	break;
 	case 1344:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7128); }
+	{ SET_INSTRUCTION_NAME("vrsqrtps"); }
 	break;
 	case 1345:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7137); }
+	{ SET_INSTRUCTION_NAME("vrsqrtss"); }
 	break;
 	case 1346:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7146); }
+	{ SET_INSTRUCTION_NAME("vshufpd"); }
 	break;
 	case 1347:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7154); }
+	{ SET_INSTRUCTION_NAME("vshufps"); }
 	break;
 	case 1348:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7162); }
+	{ SET_INSTRUCTION_NAME("vsqrtpd"); }
 	break;
 	case 1349:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7170); }
+	{ SET_INSTRUCTION_NAME("vsqrtps"); }
 	break;
 	case 1350:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7178); }
+	{ SET_INSTRUCTION_NAME("vsqrtsd"); }
 	break;
 	case 1351:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7186); }
+	{ SET_INSTRUCTION_NAME("vsqrtss"); }
 	break;
 	case 1352:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7194); }
+	{ SET_INSTRUCTION_NAME("vstmxcsr"); }
 	break;
 	case 1353:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7203); }
+	{ SET_INSTRUCTION_NAME("vsubpd"); }
 	break;
 	case 1354:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7210); }
+	{ SET_INSTRUCTION_NAME("vsubps"); }
 	break;
 	case 1355:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7217); }
+	{ SET_INSTRUCTION_NAME("vsubsd"); }
 	break;
 	case 1356:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7224); }
+	{ SET_INSTRUCTION_NAME("vsubss"); }
 	break;
 	case 1357:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7231); }
+	{ SET_INSTRUCTION_NAME("vtestpd"); }
 	break;
 	case 1358:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7239); }
+	{ SET_INSTRUCTION_NAME("vtestps"); }
 	break;
 	case 1359:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7247); }
+	{ SET_INSTRUCTION_NAME("vucomisd"); }
 	break;
 	case 1360:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7256); }
+	{ SET_INSTRUCTION_NAME("vucomiss"); }
 	break;
 	case 1361:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7265); }
+	{ SET_INSTRUCTION_NAME("vunpckhpd"); }
 	break;
 	case 1362:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7275); }
+	{ SET_INSTRUCTION_NAME("vunpckhps"); }
 	break;
 	case 1363:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7285); }
+	{ SET_INSTRUCTION_NAME("vunpcklpd"); }
 	break;
 	case 1364:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7295); }
+	{ SET_INSTRUCTION_NAME("vunpcklps"); }
 	break;
 	case 1365:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7305); }
+	{ SET_INSTRUCTION_NAME("vxorpd"); }
 	break;
 	case 1366:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7312); }
+	{ SET_INSTRUCTION_NAME("vxorps"); }
 	break;
 	case 1367:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7319); }
+	{ SET_INSTRUCTION_NAME("vzeroall"); }
 	break;
 	case 1368:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7328); }
+	{ SET_INSTRUCTION_NAME("vzeroupper"); }
 	break;
 	case 1369:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7339); }
+	{ SET_INSTRUCTION_NAME("wbinvd"); }
 	break;
 	case 1370:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7346); }
+	{ SET_INSTRUCTION_NAME("wrmsr"); }
 	break;
 	case 1371:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7352); }
+	{ SET_INSTRUCTION_NAME("xadd"); }
 	break;
 	case 1372:
-	{ SET_INSTRUCTION_NAME(instruction_names + 235); }
+	{ SET_INSTRUCTION_NAME("xchg"); }
 	break;
 	case 1373:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7357); }
+	{ SET_INSTRUCTION_NAME("xgetbv"); }
 	break;
 	case 1374:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7364); }
+	{ SET_INSTRUCTION_NAME("xlat"); }
 	break;
 	case 1375:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7074); }
+	{ SET_INSTRUCTION_NAME("xor"); }
 	break;
 	case 1376:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7306); }
+	{ SET_INSTRUCTION_NAME("xorpd"); }
 	break;
 	case 1377:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7313); }
+	{ SET_INSTRUCTION_NAME("xorps"); }
 	break;
 	case 1378:
-	{ SET_INSTRUCTION_NAME(instruction_names + 999); }
+	{ SET_INSTRUCTION_NAME("xrstor"); }
 	break;
 	case 1379:
-	{ SET_INSTRUCTION_NAME(instruction_names + 1007); }
+	{ SET_INSTRUCTION_NAME("xsave"); }
 	break;
 	case 1380:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7369); }
+	{ SET_INSTRUCTION_NAME("xsaveopt"); }
 	break;
 	case 1381:
-	{ SET_INSTRUCTION_NAME(instruction_names + 7378); }
+	{ SET_INSTRUCTION_NAME("xsetbv"); }
 	break;
 	case 1382:
 	{
