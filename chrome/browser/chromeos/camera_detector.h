@@ -30,8 +30,11 @@ class CameraDetector {
   static void StartPresenceCheck(const base::Closure& check_done);
 
  private:
-  // Checks for camera presence. Runs on a worker pool.
-  static void CheckPresence();
+  // Called back on UI thread after check has been performed.
+  static void OnPresenceCheckDone(const base::Closure& callback, bool present);
+
+  // Checks for camera presence. Runs on a thread that allows I/O.
+  static bool CheckPresence();
 
   // Result of the last presence check.
   static CameraPresence camera_presence_;

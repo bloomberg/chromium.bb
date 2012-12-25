@@ -9,8 +9,10 @@
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/system_monitor/udev_util_linux.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -27,26 +29,41 @@ const char kV4LCaptureCapability[] = "capture";
 
 }  // namespace
 
+using content::BrowserThread;
+
+// static
 CameraDetector::CameraPresence CameraDetector::camera_presence_ =
     CameraDetector::kCameraPresenceUnknown;
 
+// static
 bool CameraDetector::presence_check_in_progress_ = false;
 
-void CameraDetector::StartPresenceCheck(const base::Closure& check_done) {
+// static
+void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (presence_check_in_progress_)
+    return;
   DVLOG(1) << "Starting camera presence check";
-  if (!presence_check_in_progress_) {
-    presence_check_in_progress_ = true;
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&CameraDetector::CheckPresence),
-        check_done,
-        /* task_is_slow= */ false);
-  }
+  presence_check_in_progress_ = true;
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
+      FROM_HERE,
+      base::Bind(&CameraDetector::CheckPresence),
+      base::Bind(&CameraDetector::OnPresenceCheckDone, callback));
 }
 
-void CameraDetector::CheckPresence() {
-  bool present = false;
+// static
+void CameraDetector::OnPresenceCheckDone(const base::Closure& callback,
+                                         bool present) {
+  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  camera_presence_ = present ? kCameraPresent : kCameraAbsent;
+  presence_check_in_progress_ = false;
+  callback.Run();
+}
 
+// static
+bool CameraDetector::CheckPresence() {
   // We do a quick check using udev database because opening each /dev/videoX
   // device may trigger costly device initialization.
   using file_util::FileEnumerator;
@@ -61,16 +78,11 @@ void CameraDetector::CheckPresence() {
       std::vector<std::string> caps;
       base::SplitString(v4l_capabilities, kV4LCapabilitiesDelim, &caps);
       if (find(caps.begin(), caps.end(), kV4LCaptureCapability) != caps.end()) {
-        present = true;
-        break;
+        return true;
       }
     }
   }
-
-  camera_presence_ = present ? kCameraPresent : kCameraAbsent;
-  presence_check_in_progress_ = false;
-
-  DVLOG(1) << "Camera presence state: " << camera_presence_;
+  return false;
 }
 
 }  // namespace chromeos
