@@ -438,7 +438,9 @@ class MsvsSettings(object):
     ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
     ld('ResourceOnlyDLL', map={'true': '/NOENTRY'})
     ld('EntryPointSymbol', prefix='/ENTRY:')
-    ld('Profile', map={ 'true': '/PROFILE'})
+    ld('Profile', map={'true': '/PROFILE'})
+    ld('LargeAddressAware',
+        map={'1': ':NO', '2': ''}, prefix='/LARGEADDRESSAWARE')
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
     # TODO(scottmg): These too.
