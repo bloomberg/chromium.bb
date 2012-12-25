@@ -312,7 +312,7 @@ class LoginUtilsImpl
   // Restores GAIA auth cookies for the created profile.
   void RestoreAuthCookies(Profile* user_profile);
 
-  // Initializes RLZ. If |disabled| is true, financial pings are turned off.
+  // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
 
   std::string password_;
@@ -646,7 +646,7 @@ void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
     return;
   }
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false /* task_is_slow */),
+      base::WorkerPool::GetTaskRunner(false),
       FROM_HERE,
       base::Bind(&file_util::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&LoginUtilsImpl::InitRlz, AsWeakPtr(), user_profile));
@@ -657,7 +657,7 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
 #if defined(ENABLE_RLZ)
   PrefService* local_state = g_browser_process->local_state();
   if (disabled) {
-    // Empty brand code turns financial pings off.
+    // Empty brand code means an organic install (no RLZ pings are sent).
     google_util::chromeos::ClearBrandForCurrentSession();
   }
   if (disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
@@ -668,8 +668,11 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
   // Init the RLZ library.
   int ping_delay = user_profile->GetPrefs()->GetInteger(
       first_run::GetPingDelayPrefName().c_str());
+  // Negative ping delay means to send ping immediately after a first search is
+  // recorded.
   RLZTracker::InitRlzFromProfileDelayed(
-      user_profile, UserManager::Get()->IsCurrentUserNew(), ping_delay);
+      user_profile, UserManager::Get()->IsCurrentUserNew(),
+      ping_delay < 0, base::TimeDelta::FromMilliseconds(abs(ping_delay)));
   if (delegate_)
     delegate_->OnRlzInitialized(user_profile);
 #endif

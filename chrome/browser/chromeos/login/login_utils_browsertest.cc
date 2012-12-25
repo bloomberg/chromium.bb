@@ -274,6 +274,7 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetIOThread(io_thread_state_.get());
 
 #if defined(ENABLE_RLZ)
+    rlz_initialized_cb_ = base::Bind(&base::DoNothing);
     rlz_lib::testing::SetRlzStoreDirectory(scoped_temp_dir_.path());
     RLZTracker::EnableZeroDelayForTesting();
 #endif
@@ -562,14 +563,14 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
 
   PrepareProfile(kUsername);
 
-  wait_for_rlz_init.Run();
-  // Wait for blocking RLZ tasks to complete.
-  RunUntilIdle();
-
   // This should shortcut cookie transfer step that is missing due to
   // IO thread being mocked.
   EXPECT_TRUE(created_profile_);
   LoginUtils::Get()->CompleteProfileCreate(created_profile_);
+
+  wait_for_rlz_init.Run();
+  // Wait for blocking RLZ tasks to complete.
+  RunUntilIdle();
 
   // RLZ brand code has been set to empty string.
   EXPECT_TRUE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));

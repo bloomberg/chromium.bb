@@ -25,6 +25,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -59,8 +60,8 @@ namespace {
 
 // Maximum and minimum delay for financial ping we would allow to be set through
 // master preferences. Somewhat arbitrary, may need to be adjusted in future.
-const int kMaxDelay = 200 * 1000;
-const int kMinDelay = 20 * 1000;
+const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromSeconds(200);
+const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(20);
 
 bool IsGoogleUrl(const GURL& url) {
   return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
@@ -189,7 +190,7 @@ RLZTracker::RLZTracker()
       already_ran_(false),
       omnibox_used_(false),
       homepage_used_(false),
-      min_delay_(kMinDelay) {
+      min_init_delay_(kMinInitDelay) {
 }
 
 RLZTracker::~RLZTracker() {
@@ -197,18 +198,21 @@ RLZTracker::~RLZTracker() {
 
 // static
 bool RLZTracker::InitRlzDelayed(bool first_run,
-                                int delay,
+                                bool send_ping_immediately,
+                                base::TimeDelta delay,
                                 bool is_google_default_search,
                                 bool is_google_homepage,
                                 bool is_google_in_startpages) {
-  return GetInstance()->Init(first_run, delay, is_google_default_search,
-                             is_google_homepage, is_google_in_startpages);
+  return GetInstance()->Init(first_run, send_ping_immediately, delay,
+                             is_google_default_search, is_google_homepage,
+                             is_google_in_startpages);
 }
 
 // static
 bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
                                            bool first_run,
-                                           int delay) {
+                                           bool send_ping_immediately,
+                                           base::TimeDelta delay) {
   bool is_google_default_search = false;
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -233,7 +237,7 @@ bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
                                             IsGoogleUrl) > 0;
   }
 
-  if (!InitRlzDelayed(first_run, delay,
+  if (!InitRlzDelayed(first_run, send_ping_immediately, delay,
                       is_google_default_search, is_google_homepage,
                       is_google_in_startpages)) {
     return false;
@@ -248,7 +252,8 @@ bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
 }
 
 bool RLZTracker::Init(bool first_run,
-                      int delay,
+                      bool send_ping_immediately,
+                      base::TimeDelta delay,
                       bool is_google_default_search,
                       bool is_google_homepage,
                       bool is_google_in_startpages) {
@@ -256,19 +261,13 @@ bool RLZTracker::Init(bool first_run,
   is_google_default_search_ = is_google_default_search;
   is_google_homepage_ = is_google_homepage;
   is_google_in_startpages_ = is_google_in_startpages;
+  send_ping_immediately_ = send_ping_immediately;
 
-  // A negative delay means that a financial ping should be sent immediately
-  // after a first search is recorded, without waiting for the next restart
-  // of chrome. However, we only want this behaviour on first run.
-  send_ping_immediately_ = false;
-  if (delay < 0) {
-    send_ping_immediately_ = true;
-    delay = -delay;
-  }
+  // Enable zero delays for testing.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+    EnableZeroDelayForTesting();
 
-  delay *= 1000;
-  delay = (delay < min_delay_) ? min_delay_ : delay;
-  delay = (delay > kMaxDelay) ? kMaxDelay : delay;
+  delay = std::min(kMaxInitDelay, std::max(min_init_delay_, delay));
 
   if (google_util::GetBrand(&brand_) && !IsBrandOrganic(brand_)) {
     // Register for notifications from the omnibox so that we can record when
@@ -293,14 +292,14 @@ bool RLZTracker::Init(bool first_run,
   return true;
 }
 
-void RLZTracker::ScheduleDelayedInit(int delay) {
+void RLZTracker::ScheduleDelayedInit(base::TimeDelta delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
   BrowserThread::GetBlockingPool()->PostDelayedSequencedWorkerTask(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(delay));
+      delay);
 }
 
 void RLZTracker::DelayedInit() {
@@ -457,7 +456,7 @@ void RLZTracker::RecordFirstSearch(rlz_lib::AccessPoint point) {
   if (!RecordProductEvent(rlz_lib::CHROME, point, rlz_lib::FIRST_SEARCH))
     *record_used = true;
   else if (send_ping_immediately_ && point == CHROME_OMNIBOX)
-    ScheduleDelayedInit(0);
+    ScheduleDelayedInit(base::TimeDelta());
 }
 
 bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
@@ -573,5 +572,5 @@ void RLZTracker::CleanupRlz() {
 
 // static
 void RLZTracker::EnableZeroDelayForTesting() {
-  GetInstance()->min_delay_ = 0;
+  GetInstance()->min_init_delay_ = base::TimeDelta();
 }

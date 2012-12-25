@@ -1262,7 +1262,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PrefService* pref_service = profile_->GetPrefs();
   int ping_delay = is_first_run_ ? master_prefs_->ping_delay :
       pref_service->GetInteger(first_run::GetPingDelayPrefName().c_str());
-  RLZTracker::InitRlzFromProfileDelayed(profile_, is_first_run_, ping_delay);
+  // Negative ping delay means to send ping immediately after a first search is
+  // recorded.
+  RLZTracker::InitRlzFromProfileDelayed(
+      profile_, is_first_run_, ping_delay < 0,
+      base::TimeDelta::FromMilliseconds(abs(ping_delay)));
 #endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
   // Configure modules that need access to resources.

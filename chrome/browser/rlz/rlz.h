@@ -16,6 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "rlz/lib/rlz_lib.h"
@@ -37,14 +38,19 @@ class URLRequestContextGetter;
 
 class RLZTracker : public content::NotificationObserver {
  public:
-  // Initializes the RLZ library services for use in chrome. Schedules a
-  // delayed task (delayed by |delay| seconds) that performs the ping and
-  // registers some events when 'first-run' is true.
+  // Initializes the RLZ library services for use in chrome. Schedules a delayed
+  // task that performs the ping and registers some events when 'first-run' is
+  // true.
+  //
+  // When |send_ping_immediately| is true, a financial ping should be sent
+  // immediately after a first search is recorded, without waiting for |delay|.
+  // However, we only want this behaviour on first run.
   //
   // If the chrome brand is organic (no partners) then the pings don't occur.
   static bool InitRlzFromProfileDelayed(Profile* profile,
                                         bool first_run,
-                                        int delay);
+                                        bool send_ping_immediately,
+                                        base::TimeDelta delay);
 
   // Records an RLZ event. Some events can be access point independent.
   // Returns false it the event could not be recorded. Requires write access
@@ -92,7 +98,8 @@ class RLZTracker : public content::NotificationObserver {
 
   // Called by InitRlzFromProfileDelayed with values taken from |profile|.
   static bool InitRlzDelayed(bool first_run,
-                             int delay,
+                             bool send_ping_immediately,
+                             base::TimeDelta delay,
                              bool is_google_default_search,
                              bool is_google_homepage,
                              bool is_google_in_startpages);
@@ -123,7 +130,8 @@ class RLZTracker : public content::NotificationObserver {
 
   // Implementation called from InitRlzDelayed() static method.
   bool Init(bool first_run,
-            int delay,
+            bool send_ping_immediately,
+            base::TimeDelta delay,
             bool google_default_search,
             bool google_default_homepage,
             bool is_google_in_startpages);
@@ -141,7 +149,7 @@ class RLZTracker : public content::NotificationObserver {
 
   // Schedules the delayed initialization. This method is virtual to allow
   // tests to override how the scheduling is done.
-  virtual void ScheduleDelayedInit(int delay);
+  virtual void ScheduleDelayedInit(base::TimeDelta delay);
 
   // Schedules a call to rlz_lib::RecordProductEvent(). This method is virtual
   // to allow tests to override how the scheduling is done.
@@ -217,7 +225,7 @@ class RLZTracker : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   // Minimum delay before sending financial ping after initialization.
-  int min_delay_;
+  base::TimeDelta min_init_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };

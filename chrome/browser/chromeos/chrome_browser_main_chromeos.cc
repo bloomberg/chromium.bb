@@ -517,11 +517,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
                                   &tracker_);
 #endif
 
-#if defined(ENABLE_RLZ)
-  if (parsed_command_line().HasSwitch(::switches::kTestType))
-    RLZTracker::EnableZeroDelayForTesting();
-#endif
-
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
