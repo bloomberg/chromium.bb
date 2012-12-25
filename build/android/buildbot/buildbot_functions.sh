@@ -214,6 +214,8 @@ function bb_run_tests_emulator {
 }
 
 function bb_spawn_logcat_monitor_and_status {
+  adb start-server
+  sleep 1
   python build/android/device_status_check.py
   LOGCAT_DUMP_DIR="$CHROME_SRC/out/logcat"
   rm -rf "$LOGCAT_DUMP_DIR"
