@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
   Oobe.handleAccessbilityLinkClick = function(e) {
     /** @const */ var BUBBLE_OFFSET = 5;
     /** @const */ var BUBBLE_PADDING = 10;
-    $('accessibility-menu').showForElement($('connect-accessibility-link'),
+    $('accessibility-menu').showForElement(e.target,
                                            cr.ui.Bubble.Attachment.BOTTOM,
                                            BUBBLE_OFFSET, BUBBLE_PADDING);
     e.stopPropagation();

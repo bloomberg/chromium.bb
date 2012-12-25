@@ -926,9 +926,14 @@ html[oobe=old] #installation-settings {
 
 .step-extra-controls {
   bottom: 26px;
-  display: -webkit-box;
   left: 49px;
   position: absolute;
+}
+
+/* EULA screen extra controls have 2 elements
+   so they require different alignment. */
+#eula-extra-controls {
+  bottom: 17px;
 }
 
 #security-info a:focus,
@@ -940,7 +945,7 @@ html[oobe=old] #installation-settings {
 }
 
 .step-extra-controls > *:not(:first-child) {
-  -webkit-margin-start: 25px;
+  -webkit-margin-before: 7px;
 }
 
 html[dir=rtl] .step-extra-controls {
