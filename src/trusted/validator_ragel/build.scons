@@ -21,12 +21,12 @@ gen_dir = '$MAIN_DIR/src/trusted/validator_ragel/gen'
 ragel_binary = '$MAIN_DIR/../third_party/ragel/ragel.linux'
 
 INST_DEFS = [
-    'unreviewed/general_purpose_instructions.def',
-    'unreviewed/system_instructions.def',
-    'unreviewed/x87_instructions.def',
-    'unreviewed/mmx_instructions.def',
-    'unreviewed/xmm_instructions.def',
-    'unreviewed/nops.def'
+    'unreviewed/instruction_definitions/general_purpose_instructions.def',
+    'unreviewed/instruction_definitions/system_instructions.def',
+    'unreviewed/instruction_definitions/x87_instructions.def',
+    'unreviewed/instruction_definitions/mmx_instructions.def',
+    'unreviewed/instruction_definitions/xmm_instructions.def',
+    'unreviewed/instruction_definitions/nops.def'
 ]
 
 # Generate 32 and 64 bit versions of decoders and validators.  Both libraries
