@@ -14,7 +14,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "googleurl/src/gurl.h"
 
@@ -40,7 +39,10 @@ DevToolsManagerImpl::~DevToolsManagerImpl() {
 
 DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(
     DevToolsAgentHost* agent_host) {
-  AgentToClientHostMap::iterator it = agent_to_client_host_.find(agent_host);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  AgentToClientHostMap::iterator it =
+      agent_to_client_host_.find(agent_host_impl);
   if (it != agent_to_client_host_.end())
     return it->second;
   return NULL;
@@ -57,8 +59,10 @@ DevToolsAgentHost* DevToolsManagerImpl::GetDevToolsAgentHostFor(
 void DevToolsManagerImpl::RegisterDevToolsClientHostFor(
     DevToolsAgentHost* agent_host,
     DevToolsClientHost* client_host) {
-  BindClientHost(agent_host, client_host);
-  agent_host->Attach();
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  BindClientHost(agent_host_impl, client_host);
+  agent_host_impl->Attach();
 }
 
 bool DevToolsManagerImpl::DispatchOnInspectorBackend(
@@ -67,8 +71,9 @@ bool DevToolsManagerImpl::DispatchOnInspectorBackend(
   DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(from);
   if (!agent_host)
     return false;
-
-  agent_host->DipatchOnInspectorBackend(message);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  agent_host_impl->DipatchOnInspectorBackend(message);
   return true;
 }
 
@@ -86,24 +91,29 @@ void DevToolsManagerImpl::DispatchOnInspectorFrontend(
 
 void DevToolsManagerImpl::InspectElement(DevToolsAgentHost* agent_host,
                                          int x, int y) {
-  agent_host->InspectElement(x, y);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  agent_host_impl->InspectElement(x, y);
 }
 
 void DevToolsManagerImpl::AddMessageToConsole(DevToolsAgentHost* agent_host,
                                               ConsoleMessageLevel level,
                                               const std::string& message) {
-  agent_host->AddMessageToConsole(level, message);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  agent_host_impl->AddMessageToConsole(level, message);
 }
 
 void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
   DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(client_host);
   if (!agent_host)
     return;
-
-  UnbindClientHost(agent_host, client_host);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  UnbindClientHost(agent_host_impl, client_host);
 }
 
-void DevToolsManagerImpl::AgentHostClosing(DevToolsAgentHost* agent_host) {
+void DevToolsManagerImpl::AgentHostClosing(DevToolsAgentHostImpl* agent_host) {
   UnregisterDevToolsClientHostFor(agent_host);
 }
 
@@ -112,12 +122,14 @@ void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host)
     return;
-  UnbindClientHost(agent_host, client_host);
+  DevToolsAgentHostImpl* agent_host_impl =
+      static_cast<DevToolsAgentHostImpl*>(agent_host);
+  UnbindClientHost(agent_host_impl, client_host);
   client_host->InspectedContentsClosing();
 }
 
 void DevToolsManagerImpl::BindClientHost(
-    DevToolsAgentHost* agent_host,
+    DevToolsAgentHostImpl* agent_host,
     DevToolsClientHost* client_host) {
   DCHECK(agent_to_client_host_.find(agent_host) ==
       agent_to_client_host_.end());
@@ -134,13 +146,16 @@ void DevToolsManagerImpl::BindClientHost(
   client_to_agent_host_[client_host] = agent_host;
   agent_host->set_close_listener(this);
 
-  int process_id = agent_host->GetRenderProcessId();
-  if (process_id != -1)
+  // TODO(pfeldman): move this into the RenderViewDevToolsAgentHost attach /
+  // detach sniffers.
+  RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  if (rvh) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-        process_id);
+        rvh->GetProcess()->GetID());
+  }
 }
 
-void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
+void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
                                            DevToolsClientHost* client_host) {
   DCHECK(agent_host);
   DCHECK(agent_to_client_host_.find(agent_host)->second ==
@@ -158,12 +173,14 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
         FROM_HERE,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
-  int process_id = agent_host->GetRenderProcessId();
-  bool process_has_agents = false;
+  RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  int process_id = rvh ? rvh->GetProcess()->GetID() : -1;
+  bool process_has_agents = !rvh;
   for (AgentToClientHostMap::iterator it = agent_to_client_host_.begin();
        !process_has_agents && it != agent_to_client_host_.end();
        ++it) {
-    if (it->first->GetRenderProcessId() == process_id)
+    RenderViewHost* cur_rvh = it->first->GetRenderViewHost();
+    if (cur_rvh && cur_rvh->GetProcess()->GetID() == process_id)
       process_has_agents = true;
   }
 

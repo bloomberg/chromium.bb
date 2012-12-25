@@ -42,7 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -362,7 +362,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
 
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541
-  if (content::DevToolsAgentHostRegistry::IsDebuggerAttached(web_contents)) {
+  if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents)) {
     DestroyAndMarkMatchCompleteAsUsed(prerender_data->contents(),
                                       FINAL_STATUS_DEVTOOLS_ATTACHED);
     return false;

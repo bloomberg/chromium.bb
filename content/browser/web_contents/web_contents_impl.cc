@@ -48,7 +48,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/invalidate_type.h"
@@ -3161,10 +3161,7 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* rvh,
   // Ignore renderer unresponsive event if debugger is attached to the tab
   // since the event may be a result of the renderer sitting on a breakpoint.
   // See http://crbug.com/65458
-  DevToolsAgentHost* agent =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
-  if (agent &&
-      DevToolsManagerImpl::GetInstance()->GetDevToolsClientHostFor(agent))
+  if (DevToolsAgentHost::IsDebuggerAttached(this))
     return;
 
   if (is_during_unload) {

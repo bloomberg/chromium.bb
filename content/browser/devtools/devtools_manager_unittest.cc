@@ -10,7 +10,7 @@
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/test/test_content_browser_client.h"
@@ -127,8 +127,7 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
   DevToolsManagerImpl manager;
 
-  DevToolsAgentHost* agent =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh());
   DevToolsClientHost* host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(NULL == host);
 
@@ -154,13 +153,12 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
   DevToolsManagerImpl manager;
 
   TestDevToolsClientHost client_host;
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetFor(rvh());
   manager.RegisterDevToolsClientHostFor(agent_host, &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   std::string m = "test message";
-  agent_host = DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  agent_host = DevToolsAgentHost::GetFor(rvh());
   manager.DispatchOnInspectorFrontend(agent_host, m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
@@ -176,8 +174,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   contents()->SetDelegate(&delegate);
 
   TestDevToolsClientHost client_host;
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(inspected_rvh);
+  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetFor(inspected_rvh);
   DevToolsManager::GetInstance()->
       RegisterDevToolsClientHostFor(agent_host, &client_host);
 
@@ -214,7 +211,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   TestDevToolsClientHost client_host;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   devtools_manager->RegisterDevToolsClientHostFor(
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh()),
+      DevToolsAgentHost::GetFor(rvh()),
       &client_host);
 
   // Navigate to new site which should get a new RenderViewHost.
@@ -223,7 +220,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(pending_rvh())));
+      DevToolsAgentHost::GetFor(pending_rvh())));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
@@ -231,7 +228,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh())));
+      DevToolsAgentHost::GetFor(rvh())));
   client_host.Close(DevToolsManager::GetInstance());
 }
 

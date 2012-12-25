@@ -19,12 +19,13 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_browser_target.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager.h"
@@ -274,7 +275,7 @@ void DevToolsHttpHandlerImpl::Observe(int type,
     DevToolsAgentHost* agent = manager->GetDevToolsAgentHostFor(it->second);
     if (!agent)
       continue;
-    RenderViewHost* rvh = DevToolsAgentHostRegistry::GetRenderViewHost(agent);
+    RenderViewHost* rvh = agent->GetRenderViewHost();
     if (rvh && rvh->GetProcess() == process)
       it->second->InspectedContentsClosing();
   }
@@ -623,8 +624,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      rvh);
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh);
   if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id,
             "Target with given id is being inspected: " + page_id);
@@ -820,8 +820,7 @@ DevToolsHttpHandlerImpl::PageInfo
 DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh)
 {
   RenderViewHostDelegate* host_delegate = rvh->GetDelegate();
-  DevToolsAgentHost* agent =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh);
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);
   PageInfo page_info;

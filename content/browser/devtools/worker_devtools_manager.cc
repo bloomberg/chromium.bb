@@ -9,14 +9,13 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "content/browser/devtools/devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/common/process_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -28,7 +27,7 @@ namespace content {
 
 // Called on the UI thread.
 // static
-DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
+DevToolsAgentHost* DevToolsAgentHost::GetForWorker(
     int worker_process_id,
     int worker_route_id) {
   return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
@@ -57,7 +56,7 @@ struct WorkerDevToolsManager::TerminatedInspectedWorker {
 
 
 class WorkerDevToolsManager::WorkerDevToolsAgentHost
-    : public DevToolsAgentHost {
+    : public DevToolsAgentHostImpl {
  public:
   explicit WorkerDevToolsAgentHost(WorkerId worker_id)
       : has_worker_id_(false) {
@@ -87,7 +86,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   }
 
   virtual void Detach() {
-    DevToolsAgentHost::Detach();
+    DevToolsAgentHostImpl::Detach();
     Destroy();
   }
 
@@ -127,7 +126,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
         worker_process_id, worker_route_id, *message);
   }
 
-  // DevToolsAgentHost implementation.
+  // DevToolsAgentHostImpl implementation.
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE {
     if (!has_worker_id_) {
       delete message;
@@ -144,7 +143,6 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
 
   virtual void NotifyClientAttaching() OVERRIDE {}
   virtual void NotifyClientDetaching() OVERRIDE {}
-  virtual int GetRenderProcessId() OVERRIDE { return -1; }
 
   bool has_worker_id_;
   WorkerId worker_id_;

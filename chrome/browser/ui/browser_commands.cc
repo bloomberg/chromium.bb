@@ -55,7 +55,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -961,7 +961,7 @@ void ClearCache(Browser* browser) {
 bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
   WebContents* contents = chrome::GetActiveWebContents(browser);
   return contents ?
-      content::DevToolsAgentHostRegistry::IsDebuggerAttached(contents) : false;
+      content::DevToolsAgentHost::IsDebuggerAttached(contents) : false;
 }
 
 void ViewSource(Browser* browser, WebContents* contents) {

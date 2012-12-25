@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_H_
-#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_
+#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/console_message_level.h"
 
 namespace IPC {
@@ -17,11 +19,11 @@ class Message;
 namespace content {
 
 // Describes interface for managing devtools agents from the browser process.
-class CONTENT_EXPORT DevToolsAgentHost {
+class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
   class CONTENT_EXPORT CloseListener {
    public:
-    virtual void AgentHostClosing(DevToolsAgentHost*) = 0;
+    virtual void AgentHostClosing(DevToolsAgentHostImpl*) = 0;
    protected:
     virtual ~CloseListener() {}
   };
@@ -35,17 +37,18 @@ class CONTENT_EXPORT DevToolsAgentHost {
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message);
 
-  virtual int GetRenderProcessId() = 0;
-
   void set_close_listener(CloseListener* listener) {
     close_listener_ = listener;
   }
 
   int id() { return id_; }
 
+  // DevToolsAgentHost implementation.
+  virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
+
  protected:
-  DevToolsAgentHost();
-  virtual ~DevToolsAgentHost() {}
+  DevToolsAgentHostImpl();
+  virtual ~DevToolsAgentHostImpl() {}
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
   virtual void NotifyClientAttaching() = 0;
@@ -61,4 +64,4 @@ class CONTENT_EXPORT DevToolsAgentHost {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_

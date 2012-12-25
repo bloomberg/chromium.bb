@@ -15,7 +15,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -69,8 +68,7 @@ class DevToolsAgentHostRvhObserver : public RenderViewHostObserver {
 };
 
 // static
-DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-    RenderViewHost* rvh) {
+DevToolsAgentHost* DevToolsAgentHost::GetFor(RenderViewHost* rvh) {
   RenderViewDevToolsAgentHost* result = FindAgentHost(rvh);
   if (!result)
     result = new RenderViewDevToolsAgentHost(rvh);
@@ -78,22 +76,11 @@ DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHost(
 }
 
 // static
-RenderViewHost* DevToolsAgentHostRegistry::GetRenderViewHost(
-     DevToolsAgentHost* agent_host) {
-  Instances::iterator it = std::find(g_instances.Get().begin(),
-                                     g_instances.Get().end(),
-                                     agent_host);
-  if (it != g_instances.Get().end())
-    return (*it)->render_view_host_;
-  return NULL;
-}
-
-// static
-bool DevToolsAgentHostRegistry::HasDevToolsAgentHost(RenderViewHost* rvh) {
+bool DevToolsAgentHost::HasFor(RenderViewHost* rvh) {
   return FindAgentHost(rvh) != NULL;
 }
 
-bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
+bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
   if (g_instances == NULL)
     return false;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
@@ -113,7 +100,7 @@ bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
 }
 
 // static
-int DevToolsAgentHostRegistry::DisconnectRenderViewHost(RenderViewHost* rvh) {
+int DevToolsAgentHost::DisconnectRenderViewHost(RenderViewHost* rvh) {
   RenderViewDevToolsAgentHost* agent_host = FindAgentHost(rvh);
   if (!agent_host)
     return -1;
@@ -122,8 +109,8 @@ int DevToolsAgentHostRegistry::DisconnectRenderViewHost(RenderViewHost* rvh) {
 }
 
 // static
-void DevToolsAgentHostRegistry::ConnectRenderViewHost(int cookie,
-                                                      RenderViewHost* rvh) {
+void DevToolsAgentHost::ConnectRenderViewHost(int cookie,
+                                              RenderViewHost* rvh) {
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
     if (cookie == (*it)->id()) {
@@ -137,9 +124,9 @@ void DevToolsAgentHostRegistry::ConnectRenderViewHost(int cookie,
 void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
     RenderViewHost* pending,
     RenderViewHost* current) {
-  int cookie = DevToolsAgentHostRegistry::DisconnectRenderViewHost(pending);
+  int cookie = DevToolsAgentHost::DisconnectRenderViewHost(pending);
   if (cookie != -1)
-    DevToolsAgentHostRegistry::ConnectRenderViewHost(cookie, current);
+    DevToolsAgentHost::ConnectRenderViewHost(cookie, current);
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
@@ -151,12 +138,14 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     Observe(delegate->GetAsWebContents());
 }
 
-
-void RenderViewDevToolsAgentHost::Detach() {
-  DevToolsAgentHost::Detach();
-  Destroy();
+RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
+  return render_view_host_;
 }
 
+void RenderViewDevToolsAgentHost::Detach() {
+  DevToolsAgentHostImpl::Detach();
+  Destroy();
+}
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   msg->set_routing_id(render_view_host_->GetRoutingID());
@@ -179,10 +168,6 @@ void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
           render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),
       Details<RenderViewHost>(render_view_host_));
-}
-
-int RenderViewDevToolsAgentHost::GetRenderProcessId() {
-  return render_view_host_->GetProcess()->GetID();
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {

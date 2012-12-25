@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/devtools/devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -22,7 +22,7 @@ class RenderViewHost;
 class DevToolsAgentHostRvhObserver;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
-    : public DevToolsAgentHost,
+    : public DevToolsAgentHostImpl,
       private WebContentsObserver {
  public:
   static void OnCancelPendingNavigation(RenderViewHost* pending,
@@ -33,17 +33,19 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewHost* render_view_host() { return render_view_host_; }
 
  private:
-  friend class DevToolsAgentHostRegistry;
+  friend class DevToolsAgentHost;
   friend class DevToolsAgentHostRvhObserver;
 
   virtual ~RenderViewDevToolsAgentHost();
 
-  // DevToolsAgentHost implementation.
+  // DevTooolsAgentHost overrides.
+  virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
+
+  // DevToolsAgentHostImpl implementation.
   virtual void Detach() OVERRIDE;
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
   virtual void NotifyClientAttaching() OVERRIDE;
   virtual void NotifyClientDetaching() OVERRIDE;
-  virtual int GetRenderProcessId() OVERRIDE;
 
   // WebContentsObserver overrides.
   virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) OVERRIDE;

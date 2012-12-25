@@ -92,7 +92,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -121,7 +121,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DevToolsAgentHostRegistry;
+using content::DevToolsAgentHost;
 using content::PluginService;
 using extensions::CrxInstaller;
 using extensions::Extension;
@@ -730,10 +730,9 @@ void ExtensionService::ReloadExtensionWithEvents(
     ExtensionProcessManager* manager = system_->process_manager();
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
-    if (host && DevToolsAgentHostRegistry::HasDevToolsAgentHost(
-            host->render_view_host())) {
+    if (host && DevToolsAgentHost::HasFor(host->render_view_host())) {
       // Look for an open inspector for the background page.
-      int devtools_cookie = DevToolsAgentHostRegistry::DisconnectRenderViewHost(
+      int devtools_cookie = DevToolsAgentHost::DisconnectRenderViewHost(
           host->render_view_host());
       if (devtools_cookie >= 0)
         orphaned_dev_tools_[extension_id] = devtools_cookie;
@@ -2662,8 +2661,8 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
   if (iter == orphaned_dev_tools_.end())
     return;
 
-  DevToolsAgentHostRegistry::ConnectRenderViewHost(iter->second,
-                                                   host->render_view_host());
+  DevToolsAgentHost::ConnectRenderViewHost(iter->second,
+                                           host->render_view_host());
   orphaned_dev_tools_.erase(iter);
 }
 

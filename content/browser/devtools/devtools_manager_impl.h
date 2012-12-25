@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "content/browser/devtools/devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -23,7 +23,6 @@ class Message;
 
 namespace content {
 
-class DevToolsAgentHost;
 class RenderViewHost;
 
 // This class is a singleton that manages DevToolsClientHost instances and
@@ -33,7 +32,7 @@ class RenderViewHost;
 // just convenience methods that call corresponding methods accepting
 // DevToolAgentHost.
 class CONTENT_EXPORT DevToolsManagerImpl
-    : public DevToolsAgentHost::CloseListener,
+    : public DevToolsAgentHostImpl::CloseListener,
       public DevToolsManager {
  public:
   // Returns single instance of this class. The instance is destroyed on the
@@ -70,11 +69,11 @@ class CONTENT_EXPORT DevToolsManagerImpl
   friend struct DefaultSingletonTraits<DevToolsManagerImpl>;
 
   // DevToolsAgentHost::CloseListener implementation.
-  virtual void AgentHostClosing(DevToolsAgentHost* host) OVERRIDE;
+  virtual void AgentHostClosing(DevToolsAgentHostImpl* host) OVERRIDE;
 
-  void BindClientHost(DevToolsAgentHost* agent_host,
+  void BindClientHost(DevToolsAgentHostImpl* agent_host,
                       DevToolsClientHost* client_host);
-  void UnbindClientHost(DevToolsAgentHost* agent_host,
+  void UnbindClientHost(DevToolsAgentHostImpl* agent_host,
                         DevToolsClientHost* client_host);
 
   // These two maps are for tracking dependencies between inspected contents and
@@ -83,11 +82,11 @@ class CONTENT_EXPORT DevToolsManagerImpl
   //
   // DevToolsManagerImpl starts listening to DevToolsClientHosts when they are
   // put into these maps and removes them when they are closing.
-  typedef std::map<DevToolsAgentHost*, DevToolsClientHost*>
+  typedef std::map<DevToolsAgentHostImpl*, DevToolsClientHost*>
       AgentToClientHostMap;
   AgentToClientHostMap agent_to_client_host_;
 
-  typedef std::map<DevToolsClientHost*, DevToolsAgentHost*>
+  typedef std::map<DevToolsClientHost*, DevToolsAgentHostImpl*>
       ClientToAgentHostMap;
   ClientToAgentHostMap client_to_agent_host_;
 

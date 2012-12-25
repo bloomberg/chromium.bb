@@ -42,7 +42,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -61,7 +61,6 @@
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
-using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::NavigationController;
@@ -2489,7 +2488,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
   WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
       web_contents->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;

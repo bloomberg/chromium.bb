@@ -28,7 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/debugger.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -42,7 +42,6 @@
 #include "webkit/glue/webkit_glue.h"
 
 using content::DevToolsAgentHost;
-using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
@@ -158,8 +157,7 @@ class AttachedClientHosts {
           DevToolsManager::GetInstance()->GetDevToolsAgentHostFor(*it);
       if (!agent_host)
         continue;
-      content::RenderViewHost* rvh =
-          DevToolsAgentHostRegistry::GetRenderViewHost(agent_host);
+      content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
       if (rvh && WebContents::FromRenderViewHost(rvh) == contents)
         return static_cast<ExtensionDevToolsClientHost*>(*it);
     }
@@ -192,7 +190,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
                  content::Source<Profile>(profile));
 
   // Attach to debugger and tell it we are ready.
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
       web_contents_->GetRenderViewHost());
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 
@@ -463,7 +461,7 @@ bool AttachDebuggerFunction::RunImpl() {
     return false;
   }
 
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
       contents_->GetRenderViewHost());
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);

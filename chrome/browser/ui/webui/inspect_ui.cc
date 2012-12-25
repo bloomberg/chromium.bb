@@ -24,7 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
@@ -49,7 +49,6 @@
 using content::BrowserThread;
 using content::ChildProcessData;
 using content::DevToolsAgentHost;
-using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::RenderProcessHost;
@@ -104,11 +103,10 @@ DictionaryValue* BuildTargetDescriptor(
 }
 
 bool HasClientHost(RenderViewHost* rvh) {
-  if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh))
+  if (!DevToolsAgentHost::HasFor(rvh))
     return false;
 
-  DevToolsAgentHost* agent =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
+  DevToolsAgentHost* agent =DevToolsAgentHost::GetFor(rvh);
   return !!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
 }
 
@@ -287,8 +285,7 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
   }
 
   DevToolsAgentHost* agent_host =
-      DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(process_id,
-                                                               route_id);
+      DevToolsAgentHost::GetForWorker(process_id, route_id);
   if (agent_host)
     DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }

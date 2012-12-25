@@ -34,7 +34,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/load_notification_details.h"
@@ -56,7 +56,6 @@ base::LazyInstance<DevToolsWindowList>::Leaky
 }  // namespace
 
 using content::DevToolsAgentHost;
-using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::FileChooserParams;
@@ -104,10 +103,9 @@ DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
   if (!inspected_web_contents)
     return NULL;
 
-  if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(
-      inspected_web_contents->GetRenderViewHost()))
+  if (!DevToolsAgentHost::HasFor(inspected_web_contents->GetRenderViewHost()))
     return NULL;
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
       inspected_web_contents->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
@@ -173,8 +171,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
                                     int x,
                                     int y) {
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      inspected_rvh);
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(inspected_rvh);
   DevToolsManager::GetInstance()->InspectElement(agent, x, y);
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
@@ -660,8 +657,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     RenderViewHost* inspected_rvh,
     bool force_open,
     DevToolsToggleAction action) {
-  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      inspected_rvh);
+  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(inspected_rvh);
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(host);

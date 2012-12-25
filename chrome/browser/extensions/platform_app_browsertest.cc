@@ -31,7 +31,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/test/test_utils.h"
@@ -696,7 +696,7 @@ class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
 
 void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     const char* name, int test_flags) {
-  using content::DevToolsAgentHostRegistry;
+  using content::DevToolsAgentHost;
   ExtensionTestMessageListener launched_listener("Launched", false);
   const Extension* extension = LoadAndLaunchPlatformApp(name);
   ASSERT_TRUE(extension);
@@ -708,14 +708,14 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
   ASSERT_TRUE(rvh);
 
   // Ensure no DevTools open for the ShellWindow, then open one.
-  ASSERT_FALSE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+  ASSERT_FALSE(DevToolsAgentHost::HasFor(rvh));
   DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(rvh);
   content::WindowedNotificationObserver loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
           &devtools_window->web_contents()->GetController()));
   loaded_observer.Wait();
-  ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+  ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
 
   if (test_flags & RELAUNCH) {
     // Close the ShellWindow, and ensure it is gone.
@@ -736,7 +736,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     // DevTools should have reopened with the relaunch.
     rvh = window->web_contents()->GetRenderViewHost();
     ASSERT_TRUE(rvh);
-    ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+    ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
   }
 }
 
