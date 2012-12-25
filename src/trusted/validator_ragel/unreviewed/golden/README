@@ -1,3 +1,0 @@
-This directory contains golden files generated automatically by parse_hex.py
-from files in native_client/src/trusted/validator_x86/testdata/64/*.rval and
-used by run_ncval_tests.py to compare the two validators.
