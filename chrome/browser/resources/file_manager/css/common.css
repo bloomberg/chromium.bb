@@ -267,16 +267,25 @@ span.disclosureindicator {
    menus in FileBrowser look like native ChromeOS menus. */
 
 menu.chrome-menu {
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
+  -webkit-transition: opacity 200ms ease-in;
+  border: 1px solid rgba(0, 0, 0, .28);
   border-radius: 2px;
   outline: none;
   padding: 2px 0;
   z-index: 15;
 }
+
+menu.chrome-menu[hidden] {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 menu.chrome-menu > :not(hr) {
   background-position: 6px center;
   background-repeat: no-repeat;
-  color: rgb(34, 34, 34);
   height: 30px;
   line-height: 28px;
   padding-left: 28px;
