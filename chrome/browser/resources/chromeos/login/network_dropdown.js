@@ -128,13 +128,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Returns title button.
-     */
-    get titleButton() {
-      return this.children[1];
-    },
-
-    /**
      * Returns container of the menu items.
      */
     get container() {
@@ -147,8 +140,8 @@ cr.define('cr.ui', function() {
      * @param {string} icon Icon in dataURL format.
      */
     setTitle: function(title, icon) {
-      this.titleButton.firstElementChild.src = icon;
-      this.titleButton.lastElementChild.textContent = title;
+      this.title_.firstElementChild.src = icon;
+      this.title_.lastElementChild.textContent = title;
     },
 
     /**
@@ -231,7 +224,7 @@ cr.define('cr.ui', function() {
           item.controller.isShown = false;
           if (item.iid >= 0)
             chrome.send('networkItemChosen', [item.iid]);
-          this.parentNode.parentNode.titleButton.focus();
+          this.parentNode.parentNode.title_.focus();
         });
         wrapperDiv.addEventListener('mouseover', function f(e) {
           this.parentNode.selectItem(this, true);
@@ -253,7 +246,7 @@ cr.define('cr.ui', function() {
       var overlay = this.ownerDocument.createElement('div');
       overlay.classList.add('dropdown-overlay');
       overlay.addEventListener('click', function() {
-        this.parentNode.titleButton.focus();
+        this.parentNode.title_.focus();
         this.parentNode.isShown = false;
       });
       return overlay;
@@ -343,20 +336,18 @@ cr.define('cr.ui', function() {
           break;
         }
         case DropDown.KEYCODE_ENTER: {
-          var button = this.titleButton;
-          if (!button.opening) {
-            button.focus();
+          if (!this.title_.opening) {
+            this.title_.focus();
             this.isShown = false;
             var item =
-                button.controller.container.selectedItem.lastElementChild;
+                this.title_.controller.container.selectedItem.lastElementChild;
             if (item.iid >= 0 && !item.classList.contains('disabled-item'))
               chrome.send('networkItemChosen', [item.iid]);
-          } else {
-            button.opening = false;
           }
           break;
         }
       }
+      this.title_.opening = false;
     }
   };
 
