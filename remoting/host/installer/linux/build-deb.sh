@@ -29,9 +29,9 @@ fi
 
 # Include revision information in changelog when building from a local
 # git-based checkout.
-merge_head="$(git merge-base HEAD origin/git-svn 2>/dev/null)"
+merge_head="$(git merge-base HEAD origin/git-svn 2>/dev/null || true)"
 if [[ -n "$merge_head" ]]; then
-  revision="$(git svn find-rev "$merge_head" 2>/dev/null)"
+  revision="$(git svn find-rev "$merge_head" 2>/dev/null || true)"
   if [[ -n "$revision" ]]; then
     revision_text="(r$revision)"
   fi
