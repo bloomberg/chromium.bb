@@ -655,7 +655,7 @@ bool FileTaskExecutor::Execute(const std::vector<GURL>& file_urls) {
 // TODO(kaznacheev): Remove this method and inline its implementation at the
 // only place where it is used (DriveTaskExecutor::OnAppAuthorized)
 Browser* FileTaskExecutor::GetBrowser() const {
-  return browser::FindOrCreateTabbedBrowser(
+  return chrome::FindOrCreateTabbedBrowser(
       profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
 }

@@ -135,17 +135,16 @@ Browser* FindTabbedBrowser(Profile* profile,
                                         match_original_profiles);
 }
 
-Browser* FindOrCreateTabbedBrowser(Profile* profile,
-                                   chrome::HostDesktopType type) {
-  Browser* browser = FindTabbedBrowser(profile, false, type);
+}  // namespace browser
+
+namespace chrome {
+
+Browser* FindOrCreateTabbedBrowser(Profile* profile, HostDesktopType type) {
+  Browser* browser = browser::FindTabbedBrowser(profile, false, type);
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, type));
   return browser;
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 Browser* FindAnyBrowser(Profile* profile,
                         bool match_original_profiles,
@@ -189,7 +188,7 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return NULL;
 }
 
-chrome::HostDesktopType FindHostDesktopTypeForWebContents(
+HostDesktopType FindHostDesktopTypeForWebContents(
     const WebContents* web_contents) {
   Browser* browser = FindBrowserWithWebContents(web_contents);
   return browser ? browser->host_desktop_type() : HOST_DESKTOP_TYPE_NATIVE;

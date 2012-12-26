@@ -101,7 +101,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
 
     params->disposition = SINGLETON_TAB;
     params->browser =
-        browser::FindOrCreateTabbedBrowser(profile, params->host_desktop_type);
+        chrome::FindOrCreateTabbedBrowser(profile, params->host_desktop_type);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 

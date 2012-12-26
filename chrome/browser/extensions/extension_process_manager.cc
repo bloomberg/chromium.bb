@@ -316,8 +316,8 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
   // able to save settings from OTR.
   if (browser->profile()->IsOffTheRecord()) {
     Profile* profile = GetProfile();
-    browser = browser::FindOrCreateTabbedBrowser(profile->GetOriginalProfile(),
-                                                 browser->host_desktop_type());
+    browser = chrome::FindOrCreateTabbedBrowser(profile->GetOriginalProfile(),
+                                                browser->host_desktop_type());
   }
 
   OpenURLParams params(extension->options_url(), Referrer(), SINGLETON_TAB,

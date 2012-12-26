@@ -208,7 +208,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
 
 void OpenNewTab(const GURL& url, Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
@@ -222,8 +222,8 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
   // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
   // browser is leaked.
   Browser* browser =
-      browser::FindOrCreateTabbedBrowser(profile,
-                                         chrome::HOST_DESKTOP_TYPE_ASH);
+      chrome::FindOrCreateTabbedBrowser(profile,
+                                        chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowMessageBox(
       browser->window()->GetNativeWindow(),
       l10n_util::GetStringFUTF16(

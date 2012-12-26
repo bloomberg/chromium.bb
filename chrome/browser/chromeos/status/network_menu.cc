@@ -83,7 +83,7 @@ bool ShouldHighlightNetwork(const chromeos::Network* network) {
 // browser window with an empty tab and returns it.
 Browser* GetAppropriateBrowser() {
   DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
-  return browser::FindOrCreateTabbedBrowser(
+  return chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
 }
@@ -433,7 +433,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
     if (active_vpn)
       cros->DisconnectFromNetwork(active_vpn);
   } else if (flags & FLAG_VIEW_ACCOUNT) {
-    Browser* browser = browser::FindOrCreateTabbedBrowser(
+    Browser* browser = chrome::FindOrCreateTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(),
         chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSingletonTab(browser, GURL(top_up_url_));

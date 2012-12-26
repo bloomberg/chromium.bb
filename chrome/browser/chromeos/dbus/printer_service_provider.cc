@@ -74,8 +74,8 @@ void FindOrOpenCloudPrintPage(const std::string& vendor,
 
   Browser* browser = ActivateAndGetBrowserForUrl(url);
   if (!browser) {
-    browser = browser::FindOrCreateTabbedBrowser(profile,
-                                                 chrome::HOST_DESKTOP_TYPE_ASH);
+    browser = chrome::FindOrCreateTabbedBrowser(profile,
+                                                chrome::HOST_DESKTOP_TYPE_ASH);
     if (!browser)
       return;
     UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",

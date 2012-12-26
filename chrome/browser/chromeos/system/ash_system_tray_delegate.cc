@@ -871,7 +871,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Returns the last active browser. If there is no such browser, creates a new
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser() {
-    return browser::FindOrCreateTabbedBrowser(
+    return chrome::FindOrCreateTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(),
         chrome::HOST_DESKTOP_TYPE_ASH);
   }

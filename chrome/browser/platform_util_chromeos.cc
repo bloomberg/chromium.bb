@@ -38,7 +38,7 @@ void OpenItemOnFileThread(const FilePath& full_path) {
 
 void OpenURL(const std::string& url) {
   // TODO(beng): improve this to locate context from call stack.
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::NavigateParams params(

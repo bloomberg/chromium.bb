@@ -1279,7 +1279,7 @@ TaskManager* TaskManager::GetInstance() {
 }
 
 void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(), desktop_type);
   chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
                                 content::PAGE_TRANSITION_LINK);

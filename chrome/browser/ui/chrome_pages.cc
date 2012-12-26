@@ -193,8 +193,8 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
     // from an incognito window.
     if (browser->profile()->IsOffTheRecord()) {
       browser =
-          browser::FindOrCreateTabbedBrowser(original_profile,
-                                             chrome::HOST_DESKTOP_TYPE_NATIVE);
+          chrome::FindOrCreateTabbedBrowser(original_profile,
+                                            chrome::HOST_DESKTOP_TYPE_NATIVE);
     }
 
     const bool use_web_flow = SyncPromoUI::UseWebBasedSigninFlow();

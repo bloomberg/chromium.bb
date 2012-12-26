@@ -70,7 +70,7 @@ Browser* GetTargetBrowser() {
   Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
   if (browser)
     return browser;
-  return browser::FindOrCreateTabbedBrowser(
+  return chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
 }
@@ -300,7 +300,7 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
 }
 
 void ChromeShellDelegate::ShowTaskManager() {
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::OpenTaskManager(browser, false);

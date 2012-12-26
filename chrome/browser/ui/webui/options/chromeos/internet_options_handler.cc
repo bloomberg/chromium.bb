@@ -1518,7 +1518,7 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
 }
 
 Browser* InternetOptionsHandler::GetAppropriateBrowser() {
-  return browser::FindOrCreateTabbedBrowser(
+  return chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
 }

@@ -70,8 +70,8 @@ void BalloonCollectionImplAsh::ShowSettings(
   Profile* profile =
       balloon ? balloon->profile() : ProfileManager::GetDefaultProfile();
   Browser* browser =
-      browser::FindOrCreateTabbedBrowser(profile,
-                                         chrome::HOST_DESKTOP_TYPE_ASH);
+      chrome::FindOrCreateTabbedBrowser(profile,
+                                        chrome::HOST_DESKTOP_TYPE_ASH);
   if (GetBalloonExtension(balloon))
     chrome::ShowExtensions(browser);
   else

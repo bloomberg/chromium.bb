@@ -40,8 +40,8 @@ using content::Referrer;
 // Open the URL of the given history item in the current tab.
 - (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node {
   Browser* browser =
-      browser::FindOrCreateTabbedBrowser(bridge_->profile(),
-                                         chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::FindOrCreateTabbedBrowser(bridge_->profile(),
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
 

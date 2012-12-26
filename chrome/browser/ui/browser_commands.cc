@@ -317,7 +317,7 @@ void OpenWindowWithRestoredTabs(Profile* profile) {
 void OpenURLOffTheRecord(Profile* profile,
                          const GURL& url,
                          chrome::HostDesktopType desktop_type) {
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       profile->GetOffTheRecordProfile(), desktop_type);
   AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
@@ -468,8 +468,8 @@ void NewTab(Browser* browser) {
     GetActiveWebContents(browser)->GetView()->RestoreFocus();
   } else {
     Browser* b =
-        browser::FindOrCreateTabbedBrowser(browser->profile(),
-                                           browser->host_desktop_type());
+        chrome::FindOrCreateTabbedBrowser(browser->profile(),
+                                          browser->host_desktop_type());
     AddBlankTabAt(b, -1, true);
     b->window()->Show();
     // The call to AddBlankTabAt above did not set the focus to the tab as its
