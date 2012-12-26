@@ -418,20 +418,6 @@
    fun:thread_start
 }
 {
-   bug_20504
-   Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:+[NSObject* allocWithZone:]
-   ...
-   fun:-[NSCustomObject nibInstantiate]
-   fun:-[NSIBObjectData instantiateObject:]
-   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
-   fun:-[NSNib instantiateNibWithExternalNameTable:]
-   fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
-   fun:_ZN25ChromeBrowserMainPartsMac23PreMainMessageLoopStartEv
-}
-{
    bug_20582
    Memcheck:Leak
    fun:_Znw*

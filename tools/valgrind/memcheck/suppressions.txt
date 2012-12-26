@@ -1191,13 +1191,6 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
-   # See http://crbug.com/11139
-   bug_11139
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base23EnsureProcessTerminatedEi
-}
-{
    # very common in ui tests
    bug_16091
    Memcheck:Leak
@@ -1233,32 +1226,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
-   # very common in ui tests
-   bug_16093
-   Memcheck:Leak
-   ...
-   fun:getaddrinfo
-}
-{
-   # very common in ui tests
-   bug_16095
-   Memcheck:Leak
-   ...
-   fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKN*PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-}
-{
-   # Somewhat common in ui tests.  See also bug 9245.
-   bug_16102
-   Memcheck:Leak
-   ...
-   fun:realloc
-   fun:FcPatternObjectInsertElt
-   fun:FcConfigPatternAdd
-   fun:FcConfigSubstituteWithPat
-   fun:FcFontRenderPrepare
-}
-{
    bug_16128
    Memcheck:Leak
    fun:_Znw*
@@ -1268,14 +1235,6 @@
    fun:_ZN7content11ChildThread4InitEv
 }
 {
-   bug_16156
-   Memcheck:Leak
-   ...
-   fun:gtk_im_context_set_cursor_location
-   ...
-   fun:gtk_widget_size_allocate
-}
-{
    bug_16326
    Memcheck:Leak
    fun:_Znw*
@@ -1283,21 +1242,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
    fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
-}
-{
-   # Webkit leak in WebCore::HTMLNames::init() ?
-   bug_16579
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCore9HTMLNames4initEv
-}
-{
-   bug_16583
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_hash_table_new_full
 }
 {
    bug_17291
@@ -1339,12 +1283,6 @@
    fun:_ZN11ChildThread12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoEii
    ...
    fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
-}
-{
-   bug_19191
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCore10XLinkNames4initEv
 }
 {
    bug_19196
@@ -1443,17 +1381,6 @@
    ...
    fun:yy_reduce
 }
-{
-   bug_20581
-   Memcheck:Leak
-   ...
-   fun:btreeCreateTable
-   fun:sqlite3BtreeCreateTable
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
-}
 # IPCing uninitialized data
 {
    bug_20997_a
@@ -1521,14 +1448,6 @@
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
 }
 {
-   bug_27936
-   Memcheck:Leak
-   ...
-   fun:_ZN7history20ExpireHistoryBackend28BroadcastDeleteNotificationsEPNS0_18DeleteDependenciesE
-   fun:_ZN7history20ExpireHistoryBackend21ArchiveSomeOldHistoryEN4base4TimeEPKNS_20ExpiringVisitsReaderEi
-   fun:_ZN7history20ExpireHistoryBackend18DoArchiveIterationEv
-}
-{
    bug_28200
    Memcheck:Leak
    fun:malloc
@@ -1552,13 +1471,6 @@
    fun:tooltip_popup_timeout
    fun:gdk_threads_dispatch
    fun:g_timeout_dispatch
-}
-{
-   bug_28633
-   Memcheck:Leak
-   fun:calloc
-   fun:__new_exitfn
-   fun:__cxa_atexit
 }
 {
    bug_29675
