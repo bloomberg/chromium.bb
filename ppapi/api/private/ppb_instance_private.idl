@@ -9,6 +9,8 @@
  * instances.
  */
 
+[generate_thunk]
+
 label Chrome {
   M13 = 0.1
 };

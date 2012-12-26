@@ -194,6 +194,7 @@
           'thunk/ppb_input_event_api.h',
           'thunk/ppb_input_event_thunk.cc',
           'thunk/ppb_instance_api.h',
+          'thunk/ppb_instance_private_thunk.cc',
           'thunk/ppb_instance_thunk.cc',
           'thunk/ppb_message_loop_api.h',
           'thunk/ppb_messaging_thunk.cc',

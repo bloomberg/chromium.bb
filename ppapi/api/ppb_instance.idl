@@ -9,6 +9,8 @@
  * the module instance on a web page.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0
  };
