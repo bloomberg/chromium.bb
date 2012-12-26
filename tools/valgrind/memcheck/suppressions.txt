@@ -1226,6 +1226,21 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
+   # very common in ui tests, also seen in Linux Reliability
+   bug_16093
+   Memcheck:Leak
+   ...
+   fun:getaddrinfo
+}
+{
+   # very common in ui tests, also seen in Linux Reliability
+   bug_16095
+   Memcheck:Leak
+   ...
+   fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKN*PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+}
+{
    bug_16128
    Memcheck:Leak
    fun:_Znw*
