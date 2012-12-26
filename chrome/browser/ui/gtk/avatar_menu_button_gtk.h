@@ -31,8 +31,8 @@ class AvatarMenuButtonGtk {
   GtkWidget* widget() const { return widget_.get(); }
 
   // Sets the location the arrow should be displayed on the menu bubble.
-  void set_menu_arrow_location(BubbleGtk::ArrowLocationGtk arrow_location) {
-    arrow_location_ = arrow_location;
+  void set_menu_frame_style(BubbleGtk::FrameStyle frame_style) {
+    frame_style_ = frame_style;
   }
 
   // Sets the image to display on the button, typically the profile icon.
@@ -59,7 +59,7 @@ class AvatarMenuButtonGtk {
   Browser* browser_;
 
   // Which side of the bubble to display the arrow.
-  BubbleGtk::ArrowLocationGtk arrow_location_;
+  BubbleGtk::FrameStyle frame_style_;
 
   scoped_ptr<gfx::Image> icon_;
   bool is_gaia_picture_;

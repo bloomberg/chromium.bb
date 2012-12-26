@@ -44,31 +44,31 @@ class BubbleGtkTest : public InProcessBrowserTest,
 
 // Tests that we can adjust a bubble arrow so we can show a bubble without being
 // clipped. This test verifies the following four issues:
-// 1. Shows a bubble to the top-left corner and see its arrow location always
-// becomes ARROW_LOCATION_TOP_LEFT.
-// 2. Shows a bubble to the top-right corner and see its arrow location always
-// becomes ARROW_LOCATION_TOP_RIGHT.
-// 3. Shows a bubble to the bottom-left corner and see its arrow location always
-// becomes ARROW_LOCATION_BOTTOM_LEFT.
-// 4. Shows a bubble to the top-left corner and see its arrow location always
-// becomes ARROW_LOCATION_BOTTOM_RIGHT.
+// 1. Shows a bubble to the top-left corner and see its frame style always
+// becomes ANCHOR_TOP_LEFT.
+// 2. Shows a bubble to the top-right corner and see its frame style always
+// becomes ANCHOR_TOP_RIGHT.
+// 3. Shows a bubble to the bottom-left corner and see its frame style always
+// becomes ANCHOR_BOTTOM_LEFT.
+// 4. Shows a bubble to the top-left corner and see its frame style always
+// becomes ANCHOR_BOTTOM_RIGHT.
 IN_PROC_BROWSER_TEST_F(BubbleGtkTest, ArrowLocation) {
   int width = gdk_screen_get_width(gdk_screen_get_default());
   int height = gdk_screen_get_height(gdk_screen_get_default());
   struct {
     int x, y;
-    BubbleGtk::ArrowLocationGtk expected;
+    BubbleGtk::FrameStyle expected;
   } points[] = {
-    {0, 0, BubbleGtk::ARROW_LOCATION_TOP_LEFT},
-    {width - 1, 0, BubbleGtk::ARROW_LOCATION_TOP_RIGHT},
-    {0, height - 1, BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT},
-    {width - 1, height - 1, BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT},
+    {0, 0, BubbleGtk::ANCHOR_TOP_LEFT},
+    {width - 1, 0, BubbleGtk::ANCHOR_TOP_RIGHT},
+    {0, height - 1, BubbleGtk::ANCHOR_BOTTOM_LEFT},
+    {width - 1, height - 1, BubbleGtk::ANCHOR_BOTTOM_RIGHT},
   };
-  static const BubbleGtk::ArrowLocationGtk kPreferredLocations[] = {
-    BubbleGtk::ARROW_LOCATION_TOP_LEFT,
-    BubbleGtk::ARROW_LOCATION_TOP_RIGHT,
-    BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT,
-    BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT,
+  static const BubbleGtk::FrameStyle kPreferredLocations[] = {
+    BubbleGtk::ANCHOR_TOP_LEFT,
+    BubbleGtk::ANCHOR_TOP_RIGHT,
+    BubbleGtk::ANCHOR_BOTTOM_LEFT,
+    BubbleGtk::ANCHOR_BOTTOM_RIGHT,
   };
 
   GtkWidget* anchor = GetNativeBrowserWindow();
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BubbleGtkTest, ArrowLocation) {
                                               BubbleGtk::GRAB_INPUT,
                                           theme_service,
                                           this);
-      EXPECT_EQ(points[i].expected, bubble->current_arrow_location_);
+      EXPECT_EQ(points[i].expected, bubble->actual_frame_style_);
       bubble->Close();
     }
   }
@@ -100,16 +100,16 @@ IN_PROC_BROWSER_TEST_F(BubbleGtkTest, NoArrow) {
   int height = gdk_screen_get_height(gdk_screen_get_default());
   struct {
     int x, y;
-    BubbleGtk::ArrowLocationGtk expected;
+    BubbleGtk::FrameStyle expected;
   } points[] = {
-    {0, 0, BubbleGtk::ARROW_LOCATION_NONE},
-    {width - 1, 0, BubbleGtk::ARROW_LOCATION_NONE},
-    {0, height - 1, BubbleGtk::ARROW_LOCATION_FLOAT},
-    {width - 1, height - 1, BubbleGtk::ARROW_LOCATION_FLOAT},
+    {0, 0, BubbleGtk::FLOAT_BELOW_RECT},
+    {width - 1, 0, BubbleGtk::FLOAT_BELOW_RECT},
+    {0, height - 1, BubbleGtk::CENTER_OVER_RECT},
+    {width - 1, height - 1, BubbleGtk::CENTER_OVER_RECT},
   };
-  static const BubbleGtk::ArrowLocationGtk kPreferredLocations[] = {
-    BubbleGtk::ARROW_LOCATION_NONE,
-    BubbleGtk::ARROW_LOCATION_FLOAT,
+  static const BubbleGtk::FrameStyle kPreferredLocations[] = {
+    BubbleGtk::FLOAT_BELOW_RECT,
+    BubbleGtk::CENTER_OVER_RECT,
   };
 
   GtkWidget* anchor = GetNativeBrowserWindow();
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(BubbleGtkTest, NoArrow) {
                                               BubbleGtk::GRAB_INPUT,
                                           theme_service,
                                           this);
-      EXPECT_EQ(points[i].expected, bubble->current_arrow_location_);
+      EXPECT_EQ(points[i].expected, bubble->actual_frame_style_);
       bubble->Close();
     }
   }

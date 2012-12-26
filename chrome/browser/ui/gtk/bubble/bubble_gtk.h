@@ -48,37 +48,40 @@ class BubbleDelegateGtk {
 // calling Close().
 class BubbleGtk : public content::NotificationObserver {
  public:
-  // Where should the arrow be placed relative to the bubble?
-  enum ArrowLocationGtk {
-    ARROW_LOCATION_TOP_LEFT,
-    ARROW_LOCATION_TOP_MIDDLE,
-    ARROW_LOCATION_TOP_RIGHT,
-    ARROW_LOCATION_BOTTOM_LEFT,
-    ARROW_LOCATION_BOTTOM_MIDDLE,
-    ARROW_LOCATION_BOTTOM_RIGHT,
-    ARROW_LOCATION_NONE,  // No arrow. Positioned under the supplied rect.
-    ARROW_LOCATION_FLOAT,  // No arrow. Centered over the supplied rect.
+  // The style of the frame of the bubble (includes positioning and arrow).
+  enum FrameStyle {
+    ANCHOR_TOP_LEFT,
+    ANCHOR_TOP_MIDDLE,
+    ANCHOR_TOP_RIGHT,
+    ANCHOR_BOTTOM_LEFT,
+    ANCHOR_BOTTOM_MIDDLE,
+    ANCHOR_BOTTOM_RIGHT,
+    FLOAT_BELOW_RECT,  // No arrow. Positioned under the supplied rect.
+    CENTER_OVER_RECT,  // No arrow. Centered over the supplied rect.
+    FIXED_TOP_LEFT,  // No arrow. Shown at top left of |toplevel_window_|.
+    FIXED_TOP_RIGHT,  // No arrow. Shown at top right of |toplevel_window_|.
   };
 
   enum BubbleAttribute {
     NONE = 0,
-    MATCH_SYSTEM_THEME = 1 << 0, // Matches system colors/themes when possible.
-    POPUP_WINDOW = 1 << 1, // Displays as popup instead of top-level window.
-    GRAB_INPUT = 1 << 2, // Causes bubble to grab keyboard/pointer input.
+    MATCH_SYSTEM_THEME = 1 << 0,  // Matches system colors/themes when possible.
+    POPUP_WINDOW = 1 << 1,  // Displays as popup instead of top-level window.
+    GRAB_INPUT = 1 << 2,  // Causes bubble to grab keyboard/pointer input.
   };
 
   // Show a bubble, pointing at the area |rect| (in coordinates relative to
   // |anchor_widget|'s origin). A bubble will try to fit on the screen, so it
   // can point to any edge of |rect|. If |rect| is NULL, the widget's entire
   // area will be used. The bubble will host the |content| widget. Its arrow
-  // will be drawn at |arrow_location| if possible. The |delegate| will be
-  // notified when the bubble is closed. The bubble will perform an X grab of
-  // the pointer and keyboard, and will close itself if a click is received
-  // outside of the bubble.
+  // will be drawn according to |frame_style| if possible, and will be
+  // automatically flipped in RTL locales. The |delegate| will be notified when
+  // the bubble is closed. The bubble will perform an X grab of the pointer and
+  // keyboard, and will close itself if a click is received outside of the
+  // bubble.
   static BubbleGtk* Show(GtkWidget* anchor_widget,
                          const gfx::Rect* rect,
                          GtkWidget* content,
-                         ArrowLocationGtk arrow_location,
+                         FrameStyle frame_style,
                          int attribute_flags,
                          GtkThemeService* provider,
                          BubbleDelegateGtk* delegate);
@@ -109,40 +112,40 @@ class BubbleGtk : public content::NotificationObserver {
     FRAME_STROKE,
   };
 
-  BubbleGtk(GtkThemeService* provider, int attribute_flags);
+  BubbleGtk(GtkThemeService* provider,
+            FrameStyle frame_style,
+            int attribute_flags);
   virtual ~BubbleGtk();
 
   // Creates the Bubble.
   void Init(GtkWidget* anchor_widget,
             const gfx::Rect* rect,
             GtkWidget* content,
-            ArrowLocationGtk arrow_location,
             int attribute_flags);
 
   // Make the points for our polygon frame, either for fill (the mask), or for
   // when we stroke the border.
   static std::vector<GdkPoint> MakeFramePolygonPoints(
-      ArrowLocationGtk arrow_location,
+      FrameStyle frame_style,
       int width,
       int height,
       FrameType type);
 
-  // Get the location where the arrow should be placed (which is a function of
-  // the preferred location and of the direction that the bubble should be
-  // facing to fit onscreen).  |arrow_x| (or |arrow_y|) is the X component (or
-  // Y component) in screen coordinates of the point at which the bubble's arrow
-  // should be aimed, respectively. |width| (or |height|) is the bubble's width
-  // (or height).
-  static ArrowLocationGtk GetArrowLocation(ArrowLocationGtk preferred_location,
-                                           int arrow_x,
-                                           int arrow_y,
-                                           int width,
-                                           int height);
+  // Get the allowed frame style (which is a function of the preferred style and
+  // of the direction that the bubble should be facing to fit onscreen).
+  // |arrow_x| (or |arrow_y|) is the X component (or Y component) in screen
+  // coordinates of the point at which the bubble's arrow should be aimed,
+  // respectively.  |width| (or |height|) is the bubble's width (or height).
+  static FrameStyle GetAllowedFrameStyle(FrameStyle preferred_location,
+                                         int arrow_x,
+                                         int arrow_y,
+                                         int width,
+                                         int height);
 
-  // Updates |arrow_location_| based on the toplevel window's current position
-  // and the bubble's size.  If the |force_move_and_reshape| is true or the
-  // location changes, moves and reshapes the window and returns true.
-  bool UpdateArrowLocation(bool force_move_and_reshape);
+  // Updates the frame style based on the toplevel window's current position and
+  // the bubble's size.  If the |force_move_and_reshape| is true or the location
+  // changes, moves and reshapes the window and returns true.
+  bool UpdateFrameStyle(bool force_move_and_reshape);
 
   // Reshapes the window and updates |mask_region_|.
   void UpdateWindowShape();
@@ -209,10 +212,13 @@ class BubbleGtk : public content::NotificationObserver {
   // not).
   GdkRegion* mask_region_;
 
-  // Where would we prefer for the arrow be drawn relative to the bubble, and
-  // where is it currently drawn?
-  ArrowLocationGtk preferred_arrow_location_;
-  ArrowLocationGtk current_arrow_location_;
+  // The frame style given to |Show()| that will attempt to be used. It will be
+  // flipped in RTL. If there's not enough screen space for the given
+  // FrameStyle, this may be changed and differ from |actual_frame_style_|.
+  FrameStyle requested_frame_style_;
+
+  // The currently used frame style given screen size and directionality.
+  FrameStyle actual_frame_style_;
 
   // Whether the background should match the system theme, when the system theme
   // is being used. For example, the bookmark bubble does, but extension popups

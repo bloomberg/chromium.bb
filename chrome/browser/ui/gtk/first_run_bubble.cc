@@ -69,12 +69,10 @@ FirstRunBubble::FirstRunBubble(Browser* browser,
   gtk_box_pack_start(GTK_BOX(content), top_line, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), subtext, FALSE, FALSE, 0);
 
-  BubbleGtk::ArrowLocationGtk arrow_location = !base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = BubbleGtk::Show(anchor,
                             &rect,
                             content,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_LEFT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

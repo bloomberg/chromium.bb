@@ -139,7 +139,7 @@ void ConfirmBubbleGtk::Show() {
   bubble_ = BubbleGtk::Show(anchor_,
                             &rect,
                             content,
-                            BubbleGtk::ARROW_LOCATION_NONE,
+                            BubbleGtk::FLOAT_BELOW_RECT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

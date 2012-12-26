@@ -29,7 +29,7 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
  public:
   AvatarMenuBubbleGtk(Browser* browser,
                       GtkWidget* anchor,
-                      BubbleGtk::ArrowLocationGtk arrow,
+                      BubbleGtk::FrameStyle arrow,
                       const gfx::Rect* rect);
   virtual ~AvatarMenuBubbleGtk();
 

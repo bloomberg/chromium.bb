@@ -89,7 +89,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   bubble_ = BubbleGtk::Show(web_contents->GetContentNativeView(),
                             &anchor_rect,
                             content,
-                            BubbleGtk::ARROW_LOCATION_TOP_LEFT,
+                            BubbleGtk::ANCHOR_TOP_LEFT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

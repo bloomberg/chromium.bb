@@ -815,12 +815,8 @@ void BrowserTitlebar::UpdateAvatar() {
     avatar = cache.GetAvatarIconOfProfileAtIndex(index);
   }
   avatar_button_->SetIcon(avatar, is_gaia_picture);
-
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      display_avatar_on_left_ ^ base::i18n::IsRTL() ?
-          BubbleGtk::ARROW_LOCATION_TOP_LEFT :
-          BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  avatar_button_->set_menu_arrow_location(arrow_location);
+  avatar_button_->set_menu_frame_style(display_avatar_on_left_ ?
+      BubbleGtk::ANCHOR_TOP_LEFT : BubbleGtk::ANCHOR_TOP_RIGHT);
 }
 
 void BrowserTitlebar::MaximizeButtonClicked() {

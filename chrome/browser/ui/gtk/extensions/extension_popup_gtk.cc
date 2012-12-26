@@ -185,14 +185,10 @@ void ExtensionPopupGtk::ShowPopup() {
   // We'll be in the upper-right corner of the window for LTR languages, so we
   // want to put the arrow at the upper-right corner of the bubble to match the
   // page and app menus.
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      !base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,
                             border_box,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_RIGHT,
                             being_inspected_ ? 0 :
                                 BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
                             GtkThemeService::GetFrom(browser_->profile()),

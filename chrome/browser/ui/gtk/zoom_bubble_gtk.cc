@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/zoom_bubble_gtk.h"
 
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,9 +34,9 @@ const int kBubbleAnchorHeight = 25;
 }  // namespace
 
 // static
-void ZoomBubbleGtk::Show(GtkWidget* anchor,
-                         content::WebContents* web_contents,
-                         bool auto_close) {
+void ZoomBubbleGtk::ShowBubble(GtkWidget* anchor,
+                               content::WebContents* web_contents,
+                               bool auto_close) {
   // If the bubble is already showing and its |auto_close_| value is equal to
   // |auto_close|, the bubble can be reused and only the label text needs to
   // be updated.
@@ -47,7 +48,7 @@ void ZoomBubbleGtk::Show(GtkWidget* anchor,
     // If the bubble is already showing but its |auto_close_| value is not equal
     // to |auto_close|, the bubble's focus properties must change, so the
     // current bubble must be closed and a new one created.
-    Close();
+    CloseBubble();
     DCHECK(!g_bubble);
 
     g_bubble = new ZoomBubbleGtk(anchor, web_contents, auto_close);
@@ -55,9 +56,14 @@ void ZoomBubbleGtk::Show(GtkWidget* anchor,
 }
 
 // static
-void ZoomBubbleGtk::Close() {
+void ZoomBubbleGtk::CloseBubble() {
   if (g_bubble)
-    g_bubble->CloseBubble();
+    g_bubble->Close();
+}
+
+// static
+bool ZoomBubbleGtk::IsShowing() {
+  return g_bubble != NULL;
 }
 
 ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
@@ -104,11 +110,11 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
 
   gtk_container_set_focus_child(GTK_CONTAINER(container), NULL);
 
-  gfx::Rect rect(kBubbleAnchorWidth, kBubbleAnchorHeight);
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      BubbleGtk::ARROW_LOCATION_TOP_MIDDLE;
+  gfx::Rect rect = gfx::Rect(kBubbleAnchorWidth, kBubbleAnchorHeight);
+  BubbleGtk::FrameStyle frame_style = gtk_widget_is_toplevel(anchor) ?
+      BubbleGtk::FIXED_TOP_RIGHT : BubbleGtk::ANCHOR_TOP_MIDDLE;
   int bubble_options = BubbleGtk::MATCH_SYSTEM_THEME | BubbleGtk::POPUP_WINDOW;
-  bubble_ = BubbleGtk::Show(anchor, &rect, event_box_, arrow_location,
+  bubble_ = BubbleGtk::Show(anchor, &rect, event_box_, frame_style,
       auto_close ? bubble_options : bubble_options | BubbleGtk::GRAB_INPUT,
       theme_service, NULL);
 
@@ -167,7 +173,7 @@ void ZoomBubbleGtk::StartTimerIfNecessary() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
         this,
-        &ZoomBubbleGtk::CloseBubble);
+        &ZoomBubbleGtk::Close);
   }
 }
 
@@ -176,7 +182,7 @@ void ZoomBubbleGtk::StopTimerIfNecessary() {
     timer_.Stop();
 }
 
-void ZoomBubbleGtk::CloseBubble() {
+void ZoomBubbleGtk::Close() {
   DCHECK(bubble_);
   bubble_->Close();
 }

@@ -119,13 +119,10 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
 
   InitContents();
 
-  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,  // |rect|
                             contents_,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_LEFT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

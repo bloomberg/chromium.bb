@@ -6,7 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "base/logging.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -35,40 +35,90 @@ const int kArrowToContentPadding = -4;
 // We draw flat diagonal corners, each corner is an NxN square.
 const int kCornerSize = 3;
 
+// The amount of padding (in pixels) from the top of |toplevel_window_| to the
+// top of |window_| when fixed positioning is used.
+const int kFixedPositionPaddingEnd = 10;
+const int kFixedPositionPaddingTop = 5;
+
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
 // Helper functions that encapsulate arrow locations.
-bool HasArrow(BubbleGtk::ArrowLocationGtk location) {
-  return location != BubbleGtk::ARROW_LOCATION_NONE &&
-      location != BubbleGtk::ARROW_LOCATION_FLOAT;
+bool HasArrow(BubbleGtk::FrameStyle frame_style) {
+  return frame_style != BubbleGtk::FLOAT_BELOW_RECT &&
+         frame_style != BubbleGtk::CENTER_OVER_RECT &&
+         frame_style != BubbleGtk::FIXED_TOP_LEFT &&
+         frame_style != BubbleGtk::FIXED_TOP_RIGHT;
 }
 
-bool IsArrowLeft(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT;
+bool IsArrowLeft(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::ANCHOR_TOP_LEFT ||
+         frame_style == BubbleGtk::ANCHOR_BOTTOM_LEFT;
 }
 
-bool IsArrowMiddle(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_MIDDLE ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_MIDDLE;
+bool IsArrowMiddle(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::ANCHOR_TOP_MIDDLE ||
+         frame_style == BubbleGtk::ANCHOR_BOTTOM_MIDDLE;
 }
 
-bool IsArrowRight(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
+bool IsArrowRight(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::ANCHOR_TOP_RIGHT ||
+         frame_style == BubbleGtk::ANCHOR_BOTTOM_RIGHT;
 }
 
-bool IsArrowTop(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_TOP_MIDDLE ||
-      location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+bool IsArrowTop(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::ANCHOR_TOP_LEFT ||
+         frame_style == BubbleGtk::ANCHOR_TOP_MIDDLE ||
+         frame_style == BubbleGtk::ANCHOR_TOP_RIGHT;
 }
 
-bool IsArrowBottom(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_MIDDLE ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
+bool IsArrowBottom(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::ANCHOR_BOTTOM_LEFT ||
+         frame_style == BubbleGtk::ANCHOR_BOTTOM_MIDDLE ||
+         frame_style == BubbleGtk::ANCHOR_BOTTOM_RIGHT;
+}
+
+bool IsFixed(BubbleGtk::FrameStyle frame_style) {
+  return frame_style == BubbleGtk::FIXED_TOP_LEFT ||
+         frame_style == BubbleGtk::FIXED_TOP_RIGHT;
+}
+
+BubbleGtk::FrameStyle AdjustFrameStyleForLocale(
+    BubbleGtk::FrameStyle frame_style) {
+  // Only RTL requires more work.
+  if (!base::i18n::IsRTL())
+    return frame_style;
+
+  switch (frame_style) {
+    // These don't flip.
+    case BubbleGtk::ANCHOR_TOP_MIDDLE:
+    case BubbleGtk::ANCHOR_BOTTOM_MIDDLE:
+    case BubbleGtk::FLOAT_BELOW_RECT:
+    case BubbleGtk::CENTER_OVER_RECT:
+      return frame_style;
+
+    // These do flip.
+    case BubbleGtk::ANCHOR_TOP_LEFT:
+      return BubbleGtk::ANCHOR_TOP_RIGHT;
+
+    case BubbleGtk::ANCHOR_TOP_RIGHT:
+      return BubbleGtk::ANCHOR_TOP_LEFT;
+
+    case BubbleGtk::ANCHOR_BOTTOM_LEFT:
+      return BubbleGtk::ANCHOR_BOTTOM_RIGHT;
+
+    case BubbleGtk::ANCHOR_BOTTOM_RIGHT:
+      return BubbleGtk::ANCHOR_BOTTOM_LEFT;
+
+    case BubbleGtk::FIXED_TOP_LEFT:
+      return BubbleGtk::FIXED_TOP_RIGHT;
+
+    case BubbleGtk::FIXED_TOP_RIGHT:
+      return BubbleGtk::FIXED_TOP_LEFT;
+  }
+
+  NOTREACHED();
+  return BubbleGtk::ANCHOR_TOP_LEFT;
 }
 
 }  // namespace
@@ -77,17 +127,21 @@ bool IsArrowBottom(BubbleGtk::ArrowLocationGtk location) {
 BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
                            const gfx::Rect* rect,
                            GtkWidget* content,
-                           ArrowLocationGtk arrow_location,
+                           FrameStyle frame_style,
                            int attribute_flags,
                            GtkThemeService* provider,
                            BubbleDelegateGtk* delegate) {
-  BubbleGtk* bubble = new BubbleGtk(provider, attribute_flags);
-  bubble->Init(anchor_widget, rect, content, arrow_location, attribute_flags);
+  BubbleGtk* bubble = new BubbleGtk(provider,
+                                    AdjustFrameStyleForLocale(frame_style),
+                                    attribute_flags);
+  bubble->Init(anchor_widget, rect, content, attribute_flags);
   bubble->set_delegate(delegate);
   return bubble;
 }
 
-BubbleGtk::BubbleGtk(GtkThemeService* provider, int attribute_flags)
+BubbleGtk::BubbleGtk(GtkThemeService* provider,
+                     FrameStyle frame_style,
+                     int attribute_flags)
     : delegate_(NULL),
       window_(NULL),
       theme_service_(provider),
@@ -95,10 +149,10 @@ BubbleGtk::BubbleGtk(GtkThemeService* provider, int attribute_flags)
       toplevel_window_(NULL),
       anchor_widget_(NULL),
       mask_region_(NULL),
-      preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
-      current_arrow_location_(ARROW_LOCATION_TOP_LEFT),
+      requested_frame_style_(frame_style),
+      actual_frame_style_(ANCHOR_TOP_LEFT),
       match_system_theme_(attribute_flags & MATCH_SYSTEM_THEME),
-      grab_input_(true),
+      grab_input_(attribute_flags & GRAB_INPUT),
       closed_by_escape_(false) {
 }
 
@@ -116,7 +170,6 @@ BubbleGtk::~BubbleGtk() {
 void BubbleGtk::Init(GtkWidget* anchor_widget,
                      const gfx::Rect* rect,
                      GtkWidget* content,
-                     ArrowLocationGtk arrow_location,
                      int attribute_flags) {
   // If there is a current grab widget (menu, other bubble, etc.), hide it.
   GtkWidget* current_grab_widget = gtk_grab_get_current();
@@ -128,9 +181,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   toplevel_window_ = gtk_widget_get_toplevel(anchor_widget_);
   DCHECK(gtk_widget_is_toplevel(toplevel_window_));
   rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
-  preferred_arrow_location_ = arrow_location;
 
-  grab_input_ = attribute_flags & GRAB_INPUT;
   // Using a TOPLEVEL window may cause placement issues with certain WMs but it
   // is necessary to be able to focus the window.
   window_ = gtk_window_new(attribute_flags & POPUP_WINDOW ?
@@ -154,8 +205,13 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 
   gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
 
+  // |requested_frame_style_| is used instead of |actual_frame_style_| here
+  // because |actual_frame_style_| is only correct after calling
+  // |UpdateFrameStyle()|. Unfortunately, |UpdateFrameStyle()| requires knowing
+  // the size of |window_| (which happens later on).
+  int arrow_padding = HasArrow(requested_frame_style_) ? kArrowSize : 0;
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), kArrowSize, 0, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), arrow_padding, 0, 0, 0);
 
   gtk_container_add(GTK_CONTAINER(alignment), content);
   gtk_container_add(GTK_CONTAINER(window_), alignment);
@@ -165,7 +221,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   // OnSizeAllocate, so the mask can be applied to the GdkWindow.
   gtk_widget_realize(window_);
 
-  UpdateArrowLocation(true);  // Force move and reshape.
+  UpdateFrameStyle(true);  // Force move and reshape.
   StackWindow();
 
   gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK);
@@ -218,22 +274,22 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 // corners.  This is a lot more work, but they get anti-aliasing.
 // static
 std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
-    ArrowLocationGtk arrow_location,
+    FrameStyle frame_style,
     int width,
     int height,
     FrameType type) {
   using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
-  int top_arrow_size = IsArrowTop(arrow_location) ? kArrowSize : 0;
-  int bottom_arrow_size = IsArrowBottom(arrow_location) ? kArrowSize : 0;
-  bool on_left = IsArrowLeft(arrow_location);
+  int top_arrow_size = IsArrowTop(frame_style) ? kArrowSize : 0;
+  int bottom_arrow_size = IsArrowBottom(frame_style) ? kArrowSize : 0;
+  bool on_left = IsArrowLeft(frame_style);
 
   // If we're stroking the frame, we need to offset some of our points by 1
   // pixel.  We do this when we draw horizontal lines that are on the bottom or
   // when we draw vertical lines that are closer to the end (where "end" is the
-  // right side for ARROW_LOCATION_TOP_LEFT).
-  int y_off = (type == FRAME_MASK) ? 0 : -1;
+  // right side for ANCHOR_TOP_LEFT).
+  int y_off = type == FRAME_MASK ? 0 : -1;
   // We use this one for arrows located on the left.
   int x_off_l = on_left ? y_off : 0;
   // We use this one for RTL.
@@ -247,8 +303,7 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 
   // The top arrow.
   if (top_arrow_size) {
-    int arrow_x = arrow_location == ARROW_LOCATION_TOP_MIDDLE ?
-        width / 2 : kArrowX;
+    int arrow_x = frame_style == ANCHOR_TOP_MIDDLE ? width / 2 : kArrowX;
     points.push_back(MakeBidiGdkPoint(
         arrow_x - top_arrow_size + x_off_r, top_arrow_size, width, on_left));
     points.push_back(MakeBidiGdkPoint(
@@ -276,7 +331,7 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 
   // The bottom arrow.
   if (bottom_arrow_size) {
-    int arrow_x = arrow_location == ARROW_LOCATION_BOTTOM_MIDDLE ?
+    int arrow_x = frame_style == ANCHOR_BOTTOM_MIDDLE ?
         width / 2 : kArrowX;
     points.push_back(MakeBidiGdkPoint(
         arrow_x + bottom_arrow_size + 1 + x_off_l,
@@ -304,43 +359,46 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
   return points;
 }
 
-BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
-    ArrowLocationGtk preferred_location,
+BubbleGtk::FrameStyle BubbleGtk::GetAllowedFrameStyle(
+    FrameStyle preferred_style,
     int arrow_x,
     int arrow_y,
     int width,
     int height) {
+  if (IsFixed(preferred_style))
+    return preferred_style;
+
   const int screen_width = gdk_screen_get_width(gdk_screen_get_default());
   const int screen_height = gdk_screen_get_height(gdk_screen_get_default());
 
   // Choose whether to show the bubble above or below the specified location.
-  const bool prefer_top_arrow = IsArrowTop(preferred_location) ||
-      preferred_location == ARROW_LOCATION_NONE;
+  const bool prefer_top_arrow = IsArrowTop(preferred_style) ||
+             preferred_style == FLOAT_BELOW_RECT;
   // The bleed measures the amount of bubble that would be shown offscreen.
   const int top_arrow_bleed =
       std::max(height + kArrowSize + arrow_y - screen_height, 0);
   const int bottom_arrow_bleed = std::max(height + kArrowSize - arrow_y, 0);
 
-  ArrowLocationGtk arrow_location_none = ARROW_LOCATION_NONE;
-  ArrowLocationGtk arrow_location_left = ARROW_LOCATION_TOP_LEFT;
-  ArrowLocationGtk arrow_location_middle = ARROW_LOCATION_TOP_MIDDLE;
-  ArrowLocationGtk arrow_location_right = ARROW_LOCATION_TOP_RIGHT;
+  FrameStyle frame_style_none = FLOAT_BELOW_RECT;
+  FrameStyle frame_style_left = ANCHOR_TOP_LEFT;
+  FrameStyle frame_style_middle = ANCHOR_TOP_MIDDLE;
+  FrameStyle frame_style_right = ANCHOR_TOP_RIGHT;
   if ((prefer_top_arrow && (top_arrow_bleed > bottom_arrow_bleed)) ||
       (!prefer_top_arrow && (top_arrow_bleed >= bottom_arrow_bleed))) {
-    arrow_location_none = ARROW_LOCATION_FLOAT;
-    arrow_location_left = ARROW_LOCATION_BOTTOM_LEFT;
-    arrow_location_middle = ARROW_LOCATION_BOTTOM_MIDDLE;
-    arrow_location_right =ARROW_LOCATION_BOTTOM_RIGHT;
+    frame_style_none = CENTER_OVER_RECT;
+    frame_style_left = ANCHOR_BOTTOM_LEFT;
+    frame_style_middle = ANCHOR_BOTTOM_MIDDLE;
+    frame_style_right = ANCHOR_BOTTOM_RIGHT;
   }
 
-  if (!HasArrow(preferred_location))
-    return arrow_location_none;
+  if (!HasArrow(preferred_style))
+    return frame_style_none;
 
-  if (IsArrowMiddle(preferred_location))
-    return arrow_location_middle;
+  if (IsArrowMiddle(preferred_style))
+    return frame_style_middle;
 
   // Choose whether to show the bubble left or right of the specified location.
-  const bool prefer_left_arrow = IsArrowLeft(preferred_location);
+  const bool prefer_left_arrow = IsArrowLeft(preferred_style);
   // The bleed measures the amount of bubble that would be shown offscreen.
   const int left_arrow_bleed =
       std::max(width + arrow_x - kArrowX - screen_width, 0);
@@ -349,10 +407,10 @@ BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
   // Use the preferred location if it doesn't bleed more than the opposite side.
   return ((prefer_left_arrow && (left_arrow_bleed <= right_arrow_bleed)) ||
           (!prefer_left_arrow && (left_arrow_bleed < right_arrow_bleed))) ?
-      arrow_location_left : arrow_location_right;
+      frame_style_left : frame_style_right;
 }
 
-bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
+bool BubbleGtk::UpdateFrameStyle(bool force_move_and_reshape) {
   if (!toplevel_window_ || !anchor_widget_)
     return false;
 
@@ -363,17 +421,17 @@ bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
   gtk_widget_translate_coordinates(anchor_widget_, toplevel_window_,
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
-  ArrowLocationGtk old_location = current_arrow_location_;
+  FrameStyle old_frame_style = actual_frame_style_;
   GtkAllocation allocation;
   gtk_widget_get_allocation(window_, &allocation);
-  current_arrow_location_ = GetArrowLocation(
-      preferred_arrow_location_,
+  actual_frame_style_ = GetAllowedFrameStyle(
+      requested_frame_style_,
       toplevel_x + offset_x + (rect_.width() / 2),  // arrow_x
       toplevel_y + offset_y,
       allocation.width,
       allocation.height);
 
-  if (force_move_and_reshape || current_arrow_location_ != old_location) {
+  if (force_move_and_reshape || actual_frame_style_ != old_frame_style) {
     UpdateWindowShape();
     MoveWindow();
     // We need to redraw the entire window to repaint its border.
@@ -391,7 +449,7 @@ void BubbleGtk::UpdateWindowShape() {
   GtkAllocation allocation;
   gtk_widget_get_allocation(window_, &allocation);
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      current_arrow_location_, allocation.width, allocation.height,
+      actual_frame_style_, allocation.width, allocation.height,
       FRAME_MASK);
   mask_region_ = gdk_region_polygon(&points[0],
                                     points.size(),
@@ -414,17 +472,28 @@ void BubbleGtk::MoveWindow() {
   gtk_widget_translate_coordinates(anchor_widget_, toplevel_window_,
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(window_, &allocation);
-
   gint screen_x = 0;
-  if (!HasArrow(current_arrow_location_) ||
-      IsArrowMiddle(current_arrow_location_)) {
+  if (IsFixed(actual_frame_style_)) {
+    GtkAllocation toplevel_allocation;
+    gtk_widget_get_allocation(toplevel_window_, &toplevel_allocation);
+
+    GtkAllocation bubble_allocation;
+    gtk_widget_get_allocation(window_, &bubble_allocation);
+
+    int x_offset = actual_frame_style_ == FIXED_TOP_LEFT ?
+        kFixedPositionPaddingEnd :
+        toplevel_allocation.width - bubble_allocation.width -
+            kFixedPositionPaddingEnd;
+    screen_x = toplevel_x + x_offset;
+  } else if (!HasArrow(actual_frame_style_) ||
+             IsArrowMiddle(actual_frame_style_)) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(window_, &allocation);
     screen_x =
         toplevel_x + offset_x + (rect_.width() / 2) - allocation.width / 2;
-  } else if (IsArrowLeft(current_arrow_location_)) {
+  } else if (IsArrowLeft(actual_frame_style_)) {
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) - kArrowX;
-  } else if (IsArrowRight(current_arrow_location_)) {
+  } else if (IsArrowRight(actual_frame_style_)) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(window_, &allocation);
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) -
@@ -434,10 +503,14 @@ void BubbleGtk::MoveWindow() {
   }
 
   gint screen_y = toplevel_y + offset_y + rect_.height();
-  if (IsArrowTop(current_arrow_location_) ||
-      current_arrow_location_ == ARROW_LOCATION_NONE) {
+  if (IsFixed(actual_frame_style_)) {
+    screen_y = toplevel_y + kFixedPositionPaddingTop;
+  } else if (IsArrowTop(actual_frame_style_) ||
+             actual_frame_style_ == FLOAT_BELOW_RECT) {
     screen_y += kArrowToContentPadding;
   } else {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(window_, &allocation);
     screen_y -= allocation.height + kArrowToContentPadding;
   }
 
@@ -579,7 +652,7 @@ gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
   GtkAllocation allocation;
   gtk_widget_get_allocation(window_, &allocation);
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      current_arrow_location_, allocation.width, allocation.height,
+      actual_frame_style_, allocation.width, allocation.height,
       FRAME_STROKE);
   gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
 
@@ -599,10 +672,9 @@ gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
 // and apply our shape mask region.
 void BubbleGtk::OnSizeAllocate(GtkWidget* widget,
                                GtkAllocation* allocation) {
-  if (!UpdateArrowLocation(false)) {
+  if (!UpdateFrameStyle(false)) {
     UpdateWindowShape();
-    if (current_arrow_location_ != ARROW_LOCATION_TOP_LEFT)
-      MoveWindow();
+    MoveWindow();
   }
 }
 
@@ -671,7 +743,7 @@ void BubbleGtk::OnForeshadowWidgetHide(GtkWidget* widget) {
 
 gboolean BubbleGtk::OnToplevelConfigure(GtkWidget* widget,
                                         GdkEventConfigure* event) {
-  if (!UpdateArrowLocation(false))
+  if (!UpdateFrameStyle(false))
     MoveWindow();
   StackWindow();
   return FALSE;
@@ -684,7 +756,7 @@ gboolean BubbleGtk::OnToplevelUnmap(GtkWidget* widget, GdkEvent* event) {
 
 void BubbleGtk::OnAnchorAllocate(GtkWidget* widget,
                                  GtkAllocation* allocation) {
-  if (!UpdateArrowLocation(false))
+  if (!UpdateFrameStyle(false))
     MoveWindow();
 }
 

@@ -91,15 +91,12 @@ void BundleInstalledBubbleGtk::ShowInternal(const BundleInstaller* bundle) {
   gtk_box_pack_start(GTK_BOX(close_column), close_button_->widget(),
       FALSE, FALSE, 0);
 
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      !base::i18n::IsRTL() ? BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-                             BubbleGtk::ARROW_LOCATION_TOP_LEFT;
   gfx::Rect bounds = gtk_util::WidgetBounds(reference_widget);
 
   bubble_ = BubbleGtk::Show(reference_widget,
                             &bounds,
                             bubble_content,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_RIGHT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

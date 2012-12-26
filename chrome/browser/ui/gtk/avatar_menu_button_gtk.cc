@@ -19,7 +19,7 @@
 AvatarMenuButtonGtk::AvatarMenuButtonGtk(Browser* browser)
     : image_(NULL),
       browser_(browser),
-      arrow_location_(BubbleGtk::ARROW_LOCATION_TOP_LEFT),
+      frame_style_(BubbleGtk::ANCHOR_TOP_LEFT),
       is_gaia_picture_(false),
       old_height_(0) {
   GtkWidget* event_box = gtk_event_box_new();
@@ -71,7 +71,7 @@ void AvatarMenuButtonGtk::ShowAvatarBubble() {
   DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
   // Only show the avatar bubble if the avatar button is in the title bar.
   if (gtk_widget_get_parent_window(widget_.get()))
-    new AvatarMenuBubbleGtk(browser_, widget_.get(), arrow_location_, NULL);
+    new AvatarMenuBubbleGtk(browser_, widget_.get(), frame_style_, NULL);
 }
 
 void AvatarMenuButtonGtk::UpdateButtonIcon() {

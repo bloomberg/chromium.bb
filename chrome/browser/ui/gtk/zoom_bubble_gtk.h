@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_GTK_ZOOM_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_ZOOM_BUBBLE_GTK_H_
 
+#include <gtk/gtk.h>
+
 #include "base/basictypes.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -18,13 +20,18 @@ class WebContents;
 
 class ZoomBubbleGtk {
  public:
-  // Shows the zoom bubble, pointing at |anchor_widget|.
-  static void Show(GtkWidget* anchor,
-                   content::WebContents* web_contents,
-                   bool auto_close);
+  // Shows the zoom bubble below |anchor_widget| with an arrow pointing at
+  // |anchor_widget|. If |anchor_widget| is a toplevel window, the bubble will
+  // fixed positioned in the top right of corner of the widget with no arrow.
+  static void ShowBubble(GtkWidget* anchor,
+                         content::WebContents* web_contents,
+                         bool auto_close);
 
-  // Closes the zoom bubble.
-  static void Close();
+  // Whether the zoom bubble is currently showing.
+  static bool IsShowing();
+
+  // Closes the zoom bubble (if there is one).
+  static void CloseBubble();
 
  private:
   ZoomBubbleGtk(GtkWidget* anchor,
@@ -44,7 +51,7 @@ class ZoomBubbleGtk {
   void Refresh();
 
   // Closes the zoom bubble.
-  void CloseBubble();
+  void Close();
 
   // Notified when the bubble is destroyed so this instance can be deleted.
   CHROMEGTK_CALLBACK_0(ZoomBubbleGtk, void, OnDestroy);

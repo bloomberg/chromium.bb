@@ -102,9 +102,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
 
-  // Shows the bookmark bubble.
-  void ShowZoomBubble();
-
   // Happens when the zoom changes for the active tab. |can_show_bubble| will be
   // true if it was a user action and a bubble could be shown.
   void ZoomChangedForActiveTab(bool can_show_bubble);
@@ -394,6 +391,13 @@ class LocationBarViewGtk : public OmniboxEditController,
   void SetKeywordHintLabel(const string16& keyword);
 
   void ShowFirstRunBubbleInternal();
+
+  // Get the correct zoom bubble anchor according to whether the browser window
+  // is fullscreen or not.
+  GtkWidget* GetZoomBubbleAnchor();
+
+  // Shows the zoom bubble.
+  void ShowZoomBubble();
 
   // Show or hide |tab_to_search_box_| and |tab_to_search_hint_| according to
   // the value of |show_selected_keyword_|, |show_keyword_hint_|, and the

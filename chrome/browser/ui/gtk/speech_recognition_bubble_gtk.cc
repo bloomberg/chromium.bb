@@ -197,7 +197,7 @@ void SpeechRecognitionBubbleGtk::Show() {
   bubble_ = BubbleGtk::Show(reference_widget,
                             &target_rect,
                             content,
-                            BubbleGtk::ARROW_LOCATION_TOP_LEFT,
+                            BubbleGtk::ANCHOR_TOP_LEFT,
                             BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
                             theme_provider,
                             this);

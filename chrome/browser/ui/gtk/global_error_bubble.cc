@@ -101,14 +101,10 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
 
   g_signal_connect(bottom, "realize", G_CALLBACK(OnBottomRealizeThunk), this);
 
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT :
-      BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = BubbleGtk::Show(anchor,
                             NULL,
                             content,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_RIGHT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

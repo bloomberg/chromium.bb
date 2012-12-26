@@ -258,14 +258,10 @@ void ContentSettingBubbleGtk::BuildBubble() {
   gtk_widget_grab_focus(bottom_box);
   gtk_widget_grab_focus(button);
 
-  BubbleGtk::ArrowLocationGtk arrow_location =
-      !base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,
                             bubble_content,
-                            arrow_location,
+                            BubbleGtk::ANCHOR_TOP_RIGHT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,

@@ -245,11 +245,10 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkWidget* anchor_widget,
   // Initialize focus to the send button.
   gtk_container_set_focus_child(GTK_CONTAINER(content), send_);
 
-  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+  BubbleGtk::FrameStyle frame_style = BubbleGtk::ANCHOR_TOP_RIGHT;
   const int attribute_flags = BubbleGtk::MATCH_SYSTEM_THEME |
                               BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT;
-  bubble_ = BubbleGtk::Show(anchor_widget_, NULL, content, arrow_location,
+  bubble_ = BubbleGtk::Show(anchor_widget_, NULL, content, frame_style,
                             attribute_flags, theme_service_, this /*delegate*/);
   if (!bubble_) {
     NOTREACHED();

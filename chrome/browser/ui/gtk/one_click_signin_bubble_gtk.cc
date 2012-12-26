@@ -78,15 +78,12 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
   GtkWidget* const app_menu_widget =
       browser_window_gtk->GetToolbar()->GetAppMenuButton();
   gfx::Rect bounds = gtk_util::WidgetBounds(app_menu_widget);
-  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
-      BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ =
-      BubbleGtk::Show(app_menu_widget, &bounds, bubble_content,
-                      arrow_location,
-                      BubbleGtk::MATCH_SYSTEM_THEME |
-                          BubbleGtk::POPUP_WINDOW |
-                          BubbleGtk::GRAB_INPUT,
-                      theme_provider, this);
+  bubble_ = BubbleGtk::Show(app_menu_widget, &bounds, bubble_content,
+                            BubbleGtk::ANCHOR_TOP_RIGHT,
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
+                            theme_provider, this);
   gtk_widget_grab_focus(ok_button);
 }
 

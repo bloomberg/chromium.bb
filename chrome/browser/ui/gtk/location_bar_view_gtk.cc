@@ -620,6 +620,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  content::Source<Profile>(browser()->profile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                 content::Source<FullscreenController>(
+                     browser()->fullscreen_controller()));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile->GetPrefs(),
                                base::Bind(&LocationBarViewGtk::UpdateStarIcon,
@@ -751,7 +755,7 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   } else {
     gtk_widget_queue_draw(widget());
   }
-  ZoomBubbleGtk::Close();
+  ZoomBubbleGtk::CloseBubble();
 }
 
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
@@ -1184,6 +1188,11 @@ void LocationBarViewGtk::Observe(int type,
       break;
     }
 
+    case chrome::NOTIFICATION_FULLSCREEN_CHANGED: {
+      ZoomBubbleGtk::CloseBubble();
+      break;
+    }
+
     default:
       NOTREACHED();
   }
@@ -1523,7 +1532,7 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
   if (event->button == 1 && GetWebContents()) {
     // If the zoom icon is clicked, show the zoom bubble and keep it open until
     // it loses focus.
-    ZoomBubbleGtk::Show(zoom_.get(), GetWebContents(), false);
+    ZoomBubbleGtk::ShowBubble(GetZoomBubbleAnchor(), GetWebContents(), false);
     return TRUE;
   }
   return FALSE;
@@ -1575,7 +1584,14 @@ void LocationBarViewGtk::ShowZoomBubble() {
   if (!zoom_.get() || toolbar_model_->GetInputInProgress())
     return;
 
-  ZoomBubbleGtk::Show(zoom_.get(), GetWebContents(), true);
+  ZoomBubbleGtk::ShowBubble(GetZoomBubbleAnchor(), GetWebContents(), true);
+}
+
+GtkWidget* LocationBarViewGtk::GetZoomBubbleAnchor() {
+  // |browser_->window()| is null until |browser_->CreateBrowserWindow()| has
+  // been called.
+  return browser_->window() && browser_->window()->IsFullscreen() ?
+      GTK_WIDGET(browser()->window()->GetNativeWindow()) : zoom_.get();
 }
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,
@@ -1622,7 +1638,7 @@ void LocationBarViewGtk::UpdateZoomIcon() {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       toolbar_model_->GetInputInProgress()) {
     gtk_widget_hide(zoom_.get());
-    ZoomBubbleGtk::Close();
+    ZoomBubbleGtk::CloseBubble();
     return;
   }
 
