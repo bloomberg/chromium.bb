@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/bookmarks/bookmark_model.h"
+
 #include <set>
 #include <string>
 
@@ -18,22 +20,14 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
