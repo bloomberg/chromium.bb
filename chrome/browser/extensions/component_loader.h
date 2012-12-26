@@ -33,17 +33,8 @@ class ComponentLoader {
     return component_extensions_.size();
   }
 
-  // Creates and loads all registered component extensions, including those with
-  // background pages.
-  void BulkLoadAll();
-
-  // Create all registered component extensions, loading those without
-  // background pages and deferring others until a call to BulkLoadDeferred.
-  void BulkLoadDeferBackgroundPages();
-
-  // Load component extensions deferred in the last call to
-  // BulkLoadDeferBackgroundPages.
-  void BulkLoadDeferred();
+  // Creates and loads all registered component extensions.
+  void LoadAll();
 
   // Clear the list of all registered extensions and unloads them from the
   // extension service.
@@ -121,8 +112,7 @@ class ComponentLoader {
                   const FilePath& root_directory);
 
   // Loads a registered component extension.
-  void Load(const ComponentExtensionInfo& info,
-            bool defer_if_has_background_page);
+  void Load(const ComponentExtensionInfo& info);
 
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
@@ -150,10 +140,6 @@ class ComponentLoader {
   RegisteredComponentExtensions component_extensions_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Extensions with background pages deferred by LoadAll(true).
-  typedef std::vector<scoped_refptr<const Extension> > DeferredAtLoadExtensions;
-  DeferredAtLoadExtensions deferred_at_load_extensions;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };

@@ -502,7 +502,7 @@ void ExtensionService::RegisterForImportFinished() {
 }
 
 void ExtensionService::InitAfterImport() {
-  component_loader_->BulkLoadDeferred();
+  component_loader_->LoadAll();
 
   CheckForExternalUpdates();
 
@@ -591,14 +591,13 @@ void ExtensionService::Init() {
   // here instead of in installedloader.
   if (g_browser_process->profile_manager() &&
       g_browser_process->profile_manager()->will_import()) {
+    // Do not load any component extensions, since they may conflict with the
+    // import process.
 
-    // Defer component extensions with background pages, since they may conflict
-    // with the import process.
-    component_loader_->BulkLoadDeferBackgroundPages();
     extensions::InstalledLoader(this).LoadAllExtensions();
     RegisterForImportFinished();
   } else {
-    component_loader_->BulkLoadAll();
+    component_loader_->LoadAll();
     extensions::InstalledLoader(this).LoadAllExtensions();
 
     // TODO(erikkay) this should probably be deferred to a future point
@@ -1991,7 +1990,7 @@ void ExtensionService::UnloadAllExtensions() {
 
 void ExtensionService::ReloadExtensions() {
   UnloadAllExtensions();
-  component_loader_->BulkLoadAll();
+  component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
 }
 

@@ -198,10 +198,10 @@ TEST_F(ComponentLoaderTest, Remove) {
   component_loader_.Remove(extension_path_);
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 
-  // Try adding and removing before BulkLoadAll() is called.
+  // Try adding and removing before LoadAll() is called.
   component_loader_.Add(manifest_contents_, extension_path_);
   component_loader_.Remove(extension_path_);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 
   // Load an extension, and check that it's unloaded when Remove() is called.
@@ -212,8 +212,8 @@ TEST_F(ComponentLoaderTest, Remove) {
   component_loader_.Remove(extension_path_);
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 
-  // And after calling BulkLoadAll(), it shouldn't get loaded.
-  component_loader_.BulkLoadAll();
+  // And after calling LoadAll(), it shouldn't get loaded.
+  component_loader_.LoadAll();
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 }
 
@@ -221,44 +221,20 @@ TEST_F(ComponentLoaderTest, LoadAll) {
   extension_service_.set_ready(false);
 
   // No extensions should be loaded if none were added.
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 
-  // Use BulkLoadAll() to load the default extensions.
+  // Use LoadAll() to load the default extensions.
   component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
   unsigned int default_count = extension_service_.extensions()->size();
 
   // Clear the list of loaded extensions, and reload with one more.
   extension_service_.clear_extensions();
   component_loader_.Add(manifest_contents_, extension_path_);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
 
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
-}
-
-TEST_F(ComponentLoaderTest, BulkLoadDeferred) {
-  extension_service_.set_ready(false);
-
-  // Use BulkLoadDeferBackgroundPages to get a baseline of extensions with
-  // background pages.
-  component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.BulkLoadDeferBackgroundPages();
-  unsigned int default_count_no_bg = extension_service_.extensions()->size();
-  component_loader_.BulkLoadDeferred();
-  unsigned int default_count_bg = extension_service_.extensions()->size();
-
-  // Clear and reload with one more, which is known to have a background page.
-  extension_service_.clear_extensions();
-  component_loader_.Add(manifest_contents_, extension_path_);
-  component_loader_.BulkLoadDeferBackgroundPages();
-
-  // Count should not change, since the load will be deferred.
-  EXPECT_EQ(default_count_no_bg, extension_service_.extensions()->size());
-
-  // After loading deferred there should be one more than previously.
-  component_loader_.BulkLoadDeferred();
-  EXPECT_EQ(default_count_bg + 1, extension_service_.extensions()->size());
 }
 
 TEST_F(ComponentLoaderTest, RemoveAll) {
@@ -281,7 +257,7 @@ TEST_F(ComponentLoaderTest, RemoveAll) {
 
 TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
   component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
   unsigned int default_count = extension_service_.extensions()->size();
 
   // Set the pref, and it should get loaded automatically.
@@ -295,7 +271,7 @@ TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
   extension_service_.clear_extensions();
   component_loader_.ClearAllRegistered();
   component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
 
   // Number of loaded extensions should be the same after changing the pref.
@@ -323,7 +299,7 @@ TEST_F(ComponentLoaderTest, AddOrReplace) {
             component_loader_.registered_extensions_count());
 
   extension_service_.set_ready(true);
-  component_loader_.BulkLoadAll();
+  component_loader_.LoadAll();
 
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
   EXPECT_EQ(0u, extension_service_.unloaded_count());
