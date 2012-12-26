@@ -204,6 +204,7 @@ void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
 void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
     RenderViewHost* rvh) {
   DCHECK(render_view_host_);
+  scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
   NotifyCloseListener();
   render_view_host_ = NULL;
 }
