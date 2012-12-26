@@ -11,7 +11,8 @@ target of 'all'.
 
 import TestGyp
 
-# Ninja and Android don't support --generator-output.
+# Android doesn't support --generator-output.
+# Ninja doesn't support relocation.
 test = TestGyp.TestGyp(formats=['!ninja', '!android'])
 
 test.writable(test.workpath('copies'), False)

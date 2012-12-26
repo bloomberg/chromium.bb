@@ -97,21 +97,6 @@ def Define(d, flavor):
   return QuoteShellArgument(ninja_syntax.escape('-D' + d), flavor)
 
 
-def InvertRelativePath(path):
-  """Given a relative path like foo/bar, return the inverse relative path:
-  the path from the relative path back to the origin dir.
-
-  E.g. os.path.normpath(os.path.join(path, InvertRelativePath(path)))
-  should always produce the empty string."""
-
-  if not path:
-    return path
-  # Only need to handle relative paths into subdirectories for now.
-  assert '..' not in path, path
-  depth = len(path.split(os.path.sep))
-  return os.path.sep.join(['..'] * depth)
-
-
 class Target:
   """Target represents the paths used within a single gyp target.
 
@@ -218,12 +203,12 @@ class Target:
 
 class NinjaWriter:
   def __init__(self, qualified_target, target_outputs, base_dir, build_dir,
-               output_file, flavor, abs_build_dir=None):
+               output_file, flavor, toplevel_dir=None):
     """
     base_dir: path from source root to directory containing this gyp file,
               by gyp semantics, all input paths are relative to this
     build_dir: path from source root to build output
-    abs_build_dir: absolute path to the build directory
+    toplevel_dir: path to the toplevel directory
     """
 
     self.qualified_target = qualified_target
@@ -232,7 +217,10 @@ class NinjaWriter:
     self.build_dir = build_dir
     self.ninja = ninja_syntax.Writer(output_file)
     self.flavor = flavor
-    self.abs_build_dir = abs_build_dir
+    self.abs_build_dir = None
+    if toplevel_dir is not None:
+      self.abs_build_dir = os.path.abspath(os.path.join(toplevel_dir,
+                                                        build_dir))
     self.obj_ext = '.obj' if flavor == 'win' else '.o'
     if flavor == 'win':
       # See docstring of msvs_emulation.GenerateEnvironmentFiles().
@@ -241,9 +229,11 @@ class NinjaWriter:
         self.win_env[arch] = 'environment.' + arch
 
     # Relative path from build output dir to base dir.
-    self.build_to_base = os.path.join(InvertRelativePath(build_dir), base_dir)
+    build_to_top = gyp.common.InvertRelativePath(build_dir, toplevel_dir)
+    self.build_to_base = os.path.join(build_to_top, base_dir)
     # Relative path from base dir to build dir.
-    self.base_to_build = os.path.join(InvertRelativePath(base_dir), build_dir)
+    base_to_top = gyp.common.InvertRelativePath(base_dir, toplevel_dir)
+    self.base_to_build = os.path.join(base_to_top, build_dir)
 
   def ExpandSpecial(self, path, product_dir=None):
     """Expand specials like $!PRODUCT_DIR in |path|.
@@ -1372,7 +1362,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings = data[build_file].get('make_global_settings', [])
-  build_to_root = InvertRelativePath(build_dir)
+  build_to_root = gyp.common.InvertRelativePath(build_dir,
+                                                options.toplevel_dir)
   for key, value in make_global_settings:
     if key == 'CC':
       cc = os.path.join(build_to_root, value)
@@ -1729,7 +1720,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     abs_build_dir = os.path.abspath(toplevel_build)
     writer = NinjaWriter(qualified_target, target_outputs, base_path, build_dir,
                          OpenOutput(os.path.join(toplevel_build, output_file)),
-                         flavor, abs_build_dir=abs_build_dir)
+                         flavor, toplevel_dir=options.toplevel_dir)
     master_ninja.subninja(output_file)
 
     target = writer.WriteSpec(

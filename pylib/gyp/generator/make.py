@@ -619,21 +619,6 @@ def QuoteSpaces(s, quote=r'\ '):
   return s.replace(' ', quote)
 
 
-def InvertRelativePath(path):
-  """Given a relative path like foo/bar, return the inverse relative path:
-  the path from the relative path back to the origin dir.
-
-  E.g. os.path.normpath(os.path.join(path, InvertRelativePath(path)))
-  should always produce the empty string."""
-
-  if not path:
-    return path
-  # Only need to handle relative paths into subdirectories for now.
-  assert '..' not in path, path
-  depth = len(path.split(os.path.sep))
-  return os.path.sep.join(['..'] * depth)
-
-
 # Map from qualified target to path to output.
 target_outputs = {}
 # Map from qualified target to any linkable output.  A subset
@@ -1417,7 +1402,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
               lambda p: Sourceify(self.Absolutify(p)))
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
-          gyp_to_build = InvertRelativePath(self.path)
+          gyp_to_build = gyp.common.InvertRelativePath(self.path)
           target_postbuild = self.xcode_settings.GetTargetPostbuilds(
               configname,
               QuoteSpaces(os.path.normpath(os.path.join(gyp_to_build,

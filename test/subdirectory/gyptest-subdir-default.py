@@ -13,7 +13,8 @@ and using the subdirectory's solution or project file as the entry point.
 import TestGyp
 import errno
 
-# Ninja and Android don't support running from subdirectories.
+# Android doesn't support running from subdirectories.
+# Ninja doesn't support relocation.
 test = TestGyp.TestGyp(formats=['!ninja', '!android'])
 
 test.run_gyp('prog1.gyp', chdir='src')

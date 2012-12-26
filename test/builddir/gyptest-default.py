@@ -24,6 +24,7 @@ import TestGyp
 # directory, or if the test is wrong for assuming everything generated is under
 # the current directory.
 # Android does not support setting the build directory.
+# Ninja does not support relocation.
 test = TestGyp.TestGyp(formats=['!make', '!ninja', '!android'])
 
 test.run_gyp('prog1.gyp', '--depth=..', chdir='src')
