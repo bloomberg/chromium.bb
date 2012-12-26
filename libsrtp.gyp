@@ -17,10 +17,17 @@
       'srtp/crypto/include',
     ],
     'conditions': [
-      ['target_arch=="x64"', {
+      ['target_arch=="x64" and OS!="win"', {
         'defines': [
           'CPU_CISC',
           'SIZEOF_UNSIGNED_LONG=8',
+          'SIZEOF_UNSIGNED_LONG_LONG=8',
+        ],
+      }],
+      ['target_arch=="x64" and OS=="win"', {
+        'defines': [
+          'CPU_CISC',
+          'SIZEOF_UNSIGNED_LONG=4',
           'SIZEOF_UNSIGNED_LONG_LONG=8',
         ],
       }],
@@ -93,10 +100,17 @@
         'srtp/crypto/include',
       ],
       'conditions': [
-        ['target_arch=="x64"', {
+        ['target_arch=="x64" and OS!="win"', {
           'defines': [
             'CPU_CISC',
             'SIZEOF_UNSIGNED_LONG=8',
+            'SIZEOF_UNSIGNED_LONG_LONG=8',
+          ],
+        }],
+        ['target_arch=="x64" and OS=="win"', {
+          'defines': [
+            'CPU_CISC',
+            'SIZEOF_UNSIGNED_LONG=4',
             'SIZEOF_UNSIGNED_LONG_LONG=8',
           ],
         }],
