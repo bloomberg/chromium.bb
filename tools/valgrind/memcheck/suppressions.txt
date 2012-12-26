@@ -4817,15 +4817,6 @@
    fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
 }
 {
-   bug_122249d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6WebKit17IDBCallbacksProxy9onSuccessEN3WTF10PassRefPtrIN7WebCore27IDBDatabaseBackendInterfaceEEE
-   fun:_ZN7WebCore22IDBDatabaseBackendImpl19processPendingCallsEv
-   fun:_ZN7WebCore22IDBDatabaseBackendImpl35transactionFinishedAndCompleteFiredEN3WTF10PassRefPtrINS_25IDBTransactionBackendImplEEE
-   fun:_ZN7WebCore25IDBTransactionBackendImpl6commitEv
-}
-{
    bug_122429
    Memcheck:Leak
    fun:_Znw*
