@@ -22,7 +22,7 @@ set -o errexit
 
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=9944
+ARCHIVED_PEXE_TRANSLATOR_REV=10489
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
@@ -284,15 +284,32 @@ archived-pexe-translator-test() {
       ${ARCHIVED_PEXE_TRANSLATOR_REV} ${tarball}
   tar jxf ${tarball} --directory ${dir}
 
-  # Note, the archive provides both stripped (ext="") and unstripped
-  #       (ext=".strip-all") versions of the pexes ("ld-new", "llc").
+  # Note, the archive provides both unstripped (ext="") and stripped
+  #       (ext=".strip-all") versions of the pexes ("ld", "llc").
   #       We do not want to strip them here as the "translator"
   #       package and the toolchain package maybe out of sync and
   #       strip does more than just stripping, it also upgrades
   #       bitcode versions if there was a format change.
   #       We only run with ext="" to save time, but if any bugs show up
   #       we can switch to ext=".strip-all" and diagnose the bugs.
-  local ext=""
+  local ld_ext=""
+  local llc_ext=""
+  # Pexes are arch specific.
+  case ${arch} in
+    arm)
+      ld_ext=".armv7.pexe"
+      llc_ext=".armv7.pexe"
+      ;;
+    x86-32)
+      ld_ext=".i686.pexe"
+      llc_ext=".i686.pexe"
+      ;;
+    x86-64)
+      ld_ext=".x86_64.pexe"
+      llc_ext=".i686.pexe" # One llc pexe handles both x86-32 and x86-64.
+      ;;
+    *) echo "unknown arch!" && handle-error ;;
+  esac
 
   # Note, that the arch flag has two functions:
   # 1) it selects the target arch for the translator
@@ -313,48 +330,50 @@ archived-pexe-translator-test() {
   # has changed.
   local override_flags="\
     --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
-    --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
+    --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.nexe"
   local fast_override_flags="\
     --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
-    --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
+    --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.fast_trans.nexe"
 
   echo "=== Translating the archived translator."
   echo "=== Compiling Old Gold (normal mode) ==="
-  ${sb_translator} ${flags} ${dir}/ld-new${ext} \
-      -o ${dir}/ld-new-${arch}.nexe
+  ${sb_translator} ${flags} ${dir}/ld${ld_ext} \
+      -o ${dir}/ld-${arch}.nexe
   echo "=== Compiling Old Gold (fast mode) ==="
-  ${sb_translator} ${fast_trans_flags} ${dir}/ld-new${ext} \
-      -o ${dir}/ld-new-${arch}.fast_trans.nexe
+  ${sb_translator} ${fast_trans_flags} ${dir}/ld${ld_ext} \
+      -o ${dir}/ld-${arch}.fast_trans.nexe
 
-  if [[ ${arch} = arm || ${arch} = x86-32 ]]; then
-    # With an unstripped pexe (around rev 9444), arm and x86-32
-    # run out of memory:
-    # "terminate called after throwing an instance of 'std::bad_alloc'"
-    echo "Skipping translator archived llc for arch ${arch} (out of mem)"
-    override_flags="--pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
-    fast_override_flags="\
-      --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
-  else
-    # This takes about 17min on arm with qemu
-    echo "=== Compiling Old LLC (normal mode) ==="
-    ${sb_translator} ${flags} ${dir}/llc${ext} \
-        -o ${dir}/llc-${arch}.nexe
-    echo "=== Compiling Old LLC (fast mode) ==="
-    ${sb_translator} ${fast_trans_flags} ${dir}/llc${ext} \
-        -o ${dir}/llc-${arch}.fast_trans.nexe
-  fi
+  # Yikes: This takes about 17min on arm with qemu
+  echo "=== Compiling Old LLC (normal mode) ==="
+  ${sb_translator} ${flags} ${dir}/llc${llc_ext} \
+      -o ${dir}/llc-${arch}.nexe
+  echo "=== Compiling Old LLC (fast mode) ==="
+  ${sb_translator} ${fast_trans_flags} ${dir}/llc${llc_ext} \
+      -o ${dir}/llc-${arch}.fast_trans.nexe
 
   ls -l ${dir}
   file ${dir}/*
 
+  # The llc.pexe compile finishes with -translate-fast, but the result
+  # has bugs on x86-64, so we cannot test it below.
+  # Known error is: assertion "InChain.getValueType() == MVT::Other &&
+  # "Not a chain"" failed:
+  # file "../llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp", line 1927,
+  # function: llvm::SDValue HandleMergeInputChains(
+  #    SmallVectorImpl<llvm::SDNode *> &, llvm::SelectionDAG *)
+  # To test, run with the original fast_override_flags:
+  if [[ ${arch} = x86-64 ]]; then
+    fast_override_flags="\
+      --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.fast_trans.nexe"
+  fi
   echo "=== Running the translated archived translator to test."
-  ${sb_translator} ${flags} ${override_flags} ${dir}/ld-new${ext} \
-      -o ${dir}/ld-new-${arch}.2.nexe
-  ${sb_translator} ${flags} ${fast_override_flags} ${dir}/ld-new${ext} \
-      -o ${dir}/ld-new-${arch}.3.nexe
+  ${sb_translator} ${flags} ${override_flags} ${dir}/ld${ld_ext} \
+      -o ${dir}/ld-${arch}.2.nexe
+  ${sb_translator} ${flags} ${fast_override_flags} ${dir}/ld${ld_ext} \
+      -o ${dir}/ld-${arch}.3.nexe
 
   # TODO(robertm): Ideally we would compare the result of translation like so
-  # ${dir}/ld-new-${arch}.2.nexe == ${dir}/ld-new-${arch}.3.nexe
+  # ${dir}/ld-${arch}.2.nexe == ${dir}/ld-${arch}.3.nexe
   # but this requires the translator to be deterministic which is not
   # quite true at the moment - probably due to due hashing inside of
   # llc based on pointer values.
