@@ -212,6 +212,12 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes) {
+  if (buffer_ids.size() != texture_ids.size() ||
+      buffer_ids.size() != sizes.size()) {
+    NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+    return;
+  }
+
   gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();
