@@ -97,8 +97,6 @@
           'proxy/ppb_file_ref_proxy.h',
           'proxy/ppb_file_system_proxy.cc',
           'proxy/ppb_file_system_proxy.h',
-          'proxy/ppb_flash_proxy.cc',
-          'proxy/ppb_flash_proxy.h',
           'proxy/ppb_flash_message_loop_proxy.cc',
           'proxy/ppb_flash_message_loop_proxy.h',
           'proxy/ppb_graphics_3d_proxy.cc',

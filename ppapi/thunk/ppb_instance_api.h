@@ -89,9 +89,6 @@ class PPB_Instance_API {
                                 PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
 
-  // Flash (Deprecated for Flash_Functions).
-  virtual PPB_Flash_API* GetFlashAPI() = 0;
-
   // This is an implementation-only function which grabs an instance of a
   // "singleton resource". These are used to implement instance interfaces
   // (functions which are associated with the instance itself as opposed to a

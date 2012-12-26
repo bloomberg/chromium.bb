@@ -51,7 +51,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
@@ -372,7 +371,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
-  virtual ::ppapi::thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
   virtual ::ppapi::Resource* GetSingletonResource(PP_Instance instance,
       ::ppapi::SingletonResourceID id) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
@@ -755,9 +753,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Track pending user gestures so out-of-process plugins can respond to
   // a user gesture after it has been processed.
   PP_TimeTicks pending_user_gesture_;
-
-  // The Flash proxy is associated with the instance.
-  PPB_Flash_Impl flash_impl_;
 
   // We store the arguments so we can re-send them if we are reset to talk to
   // NaCl via the IPC NaCl proxy.

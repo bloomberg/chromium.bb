@@ -387,8 +387,7 @@ PluginInstance::PluginInstance(
       text_input_caret_set_(false),
       selection_caret_(0),
       selection_anchor_(0),
-      pending_user_gesture_(0.0),
-      flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      pending_user_gesture_(0.0) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -2130,10 +2129,6 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   gfx::Size screen_size = delegate()->GetScreenSize();
   *size = PP_MakeSize(screen_size.width(), screen_size.height());
   return PP_TRUE;
-}
-
-::ppapi::thunk::PPB_Flash_API* PluginInstance::GetFlashAPI() {
-  return &flash_impl_;
 }
 
 ::ppapi::Resource* PluginInstance::GetSingletonResource(

@@ -159,7 +159,6 @@
           'thunk/ppb_file_system_api.h',
           'thunk/ppb_file_system_thunk.cc',
           'thunk/ppb_find_thunk.cc',
-          'thunk/ppb_flash_api.h',
           'thunk/ppb_flash_clipboard_api.h',
           'thunk/ppb_flash_clipboard_thunk.cc',
           'thunk/ppb_flash_device_id_api.h',

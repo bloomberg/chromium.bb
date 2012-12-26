@@ -10,7 +10,6 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_flash_api.h"
 #include "ppapi/thunk/ppb_flash_functions_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"

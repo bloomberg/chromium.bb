@@ -17,8 +17,6 @@ namespace ppapi {
 namespace thunk {
 
 // This class collects all of the Flash interface-related APIs into one place.
-// PPB_Flash_API is deprecated in favor of this (the new resource model uses
-// this API).
 class PPAPI_THUNK_EXPORT PPB_Flash_Functions_API {
  public:
   virtual ~PPB_Flash_Functions_API() {}

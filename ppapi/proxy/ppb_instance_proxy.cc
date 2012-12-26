@@ -26,7 +26,6 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
@@ -336,11 +335,6 @@ PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetScreenSize(
       API_ID_PPB_INSTANCE, instance, &result, size));
   return result;
-}
-
-thunk::PPB_Flash_API* PPB_Instance_Proxy::GetFlashAPI() {
-  InterfaceProxy* ip = dispatcher()->GetInterfaceProxy(API_ID_PPB_FLASH);
-  return static_cast<PPB_Flash_Proxy*>(ip);
 }
 
 Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,

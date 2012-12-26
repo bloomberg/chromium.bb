@@ -69,7 +69,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance,
                                 PP_Size* size) OVERRIDE;
-  virtual thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
   virtual Resource* GetSingletonResource(PP_Instance instance,
                                          SingletonResourceID id) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
