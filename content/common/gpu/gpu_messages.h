@@ -533,20 +533,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_DestroyVideoDecoder,
                            int /* route_id */)
 
-// Tells the GPU process to resize an offscreen frame buffer.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
-                    gfx::Size /* size */)
-
-#if defined(OS_MACOSX)
-// On Mac OS X the GPU plugin must be offscreen, because there is no
-// true cross-process window hierarchy. For this reason we must send
-// resize events explicitly to the command buffer stub so it can
-// reallocate its backing store and send the new one back to the
-// browser. This message is currently used only on 10.6 and later.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
-                    gfx::Size /* size */)
-#endif
-
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
