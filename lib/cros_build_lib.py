@@ -530,7 +530,7 @@ def PrintBuildbotStepWarnings(handle=None):
 
 
 def PrintBuildbotStepFailure(handle=None):
-  """Marks a stage as having warnings."""
+  """Marks a stage as having failures."""
   (handle or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
 
 
