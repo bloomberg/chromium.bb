@@ -28,10 +28,11 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_api_factory.h"
-#include "chrome/browser/extensions/api/processes/processes_api_factory.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
-#include "chrome/browser/extensions/api/tabs/tabs_windows_api_factory.h"
+#include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_factory.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -260,11 +261,11 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
   extensions::OmniboxAPIFactory::GetInstance();
   extensions::PreferenceAPIFactory::GetInstance();
-  extensions::ProcessesAPIFactory::GetInstance();
+  extensions::ProfileKeyedAPIFactory<extensions::ProcessesAPI>::GetInstance();
+  extensions::ProfileKeyedAPIFactory<extensions::TabsWindowsAPI>::GetInstance();
   extensions::PushMessagingAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
-  extensions::TabsWindowsAPIFactory::GetInstance();
   extensions::WebNavigationAPIFactory::GetInstance();
   ExtensionManagementAPIFactory::GetInstance();
 #endif

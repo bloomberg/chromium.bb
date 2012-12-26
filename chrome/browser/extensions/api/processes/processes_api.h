@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -91,7 +92,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
 };
 
 // The profile-keyed service that manages the processes extension API.
-class ProcessesAPI : public ProfileKeyedService,
+class ProcessesAPI : public ProfileKeyedAPI,
                      public EventRouter::Observer {
  public:
   explicit ProcessesAPI(Profile* profile);
@@ -110,11 +111,24 @@ class ProcessesAPI : public ProfileKeyedService,
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<ProcessesAPI>;
+
   Profile* profile_;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "ProcessesAPI";
+  }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily on first access.
   scoped_ptr<ProcessesEventRouter> processes_event_router_;
 };
+
+template <>
+ProfileKeyedAPIFactory<ProcessesAPI>*
+ProfileKeyedAPIFactory<ProcessesAPI>::GetInstance();
 
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.
