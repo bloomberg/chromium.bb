@@ -91,6 +91,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
@@ -191,6 +192,23 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
+}
+
+const unsigned char* GetCategoryEnabled(const char* name) {
+  return TRACE_EVENT_API_GET_CATEGORY_ENABLED(name);
+}
+
+void AddTraceEvent(char phase,
+                   const unsigned char* category_enabled,
+                   const char* name,
+                   unsigned long long id,
+                   int num_args,
+                   const char** arg_names,
+                   const unsigned char* arg_types,
+                   const unsigned long long* arg_values,
+                   unsigned char flags) {
+  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_enabled, name, id, num_args,
+                                  arg_names, arg_types, arg_values, flags);
 }
 
 }  // namespace
@@ -307,6 +325,7 @@ void RenderThreadImpl::Init() {
   AddFilter(db_message_filter_.get());
 
 #if defined(ENABLE_WEBRTC)
+  webrtc::SetupEventTracer(&GetCategoryEnabled, &AddTraceEvent);
   p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOMessageLoopProxy());
   AddFilter(p2p_socket_dispatcher_);
 #endif  // defined(ENABLE_WEBRTC)
