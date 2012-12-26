@@ -41,6 +41,21 @@ void AppCacheHistograms::AddCompletionRunTimeSample(
   UMA_HISTOGRAM_TIMES("appcache.CompletionRunTime", duration);
 }
 
+void AppCacheHistograms::AddNetworkJobStartDelaySample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.JobStartDelay.Network", duration);
+}
+
+void AppCacheHistograms::AddErrorJobStartDelaySample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.JobStartDelay.Error", duration);
+}
+
+void AppCacheHistograms::AddAppCacheJobStartDelaySample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.JobStartDelay.AppCache", duration);
+}
+
 void AppCacheHistograms::AddMissingManifestEntrySample() {
   UMA_HISTOGRAM_BOOLEAN("appcache.MissingManifestEntry", true);
 }

@@ -32,7 +32,9 @@ class AppCacheHistograms {
   static void AddTaskRunTimeSample(const base::TimeDelta& duration);
   static void AddCompletionQueueTimeSample(const base::TimeDelta& duration);
   static void AddCompletionRunTimeSample(const base::TimeDelta& duration);
-
+  static void AddNetworkJobStartDelaySample(const base::TimeDelta& duration);
+  static void AddErrorJobStartDelaySample(const base::TimeDelta& duration);
+  static void AddAppCacheJobStartDelaySample(const base::TimeDelta& duration);
   static void AddMissingManifestEntrySample();
 
   enum MissingManifestCallsiteType {

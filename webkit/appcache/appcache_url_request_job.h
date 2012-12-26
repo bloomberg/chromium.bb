@@ -131,6 +131,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheURLRequestJob
   virtual int GetResponseCode() const OVERRIDE;
 
   AppCacheStorage* storage_;
+  base::TimeTicks start_time_tick_;
   bool has_been_started_;
   bool has_been_killed_;
   DeliveryType delivery_type_;

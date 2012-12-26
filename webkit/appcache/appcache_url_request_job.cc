@@ -19,6 +19,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/appcache/appcache_histograms.h"
 #include "webkit/appcache/appcache_service.h"
 
 namespace appcache {
@@ -84,6 +85,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
 
   switch (delivery_type_) {
     case NETWORK_DELIVERY:
+      AppCacheHistograms::AddNetworkJobStartDelaySample(
+          base::TimeTicks::Now() - start_time_tick_);
       // To fallthru to the network, we restart the request which will
       // cause a new job to be created to retrieve the resource from the
       // network. Our caller is responsible for arranging to not re-intercept
@@ -92,6 +95,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
       break;
 
     case ERROR_DELIVERY:
+      AppCacheHistograms::AddErrorJobStartDelaySample(
+          base::TimeTicks::Now() - start_time_tick_);
       request()->net_log().AddEvent(
           net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE);
       NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
@@ -99,6 +104,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
       break;
 
     case APPCACHED_DELIVERY:
+      AppCacheHistograms::AddAppCacheJobStartDelaySample(
+          base::TimeTicks::Now() - start_time_tick_);
       request()->net_log().AddEvent(
           is_fallback_ ?
               net::NetLog::TYPE_APPCACHE_DELIVERING_FALLBACK_RESPONSE :
@@ -210,6 +217,7 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
 void AppCacheURLRequestJob::Start() {
   DCHECK(!has_been_started());
   has_been_started_ = true;
+  start_time_tick_ = base::TimeTicks::Now();
   MaybeBeginDelivery();
 }
 
