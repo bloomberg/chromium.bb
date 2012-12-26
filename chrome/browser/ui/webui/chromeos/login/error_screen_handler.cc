@@ -36,13 +36,14 @@ void ErrorScreenHandler::SetNativeWindowDelegate(
   native_window_delegate_ = native_window_delegate;
 }
 
-void ErrorScreenHandler::Show(OobeUI::Screen parent_screen) {
+void ErrorScreenHandler::Show(OobeUI::Screen parent_screen,
+                              base::DictionaryValue* params) {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
   }
   parent_screen_ = parent_screen;
-  ShowScreen(OobeUI::kScreenErrorMessage, NULL);
+  ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
 }
 
@@ -52,16 +53,6 @@ void ErrorScreenHandler::Hide() {
     if (GetScreenName(parent_screen_, &screen_name))
       ShowScreen(screen_name.c_str(), NULL);
   }
-}
-
-void ErrorScreenHandler::OnBeforeShow(ConnectionType last_network_type) {
-  base::FundamentalValue last_network_type_value(last_network_type);
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.onBeforeShow",
-                                   last_network_type_value);
-}
-
-void ErrorScreenHandler::OnBeforeHide() {
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.onBeforeHide");
 }
 
 void ErrorScreenHandler::FixCaptivePortal() {
@@ -165,7 +156,7 @@ void ErrorScreenHandler::Initialize() {
   if (!page_is_ready())
     return;
   if (show_on_init_) {
-    Show(parent_screen_);
+    Show(parent_screen_, NULL);
     show_on_init_ = false;
   }
 }

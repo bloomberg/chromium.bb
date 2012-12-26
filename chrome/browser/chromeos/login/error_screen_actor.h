@@ -8,6 +8,10 @@
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 class ErrorScreenActor {
@@ -42,14 +46,11 @@ class ErrorScreenActor {
   OobeUI::Screen parent_screen() const { return parent_screen_; }
 
   // Shows the screen.
-  virtual void Show(OobeUI::Screen parent_screen) = 0;
+  virtual void Show(OobeUI::Screen parent_screen,
+                    base::DictionaryValue* params) = 0;
 
   // Hides the screen.
   virtual void Hide() = 0;
-
-  virtual void OnBeforeShow(ConnectionType last_network_type) = 0;
-
-  virtual void OnBeforeHide() = 0;
 
   // Initializes captive portal dialog and shows that if needed.
   virtual void FixCaptivePortal() = 0;

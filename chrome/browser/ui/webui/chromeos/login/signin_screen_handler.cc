@@ -481,8 +481,9 @@ void SigninScreenHandler::UpdateStateInternal(
     }
 
     if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
-      error_screen_actor_->OnBeforeShow(last_network_type);
-      error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN);
+      DictionaryValue params;
+      params.SetInteger("lastNetworkType", static_cast<int>(last_network_type));
+      error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
     }
   } else {
     error_screen_actor_->HideCaptivePortal();
@@ -490,7 +491,6 @@ void SigninScreenHandler::UpdateStateInternal(
     if (IsSigninScreenHiddenByError()) {
       LOG(WARNING) << "Hide offline message. state=" << state << ", "
                    << "network_name=" << network_name << ", reason=" << reason;
-      error_screen_actor_->OnBeforeHide();
       error_screen_actor_->Hide();
 
       // Forces a reload for Gaia screen on hiding error message.

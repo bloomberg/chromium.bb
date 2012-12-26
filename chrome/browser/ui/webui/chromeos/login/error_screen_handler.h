@@ -33,10 +33,9 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
 
   // ErrorScreenActor implementation:
-  virtual void Show(OobeUI::Screen parent_screen) OVERRIDE;
+  virtual void Show(OobeUI::Screen parent_screen,
+                    base::DictionaryValue* params) OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void OnBeforeShow(ConnectionType last_network_type) OVERRIDE;
-  virtual void OnBeforeHide() OVERRIDE;
   virtual void FixCaptivePortal() OVERRIDE;
   virtual void ShowCaptivePortal() OVERRIDE;
   virtual void HideCaptivePortal() OVERRIDE;

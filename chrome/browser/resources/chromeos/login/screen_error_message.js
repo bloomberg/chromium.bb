@@ -92,11 +92,19 @@ cr.define('login', function() {
       };
     },
 
-    onBeforeShow: function(lastNetworkType) {
+    /**
+     * Event handler that is invoked just before the screen in shown.
+     * @param {Object} data Screen init payload.
+     */
+    onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
+      var lastNetworkType = data['lastNetworkType'] || 0;
       cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
     },
 
+    /**
+     * Event handler that is invoked just before the screen is hidden.
+     */
     onBeforeHide: function() {
       cr.ui.DropDown.hide('offline-networks-list');
     },
