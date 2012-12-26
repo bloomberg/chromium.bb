@@ -206,8 +206,16 @@ class BasePerfTest(pyauto.PyUITest):
       logging.info('Current CPU utilization = %f.', fraction_non_idle_time)
       if time_passed > timeout:
         self._LogProcessActivity()
-        self.fail('CPU did not idle after %fs wait (utilization = %f).' % (
-                  time_passed, fraction_non_idle_time))
+        message = ('CPU did not idle after %fs wait (utilization = %f).' % (
+                   time_passed, fraction_non_idle_time))
+
+        # crosbug.com/37389
+        if self._IsPGOMode():
+          logging.info(message)
+          logging.info('Still continuing because we are in PGO mode.')
+          return
+
+        self.fail(message)
     logging.info('Wait for idle CPU took %fs (utilization = %f).',
                  time_passed, fraction_non_idle_time)
 
