@@ -185,13 +185,18 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 #if defined(OS_WIN)
 class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Shows an infobar asking the user to switch to desktop chrome if they
-  // want to use the plugin.
+  // The infobar can be used for two purposes: to inform the user about a
+  // missing plugin or to note that a plugin only works in desktop mode.  These
+  // purposes require different messages, buttons, etc.
+  enum Mode {
+    MISSING_PLUGIN,
+    DESKTOP_MODE_REQUIRED,
+  };
+
   PluginMetroModeInfoBarDelegate(InfoBarService* infobar_service,
-                                 const string16& plugin_name,
-                                 const string16& ok_label,
-                                 const GURL& learn_more_url,
-                                 bool show_dont_ask_again_button);
+                                 Mode mode,
+                                 const string16& name);
+
  private:
   virtual ~PluginMetroModeInfoBarDelegate();
 
@@ -205,10 +210,8 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  const string16 message_;
-  const string16 ok_label_;
-  const GURL learn_more_url_;
-  const bool show_dont_ask_again_button_;
+  const Mode mode_;
+  const string16 name_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
 };

@@ -296,11 +296,8 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
   delegate = base::win::IsMetroProcess() ?
       new PluginMetroModeInfoBarDelegate(
           infobar_service,
-          l10n_util::GetStringFUTF16(IDS_METRO_MISSING_PLUGIN_PROMPT,
-                                     plugin_metadata->name()),
-          l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART),
-          GURL("https://support.google.com/chrome/?ib_display_in_desktop"),
-          false) :
+          PluginMetroModeInfoBarDelegate::MISSING_PLUGIN,
+          plugin_metadata->name()) :
       PluginInstallerInfoBarDelegate::Create(
           infobar_service, installer, plugin_metadata.Pass(), callback);
 #endif
@@ -383,11 +380,8 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
   infobar_service->AddInfoBar(
       new PluginMetroModeInfoBarDelegate(
           infobar_service,
-          l10n_util::GetStringFUTF16(IDS_METRO_NPAPI_PLUGIN_PROMPT,
-                                     plugin->name()),
-          l10n_util::GetStringUTF16(IDS_WIN8_RESTART),
-          GURL("https://support.google.com/chrome/?ib_redirect_to_desktop"),
-          true));
+          PluginMetroModeInfoBarDelegate::DESKTOP_MODE_REQUIRED,
+          plugin->name()));
 #else
   NOTREACHED();
 #endif

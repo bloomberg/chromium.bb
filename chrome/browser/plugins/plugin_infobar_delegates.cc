@@ -438,15 +438,11 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 #if defined(OS_WIN)
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
     InfoBarService* infobar_service,
-    const string16& message,
-    const string16& ok_label,
-    const GURL& learn_more_url,
-    bool show_dont_ask_again_button)
+    PluginMetroModeInfoBarDelegate::Mode mode,
+    const string16& name)
     : ConfirmInfoBarDelegate(infobar_service),
-      message_(message),
-      ok_label_(ok_label),
-      learn_more_url_(learn_more_url),
-      show_dont_ask_again_button_(show_dont_ask_again_button) {
+      mode_(mode),
+      name_(name) {
 }
 
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
@@ -458,26 +454,20 @@ gfx::Image* PluginMetroModeInfoBarDelegate::GetIcon() const {
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
-  return message_;
+  return l10n_util::GetStringFUTF16((mode_ == MISSING_PLUGIN) ?
+      IDS_METRO_MISSING_PLUGIN_PROMPT : IDS_METRO_NPAPI_PLUGIN_PROMPT, name_);
 }
 
 int PluginMetroModeInfoBarDelegate::GetButtons() const {
-  int buttons = BUTTON_OK;
-  if (show_dont_ask_again_button_)
-    buttons |= BUTTON_CANCEL;
-  return buttons;
+  return (mode_ == MISSING_PLUGIN) ? BUTTON_OK : (BUTTON_OK | BUTTON_CANCEL);
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (button == BUTTON_OK)
-    return ok_label_;
-  if (button == BUTTON_CANCEL) {
-    DCHECK(show_dont_ask_again_button_);
+  if (button == BUTTON_CANCEL)
     return l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
-  }
-  NOTREACHED();
-  return string16();
+  return l10n_util::GetStringUTF16((mode_ == MISSING_PLUGIN) ?
+      IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_RESTART);
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
@@ -486,7 +476,7 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
 }
 
 bool PluginMetroModeInfoBarDelegate::Cancel() {
-  DCHECK(show_dont_ask_again_button_);
+  DCHECK_EQ(DESKTOP_MODE_REQUIRED, mode_);
   content::WebContents* web_contents = owner()->GetWebContents();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -509,7 +499,10 @@ string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
 bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   OpenURLParams params(
-      learn_more_url_, Referrer(),
+      GURL((mode_ == MISSING_PLUGIN) ?
+          "https://support.google.com/chrome/?ib_display_in_desktop" :
+          "https://support.google.com/chrome/?ib_redirect_to_desktop"),
+      Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
   owner()->GetWebContents()->OpenURL(params);
