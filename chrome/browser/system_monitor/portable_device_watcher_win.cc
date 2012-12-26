@@ -173,44 +173,70 @@ REFPROPERTYKEY GetUniqueIdPropertyKey(const string16& object_id) {
       WPD_DEVICE_SERIAL_NUMBER : WPD_OBJECT_PERSISTENT_UNIQUE_ID;
 }
 
-// Wrapper function to get content property string value. On failure, returns
-// an empty string.
-string16 GetStringPropertyValue(IPortableDeviceProperties* properties,
-                                const string16& object_id,
-                                REFPROPERTYKEY key) {
-  DCHECK(properties);
-  base::win::ScopedComPtr<IPortableDeviceKeyCollection> properties_to_read;
-  HRESULT hr = properties_to_read.CreateInstance(
+// On success, returns true and populates |properties_to_read| with the
+// property key of the object specified by the |object_id|.
+bool PopulatePropertyKeyCollection(
+    const string16& object_id,
+    base::win::ScopedComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
+  HRESULT hr = properties_to_read->CreateInstance(
       __uuidof(PortableDeviceKeyCollection), NULL, CLSCTX_INPROC_SERVER);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create IPortableDeviceKeyCollection instance";
-    return string16();
+    return false;
+  }
+  REFPROPERTYKEY key = GetUniqueIdPropertyKey(object_id);
+  hr = (*properties_to_read)->Add(key);
+  return SUCCEEDED(hr);
+}
+
+// Wrapper function to get content property string value.
+bool GetStringPropertyValue(IPortableDeviceValues* properties_values,
+                            REFPROPERTYKEY key,
+                            string16* value) {
+  DCHECK(properties_values);
+  DCHECK(value);
+  base::win::ScopedCoMem<char16> buffer;
+  HRESULT hr = properties_values->GetStringValue(key, &buffer);
+  if (FAILED(hr))
+    return false;
+  *value = static_cast<const char16*>(buffer);
+  return true;
+}
+
+// Constructs a unique identifier for the object specified by the |object_id|.
+// On success, returns true and fills in |unique_id|.
+bool GetObjectUniqueId(IPortableDevice* device,
+                       const string16& object_id,
+                       string16* unique_id) {
+  DCHECK(device);
+  DCHECK(unique_id);
+  base::win::ScopedComPtr<IPortableDeviceContent> content;
+  HRESULT hr = device->Content(content.Receive());
+  if (FAILED(hr)) {
+    DPLOG(ERROR) << "Failed to get IPortableDeviceContent interface";
+    return false;
   }
 
-  if (FAILED(properties_to_read->Add(key)))
-    return string16();
+  base::win::ScopedComPtr<IPortableDeviceProperties> properties;
+  hr = content->Properties(properties.Receive());
+  if (FAILED(hr)) {
+    DPLOG(ERROR) << "Failed to get IPortableDeviceProperties interface";
+    return false;
+  }
+
+  base::win::ScopedComPtr<IPortableDeviceKeyCollection> properties_to_read;
+  if (!PopulatePropertyKeyCollection(object_id, &properties_to_read))
+    return false;
 
   base::win::ScopedComPtr<IPortableDeviceValues> properties_values;
   if (FAILED(properties->GetValues(object_id.c_str(),
                                    properties_to_read.get(),
                                    properties_values.Receive()))) {
-    return string16();
+    return false;
   }
 
-  base::win::ScopedCoMem<char16> buffer;
-  if (FAILED(properties_values->GetStringValue(key, &buffer)))
-    return string16();
-  string16 value = static_cast<const char16*>(buffer);
-  TrimWhitespace(value, TRIM_ALL, &value);
-  return value;
-}
-
-// Returns the unique identifier for the object specified by the |object_id|.
-string16 GetObjectUniqueId(IPortableDeviceProperties* properties,
-                       const string16& object_id) {
-  DCHECK(properties);
   REFPROPERTYKEY key = GetUniqueIdPropertyKey(object_id);
-  return GetStringPropertyValue(properties, object_id, key);
+  return GetStringPropertyValue(properties_values.get(), key, unique_id);
 }
 
 // Constructs the device storage unique identifier using |device_serial_num| and
@@ -268,27 +294,9 @@ bool GetRemovableStorageObjectIds(
   return true;
 }
 
-// Returns true if the portable device is a Mass Storage Class (MSC) device.
-// This is used to avoid duplication of the device in both volume mount watcher
-// and portable device watcher.
-bool IsMassStoragePortableDevice(IPortableDeviceProperties* properties,
-                                 const string16& device_name) {
-  string16 device_protocol = GetStringPropertyValue(properties,
-                                                    WPD_DEVICE_OBJECT_ID,
-                                                    WPD_DEVICE_PROTOCOL);
-  if (device_protocol.empty())
-    return true;
-
-  // Based on testing, the device WPD_DEVICE_PROTOCOL key value can be one of
-  // the following:
-  // - "MSC:" (Mass Storage Class).
-  // - "MTP:" (Media Transfer Protocol).
-  // - "PTP:" (Picture Transfer Protocol).
-  if (StartsWith(device_protocol, L"MSC:", false) ||
-      (!StartsWith(device_protocol, L"MTP:", false) &&
-       !StartsWith(device_protocol, L"PTP:", false)))
-    return true;
-
+// Returns true if the portable device is mounted on a volume. |device_name|
+// specifies the name of the device.
+bool IsVolumeMountedPortableDevice(const string16& device_name) {
   // If the device is a volume mounted device, |device_name| will be
   // the volume name.
   return ((device_name.length() >= 2) && (device_name[1] == L':') &&
@@ -312,24 +320,27 @@ string16 GetDeviceNameOnBlockingThread(
 // Access the device and gets the device storage details. On success, returns
 // true and populates |storage_objects| with device storage details.
 bool GetDeviceStorageObjectsOnBlockingThread(
-    IPortableDevice* device,
-    IPortableDeviceProperties* properties,
+    const string16& pnp_device_id,
     PortableDeviceWatcherWin::StorageObjects* storage_objects) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  DCHECK(device);
   DCHECK(storage_objects);
-  // Old MTP devices does not have a valid serial number. |device_serial_num|
-  // will be empty in those cases.
-  string16 device_serial_num(
-      GetObjectUniqueId(properties, WPD_DEVICE_OBJECT_ID));
+  base::win::ScopedComPtr<IPortableDevice> device;
+  if (!SetUp(pnp_device_id, &device))
+    return false;
+
+  string16 device_serial_num;
+  if (!GetObjectUniqueId(device.get(), WPD_DEVICE_OBJECT_ID,
+                         &device_serial_num)) {
+    return false;
+  }
 
   PortableDeviceWatcherWin::StorageObjectIDs storage_obj_ids;
-  if (!GetRemovableStorageObjectIds(device, &storage_obj_ids))
+  if (!GetRemovableStorageObjectIds(device.get(), &storage_obj_ids))
     return false;
   for (PortableDeviceWatcherWin::StorageObjectIDs::const_iterator id_iter =
        storage_obj_ids.begin(); id_iter != storage_obj_ids.end(); ++id_iter) {
-    string16 storage_persistent_id(GetObjectUniqueId(properties, *id_iter));
-    if (storage_persistent_id.empty())
+    string16 storage_persistent_id;
+    if (!GetObjectUniqueId(device.get(), *id_iter, &storage_persistent_id))
       continue;
 
     std::string device_storage_id;
@@ -353,33 +364,15 @@ bool GetDeviceInfoOnBlockingThread(
   DCHECK(portable_device_manager);
   DCHECK(device_details);
   DCHECK(!pnp_device_id.empty());
-  base::win::ScopedComPtr<IPortableDevice> device;
-  if (!SetUp(pnp_device_id, &device))
-    return false;
-
-  base::win::ScopedComPtr<IPortableDeviceContent> content;
-  HRESULT hr = device->Content(content.Receive());
-  if (FAILED(hr)) {
-    DPLOG(ERROR) << "Failed to get IPortableDeviceContent interface";
-    return false;
-  }
-
-  base::win::ScopedComPtr<IPortableDeviceProperties> properties;
-  hr = content->Properties(properties.Receive());
-  if (FAILED(hr)) {
-    DPLOG(ERROR) << "Failed to get IPortableDeviceProperties interface";
-    return false;
-  }
-
   device_details->name = GetDeviceNameOnBlockingThread(portable_device_manager,
                                                        pnp_device_id);
-  if (IsMassStoragePortableDevice(properties.get(), device_details->name))
+  if (IsVolumeMountedPortableDevice(device_details->name))
     return false;
 
   device_details->location = pnp_device_id;
   PortableDeviceWatcherWin::StorageObjects storage_objects;
   return GetDeviceStorageObjectsOnBlockingThread(
-      device.get(), properties.get(), &device_details->storage_objects);
+      pnp_device_id, &device_details->storage_objects);
 }
 
 // Wrapper function to get an instance of portable device manager. On success,
