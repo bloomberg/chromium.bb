@@ -15,6 +15,7 @@ namespace media {
 // Values for TrackType element.
 static const int kWebMTrackTypeVideo = 1;
 static const int kWebMTrackTypeAudio = 2;
+static const int kWebMTrackTypeSubtitle = 0x11;
 
 WebMTracksParser::WebMTracksParser(const LogCB& log_cb)
     : track_type_(-1),
@@ -74,7 +75,8 @@ bool WebMTracksParser::OnListEnd(int id) {
     }
 
     if (track_type_ != kWebMTrackTypeAudio &&
-        track_type_ != kWebMTrackTypeVideo) {
+        track_type_ != kWebMTrackTypeVideo &&
+        track_type_ != kWebMTrackTypeSubtitle) {
       MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
       return false;
     }
@@ -89,11 +91,27 @@ bool WebMTracksParser::OnListEnd(int id) {
     }
 
     if (track_type_ == kWebMTrackTypeAudio) {
-      audio_track_num_ = track_num_;
-      audio_encryption_key_id_ = encryption_key_id;
+      if (audio_track_num_ == -1) {
+        audio_track_num_ = track_num_;
+        audio_encryption_key_id_ = encryption_key_id;
+      } else {
+        MEDIA_LOG(log_cb_) << "Ignoring audio track " << track_num_;
+        ignored_tracks_.insert(track_num_);
+      }
     } else if (track_type_ == kWebMTrackTypeVideo) {
-      video_track_num_ = track_num_;
-      video_encryption_key_id_ = encryption_key_id;
+      if (video_track_num_ == -1) {
+        video_track_num_ = track_num_;
+        video_encryption_key_id_ = encryption_key_id;
+      } else {
+        MEDIA_LOG(log_cb_) << "Ignoring video track " << track_num_;
+        ignored_tracks_.insert(track_num_);
+      }
+    } else if (track_type_ == kWebMTrackTypeSubtitle) {
+      MEDIA_LOG(log_cb_) << "Ignoring subtitle track " << track_num_;
+      ignored_tracks_.insert(track_num_);
+    } else {
+      MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
+      return false;
     }
 
     track_type_ = -1;
@@ -138,7 +156,8 @@ bool WebMTracksParser::OnBinary(int id, const uint8* data, int size) {
 }
 
 bool WebMTracksParser::OnString(int id, const std::string& str) {
-  if (id == kWebMIdCodecID && str != "A_VORBIS" && str != "V_VP8") {
+  if (id == kWebMIdCodecID && str != "A_VORBIS" && str != "V_VP8" &&
+      str.find("D_WEBVTT/") != 0) {
     MEDIA_LOG(log_cb_) << "Unexpected CodecID " << str;
     return false;
   }

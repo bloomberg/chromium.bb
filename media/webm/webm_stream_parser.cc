@@ -395,6 +395,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       info_parser.timecode_scale(),
       tracks_parser.audio_track_num(),
       tracks_parser.video_track_num(),
+      tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
       tracks_parser.video_encryption_key_id(),
       log_cb_));

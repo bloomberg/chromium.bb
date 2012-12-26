@@ -22,6 +22,7 @@ enum {
   kTimecodeScale = 1000000,  // Timecode scale for millisecond timestamps.
   kAudioTrackNum = 1,
   kVideoTrackNum = 2,
+  kTextTrackNum = 3,
 };
 
 struct BlockInfo {
@@ -126,7 +127,8 @@ class WebMClusterParserTest : public testing::Test {
  public:
   WebMClusterParserTest()
       : parser_(new WebMClusterParser(
-          kTimecodeScale, kAudioTrackNum, kVideoTrackNum, "", "", LogCB())) {
+          kTimecodeScale, kAudioTrackNum, kVideoTrackNum, std::set<int64>(),
+          "", "", LogCB())) {
   }
 
  protected:
@@ -244,6 +246,41 @@ TEST_F(WebMClusterParserTest, ParseSimpleBlockAndBlockGroupMixture) {
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(cluster->size(), result);
   ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
+}
+
+TEST_F(WebMClusterParserTest, IgnoredTracks) {
+  std::set<int64> ignored_tracks;
+  ignored_tracks.insert(kTextTrackNum);
+
+  parser_.reset(new WebMClusterParser(
+      kTimecodeScale, kAudioTrackNum, kVideoTrackNum, ignored_tracks, "", "",
+      LogCB()));
+
+  const BlockInfo kInputBlockInfo[] = {
+    { kAudioTrackNum, 0,  23, true },
+    { kAudioTrackNum, 23, 23, true },
+    { kVideoTrackNum, 33, 33, true },
+    { kTextTrackNum,  33, 99, true },
+    { kAudioTrackNum, 46, 23, true },
+    { kVideoTrackNum, 67, 33, true },
+  };
+  int input_block_count = arraysize(kInputBlockInfo);
+
+  const BlockInfo kOutputBlockInfo[] = {
+    { kAudioTrackNum, 0,  23, true },
+    { kAudioTrackNum, 23, 23, true },
+    { kVideoTrackNum, 33, 33, true },
+    { kAudioTrackNum, 46, 23, true },
+    { kVideoTrackNum, 67, 33, true },
+  };
+  int output_block_count = arraysize(kOutputBlockInfo);
+
+  scoped_ptr<Cluster> cluster(
+      CreateCluster(0, kInputBlockInfo, input_block_count));
+
+  int result = parser_->Parse(cluster->data(), cluster->size());
+  EXPECT_EQ(cluster->size(), result);
+  ASSERT_TRUE(VerifyBuffers(parser_, kOutputBlockInfo, output_block_count));
 }
 
 }  // namespace media

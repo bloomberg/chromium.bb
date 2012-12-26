@@ -25,10 +25,12 @@ static std::string GenerateCounterBlock(const uint8* iv, int iv_size) {
 
 WebMClusterParser::WebMClusterParser(
     int64 timecode_scale, int audio_track_num, int video_track_num,
+    const std::set<int64>& ignored_tracks,
     const std::string& audio_encryption_key_id,
     const std::string& video_encryption_key_id,
     const LogCB& log_cb)
     : timecode_multiplier_(timecode_scale / 1000.0),
+      ignored_tracks_(ignored_tracks),
       audio_encryption_key_id_(audio_encryption_key_id),
       video_encryption_key_id_(video_encryption_key_id),
       parser_(kWebMIdCluster, this),
@@ -215,6 +217,8 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   } else if (track_num == video_.track_num()) {
     track = &video_;
     encryption_key_id = video_encryption_key_id_;
+  } else if (ignored_tracks_.find(track_num) != ignored_tracks_.end()) {
+    return true;
   } else {
     MEDIA_LOG(log_cb_) << "Unexpected track number " << track_num;
     return false;

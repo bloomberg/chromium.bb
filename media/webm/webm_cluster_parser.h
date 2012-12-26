@@ -6,6 +6,7 @@
 #define MEDIA_WEBM_WEBM_CLUSTER_PARSER_H_
 
 #include <deque>
+#include <set>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +24,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   WebMClusterParser(int64 timecode_scale,
                     int audio_track_num,
                     int video_track_num,
+                    const std::set<int64>& ignored_tracks,
                     const std::string& audio_encryption_key_id,
                     const std::string& video_encryption_key_id,
                     const LogCB& log_cb);
@@ -85,6 +87,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
   double timecode_multiplier_;  // Multiplier used to convert timecodes into
                                 // microseconds.
+  std::set<int64> ignored_tracks_;
   std::string audio_encryption_key_id_;
   std::string video_encryption_key_id_;
 
