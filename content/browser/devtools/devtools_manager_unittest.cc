@@ -127,7 +127,7 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
   DevToolsManagerImpl manager;
 
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh());
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh()));
   DevToolsClientHost* host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(NULL == host);
 
@@ -153,7 +153,7 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
   DevToolsManagerImpl manager;
 
   TestDevToolsClientHost client_host;
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetFor(rvh());
+  scoped_refptr<DevToolsAgentHost> agent_host(DevToolsAgentHost::GetFor(rvh()));
   manager.RegisterDevToolsClientHostFor(agent_host, &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
@@ -174,7 +174,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   contents()->SetDelegate(&delegate);
 
   TestDevToolsClientHost client_host;
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetFor(inspected_rvh);
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetFor(inspected_rvh));
   DevToolsManager::GetInstance()->
       RegisterDevToolsClientHostFor(agent_host, &client_host);
 

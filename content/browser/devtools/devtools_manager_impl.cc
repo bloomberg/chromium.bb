@@ -158,6 +158,7 @@ void DevToolsManagerImpl::BindClientHost(
 void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
                                            DevToolsClientHost* client_host) {
   DCHECK(agent_host);
+  scoped_refptr<DevToolsAgentHostImpl> protect(agent_host);
   DCHECK(agent_to_client_host_.find(agent_host)->second ==
       client_host);
   DCHECK(client_to_agent_host_.find(client_host)->second ==

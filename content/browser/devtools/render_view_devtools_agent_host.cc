@@ -68,7 +68,8 @@ class DevToolsAgentHostRvhObserver : public RenderViewHostObserver {
 };
 
 // static
-DevToolsAgentHost* DevToolsAgentHost::GetFor(RenderViewHost* rvh) {
+scoped_refptr<DevToolsAgentHost>
+DevToolsAgentHost::GetFor(RenderViewHost* rvh) {
   RenderViewDevToolsAgentHost* result = FindAgentHost(rvh);
   if (!result)
     result = new RenderViewDevToolsAgentHost(rvh);
@@ -142,11 +143,6 @@ RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
   return render_view_host_;
 }
 
-void RenderViewDevToolsAgentHost::Detach() {
-  DevToolsAgentHostImpl::Detach();
-  Destroy();
-}
-
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   msg->set_routing_id(render_view_host_->GetRoutingID());
   render_view_host_->Send(msg);
@@ -208,9 +204,8 @@ void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
 void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
     RenderViewHost* rvh) {
   DCHECK(render_view_host_);
-  if (NotifyCloseListener())
-    return;  // Detach will delete.
-  Destroy();
+  NotifyCloseListener();
+  render_view_host_ = NULL;
 }
 
 bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
@@ -299,10 +294,6 @@ bool RenderViewDevToolsAgentHost::CaptureScreenshot(std::string* base_64_data) {
                                 reinterpret_cast<char*>(&*png.begin()),
                                 png.size()),
                             base_64_data);
-}
-
-void RenderViewDevToolsAgentHost::Destroy() {
-  delete this;
 }
 
 }  // namespace content

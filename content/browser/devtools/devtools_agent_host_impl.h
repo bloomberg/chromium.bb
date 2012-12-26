@@ -31,7 +31,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   // Sends the message to the devtools agent hosted by this object.
   void Attach();
   void Reattach(const std::string& saved_agent_state);
-  virtual void Detach();
+  void Detach();
   void DipatchOnInspectorBackend(const std::string& message);
   void InspectElement(int x, int y);
   void AddMessageToConsole(ConsoleMessageLevel level,
@@ -54,7 +54,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   virtual void NotifyClientAttaching() = 0;
   virtual void NotifyClientDetaching() = 0;
 
-  bool NotifyCloseListener();
+  void NotifyCloseListener();
 
   CloseListener* close_listener_;
 

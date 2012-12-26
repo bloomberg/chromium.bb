@@ -27,7 +27,7 @@ namespace content {
 
 // Called on the UI thread.
 // static
-DevToolsAgentHost* DevToolsAgentHost::GetForWorker(
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
     int worker_process_id,
     int worker_route_id) {
   return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
@@ -85,30 +85,19 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
     has_worker_id_ = false;
   }
 
-  virtual void Detach() {
-    DevToolsAgentHostImpl::Detach();
-    Destroy();
-  }
-
   void SaveAgentRuntimeState(const std::string& state) {
     state_ = state;
   }
 
   void ConnectionFailed() {
-    // Depending on whether we are connected or not, we should disconnect and
-    // self-destruct.
-    if (NotifyCloseListener())
-      return;  // Detach will delete this instance.
-    Destroy();
-  }
-
-  void Destroy() {
-    delete this;
+    NotifyCloseListener();
+    // Object can be deleted here.
   }
 
  private:
   virtual ~WorkerDevToolsAgentHost() {
     g_agent_map.Get().erase(worker_id_);
+    g_orphan_map.Get().erase(worker_id_);
   }
 
   static void ConnectToWorker(
@@ -181,7 +170,6 @@ class WorkerDevToolsManager::DetachedClientHosts {
     if (!client_host) {
       // Agent has no client hosts -> delete it.
       RemovePendingWorkerData(id);
-      agent->Destroy();
       return;
     }
 

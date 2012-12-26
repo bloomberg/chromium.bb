@@ -190,8 +190,8 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
                  content::Source<Profile>(profile));
 
   // Attach to debugger and tell it we are ready.
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
-      web_contents_->GetRenderViewHost());
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
+      web_contents_->GetRenderViewHost()));
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 
   InfoBarService* infobar_service =
@@ -461,8 +461,8 @@ bool AttachDebuggerFunction::RunImpl() {
     return false;
   }
 
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
-      contents_->GetRenderViewHost());
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
+      contents_->GetRenderViewHost()));
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);
 

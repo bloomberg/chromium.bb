@@ -42,7 +42,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // DevToolsAgentHostImpl implementation.
-  virtual void Detach() OVERRIDE;
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
   virtual void NotifyClientAttaching() OVERRIDE;
   virtual void NotifyClientDetaching() OVERRIDE;
@@ -62,8 +61,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClearBrowserCookies();
 
   bool CaptureScreenshot(std::string* base_64_data);
-
-  void Destroy();
 
   RenderViewHost* render_view_host_;
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;

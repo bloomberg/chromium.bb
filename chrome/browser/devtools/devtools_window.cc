@@ -105,8 +105,8 @@ DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
 
   if (!DevToolsAgentHost::HasFor(inspected_web_contents->GetRenderViewHost()))
     return NULL;
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
-      inspected_web_contents->GetRenderViewHost());
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
+      inspected_web_contents->GetRenderViewHost()));
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(client_host);
@@ -171,7 +171,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
                                     int x,
                                     int y) {
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(inspected_rvh);
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetFor(inspected_rvh));
   DevToolsManager::GetInstance()->InspectElement(agent, x, y);
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
@@ -657,7 +658,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     RenderViewHost* inspected_rvh,
     bool force_open,
     DevToolsToggleAction action) {
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(inspected_rvh);
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetFor(inspected_rvh));
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(host);

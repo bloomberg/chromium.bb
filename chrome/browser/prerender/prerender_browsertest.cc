@@ -2488,8 +2488,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
   WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(
-      web_contents->GetRenderViewHost());
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
+      web_contents->GetRenderViewHost()));
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;
   manager->RegisterDevToolsClientHostFor(agent, &client_host);

@@ -58,14 +58,12 @@ RenderViewHost* DevToolsAgentHostImpl::GetRenderViewHost() {
   return NULL;
 }
 
-bool DevToolsAgentHostImpl::NotifyCloseListener() {
+void DevToolsAgentHostImpl::NotifyCloseListener() {
   if (close_listener_) {
-    CloseListener* close_listener = close_listener_;
+    scoped_refptr<DevToolsAgentHostImpl> protect(this);
+    close_listener_->AgentHostClosing(this);
     close_listener_ = NULL;
-    close_listener->AgentHostClosing(this);
-    return true;
   }
-  return false;
 }
 
 }  // namespace content

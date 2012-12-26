@@ -154,7 +154,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     // UnregisterDevToolsClientHostFor may destroy window_ so store the browser
     // first.
     Browser* browser = window_->browser();
-    DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(inspected_rvh_);
+    scoped_refptr<DevToolsAgentHost> agent(
+        DevToolsAgentHost::GetFor(inspected_rvh_));
     devtools_manager->UnregisterDevToolsClientHostFor(agent);
 
     // Wait only when DevToolsWindow has a browser. For docked DevTools, this
@@ -385,10 +386,10 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     window_->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
-    DevToolsAgentHost* agent_host =
+    scoped_refptr<DevToolsAgentHost> agent_host(
         DevToolsAgentHost::GetForWorker(
             worker_data->worker_process_id,
-            worker_data->worker_route_id);
+            worker_data->worker_route_id));
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host,
         window_->devtools_client_host());
@@ -583,7 +584,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAddMessageToConsole) {
   OpenDevToolsWindow("about:blank");
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetFor(inspected_rvh_);
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetFor(inspected_rvh_));
   devtools_manager->AddMessageToConsole(agent_host,
                                         content::CONSOLE_MESSAGE_LEVEL_LOG,
                                         "log");

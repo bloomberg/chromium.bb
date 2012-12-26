@@ -137,8 +137,8 @@ void TaskManagerSharedWorkerResource::Inspect() const {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (!profile)
     return;
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHost::GetForWorker(process_id_, routing_id_);
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetForWorker(process_id_, routing_id_));
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
 

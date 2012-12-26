@@ -106,7 +106,7 @@ bool HasClientHost(RenderViewHost* rvh) {
   if (!DevToolsAgentHost::HasFor(rvh))
     return false;
 
-  DevToolsAgentHost* agent =DevToolsAgentHost::GetFor(rvh);
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
   return !!DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
 }
 
@@ -284,8 +284,8 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     return;
   }
 
-  DevToolsAgentHost* agent_host =
-      DevToolsAgentHost::GetForWorker(process_id, route_id);
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetForWorker(process_id, route_id));
   if (agent_host)
     DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }

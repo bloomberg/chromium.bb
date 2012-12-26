@@ -624,7 +624,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh);
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
   if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id,
             "Target with given id is being inspected: " + page_id);
@@ -820,7 +820,7 @@ DevToolsHttpHandlerImpl::PageInfo
 DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh)
 {
   RenderViewHostDelegate* host_delegate = rvh->GetDelegate();
-  DevToolsAgentHost* agent = DevToolsAgentHost::GetFor(rvh);
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);
   PageInfo page_info;

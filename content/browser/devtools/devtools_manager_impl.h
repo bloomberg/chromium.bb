@@ -86,7 +86,7 @@ class CONTENT_EXPORT DevToolsManagerImpl
       AgentToClientHostMap;
   AgentToClientHostMap agent_to_client_host_;
 
-  typedef std::map<DevToolsClientHost*, DevToolsAgentHostImpl*>
+  typedef std::map<DevToolsClientHost*, scoped_refptr<DevToolsAgentHostImpl> >
       ClientToAgentHostMap;
   ClientToAgentHostMap client_to_agent_host_;
 
