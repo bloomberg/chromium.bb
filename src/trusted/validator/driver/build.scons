@@ -17,5 +17,4 @@ env.ComponentLibrary(
 ncval_new = env.ComponentProgram(
     'ncval_new',
     ['ncval.cc'],
-    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
-                'elf_load'])
+    EXTRA_LIBS=['rdfa_validator', 'platform', 'elf_load'])

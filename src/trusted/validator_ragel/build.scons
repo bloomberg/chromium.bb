@@ -29,30 +29,37 @@ INST_DEFS = [
     'unreviewed/instruction_definitions/nops.def'
 ]
 
-# Generate 32 and 64 bit versions of decoders and validators.  Both libraries
-# are used for command-line decoder and validator those detect specific
-# architecture of the ELF file provided.
-glue_files = ['unreviewed/dfa_validate_common.c',
-              'unreviewed/validator_features_all.c',
-              'unreviewed/validator_features_validator.c']
+# These objects are included in both dfa_validate_x86_xx and rdfa_validator
+# libraries, so we have to introduce intermediate scons nodes.
+validator32 = env.ComponentObject('gen/validator_x86_32.c')
+validator64 = env.ComponentObject('gen/validator_x86_64.c')
+
+features = [
+    env.ComponentObject('unreviewed/validator_features_all.c'),
+    env.ComponentObject('unreviewed/validator_features_validator.c')
+]
+
+dfa_validate_common = env.ComponentObject('unreviewed/dfa_validate_common.c')
+
 env.ComponentLibrary('dfa_validate_x86_32',
-                     ['gen/validator_x86_32.c'] +
-                      (glue_files if env.get('TARGET_SUBARCH') == '32' else []))
+                     [validator32, dfa_validate_common, features])
 env.ComponentLibrary('dfa_validate_x86_64',
-                     ['gen/validator_x86_64.c'] +
-                      (glue_files if env.get('TARGET_SUBARCH') == '64' else []))
-env.ComponentLibrary('dfa_decode_x86_32',
-                     ['gen/decoder_x86_32.c'])
-env.ComponentLibrary('dfa_decode_x86_64',
-                     ['gen/decoder_x86_64.c'])
+                     [validator64, dfa_validate_common, features])
 
 # Glue library called from service runtime. The source file depends on the
-# target architecture.
+# target architecture.  In library_deps.py this library is marked as
+# dependant of dfa_validate_x86_xx.
+# TODO(shcherbina): incorporate dfa_validate_x86_xx into caller lib.
 caller_lib = 'dfa_validate_caller_x86_%s' % env.get('TARGET_SUBARCH')
 env.ComponentLibrary(
     caller_lib,
     'unreviewed/dfa_validate_%s.c' % env.get('TARGET_SUBARCH')
 )
+
+env.ComponentLibrary('dfa_decode_x86_32',
+                     ['gen/decoder_x86_32.c'])
+env.ComponentLibrary('dfa_decode_x86_64',
+                     ['gen/decoder_x86_64.c'])
 
 # Command-line decoder.
 decoder_test = env.ComponentProgram(
@@ -60,11 +67,15 @@ decoder_test = env.ComponentProgram(
     ['unreviewed/decoder_test.c'],
     EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
+# Low-level platform-independent interface supporting both 32 and 64 bit,
+# used in ncval and in validator_benchmark.
+env.ComponentLibrary('rdfa_validator',
+                     [validator32, validator64] + features)
+
 validator_benchmark = env.ComponentProgram(
     'rdfa_validator_benchmark',
     ['validator_benchmark.cc'],
-    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
-                'elf_load']
+    EXTRA_LIBS=['rdfa_validator', 'platform', 'elf_load']
 )
 
 run_benchmark = env.AutoDepsCommand(
