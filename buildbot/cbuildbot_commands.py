@@ -524,6 +524,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
   gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP, chroot=chroot)
   chroot_tmp = os.path.join(chroot, 'tmp')
   temp_dir = tempfile.mkdtemp(prefix='cbuildbot_dumps', dir=chroot_tmp)
+  asan_log_signaled = False
 
   # We need to unzip the test results tarball first because we cannot update
   # a compressed tarball.
@@ -574,6 +575,14 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
                                   input=raw.output,
                                   cwd=buildroot, redirect_stderr=True,
                                   log_stdout_to_file=processed_file_path)
+        # Break the bot if asan_log found. This is because some asan
+        # crashes may not fail any test so the bot stays green.
+        # Ex: crbug.com/167497
+        if not asan_log_signaled:
+          asan_log_signaled = True
+          cros_build_lib.Error(
+              'Asan crash occurred. See asan_logs in Artifacts.')
+          cros_build_lib.PrintBuildbotStepFailure()
 
       # Append the processed file to archive.
       filename = ArchiveFile(processed_file_path, archive_dir)
