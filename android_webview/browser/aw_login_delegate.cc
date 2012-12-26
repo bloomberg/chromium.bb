@@ -56,11 +56,14 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&AwLoginDelegate::HandleHttpAuthRequestOnUIThread,
-                   make_scoped_refptr(this), (count->auth_attempts_ == 0)));
+                   this, (count->auth_attempts_ == 0)));
     count->auth_attempts_++;
 }
 
 AwLoginDelegate::~AwLoginDelegate() {
+  // The Auth handler holds a ref count back on |this| object, so it should be
+  // impossible to reach here while this object still owns an auth handler.
+  DCHECK(aw_http_auth_handler_ == NULL);
 }
 
 void AwLoginDelegate::Proceed(const string16& user,
@@ -68,14 +71,13 @@ void AwLoginDelegate::Proceed(const string16& user,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&AwLoginDelegate::ProceedOnIOThread,
-                 make_scoped_refptr(this), user, password));
+                 this, user, password));
 }
 
 void AwLoginDelegate::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&AwLoginDelegate::CancelOnIOThread,
-                 make_scoped_refptr(this)));
+      base::Bind(&AwLoginDelegate::CancelOnIOThread, this));
 }
 
 void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
@@ -102,7 +104,9 @@ void AwLoginDelegate::CancelOnIOThread() {
   if (request_) {
     request_->CancelAuth();
     ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request_);
+    request_ = NULL;
   }
+  DeleteAuthHandlerSoon();
 }
 
 void AwLoginDelegate::ProceedOnIOThread(const string16& user,
@@ -111,12 +115,23 @@ void AwLoginDelegate::ProceedOnIOThread(const string16& user,
   if (request_) {
     request_->SetAuth(net::AuthCredentials(user, password));
     ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request_);
+    request_ = NULL;
   }
+  DeleteAuthHandlerSoon();
 }
 
 void AwLoginDelegate::OnRequestCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   request_ = NULL;
+  DeleteAuthHandlerSoon();
+}
+
+void AwLoginDelegate::DeleteAuthHandlerSoon() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&AwLoginDelegate::DeleteAuthHandlerSoon, this));
+    return;
+  }
   aw_http_auth_handler_.reset();
 }
 

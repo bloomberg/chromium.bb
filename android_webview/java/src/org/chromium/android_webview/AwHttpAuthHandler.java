@@ -11,14 +11,20 @@ import org.chromium.base.JNINamespace;
 public class AwHttpAuthHandler {
 
     private int mNativeAwHttpAuthHandler;
-    private boolean mFirstAttempt;
+    private final boolean mFirstAttempt;
 
     public void proceed(String username, String password) {
-        nativeProceed(mNativeAwHttpAuthHandler, username, password);
+        if (mNativeAwHttpAuthHandler != 0) {
+            nativeProceed(mNativeAwHttpAuthHandler, username, password);
+            mNativeAwHttpAuthHandler = 0;
+        }
     }
 
     public void cancel() {
-        nativeCancel(mNativeAwHttpAuthHandler);
+        if (mNativeAwHttpAuthHandler != 0) {
+            nativeCancel(mNativeAwHttpAuthHandler);
+            mNativeAwHttpAuthHandler = 0;
+        }
     }
 
     public boolean isFirstAttempt() {
@@ -33,6 +39,11 @@ public class AwHttpAuthHandler {
     private AwHttpAuthHandler(int nativeAwHttpAuthHandler, boolean firstAttempt) {
         mNativeAwHttpAuthHandler = nativeAwHttpAuthHandler;
         mFirstAttempt = firstAttempt;
+    }
+
+    @CalledByNative
+    void handlerDestroyed() {
+        mNativeAwHttpAuthHandler = 0;
     }
 
     private native void nativeProceed(int nativeAwHttpAuthHandler,

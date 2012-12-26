@@ -35,6 +35,7 @@ class AwLoginDelegate :
   void HandleHttpAuthRequestOnUIThread(bool first_auth_attempt);
   void CancelOnIOThread();
   void ProceedOnIOThread(const string16& user, const string16& password);
+  void DeleteAuthHandlerSoon();
 
   scoped_ptr<AwHttpAuthHandlerBase> aw_http_auth_handler_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;

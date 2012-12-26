@@ -8,6 +8,7 @@
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "content/public/browser/browser_thread.h"
 #include "jni/AwHttpAuthHandler_jni.h"
 #include "net/base/auth.h"
 #include "content/public/browser/web_contents.h"
@@ -19,9 +20,10 @@ namespace android_webview {
 AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
                                      net::AuthChallengeInfo* auth_info,
                                      bool first_auth_attempt)
-    : login_delegate_(make_scoped_refptr(login_delegate)),
+    : login_delegate_(login_delegate),
       host_(auth_info->challenger.host()),
       realm_(auth_info->realm) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(
       Java_AwHttpAuthHandler_create(
@@ -29,23 +31,34 @@ AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
 }
 
 AwHttpAuthHandler:: ~AwHttpAuthHandler() {
-  // TODO(joth): tell java counterpart, so it can null its native back-pointer.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  Java_AwHttpAuthHandler_handlerDestroyed(base::android::AttachCurrentThread(),
+                                          http_auth_handler_.obj());
 }
 
 void AwHttpAuthHandler::Proceed(JNIEnv* env,
                                 jobject obj,
                                 jstring user,
                                 jstring password) {
-  login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
-                           ConvertJavaStringToUTF16(env, password));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (login_delegate_) {
+    login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
+                             ConvertJavaStringToUTF16(env, password));
+    login_delegate_ = NULL;
+  }
 }
 
 void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
-  login_delegate_->Cancel();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (login_delegate_) {
+    login_delegate_->Cancel();
+    login_delegate_ = NULL;
+  }
 }
 
 void AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
   DCHECK(web_contents);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
 
   aw_contents->onReceivedHttpAuthRequest(
