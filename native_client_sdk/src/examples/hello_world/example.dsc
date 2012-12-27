@@ -8,6 +8,7 @@
       'LIBS': ['ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'hello_world',
   'TITLE': 'Hello World.',

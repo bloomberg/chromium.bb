@@ -100,7 +100,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   const char* argv[]) {
 
   const char* post_msg = "Hello World (" TCNAME ")!";
-  const char* console_msg = "Hello World (JavsScript Console)!";
+  const char* console_msg = "Hello World (JavaScript Console)!";
 
   SendMessage(instance, post_msg);
   LogMessage(instance, console_msg);

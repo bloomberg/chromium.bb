@@ -159,7 +159,7 @@ def GenerateRules(desc, tools):
         incs = target.get('INCLUDES', [])
         libs = target.get('LIBS', [])
         makeobj.SetProject(project, ptype, defs=defs, incs=incs, libs=libs)
-        if ptype == 'main':
+        if ptype == 'main' and tc in ['linux', 'win']:
           rules += makeobj.GetPepperPlugin()
         for arch in arches:
           makeobj.SetArch(arch)
