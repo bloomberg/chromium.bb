@@ -73,7 +73,8 @@ class FindInPageTest : public InProcessBrowserTest {
 
 }  // namespace
 
-#if defined(OS_WIN)
+// Fails often on Win, CrOS. http://crbug.com/145476, http://crbug.com/128724
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_CrashEscHandlers DISABLED_CrashEscHandlers
 #else
 #define MAYBE_CrashEscHandlers CrashEscHandlers
