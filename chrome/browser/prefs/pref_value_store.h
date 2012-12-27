@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_store.h"
 #include "base/values.h"
 
-class PrefModelAssociator;
 class PrefNotifier;
 class PrefStore;
 
@@ -28,6 +28,8 @@ class PrefStore;
 // be called on the UI thread.
 class PrefValueStore {
  public:
+  typedef base::Callback<void(const std::string&)> PrefChangedCallback;
+
   // In decreasing order of precedence:
   //   |managed_prefs| contains all preferences from mandatory policies.
   //   |extension_prefs| contains preference values set by extensions.
@@ -59,9 +61,11 @@ class PrefValueStore {
                                      PrefStore* default_prefs,
                                      PrefNotifier* pref_notifier);
 
-  // TODO(joi): Remove this completely; the part PrefModelAssociator
-  // needs can be handled simply as a PrefObserver.
-  void set_sync_associator(PrefModelAssociator* sync_associator);
+  // A PrefValueStore can have exactly one callback that is directly
+  // notified of preferences changing in the store. This does not
+  // filter through the PrefNotifier mechanism, which may not forward
+  // certain changes (e.g. unregistered prefs).
+  void set_callback(const PrefChangedCallback& callback);
 
   // Gets the value for the given preference name that has the specified value
   // type. Values stored in a PrefStore that have the matching |name| but
@@ -237,12 +241,10 @@ class PrefValueStore {
   // Keeps the PrefStore references in order of precedence.
   PrefStoreKeeper pref_stores_[PREF_STORE_TYPE_MAX + 1];
 
-  // The associator for syncing preferences.
-  PrefModelAssociator* pref_sync_associator_;
+  PrefChangedCallback pref_changed_callback_;
 
-  // Used for generating PREF_CHANGED and PREF_INITIALIZATION_COMPLETED
-  // notifications. This is a weak reference, since the notifier is owned by the
-  // corresponding PrefService.
+  // Used for generating notifications. This is a weak reference,
+  // since the notifier is owned by the corresponding PrefService.
   PrefNotifier* pref_notifier_;
 
   // A mapping of preference names to their registered types.

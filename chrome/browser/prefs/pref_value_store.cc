@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_notifier.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
+#include "base/prefs/pref_observer.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
     : pref_value_store_(NULL),
@@ -53,8 +53,7 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* recommended_prefs,
                                PrefStore* default_prefs,
                                PrefNotifier* pref_notifier)
-    : pref_sync_associator_(NULL),
-      pref_notifier_(pref_notifier),
+    : pref_notifier_(pref_notifier),
       initialization_failed_(false) {
   InitPrefStore(MANAGED_STORE, managed_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -95,8 +94,8 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
       recommended_prefs, default_prefs, pref_notifier);
 }
 
-void PrefValueStore::set_sync_associator(PrefModelAssociator* sync_associator) {
-  pref_sync_associator_ = sync_associator;
+void PrefValueStore::set_callback(const PrefChangedCallback& callback) {
+  pref_changed_callback_ = callback;
 }
 
 bool PrefValueStore::GetValue(const std::string& name,
@@ -127,8 +126,8 @@ void PrefValueStore::NotifyPrefChanged(
   // store is currently being overridden by a higher-priority store, the
   // effective value of the pref will not have changed.
   pref_notifier_->OnPreferenceChanged(path);
-  if (pref_sync_associator_)
-    pref_sync_associator_->ProcessPrefChange(path);
+  if (!pref_changed_callback_.is_null())
+    pref_changed_callback_.Run(path);
 }
 
 bool PrefValueStore::PrefValueInManagedStore(const char* name) const {

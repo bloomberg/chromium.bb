@@ -4,12 +4,12 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,7 +28,7 @@ class MockPrefNotifier : public PrefNotifier {
 };
 
 // Allows to capture sync model associator interaction.
-class MockPrefModelAssociator : public PrefModelAssociator {
+class MockPrefModelAssociator {
  public:
   MOCK_METHOD1(ProcessPrefChange, void(const std::string&));
 };
@@ -108,7 +108,9 @@ class PrefValueStoreTest : public testing::Test {
         default_pref_store_,
         &pref_notifier_));
 
-    pref_value_store_->set_sync_associator(sync_associator_.get());
+    pref_value_store_->set_callback(
+        base::Bind(&MockPrefModelAssociator::ProcessPrefChange,
+                   base::Unretained(sync_associator_.get())));
   }
 
   void CreateManagedPrefs() {

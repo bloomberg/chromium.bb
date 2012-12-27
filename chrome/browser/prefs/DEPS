@@ -3,10 +3,13 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "(chrome_)?pref_service.*|browser_prefs.*": [
+  "chrome_pref_service_factory.*|pref_service_(unittest|mock|syncable).*|browser_prefs.*": [
     "+content/public/browser/browser_thread.h",
     "+content/public/browser/browser_context.h",
     "+content/public/browser/render_process_host.h",
     "+content/public/test",
   ],
+  "pref_value_store.*|pref_service(_simple)?\..*": [
+    "-chrome/browser/prefs/pref_model_associator.h",
+  ]
 }

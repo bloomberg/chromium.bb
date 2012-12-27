@@ -78,7 +78,10 @@ PrefServiceSyncable::PrefServiceSyncable(
                 read_error_callback,
                 async) {
   pref_sync_associator_.SetPrefService(this);
-  pref_value_store->set_sync_associator(&pref_sync_associator_);
+
+  pref_value_store->set_callback(
+      base::Bind(&PrefModelAssociator::ProcessPrefChange,
+                 base::Unretained(&pref_sync_associator_)));
 }
 
 PrefServiceSyncable::~PrefServiceSyncable() {}
