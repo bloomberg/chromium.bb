@@ -93,8 +93,9 @@ void EventRouterForwarder::HandleEvent(const std::string& extension_id,
   } else {
     std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
     for (size_t i = 0; i < profiles.size(); ++i) {
+      scoped_ptr<ListValue> per_profile_event_args(event_args->DeepCopy());
       CallEventRouter(
-          profiles[i], extension_id, event_name, event_args.Pass(),
+          profiles[i], extension_id, event_name, per_profile_event_args.Pass(),
           use_profile_to_restrict_events ? profiles[i] : NULL, event_url);
     }
   }
