@@ -774,7 +774,6 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
 
     if (m_tileManager) {
       // TODO(nduca): Pass something useful into the memory manager.
-      LOG(INFO) << "Setting up initial tile manager policy";
       GlobalStateThatImpactsTilePriority new_state(m_tileManager->GlobalState());
       new_state.memory_limit_in_bytes = PrioritizedResourceManager::defaultMemoryAllocationLimit();
       new_state.memory_limit_policy = ALLOW_ANYTHING;
