@@ -15,8 +15,6 @@ if env.Bit('linux') and not env.Bit('android'):
       CXXFLAGS='-Weffc++ -Woverloaded-virtual -fomit-frame-pointer',
 )
 
-untrusted_env = env.MakeUntrustedNativeEnv()
-
 # ------------------------------------------------------------------
 # Source generation is controlled by command line directives. To update
 # source generation, you must add one of the following arguments:
@@ -212,6 +210,7 @@ validator_tests = {
 # generate file. They're all expected to fail and produce the golden files'
 # stdout. Stderr is expected to be empty.
 if env.Bit('target_arm'):
+  untrusted_env = env.MakeUntrustedNativeEnv()
   for test, exit_status in validator_tests.iteritems():
     nexe = untrusted_env.ComponentProgram(test, 'testdata/' + test + '.S',
                                           LINKFLAGS=['-nodefaultlibs',
