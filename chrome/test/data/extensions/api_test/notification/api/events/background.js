@@ -4,6 +4,8 @@
 
 const notification = chrome.experimental.notification;
 
+const replaceIdString = "foo123";
+
 var testBasicEvents = function() {
   var incidents = 0;
 
@@ -11,9 +13,10 @@ var testBasicEvents = function() {
     incidents++;
   }
 
-  var onDisplayed = function() {
+  var onDisplayed = function(replaceId) {
     incidents++;
     if (incidents == 2) {
+      chrome.test.assertEq(replaceIdString, replaceId);
       chrome.test.succeed();
     }
   }
@@ -25,7 +28,7 @@ var testBasicEvents = function() {
         "common/images/chrome_logo_2x.png",
     title: "Attention!",
     message: "Check out Cirque du Soleil",
-    replaceId: "12345678"
+    replaceId: replaceIdString
   };
   notification.show(options, onShowCallback);
 };

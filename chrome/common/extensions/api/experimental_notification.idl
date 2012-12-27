@@ -76,14 +76,11 @@
   };
 
   interface Events {
-    // TODO(miket): these events are only trivially useful without a way to map
-    // back to *which* notification triggered them. Fix this.
-
-    static void onDisplayed();
-    static void onError();
-    static void onClosed(boolean byUser);
-    static void onClicked();
-    static void onButtonClicked(long buttonIndex);
+    static void onDisplayed(DOMString replaceId);
+    static void onError(DOMString replaceId);
+    static void onClosed(DOMString replaceId, boolean byUser);
+    static void onClicked(DOMString replaceId);
+    static void onButtonClicked(DOMString replaceId, long buttonIndex);
   };
 
 };

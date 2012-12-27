@@ -29,37 +29,39 @@ class NotificationApiDelegate : public NotificationDelegate {
  public:
   NotificationApiDelegate(ApiFunction* api_function,
                           Profile* profile,
-                          const std::string& extension_id)
+                          const std::string& extension_id,
+                          const string16& replace_id)
       : api_function_(api_function),
         profile_(profile),
         extension_id_(extension_id),
+        replace_id_(replace_id),
         id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
     DCHECK(api_function_);
   }
 
   virtual void Display() OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationDisplayed, args.Pass());
   }
 
   virtual void Error() OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationError, args.Pass());
   }
 
   virtual void Close(bool by_user) OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<ListValue> args(CreateBaseEventArgs());
     args->Append(Value::CreateBooleanValue(by_user));
     SendEvent(event_names::kOnNotificationClosed, args.Pass());
   }
 
   virtual void Click() OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationClicked, args.Pass());
   }
 
   virtual void ButtonClick(int index) OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<ListValue> args(CreateBaseEventArgs());
     args->Append(Value::CreateIntegerValue(index));
     SendEvent(event_names::kOnNotificationButtonClicked, args.Pass());
   }
@@ -85,9 +87,16 @@ class NotificationApiDelegate : public NotificationDelegate {
         extension_id_, event.Pass());
   }
 
+  scoped_ptr<ListValue> CreateBaseEventArgs() {
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(replace_id_));
+    return args.Pass();
+  }
+
   scoped_refptr<ApiFunction> api_function_;
   Profile* profile_;
   const std::string extension_id_;
+  const string16 replace_id_;
   std::string id_;
 
   static uint64 next_id_;
@@ -177,7 +186,8 @@ bool NotificationShowFunction::RunImpl() {
                             optional_fields.get(),
                             new NotificationApiDelegate(this,
                                                         profile(),
-                                                        extension_->id()));
+                                                        extension_->id(),
+                                                        replace_id));
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 
   // TODO(miket): why return a result if it's always true?
