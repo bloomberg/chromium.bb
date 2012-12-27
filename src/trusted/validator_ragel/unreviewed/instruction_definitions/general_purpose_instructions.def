@@ -41,6 +41,8 @@
 #       t: Top of the x87 stack (%st).
 #       x: A memory operand addressed by the %ds:(%[er]bx). See “xlat”.
 #       B: General purpose register specified by the VEX/XOP.vvvv field.
+#       C: Control register specified by the ModRM.reg field.
+#       D: Debug register specified by the ModRM.reg field.
 #       E: General purpose register or memory operand specified by the r/m
 #          field of the ModRM byte.  For memory operands, the ModRM byte may
 #          be followed by a SIB byte to specify one of the indexed
@@ -143,6 +145,11 @@
 #       v:    A word, doubleword, or quadword (in 64-bit mode), depending on
 #             the effective operand size.
 #       w:    A word, irrespective of the effective operand size.
+#       x:    Instruction supports both vector sizes (128 bits or 256 bits).
+#             Size is encoded using the VEX/XOP.L field. (L=0: 128 bits;
+#             L=1: 256 bits). Usually this symbol is appended to ps or pd, but
+#             sometimes it is used alone. For gen_dfa psx, pdx and x
+#             are the same.
 #       y:    A doubleword or quadword depending on effective operand size.
 #       z:    A word if the effective operand size is 16 bits, or a doubleword
 #             if the effective operand size is 32 or 64 bits.
