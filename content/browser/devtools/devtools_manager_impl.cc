@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -145,14 +144,6 @@ void DevToolsManagerImpl::BindClientHost(
   agent_to_client_host_[agent_host] = client_host;
   client_to_agent_host_[client_host] = agent_host;
   agent_host->set_close_listener(this);
-
-  // TODO(pfeldman): move this into the RenderViewDevToolsAgentHost attach /
-  // detach sniffers.
-  RenderViewHost* rvh = agent_host->GetRenderViewHost();
-  if (rvh) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-        rvh->GetProcess()->GetID());
-  }
 }
 
 void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
@@ -174,26 +165,9 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
         FROM_HERE,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
-  RenderViewHost* rvh = agent_host->GetRenderViewHost();
-  int process_id = rvh ? rvh->GetProcess()->GetID() : -1;
-  bool process_has_agents = !rvh;
-  for (AgentToClientHostMap::iterator it = agent_to_client_host_.begin();
-       !process_has_agents && it != agent_to_client_host_.end();
-       ++it) {
-    RenderViewHost* cur_rvh = it->first->GetRenderViewHost();
-    if (cur_rvh && cur_rvh->GetProcess()->GetID() == process_id)
-      process_has_agents = true;
-  }
-
   // Lazy agent hosts can be deleted from within detach.
   // Do not access agent_host below this line.
   agent_host->Detach();
-
-  // We are the last to disconnect from the renderer -> revoke permissions.
-  if (!process_has_agents) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-        process_id);
-  }
 }
 
 void DevToolsManagerImpl::CloseAllClientHosts() {

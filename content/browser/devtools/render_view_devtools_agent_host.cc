@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -81,6 +82,7 @@ bool DevToolsAgentHost::HasFor(RenderViewHost* rvh) {
   return FindAgentHost(rvh) != NULL;
 }
 
+// static
 bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
   if (g_instances == NULL)
     return false;
@@ -149,6 +151,12 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
 }
 
 void RenderViewDevToolsAgentHost::NotifyClientAttaching() {
+  if (!render_view_host_)
+    return;
+
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+      render_view_host_->GetProcess()->GetID());
+
   NotificationService::current()->Notify(
       NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
       Source<BrowserContext>(
@@ -158,6 +166,27 @@ void RenderViewDevToolsAgentHost::NotifyClientAttaching() {
 }
 
 void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
+  if (!render_view_host_)
+    return;
+
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  bool process_has_agents = false;
+  RenderProcessHost* render_process_host = render_view_host_->GetProcess();
+  for (Instances::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
+    if (*it == this || !devtools_manager->GetDevToolsClientHostFor(*it))
+      continue;
+    RenderViewHost* rvh = (*it)->render_view_host();
+    if (rvh && rvh->GetProcess() == render_process_host)
+      process_has_agents = true;
+  }
+
+  // We are the last to disconnect from the renderer -> revoke permissions.
+  if (!process_has_agents) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
+        render_process_host->GetID());
+  }
+
   NotificationService::current()->Notify(
       NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
       Source<BrowserContext>(
