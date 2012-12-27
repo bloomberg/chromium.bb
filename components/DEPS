@@ -1,0 +1,17 @@
+include_rules = [
+  # Do not add chrome/ as an allowed include.  Components MUST NOT
+  # depend on anything under src/chrome.
+  "-chrome",
+
+  # Components should only depend on the public Content API, and on
+  # layers below the Content Module. They must not depend on the
+  # implementation of the Content Module.
+  #
+  # Subdirectories of e.g. src/components/component_name should add
+  # the additional parts of the Content API that they need,
+  # e.g. components/component_name/browser/DEPS would add a
+  # "+content/public/browser" rule.
+  "-content",
+  "+content/public/common",
+  "+content/public/test",
+]
