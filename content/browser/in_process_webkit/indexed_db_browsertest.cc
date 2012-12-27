@@ -124,12 +124,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
   SimpleTest(GetTestUrl("indexeddb", "value_size_test.html"));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_DoesntHangTest DISABLED_DoesntHangTest
-#else
-#define MAYBE_DoesntHangTest DoesntHangTest
-#endif
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_DoesntHangTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_run_forever.html"));
   CrashTab(shell()->web_contents());
   SimpleTest(GetTestUrl("indexeddb", "transaction_test.html"));
