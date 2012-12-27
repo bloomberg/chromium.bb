@@ -37,4 +37,8 @@ bool OmniboxAPIFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
+bool OmniboxAPIFactory::ServiceRedirectedInIncognito() const {
+  return true;
+}
+
 }  // namespace extensions
