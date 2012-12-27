@@ -39,6 +39,7 @@ class ChromeCommitter(object):
   _CANDIDATES_TO_CONSIDER = 10
 
   _SLEEP_TIMEOUT = 30
+  _TREE_TIMEOUT = 7200
 
   def __init__(self, checkout_dir, dryrun):
     self._checkout_dir = checkout_dir
@@ -132,7 +133,8 @@ class ChromeCommitter(object):
     commit_cmd = ['svn', 'commit', '--message',
                   self. _COMMIT_MSG % dict(version=self._lkgm)]
 
-    if not cros_build_lib.TreeOpen(gclient.STATUS_URL, self._SLEEP_TIMEOUT):
+    if not cros_build_lib.TreeOpen(gclient.STATUS_URL, self._SLEEP_TIMEOUT,
+                                   max_timeout=self._TREE_TIMEOUT):
       raise LKGMNotCommitted('Chromium Tree is closed')
 
     # Sadly svn commit does not have a dryrun option.

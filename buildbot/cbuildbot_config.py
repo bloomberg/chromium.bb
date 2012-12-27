@@ -732,6 +732,10 @@ chrome_perf = chrome_info.derive(
   hw_tests_num=1,
   hw_tests_timeout=90 * 60,
   nowithdebug=True,
+  use_chrome_lkgm=True,
+  use_lkgm=False,
+
+
   # TODO(sosa): Really shouldn't be necessary in addition with
   # nowithdebug. One should imply the other.
   useflags=official['useflags'] + ['-chrome_debug'],
@@ -740,13 +744,6 @@ chrome_perf = chrome_info.derive(
 chrome_perf.add_config('lumpy-chrome-perf',
   boards=['lumpy'],
   trybot_list=True,
-)
-
-chrome_perf.add_config('lumpy-lkgm-chrome-perf',
-  boards=['lumpy'],
-  trybot_list=True,
-  use_chrome_lkgm=True,
-  use_lkgm=False,
 )
 
 chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
