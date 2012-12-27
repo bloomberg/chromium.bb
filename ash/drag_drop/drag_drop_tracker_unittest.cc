@@ -62,17 +62,17 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
-  Shell::GetInstance()->set_active_root_window(root_windows[0]);
-
   scoped_ptr<aura::Window> window0(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   window0->Show();
 
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
-
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100)));
+      CreateTestWindow(gfx::Rect(300, 100, 100, 100)));
   window1->Show();
+  EXPECT_EQ(root_windows[0], window0->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window1->GetRootWindow());
+  EXPECT_EQ("0,0 100x100", window0->GetBoundsInScreen().ToString());
+  EXPECT_EQ("300,100 100x100", window1->GetBoundsInScreen().ToString());
 
   // Make RootWindow0 active so that capture window is parented to it.
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
@@ -129,14 +129,12 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
-  Shell::GetInstance()->set_active_root_window(root_windows[0]);
   scoped_ptr<aura::Window> window0(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   window0->Show();
 
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100)));
+      CreateTestWindow(gfx::Rect(300, 100, 100, 100)));
   window1->Show();
 
   // Make RootWindow0 active so that capture window is parented to it.

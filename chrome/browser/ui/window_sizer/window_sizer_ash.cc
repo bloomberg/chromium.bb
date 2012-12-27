@@ -130,8 +130,12 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     GetDefaultWindowBounds(bounds_in_screen);
 
   if (browser_ && browser_->is_type_tabbed()) {
+    aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
+    // Always open new window inthe active display.
+    gfx::Rect active_area = active->GetBoundsInScreen();
     gfx::Rect work_area =
-        monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds_in_screen);
+        monitor_info_provider_->GetMonitorWorkAreaMatching(active_area);
+
     // This is a window / app. See if there is no window and try to place it.
     int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
     aura::Window* top_window = GetTopWindow(work_area);

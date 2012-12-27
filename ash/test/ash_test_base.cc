@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/public/test/web_contents_tester.h"
@@ -133,9 +134,20 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   window->set_id(id);
   window->SetType(type);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetBounds(bounds);
   window->Show();
-  SetDefaultParentByPrimaryRootWindow(window);
+
+  if (bounds.IsEmpty()) {
+    SetDefaultParentByPrimaryRootWindow(window);
+  } else {
+    gfx::Display display =
+      ash::Shell::GetInstance()->display_manager()->GetDisplayMatching(bounds);
+    aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
+        GetRootWindowForDisplayId(display.id());
+    gfx::Point origin = bounds.origin();
+    wm::ConvertPointFromScreen(root, &origin);
+    window->SetBounds(gfx::Rect(origin, bounds.size()));
+    window->SetDefaultParentByRootWindow(root, bounds);
+  }
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   return window;
 }

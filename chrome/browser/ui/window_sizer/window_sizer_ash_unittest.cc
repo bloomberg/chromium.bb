@@ -15,6 +15,7 @@
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -33,8 +34,10 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   explicit TestBrowserWindowAura(aura::Window* native_window);
   virtual ~TestBrowserWindowAura();
 
+  // TestBrowserWindow overrides:
+  virtual void Show() OVERRIDE;
+  virtual void Activate() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
-
   virtual gfx::Rect GetBounds() const OVERRIDE;
 
  private:
@@ -49,6 +52,16 @@ TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
 }
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
+
+void TestBrowserWindowAura::Show() {
+  native_window_->Show();
+  Activate();
+}
+
+void TestBrowserWindowAura::Activate() {
+  GetActivationClient(
+      native_window_->GetRootWindow())->ActivateWindow(native_window_);
+}
 
 gfx::NativeWindow TestBrowserWindowAura::GetNativeWindow() {
     return native_window_;
@@ -548,6 +561,97 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
                         1024 - 2 * WindowSizer::kDesktopBorderSize,
                         768 - WindowSizer::kDesktopBorderSize).ToString(),
               window_bounds.ToString());
+  }
+}
+
+#if defined(OS_CHROMEOS)
+#define MAYBE_PlaceNewWindowsOnMultipleDisplays PlaceNewWindowsOnMultipleDisplays
+#else
+// No multiple displays on windows ash.
+#define MAYBE_PlaceNewWindowsOnMultipleDisplays DISABLED_PlaceNewWindowsOnMultipleDisplays
+#endif
+
+// Test the placement of newly created windows on multiple dislays.
+TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
+  UpdateDisplay("1024x768,400x400");
+  const gfx::Rect secondary(1024, 0, 400, 400);
+
+  ash::Shell::GetInstance()->set_active_root_window(
+      ash::Shell::GetPrimaryRootWindow());
+
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
+
+  // Create browser windows that are used as reference.
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  window->SetBounds(gfx::Rect(10, 10, 200, 200));
+  scoped_ptr<BrowserWindow> browser_window(
+      new TestBrowserWindowAura(window.get()));
+  Browser::CreateParams window_params(profile.get());
+  window_params.window = browser_window.get();
+  scoped_ptr<Browser> window_owning_browser(new Browser(window_params));
+  browser_window->Show();
+  EXPECT_EQ(window->GetRootWindow(), ash::Shell::GetActiveRootWindow());
+
+  scoped_ptr<aura::Window> another_window(CreateTestWindowInShellWithId(1));
+  another_window->SetBounds(gfx::Rect(800, 10, 300, 300));
+  scoped_ptr<BrowserWindow> another_browser_window(
+      new TestBrowserWindowAura(another_window.get()));
+  Browser::CreateParams another_window_params(profile.get());
+  another_window_params.window = another_browser_window.get();
+  scoped_ptr<Browser> another_window_owning_browser(
+      new Browser(another_window_params));
+  another_browser_window->Show();
+
+  // Creating a new window to verify the new placement.
+  scoped_ptr<aura::Window> new_window(CreateTestWindowInShellWithId(0));
+  scoped_ptr<BrowserWindow> new_browser_window(
+      new TestBrowserWindowAura(new_window.get()));
+  Browser::CreateParams new_window_params(profile.get());
+  new_window_params.window = new_browser_window.get();
+  scoped_ptr<Browser> new_browser(new Browser(new_window_params));
+
+  // Make sure the primary root is active.
+  ASSERT_EQ(ash::Shell::GetPrimaryRootWindow(),
+            ash::Shell::GetActiveRootWindow());
+
+  // First new window should be in the primary.
+  {
+    gfx::Rect window_bounds;
+    GetWindowBounds(p1024x768, p1024x768, secondary,
+                    gfx::Rect(), secondary,
+                    PERSISTED, new_browser.get(), gfx::Rect(), &window_bounds);
+    EXPECT_EQ("0,10 300x300", window_bounds.ToString());
+  }
+
+  // Move the window to the secondary display and create a new window.
+  // It should be opened in the secondary display.
+  {
+    gfx::Display second_display = gfx::Screen::GetScreenFor(window.get())->
+        GetDisplayNearestPoint(gfx::Point(1200,10));
+    window->SetBoundsInScreen(gfx::Rect(1200, 10, 200, 200), second_display);
+    browser_window->Activate();
+    EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
+              ash::Shell::GetActiveRootWindow());
+
+    gfx::Rect window_bounds;
+    GetWindowBounds(p1024x768, p1024x768, secondary,
+                    gfx::Rect(), secondary,
+                    PERSISTED, new_browser.get(), gfx::Rect(), &window_bounds);
+    EXPECT_EQ("1024,10 200x200", window_bounds.ToString());
+  }
+
+  // Activate another window in the primary display and create a new window.
+  // It should be created in the primary display.
+  {
+    another_browser_window->Activate();
+    EXPECT_EQ(ash::Shell::GetPrimaryRootWindow(),
+              ash::Shell::GetActiveRootWindow());
+
+    gfx::Rect window_bounds;
+    GetWindowBounds(p1024x768, p1024x768, secondary,
+                    gfx::Rect(), secondary,
+                    PERSISTED, new_browser.get(), gfx::Rect(), &window_bounds);
+    EXPECT_EQ("0,10 300x300", window_bounds.ToString());
   }
 }
 
