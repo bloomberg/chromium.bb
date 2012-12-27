@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -51,8 +52,7 @@ enum DevToolsDockSide {
 
 class DevToolsWindow : private content::NotificationObserver,
                        private content::WebContentsDelegate,
-                       private content::DevToolsFrontendHostDelegate,
-                       private DevToolsFileHelper::Delegate {
+                       private content::DevToolsFrontendHostDelegate {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
@@ -183,9 +183,9 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void AppendToFile(const std::string& url,
                             const std::string& content) OVERRIDE;
 
-  // Overridden from DevToolsFileHelper::Delegate
-  virtual void FileSavedAs(const std::string& url)  OVERRIDE;
-  virtual void AppendedTo(const std::string& url)  OVERRIDE;
+  // DevToolsFileHelper callbacks.
+  void FileSavedAs(const std::string& url);
+  void AppendedTo(const std::string& url);
 
   void UpdateBrowserToolbar();
   bool IsDocked();
@@ -202,6 +202,7 @@ class DevToolsWindow : private content::NotificationObserver,
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;
   content::DevToolsClientHost* frontend_host_;
+  base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
   int width_;
   int height_;

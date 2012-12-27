@@ -23,6 +23,8 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
+using base::Bind;
+using base::Callback;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
@@ -34,30 +36,28 @@ base::LazyInstance<FilePath>::Leaky
 
 }  // namespace
 
-class DevToolsFileHelper::SaveAsDialog : public ui::SelectFileDialog::Listener,
-                                         public base::RefCounted<SaveAsDialog> {
+namespace {
+
+typedef Callback<void(const FilePath&)> SelectedCallback;
+typedef Callback<void(void)> CanceledCallback;
+
+class SelectFileDialog : public ui::SelectFileDialog::Listener,
+                         public base::RefCounted<SelectFileDialog> {
  public:
-  explicit SaveAsDialog(DevToolsFileHelper* helper)
-      : helper_(helper) {
+  SelectFileDialog(const SelectedCallback& selected_callback,
+                   const CanceledCallback& canceled_callback)
+      : selected_callback_(selected_callback),
+        canceled_callback_(canceled_callback) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(NULL));
   }
 
-  void ResetHelper() {
-    helper_ = NULL;
-  }
-
-  void Show(const std::string& url,
-            const FilePath& initial_path,
-            const std::string& content) {
+  void Show(ui::SelectFileDialog::Type type,
+            const FilePath& default_path) {
     AddRef();  // Balanced in the three listener outcomes.
-
-    url_ = url;
-    content_ = content;
-
-    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+    select_file_dialog_->SelectFile(type,
                                     string16(),
-                                    initial_path,
+                                    default_path,
                                     NULL,
                                     0,
                                     FILE_PATH_LITERAL(""),
@@ -66,72 +66,63 @@ class DevToolsFileHelper::SaveAsDialog : public ui::SelectFileDialog::Listener,
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
-                            int index, void* params) {
-    if (helper_)
-      helper_->FileSelected(url_, path, content_);
+  virtual void FileSelected(const FilePath& path, int index, void* params) {
+    selected_callback_.Run(path);
     Release();  // Balanced in ::Show.
   }
 
-  virtual void MultiFilesSelected(
-    const std::vector<FilePath>& files, void* params) {
+  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
+                                  void* params) {
     Release();  // Balanced in ::Show.
     NOTREACHED() << "Should not be able to select multiple files";
   }
 
   virtual void FileSelectionCanceled(void* params) {
+    canceled_callback_.Run();
     Release();  // Balanced in ::Show.
   }
 
  private:
-  friend class base::RefCounted<SaveAsDialog>;
-  virtual ~SaveAsDialog() {}
+  friend class base::RefCounted<SelectFileDialog>;
+  virtual ~SelectFileDialog() {}
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  std::string url_;
-  std::string content_;
-  DevToolsFileHelper* helper_;
+  SelectedCallback selected_callback_;
+  CanceledCallback canceled_callback_;
 };
 
-// static
-void DevToolsFileHelper::WriteFile(const FilePath& path,
-                                   const std::string& content) {
+void WriteToFile(const FilePath& path, const std::string& content) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!path.empty());
 
   file_util::WriteFile(path, content.c_str(), content.length());
 }
 
-// static
-void DevToolsFileHelper::AppendToFile(const FilePath& path,
-                                    const std::string& content) {
+void AppendToFile(const FilePath& path, const std::string& content) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!path.empty());
 
   file_util::AppendToFile(path, content.c_str(), content.length());
 }
 
-DevToolsFileHelper::DevToolsFileHelper(Profile* profile, Delegate* delegate)
-    : profile_(profile),
-      delegate_(delegate) {
+}  // namespace
+
+DevToolsFileHelper::DevToolsFileHelper(Profile* profile) : profile_(profile),
+                                                           weak_factory_(this) {
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() {
-  if (save_as_dialog_)
-    save_as_dialog_->ResetHelper();
 }
 
 void DevToolsFileHelper::Save(const std::string& url,
                               const std::string& content,
-                              bool save_as) {
+                              bool save_as,
+                              const SaveCallback& callback) {
   PathsMap::iterator it = saved_files_.find(url);
   if (it != saved_files_.end() && !save_as) {
-    FileSelected(url, it->second, content);
+    SaveAsFileSelected(url, content, callback, it->second);
     return;
   }
-
-  if (save_as_dialog_)
-    save_as_dialog_->ResetHelper();
 
   const DictionaryValue* file_map =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsEditedFiles);
@@ -159,28 +150,33 @@ void DevToolsFileHelper::Save(const std::string& url,
     }
   }
 
-  save_as_dialog_ = new SaveAsDialog(this);
-  save_as_dialog_->Show(url, initial_path, content);
+  scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
+      Bind(&DevToolsFileHelper::SaveAsFileSelected,
+           weak_factory_.GetWeakPtr(),
+           url,
+           content,
+           callback),
+      Bind(&DevToolsFileHelper::SaveAsFileSelectionCanceled,
+           weak_factory_.GetWeakPtr()));
+  select_file_dialog->Show(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+                           initial_path);
 }
 
 void DevToolsFileHelper::Append(const std::string& url,
-                                const std::string& content) {
+                                const std::string& content,
+                                const AppendCallback& callback) {
   PathsMap::iterator it = saved_files_.find(url);
   if (it == saved_files_.end())
     return;
-
-  delegate_->AppendedTo(url);
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsFileHelper::AppendToFile,
-                 it->second,
-                 content));
+  callback.Run();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&AppendToFile, it->second, content));
 }
 
-void DevToolsFileHelper::FileSelected(const std::string& url,
-                                      const FilePath& path,
-                                      const std::string& content) {
+void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
+                                            const std::string& content,
+                                            const SaveCallback& callback,
+                                            const FilePath& path) {
   *g_last_save_path.Pointer() = path;
   saved_files_[url] = path;
 
@@ -189,11 +185,10 @@ void DevToolsFileHelper::FileSelected(const std::string& url,
   DictionaryValue* files_map = update.Get();
   files_map->SetWithoutPathExpansion(base::MD5String(url),
                                      base::CreateFilePathValue(path));
-  delegate_->FileSavedAs(url);
+  callback.Run();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&WriteToFile, path, content));
+}
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsFileHelper::WriteFile,
-                 path,
-                 content));
+void DevToolsFileHelper::SaveAsFileSelectionCanceled() {
 }

@@ -55,6 +55,7 @@ base::LazyInstance<DevToolsWindowList>::Leaky
      g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
+using base::Bind;
 using content::DevToolsAgentHost;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
@@ -209,11 +210,12 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
       dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
+      weak_factory_(this),
       width_(-1),
       height_(-1) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(web_contents,
                                                                   this);
-  file_helper_.reset(new DevToolsFileHelper(profile, this));
+  file_helper_.reset(new DevToolsFileHelper(profile));
 
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
@@ -812,12 +814,16 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
 void DevToolsWindow::SaveToFile(const std::string& url,
                                 const std::string& content,
                                 bool save_as) {
-  file_helper_->Save(url, content, save_as);
+  file_helper_->Save(url, content, save_as, Bind(&DevToolsWindow::FileSavedAs,
+                                                 weak_factory_.GetWeakPtr(),
+                                                 url));
 }
 
 void DevToolsWindow::AppendToFile(const std::string& url,
                                   const std::string& content) {
-  file_helper_->Append(url, content);
+  file_helper_->Append(url, content, Bind(&DevToolsWindow::AppendedTo,
+                                          weak_factory_.GetWeakPtr(),
+                                          url));
 }
 
 void DevToolsWindow::FileSavedAs(const std::string& url) {
