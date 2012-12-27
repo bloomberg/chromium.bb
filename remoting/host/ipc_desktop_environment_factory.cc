@@ -22,12 +22,14 @@ namespace remoting {
 
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     IPC::ChannelProxy* daemon_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner)
     : DesktopEnvironmentFactory(input_task_runner, ui_task_runner),
       daemon_channel_(daemon_channel),
+      audio_capture_task_runner_(audio_capture_task_runner),
       network_task_runner_(network_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       next_id_(0) {
@@ -40,7 +42,8 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy(
-      new DesktopSessionProxy(network_task_runner_,
+      new DesktopSessionProxy(audio_capture_task_runner_,
+                              network_task_runner_,
                               video_capture_task_runner_));
 
   return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(

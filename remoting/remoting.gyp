@@ -397,6 +397,8 @@
             'host/host_user_interface.h',
             'host/in_memory_host_config.cc',
             'host/in_memory_host_config.h',
+            'host/ipc_audio_capturer.cc',
+            'host/ipc_audio_capturer.h',
             'host/ipc_constants.cc',
             'host/ipc_constants.h',
             'host/ipc_desktop_environment_factory.cc',

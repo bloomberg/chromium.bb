@@ -12,11 +12,13 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/capturer/capture_data.h"
+#include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/remote_input_filter.h"
+#include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -68,6 +70,7 @@ DesktopSessionAgent::Delegate::~Delegate() {
 }
 
 DesktopSessionAgent::~DesktopSessionAgent() {
+  DCHECK(!audio_capturer_);
   DCHECK(!disconnect_window_);
   DCHECK(!local_input_monitor_);
   DCHECK(!network_channel_);
@@ -201,6 +204,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   local_input_monitor_ = LocalInputMonitor::Create();
   local_input_monitor_->Start(this, disconnect_session);
 
+  // Start the audio capturer.
+  audio_capture_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
+
   // Start the video capturer.
   video_capture_task_runner()->PostTask(
       FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
@@ -248,6 +255,18 @@ void DesktopSessionAgent::InjectClipboardEvent(
       new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event));
 }
 
+void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
+  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+
+  std::string serialized_packet;
+  if (!packet->SerializeToString(&serialized_packet)) {
+    LOG(ERROR) << "Failed to serialize AudioPacket.";
+    return;
+  }
+
+  SendToNetwork(new ChromotingDesktopNetworkMsg_AudioPacket(serialized_packet));
+}
+
 bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                 IPC::PlatformFileForTransit* desktop_pipe_out) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
@@ -285,6 +304,10 @@ void DesktopSessionAgent::Stop() {
     input_tracker_.reset();
 
     event_executor_.reset();
+
+    // Stop the audio capturer.
+    audio_capture_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&DesktopSessionAgent::StopAudioCapturer, this));
 
     // Stop the video capturer.
     video_capture_task_runner()->PostTask(
@@ -442,6 +465,22 @@ void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
   }
 }
 
+void DesktopSessionAgent::StartAudioCapturer() {
+  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+
+  audio_capturer_ = AudioCapturer::Create();
+  if (audio_capturer_) {
+    audio_capturer_->Start(base::Bind(&DesktopSessionAgent::ProcessAudioPacket,
+                                      this));
+  }
+}
+
+void DesktopSessionAgent::StopAudioCapturer() {
+  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+
+  audio_capturer_.reset();
+}
+
 void DesktopSessionAgent::StartVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
@@ -463,11 +502,13 @@ void DesktopSessionAgent::StopVideoCapturer() {
 }
 
 DesktopSessionAgent::DesktopSessionAgent(
+    scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
-    : caller_task_runner_(caller_task_runner),
+    : audio_capture_task_runner_(audio_capture_task_runner),
+      caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),

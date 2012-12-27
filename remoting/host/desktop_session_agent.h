@@ -30,6 +30,8 @@ class Message;
 
 namespace remoting {
 
+class AudioCapturer;
+class AudioPacket;
 class AutoThreadTaskRunner;
 class DisconnectWindow;
 class EventExecutor;
@@ -62,6 +64,7 @@ class DesktopSessionAgent
   };
 
   static scoped_refptr<DesktopSessionAgent> Create(
+      scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
@@ -89,6 +92,9 @@ class DesktopSessionAgent
   // process.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event);
 
+  // Forwards an audio packet though the IPC channel to the network process.
+  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet);
+
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned in
   // the variable pointed by |desktop_pipe_out|.
@@ -100,6 +106,7 @@ class DesktopSessionAgent
 
  protected:
   DesktopSessionAgent(
+      scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
@@ -140,6 +147,12 @@ class DesktopSessionAgent
   // Sends a message to the network process.
   void SendToNetwork(IPC::Message* message);
 
+  // Posted to |audio_capture_task_runner_| to start the audio capturer.
+  void StartAudioCapturer();
+
+  // Posted to |audio_capture_task_runner_| to stop the audio capturer.
+  void StopAudioCapturer();
+
   // Posted to |video_capture_task_runner_| to start the video capturer.
   void StartVideoCapturer();
 
@@ -148,6 +161,10 @@ class DesktopSessionAgent
 
   // Getters providing access to the task runners for platform-specific derived
   // classes.
+  scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner() const {
+    return audio_capture_task_runner_;
+  }
+
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
   }
@@ -169,6 +186,9 @@ class DesktopSessionAgent
   }
 
  private:
+  // Task runner dedicated to running methods of |audio_capturer_|.
+  scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner_;
+
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
@@ -180,6 +200,9 @@ class DesktopSessionAgent
 
   // Task runner dedicated to running methods of |video_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
+
+  // Captures audio output.
+  scoped_ptr<AudioCapturer> audio_capturer_;
 
   base::WeakPtr<Delegate> delegate_;
 

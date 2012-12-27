@@ -570,6 +570,7 @@ void HostProcess::StartOnUiThread() {
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
           daemon_channel_.get(),
+          context_->audio_task_runner(),
           context_->input_task_runner(),
           context_->network_task_runner(),
           context_->ui_task_runner(),

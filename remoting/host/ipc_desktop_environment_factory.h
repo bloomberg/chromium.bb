@@ -31,6 +31,7 @@ class IpcDesktopEnvironmentFactory
   // relevant task runners. |daemon_channel| must outlive this object.
   IpcDesktopEnvironmentFactory(
       IPC::ChannelProxy* daemon_channel,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -53,6 +54,9 @@ class IpcDesktopEnvironmentFactory
  private:
   // IPC channel connected to the daemon process.
   IPC::ChannelProxy* daemon_channel_;
+
+  // Task runner used to run the audio capturer.
+  scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner_;
 
   // Task runner used to service calls to the DesktopSessionConnector APIs.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;

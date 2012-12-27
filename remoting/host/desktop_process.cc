@@ -76,6 +76,19 @@ void DesktopProcess::OnChannelError() {
 bool DesktopProcess::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  // Launch the audio capturing thread.
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner;
+#if defined(OS_WIN)
+  // On Windows the AudioCapturer requires COM, so we run a single-threaded
+  // apartment, which requires a UI thread.
+  audio_task_runner = AutoThread::CreateWithLoopAndComInitTypes(
+      "ChromotingAudioThread", caller_task_runner_, MessageLoop::TYPE_UI,
+      AutoThread::COM_INIT_STA);
+#else // !defined(OS_WIN)
+  audio_task_runner = AutoThread::CreateWithType(
+      "ChromotingAudioThread", caller_task_runner_, MessageLoop::TYPE_IO);
+#endif // !defined(OS_WIN)
+
   // Launch the input thread.
   scoped_refptr<AutoThreadTaskRunner> input_task_runner =
       AutoThread::CreateWithType("Input thread", caller_task_runner_,
@@ -91,7 +104,8 @@ bool DesktopProcess::Start() {
       AutoThread::Create("Video capture thread", caller_task_runner_);
 
   // Create a desktop agent.
-  desktop_agent_ = DesktopSessionAgent::Create(caller_task_runner_,
+  desktop_agent_ = DesktopSessionAgent::Create(audio_task_runner,
+                                               caller_task_runner_,
                                                input_task_runner,
                                                io_task_runner,
                                                video_capture_task_runner);

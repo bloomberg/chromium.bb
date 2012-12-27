@@ -36,7 +36,9 @@ struct SerializedCapturedData;
 
 namespace remoting {
 
+class AudioPacket;
 class ClientSession;
+class IpcAudioCapturer;
 class IpcVideoFrameCapturer;
 
 // This class routes calls to the DesktopEnvironment's stubs though the IPC
@@ -47,6 +49,7 @@ class DesktopSessionProxy
       public IPC::Listener {
  public:
   DesktopSessionProxy(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner);
 
@@ -78,6 +81,14 @@ class DesktopSessionProxy
   void InvalidateRegion(const SkRegion& invalid_region);
   void CaptureFrame();
 
+  // Stores |audio_capturer| to be used to post captured audio packets.
+  // |audio_capturer| must be valid until StopAudioCapturer() is called.
+  void StartAudioCapturer(IpcAudioCapturer* audio_capturer);
+
+  // Clears the cached pointer to the audio capturer. Any packets captured after
+  // StopAudioCapturer() has been called will be silently dropped.
+  void StopAudioCapturer();
+
   // Stores |video_capturer| to be used to post captured video frames.
   // |video_capturer| must be valid until StopVideoCapturer() is called.
   void StartVideoCapturer(IpcVideoFrameCapturer* video_capturer);
@@ -99,6 +110,9 @@ class DesktopSessionProxy
   // Returns a shared buffer from the list of known buffers.
   scoped_refptr<SharedBuffer> GetSharedBuffer(int id);
 
+  // Handles AudioPacket notification from the desktop session agent.
+  void OnAudioPacket(const std::string& serialized_packet);
+
   // Registers a new shared buffer created by the desktop process.
   void OnCreateSharedBuffer(int id,
                             IPC::PlatformFileForTransit handle,
@@ -116,6 +130,10 @@ class DesktopSessionProxy
   // Handles InjectClipboardEvent request from the desktop integration process.
   void OnInjectClipboardEvent(const std::string& serialized_event);
 
+  // Posted to |audio_capture_task_runner_| to pass a captured audio packet back
+  // to |audio_capturer_|.
+  void PostAudioPacket(scoped_ptr<AudioPacket> packet);
+
   // Posted to |video_capture_task_runner_| to pass a captured video frame back
   // to |video_capturer_|.
   void PostCaptureCompleted(scoped_refptr<CaptureData> capture_data);
@@ -128,12 +146,18 @@ class DesktopSessionProxy
   // deleted if the channel is broken.
   void SendToDesktop(IPC::Message* message);
 
+  // Task runner on which methods of |audio_capturer_| will be invoked.
+  scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner_;
+
   // Task runner on which public methods of this class should be called (unless
   // it is documented otherwise).
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
-  // Task runner on which |video_capturer_delegate_| will be invoked.
+  // Task runner on which methods of |video_capturer_| will be invoked.
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
+
+  // Points to the audio capturer receiving captured audio packets.
+  IpcAudioCapturer* audio_capturer_;
 
   // Points to the client stub passed to StartEventExecutor().
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;

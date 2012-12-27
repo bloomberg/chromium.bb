@@ -23,6 +23,7 @@ namespace remoting {
 class DesktopSessionAgentPosix : public DesktopSessionAgent {
  public:
   DesktopSessionAgentPosix(
+      scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
@@ -41,11 +42,13 @@ class DesktopSessionAgentPosix : public DesktopSessionAgent {
 };
 
 DesktopSessionAgentPosix::DesktopSessionAgentPosix(
+    scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
-    : DesktopSessionAgent(caller_task_runner, input_task_runner, io_task_runner,
+    : DesktopSessionAgent(audio_capture_task_runner, caller_task_runner,
+                          input_task_runner, io_task_runner,
                           video_capture_task_runner) {
 }
 
@@ -99,12 +102,14 @@ scoped_ptr<EventExecutor> DesktopSessionAgentPosix::CreateEventExecutor() {
 
 // static
 scoped_refptr<DesktopSessionAgent> DesktopSessionAgent::Create(
+    scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner) {
   return scoped_refptr<DesktopSessionAgent>(
-      new DesktopSessionAgentPosix(caller_task_runner, input_task_runner,
+      new DesktopSessionAgentPosix(audio_capture_task_runner,
+                                   caller_task_runner, input_task_runner,
                                    io_task_runner, video_capture_task_runner));
 }
 

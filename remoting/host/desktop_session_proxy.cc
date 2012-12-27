@@ -14,7 +14,9 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/ipc_audio_capturer.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 
@@ -25,10 +27,13 @@
 namespace remoting {
 
 DesktopSessionProxy::DesktopSessionProxy(
+    scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner)
-    : caller_task_runner_(caller_task_runner),
+    : audio_capture_task_runner_(audio_capture_task_runner),
+      caller_task_runner_(caller_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
+      audio_capturer_(NULL),
       pending_capture_frame_requests_(0),
       video_capturer_(NULL) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -39,6 +44,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionProxy, message)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_AudioPacket,
+                        OnAudioPacket)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureCompleted,
                         OnCaptureCompleted)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CursorShapeChanged,
@@ -229,6 +236,19 @@ void DesktopSessionProxy::CaptureFrame() {
   SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
 }
 
+void DesktopSessionProxy::StartAudioCapturer(IpcAudioCapturer* audio_capturer) {
+  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_capturer_ == NULL);
+
+  audio_capturer_ = audio_capturer;
+}
+
+void DesktopSessionProxy::StopAudioCapturer() {
+  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
+
+  audio_capturer_ = NULL;
+}
+
 void DesktopSessionProxy::StartVideoCapturer(
     IpcVideoFrameCapturer* video_capturer) {
   DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
@@ -256,6 +276,20 @@ scoped_refptr<SharedBuffer> DesktopSessionProxy::GetSharedBuffer(int id) {
     LOG(ERROR) << "Failed to find the shared buffer " << id;
     return scoped_refptr<SharedBuffer>();
   }
+}
+
+void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Parse the serialized audio packet. No further validation is done since
+  // the message was send by more privileged process.
+  scoped_ptr<AudioPacket> packet(new AudioPacket());
+  if (!packet->ParseFromString(serialized_packet)) {
+    LOG(ERROR) << "Failed to parse AudioPacket.";
+    return;
+  }
+
+  PostAudioPacket(packet.Pass());
 }
 
 void DesktopSessionProxy::OnCreateSharedBuffer(
@@ -353,6 +387,18 @@ void DesktopSessionProxy::OnInjectClipboardEvent(
   }
 
   client_clipboard_->InjectClipboardEvent(event);
+}
+
+void DesktopSessionProxy::PostAudioPacket(scoped_ptr<AudioPacket> packet) {
+  if (!audio_capture_task_runner_->BelongsToCurrentThread()) {
+    audio_capture_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DesktopSessionProxy::PostAudioPacket,
+                              this, base::Passed(&packet)));
+    return;
+  }
+
+  if (audio_capturer_)
+    audio_capturer_->OnAudioPacket(packet.Pass());
 }
 
 void DesktopSessionProxy::PostCaptureCompleted(

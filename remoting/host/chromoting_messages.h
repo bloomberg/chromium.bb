@@ -174,6 +174,11 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
 // Requests the network process to terminate the client session.
 IPC_MESSAGE_CONTROL0(ChromotingDesktopNetworkMsg_DisconnectSession)
 
+// Carries an audio packet from the desktop session agent to the client.
+// |serialized_packet| is a serialized AudioPacket.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_AudioPacket,
+                     std::string /* serialized_packet */ )
+
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.
 
