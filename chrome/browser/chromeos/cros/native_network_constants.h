@@ -17,6 +17,7 @@ extern const char kCarrierIdFormat[];
 // Path of the default (shared) shill profile.
 extern const char kSharedProfilePath[];
 
+extern const char* ConnectionStateToString(ConnectionState state);
 extern const char* ConnectionTypeToString(ConnectionType type);
 extern const char* SecurityToString(ConnectionSecurity security);
 extern const char* ProviderTypeToString(ProviderType type);

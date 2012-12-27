@@ -1166,18 +1166,6 @@ void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
                          dhcp_usage_mask);
 }
 
-void InternetOptionsHandler::PopulateDictionaryDetails(
-    const chromeos::Network* network) {
-  DCHECK(network);
-
-  // Send off an asynchronous request to Shill to get the service properties
-  // and continue in the callback.
-  chromeos::CrosRequestNetworkServiceProperties(
-      network->service_path(),
-      base::Bind(&InternetOptionsHandler::PopulateDictionaryDetailsCallback,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     const std::string& service_path,
     const base::DictionaryValue* shill_properties) {
@@ -1564,7 +1552,10 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
       << " For network: " << service_path;
 
   if (command == kTagOptions) {
-    PopulateDictionaryDetails(network);
+    cros_->RequestNetworkServiceProperties(
+        service_path,
+        base::Bind(&InternetOptionsHandler::PopulateDictionaryDetailsCallback,
+                   weak_factory_.GetWeakPtr()));
   } else if (command == kTagConnect) {
     ConnectToNetwork(network);
   } else if (command == kTagDisconnect && type != chromeos::TYPE_ETHERNET) {

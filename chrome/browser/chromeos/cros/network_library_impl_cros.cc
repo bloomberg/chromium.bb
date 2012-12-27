@@ -621,6 +621,12 @@ void NetworkLibraryImplCros::SetIPParameters(const std::string& service_path,
   CrosRequestNetworkServiceProperties(service_path, callback);
 }
 
+void NetworkLibraryImplCros::RequestNetworkServiceProperties(
+    const std::string& service_path,
+    const NetworkServicePropertiesCallback& callback) {
+  chromeos::CrosRequestNetworkServiceProperties(service_path, callback);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Network Manager functions.
 

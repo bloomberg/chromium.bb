@@ -89,12 +89,18 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
                                const std::string& gateway,
                                const std::string& name_servers,
                                int dhcp_usage_mask) OVERRIDE;
+  virtual void RequestNetworkServiceProperties(
+      const std::string& service_path,
+      const NetworkServicePropertiesCallback& callback) OVERRIDE;
 
  private:
   void AddStubNetwork(Network* network, NetworkProfileType profile_type);
   void AddStubRememberedNetwork(Network* network);
   void ConnectToNetwork(Network* network);
   void ScanCompleted();
+  void SendNetworkServiceProperties(
+      const std::string& service_path,
+      const NetworkServicePropertiesCallback& callback);
 
   std::string ip_address_;
   std::string hardware_address_;

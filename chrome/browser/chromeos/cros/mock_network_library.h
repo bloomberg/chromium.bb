@@ -188,6 +188,9 @@ class MockNetworkLibrary : public NetworkLibrary {
                                      const std::string&,
                                      const std::string&,
                                      int));
+  MOCK_METHOD2(RequestNetworkServiceProperties,
+               void(const std::string&,
+                    const NetworkServicePropertiesCallback&));
   MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
   MOCK_METHOD4(LoadOncNetworks, bool(const std::string&,
                                      const std::string&,

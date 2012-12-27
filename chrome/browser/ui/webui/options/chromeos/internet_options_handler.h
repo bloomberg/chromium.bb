@@ -114,9 +114,7 @@ class InternetOptionsHandler
   void ToggleAirplaneModeCallback(const ListValue* args);
 
   // Populates the ui with the details of the given device path. This forces
-  // an overlay to be displayed in the UI.
-  void PopulateDictionaryDetails(const chromeos::Network* network);
-  // This is the second half of PopulateDictionaryDetails after the asynchronous
+  // an overlay to be displayed in the UI. Called after the asynchronous
   // request for Shill's service properties.
   void PopulateDictionaryDetailsCallback(
       const std::string& service_path,

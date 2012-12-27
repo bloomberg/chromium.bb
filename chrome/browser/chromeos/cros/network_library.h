@@ -1688,6 +1688,15 @@ class NetworkLibrary {
                                const std::string& name_servers,
                                int dhcp_usage_mask) = 0;
 
+  // Requests the service properties associated with |service_path|. Calls
+  // |callback| with the properties when competed.
+  typedef base::Callback<void(const std::string& service_path,
+                              const base::DictionaryValue* properties)>
+      NetworkServicePropertiesCallback;
+  virtual void RequestNetworkServiceProperties(
+      const std::string& service_path,
+      const NetworkServicePropertiesCallback& callback) = 0;
+
   // This will connect to a preferred network if the currently connected
   // network is not preferred. This should be called when the active profile
   // changes.

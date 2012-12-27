@@ -13,6 +13,37 @@ const char kCarrierIdFormat[] = "%s (%s)";
 // Path of the default (shared) shill profile.
 const char kSharedProfilePath[] = "/profile/default";
 
+const char* ConnectionStateToString(ConnectionState state) {
+  switch (state) {
+    case STATE_UNKNOWN:
+      break;
+    case STATE_IDLE:
+      return flimflam::kStateIdle;
+    case STATE_CARRIER:
+      return flimflam::kStateCarrier;
+    case STATE_ASSOCIATION:
+      return flimflam::kStateAssociation;
+    case STATE_CONFIGURATION:
+      return flimflam::kStateConfiguration;
+    case STATE_READY:
+      return flimflam::kStateReady;
+    case STATE_DISCONNECT:
+      return flimflam::kStateDisconnect;
+    case STATE_FAILURE:
+      return flimflam::kStateFailure;
+    case STATE_ACTIVATION_FAILURE:
+      return flimflam::kStateActivationFailure;
+    case STATE_PORTAL:
+      return flimflam::kStatePortal;
+    case STATE_ONLINE:
+      return flimflam::kStateOnline;
+    case STATE_CONNECT_REQUESTED:
+      return "ConnectRequested";  // Internal non-flimflam state
+  }
+  LOG(ERROR) << "ConnectionStateToString called with unknown state: " << state;
+  return flimflam::kUnknownString;
+}
+
 const char* ConnectionTypeToString(ConnectionType type) {
   switch (type) {
     case TYPE_UNKNOWN:

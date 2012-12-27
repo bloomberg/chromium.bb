@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -713,6 +715,35 @@ void NetworkLibraryImplStub::SetIPParameters(const std::string& service_path,
                                             netmask,
                                             gateway,
                                             name_servers));
+}
+
+void NetworkLibraryImplStub::RequestNetworkServiceProperties(
+    const std::string& service_path,
+    const NetworkServicePropertiesCallback& callback) {
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&NetworkLibraryImplStub::SendNetworkServiceProperties,
+                 base::Unretained(this),
+                 service_path, callback),
+      base::TimeDelta::FromMilliseconds(100));
+}
+
+void NetworkLibraryImplStub::SendNetworkServiceProperties(
+    const std::string& service_path,
+    const NetworkServicePropertiesCallback& callback) {
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  Network* network = FindNetworkByPath(service_path);
+  if (network) {
+    // Populate a few common properties.
+    dictionary->SetString(flimflam::kTypeProperty,
+                          ConnectionTypeToString(network->type()));
+    dictionary->SetString(flimflam::kNameProperty, network->name());
+    dictionary->SetString(flimflam::kGuidProperty, network->unique_id());
+    dictionary->SetString(flimflam::kStateProperty,
+                          ConnectionStateToString(network->state()));
+  }
+  callback.Run(service_path, dictionary.get());
 }
 
 }  // namespace chromeos
