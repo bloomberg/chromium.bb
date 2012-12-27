@@ -51,20 +51,16 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (static_cast<ContextMenuCommands>(command_id)) {
     case SHOW_IN_FOLDER:
-      return download_item_->CanShowInFolder() &&
-          !download_item_->IsTemporary();
+      return download_item_->CanShowInFolder();
     case OPEN_WHEN_COMPLETE:
-      return download_item_->CanShowInFolder() &&
-          !download_item_->IsTemporary() &&
-          (!download_crx_util::IsExtensionDownload(*download_item_) ||
-           download_item_->IsComplete());
+      return download_item_->CanOpenDownload() &&
+          !download_crx_util::IsExtensionDownload(*download_item_);
     case ALWAYS_OPEN_TYPE:
       // For temporary downloads, the target filename might be a temporary
       // filename. Don't base an "Always open" decision based on it. Also
       // exclude extensions.
       return download_item_->CanOpenDownload() &&
-          !download_crx_util::IsExtensionDownload(*download_item_) &&
-          !download_item_->IsTemporary();
+          !download_crx_util::IsExtensionDownload(*download_item_);
     case CANCEL:
       return download_item_->IsPartialDownload();
     case TOGGLE_PAUSE:

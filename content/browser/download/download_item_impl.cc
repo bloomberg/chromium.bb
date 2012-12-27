@@ -655,11 +655,17 @@ base::Time DownloadItemImpl::GetEndTime() const {
 }
 
 bool DownloadItemImpl::CanShowInFolder() {
-  return state_ != CANCELLED_INTERNAL && !file_externally_removed_;
+  // A download can be shown in the folder if the downloaded file is in a known
+  // location.
+  return CanOpenDownload() && !GetFullPath().empty();
 }
 
 bool DownloadItemImpl::CanOpenDownload() {
-  return !file_externally_removed_;
+  // We can open the file or mark it for opening on completion if the download
+  // is expected to complete successfully. Exclude temporary downloads, since
+  // they aren't owned by the download system.
+  return (IsInProgress() || IsComplete()) && !IsTemporary() &&
+      !file_externally_removed_;
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
