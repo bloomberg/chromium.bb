@@ -237,7 +237,7 @@
   },
 
   'conditions': [
-    ['enable_remoting_host==1', {
+    ['OS=="win" or OS=="mac" or OS=="linux"', {
       'targets': [
         {
           'target_name': 'remoting_screen_capturer',
@@ -285,6 +285,16 @@
                 'differ_block_sse2',
               ],
             }],
+            ['OS=="linux"', {
+              'link_settings': {
+                'libraries': [
+                  '-lX11',
+                  '-lXdamage',
+                  '-lXext',
+                  '-lXfixes',
+                ],
+              },
+            }],
             ['toolkit_uses_gtk==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
@@ -296,7 +306,11 @@
             }],
           ],
         }, # end of target remoting_screen_capturer
+      ],  # end of 'targets'
+    }],  # 'OS==win or OS==mac or OS==linux'
 
+    ['enable_remoting_host==1', {
+      'targets': [
         {
           'target_name': 'remoting_host',
           'type': 'static_library',
@@ -465,19 +479,6 @@
             'host/win/window_station_and_desktop.h',
           ],
           'conditions': [
-            ['OS=="linux"', {
-              'link_settings': {
-                'libraries': [
-                  '-lX11',
-                  '-lXdamage',
-                  '-lXfixes',
-                  '-lpam',
-                  '-lXtst',
-                  '-lXext',
-                  '-lXi'
-                ],
-              },
-            }],
             ['toolkit_uses_gtk==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
@@ -486,6 +487,18 @@
               'sources!': [
                 '*_gtk.cc',
               ],
+            }],
+            ['OS=="linux"', {
+              'link_settings': {
+                'libraries': [
+                  '-lX11',
+                  '-lXext',
+                  '-lXfixes',
+                  '-lXtst',
+                  '-lXi',
+                  '-lpam',
+                ],
+              },
             }],
             ['OS=="mac"', {
               'sources': [
@@ -2157,6 +2170,7 @@
         'remoting_host',
         'remoting_jingle_glue',
         'remoting_protocol',
+        'remoting_screen_capturer',
         'remoting_host_setup_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2319,13 +2333,12 @@
             'webapp/format_iq.js',
           ],
         }],
-        ['chromeos != 0', {
+        ['enable_remoting_host == 0', {
           'dependencies!': [
             'remoting_host',
             'remoting_host_setup_base',
           ],
           'sources/': [
-            ['exclude', 'capturer/*'],
             ['exclude', 'codec/*'],
             ['exclude', 'host/*'],
           ]
