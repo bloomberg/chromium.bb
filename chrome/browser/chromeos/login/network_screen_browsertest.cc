@@ -251,13 +251,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EmulateContinueButtonExit(network_screen_);
 }
 
-// See crbug.com/89392
-#if defined(OS_LINUX)
-#define MAYBE_Timeout DISABLED_Timeout
-#else
-#define MAYBE_Timeout Timeout
-#endif
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, MAYBE_Timeout) {
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, wifi_connected())
