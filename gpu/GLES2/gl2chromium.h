@@ -6,16 +6,12 @@
 // gpu/command_buffer/build_gles2_cmd_buffer.py
 // DO NOT EDIT!
 
-// This file contains Chromium-specific GLES2 declarations.
+// Because we are using both the real system GL and our own.
+// emulated GL we need to use different names to avoid conflicts.
 
 #ifndef GPU_GLES2_GL2CHROMIUM_H_
 #define GPU_GLES2_GL2CHROMIUM_H_
 
-#include <GLES2/gl2platform.h>
-#define GL_CONTEXT_LOST 0x300E
-
-// Because we are using both the real system GL and our own
-// emulated GL we need to use different names to avoid conflicts.
 #if defined(GLES2_USE_CPP_BINDINGS)
 #define GLES2_GET_FUN(name) gles2::GetGLContext()->name
 #else
