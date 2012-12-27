@@ -376,6 +376,7 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
 #define MAYBE_Canvas2DAllowed DISABLED_Canvas2DAllowed
 #else
 #define MAYBE_Canvas2DAllowed Canvas2DAllowed
+#endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_Canvas2DAllowed) {
   // Accelerated canvas 2D is not supported on XP.
   if (GPUTestBotConfig::CurrentConfigMatches("XP"))
