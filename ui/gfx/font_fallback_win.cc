@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "ui/gfx/font.h"
@@ -63,8 +62,6 @@ void AppendFont(const std::string& name, int size, std::vector<Font>* fonts) {
 void QueryLinkedFontsFromRegistry(const Font& font,
                                   std::map<std::string, std::string>* font_map,
                                   std::vector<Font>* linked_fonts) {
-  // TODO(asvitkine): Find a way to do this on a non-UI thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const wchar_t* kSystemLink =
       L"Software\\Microsoft\\Windows NT\\CurrentVersion\\FontLink\\SystemLink";
 
