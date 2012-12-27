@@ -343,11 +343,6 @@ void PromiseWriterHelper(const WebDropData& drop_data,
       declareTypes:[NSArray arrayWithObject:ui::kChromeDragDummyPboardType]
              owner:contentsView_];
 
-  // HTML.
-  if (!dropData_->html.string().empty())
-    [pasteboard_ addTypes:[NSArray arrayWithObject:NSHTMLPboardType]
-                    owner:contentsView_];
-
   // URL (and title).
   if (dropData_->url.is_valid()) {
     NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
@@ -432,6 +427,20 @@ void PromiseWriterHelper(const WebDropData& drop_data,
       }
     }
   }
+
+  // HTML.
+  bool hasHTMLData = !dropData_->html.string().empty();
+  // Mail.app and TextEdit accept drags that have both HTML and image flavors on
+  // them, but don't process them correctly <http://crbug.com/55879>. Therefore,
+  // omit the HTML flavor if there is an image flavor. (The only time that
+  // WebKit fills in the WebDropData::file_contents is with an image drop, but
+  // the MIME time is tested anyway for paranoia's sake.)
+  bool hasImageData = !dropData_->file_contents.empty() &&
+                      fileUTI_ &&
+                      UTTypeConformsTo(fileUTI_.get(), kUTTypeImage);
+  if (hasHTMLData && !hasImageData)
+    [pasteboard_ addTypes:[NSArray arrayWithObject:NSHTMLPboardType]
+                    owner:contentsView_];
 
   // Plain text.
   if (!dropData_->text.string().empty())
