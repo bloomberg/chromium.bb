@@ -1087,7 +1087,7 @@ void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
   UpdatePerDisplayPref(
       profile_->GetPrefs(), root_window, prefs::kShelfAutoHideBehavior, value);
 
-  if (root_window != ash::Shell::GetPrimaryRootWindow()) {
+  if (root_window == ash::Shell::GetPrimaryRootWindow()) {
     // See comment in |kShelfAlignment| about why we have two prefs here.
     profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
     profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
