@@ -84,6 +84,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   VersionLoader cros_version_loader_;
   CancelableTaskTracker tracker_;
+  bool use_new_network_change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

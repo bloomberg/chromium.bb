@@ -232,8 +232,10 @@ namespace internal {
 // destructor will get called if and only if this has been instantiated.
 class DBusServices {
  public:
-  explicit DBusServices(const content::MainFunctionParams& parameters)
-      : cros_initialized_(false),
+  DBusServices(const content::MainFunctionParams& parameters,
+               bool use_new_network_change_notifier)
+      : use_new_network_change_notifier_(use_new_network_change_notifier),
+        cros_initialized_(false),
         network_handlers_initialized_(false) {
     // Initialize CrosLibrary only for the browser, unless running tests
     // (which do their own CrosLibrary setup).
@@ -256,10 +258,8 @@ class DBusServices {
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
     // the network manager.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkHandlers)) {
+    if (!use_new_network_change_notifier_)
       CrosNetworkChangeNotifierFactory::GetInstance()->Init();
-    }
 
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
@@ -294,7 +294,8 @@ class DBusServices {
     network_handlers_initialized_ = true;
     // TODO(gauravsh): This needs re-factoring. NetworkChangeNotifier choice
     // needs to be made before about:flags are processed.
-    NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
+    if (use_new_network_change_notifier_)
+      NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
   }
 
   ~DBusServices() {
@@ -321,6 +322,7 @@ class DBusServices {
   }
 
  private:
+  bool use_new_network_change_notifier_;
   bool cros_initialized_;
   bool network_handlers_initialized_;
 
@@ -333,7 +335,8 @@ class DBusServices {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsLinux(parameters) {
+    : ChromeBrowserMainPartsLinux(parameters),
+      use_new_network_change_notifier_(false) {
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
@@ -400,6 +403,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   } else {
     LOG(WARNING) << "Using new connection change notifier.";
     network_change_factory = new NetworkChangeNotifierFactoryChromeos();
+    use_new_network_change_notifier_ = true;
   }
   net::NetworkChangeNotifier::SetFactory(network_change_factory);
   ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
@@ -409,7 +413,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
 
-  dbus_services_.reset(new internal::DBusServices(parameters()));
+  dbus_services_.reset(new internal::DBusServices(
+      parameters(), use_new_network_change_notifier_));
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
