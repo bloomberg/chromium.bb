@@ -587,8 +587,8 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
   // return the primary root). Investigate why/how this is
   // happening. crbug.com/165214.
   internal::RootWindowController* rwc = GetRootWindowController(root);
-  DCHECK(rwc) << "root=" << root
-              << ", location:" << location_in_screen.ToString();
+  CHECK(rwc) << "root=" << root
+             << ", location:" << location_in_screen.ToString();
   if (rwc)
     rwc->ShowContextMenu(location_in_screen);
 }
