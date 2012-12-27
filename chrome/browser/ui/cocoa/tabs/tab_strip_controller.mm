@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -152,6 +153,80 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedNSAnimationContextGroup);
 };
 
+// Creates an NSImage with size |size| and bitmap image representations for both
+// 1x and 2x scale factors. |drawingHandler| is called once for every scale
+// factor.  This is similar to -[NSImage imageWithSize:flipped:drawingHandler:],
+// but this function always evaluates drawingHandler eagerly, and it works on
+// 10.6 and 10.7.
+NSImage* CreateImageWithSize(NSSize size,
+                             void (^drawingHandler)(NSSize)) {
+  scoped_nsobject<NSImage> result([[NSImage alloc] initWithSize:size]);
+  [NSGraphicsContext saveGraphicsState];
+  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+    float scale = GetScaleFactorScale(scale_factor);
+    NSBitmapImageRep *bmpImageRep = [[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:NULL
+                      pixelsWide:size.width * scale
+                      pixelsHigh:size.height * scale
+                   bitsPerSample:8
+                 samplesPerPixel:4
+                        hasAlpha:YES
+                        isPlanar:NO
+                  colorSpaceName:NSCalibratedRGBColorSpace
+                    bitmapFormat:NSAlphaFirstBitmapFormat
+                     bytesPerRow:0
+                    bitsPerPixel:0];
+    [bmpImageRep setSize:size];
+    [NSGraphicsContext setCurrentContext:
+        [NSGraphicsContext graphicsContextWithBitmapImageRep:bmpImageRep]];
+    drawingHandler(size);
+    [result addRepresentation:bmpImageRep];
+  }
+  [NSGraphicsContext restoreGraphicsState];
+
+  return result.release();
+}
+
+// Takes a normal bitmap and a mask image and returns an image the size of the
+// mask that has pixels from |image| but alpha information from |mask|.
+NSImage* ApplyMask(NSImage* image, NSImage* mask) {
+  return [CreateImageWithSize([mask size], ^(NSSize size) {
+      // Skip a few pixels from the top of the tab background gradient, because
+      // the new tab button is not drawn at the very top of the browser window.
+      const int kYOffset = 10;
+      CGFloat width = size.width;
+      CGFloat height = size.height;
+      [image drawAtPoint:NSZeroPoint
+                fromRect:NSMakeRect(0, [image size].height - height - kYOffset,
+                                    width, height)
+               operation:NSCompositeCopy
+                fraction:1.0];
+      [mask drawAtPoint:NSZeroPoint
+               fromRect:NSMakeRect(0, 0, width, height)
+              operation:NSCompositeDestinationIn
+               fraction:1.0];
+  }) autorelease];
+}
+
+// Paints |overlay| on top of |ground|.
+NSImage* Overlay(NSImage* ground, NSImage* overlay) {
+  DCHECK_EQ([ground size].width, [overlay size].width);
+  DCHECK_EQ([ground size].height, [overlay size].height);
+
+  return [CreateImageWithSize([ground size], ^(NSSize size) {
+      CGFloat width = size.width;
+      CGFloat height = size.height;
+      [ground drawAtPoint:NSZeroPoint
+                 fromRect:NSMakeRect(0, 0, width, height)
+                operation:NSCompositeCopy
+                 fraction:1.0];
+      [overlay drawAtPoint:NSZeroPoint
+                  fromRect:NSMakeRect(0, 0, width, height)
+                 operation:NSCompositeSourceOver
+                  fraction:1.0];
+  }) autorelease];
+}
+
 }  // namespace
 
 @interface TabStripController (Private)
@@ -176,6 +251,8 @@ private:
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
+- (void)themeDidChangeNotification:(NSNotification*)notification;
+- (void)setNewTabImages;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -206,8 +283,9 @@ private:
 
 - (id)initWithFrame:(NSRect)frameRect
          controller:(TabStripController*)controller {
-  if ((self = [super initWithFrame:frameRect]))
+  if ((self = [super initWithFrame:frameRect])) {
     controller_ = controller;
+  }
   return self;
 }
 
@@ -389,24 +467,12 @@ private:
     [self setLeftIndentForControls:[[self class] defaultLeftIndentForControls]];
     [self setRightIndentForControls:0];
 
-    // TODO(viettrungluu): WTF? "For some reason, if the view is present in the
-    // nib a priori, it draws correctly. If we create it in code and add it to
-    // the tab view, it draws with all sorts of crazy artifacts."
     newTabButton_ = [view getNewTabButton];
     [self addSubviewToPermanentList:newTabButton_];
     [newTabButton_ setTarget:self];
     [newTabButton_ setAction:@selector(clickNewTabButton:)];
 
-    // Set the images from code because Cocoa fails to find them in our sub
-    // bundle during tests.
-    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON
-                      forButtonState:image_button_cell::kDefaultState];
-    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_H
-                      forButtonState:image_button_cell::kHoverState];
-    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_P
-                      forButtonState:image_button_cell::kPressedState];
-    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_MASK
-                      forButtonState:image_button_cell::kMaskState];
+    [self setNewTabImages];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
@@ -439,6 +505,12 @@ private:
            selector:@selector(tabViewFrameChanged:)
                name:NSViewFrameDidChangeNotification
              object:tabStripView_];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(themeDidChangeNotification:)
+               name:kBrowserThemeDidChangeNotification
+             object:nil];
 
     trackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:NSZeroRect  // Ignored by NSTrackingInVisibleRect
@@ -2098,6 +2170,38 @@ private:
       index >= (NSInteger)[tabContentsArray_ count])
     return nil;
   return [tabContentsArray_ objectAtIndex:index];
+}
+
+- (void)themeDidChangeNotification:(NSNotification*)notification {
+  [self setNewTabImages];
+}
+
+- (void)setNewTabImages {
+  ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
+  if (!theme)
+    return;
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* mask = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
+  NSImage* normal = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON).ToNSImage();
+  NSImage* hover = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_H).ToNSImage();
+  NSImage* pressed = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_P).ToNSImage();
+
+  NSImage* foreground = ApplyMask(
+      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true), mask);
+  NSImage* background = ApplyMask(
+      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE, true), mask);
+
+  [[newTabButton_ cell] setImage:Overlay(foreground, normal)
+                  forButtonState:image_button_cell::kDefaultState];
+  [[newTabButton_ cell] setImage:Overlay(foreground, hover)
+                  forButtonState:image_button_cell::kHoverState];
+  [[newTabButton_ cell] setImage:Overlay(foreground, pressed)
+                    forButtonState:image_button_cell::kPressedState];
+  [[newTabButton_ cell] setImage:Overlay(background, normal)
+                  forButtonState:image_button_cell::kDefaultStateBackground];
+  [[newTabButton_ cell] setImage:Overlay(background, hover)
+                  forButtonState:image_button_cell::kHoverStateBackground];
 }
 
 @end

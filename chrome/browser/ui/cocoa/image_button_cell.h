@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
+
 namespace image_button_cell {
 
 // Possible states
@@ -15,7 +17,9 @@ enum ButtonState {
   kHoverState,
   kPressedState,
   kDisabledState,
-  kMaskState,
+  // The same as above, but for non-main, non-key windows.
+  kDefaultStateBackground,
+  kHoverStateBackground,
   kButtonStateCount
 };
 
@@ -32,7 +36,7 @@ enum ButtonState {
 // state. Images are specified by image IDs.
 @interface ImageButtonCell : NSButtonCell {
  @private
-  NSInteger imageID_[image_button_cell::kButtonStateCount];
+  scoped_nsobject<NSImage> image_[image_button_cell::kButtonStateCount];
   NSInteger overlayImageID_;
   BOOL isMouseInside_;
 }
@@ -41,9 +45,13 @@ enum ButtonState {
 @property(assign, nonatomic) BOOL isMouseInside;
 
 // Sets the image for the given button state using an image ID.
-// The image will be lazy loaded from a resource pak.
+// The image will be loaded from a resource pak.
 - (void)setImageID:(NSInteger)imageID
     forButtonState:(image_button_cell::ButtonState)state;
+
+// Sets the image for the given button state using an image.
+- (void)setImage:(NSImage*)image
+  forButtonState:(image_button_cell::ButtonState)state;
 
 @end
 

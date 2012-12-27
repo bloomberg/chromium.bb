@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -61,9 +62,20 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   BOOL windowHasFocus = [[controlView window] isMainWindow] ||
                         [[controlView window] isKeyWindow];
   CGFloat alpha = windowHasFocus ? 1.0 : kImageNoFocusAlpha;
+  NSImage* image = image_[[self currentButtonState]];
 
-  NSImage* image = [self imageForID:imageID_[[self currentButtonState]]
-                        controlView:controlView];
+  if (!windowHasFocus) {
+    if ([self currentButtonState] == image_button_cell::kDefaultState &&
+        image_[image_button_cell::kDefaultStateBackground]) {
+      image = image_[image_button_cell::kDefaultStateBackground];
+      alpha = 1.0;
+    } else if ([self currentButtonState] == image_button_cell::kHoverState &&
+        image_[image_button_cell::kHoverStateBackground]) {
+      image = image_[image_button_cell::kHoverStateBackground];
+      alpha = 1.0;
+    }
+  }
+
   NSRect imageRect;
   imageRect.size = [image size];
   imageRect.origin.x = cellFrame.origin.x +
@@ -71,36 +83,12 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   imageRect.origin.y = cellFrame.origin.y +
     roundf((NSHeight(cellFrame) - NSHeight(imageRect)) / 2.0);
 
-  if (!imageID_[image_button_cell::kMaskState] ||
-      [self currentButtonState] == image_button_cell::kPressedState) {
-    [image drawInRect:imageRect
-             fromRect:NSZeroRect
-            operation:NSCompositeSourceOver
-             fraction:alpha
-       respectFlipped:YES
-                hints:nil];
-  } else {
-    image = [self imageForID:imageID_[image_button_cell::kMaskState]
-                 controlView:controlView];
-    [image drawInRect:imageRect
-             fromRect:NSZeroRect
-            operation:NSCompositeSourceOver
-             fraction:alpha * 0.3
-       respectFlipped:YES
-                hints:nil];
-
-    if ([self currentButtonState] == image_button_cell::kDefaultState ||
-        [self currentButtonState] == image_button_cell::kHoverState) {
-      image = [self imageForID:imageID_[[self currentButtonState]]
-                   controlView:controlView];
-      [image drawInRect:imageRect
-               fromRect:NSZeroRect
-              operation:NSCompositeSourceOver
-               fraction:alpha
-         respectFlipped:YES
-                  hints:nil];
-    }
-  }
+  [image drawInRect:imageRect
+           fromRect:NSZeroRect
+          operation:NSCompositeSourceOver
+           fraction:alpha
+     respectFlipped:YES
+              hints:nil];
 
   if (overlayImageID_) {
     NSImage* overlayImage = [self imageForID:overlayImageID_
@@ -122,12 +110,17 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 - (void)setImageID:(NSInteger)imageID
     forButtonState:(image_button_cell::ButtonState)state {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* image = imageID ? rb.GetNativeImageNamed(imageID).ToNSImage() : nil;
+  [self setImage:image forButtonState:state];
+}
+
+// Sets the image for the given button state using an image.
+- (void)setImage:(NSImage*)image
+  forButtonState:(image_button_cell::ButtonState)state {
   DCHECK_GE(state, 0);
   DCHECK_LT(state, image_button_cell::kButtonStateCount);
-  if (imageID_[state] != imageID) {
-    imageID_[state] = imageID;
-    [[self controlView] setNeedsDisplay:YES];
-  }
+  image_[state].reset([image retain]);
 }
 
 - (void)setOverlayImageID:(NSInteger)imageID {
@@ -138,11 +131,11 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 }
 
 - (image_button_cell::ButtonState)currentButtonState {
-  if (![self isEnabled] && imageID_[image_button_cell::kDisabledState])
+  if (![self isEnabled] && image_[image_button_cell::kDisabledState])
     return image_button_cell::kDisabledState;
-  else if ([self isHighlighted] && imageID_[image_button_cell::kPressedState])
+  else if ([self isHighlighted] && image_[image_button_cell::kPressedState])
     return image_button_cell::kPressedState;
-  else if ([self isMouseInside] && imageID_[image_button_cell::kHoverState])
+  else if ([self isMouseInside] && image_[image_button_cell::kHoverState])
     return image_button_cell::kHoverState;
   else
     return image_button_cell::kDefaultState;
