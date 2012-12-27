@@ -17,3 +17,6 @@ modified to not include <stdint.h> when COMPILER_MSVC is defined (since
 that header file does not exist under VC8), but instead in that case to
 include "base/basictypes.h" and provide the required typedefs for
 uint8_t and uint32_t using uint8 and uint32.
+
+The modp_b64.cc and modp_b64.h files were modified to make them safe on
+64-bit systems.
