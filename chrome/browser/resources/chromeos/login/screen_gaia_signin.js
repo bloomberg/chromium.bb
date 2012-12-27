@@ -480,6 +480,10 @@ cr.define('login', function() {
     $('gaia-signin').doReload();
   };
 
+  GaiaSigninScreen.scheduleRetry = function() {
+    $('gaia-signin').scheduleRetry();
+  };
+
   /**
    * Handler for iframe's error notification coming from the outside.
    * For more info see C++ class 'SnifferObserver' which calls this method.
