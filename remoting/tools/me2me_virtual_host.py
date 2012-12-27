@@ -61,9 +61,6 @@ HOME_DIR = os.environ["HOME"]
 X_LOCK_FILE_TEMPLATE = "/tmp/.X%d-lock"
 FIRST_X_DISPLAY_NUMBER = 20
 
-X_AUTH_FILE = os.path.expanduser("~/.Xauthority")
-os.environ["XAUTHORITY"] = X_AUTH_FILE
-
 # Minimum amount of time to wait between relaunching processes.
 BACKOFF_TIME = 60
 
@@ -260,10 +257,15 @@ class Desktop:
     return True
 
   def _launch_x_server(self, extra_x_args):
+    x_auth_file = os.path.expanduser("~/.Xauthority")
+    self.child_env["XAUTHORITY"] = x_auth_file
     devnull = open(os.devnull, "rw")
     display = self.get_unused_display_number()
+
+    # Run "xauth add" with |child_env| so that it modifies the same XAUTHORITY
+    # file which will be used for the X session.
     ret_code = subprocess.call("xauth add :%d . `mcookie`" % display,
-                               shell=True)
+                               env=self.child_env, shell=True)
     if ret_code != 0:
       raise Exception("xauth failed with code %d" % ret_code)
 
@@ -286,7 +288,7 @@ class Desktop:
     screen_option = "%dx%dx24" % (max_width, max_height)
     self.x_proc = subprocess.Popen([xvfb, ":%d" % display,
                                     "-noreset",
-                                    "-auth", X_AUTH_FILE,
+                                    "-auth", x_auth_file,
                                     "-nolisten", "tcp",
                                     "-screen", "0", screen_option
                                     ] + extra_x_args)
