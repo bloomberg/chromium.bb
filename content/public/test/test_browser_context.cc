@@ -5,6 +5,7 @@
 #include "content/public/test/test_browser_context.h"
 
 #include "base/file_path.h"
+#include "base/test/null_task_runner.h"
 #include "content/public/test/mock_resource_context.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -13,39 +14,11 @@
 
 namespace {
 
-// A silly class to satisfy net::URLRequestsContextGetter requirement
-// for a task runner. Threading requirements don't matter for this
-// test scaffolding.
-class AnyThreadNonTaskRunner : public base::SingleThreadTaskRunner {
- public:
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE {
-    return true;
-  }
-
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
- private:
-  virtual ~AnyThreadNonTaskRunner() {}
-};
-
 class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit TestContextURLRequestContextGetter(net::URLRequestContext* context)
       : context_(context),
-        any_thread_non_task_runner_(new AnyThreadNonTaskRunner) {
+        null_task_runner_(new base::NullTaskRunner) {
   }
 
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
@@ -54,14 +27,14 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const OVERRIDE {
-    return any_thread_non_task_runner_;
+    return null_task_runner_;
   }
 
  private:
   virtual ~TestContextURLRequestContextGetter() {}
 
   net::URLRequestContext* context_;
-  scoped_refptr<base::SingleThreadTaskRunner> any_thread_non_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
 };
 
 }  // namespace
