@@ -91,7 +91,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
@@ -109,6 +108,10 @@
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
+#endif
+
+#if defined(ENABLE_WEBRTC)
+#include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 #endif
 
 using WebKit::WebDocument;
@@ -194,6 +197,7 @@ void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
+#if defined(ENABLE_WEBRTC)
 const unsigned char* GetCategoryEnabled(const char* name) {
   return TRACE_EVENT_API_GET_CATEGORY_ENABLED(name);
 }
@@ -210,6 +214,7 @@ void AddTraceEvent(char phase,
   TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_enabled, name, id, num_args,
                                   arg_names, arg_types, arg_values, flags);
 }
+#endif
 
 }  // namespace
 
