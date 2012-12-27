@@ -21,6 +21,7 @@
               4018,  # signed/unsigned mismatch in comparison
               4244,  # implicit conversion, possible loss of data
               4355,  # 'this' used in base member initializer list
+              4267,  # size_t to int truncation
             ],
             'defines!': [
               'WIN32_LEAN_AND_MEAN',  # Protobuf defines this itself.
