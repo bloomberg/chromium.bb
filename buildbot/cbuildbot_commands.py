@@ -530,60 +530,56 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
   cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball])
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
 
-  # Do our best to generate the symbols but if we fail, don't break the
-  # build process.
-  tar_cmd = cros_build_lib.RunCommand(
-      ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir,
-       '--wildcards', '*.dmp', '*asan_log.*'],
-      error_code_ok=True, redirect_stderr=True)
-  if not tar_cmd.returncode:
-    symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
-                              'breakpad')
-    board_path = os.path.join('/build', board)
-    for curr_dir, _subdirs, files in os.walk(temp_dir):
-      for curr_file in files:
-        full_file_path = os.path.join(curr_dir, curr_file)
-        processed_file_path = '%s.txt' % full_file_path
+  # Extract minidump and asan files from the tarball and symbolize them.
+  cmd = ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir, '--wildcards']
+  cros_build_lib.RunCommand(cmd + ['*.dmp', '*asan_log.*'],
+                            redirect_stderr=True, error_code_ok=True)
+  symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
+  board_path = os.path.join('/build', board)
+  for curr_dir, _subdirs, files in os.walk(temp_dir):
+    for curr_file in files:
+      full_file_path = os.path.join(curr_dir, curr_file)
+      processed_file_path = '%s.txt' % full_file_path
 
-        # Distinguish whether the current file is a minidump or asan_log.
-        if curr_file.endswith('.dmp'):
-          # Skip crash files that were purposely generated or if
-          # breakpad symbols are absent.
-          if not got_symbols or curr_file.find('crasher_nobreakpad') == 0:
-            continue
-          # Precess the minidump from within chroot.
-          minidump = git.ReinterpretPathForChroot(full_file_path)
-          cwd = os.path.join(buildroot, 'src', 'scripts')
-          cros_build_lib.RunCommand(
-              ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
-              enter_chroot=True, error_code_ok=True, redirect_stderr=True,
-              log_stdout_to_file=processed_file_path)
-        # Process asan log.
-        else:
-          # Prepend '/chrome/$board' path to the stack trace in log.
-          log_content = ''
-          with open(full_file_path) as f:
-            for line in f:
-              # Stack frame line example to be matched here:
-              #    #0 0x721d1831 (/opt/google/chrome/chrome+0xb837831)
-              stackline_match = re.search('^ *#[0-9]* 0x.* \(', line);
-              if stackline_match:
-                frame_end = stackline_match.span()[1]
-                line = line[:frame_end] + board_path + line[frame_end:];
-              log_content += line
-          # Symbolize and demangle it.
-          raw = cros_build_lib.RunCommandCaptureOutput(
-              ['asan_symbolize.py'], input=log_content, enter_chroot=True)
-          cros_build_lib.RunCommand(['c++filt'],
-                                    input=raw.output,
-                                    cwd=buildroot, redirect_stderr=True,
-                                    log_stdout_to_file=processed_file_path)
+      # Distinguish whether the current file is a minidump or asan_log.
+      if curr_file.endswith('.dmp'):
+        # Skip crash files that were purposely generated or if
+        # breakpad symbols are absent.
+        if not got_symbols or curr_file.find('crasher_nobreakpad') == 0:
+          continue
+        # Precess the minidump from within chroot.
+        minidump = git.ReinterpretPathForChroot(full_file_path)
+        cwd = os.path.join(buildroot, 'src', 'scripts')
+        cros_build_lib.RunCommand(
+            ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
+            enter_chroot=True, error_code_ok=True, redirect_stderr=True,
+            log_stdout_to_file=processed_file_path)
+      # Process asan log.
+      else:
+        # Prepend '/chrome/$board' path to the stack trace in log.
+        log_content = ''
+        with open(full_file_path) as f:
+          for line in f:
+            # Stack frame line example to be matched here:
+            #    #0 0x721d1831 (/opt/google/chrome/chrome+0xb837831)
+            stackline_match = re.search('^ *#[0-9]* 0x.* \(', line)
+            if stackline_match:
+              frame_end = stackline_match.span()[1]
+              line = line[:frame_end] + board_path + line[frame_end:]
+            log_content += line
+        # Symbolize and demangle it.
+        raw = cros_build_lib.RunCommandCaptureOutput(
+            ['asan_symbolize.py'], input=log_content, enter_chroot=True)
+        cros_build_lib.RunCommand(['c++filt'],
+                                  input=raw.output,
+                                  cwd=buildroot, redirect_stderr=True,
+                                  log_stdout_to_file=processed_file_path)
 
-        # Append the processed file to archive.
-        filename = ArchiveFile(processed_file_path, archive_dir)
-        stack_trace_filenames.append(filename)
-    cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
-                               '--directory=%s' % temp_dir, '.'])
+      # Append the processed file to archive.
+      filename = ArchiveFile(processed_file_path, archive_dir)
+      stack_trace_filenames.append(filename)
+  cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
+                             '--directory=%s' % temp_dir, '.'])
   cros_build_lib.RunCommand('%s -c %s > %s'
                             % (gzip, test_tarball, gzipped_test_tarball),
                             shell=True)
