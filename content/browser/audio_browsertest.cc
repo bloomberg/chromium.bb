@@ -50,7 +50,8 @@ IN_PROC_BROWSER_TEST_F(AudioLayoutTest, MAYBE_AudioOnlyVideoIntrinsicSize) {
   RunLayoutTest("audio-only-video-intrinsic-size.html");
 }
 
-IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioPlayEvent) {
+// http://crbug.com/167640
+IN_PROC_BROWSER_TEST_F(AudioLayoutTest, DISABLED_AudioPlayEvent) {
   RunLayoutTest("audio-play-event.html");
 }
 
