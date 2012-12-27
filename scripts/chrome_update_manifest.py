@@ -21,9 +21,6 @@ from chromite.buildbot import constants
 from chromite.buildbot import repository
 
 
-_CHROMIUM_ROOT = 'chromium'
-_CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')
-_CHROMIUM_SRC_INTERNAL = os.path.join(_CHROMIUM_ROOT, 'src-internal')
 
 _MANIFEST_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -49,17 +46,9 @@ _PROJECT = """\
 """
 
 
-_EXTERNAL_MANIFEST_DIR = 'update-manifest'
-_INTERNAL_MANIFEST_DIR = 'update-manifest-internal'
 _EXTERNAL_MANIFEST_PROJECT = 'chromiumos/manifest'
 _INTERNAL_MANIFEST_PROJECT = 'chromeos/manifest-internal'
-_EXTERNAL_TEST_DIR = 'external'
-_INTERNAL_TEST_DIR = 'internal'
-_EXTERNAL_REMOTE = 'chromium'
-_INTERNAL_REMOTE = 'chrome'
 
-_CHROMIUM_SRC_PROJECT = 'chromium/src'
-_CHROMIUM_SRC_INTERNAL_PROJECT = 'chrome/src-internal'
 TEST_BRANCH = "temp-newly-synced"
 MANIFEST_FILE = 'gerrit-source.xml'
 INCLUDE_TARGET = 'full.xml'
@@ -100,14 +89,45 @@ def ConvertDepsToManifest(deps_file, project_blacklist, manifest_file,
 
 class Manifest(object):
   """Encapsulates manifest update logic for an external or internal manifest."""
-  def __init__(self, repo_root, manifest_path, internal, dryrun=True,
+
+  EXTERNAL_REMOTE = 'chromium'
+  INTERNAL_REMOTE = 'chrome'
+
+  CHROMIUM_PROJECT = CHROMIUM_ROOT = 'chromium/src'
+  CHROME_ROOT = 'chromium/src-internal'
+  CHROME_PROJECT = 'chrome/src-internal'
+
+  def __init__(self, repo_root, manifest_dir, internal, dryrun=True,
                reference=None):
     self.repo_root = repo_root
-    self.manifest_path = manifest_path
-    self.manifest_dir = os.path.dirname(manifest_path)
+    self.manifest_dir = manifest_dir
+    self.manifest_path = os.path.join(self.manifest_dir, MANIFEST_FILE)
     self.internal = internal
     self.dryrun = dryrun
     self.reference = reference
+
+  def SyncSources(self):
+    repo = repository.RepoRepository(
+        self.manifest_dir, self.repo_root, referenced_repo=self.reference,
+        manifest=MANIFEST_FILE, branch='master')
+    # Trigger the network sync
+    repo.Sync(jobs=multiprocessing.cpu_count() + 1, network_only=True)
+    projects = [self.CHROMIUM_ROOT]
+    if self.internal:
+      projects.append(self.CHROME_ROOT)
+
+    for project in projects:
+      path = os.path.join(self.repo_root, project)
+      if os.path.exists(path):
+        try:
+          git.CleanAndCheckoutUpstream(path, refresh_upstream=False)
+          continue
+        except cros_build_lib.RunCommandError:
+          cros_build_lib.Error("Failed cleaning %r; wiping.", path)
+          cros_build_lib.SudoRunCommand(['rm', '-rf', path], print_cmd=False)
+
+        cros_build_lib.RunCommand(['repo', 'sync', '-ld', project],
+                                  cwd=self.repo_root)
 
   def CreateNewManifest(self):
     """Generates a new manifest with updated Chrome entries."""
@@ -118,24 +138,26 @@ class Manifest(object):
 
     content = StringIO.StringIO()
     content.write(_TYPE_MARKER % {'type': 'EXTERNAL'})
-    content.write(_MkProject('chromium/src', 'chromium/src',
-                             _EXTERNAL_REMOTE, branch='git-svn'))
+    content.write(_MkProject(self.CHROMIUM_ROOT, self.CHROMIUM_PROJECT,
+                             self.EXTERNAL_REMOTE, branch='git-svn'))
     # Grab the repo manifest, and ensure that we're not adding a project that
     # our inherit target already has.
     include_target = os.path.join(self.manifest_dir, INCLUDE_TARGET)
     existing_projects = frozenset(git.Manifest.Cached(
         include_target, manifest_include_dir=self.manifest_dir).projects)
+
     ConvertDepsToManifest(
-        os.path.join(self.repo_root, _CHROMIUM_SRC_ROOT, '.DEPS.git'),
-        existing_projects, content, _EXTERNAL_REMOTE)
+        os.path.join(self.repo_root, self.CHROMIUM_ROOT, '.DEPS.git'),
+        existing_projects, content, self.EXTERNAL_REMOTE)
 
     if self.internal:
       content.write(_TYPE_MARKER % {'type': 'INTERNAL'})
-      content.write(_MkProject('chromium/src-internal', 'chrome/src-internal',
-                               'cros-internal'))
+      content.write(_MkProject(self.CHROME_ROOT, self.CHROME_PROJECT,
+                               self.INTERNAL_REMOTE))
       ConvertDepsToManifest(
-          os.path.join(self.repo_root, _CHROMIUM_SRC_INTERNAL, '.DEPS.git'),
-          existing_projects, content, _INTERNAL_REMOTE)
+          os.path.join(self.repo_root, self.CHROME_ROOT,
+                       '.DEPS.git'),
+          existing_projects, content, self.INTERNAL_REMOTE)
 
     osutils.WriteFile(
         self.manifest_path,
@@ -153,21 +175,15 @@ class Manifest(object):
         'commit', '-m',
         'Auto-updating manifest to match .DEPS.git file'])
 
-  def TestNewManifest(self, testroot):
+  def TestNewManifest(self):
     """Runs a 'repo sync' off of new manifest to verify things aren't broken."""
-    # Copy to .repo/manifest.xml and run repo sync
-    test_dir = os.path.join(
-        testroot,
-        _INTERNAL_TEST_DIR if self.internal else _EXTERNAL_TEST_DIR)
-
-    osutils.SafeMakedirs(test_dir)
 
     # Do as cheap a sync as possible; network only is good enough,
     # allow shallow cloning if we don't have a reference, and sync
     # strictly the target branch.
     repo = repository.RepoRepository(
-        self.manifest_dir, test_dir, branch=TEST_BRANCH,
-        referenced_repo=self.reference)
+        self.manifest_dir, self.repo_root, branch=TEST_BRANCH,
+        referenced_repo=self.reference, manifest=MANIFEST_FILE)
     try:
       repo.Sync(jobs=multiprocessing.cpu_count() + 1, network_only=True)
     except Exception:
@@ -179,12 +195,13 @@ class Manifest(object):
     git.PushWithRetry(
         TEST_BRANCH, self.manifest_dir, dryrun=self.dryrun)
 
-  def PerformUpdate(self, testroot):
+  def PerformUpdate(self):
+    self.SyncSources()
     self.CreateNewManifest()
     if not self.IsNewManifestDifferent():
       return
     self.CommitNewManifest()
-    self.TestNewManifest(testroot)
+    self.TestNewManifest()
     self.PushChanges()
 
 
@@ -197,12 +214,9 @@ def main(argv=None):
 
   parser.add_option('-r', '--testroot', action='store', type='path',
                     help=('Directory where test checkout is stored.'))
-  parser.add_option('-f', '--force', default=False, action='store_true',
-                    help='Actually push manifest changes.')
-  parser.add_option('--save-dir', default=None, action='store', type='path',
-                    help='The location to save the updated external and '
-                    'internal manifest repositories to for a successful run.  '
-                    'Primarily for debugging.')
+  parser.add_option('-f', '--force', default=True, action='store_false',
+                    dest='dryrun',
+                    help='If enabled, allow committing.')
   parser.add_option(
       '--internal-manifest-url',
       default='%s/%s' % (constants.GERRIT_INT_SSH_URL,
@@ -226,59 +240,33 @@ def main(argv=None):
   logging.getLogger().setLevel(
       logging.DEBUG if options.verbose else logging.WARN)
 
-  repo_root = git.FindRepoCheckoutRoot(os.getcwd())
-  chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
-  if not os.path.isdir(chromium_src_root):
-    parser.error('chromium src/ dir not found')
-
   if options.reference is None:
-    options.reference = repo_root
+    options.reference = git.FindRepoCheckoutRoot(os.getcwd())
 
-  project_list = (_CHROMIUM_SRC_PROJECT, _CHROMIUM_SRC_INTERNAL_PROJECT)
-  manifest = git.ManifestCheckout.Cached(repo_root)
-  missing = set(project_list).difference(manifest.projects)
-  if missing:
-    parser.error(
-        "Required project(s) weren't found; are you on a %r checkout?:\n\t%s"
-        % (MANIFEST_FILE, '\n\t'.join(sorted(missing))))
+  def process_target(internal, manifest_url, reference):
+    subdir = 'internal' if internal else 'external'
+    root = os.path.join(options.testroot, subdir)
+    repo_dir = os.path.join(root, 'repo')
+    osutils.SafeMakedirs(repo_dir)
+    manifest_dir = os.path.join(root, 'manifest')
 
-  with osutils.TempDirContextManager() as working_dir:
-    external_manifest_dir = os.path.join(working_dir, _EXTERNAL_MANIFEST_DIR)
-    internal_manifest_dir = os.path.join(working_dir, _INTERNAL_MANIFEST_DIR)
+    if os.path.exists(manifest_dir):
+      git.CleanAndCheckoutUpstream(manifest_dir)
+      git.RunGit(manifest_dir,
+                 ['checkout', '-B', 'master', '-t', 'origin/master'])
+    else:
+      repository.CloneGitRepo(manifest_dir, manifest_url)
+    m = Manifest(repo_dir, manifest_dir, internal,
+                 reference=reference,
+                 dryrun=options.dryrun)
+    m.PerformUpdate()
 
-    # Sync manifest and .DEPS.git files.
-    repository.CloneGitRepo(
-        external_manifest_dir, options.internal_manifest_url)
-    repository.CloneGitRepo(
-        internal_manifest_dir, options.internal_manifest_url)
+    if options.dryrun:
+      print "%s manifest is now:" % subdir
+      print osutils.ReadFile(os.path.join(manifest_dir, MANIFEST_FILE))
 
-    cros_build_lib.RunCommand(
-        ['repo', 'sync', '-cd', '-j%i' % len(project_list)] + project_list,
-        cwd=repo_root)
-
-    # Update external manifest.
-    external_manifest = os.path.join(external_manifest_dir, MANIFEST_FILE)
-    Manifest(repo_root, external_manifest, internal=False,
-             reference=options.reference,
-             dryrun=not options.force).PerformUpdate(options.testroot)
-
-    # Update internal manifest.
-    internal_manifest = os.path.join(internal_manifest_dir, MANIFEST_FILE)
-    Manifest(repo_root, internal_manifest, internal=True,
-             reference=options.reference,
-             dryrun=not options.force).PerformUpdate(options.testroot)
-
-    if not options.force:
-      # Since we wipe the tmp space, output the generated manifests so
-      # they can be examined.
-      print "external manifest is now:"
-      print osutils.ReadFile(external_manifest)
-      print
-      print "internal manifest is now:"
-      print osutils.ReadFile(internal_manifest)
-
-    if options.save_dir:
-      osutils.SafeMakedirs(options.save_dir)
-      cros_build_lib.RunCommand(
-          ['mv', external_manifest_dir, internal_manifest_dir,
-           options.save_dir])
+  # Process internal first so that any references to the passed in repo
+  # are utilized in full, w/ external then slaving from the new internal.
+  process_target(True, options.internal_manifest_url, options.reference)
+  process_target(False, options.external_manifest_url,
+                 os.path.join(options.testroot, 'internal', 'repo'))
