@@ -269,8 +269,8 @@ void DisconnectWindowWin::EndDialog() {
   }
 
   if (hwnd_) {
-    ::DestroyWindow(hwnd_);
-    DCHECK(hwnd_ == NULL);
+    DestroyWindow(hwnd_);
+    hwnd_ = NULL;
   }
 
   if (!disconnect_callback_.is_null()) {
