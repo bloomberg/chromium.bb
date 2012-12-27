@@ -140,7 +140,7 @@ sl_SI:  Added words
         Added five words to .dic file with the ! flag to mark them forbidden/nosuggest.
         Changed "Ÿvrklji/N" to "Ÿvrklji/" in sl_SI.dic to make convert_dict work.
 
-sq:     No changees
+sq:     No changes
 
 sr:     Added a word
 
@@ -162,6 +162,6 @@ ru_RU:  Added words
 On Jan 20, 2011, en_US.dic_delta was copied to en_AU.dic_delta and
 en_GB.dic_delta so these locales would get the same additional words.
 
-On Dec 14, 2012, we reran convert_dict on all dictionaries to add MD5 checksum
+On Dec 26, 2012, we reran convert_dict on all dictionaries to add MD5 checksum
 to the .bdic files, added sq, ta, and ko dictionaries, and bumped the versions
 up to 3-0.
