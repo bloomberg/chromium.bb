@@ -91,6 +91,8 @@ def CalcTextureUploadResults(rendering_stats_deltas, results):
 
   results.Add('texture_upload_count', 'count',
               rendering_stats_deltas.get('textureUploadCount', 0))
+  results.Add('total_texture_upload_time', 'seconds',
+              rendering_stats_deltas.get('totalTextureUploadTimeInSeconds', 0))
   results.Add('average_commit_time', 'ms', averageCommitTimeMs,
               data_type='unimportant')
 
