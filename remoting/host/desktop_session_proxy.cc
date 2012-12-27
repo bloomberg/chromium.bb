@@ -13,6 +13,7 @@
 #include "remoting/capturer/capture_data.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/client_session.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -30,6 +31,7 @@ DesktopSessionProxy::DesktopSessionProxy(
       video_capture_task_runner_(video_capture_task_runner),
       pending_capture_frame_requests_(0),
       video_capturer_(NULL) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
 bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
@@ -47,6 +49,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseSharedBuffer)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                         OnInjectClipboardEvent)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisconnectSession,
+                        DisconnectSession);
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -61,13 +65,28 @@ void DesktopSessionProxy::OnChannelConnected(int32 peer_pid) {
 void DesktopSessionProxy::OnChannelError() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  Disconnect();
+  DetachFromDesktop();
 }
 
-bool DesktopSessionProxy::Connect(IPC::PlatformFileForTransit desktop_process,
-                                  IPC::PlatformFileForTransit desktop_pipe) {
+void DesktopSessionProxy::Initialize(const std::string& client_jid,
+                                     const base::Closure& disconnect_callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_jid_.empty());
+  DCHECK(!client_jid.empty());
+  DCHECK(disconnect_callback_.is_null());
+  DCHECK(!disconnect_callback.is_null());
+
+  client_jid_ = client_jid;
+  disconnect_callback_ = disconnect_callback;
+}
+
+bool DesktopSessionProxy::AttachToDesktop(
+    IPC::PlatformFileForTransit desktop_process,
+    IPC::PlatformFileForTransit desktop_pipe) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!client_jid_.empty());
   DCHECK(!desktop_channel_);
+  DCHECK(!disconnect_callback_.is_null());
 
 #if defined(OS_WIN)
   // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
@@ -105,10 +124,13 @@ bool DesktopSessionProxy::Connect(IPC::PlatformFileForTransit desktop_process,
 #error Unsupported platform.
 #endif
 
+  // Pass ID of the client (which is authenticated at this point) to the desktop
+  // session agent and start the agent.
+  SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(client_jid_));
   return true;
 }
 
-void DesktopSessionProxy::Disconnect() {
+void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   desktop_channel_.reset();
@@ -124,6 +146,13 @@ void DesktopSessionProxy::Disconnect() {
     --pending_capture_frame_requests_;
     PostCaptureCompleted(scoped_refptr<CaptureData>());
   }
+}
+
+void DesktopSessionProxy::DisconnectSession() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Disconnect the client session if it hasn't been disconnected yet.
+  disconnect_callback_.Run();
 }
 
 void DesktopSessionProxy::InjectClipboardEvent(
@@ -325,7 +354,6 @@ void DesktopSessionProxy::OnInjectClipboardEvent(
 
   client_clipboard_->InjectClipboardEvent(event);
 }
-
 
 void DesktopSessionProxy::PostCaptureCompleted(
     scoped_refptr<CaptureData> capture_data) {

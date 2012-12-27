@@ -592,7 +592,7 @@ void HostProcess::StartOnUiThread() {
 
   // The host UI should be created on the UI thread.
   bool want_user_interface = true;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(REMOTING_MULTI_PROCESS)
   want_user_interface = false;
 #elif defined(OS_MACOSX)
   // Don't try to display any UI on top of the system's login screen as this

@@ -38,8 +38,8 @@ ClientSession::ClientSession(
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
-      desktop_environment_(desktop_environment_factory->Create(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      connection_factory_(connection_.get()),
+      desktop_environment_(desktop_environment_factory->Create()),
       client_jid_(connection_->session()->jid()),
       host_clipboard_stub_(desktop_environment_->event_executor()),
       host_input_stub_(desktop_environment_->event_executor()),
@@ -129,6 +129,13 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK_EQ(connection_.get(), connection);
   SetDisableInputs(false);
 
+  // Let the desktop environment notify us of local clipboard changes.
+  desktop_environment_->Start(
+      CreateClipboardProxy(),
+      client_jid(),
+      base::Bind(&protocol::ConnectionToClient::Disconnect,
+                 connection_factory_.GetWeakPtr()));
+
   // Create a VideoEncoder based on the session's video channel configuration.
   scoped_ptr<VideoEncoder> video_encoder =
       CreateVideoEncoder(connection_->session()->config());
@@ -157,9 +164,6 @@ void ClientSession::OnConnectionChannelsConnected(
     ++active_recorders_;
   }
 
-  // Let the desktop environment notify us of local clipboard changes.
-  desktop_environment_->Start(CreateClipboardProxy());
-
   // Notify the event handler that all our channels are now connected.
   event_handler_->OnSessionChannelsConnected(this);
 }
@@ -169,6 +173,9 @@ void ClientSession::OnConnectionClosed(
     protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+
+  // Ignore any further callbacks from the DesktopEnvironment.
+  connection_factory_.InvalidateWeakPtrs();
 
   // If the client never authenticated then the session failed.
   if (!auth_input_filter_.enabled())

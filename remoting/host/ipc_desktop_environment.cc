@@ -4,6 +4,7 @@
 
 #include "remoting/host/ipc_desktop_environment.h"
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
@@ -32,8 +33,7 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     DesktopSessionConnector* desktop_session_connector,
-    scoped_refptr<DesktopSessionProxy> desktop_session_proxy,
-    ClientSession* client)
+    scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : DesktopEnvironment(
           AudioCapturer::Create(),
           scoped_ptr<EventExecutor>(
@@ -42,7 +42,6 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
               new IpcVideoFrameCapturer(desktop_session_proxy))),
       network_task_runner_(network_task_runner),
       desktop_session_connector_(desktop_session_connector),
-      client_(client),
       desktop_session_proxy_(desktop_session_proxy),
       connected_(false) {
 }
@@ -50,34 +49,26 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {
   if (connected_) {
     connected_ = false;
-    desktop_session_connector_->DisconnectTerminal(this);
+    desktop_session_connector_->DisconnectTerminal(desktop_session_proxy_);
   }
 }
 
 void IpcDesktopEnvironment::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    scoped_ptr<protocol::ClipboardStub> client_clipboard,
+    const std::string& client_jid,
+    const base::Closure& disconnect_callback) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(!connected_);
 
+  desktop_session_proxy_->Initialize(client_jid, disconnect_callback);
+
+  // Register the proxy to receive AttachToDesktop() and DetachFromDesktop()
+  // notifications.
   connected_ = true;
-  desktop_session_connector_->ConnectTerminal(this);
+  desktop_session_connector_->ConnectTerminal(desktop_session_proxy_);
 
-  DesktopEnvironment::Start(client_clipboard.Pass());
-}
-
-void IpcDesktopEnvironment::DisconnectClient() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  client_->Disconnect();
-}
-
-void IpcDesktopEnvironment::OnDesktopSessionAgentAttached(
-    IPC::PlatformFileForTransit desktop_process,
-    IPC::PlatformFileForTransit desktop_pipe) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  desktop_session_proxy_->Disconnect();
-  desktop_session_proxy_->Connect(desktop_process, desktop_pipe);
+  DesktopEnvironment::Start(client_clipboard.Pass(), client_jid,
+                            disconnect_callback);
 }
 
 }  // namespace remoting

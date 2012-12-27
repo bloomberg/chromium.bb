@@ -171,8 +171,16 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                      std::string /* serialized_event */ )
 
+// Requests the network process to terminate the client session.
+IPC_MESSAGE_CONTROL0(ChromotingDesktopNetworkMsg_DisconnectSession)
+
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.
+
+// Passes the client session data to the desktop session agent and starts it.
+// This must be the first message received from the host.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_StartSessionAgent,
+                     std::string /* authenticated_jid */ )
 
 // Notifies the desktop process that the shared memory buffer has been mapped to
 // the memory of the network process and so it can be safely dropped by

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/capturer/shared_buffer.h"
@@ -35,6 +36,7 @@ struct SerializedCapturedData;
 
 namespace remoting {
 
+class ClientSession;
 class IpcVideoFrameCapturer;
 
 // This class routes calls to the DesktopEnvironment's stubs though the IPC
@@ -53,13 +55,23 @@ class DesktopSessionProxy
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // Connects to the desktop process.
-  bool Connect(IPC::PlatformFileForTransit desktop_process,
-               IPC::PlatformFileForTransit desktop_pipe);
+  // Initializes the object. |client_jid| specifies the client session's JID.
+  // |disconnect_callback| specifies a callback that disconnects the client
+  // session when invoked.
+  // Initialize() should be called before AttachToDesktop() is called.
+  void Initialize(const std::string& client_jid,
+                  const base::Closure& disconnect_callback);
+
+  // Connects to the desktop session agent.
+  bool AttachToDesktop(IPC::PlatformFileForTransit desktop_process,
+                       IPC::PlatformFileForTransit desktop_pipe);
 
   // Closes the connection to the desktop session agent and cleans up
   // the associated resources.
-  void Disconnect();
+  void DetachFromDesktop();
+
+  // Disconnects the client session that owns |this|.
+  void DisconnectSession();
 
   // APIs used to implement the VideoFrameCapturer interface. These must be
   // called on |video_capture_task_runner_|.
@@ -101,6 +113,9 @@ class DesktopSessionProxy
   // Handles CursorShapeChanged notification from the desktop session agent.
   void OnCursorShapeChanged(const MouseCursorShape& cursor_shape);
 
+  // Handles InjectClipboardEvent request from the desktop integration process.
+  void OnInjectClipboardEvent(const std::string& serialized_event);
+
   // Posted to |video_capture_task_runner_| to pass a captured video frame back
   // to |video_capturer_|.
   void PostCaptureCompleted(scoped_refptr<CaptureData> capture_data);
@@ -108,9 +123,6 @@ class DesktopSessionProxy
   // Posted to |video_capture_task_runner_| to pass |cursor_shape| back to
   // |video_capturer_|.
   void PostCursorShape(scoped_ptr<MouseCursorShape> cursor_shape);
-
-  // Handles InjectClipboardEvent request from the desktop integration process.
-  void OnInjectClipboardEvent(const std::string& serialized_event);
 
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.
@@ -126,8 +138,14 @@ class DesktopSessionProxy
   // Points to the client stub passed to StartEventExecutor().
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
 
+  // JID of the client session.
+  std::string client_jid_;
+
   // IPC channel to the desktop session agent.
   scoped_ptr<IPC::ChannelProxy> desktop_channel_;
+
+  // Disconnects the client session when invoked.
+  base::Closure disconnect_callback_;
 
 #if defined(OS_WIN)
   // Handle of the desktop process.

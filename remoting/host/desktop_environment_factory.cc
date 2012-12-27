@@ -8,7 +8,6 @@
 #include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 
@@ -24,8 +23,7 @@ DesktopEnvironmentFactory::DesktopEnvironmentFactory(
 DesktopEnvironmentFactory::~DesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> DesktopEnvironmentFactory::Create(
-    ClientSession* client) {
+scoped_ptr<DesktopEnvironment> DesktopEnvironmentFactory::Create() {
   scoped_ptr<DesktopEnvironment> environment(new DesktopEnvironment(
       AudioCapturer::Create(),
       EventExecutor::Create(input_task_runner_, ui_task_runner_),

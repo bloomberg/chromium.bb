@@ -13,10 +13,14 @@
 #include "remoting/base/util.h"
 #include "remoting/capturer/capture_data.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/remote_input_filter.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/input_event_tracker.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace remoting {
@@ -64,6 +68,8 @@ DesktopSessionAgent::Delegate::~Delegate() {
 }
 
 DesktopSessionAgent::~DesktopSessionAgent() {
+  DCHECK(!disconnect_window_);
+  DCHECK(!local_input_monitor_);
   DCHECK(!network_channel_);
   DCHECK(!video_capturer_);
 }
@@ -72,20 +78,35 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_CaptureFrame,
-                        OnCaptureFrame)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InvalidateRegion,
-                        OnInvalidateRegion)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SharedBufferCreated,
-                        OnSharedBufferCreated)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
-                        OnInjectClipboardEvent)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
-                        OnInjectKeyEvent)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectMouseEvent,
-                        OnInjectMouseEvent)
-  IPC_END_MESSAGE_MAP()
+  if (started_) {
+    IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_CaptureFrame,
+                          OnCaptureFrame)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InvalidateRegion,
+                          OnInvalidateRegion)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SharedBufferCreated,
+                          OnSharedBufferCreated)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
+                          OnInjectClipboardEvent)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
+                          OnInjectKeyEvent)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectMouseEvent,
+                          OnInjectMouseEvent)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+  } else {
+    IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_StartSessionAgent,
+                          OnStartSessionAgent)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+  }
+
+  // Close the channel if the received message wasn't expected.
+  if (!handled) {
+    LOG(ERROR) << "An unexpected IPC message received: type=" << message.type();
+    OnChannelError();
+  }
 
   return handled;
 }
@@ -105,6 +126,12 @@ void DesktopSessionAgent::OnChannelError() {
   // Notify the caller that the channel has been disconnected.
   if (delegate_.get())
     delegate_->OnNetworkProcessDisconnected();
+}
+
+void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  remote_input_filter_->LocalMouseMoved(new_pos);
 }
 
 scoped_refptr<SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
@@ -140,6 +167,43 @@ void DesktopSessionAgent::ReleaseSharedBuffer(
 
   SendToNetwork(
       new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(buffer->id()));
+}
+
+void DesktopSessionAgent::OnStartSessionAgent(
+    const std::string& authenticated_jid) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(!started_);
+
+  started_ = true;
+
+  // Create the event executor.
+  event_executor_ = CreateEventExecutor();
+
+  // Hook up the input filter
+  input_tracker_.reset(new protocol::InputEventTracker(event_executor_.get()));
+  remote_input_filter_.reset(new RemoteInputFilter(input_tracker_.get()));
+
+  // Start the event executor.
+  scoped_ptr<protocol::ClipboardStub> clipboard_stub(
+      new DesktopSesssionClipboardStub(this));
+  event_executor_->Start(clipboard_stub.Pass());
+
+  base::Closure disconnect_session =
+      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
+
+  // Create the disconnect window.
+  disconnect_window_ = DisconnectWindow::Create();
+  disconnect_window_->Show(
+      ui_strings_, disconnect_session,
+      authenticated_jid.substr(0, authenticated_jid.find('/')));
+
+  // Start monitoring local input.
+  local_input_monitor_ = LocalInputMonitor::Create();
+  local_input_monitor_->Start(this, disconnect_session);
+
+  // Start the video capturer.
+  video_capture_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
 }
 
 void DesktopSessionAgent::OnCaptureCompleted(
@@ -192,19 +256,7 @@ bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
   delegate_ = delegate;
 
   // Create an IPC channel to communicate with the network process.
-  if (!CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_))
-    return false;
-
-  // Create and start the event executor.
-  event_executor_ = CreateEventExecutor();
-  scoped_ptr<protocol::ClipboardStub> clipboard_stub(
-      new DesktopSesssionClipboardStub(this));
-  event_executor_->Start(clipboard_stub.Pass());
-
-  // Start the video capturer.
-  video_capture_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
-  return true;
+  return CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_);
 }
 
 void DesktopSessionAgent::Stop() {
@@ -215,11 +267,29 @@ void DesktopSessionAgent::Stop() {
   // Make sure the channel is closed.
   network_channel_.reset();
 
-  event_executor_.reset();
+  if (started_) {
+    started_ = false;
 
-  // Stop the video capturer.
-  video_capture_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DesktopSessionAgent::StopVideoCapturer, this));
+    // Close the disconnect window and stop listening to local input.
+    disconnect_window_->Hide();
+    disconnect_window_.reset();
+
+    // Stop monitoring to local input.
+    local_input_monitor_->Stop();
+    local_input_monitor_.reset();
+
+    remote_input_filter_.reset();
+
+    // Ensure that any pressed keys or buttons are released.
+    input_tracker_->ReleaseAll();
+    input_tracker_.reset();
+
+    event_executor_.reset();
+
+    // Stop the video capturer.
+    video_capture_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&DesktopSessionAgent::StopVideoCapturer, this));
+  }
 }
 
 void DesktopSessionAgent::OnCaptureFrame() {
@@ -323,7 +393,7 @@ void DesktopSessionAgent::OnInjectKeyEvent(
     return;
   }
 
-  event_executor_->InjectKeyEvent(event);
+  remote_input_filter_->InjectKeyEvent(event);
 }
 
 void DesktopSessionAgent::OnInjectMouseEvent(
@@ -350,7 +420,11 @@ void DesktopSessionAgent::OnInjectMouseEvent(
   if (event.has_y())
     event.set_y(std::max(0, event.y()));
 
-  event_executor_->InjectMouseEvent(event);
+  remote_input_filter_->InjectMouseEvent(event);
+}
+
+void DesktopSessionAgent::DisconnectSession() {
+  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession());
 }
 
 void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
@@ -397,7 +471,8 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
-      next_shared_buffer_id_(1) {
+      next_shared_buffer_id_(1),
+      started_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 

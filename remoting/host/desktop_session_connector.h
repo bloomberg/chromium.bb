@@ -6,11 +6,12 @@
 #define REMOTING_HOST_DESKTOP_SESSION_CONNECTOR_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace remoting {
 
-class IpcDesktopEnvironment;
+class DesktopSessionProxy;
 
 // Provides a way to connect a terminal (i.e. a remote client) with a desktop
 // session (i.e. the screen, keyboard and the rest).
@@ -20,13 +21,14 @@ class DesktopSessionConnector {
   virtual ~DesktopSessionConnector() {}
 
   // Requests the daemon process to create a desktop session and associates
-  // |desktop_environment| with it.
-  virtual void ConnectTerminal(IpcDesktopEnvironment* desktop_environment) = 0;
+  // |desktop_session_proxy| with it.
+  virtual void ConnectTerminal(
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) = 0;
 
-  // Requests the daemon process disconnect |desktop_environment| from
+  // Requests the daemon process disconnect |desktop_session_proxy| from
   // the associated desktop session.
   virtual void DisconnectTerminal(
-      IpcDesktopEnvironment* desktop_environment) = 0;
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) = 0;
 
   // Notifies the network process that |terminal_id| is now attached to
   // a desktop integration process. |desktop_process| specifies the process

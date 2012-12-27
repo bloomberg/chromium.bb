@@ -5,7 +5,10 @@
 #ifndef REMOTING_HOST_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_DESKTOP_ENVIRONMENT_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace remoting {
@@ -29,8 +32,16 @@ class DesktopEnvironment {
   EventExecutor* event_executor() const { return event_executor_.get(); }
   VideoFrameCapturer* video_capturer() const { return video_capturer_.get(); }
 
+  // Starts the desktop environment passing |client_jid| of the attached
+  // authenticated session. Registers |client_clipboard| to receive
+  // notifications about local clipboard changes. |disconnect_callback| can be
+  // invoked by the DesktopEnvironment to request the client session to be
+  // disconnected. |disconnect_callback| is invoked on the same thread Start()
+  // has been called on.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard);
+      scoped_ptr<protocol::ClipboardStub> client_clipboard,
+      const std::string& client_jid,
+      const base::Closure& disconnect_callback);
 
  private:
   // Used to capture audio to deliver to clients.

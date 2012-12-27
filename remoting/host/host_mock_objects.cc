@@ -18,9 +18,8 @@ MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory()
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
 
-scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
-    ClientSession* client) {
-  return scoped_ptr<DesktopEnvironment>(CreatePtr(client));
+scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create() {
+  return scoped_ptr<DesktopEnvironment>(CreatePtr());
 }
 
 MockEventExecutor::MockEventExecutor() {}

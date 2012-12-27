@@ -173,6 +173,9 @@ class ClientSession
   // The connection to the client.
   scoped_ptr<protocol::ConnectionToClient> connection_;
 
+  // Used to disable callbacks to |connection_| once it is disconnected.
+  base::WeakPtrFactory<protocol::ConnectionToClient> connection_factory_;
+
   // The desktop environment used by this session.
   scoped_ptr<DesktopEnvironment> desktop_environment_;
 

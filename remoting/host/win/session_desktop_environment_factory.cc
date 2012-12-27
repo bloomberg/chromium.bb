@@ -8,7 +8,6 @@
 #include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/win/session_event_executor.h"
@@ -26,8 +25,7 @@ SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
-    ClientSession* client) {
+scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create() {
   scoped_ptr<AudioCapturer> audio_capturer = AudioCapturer::Create();
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
       input_task_runner_, ui_task_runner_);

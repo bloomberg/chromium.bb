@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_environment.h"
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/audio_capturer.h"
@@ -25,7 +26,9 @@ DesktopEnvironment::~DesktopEnvironment() {
 }
 
 void DesktopEnvironment::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+    scoped_ptr<protocol::ClipboardStub> client_clipboard,
+    const std::string& client_jid,
+    const base::Closure& disconnect_callback) {
   event_executor_->Start(client_clipboard.Pass());
 }
 

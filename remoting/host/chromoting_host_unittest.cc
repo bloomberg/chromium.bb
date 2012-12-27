@@ -119,7 +119,7 @@ class ChromotingHostTest : public testing::Test {
                    base::Unretained(this)));
 
     desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
-    EXPECT_CALL(*desktop_environment_factory_, CreatePtr(_))
+    EXPECT_CALL(*desktop_environment_factory_, CreatePtr())
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this,
                                &ChromotingHostTest::CreateDesktopEnvironment));
@@ -282,7 +282,7 @@ class ChromotingHostTest : public testing::Test {
     host_->OnSessionRouteChange(get_client(0), channel_name, route);
   }
 
-  DesktopEnvironment* CreateDesktopEnvironment(ClientSession* client) {
+  DesktopEnvironment* CreateDesktopEnvironment() {
     scoped_ptr<EventExecutor> event_executor(new EventExecutorFake());
     scoped_ptr<VideoFrameCapturer> video_capturer(new VideoFrameCapturerFake());
     return new DesktopEnvironment(scoped_ptr<AudioCapturer>(NULL),

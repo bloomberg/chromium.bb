@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/desktop_session_connector.h"
@@ -18,7 +19,7 @@ class ChannelProxy;
 namespace remoting {
 
 class DesktopSessionConnector;
-class IpcDesktopEnvironment;
+class DesktopSessionProxy;
 
 // Used to create IpcDesktopEnvironment objects intergating with the desktop via
 // a helper process and talking to that process via IPC.
@@ -36,13 +37,13 @@ class IpcDesktopEnvironmentFactory
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner);
   virtual ~IpcDesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client) OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
 
   // DesktopSessionConnector implementation.
   virtual void ConnectTerminal(
-      IpcDesktopEnvironment* desktop_environment) OVERRIDE;
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) OVERRIDE;
   virtual void DisconnectTerminal(
-      IpcDesktopEnvironment* desktop_environment) OVERRIDE;
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) OVERRIDE;
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
       IPC::PlatformFileForTransit desktop_process,
@@ -60,7 +61,8 @@ class IpcDesktopEnvironmentFactory
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
-  typedef std::map<int, IpcDesktopEnvironment*> ActiveConnectionsList;
+  typedef std::map<int, scoped_refptr<DesktopSessionProxy> >
+      ActiveConnectionsList;
   ActiveConnectionsList active_connections_;
 
   // Next desktop session ID. IDs are allocated sequentially starting from 0.

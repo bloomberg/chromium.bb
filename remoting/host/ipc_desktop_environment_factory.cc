@@ -36,8 +36,7 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
-    ClientSession* client) {
+scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy(
@@ -46,16 +45,16 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
 
   return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(
       input_task_runner_, network_task_runner_, ui_task_runner_,
-      this, desktop_session_proxy, client));
+      this, desktop_session_proxy));
 }
 
 void IpcDesktopEnvironmentFactory::ConnectTerminal(
-    IpcDesktopEnvironment* desktop_environment) {
+    scoped_refptr<DesktopSessionProxy> desktop_session_proxy) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   int id = next_id_++;
   bool inserted = active_connections_.insert(
-      std::make_pair(id, desktop_environment)).second;
+      std::make_pair(id, desktop_session_proxy)).second;
   CHECK(inserted);
 
   VLOG(1) << "Network: registered desktop environment " << id;
@@ -63,12 +62,12 @@ void IpcDesktopEnvironmentFactory::ConnectTerminal(
 }
 
 void IpcDesktopEnvironmentFactory::DisconnectTerminal(
-    IpcDesktopEnvironment* desktop_environment) {
+    scoped_refptr<DesktopSessionProxy> desktop_session_proxy) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   ActiveConnectionsList::iterator i;
   for (i = active_connections_.begin(); i != active_connections_.end(); ++i) {
-    if (i->second == desktop_environment)
+    if (i->second.get() == desktop_session_proxy.get())
       break;
   }
 
@@ -94,7 +93,8 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
 
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
-    i->second->OnDesktopSessionAgentAttached(desktop_process, desktop_pipe);
+    i->second->DetachFromDesktop();
+    i->second->AttachToDesktop(desktop_process, desktop_pipe);
   } else {
 #if defined(OS_POSIX)
     DCHECK(desktop_process.auto_close);
@@ -118,11 +118,11 @@ void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
 
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
-    IpcDesktopEnvironment* desktop_environment = i->second;
+    scoped_refptr<DesktopSessionProxy> desktop_session_proxy = i->second;
     active_connections_.erase(i);
 
-    // Disconnect the client for the given desktop environment.
-    desktop_environment->DisconnectClient();
+    // Disconnect the client session.
+    desktop_session_proxy->DisconnectSession();
   }
 }
 

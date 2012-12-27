@@ -149,9 +149,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // clients that were not connected when this method is called.
   void DisconnectAllClients();
 
-  // Disconnects the client that is using |desktop_environment|, if any.
-  void DisconnectClient(DesktopEnvironment* desktop_environment);
-
   const UiStrings& ui_strings() { return ui_strings_; }
 
   // Set localized strings. Must be called before host is started.

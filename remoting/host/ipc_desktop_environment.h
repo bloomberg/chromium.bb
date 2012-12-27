@@ -6,6 +6,7 @@
 #define REMOTING_HOST_IPC_DESKTOP_ENVIRONMENT_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_platform_file.h"
@@ -17,7 +18,6 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class ClientSession;
 class DesktopSessionConnector;
 class DesktopSessionProxy;
 
@@ -34,31 +34,19 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DesktopSessionConnector* desktop_session_connector,
-      scoped_refptr<DesktopSessionProxy> desktop_session_proxy,
-      ClientSession* client);
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
   virtual ~IpcDesktopEnvironment();
 
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-
-  // Disconnects the client session that owns |this|.
-  void DisconnectClient();
-
-  // Notifies |this| that it is now attached to a desktop integration process.
-  // |desktop_process| specifies the process handle. |desktop_pipe| is
-  // the client end of the pipe opened by the desktop process.
-  void OnDesktopSessionAgentAttached(
-      IPC::PlatformFileForTransit desktop_process,
-      IPC::PlatformFileForTransit desktop_pipe);
+      scoped_ptr<protocol::ClipboardStub> client_clipboard,
+      const std::string& client_jid,
+      const base::Closure& disconnect_callback) OVERRIDE;
 
  private:
   // Used for IPC I/O.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DesktopSessionConnector* desktop_session_connector_;
-
-  // Specifies the client session that owns |this|.
-  ClientSession* client_;
 
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
 

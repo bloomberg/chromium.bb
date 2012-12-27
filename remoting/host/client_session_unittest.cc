@@ -44,7 +44,7 @@ class ClientSessionTest : public testing::Test {
     client_jid_ = "user@domain/rest-of-jid";
 
     desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
-    EXPECT_CALL(*desktop_environment_factory_, CreatePtr(_))
+    EXPECT_CALL(*desktop_environment_factory_, CreatePtr())
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this,
                                &ClientSessionTest::CreateDesktopEnvironment));
@@ -97,7 +97,7 @@ class ClientSessionTest : public testing::Test {
   }
 
  protected:
-  DesktopEnvironment* CreateDesktopEnvironment(ClientSession* client) {
+  DesktopEnvironment* CreateDesktopEnvironment() {
     MockVideoFrameCapturer* capturer = new MockVideoFrameCapturer();
     EXPECT_CALL(*capturer, Start(_));
     EXPECT_CALL(*capturer, Stop());

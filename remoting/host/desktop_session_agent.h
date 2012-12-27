@@ -18,6 +18,8 @@
 #include "remoting/capturer/shared_buffer.h"
 #include "remoting/capturer/shared_buffer_factory.h"
 #include "remoting/capturer/video_frame_capturer.h"
+#include "remoting/host/mouse_move_observer.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -29,13 +31,21 @@ class Message;
 namespace remoting {
 
 class AutoThreadTaskRunner;
+class DisconnectWindow;
 class EventExecutor;
+class LocalInputMonitor;
+class RemoteInputFilter;
+
+namespace protocol {
+class InputEventTracker;
+}  // namespace protocol
 
 // Provides screen/audio capturing and input injection services for
 // the network process.
 class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
+      public MouseMoveObserver,
       public SharedBufferFactory,
       public VideoFrameCapturer::Delegate {
  public:
@@ -61,6 +71,9 @@ class DesktopSessionAgent
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
+
+  // MouseMoveObserver implementation.
+  virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
   // SharedBufferFactory implementation.
   virtual scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size) OVERRIDE;
@@ -104,6 +117,9 @@ class DesktopSessionAgent
   // Creates an event executor specific to the platform.
   virtual scoped_ptr<EventExecutor> CreateEventExecutor() = 0;
 
+  // Handles StartSessionAgent request from the client.
+  void OnStartSessionAgent(const std::string& authenticated_jid);
+
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
 
@@ -117,6 +133,9 @@ class DesktopSessionAgent
   void OnInjectClipboardEvent(const std::string& serialized_event);
   void OnInjectKeyEvent(const std::string& serialized_event);
   void OnInjectMouseEvent(const std::string& serialized_event);
+
+  // Sends DisconnectSession request to the host.
+  void DisconnectSession();
 
   // Sends a message to the network process.
   void SendToNetwork(IPC::Message* message);
@@ -164,8 +183,21 @@ class DesktopSessionAgent
 
   base::WeakPtr<Delegate> delegate_;
 
+  // Provides a user interface allowing the local user to close the connection.
+  scoped_ptr<DisconnectWindow> disconnect_window_;
+
   // Executes keyboard, mouse and clipboard events.
   scoped_ptr<EventExecutor> event_executor_;
+
+  // Monitor local inputs to allow remote inputs to be blocked while the local
+  // user is trying to do something.
+  scoped_ptr<LocalInputMonitor> local_input_monitor_;
+
+  // Tracker used to release pressed keys and buttons when disconnecting.
+  scoped_ptr<protocol::InputEventTracker> input_tracker_;
+
+  // Filter used to disable remote inputs during local input activity.
+  scoped_ptr<RemoteInputFilter> remote_input_filter_;
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;
@@ -177,8 +209,13 @@ class DesktopSessionAgent
   typedef std::list<scoped_refptr<SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
 
+  // True if the desktop session agent has been started.
+  bool started_;
+
   // Captures the screen.
   scoped_ptr<VideoFrameCapturer> video_capturer_;
+
+  UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

@@ -373,17 +373,6 @@ void ChromotingHost::DisconnectAllClients() {
   }
 }
 
-void ChromotingHost::DisconnectClient(DesktopEnvironment* desktop_environment) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i) {
-    if ((*i)->desktop_environment() == desktop_environment) {
-      (*i)->Disconnect();
-      break;
-    }
-  }
-}
-
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitial);

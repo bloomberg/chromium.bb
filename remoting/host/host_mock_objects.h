@@ -80,9 +80,9 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MockDesktopEnvironmentFactory();
   virtual ~MockDesktopEnvironmentFactory();
 
-  MOCK_METHOD1(CreatePtr, DesktopEnvironment*(ClientSession* client));
+  MOCK_METHOD0(CreatePtr, DesktopEnvironment*());
 
-  virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client) OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);
