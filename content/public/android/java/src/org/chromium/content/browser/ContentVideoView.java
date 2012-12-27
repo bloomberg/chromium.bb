@@ -118,7 +118,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             if (mVideoWidth == 0 && mVideoHeight == 0) {
-                setMeasuredDimension(0, 0);
+                setMeasuredDimension(1, 1);
                 return;
             }
             int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
