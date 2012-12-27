@@ -34,7 +34,6 @@ namespace content {
 
 class DevToolsBrowserTarget;
 class DevToolsClientHost;
-class RenderViewHost;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
@@ -58,9 +57,9 @@ class DevToolsHttpHandlerImpl
 
   // DevToolsHttpHandler implementation.
   virtual void Stop() OVERRIDE;
-  virtual void SetRenderViewHostBinding(
-      RenderViewHostBinding* binding) OVERRIDE;
-  virtual GURL GetFrontendURL(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void SetDevToolsAgentHostBinding(
+      DevToolsAgentHostBinding* binding) OVERRIDE;
+  virtual GURL GetFrontendURL(DevToolsAgentHost* agent_host) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -131,8 +130,8 @@ class DevToolsHttpHandlerImpl
   typedef std::map<int, DevToolsClientHost*> ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
-  RenderViewHostBinding* binding_;
-  scoped_ptr<RenderViewHostBinding> default_binding_;
+  DevToolsAgentHostBinding* binding_;
+  scoped_ptr<DevToolsAgentHostBinding> default_binding_;
   NotificationRegistrar registrar_;
   scoped_ptr<DevToolsBrowserTarget> browser_target_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);

@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
@@ -181,7 +182,7 @@ void Shell::ShowDevTools() {
   ShellDevToolsDelegate* delegate =
       browser_client->shell_browser_main_parts()->devtools_delegate();
   GURL url = delegate->devtools_http_handler()->GetFrontendURL(
-      web_contents()->GetRenderViewHost());
+      DevToolsAgentHost::GetFor(web_contents()->GetRenderViewHost()));
   dev_tools_ = CreateNewWindow(
       web_contents()->GetBrowserContext(),
       url, NULL, MSG_ROUTING_NONE, NULL);

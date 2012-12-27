@@ -59,35 +59,43 @@ namespace {
 static const char* kDevToolsHandlerThreadName = "Chrome_DevToolsHandlerThread";
 
 class DevToolsDefaultBindingHandler
-    : public DevToolsHttpHandler::RenderViewHostBinding {
+    : public DevToolsHttpHandler::DevToolsAgentHostBinding {
  public:
   DevToolsDefaultBindingHandler() {
   }
 
-  virtual std::string GetIdentifier(RenderViewHost* rvh) OVERRIDE {
-    int process_id = rvh->GetProcess()->GetID();
-    int routing_id = rvh->GetRoutingID();
-    return base::StringPrintf("%d_%d", process_id, routing_id);
+  void GarbageCollect() {
+    AgentsMap::iterator it = agents_map_.begin();
+    while (it != agents_map_.end()) {
+      if (!it->second->GetRenderViewHost())
+        agents_map_.erase(it++);
+      else
+        ++it;
+    }
   }
 
-  virtual RenderViewHost* ForIdentifier(
+  virtual std::string GetIdentifier(DevToolsAgentHost* agent_host) OVERRIDE {
+    GarbageCollect();
+    DevToolsAgentHostImpl* agent_host_impl =
+        static_cast<DevToolsAgentHostImpl*>(agent_host);
+    std::string id = base::StringPrintf("%d", agent_host_impl->id());
+    agents_map_[id] = agent_host;
+    return id;
+  }
+
+  virtual DevToolsAgentHost* ForIdentifier(
       const std::string& identifier) OVERRIDE {
-    size_t pos = identifier.find("_");
-    if (pos == std::string::npos)
-      return NULL;
-
-    int process_id;
-    if (!base::StringToInt(identifier.substr(0, pos), &process_id))
-      return NULL;
-
-    int routing_id;
-    if (!base::StringToInt(identifier.substr(pos+1), &routing_id))
-      return NULL;
-
-    return RenderViewHost::FromID(process_id, routing_id);
+    GarbageCollect();
+    AgentsMap::iterator it = agents_map_.find(identifier);
+    if (it != agents_map_.end())
+      return it->second;
+    return NULL;
   }
-};
 
+ private:
+  typedef std::map<std::string, scoped_refptr<DevToolsAgentHost> > AgentsMap;
+  AgentsMap agents_map_;
+};
 
 // An internal implementation of DevToolsClientHost that delegates
 // messages sent for DevToolsClient to a DebuggerShell instance.
@@ -222,20 +230,20 @@ void DevToolsHttpHandlerImpl::Stop() {
       base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease, this));
 }
 
-void DevToolsHttpHandlerImpl::SetRenderViewHostBinding(
-    RenderViewHostBinding* binding) {
+void DevToolsHttpHandlerImpl::SetDevToolsAgentHostBinding(
+    DevToolsAgentHostBinding* binding) {
   if (binding)
     binding_ = binding;
   else
     binding_ = default_binding_.get();
 }
 
-GURL DevToolsHttpHandlerImpl::GetFrontendURL(RenderViewHost* render_view_host) {
+GURL DevToolsHttpHandlerImpl::GetFrontendURL(DevToolsAgentHost* agent_host) {
   net::IPEndPoint ip_address;
   if (server_->GetLocalAddress(&ip_address))
     return GURL();
   std::string host = ip_address.ToString();
-  std::string id = binding_->GetIdentifier(render_view_host);
+  std::string id = binding_->GetIdentifier(agent_host);
   return GURL(std::string("http://") +
               ip_address.ToString() +
               GetFrontendURLInternal(id, host));
@@ -538,7 +546,8 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   }
 
   if (command == "activate" || command == "close") {
-    RenderViewHost* rvh = binding_->ForIdentifier(target_id);
+    DevToolsAgentHost* agent_host = binding_->ForIdentifier(target_id);
+    RenderViewHost* rvh = agent_host ? agent_host->GetRenderViewHost() : NULL;
     if (!rvh) {
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
@@ -617,7 +626,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   std::string page_id = request.path.substr(page_prefix.length());
-  RenderViewHost* rvh = binding_->ForIdentifier(page_id);
+  DevToolsAgentHost* agent_host = binding_->ForIdentifier(page_id);
+  RenderViewHost* rvh = agent_host ? agent_host->GetRenderViewHost() : NULL;
   if (!rvh) {
     Send500(connection_id, "No such target id: " + page_id);
     return;
@@ -824,7 +834,7 @@ DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh)
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);
   PageInfo page_info;
-  page_info.id = binding_->GetIdentifier(rvh);
+  page_info.id = binding_->GetIdentifier(agent);
   page_info.attached = client_host != NULL;
   page_info.url = host_delegate->GetURL().spec();
 

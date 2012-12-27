@@ -5,6 +5,7 @@
 #include "content/shell/shell_web_contents_view_delegate.h"
 
 #include "base/command_line.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -234,7 +235,7 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
       ShellDevToolsDelegate* delegate =
           browser_client->shell_browser_main_parts()->devtools_delegate();
       GURL url = delegate->devtools_http_handler()->GetFrontendURL(
-          web_contents_->GetRenderViewHost());
+          DevToolsAgentHost::GetFor(web_contents_->GetRenderViewHost()));
       Shell::CreateNewWindow(web_contents_->GetBrowserContext(),
                              url,
                              NULL,
