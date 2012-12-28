@@ -17,7 +17,7 @@ namespace chrome {
 ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
                                      const string16& message,
                                      const GURL& url)
-    : LinkInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(infobar_service),
       message_(message),
       learn_more_url_(url) {
 }
@@ -25,12 +25,12 @@ ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
 ObsoleteOSInfoBar::~ObsoleteOSInfoBar() {
 }
 
-string16 ObsoleteOSInfoBar::GetMessageTextWithOffset(
-    size_t* link_offset) const {
-  string16 text = message_;
-  text.push_back(' ');  // Add a space before the following link.
-  *link_offset = text.size();
-  return text;
+string16 ObsoleteOSInfoBar::GetMessageText() const {
+  return message_;
+}
+
+int ObsoleteOSInfoBar::GetButtons() const {
+  return BUTTON_NONE;
 }
 
 string16 ObsoleteOSInfoBar::GetLinkText() const {
