@@ -61,12 +61,15 @@ const int kRightMargin = 2;
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  NSImage* image = gfx::GetCachedImageWithName(@"balloon_wrench.pdf");
-  [optionsButton_ setDefaultImage:image];
-  [optionsButton_ setDefaultOpacity:0.6];
-  [optionsButton_ setHoverImage:image];
-  [optionsButton_ setHoverOpacity:0.9];
-  [optionsButton_ setPressedImage:image];
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  [optionsButton_ setDefaultImage:
+      rb.GetNativeImageNamed(IDR_BALLOON_WRENCH).ToNSImage()];
+  [optionsButton_ setDefaultOpacity:1.0];
+  [optionsButton_ setHoverImage:
+      rb.GetNativeImageNamed(IDR_BALLOON_WRENCH_H).ToNSImage()];
+  [optionsButton_ setHoverOpacity:1.0];
+  [optionsButton_ setPressedImage:
+      rb.GetNativeImageNamed(IDR_BALLOON_WRENCH_P).ToNSImage()];
   [optionsButton_ setPressedOpacity:1.0];
   [[optionsButton_ cell] setHighlightsBy:NSNoCellMask];
 

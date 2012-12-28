@@ -56,7 +56,6 @@
 
     'app/framework-Info.plist',
     '<@(mac_all_xibs)',
-    'app/theme/balloon_wrench.pdf',
     'app/theme/chevron.pdf',
     'app/theme/find_next_Template.pdf',
     'app/theme/find_prev_Template.pdf',
