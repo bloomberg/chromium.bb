@@ -20,7 +20,7 @@ extern "C" {
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "third_party/mesa/include/osmesa.h"
+#include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
