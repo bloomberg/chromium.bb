@@ -214,6 +214,7 @@ class Manifest(object):
     if name == 'default':
       self.default = attrs
     elif name == 'remote':
+      attrs.setdefault('alias', attrs['name'])
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
       self.projects[attrs['name']] = attrs
@@ -232,7 +233,6 @@ class Manifest(object):
       self.includes.append((attrs['name'], include_path))
       self._RunParser(include_path, finalize=False)
 
-
   def ProjectExists(self, project):
     """Returns True if a project is in this manifest."""
     return os.path.normpath(project) in self.projects
@@ -250,10 +250,11 @@ class Manifest(object):
 
     remote = attrs['remote']
     assert remote in self.remotes
+    remote_name = self.remotes[remote]['alias']
 
     local_rev = rev = attrs['revision']
     if rev.startswith('refs/heads/'):
-      local_rev = 'refs/remotes/%s/%s' % (remote, StripRefsHeads(rev))
+      local_rev = 'refs/remotes/%s/%s' % (remote_name, StripRefsHeads(rev))
 
     attrs['local_revision'] = local_rev
 
