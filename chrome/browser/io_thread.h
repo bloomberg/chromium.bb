@@ -109,6 +109,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::CertVerifier> cert_verifier;
+    // The ServerBoundCertService must outlive the HttpTransactionFactory.
+    scoped_ptr<net::ServerBoundCertService> system_server_bound_cert_service;
     // This TransportSecurityState doesn't load or save any state. It's only
     // used to enforce pinning for system requests and will only use built-in
     // pins.
@@ -138,7 +140,6 @@ class IOThread : public content::BrowserThreadDelegate {
     // |system_cookie_store| and |system_server_bound_cert_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
     scoped_refptr<net::CookieStore> system_cookie_store;
-    scoped_ptr<net::ServerBoundCertService> system_server_bound_cert_service;
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
     scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>

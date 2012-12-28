@@ -79,6 +79,7 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<NetLog> net_log_;
   scoped_ptr<HostResolver> host_resolver_;
   scoped_ptr<CertVerifier> cert_verifier_;
+  // The ServerBoundCertService must outlive the HttpTransactionFactory.
   scoped_ptr<ServerBoundCertService> server_bound_cert_service_;
   scoped_ptr<FraudulentCertificateReporter> fraudulent_certificate_reporter_;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
