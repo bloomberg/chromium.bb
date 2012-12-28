@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -80,7 +79,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/common/pepper_plugin_info.h"
 #include "extensions/common/constants.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -794,25 +792,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
   plugin_service->StartWatchingPlugins();
-
-  // Register the internal Flash if available.
-  FilePath path;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableInternalFlash) &&
-      PathService::Get(chrome::FILE_FLASH_PLUGIN_EXISTING, &path)) {
-    plugin_service->AddExtraPluginPath(path);
-  }
-
-  // Register bundled Pepper Flash if available.
-  content::PepperPluginInfo plugin;
-  bool add_at_beginning = false;
-  chrome::ChromeContentClient* content_client =
-      static_cast<chrome::ChromeContentClient*>(content::GetContentClient());
-  if (content_client->GetBundledFieldTrialPepperFlash(&plugin,
-                                                      &add_at_beginning)) {
-    plugin_service->RegisterInternalPlugin(plugin.ToWebPluginInfo(),
-                                           add_at_beginning);
-  }
 
 #if defined(OS_POSIX)
   // Also find plugins in a user-specific plugins dir,

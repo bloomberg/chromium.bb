@@ -459,7 +459,6 @@
         'browser/component_updater/component_updater_service.cc',
         'browser/component_updater/component_updater_service.h',
         'browser/component_updater/flash_component_installer.h',
-        'browser/component_updater/npapi_flash_component_installer.cc',
         'browser/component_updater/pepper_flash_component_installer.cc',
         'browser/component_updater/pnacl/pnacl_component_installer.cc',
         'browser/component_updater/pnacl/pnacl_component_installer.h',

@@ -44,19 +44,6 @@ class ChromeContentClient : public content::ContentClient {
       int* sandbox_profile_resource_id) const OVERRIDE;
   virtual std::string GetCarbonInterposePath() const OVERRIDE;
 #endif
-
-  // Gets information about the bundled Pepper Flash for field trial.
-  // |override_npapi_flash| indicates whether it should take precedence over
-  // the internal NPAPI Flash.
-  // Returns false if bundled Pepper Flash is not available. In that case,
-  // |plugin| and |override_npapi_flash| are not touched.
-  //
-  // TODO(yzshen): We need this method because currently we are having a field
-  // trial with bundled Pepper Flash, and need extra information about how to
-  // order bundled Pepper Flash and internal NPAPI Flash. Once the field trial
-  // is over, we should merge this into AddPepperPlugins().
-  bool GetBundledFieldTrialPepperFlash(content::PepperPluginInfo* plugin,
-                                       bool* override_npapi_flash);
 };
 
 }  // namespace chrome

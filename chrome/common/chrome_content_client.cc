@@ -312,8 +312,7 @@ void AddPepperFlashFromCommandLine(
       CreatePepperFlashInfo(FilePath(flash_path), flash_version));
 }
 
-bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
-                           bool* override_npapi_flash) {
+bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisablePepperThreading) &&
       !command_line->HasSwitch(switches::kEnablePepperThreading)) {
@@ -343,11 +342,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
     return false;
 
-  bool force_enable =
-      command_line->HasSwitch(switches::kEnableBundledPpapiFlash);
-
   *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING);
-  *override_npapi_flash = force_enable || IsPepperFlashEnabledByDefault();
   return true;
 #else
   return false;
@@ -376,14 +371,9 @@ void ChromeContentClient::AddPepperPlugins(
   ComputeBuiltInPlugins(plugins);
   AddPepperFlashFromCommandLine(plugins);
 
-  // Don't try to register Pepper Flash if there exists a Pepper Flash field
-  // trial. It will be registered separately.
-  if (!ConductingPepperFlashFieldTrial() && IsPepperFlashEnabledByDefault()) {
-    content::PepperPluginInfo plugin;
-    bool add_at_beginning = false;
-    if (GetBundledPepperFlash(&plugin, &add_at_beginning))
-      plugins->push_back(plugin);
-  }
+  content::PepperPluginInfo plugin;
+  if (GetBundledPepperFlash(&plugin))
+    plugins->push_back(plugin);
 }
 
 void ChromeContentClient::AddNPAPIPlugins(
@@ -470,13 +460,5 @@ std::string ChromeContentClient::GetCarbonInterposePath() const {
   return std::string(kInterposeLibraryPath);
 }
 #endif
-
-bool ChromeContentClient::GetBundledFieldTrialPepperFlash(
-    content::PepperPluginInfo* plugin,
-    bool* override_npapi_flash) {
-  if (!ConductingPepperFlashFieldTrial())
-    return false;
-  return GetBundledPepperFlash(plugin, override_npapi_flash);
-}
 
 }  // namespace chrome

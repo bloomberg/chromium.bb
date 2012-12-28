@@ -270,7 +270,7 @@ const char kDisableBackgroundMode[]         = "disable-background-mode";
 // measurements.
 const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 
-// Disables the bundled PPAPI version of Flash (if it's enabled by default).
+// Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
 // Disables the bookmark autocomplete provider (BookmarkProvider).
@@ -323,9 +323,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
-
-// Disable the internal Flash Player.
-const char kDisableInternalFlash[]          = "disable-internal-flash";
 
 // Don't resolve hostnames to IPv6 addresses. This can be used when debugging
 // issues relating to IPv6, but shouldn't otherwise be needed. Be sure to file
@@ -471,9 +468,6 @@ const char kEnableAutologin[]               = "enable-autologin";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
-
-// Enables the bundled PPAPI version of Flash.
-const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.

@@ -72,12 +72,9 @@ enum {
   FILE_RECORDED_SCRIPT,         // Full path to the script.log file that
                                 // contains recorded browser events for
                                 // playback.
-  FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
-                                // Querying this path will succeed no matter the
-                                // file exists or not.
-  FILE_FLASH_PLUGIN_EXISTING,   // Full path to the internal Flash plugin file.
-                                // Querying this path will fail if the file
-                                // doesn't exist.
+  FILE_FLASH_PLUGIN,            // Full path to the internal NPAPI Flash plugin
+                                // file. Querying this path will succeed no
+                                // matter the file exists or not.
   FILE_PEPPER_FLASH_PLUGIN,     // Full path to the bundled Pepper Flash plugin
                                 // file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
