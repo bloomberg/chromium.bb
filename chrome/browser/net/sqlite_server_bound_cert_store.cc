@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -164,11 +165,17 @@ bool SQLiteServerBoundCertStore::Backend::Load(
   // moved to the DB thread as part of http://crbug.com/89665.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
+  base::TimeTicks start = base::TimeTicks::Now();
+
   // Ensure the parent directory for storing certs is created before reading
   // from it.
   const FilePath dir = path_.DirName();
   if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
     return false;
+
+  int64 db_size = 0;
+  if (file_util::GetFileSize(path_, &db_size))
+    UMA_HISTOGRAM_COUNTS("DomainBoundCerts.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);
   if (!db_->Open(path_)) {
@@ -210,6 +217,12 @@ bool SQLiteServerBoundCertStore::Backend::Load(
     certs->push_back(cert.release());
   }
 
+  UMA_HISTOGRAM_COUNTS_10000("DomainBoundCerts.DBLoadedCount", certs->size());
+  UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.DBLoadTime",
+                             base::TimeTicks::Now() - start,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(1),
+                             50);
   return true;
 }
 
