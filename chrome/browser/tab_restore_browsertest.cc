@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -63,11 +64,11 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
   void CloseTab(int index) {
-    content::WebContents* new_tab = chrome::GetWebContentsAt(browser(), index);
     content::WindowedNotificationObserver tab_close_observer(
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::NotificationService::AllSources());
-    chrome::CloseWebContents(browser(), new_tab);
+    browser()->tab_strip_model()->CloseWebContentsAt(
+        index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
     tab_close_observer.Wait();
   }
 

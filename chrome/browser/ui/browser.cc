@@ -1406,7 +1406,7 @@ void Browser::LoadingStateChanged(WebContents* source) {
 
 void Browser::CloseContents(WebContents* source) {
   if (unload_controller_->CanCloseContents(source))
-    chrome::CloseWebContents(this, source);
+    chrome::CloseWebContents(this, source, true);
 }
 
 void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {

@@ -525,7 +525,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser && browser->tab_count() > 1)
-      chrome::CloseWebContents(browser, old_contents);
+      chrome::CloseWebContents(browser, old_contents, true);
   }
 }
 

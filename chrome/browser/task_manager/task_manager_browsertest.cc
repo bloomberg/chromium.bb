@@ -117,10 +117,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
                          true));
 
   // Close the tab and verify that we notice.
-  WebContents* first_tab =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  ASSERT_TRUE(first_tab);
-  chrome::CloseWebContents(browser(), first_tab);
+  browser()->tab_strip_model()->CloseWebContentsAt(0,
+                                                   TabStripModel::CLOSE_NONE);
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 

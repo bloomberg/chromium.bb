@@ -108,15 +108,19 @@ void AddWebContents(Browser* browser,
   Navigate(&params);
 }
 
-void CloseWebContents(Browser* browser, content::WebContents* contents) {
+void CloseWebContents(Browser* browser,
+                      content::WebContents* contents,
+                      bool add_to_history) {
   int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED() << "CloseWebContents called for tab not in our strip";
     return;
   }
+
   browser->tab_strip_model()->CloseWebContentsAt(
       index,
-      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
+                     : TabStripModel::CLOSE_NONE);
 }
 
 }  // namespace chrome

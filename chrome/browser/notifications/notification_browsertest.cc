@@ -725,8 +725,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
-  chrome::CloseWebContents(browser(),
-                           browser()->tab_strip_model()->GetWebContentsAt(0));
+  browser()->tab_strip_model()->CloseWebContentsAt(0,
+                                                   TabStripModel::CLOSE_NONE);
   observer.Wait();
 }
 

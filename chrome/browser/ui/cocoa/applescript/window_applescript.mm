@@ -201,8 +201,10 @@
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
-  chrome::CloseWebContents(
-      browser_, browser_->tab_strip_model()->GetWebContentsAt(index));
+  if (index < 0 || index >= browser_->tab_strip_model()->count())
+    return;
+  browser_->tab_strip_model()->CloseWebContentsAt(
+      index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
 - (NSNumber*)orderedIndex {

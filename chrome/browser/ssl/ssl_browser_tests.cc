@@ -593,8 +593,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
 
   // Close tabs which contains the test page.
   for (int i = 0; i < 16; ++i)
-    chrome::CloseWebContents(browser(), tabs[i]);
-  chrome::CloseWebContents(browser(), tab);
+    chrome::CloseWebContents(browser(), tabs[i], false);
+  chrome::CloseWebContents(browser(), tab, false);
 }
 
 // Visit a HTTPS page and proceeds despite an invalid certificate. The page
@@ -1158,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   observer.Wait();
 
   // Close the first tab.
-  chrome::CloseWebContents(browser(), tab1);
+  chrome::CloseWebContents(browser(), tab1, false);
 }
 
 // Visit a page over bad https that is a redirect to a page with good https.

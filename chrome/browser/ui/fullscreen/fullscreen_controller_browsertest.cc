@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Close first tab while second active. Mouse lock bubble remains.
-  chrome::CloseWebContents(browser(), tab1);
+  chrome::CloseWebContents(browser(), tab1, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 }
 

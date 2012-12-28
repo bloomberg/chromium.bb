@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -115,7 +116,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
   EXPECT_EQ(std::string(chrome::kChromeUIExtensionsURL),
-            chrome::GetActiveWebContents(browser())->GetURL().spec());
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
@@ -212,7 +214,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
 
   // The extension should've opened a new tab to an extension page.
   EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
-            chrome::GetActiveWebContents(browser())->GetURL().spec());
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetURL().spec());
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.
@@ -221,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
   EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
   // Close the new tab.
-  chrome::CloseWebContents(browser(), chrome::GetActiveWebContents(browser()));
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
   page_complete.Wait();
 
   // Lazy Background Page has been shut down.
@@ -273,7 +277,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForNTP) {
 
   // The extension should've opened a new tab to an extension page.
   EXPECT_EQ(std::string(chrome::kChromeUINewTabURL),
-            chrome::GetActiveWebContents(browser())->GetURL().spec());
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetURL().spec());
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.

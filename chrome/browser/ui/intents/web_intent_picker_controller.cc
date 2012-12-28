@@ -822,7 +822,7 @@ void WebIntentPickerController::LocationBarPickerButtonClicked() {
 
     // This call deletes this object, so anything below here needs to
     // use stack variables.
-    chrome::CloseWebContents(service_browser, web_contents_);
+    chrome::CloseWebContents(service_browser, web_contents_, true);
 
     // Re-open the other tab and activate the picker.
     client_browser->window()->Activate();

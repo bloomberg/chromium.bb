@@ -853,8 +853,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       if (clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == Browser::TYPE_TABBED && active_tab &&
           browser == browser_ && browser->tab_count() > initial_tab_count) {
-        chrome::CloseWebContents(browser, active_tab);
-        active_tab = NULL;
+        chrome::CloseWebContents(browser, active_tab, true);
         selected_tab_to_activate = -1;
       }
       tab_loader_->TabIsLoading(

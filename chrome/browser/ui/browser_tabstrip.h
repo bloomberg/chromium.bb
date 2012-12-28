@@ -50,7 +50,12 @@ void AddWebContents(Browser* browser,
                     const gfx::Rect& initial_pos,
                     bool user_gesture,
                     bool* was__blocked);
-void CloseWebContents(Browser* browser, content::WebContents* contents);
+
+// Closes the specified WebContents in the specified Browser. If
+// |add_to_history| is true, an entry in the historical tab database is created.
+void CloseWebContents(Browser* browser,
+                      content::WebContents* contents,
+                      bool add_to_history);
 
 }  // namespace chrome
 

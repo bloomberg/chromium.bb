@@ -1613,7 +1613,8 @@ bool RemoveTabsFunction::RunImpl() {
 
     // There's a chance that the tab is being dragged, or we're in some other
     // nested event loop. This code path ensures that the tab is safely closed
-    // under such circumstances, whereas |chrome::CloseWebContents()| does not.
+    // under such circumstances, whereas |TabStripModel::CloseWebContentsAt()|
+    // does not.
     contents->Close();
   }
   return true;

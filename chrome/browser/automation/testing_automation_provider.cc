@@ -516,7 +516,7 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
     DCHECK(browser);
     new TabClosedNotificationObserver(this, wait_until_closed, reply_message,
                                       false);
-    chrome::CloseWebContents(browser, controller->GetWebContents());
+    chrome::CloseWebContents(browser, controller->GetWebContents(), false);
     return;
   }
 
@@ -6061,7 +6061,7 @@ void TestingAutomationProvider::CloseTabJSON(
       new TabClosedNotificationObserver(this, wait_until_closed, reply_message,
                                         true);
     }
-    chrome::CloseWebContents(browser, tab);
+    chrome::CloseWebContents(browser, tab, false);
     if (!wait_until_closed)
       AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
