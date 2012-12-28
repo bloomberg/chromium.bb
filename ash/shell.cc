@@ -377,14 +377,20 @@ const aura::Window* Shell::GetContainer(const aura::RootWindow* root_window,
 }
 
 // static
-std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
+std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
+    int container_id,
+    aura::RootWindow* priority_root) {
   std::vector<aura::Window*> containers;
   RootWindowList root_windows = GetAllRootWindows();
   for (RootWindowList::const_iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     aura::Window* container = (*it)->GetChildById(container_id);
-    if (container)
-      containers.push_back(container);
+    if (container) {
+      if (priority_root && priority_root->Contains(container))
+        containers.insert(containers.begin(), container);
+      else
+        containers.push_back(container);
+    }
   }
   return containers;
 }
@@ -622,8 +628,8 @@ bool Shell::IsScreenLocked() const {
 bool Shell::IsSystemModalWindowOpen() const {
   if (simulate_modal_window_open_for_testing_)
     return true;
-  const std::vector<aura::Window*> containers = GetAllContainers(
-      internal::kShellWindowId_SystemModalContainer);
+  const std::vector<aura::Window*> containers = GetContainersFromAllRootWindows(
+      internal::kShellWindowId_SystemModalContainer, NULL);
   for (std::vector<aura::Window*>::const_iterator cit = containers.begin();
        cit != containers.end(); ++cit) {
     for (aura::Window::Windows::const_iterator wit = (*cit)->children().begin();

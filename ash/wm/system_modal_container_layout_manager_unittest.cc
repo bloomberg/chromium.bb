@@ -31,7 +31,8 @@ aura::Window* GetModalContainer() {
 }
 
 bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
-  std::vector<aura::Window*> containers = Shell::GetAllContainers(container_id);
+  std::vector<aura::Window*> containers =
+      Shell::GetContainersFromAllRootWindows(container_id, NULL);
   bool has_modal_screen = !containers.empty();
   for (std::vector<aura::Window*>::iterator iter = containers.begin();
        iter != containers.end(); ++iter) {

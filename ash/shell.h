@@ -187,8 +187,11 @@ class ASH_EXPORT Shell
                                           int container_id);
 
   // Returns the list of containers that match |container_id| in
-  // all root windows.
-  static std::vector<aura::Window*> GetAllContainers(int container_id);
+  // all root windows. If |priority_root| is given, the container
+  // in the |priority_root| will be inserted at the top of the list.
+  static std::vector<aura::Window*> GetContainersFromAllRootWindows(
+      int container_id,
+      aura::RootWindow* priority_root);
 
   // True if "launcher per display" feature  is enabled.
   static bool IsLauncherPerDisplayEnabled();

@@ -379,8 +379,9 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
   aura::Window* window = NULL;
   for (; !window && current_container_index < arraysize(kWindowContainerIds);
        current_container_index++) {
-    aura::Window::Windows containers =
-        Shell::GetAllContainers(kWindowContainerIds[current_container_index]);
+    aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
+        kWindowContainerIds[current_container_index],
+        root);
     for (aura::Window::Windows::const_iterator iter = containers.begin();
          iter != containers.end() && !window; ++iter) {
       window = GetTopmostWindowToActivateInContainer((*iter), ignore);

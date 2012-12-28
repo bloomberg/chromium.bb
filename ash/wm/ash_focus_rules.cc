@@ -139,8 +139,9 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     int index,
     aura::Window* ignore) const {
   aura::Window* window = NULL;
-  aura::Window::Windows containers =
-      Shell::GetAllContainers(kWindowContainerIds[index]);
+  aura::RootWindow* root = ignore ? ignore->GetRootWindow() : NULL;
+  aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
+      kWindowContainerIds[index], root);
   for (aura::Window::Windows::const_iterator iter = containers.begin();
         iter != containers.end() && !window; ++iter) {
     window = GetTopmostWindowToActivateInContainer((*iter), ignore);
