@@ -196,6 +196,22 @@ class RepoRepository(object):
                       replace .repo/manifest.xml.
       extra_args: Extra args to pass to 'repo init'
     """
+
+    # Do a sanity check on the repo; if it exists and we can't pull a
+    # manifest from it, we know it's fairly screwed up and needs a fresh
+    # rebuild.
+    if os.path.exists(os.path.join(self.directory, '.repo', 'manifest.xml')):
+      try:
+        cros_build_lib.RunCommandCaptureOutput(
+            ['repo', 'manifest'], cwd=self.directory)
+      except cros_build_lib.RunCommandError:
+        cros_build_lib.Warning("Wiping %r due to `repo manifest` failure",
+                               self.directory)
+        paths = [os.path.join(self.directory, '.repo', x) for x in
+                 ('manifest.xml', 'manifests.git', 'manifests', 'repo')]
+        cros_build_lib.SudoRunCommand(['rm', '-rf', paths])
+        self._repo_update_needed = False
+
     # Wipe local_manifest.xml if it exists- it can interfere w/ things in
     # bad ways (duplicate projects, etc); we control this repository, thus
     # we can destroy it.
