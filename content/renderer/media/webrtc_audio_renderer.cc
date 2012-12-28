@@ -14,6 +14,7 @@
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "media/audio/win/core_audio_util_win.h"
 #endif
 
@@ -146,7 +147,10 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // Windows XP and lower can't cope with 10 ms output buffer size.
   // It must be extended to 30 ms (60 ms will be used internally by WaveOut).
-  if (!media::CoreAudioUtil::IsSupported()) {
+  // Note that we can't use media::CoreAudioUtil::IsSupported() here since it
+  // tries to load the Audioses.dll and it will always fail in the render
+  // process.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     buffer_size = 3 * buffer_size;
     DLOG(WARNING) << "Extending the output buffer size by a factor of three "
                   << "since Windows XP has been detected.";
