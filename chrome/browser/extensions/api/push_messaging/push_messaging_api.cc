@@ -221,9 +221,6 @@ void PushMessagingGetChannelIdFunction::OnLoginUIClosed(
 void PushMessagingGetChannelIdFunction::ReportResult(
     const std::string& gaia_id, const std::string& error_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Unpack the status and GaiaId parameters, and use it to build the
-  // channel ID here.
-  std::string channel_id(gaia_id);
 
   BuildAndSendResult(gaia_id, error_string);
 
