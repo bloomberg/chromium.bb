@@ -230,14 +230,7 @@ class Manifest(object):
       include_path = os.path.realpath(
           os.path.join(original_include_dir, attrs['name']))
       self.includes.append((attrs['name'], include_path))
-      try:
-        # Temporarily mangle the pathway for the context of this includes
-        # processing; do this so that any sub includes calculate from
-        # relative to that manifest.
-        self.manifest_include_dir = include_path
-        self._RunParser(include_path, finalize=False)
-      finally:
-        self.manifest_include_dir = original_include_dir
+      self._RunParser(include_path, finalize=False)
 
 
   def ProjectExists(self, project):
