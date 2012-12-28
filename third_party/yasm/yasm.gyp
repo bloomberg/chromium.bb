@@ -171,6 +171,7 @@
           ],
         }],
       ],
+      'msvs_disabled_warnings': [ 4267 ],
       'rules': [
         {
           'rule_name': 'generate_gperf',
@@ -553,6 +554,7 @@
           ],
         }],
       ],
+      'msvs_disabled_warnings': [ 4267 ],
     },
     {
       'target_name': 'genmodule',
