@@ -1,5 +1,60 @@
 #!/bin/bash
 
+set_target_os () {
+  # Get the os we're building for.  On first run, this will be unset.
+  target_os=$(git config target.os 2>/dev/null)
+  if [ -z "$target_os" ]; then
+    case $(uname -s) in
+      Linux) target_os=unix ;;
+      Darwin) target_os=mac ;;
+      CYGWIN*|MINGW*) target_os=win ;;
+      *)
+        echo "[$solution] *** No target.os set in .git/config, and I can't" 1>&2
+        echo "[$solution] *** figure it out from 'uname -s'" 1>&2
+        exit 1
+        ;;
+    esac
+    git config target.os "$target_os"
+  fi
+}
+
+update_submodule_url () {
+  # If the submodule's URL in .gitmodules has changed, propagate the new
+  # new URL down.  This is the same as `git submodule sync`, but we do it
+  # this way because `git submodule sync` is absurdly slow.
+  new_url=$(git config -f .gitmodules "submodule.$1.url" 2>/dev/null)
+  old_url=$(git config "submodule.$1.url" 2>/dev/null)
+  if [ -n "$old_url" -a "$new_url" != "$old_url" ]; then
+    git config "submodule.$1.url" "$new_url"
+    if [ -e "$1"/.git ]; then
+      ( cd $submod && git config remote.origin.url "$new_url" )
+    fi
+  fi
+}
+
+process_submodule () {
+  # Check whether this submodule should be ignored or updated.
+  # If it's a new submodule, match the os specified in .gitmodules against
+  # the os specified in .git/config.
+  update_policy=$(git config --get "submodule.$1.update")
+  if [ -z "$update_policy" ]; then
+    submod_os=$(git config -f .gitmodules --get "submodule.$1.os")
+    if [ -n "$submod_os" -a \
+        "$submod_os" != "all" -a \
+        "${submod_os/${target_os}/}" = "${submod_os}" ]; then
+      update_policy=none
+    else
+      git submodule --quiet init "$1"
+      update_policy=checkout
+    fi
+    git config "submodule.$1.update" $update_policy
+  fi
+  if [ "$update_policy" != "none" ]; then
+    update_submodule_url "$1"
+    echo "$solution/$1"
+  fi
+}
+
 if [ -z "$*" ]; then
   exit 0
 fi
@@ -7,9 +62,10 @@ set -o pipefail
 dir="$1"
 solution="${1%%/*}"
 cd "$solution"
+
 if [ "$solution" = "$1" ]; then
-  shift
   # Don't "pull" if checkout is not on a named branch
+  shift
   if test "$2" = "pull" && ( ! git symbolic-ref HEAD >/dev/null 2>/dev/null ); then
     first_args="$1 fetch"
   else
@@ -20,33 +76,18 @@ if [ "$solution" = "$1" ]; then
   if [ $? -ne 0 ]; then
     exit $?
   fi
-  "$GIT_EXE" submodule --quiet sync
+
+  set_target_os
+
   "$GIT_EXE" ls-files -s | grep ^160000 | awk '{print $4}' |
   while read submod; do
-    # Check whether this submodule should be ignored or updated.
-    # If it's a new submodule, match the os specified in .gitmodules against
-    # the os specified in .git/config.
-    update_policy=$(git config "submodule.$submod.update" 2>/dev/null)
-    if [ -z "$update_policy" ]; then
-      target_os=$(git config target.os 2>/dev/null)
-      submod_os=$(git config -f .gitmodules "submodule.$submod.os" 2>/dev/null)
-      if [ -n "$target_os" -a -n "$submod_os" ] &&
-          [ "$submod_os" != "all" -a "$submod_os" != "$target_os" ]; then
-        update_policy=none
-      else
-        update_policy=checkout
-      fi
-      git config "submodule.$submod.update" $update_policy 2>/dev/null
-    fi
-    if [ "$update_policy" != "none" ]; then
-      echo "$solution/$submod"
-    fi
+    process_submodule "$submod"
   done
   status=$?
 else
   submodule="${1#*/}"
-  echo "[$solution] updating $submodule ..."
-  "$GIT_EXE" submodule update --quiet --init "$submodule" |
+  echo "[$solution] updating $submodule"
+  "$GIT_EXE" submodule update --quiet "$submodule" |
   ( grep -v '^Skipping submodule' || true ) | sed "s|^|[$1] |g"
   status=$?
   if [ "$status" -ne "0" ]; then
