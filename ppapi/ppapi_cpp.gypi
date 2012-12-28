@@ -41,6 +41,9 @@
               'AdditionalOptions': ['/we4244'],  # implicit conversion, possible loss of data
             },
           },
+          'msvs_disabled_warnings': [
+            4267,
+          ],      
         }],
         ['OS=="linux"', {
           'cflags': ['-Wextra', '-pedantic'],
