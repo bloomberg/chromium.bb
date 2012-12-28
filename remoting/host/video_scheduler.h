@@ -29,8 +29,8 @@ class CursorShapeInfo;
 class VideoFrameCapturer;
 
 namespace protocol {
-class ClientStub;
 class CursorShapeInfo;
+class CursorShapeStub;
 class VideoStub;
 }  // namespace protocol
 
@@ -84,7 +84,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       VideoFrameCapturer* capturer,
       scoped_ptr<VideoEncoder> encoder,
-      protocol::ClientStub* client_stub,
+      protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
 
   // VideoFrameCapturer::Delegate implementation.
@@ -115,7 +115,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       VideoFrameCapturer* capturer,
       scoped_ptr<VideoEncoder> encoder,
-      protocol::ClientStub* client_stub,
+      protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
   virtual ~VideoScheduler();
 
@@ -173,7 +173,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Interfaces through which video frames and cursor shapes are passed to the
   // client. These members are always accessed on the network thread.
-  protocol::ClientStub* cursor_stub_;
+  protocol::CursorShapeStub* cursor_stub_;
   protocol::VideoStub* video_stub_;
 
   // Timer used to schedule CaptureNextFrame().

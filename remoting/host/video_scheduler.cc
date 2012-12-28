@@ -20,7 +20,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
@@ -38,17 +38,17 @@ scoped_refptr<VideoScheduler> VideoScheduler::Create(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
     scoped_ptr<VideoEncoder> encoder,
-    protocol::ClientStub* client_stub,
+    protocol::CursorShapeStub* cursor_stub,
     protocol::VideoStub* video_stub) {
   DCHECK(network_task_runner->BelongsToCurrentThread());
   DCHECK(capturer);
   DCHECK(encoder);
-  DCHECK(client_stub);
+  DCHECK(cursor_stub);
   DCHECK(video_stub);
 
   scoped_refptr<VideoScheduler> scheduler = new VideoScheduler(
       capture_task_runner, encode_task_runner, network_task_runner,
-      capturer, encoder.Pass(), client_stub, video_stub);
+      capturer, encoder.Pass(), cursor_stub, video_stub);
   capture_task_runner->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, scheduler));
 
@@ -143,14 +143,14 @@ VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
     scoped_ptr<VideoEncoder> encoder,
-    protocol::ClientStub* client_stub,
+    protocol::CursorShapeStub* cursor_stub,
     protocol::VideoStub* video_stub)
     : capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
       capturer_(capturer),
       encoder_(encoder.Pass()),
-      cursor_stub_(client_stub),
+      cursor_stub_(cursor_stub),
       video_stub_(video_stub),
       pending_captures_(0),
       did_skip_frame_(false),
