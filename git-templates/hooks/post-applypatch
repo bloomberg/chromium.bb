@@ -1,0 +1,4 @@
+#!/bin/bash
+
+[ -e "build/git-hooks/post-applypatch" ] && exec bash "build/git-hooks/post-applypatch" "$@"
+exit 0

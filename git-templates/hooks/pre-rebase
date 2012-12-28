@@ -1,0 +1,4 @@
+#!/bin/bash
+
+[ -e "build/git-hooks/pre-rebase" ] && exec bash "build/git-hooks/pre-rebase" "$@"
+exit 0
