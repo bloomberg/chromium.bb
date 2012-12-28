@@ -5,10 +5,6 @@
 
 Import('env')
 
-# TODO(shcherbina): merge with ARM validator driver and make it host-independent
-if not env.Bit('target_x86'):
-  Return()
-
 env.ComponentLibrary(
     'elf_load',
     ['elf_load.cc'],
