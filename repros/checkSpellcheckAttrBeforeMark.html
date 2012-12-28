@@ -1,0 +1,181 @@
+<html>
+<head>
+<style>
+* {
+    font-size: 20px;
+}
+#the_iframe {
+    border: solid 1px red;
+    padding: 10px;
+    margin: 10px;
+}
+
+#the_div {
+    border: solid 1px black;
+    padding: 10px;
+    margin: 10px;
+}
+
+#test_root li {
+    font-family: Verdana;
+    cursor: pointer;
+    color: blue;
+}
+#test_root li:hover{
+    background-color: #f3f3f3;
+    text-decoration: underline;
+}
+.link-wrapper {
+
+}
+.a1 {
+    color: red;
+}
+.a2 {
+    color: blue;
+}
+.a3 {
+    color: orange;
+}
+</style>
+<script>
+
+
+define('searchplugin/test',
+    ['jquery', 'test', 'searchplugin'],
+function LinkifyTestDriver($, Test, SearchPlugin) {
+    // A place to display test list
+    var test_root = document.getElementById('test_root');
+    var the_iframe = document.getElementById('the_iframe');
+    var the_div = document.getElementById('the_div');
+
+    var ibody = the_iframe.contentDocument.body;
+    ibody.setAttribute('contenteditable', 'true');
+
+    var cases = [
+        {
+            title: "Simple plain text BB Link.",
+            input: "{DRQS 123456&lt;GO&gt;} This is a link: {DRQS 123456&lt;GO&gt;}. Plain text! {DRQS 123456&lt;GO&gt;}",
+        },
+        {
+            title: "Link cross multiple spans {DRQS 37332120}",
+            input: "{DRQS <span class='a1'>123456</span> &lt;GO&gt;} test test {DRQS <span class='a1'>123456 &lt;GO&gt;}, test test {DRQS 123456</span> &lt;GO&gt;}",
+        },
+        {
+            title: "There is div in the link",
+            input: "{DRQS <div class='a1'>123456</div> &lt;GO&gt;} test test {DRQS <span class='a1'>123456 &lt;GO&gt;}, test test {DRQS 123456</span> &lt;GO&gt;}",
+        },
+        {
+            title: "There is line break in the link",
+            input: "{DRQS <span class='a1'>123<br>456</span> &lt;GO&gt;} test test {DRQS <span class='a1'>123456 &lt;GO&gt;}, test test {DRQS 123456</span> &lt;GO&gt;}",
+        }, 
+        {
+            title: "Links with spellcheck=false should not get spellchecked. {DRQS 37544856}",
+            input: 'Thsi <span spellcheck="false"><a contenteditable spellcheck="false" href="#" id="a">Helle</a></span> fdsa'
+        }
+    ];
+
+    var functions = [
+        {
+            title: "Find Next Link",
+            input: "findNext",
+            runner: function() {
+                var searcher = new SearchPlugin.Searcher(g_options);
+                var searcher2 = new SearchPlugin.Searcher(g_options);
+                return function() {
+                    searcher.selectNext(the_div);
+                    searcher2.selectNext(ibody);
+                } 
+            }
+        },
+        {
+            title: "Convert Next Link",
+            input: "convertNext",
+            runner: function() {
+                var searcher = new SearchPlugin.Searcher(g_options);
+                var searcher2 = new SearchPlugin.Searcher(g_options);
+                return function() {
+                    searcher.replaceNext(the_div);
+                    searcher2.replaceNext(ibody);
+                }
+            }
+        },
+        {
+            title: "Convert All Links",
+            input: "convertAllNext",
+            runner: function() {
+                return function() {
+                    SearchPlugin.replaceAll($.extend({root: the_div}, g_options));
+                    SearchPlugin.replaceAll($.extend({root: ibody}, g_options));   
+                }
+            }
+        },
+        {
+            title: "Remove First Link",
+            input: "removeFirstLink",
+            runner: function() {
+                return function() {
+                    var a = document.getElementsByTagName('a')[0];
+                    if (a) {
+                        var b = document.createRange();
+                        b.setStartBefore(a);
+                        b.setEndAfter(a);
+                        var c = document.getSelection();
+                        c.removeAllRanges();
+                        c.addRange(b);
+                        //document.execCommand('insertHTML', false, a.innerHTML);
+                        document.execCommand('unlink', false, "");
+                    }
+                }
+            }
+        }
+    ];
+    function populateEditor(input) {
+        the_iframe.contentWindow.document.body.innerHTML = input;
+        the_div.innerHTML = input;
+        // reset buttons
+        Test.populateActions(functions);
+    }
+
+    function populateTest() {
+        Test.setup({
+            root: test_root,
+            cases: cases,
+            run: populateEditor,
+            actions: functions
+        });
+    }
+
+    return {
+        run: populateTest
+    };
+});
+
+function onload() {
+var the_iframe = document.getElementById('the_iframe');
+var the_div = document.getElementById('the_div');
+
+var ibody = the_iframe.contentDocument.body;
+ibody.setAttribute('contenteditable', 'true');
+
+var title = "Links with spellcheck=false should not get spellchecked. {DRQS 37544856}";
+var input = 'Thsi <span spellcheck="false"><a contenteditable spellcheck="false" href="#" id="a">Helle</a></span> fdsa';
+
+the_div.innerHTML = input;
+ibody.innerHTML = input;
+
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<h1>spellcheck attribute should be respected</h1>
+<p>The helle link here has spellcheck="false" but as you go on typing by pressing "space", a red squiggly line appears underneath it. According to
+<a href="http://www.w3.org/html/wg/drafts/html/master/single-page.html#attr-spellcheck">HTML5 Standard</a> this is a bug.
+It is reported <a href="http://code.google.com/p/chromium/issues/detail?id=167613">here</a>.
+</p>
+<div id="the_div" data-rte-spellcheck="true" data-widgettype="RTE" contenteditable data-rte-autocorrect="true" data-rte-autocap="true"></div>
+<iframe id="the_iframe" width="600px"></iframe>
+</body>
+</html>
