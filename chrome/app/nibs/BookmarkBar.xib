@@ -141,10 +141,6 @@
 							<reference key="NSControlView" ref="1071220197"/>
 							<int key="NSButtonFlags">-2033434624</int>
 							<int key="NSButtonFlags2">70</int>
-							<object class="NSCustomResource" key="NSNormalImage">
-								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">chevron</string>
-							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -1886,13 +1882,11 @@
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<string>NSMenuCheckmark</string>
 				<string>NSMenuMixedState</string>
-				<string>chevron</string>
 			</object>
 			<object class="NSArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<string>{11, 11}</string>
 				<string>{10, 3}</string>
-				<string>{13, 19}</string>
 			</object>
 		</object>
 	</data>

@@ -357,6 +357,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [[self view] setFrame:NSMakeRect(0, 0, initialWidth_, 0)];
 
   // Complete init of the "off the side" button, as much as we can.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  [offTheSideButton_ setImage:
+        rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_CHEVRONS).ToNSImage()];
   [offTheSideButton_.draggableButton setDraggable:NO];
   [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
 

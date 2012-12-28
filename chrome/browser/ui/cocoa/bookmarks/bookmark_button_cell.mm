@@ -91,6 +91,10 @@ using content::UserMetricsAction;
   // try to match Windows for a bit to see what happens.
   [self setLineBreakMode:NSLineBreakByTruncatingTail];
 
+  // The overflow button chevron bitmap is not 16 units high, so it'd be scaled
+  // at paint time without this.
+  [self setImageScaling:NSImageScaleNone];
+
   // Theming doesn't work for bookmark buttons yet (cell text is chucked).
   [super setShouldTheme:NO];
 }
