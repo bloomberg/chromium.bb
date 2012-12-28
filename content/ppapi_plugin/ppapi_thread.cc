@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
@@ -30,6 +31,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -52,12 +54,37 @@ namespace content {
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
+PpapiThread::DispatcherMessageListener::DispatcherMessageListener(
+    PpapiThread* owner) : owner_(owner) {
+}
+
+PpapiThread::DispatcherMessageListener::~DispatcherMessageListener() {
+}
+
+bool PpapiThread::DispatcherMessageListener::OnMessageReceived(
+    const IPC::Message& msg) {
+  // The first parameter should be a plugin dispatcher ID.
+  PickleIterator iter(msg);
+  uint32 id = 0;
+  if (!msg.ReadUInt32(&iter, &id)) {
+    NOTREACHED();
+    return false;
+  }
+  std::map<uint32, ppapi::proxy::PluginDispatcher*>::iterator dispatcher =
+      owner_->plugin_dispatchers_.find(id);
+  if (dispatcher != owner_->plugin_dispatchers_.end())
+    return dispatcher->second->OnMessageReceived(msg);
+
+  return false;
+}
+
 PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
       connect_instance_func_(NULL),
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
-      next_plugin_dispatcher_id_(1) {
+      next_plugin_dispatcher_id_(1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(dispatcher_message_listener_(this)) {
   ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
   globals->set_plugin_proxy_delegate(this);
   globals->set_command_line(
@@ -72,6 +99,19 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
 
   webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
+
+  // Register interfaces that expect messages from the browser process. Please
+  // note that only those InterfaceProxy-based ones require registration.
+  AddRoute(ppapi::API_ID_PPB_TCPSERVERSOCKET_PRIVATE,
+           &dispatcher_message_listener_);
+  AddRoute(ppapi::API_ID_PPB_TCPSOCKET_PRIVATE,
+           &dispatcher_message_listener_);
+  AddRoute(ppapi::API_ID_PPB_UDPSOCKET_PRIVATE,
+           &dispatcher_message_listener_);
+  AddRoute(ppapi::API_ID_PPB_HOSTRESOLVER_PRIVATE,
+           &dispatcher_message_listener_);
+  AddRoute(ppapi::API_ID_PPB_NETWORKMANAGER_PRIVATE,
+           &dispatcher_message_listener_);
 }
 
 PpapiThread::~PpapiThread() {
@@ -94,45 +134,19 @@ bool PpapiThread::Send(IPC::Message* msg) {
   return sync_message_filter()->Send(msg);
 }
 
-// The "regular" ChildThread implements this function and does some standard
-// dispatching, then uses the message router. We don't actually need any of
-// this so this function just overrides that one.
-//
 // Note that this function is called only for messages from the channel to the
 // browser process. Messages from the renderer process are sent via a different
 // channel that ends up at Dispatcher::OnMessageReceived.
-bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
+bool PpapiThread::OnControlMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
-
-    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
-
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_ListenACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_AcceptACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_ConnectACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_ReadACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_WriteACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBUDPSocket_RecvFromACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBUDPSocket_SendToACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBUDPSocket_BindACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBHostResolver_ResolveACK,
-                                OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBNetworkMonitor_NetworkList,
-                                OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnMsgSetNetworkState)
+    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return true;
+  return handled;
 }
 
 void PpapiThread::OnChannelConnected(int32 peer_pid) {
@@ -368,20 +382,6 @@ void PpapiThread::OnMsgSetNetworkState(bool online) {
       plugin_entry_points_.get_interface(PPP_NETWORK_STATE_DEV_INTERFACE));
   if (ns)
     ns->SetOnLine(PP_FromBool(online));
-}
-
-void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
-  // The first parameter should be a plugin dispatcher ID.
-  PickleIterator iter(msg);
-  uint32 id = 0;
-  if (!msg.ReadUInt32(&iter, &id)) {
-    NOTREACHED();
-    return;
-  }
-  std::map<uint32, ppapi::proxy::PluginDispatcher*>::iterator dispatcher =
-      plugin_dispatchers_.find(id);
-  if (dispatcher != plugin_dispatchers_.end())
-    dispatcher->second->OnMessageReceived(msg);
 }
 
 bool PpapiThread::SetupRendererChannel(int renderer_id,

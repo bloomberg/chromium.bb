@@ -15,6 +15,7 @@
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
+#include "ipc/ipc_listener.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -45,9 +46,25 @@ class PpapiThread : public ChildThread,
   virtual ~PpapiThread();
 
  private:
+  // This class finds the target PluginDispatcher for each message it receives
+  // and forwards the message.
+  class DispatcherMessageListener : public IPC::Listener {
+   public:
+    explicit DispatcherMessageListener(PpapiThread* owner);
+    virtual ~DispatcherMessageListener();
+
+    // IPC::Listener implementation.
+    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+   private:
+    PpapiThread* owner_;
+
+    DISALLOW_COPY_AND_ASSIGN(DispatcherMessageListener);
+  };
+
   // ChildThread overrides.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // PluginDispatcher::PluginDelegate implementation.
@@ -79,7 +96,6 @@ class PpapiThread : public ChildThread,
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
   void OnMsgSetNetworkState(bool online);
-  void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.
@@ -129,6 +145,8 @@ class PpapiThread : public ChildThread,
   // Caches the handle to the peer process if this is a broker.
   base::win::ScopedHandle peer_handle_;
 #endif
+
+  DispatcherMessageListener dispatcher_message_listener_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };
