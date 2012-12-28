@@ -5,10 +5,13 @@
 #import "chrome/browser/ui/cocoa/profile_menu_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest_mac.h"
@@ -212,3 +215,27 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   p3_browser.reset();
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
 }
+
+TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
+  TestingProfileManager* manager = testing_profile_manager();
+
+  manager->CreateTestingProfile("Profile 2");
+  TestingProfile* profile3 = manager->CreateTestingProfile("Profile 3");
+  ASSERT_EQ(3U, manager->profile_manager()->GetNumberOfProfiles());
+
+  const FilePath profile3_path = profile3->GetPath();
+  manager->DeleteTestingProfile("Profile 3");
+
+  // Simulate an unloaded profile by setting the "last used" local state pref
+  // the profile that was just deleted.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed,
+                         profile3_path.BaseName().MaybeAsASCII());
+
+  // Simulate the active browser changing to NULL and ensure a profile doesn't
+  // get created by disallowing IO operations temporarily.
+  const bool io_was_allowed = base::ThreadRestrictions::SetIOAllowed(false);
+  [controller() activeBrowserChangedTo:NULL];
+  base::ThreadRestrictions::SetIOAllowed(io_was_allowed);
+}
+
