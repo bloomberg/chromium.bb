@@ -31,7 +31,7 @@ public abstract class AwBrowserProcess {
     public static void loadLibrary() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.setLibraryToLoad(NATIVE_LIBRARY);
-        LibraryLoader.ensureInitialized();
+        LibraryLoader.loadNow();
     }
 
     /**
@@ -46,6 +46,7 @@ public abstract class AwBrowserProcess {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                LibraryLoader.ensureInitialized();
                 AndroidBrowserProcess.initContentViewProcess(context,
                         AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS);
             }
