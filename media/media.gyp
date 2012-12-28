@@ -13,11 +13,8 @@
       ['OS == "android" or OS == "ios"', {
         # Android and iOS don't use ffmpeg.
         'use_ffmpeg%': 0,
-        # Android and iOS don't use libvpx.
-        'use_libvpx%': 0,
       }, {  # 'OS != "android" and OS != "ios"'
         'use_ffmpeg%': 1,
-        'use_libvpx%': 1,
       }],
     ],
   },
@@ -316,8 +313,6 @@
         'filters/video_frame_generator.h',
         'filters/video_renderer_base.cc',
         'filters/video_renderer_base.h',
-        'filters/vpx_video_decoder.cc',
-        'filters/vpx_video_decoder.h',
         'video/capture/fake_video_capture_device.cc',
         'video/capture/fake_video_capture_device.h',
         'video/capture/linux/video_capture_device_linux.cc',
@@ -416,17 +411,6 @@
             'webm/webm_cluster_parser.h',
             'webm/webm_stream_parser.cc',
             'webm/webm_stream_parser.h',
-          ],
-        }],
-        ['use_libvpx == 1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
-          ],
-        }, {  # use_libvpx == 0
-          # Exclude the sources that depend on libvpx.
-          'sources!': [
-            'filters/vpx_video_decoder.cc',
-            'filters/vpx_video_decoder.h',
           ],
         }],
         ['OS == "ios"', {

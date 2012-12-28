@@ -10,10 +10,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 
-// TODO(tomfinegan): Remove this once FFmpeg rolls for M25. The VP9 patch is in
-// tree, but this is required until the roll happens.
-#define AV_CODEC_ID_VP9 170
-
 namespace media {
 
 // Why FF_INPUT_BUFFER_PADDING_SIZE? FFmpeg assumes all input buffers are
@@ -153,11 +149,6 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
     case CODEC_ID_VP8:
       return kCodecVP8;
     default:
-      if (codec_id == AV_CODEC_ID_VP9) {
-        // TODO(tomfinegan): Remove this once FFmpeg rolls for M25, and
-        // AV_CODEC_ID_VP9 is part of CodecID.
-        return kCodecVP9;
-      }
       DVLOG(1) << "Unknown video CodecID: " << codec_id;
   }
   return kUnknownVideoCodec;
@@ -177,10 +168,6 @@ static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
       return CODEC_ID_MPEG4;
     case kCodecVP8:
       return CODEC_ID_VP8;
-    case kCodecVP9:
-      // TODO(tomfinegan): Remove this cast once FFmpeg rolls for M25, and the
-      // local define for AV_CODEC_ID_VP9 is removed.
-      return static_cast<CodecID>(AV_CODEC_ID_VP9);
     default:
       DVLOG(1) << "Unknown VideoCodec: " << video_codec;
   }
@@ -324,28 +311,13 @@ void AVStreamToVideoDecoderConfig(
     aspect_ratio = stream->codec->sample_aspect_ratio;
 
   VideoCodec codec = CodecIDToVideoCodec(stream->codec->codec_id);
-
-  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
-  if (codec == kCodecVP8)
-    profile = VP8PROFILE_MAIN;
-  else if (codec == kCodecVP9)
-    profile = VP9PROFILE_MAIN;
-  else
-    profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
-
+  VideoCodecProfile profile = (codec == kCodecVP8) ? VP8PROFILE_MAIN :
+      ProfileIDToVideoCodecProfile(stream->codec->profile);
   gfx::Size natural_size = GetNaturalSize(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
-
-  VideoFrame::Format format = PixelFormatToVideoFormat(stream->codec->pix_fmt);
-  if (codec == kCodecVP9) {
-    // TODO(tomfinegan): libavcodec doesn't know about VP9.
-    format = VideoFrame::YV12;
-    coded_size = natural_size;
-  }
-
   config->Initialize(codec,
                      profile,
-                     format,
+                     PixelFormatToVideoFormat(stream->codec->pix_fmt),
                      coded_size, visible_rect, natural_size,
                      stream->codec->extradata, stream->codec->extradata_size,
                      false,  // Not encrypted.
