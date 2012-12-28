@@ -33,7 +33,7 @@ fnclex, 0xdb 0xe2, CPUFeature_x87
 fclex, fwait 0xdb 0xe2, CPUFeature_x87
 ######## FCMOVcc ###############################################################
 fcmovb r7 t7, 0xda 0xc0, CPUFeature_CMOVx87
-fcmovbe r7 t7, 0xda 0xD0, CPUFeature_CMOVx87
+fcmovbe r7 t7, 0xda 0xd0, CPUFeature_CMOVx87
 fcmove r7 t7, 0xda 0xc8, CPUFeature_CMOVx87
 fcmovnb r7 t7, 0xdb 0xc0, CPUFeature_CMOVx87
 fcmovnbe r7 t7, 0xdb 0xd0, CPUFeature_CMOVx87

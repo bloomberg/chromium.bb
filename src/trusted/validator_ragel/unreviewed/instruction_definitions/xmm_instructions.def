@@ -10,7 +10,7 @@
 addpd Wpd Vpd, 0x66 0x0f 0x58, CPUFeature_SSE2
 vaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x58, CPUFeature_AVX
 ######## ADDPS/VADDPS ##########################################################
-addps Wps Vps, 0xf 0x58, CPUFeature_SSE
+addps Wps Vps, 0x0f 0x58, CPUFeature_SSE
 vaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x58, CPUFeature_AVX
 ######## ADDSD/VADDSD ##########################################################
 addsd Wsd Vsd, 0xf2 0x0f 0x58, CPUFeature_SSE2
@@ -481,8 +481,8 @@ insertq ib Ib Uq Vq, 0xf2 0x0f 0x78, CPUFeature_SSE4A
 insertq Uq Vq, 0xf2 0x0f 0x79, CPUFeature_SSE4A
 ######## LDDQU/VLDDQU ##########################################################
 lddqu Mdq Vpd, 0xf2 0x0f 0xf0, CPUFeature_SSE3
-vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0x0f0, CPUFeature_AVX
-vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0x0f0, CPUFeature_AVX
+vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0xf0, CPUFeature_AVX
+vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0xf0, CPUFeature_AVX
 ######## LDMXCSR/VLDMXCSR ######################################################
 ldmxcsr Md, 0x0f 0xae /2, CPUFeature_SSE
 vldmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /2, CPUFeature_AVX
@@ -1180,7 +1180,7 @@ vstmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /3, CPUFeature_AVX
 subpd Wpd Vpd, 0x66 0x0f 0x5c, CPUFeature_SSE2
 vsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5c, CPUFeature_AVX
 ######## SUBPS/VSUBPS ##########################################################
-subps Wps Vps, 0xf 0x5c, CPUFeature_SSE
+subps Wps Vps, 0x0f 0x5c, CPUFeature_SSE
 vsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5c, CPUFeature_AVX
 ######## SUBSD/VSUBSD ##########################################################
 subsd Wsd Vsd, 0xf2 0x0f 0x5c, CPUFeature_SSE2
