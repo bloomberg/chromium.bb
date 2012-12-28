@@ -113,7 +113,6 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'dfa_validate_caller_x86_32': [
             'ncval_base_x86_32',
             'nccopy_x86_32',
-            'dfa_validate_x86_32',
             ],
         },
     'x86-64': {
@@ -169,7 +168,6 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'dfa_validate_caller_x86_64': [
             'ncval_base_x86_64',
             'nccopy_x86_64',
-            'dfa_validate_x86_64',
             ],
         },
     'arm': {

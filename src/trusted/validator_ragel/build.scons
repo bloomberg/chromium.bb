@@ -39,22 +39,16 @@ features = [
     env.ComponentObject('unreviewed/validator_features_validator.c')
 ]
 
-dfa_validate_common = env.ComponentObject('unreviewed/dfa_validate_common.c')
-
-env.ComponentLibrary('dfa_validate_x86_32',
-                     [validator32, dfa_validate_common, features])
-env.ComponentLibrary('dfa_validate_x86_64',
-                     [validator64, dfa_validate_common, features])
-
 # Glue library called from service runtime. The source file depends on the
 # target architecture.  In library_deps.py this library is marked as
 # dependant of dfa_validate_x86_xx.
-# TODO(shcherbina): incorporate dfa_validate_x86_xx into caller lib.
 caller_lib = 'dfa_validate_caller_x86_%s' % env.get('TARGET_SUBARCH')
 env.ComponentLibrary(
     caller_lib,
-    'unreviewed/dfa_validate_%s.c' % env.get('TARGET_SUBARCH')
-)
+    ['unreviewed/dfa_validate_%s.c' % env.get('TARGET_SUBARCH'),
+     {'32': validator32, '64': validator64}[env.get('TARGET_SUBARCH')],
+     'unreviewed/dfa_validate_common.c',
+     features])
 
 env.ComponentLibrary('dfa_decode_x86_32',
                      ['gen/decoder_x86_32.c'])
