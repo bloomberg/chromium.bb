@@ -1158,7 +1158,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 }
 
 // Checks that pending prerenders launch and receive proper event treatment.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPagePending) {
+// Disabled due to http://crbug.com/167792
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
   std::deque<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_USED);
   expected_final_status_queue.push_back(FINAL_STATUS_USED);
