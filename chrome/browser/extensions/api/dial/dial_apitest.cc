@@ -34,7 +34,8 @@ class DialAPITest : public ExtensionApiTest {
 }  // namespace
 
 // Test receiving DIAL API events.
-IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
+// Disabled due to http://crbug.com/167787
+IN_PROC_BROWSER_TEST_F(DialAPITest, DISABLED_DeviceEvents) {
   scoped_refptr<extensions::DialAPI> api =
       extensions::DialAPIFactory::GetInstance()->GetForProfile(profile());
   ASSERT_TRUE(api.get());
