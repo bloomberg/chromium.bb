@@ -449,7 +449,7 @@
             '../../gpu/gpu_untrusted.gyp:gles2_implementation_untrusted',
             '../../gpu/gpu_untrusted.gyp:gles2_cmd_helper_untrusted',
             '../../gpu/gpu_untrusted.gyp:gpu_ipc_untrusted',
-            '../../content/content_components_tracing_untrusted.gyp:tracing_untrusted',
+            '../../components/components_tracing_untrusted.gyp:tracing_untrusted',
             '../../ipc/ipc_untrusted.gyp:ipc_untrusted',
             '../../base/base_untrusted.gyp:base_untrusted',
             '../../media/media_untrusted.gyp:shared_memory_support_untrusted',

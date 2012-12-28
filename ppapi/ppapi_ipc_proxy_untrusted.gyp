@@ -50,7 +50,7 @@
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../ppapi/ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
             '../third_party/khronos/khronos.gyp:khronos_headers',
-            '../content/content_components_tracing_untrusted.gyp:tracing_untrusted',
+            '../components/components_tracing_untrusted.gyp:tracing_untrusted',
           ],
         },
       ],

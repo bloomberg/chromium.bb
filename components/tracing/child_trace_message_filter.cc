@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/components/tracing/child_trace_message_filter.h"
+#include "components/tracing/child_trace_message_filter.h"
 
 #include "base/debug/trace_event.h"
 #include "base/message_loop_proxy.h"
-#include "content/components/tracing/tracing_messages.h"
+#include "components/tracing/tracing_messages.h"
 
 using base::debug::TraceLog;
 
-namespace content {
+namespace components {
 
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::MessageLoopProxy* ipc_message_loop)
@@ -114,4 +114,4 @@ void ChildTraceMessageFilter::OnTraceNotification(int notification) {
   channel_->Send(new TracingHostMsg_TraceNotification(notification));
 }
 
-}  // namespace content
+}  // namespace components

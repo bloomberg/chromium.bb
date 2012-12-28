@@ -6,13 +6,13 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../build/temp_gyp/googleurl.gyp:googleurl',
+    '../components/components_tracing.gyp:tracing',
     '../media/media.gyp:media',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/ui.gyp:ui',
     '../webkit/support/webkit_support.gyp:user_agent',
-    'content_components_tracing.gyp:tracing',
   ],
   'include_dirs': [
     '..',

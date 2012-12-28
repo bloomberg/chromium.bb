@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
-#define CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#ifndef COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#define COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 
 #include "ipc/ipc_channel_proxy.h"
 
@@ -11,7 +11,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace content {
+namespace components {
 
 // This class sends and receives trace messages on child processes.
 class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -48,6 +48,6 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };
 
-} // namespace content
+} // namespace components
 
-#endif  // CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#endif  // COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_

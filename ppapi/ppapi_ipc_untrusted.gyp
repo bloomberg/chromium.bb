@@ -39,7 +39,7 @@
             '../gpu/gpu_untrusted.gyp:gpu_ipc_untrusted',
             '../ipc/ipc_untrusted.gyp:ipc_untrusted',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
-            '../content/content_components_tracing_untrusted.gyp:tracing_untrusted',
+            '../components/components_tracing_untrusted.gyp:tracing_untrusted',
           ],
         },
       ],

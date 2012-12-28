@@ -1,1 +1,4 @@
 joi@chromium.org
+
+per-file components_tracing*=jbauman@chromium.org
+per-file components_tracing*=nduca@chromium.org

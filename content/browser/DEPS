@@ -1,5 +1,5 @@
 include_rules = [
-  "+content/components/tracing",
+  "+components/tracing",
   "+content/gpu",  # For gpu_info_collector.h and in-process GPU
   "+content/port/browser",
   "+content/public/browser",

@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
+#include "components/tracing/child_trace_message_filter.h"
 #include "content/common/child_histogram_message_filter.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
@@ -18,7 +19,6 @@
 #include "content/common/quota_dispatcher.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/socket_stream_dispatcher.h"
-#include "content/components/tracing/child_trace_message_filter.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
@@ -115,7 +115,7 @@ void ChildThread::Init() {
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
-  channel_->AddFilter(new ChildTraceMessageFilter(
+  channel_->AddFilter(new components::ChildTraceMessageFilter(
       ChildProcess::current()->io_message_loop_proxy()));
 
 #if defined(OS_POSIX)

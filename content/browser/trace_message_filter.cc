@@ -4,8 +4,8 @@
 
 #include "content/browser/trace_message_filter.h"
 
+#include "components/tracing/tracing_messages.h"
 #include "content/browser/trace_controller_impl.h"
-#include "content/components/tracing/tracing_messages.h"
 
 namespace content {
 

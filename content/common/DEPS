@@ -1,6 +1,6 @@
 include_rules = [
   "+cc",
+  "+components/tracing",
   "+media/base",
   "+sandbox/linux/seccomp-legacy",
-  "+content/components/tracing",
 ]
