@@ -277,7 +277,7 @@ function bb_run_webkit_layout_tests {
 
 # Run experimental unittest bundles.
 function bb_run_experimental_unit_tests {
-  build/android/run_tests.py --xvfb --verbose -s sandbox_linux_unittests
+  _bb_android_run_tests -s sandbox_linux_unittests
 }
 
 # Run findbugs.
