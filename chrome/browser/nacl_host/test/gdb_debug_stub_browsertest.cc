@@ -22,6 +22,8 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
   void StartTestScript(base::ProcessHandle* test_process,
                        std::string test_name, int debug_stub_port);
 
+  void RunDebugStubTest(const std::string& nacl_module,
+                        const std::string& test_name);
 };
 
 void NaClGdbDebugStubTest::SetUpCommandLine(CommandLine* command_line) {
@@ -45,21 +47,32 @@ void NaClGdbDebugStubTest::StartTestScript(base::ProcessHandle* test_process,
   base::LaunchProcess(cmd, base::LaunchOptions(), test_process);
 }
 
-// NaCl tests are disabled under ASAN because of qualification test.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_Empty DISABLED_Empty
-#else
-#define MAYBE_Empty Empty
-#endif
-
-IN_PROC_BROWSER_TEST_F(NaClGdbDebugStubTest, MAYBE_Empty) {
+void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
+                                            const std::string& test_name) {
   base::ProcessHandle test_script;
   NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
       base::Bind(&NaClGdbDebugStubTest::StartTestScript,
-                 base::Unretained(this), &test_script, "continue"));
-  RunTestViaHTTP("Empty");
+                 base::Unretained(this), &test_script, test_name));
+  RunTestViaHTTP(nacl_module);
   NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
   int exit_code;
   base::WaitForExitCode(test_script, &exit_code);
   EXPECT_EQ(0, exit_code);
+}
+
+// NaCl tests are disabled under ASAN because of qualification test.
+#if defined(ADDRESS_SANITIZER)
+# define MAYBE_Empty DISABLED_Empty
+# define MAYBE_Breakpoint DISABLED_Breakpoint
+#else
+# define MAYBE_Empty Empty
+# define MAYBE_Breakpoint Breakpoint
+#endif
+
+IN_PROC_BROWSER_TEST_F(NaClGdbDebugStubTest, MAYBE_Empty) {
+  RunDebugStubTest("Empty", "continue");
+}
+
+IN_PROC_BROWSER_TEST_F(NaClGdbDebugStubTest, MAYBE_Breakpoint) {
+  RunDebugStubTest("Empty", "breakpoint");
 }
