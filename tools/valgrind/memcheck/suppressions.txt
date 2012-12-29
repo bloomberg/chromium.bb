@@ -6349,11 +6349,20 @@
    fun:_ZN3ash50KeyboardOverlayViewTest_OpenAcceleratorsClose_Test8TestBodyEv
 }
 {
-   bug_167175
+   bug_167175a
    Memcheck:Leak
    ...
    fun:_ZN18LocationBarViewGtk4InitEb
    fun:_ZN17BrowserToolbarGtk4InitEP10_GtkWindow
+   fun:_ZN16BrowserWindowGtk11InitWidgetsEv
+   fun:_ZN16BrowserWindowGtk4InitEv
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+}
+{
+   bug_167175b
+   Memcheck:Leak
+   ...
+   fun:_ZN15BrowserTitlebar4InitEv
    fun:_ZN16BrowserWindowGtk11InitWidgetsEv
    fun:_ZN16BrowserWindowGtk4InitEv
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
