@@ -33,10 +33,17 @@ class _BackgroundSteps(multiprocessing.Process):
   is called.
   """
 
-  def __init__(self):
+  def __init__(self, semaphore=None):
+    """Create a new _BackgroundSteps object.
+
+    If semaphore is supplied, it will be acquired for the duration of the
+    steps that are run in the background. This can be used to limit the
+    number of simultaneous parallel tasks.
+    """
     multiprocessing.Process.__init__(self)
     self._steps = collections.deque()
     self._queue = multiprocessing.Queue()
+    self._semaphore = semaphore
 
   def AddStep(self, step):
     """Add a step to the list of steps to run in the background."""
@@ -102,6 +109,16 @@ class _BackgroundSteps(multiprocessing.Process):
 
   def run(self):
     """Run the list of steps."""
+    if self._semaphore is not None:
+      self._semaphore.acquire()
+    try:
+      self._RunSteps()
+    finally:
+      if self._semaphore is not None:
+        self._semaphore.release()
+
+  def _RunSteps(self):
+    """Internal method for running the list of steps."""
 
     sys.stdout.flush()
     sys.stderr.flush()
@@ -140,7 +157,7 @@ class _BackgroundSteps(multiprocessing.Process):
 
 
 @contextlib.contextmanager
-def _ParallelSteps(steps):
+def _ParallelSteps(steps, max_parallel=None):
   """Run a list of functions in parallel.
 
   This function launches the provided functions in the background, yields,
@@ -152,12 +169,21 @@ def _ParallelSteps(steps):
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
   BackgroundFailure is raised with full stack traces of all exceptions.
+
+  Args:
+    steps: A list of functions to run.
+    max_parallel: The maximum number of simultaneous tasks to run in parallel.
+      By default, run all tasks in parallel.
   """
+
+  semaphore = None
+  if max_parallel is not None:
+    semaphore = multiprocessing.Semaphore(max_parallel)
 
   # First, start all the steps.
   bg_steps = []
   for step in steps:
-    bg = _BackgroundSteps()
+    bg = _BackgroundSteps(semaphore)
     bg.AddStep(step)
     bg.start()
     bg_steps.append(bg)
@@ -179,7 +205,7 @@ def _ParallelSteps(steps):
       raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
-def RunParallelSteps(steps):
+def RunParallelSteps(steps, max_parallel=None):
   """Run a list of functions in parallel.
 
   This function blocks until all steps are completed.
@@ -191,6 +217,11 @@ def RunParallelSteps(steps):
   them after all parallel tasks have finished running. Further, a
   BackgroundFailure is raised with full stack traces of all exceptions.
 
+  Args:
+    steps: A list of functions to run.
+    max_parallel: The maximum number of simultaneous tasks to run in parallel.
+      By default, run all tasks in parallel.
+
   Example:
     # This snippet will execute in parallel:
     #   somefunc()
@@ -200,7 +231,7 @@ def RunParallelSteps(steps):
     RunParallelSteps(steps)
     # Blocks until all calls have completed.
   """
-  with _ParallelSteps(steps):
+  with _ParallelSteps(steps, max_parallel=max_parallel):
     pass
 
 

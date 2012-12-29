@@ -35,7 +35,8 @@ class ParallelMock(partial_mock.PartialCmdMock):
   ATTRS = ('_ParallelSteps',)
 
   @contextlib.contextmanager
-  def _ParallelSteps(self, steps):
+  def _ParallelSteps(self, steps, max_parallel=None):
+    assert max_parallel is None or isinstance(max_parallel, (int, long))
     try:
       yield
     finally:
