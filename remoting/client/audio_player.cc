@@ -11,7 +11,7 @@
 
 // The number of channels in the audio stream (only supporting stereo audio
 // for now).
-const int kChannels = 2u;
+const int kChannels = 2;
 const int kSampleSizeBytes = 2;
 
 // If queue grows bigger than 150ms we start dropping packets.
@@ -22,7 +22,7 @@ namespace remoting {
 AudioPlayer::AudioPlayer()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
       start_failed_(false),
-      queued_samples_(0),
+      queued_bytes_(0),
       bytes_consumed_(0) {
 }
 
@@ -63,13 +63,19 @@ void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
 
   base::AutoLock auto_lock(lock_);
 
-  if (queued_samples_ > kMaxQueueLatencyMs * sampling_rate_ /
-      base::Time::kMillisecondsPerSecond) {
-    ResetQueue();
-  }
-
-  queued_samples_ += packet->data(0).size() / (kChannels * kSampleSizeBytes);
+  queued_bytes_ += packet->data(0).size();
   queued_packets_.push_back(packet.release());
+
+  int max_buffer_size_ =
+      kMaxQueueLatencyMs * sampling_rate_ * kSampleSizeBytes * kChannels /
+      base::Time::kMillisecondsPerSecond;
+  while (queued_bytes_ > max_buffer_size_) {
+    queued_bytes_ -= queued_packets_.front()->data(0).size() - bytes_consumed_;
+    DCHECK_GE(queued_bytes_, 0);
+    delete queued_packets_.front();
+    queued_packets_.pop_front();
+    bytes_consumed_ = 0;
+  }
 }
 
 // static
@@ -83,7 +89,7 @@ void AudioPlayer::AudioPlayerCallback(void* samples,
 void AudioPlayer::ResetQueue() {
   lock_.AssertAcquired();
   STLDeleteElements(&queued_packets_);
-  queued_samples_ = 0;
+  queued_bytes_ = 0;
   bytes_consumed_ = 0;
 }
 
@@ -123,8 +129,8 @@ void AudioPlayer::FillWithSamples(void* samples, uint32 buffer_size) {
     next_sample += bytes_to_copy;
     bytes_consumed_ += bytes_to_copy;
     bytes_extracted += bytes_to_copy;
-    queued_samples_ -= bytes_to_copy / kSampleSizeBytes / kChannels;
-    DCHECK_GE(queued_samples_, 0);
+    queued_bytes_ -= bytes_to_copy;
+    DCHECK_GE(queued_bytes_, 0);
   }
 }
 

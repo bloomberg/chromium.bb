@@ -52,7 +52,7 @@ class AudioPlayer {
   base::Lock lock_;
 
   AudioPacketQueue queued_packets_;
-  int queued_samples_;
+  int queued_bytes_;
 
   // The number of bytes from |queued_packets_| that have been consumed.
   size_t bytes_consumed_;
