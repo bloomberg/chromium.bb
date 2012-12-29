@@ -6270,6 +6270,19 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
+   bug_166709c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13BrowserThread28PostBlockingPoolTaskAndReplyERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESA_
+   fun:_ZN10extensions11ImageLoader15LoadImagesAsyncEPKNS_9ExtensionERKSt6vectorINS0_19ImageRepresentationESaIS5_EERKN4base8CallbackIFvRKN3gfx5ImageEEEE
+   fun:_ZN10extensions11ImageLoader14LoadImageAsyncEPKNS_9ExtensionERK17ExtensionResourceRKN3gfx4SizeERKN4base8CallbackIFvRKNS7_5ImageEEEE
+   fun:_ZN30BackgroundApplicationListModel11Application11RequestIconEN14extension_misc14ExtensionIconsE
+   ...
+   fun:_ZN64BackgroundApplicationListModelTest_AddRemovePermissionsTest_Test8TestBodyEv
+}
+{
    bug_166818
    Memcheck:Leak
    fun:malloc
