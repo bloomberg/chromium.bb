@@ -141,9 +141,12 @@ class _BackgroundSteps(multiprocessing.Process):
         step()
       except results_lib.StepFailure as ex:
         error = str(ex)
-      except Exception:
+      except BaseException as ex:
         traceback.print_exc(file=sys.stderr)
         error = traceback.format_exc()
+        # If it's a fatal exception, don't run any more steps.
+        if isinstance(ex, (SystemExit, KeyboardInterrupt)):
+          self._steps = []
 
       sys.stdout.flush()
       sys.stderr.flush()
