@@ -38,9 +38,9 @@ string16 ObsoleteOSInfoBar::GetLinkText() const {
 }
 
 bool ObsoleteOSInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      learn_more_url_, Referrer(), disposition, content::PAGE_TRANSITION_LINK,
-      false);
+  OpenURLParams params(learn_more_url_, Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
   owner()->GetWebContents()->OpenURL(params);
   return false;
 }
