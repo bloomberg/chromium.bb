@@ -1237,9 +1237,9 @@ class UnitTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'unittests'
 
-  # If the unit tests take longer than 30 minutes, abort. They usually take
-  # five minutes to run.
-  UNIT_TEST_TIMEOUT = 1800
+  # If the unit tests take longer than 60 minutes, abort. They usually take
+  # ten minutes to run.
+  UNIT_TEST_TIMEOUT = 3600
 
   def _PerformStage(self):
     with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
