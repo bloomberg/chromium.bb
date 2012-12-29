@@ -16,6 +16,7 @@
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/driver/elf_load.h"
@@ -203,6 +204,23 @@ bool Validate(
 
   errors->clear();
 
+  if (segment.vaddr % kBundleSize != 0) {
+    errors->push_back(Error(
+        segment.vaddr,
+        "Text segment offset in memory is not bundle-aligned."));
+    return false;
+  }
+
+  if (segment.size % kBundleSize != 0) {
+    char buf[100];
+    SNPRINTF(buf, sizeof buf,
+             "Text segment size (0x%"NACL_PRIx32") is not "
+             "multiple of bundle size.",
+             segment.size);
+    errors->push_back(Error(segment.vaddr + segment.size, buf));
+    return false;
+  }
+
   vector<Jump> jumps;
   set<uint32_t> bad_jump_targets;
 
@@ -265,19 +283,6 @@ int main(int argc, char **argv) {
   ReadImage(options.input_file, &image);
 
   Segment segment = GetElfTextSegment(image);
-
-  if (segment.size % kBundleSize != 0) {
-    printf("Text segment size (0x%"NACL_PRIx32") is not "
-           "multiple of bundle size.\n",
-           segment.size);
-    exit(1);
-  }
-  if (segment.vaddr % kBundleSize != 0) {
-    printf("Text segment offset in memory (0x%"NACL_PRIx32") "
-           "is not bundle-aligned.\n",
-           segment.vaddr);
-    exit(1);
-  }
 
   vector<Error> errors;
   bool result = false;
