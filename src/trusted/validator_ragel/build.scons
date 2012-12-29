@@ -12,14 +12,14 @@ gen_dir = '$MAIN_DIR/src/trusted/validator_ragel/gen'
 # Currently we only provide ragel pre-built for Linux.
 ragel_binary = '$MAIN_DIR/../third_party/ragel/ragel.linux'
 
-INST_DEFS = [
+INSTRUCTION_DEFINITIONS = map(env.File, [
     'unreviewed/instruction_definitions/general_purpose_instructions.def',
     'unreviewed/instruction_definitions/system_instructions.def',
     'unreviewed/instruction_definitions/x87_instructions.def',
     'unreviewed/instruction_definitions/mmx_instructions.def',
     'unreviewed/instruction_definitions/xmm_instructions.def',
     'unreviewed/instruction_definitions/nops.def'
-]
+])
 
 # These objects are included in both dfa_validate_x86_xx and rdfa_validator
 # libraries, so we have to introduce intermediate scons nodes.
@@ -77,7 +77,7 @@ env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', run_benchmark))
 if not env.UsingEmulator():
   gen_dfa_test = env.CommandTest(
       'gen_dfa_test.out',
-      ['${PYTHON}', env.File('gen_dfa_test.py')] + map(env.File, INST_DEFS))
+      ['${PYTHON}', env.File('gen_dfa_test.py')] + INSTRUCTION_DEFINITIONS)
 
   env.AddNodeToTestSuite(
       gen_dfa_test,
@@ -130,7 +130,7 @@ if ragel_involved:
          '-o', '${TARGET}',
          '-m', {'32': 'ia32', '64': 'amd64'}[bits],
          '-d', dfa_gen_actions
-         ] + map(env.File, INST_DEFS))
+         ] + INSTRUCTION_DEFINITIONS)
 
     include_dir = rl_file.dir.get_abspath()
     assert include_dir == byte_machines.dir.get_abspath()
@@ -225,7 +225,7 @@ if ragel_involved:
   for bits in ('32', '64'):
     (one_valid_instr_rl,) = env.AutoDepsCommand(
         'one_valid_instruction_x86_%s.rl' % bits,
-        [gen_dfa, '-o', '${TARGET}'] + map(env.File, INST_DEFS) +
+        [gen_dfa, '-o', '${TARGET}'] + INSTRUCTION_DEFINITIONS +
         ['-d', 'check_access,vex_prefix,opcode,parse_operands_states',
          '-d', 'parse_operands,instruction_name',
          '-m', {'32': 'ia32', '64': 'amd64'}[bits]])
