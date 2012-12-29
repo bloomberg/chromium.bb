@@ -214,8 +214,9 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
   }
 };
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || defined(OS_CHROMEOS)
 // Compositing is always on for Windows Aura.
+// Disabled on chrome os due to http://crbug.com/167806
 #define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
 #else
 #define MAYBE_AcceleratedCompositingBlocked AcceleratedCompositingBlocked
