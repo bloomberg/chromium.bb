@@ -260,7 +260,6 @@ void ParseOptions(size_t argc, const char * const *argv, Options *options) {
 int main(int argc, char **argv) {
   Options options;
   ParseOptions(argc, argv, &options);
-  printf("Validating %s ...\n", options.input_file);
 
   Image image;
   ReadImage(options.input_file, &image);

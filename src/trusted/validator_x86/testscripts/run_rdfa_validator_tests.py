@@ -137,8 +137,6 @@ def ParseRdfaMessages(stdout):
       continue
     if re.match(r"(Valid|Invalid)\.$", line):
       continue
-    if re.match(r"Validating .*\.\.\.$", line):
-      continue
 
     m = re.match(r'([0-9a-f]+): (.*)$', line, re.IGNORECASE)
     assert m is not None, "can't parse line '%s'" % line
