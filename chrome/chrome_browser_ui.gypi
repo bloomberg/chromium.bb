@@ -2621,8 +2621,6 @@
             '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.m',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.h',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
-            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h',
-            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.m',
             # MolokoCacao additions
             '../third_party/molokocacao/NSBezierPath+MCAdditions.h',
             '../third_party/molokocacao/NSBezierPath+MCAdditions.m',

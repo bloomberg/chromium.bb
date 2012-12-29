@@ -2863,11 +2863,14 @@
           ],
           'sources': [
             # Build the necessary GTM sources
+            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h',
+            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.m',
             '../third_party/GTM/Foundation/GTMServiceManagement.h',
             '../third_party/GTM/Foundation/GTMServiceManagement.c',
           ],
           'include_dirs': [
             '../third_party/GTM',
+            '../third_party/GTM/DebugUtils',
             '../third_party/GTM/Foundation',
           ],
         }],
