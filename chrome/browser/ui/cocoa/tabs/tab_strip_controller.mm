@@ -1282,6 +1282,11 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
   [self updateFaviconForContents:contents atIndex:modelIndex];
 }
 
+// Called before |contents| is deactivated.
+- (void)tabDeactivatedWithContents:(content::WebContents*)contents {
+  contents->GetView()->StoreFocus();
+}
+
 // Called when a notification is received from the model to select a particular
 // tab. Swaps in the toolbar and content area associated with |newContents|.
 - (void)activateTabWithContents:(content::WebContents*)newContents
@@ -1299,7 +1304,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
       TabContentsController* oldController =
           [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
-      oldContents->GetView()->StoreFocus();
       oldContents->WasHidden();
     }
   }
@@ -1337,10 +1341,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
   if (newContents) {
     newContents->WasShown();
     newContents->GetView()->RestoreFocus();
-
-    FindTabHelper* findTabHelper = FindTabHelper::FromWebContents(newContents);
-    if (findTabHelper->find_ui_active())
-      browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 }
 

@@ -35,6 +35,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                             int index) OVERRIDE;
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
+  virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
@@ -70,6 +71,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                        atIndex:(NSInteger)index;
 - (void)tabDetachedWithContents:(content::WebContents*)contents
                         atIndex:(NSInteger)index;
+- (void)tabDeactivatedWithContents:(content::WebContents*)contents;
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index

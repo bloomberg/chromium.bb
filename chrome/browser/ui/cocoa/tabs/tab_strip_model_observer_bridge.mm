@@ -50,6 +50,11 @@ void TabStripModelObserverBridge::TabDetachedAt(WebContents* contents,
   }
 }
 
+void TabStripModelObserverBridge::TabDeactivated(WebContents* contents) {
+  if ([controller_ respondsToSelector:@selector(tabDeactivatedWithContents:)])
+    [controller_ tabDeactivatedWithContents:contents];
+}
+
 void TabStripModelObserverBridge::ActiveTabChanged(WebContents* old_contents,
                                                    WebContents* new_contents,
                                                    int index,
