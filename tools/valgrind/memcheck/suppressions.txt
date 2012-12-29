@@ -6381,6 +6381,33 @@
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
 }
 {
+   bug_167175c
+   Memcheck:Leak
+   fun:malloc
+   obj:/lib/libpng12.so.0.42.0
+   fun:png_create_read_struct_2
+   ...
+   fun:_ZN15ReloadButtonGtkC1EP18LocationBarViewGtkP7Browser
+   fun:_ZN17BrowserToolbarGtk4InitEP10_GtkWindow
+   fun:_ZN16BrowserWindowGtk11InitWidgetsEv
+   fun:_ZN16BrowserWindowGtk4InitEv
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+}
+{
+   bug_167175d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISbItN4base20string16_char_traitsESaItEEE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseISbItN4base20string16_char_traitsESaItEESaIS3_EE11_M_allocateEm
+   ...
+   fun:_ZN15WrenchMenuModel5BuildEbb
+   fun:_ZN15WrenchMenuModelC1EPN2ui19AcceleratorProviderEP7Browserbb
+   fun:_ZN17BrowserToolbarGtkC1EP7BrowserP16BrowserWindowGtk
+   fun:_ZN16BrowserWindowGtk11InitWidgetsEv
+   fun:_ZN16BrowserWindowGtk4InitEv
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+}
+{
    bug_164781a
    Memcheck:Uninitialized
    ...
