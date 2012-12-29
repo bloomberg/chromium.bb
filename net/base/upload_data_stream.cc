@@ -34,6 +34,7 @@ UploadDataStream::UploadDataStream(
       identifier_(identifier),
       is_chunked_(false),
       last_chunk_appended_(false),
+      read_failed_(false),
       initialized_successfully_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   element_readers_.swap(*element_readers);
@@ -46,6 +47,7 @@ UploadDataStream::UploadDataStream(Chunked /*chunked*/, int64 identifier)
       identifier_(identifier),
       is_chunked_(true),
       last_chunk_appended_(false),
+      read_failed_(false),
       initialized_successfully_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -76,13 +78,12 @@ int UploadDataStream::Read(IOBuffer* buf,
 
 bool UploadDataStream::IsEOF() const {
   DCHECK(initialized_successfully_);
-  // Check if all elements are consumed.
-  if (element_index_ == element_readers_.size()) {
-    // If the upload data is chunked, check if the last chunk is appended.
-    if (!is_chunked_ || last_chunk_appended_)
-      return true;
-  }
-  return false;
+  if (!is_chunked_)
+    return current_position_ == total_size_;
+
+  // If the upload data is chunked, check if the last chunk is appended and all
+  // elements are consumed.
+  return element_index_ == element_readers_.size() && last_chunk_appended_;
 }
 
 bool UploadDataStream::IsInMemory() const {
@@ -128,6 +129,7 @@ void UploadDataStream::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   pending_chunked_read_callback_.Reset();
   initialized_successfully_ = false;
+  read_failed_ = false;
   current_position_ = 0;
   total_size_ = 0;
   element_index_ = 0;
@@ -188,7 +190,7 @@ int UploadDataStream::ReadInternal(scoped_refptr<DrainableIOBuffer> buf,
                                    const CompletionCallback& callback) {
   DCHECK(initialized_successfully_);
 
-  while (element_index_ < element_readers_.size()) {
+  while (!read_failed_ && element_index_ < element_readers_.size()) {
     UploadElementReader* reader = element_readers_[element_index_];
 
     if (reader->BytesRemaining() == 0) {
@@ -214,12 +216,27 @@ int UploadDataStream::ReadInternal(scoped_refptr<DrainableIOBuffer> buf,
       DCHECK(!callback.is_null());
       return ERR_IO_PENDING;
     }
-    DCHECK_GE(result, 0);
-    buf->DidConsume(result);
+    ProcessReadResult(buf, result);
+  }
+
+  if (read_failed_) {
+    // Chunked transfers may only contain byte readers, so cannot have read
+    // failures.
+    DCHECK(!is_chunked_);
+
+    // If an error occured during read operation, then pad with zero.
+    // Otherwise the server will hang waiting for the rest of the data.
+    const int num_bytes_to_fill =
+        std::min(static_cast<uint64>(buf->BytesRemaining()),
+                 size() - position() - buf->BytesConsumed());
+    DCHECK_LE(0, num_bytes_to_fill);
+    memset(buf->data(), 0, num_bytes_to_fill);
+    buf->DidConsume(num_bytes_to_fill);
   }
 
   const int bytes_copied = buf->BytesConsumed();
   current_position_ += bytes_copied;
+  DCHECK(is_chunked_ || total_size_ >= current_position_);
 
   if (is_chunked_ && !IsEOF() && bytes_copied == 0) {
     DCHECK(!callback.is_null());
@@ -232,6 +249,9 @@ int UploadDataStream::ReadInternal(scoped_refptr<DrainableIOBuffer> buf,
                    OK);
     return ERR_IO_PENDING;
   }
+
+  // Returning 0 is allowed only when IsEOF() == true.
+  DCHECK(bytes_copied != 0 || IsEOF());
   return bytes_copied;
 }
 
@@ -239,14 +259,23 @@ void UploadDataStream::ResumePendingRead(scoped_refptr<DrainableIOBuffer> buf,
                                          const CompletionCallback& callback,
                                          int previous_result) {
   DCHECK(!callback.is_null());
-  DCHECK_GE(previous_result, 0);
 
-  // Add the last result.
-  buf->DidConsume(previous_result);
+  ProcessReadResult(buf, previous_result);
 
   const int result = ReadInternal(buf, callback);
   if (result != ERR_IO_PENDING)
     callback.Run(result);
+}
+
+void UploadDataStream::ProcessReadResult(scoped_refptr<DrainableIOBuffer> buf,
+                                         int result) {
+  DCHECK_NE(ERR_IO_PENDING, result);
+  DCHECK(!read_failed_);
+
+  if (result >= 0)
+    buf->DidConsume(result);
+  else
+    read_failed_ = true;
 }
 
 }  // namespace net

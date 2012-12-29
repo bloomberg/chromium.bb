@@ -47,10 +47,8 @@ class NET_EXPORT UploadElementReader {
   virtual bool IsInMemory() const;
 
   // Reads up to |buf_length| bytes synchronously and returns the number of
-  // bytes read when possible, otherwise, returns ERR_IO_PENDING and runs
-  // |callback| with the result. This function never fails. If there's less data
-  // to read than we initially observed, then pad with zero (this can happen
-  // with files). |buf_length| must be greater than 0.
+  // bytes read or error code when possible, otherwise, returns ERR_IO_PENDING
+  // and runs |callback| with the result. |buf_length| must be greater than 0.
   virtual int Read(IOBuffer* buf,
                    int buf_length,
                    const CompletionCallback& callback) = 0;

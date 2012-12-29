@@ -96,7 +96,8 @@ class MockUploadElementReader : public UploadElementReader {
   int OnRead(IOBuffer* buf,
              int buf_length,
              const CompletionCallback& callback) {
-    bytes_remaining_ = std::max(0, bytes_remaining_ - read_result_);
+    if (read_result_ > 0)
+      bytes_remaining_ = std::max(0, bytes_remaining_ - read_result_);
     if (IsInMemory()) {
       return read_result_;
     } else {
@@ -226,6 +227,80 @@ TEST_F(UploadDataStreamTest, FileSmallerThanLength) {
   // transaction doesn't hang.  Therefore we expected the full size.
   EXPECT_EQ(kFakeSize, read_counter);
   EXPECT_EQ(read_counter, stream.position());
+}
+
+TEST_F(UploadDataStreamTest, ReadErrorSync) {
+  // This element cannot be read.
+  MockUploadElementReader* reader =
+      new MockUploadElementReader(kTestDataSize, true);
+  EXPECT_CALL(*reader, Init(_)).WillOnce(Return(OK));
+  reader->SetReadExpectation(ERR_FAILED);
+  element_readers_.push_back(reader);
+
+  // This element is ignored because of the error from the previous reader.
+  element_readers_.push_back(new UploadBytesElementReader(
+      kTestData, kTestDataSize));
+
+  UploadDataStream stream(&element_readers_, 0);
+
+  // Run Init().
+  ASSERT_EQ(OK, stream.Init(CompletionCallback()));
+  EXPECT_EQ(kTestDataSize*2, stream.size());
+  EXPECT_EQ(0U, stream.position());
+  EXPECT_FALSE(stream.IsEOF());
+
+  // Prepare a buffer filled with non-zero data.
+  scoped_refptr<IOBuffer> buf = new IOBuffer(kTestBufferSize);
+  std::fill_n(buf->data(), kTestBufferSize, -1);
+
+  // Read() results in success even when the reader returns error.
+  EXPECT_EQ(static_cast<int>(kTestDataSize*2),
+            stream.Read(buf, kTestBufferSize, CompletionCallback()));
+  EXPECT_EQ(kTestDataSize*2, stream.position());
+  EXPECT_TRUE(stream.IsEOF());
+
+  // The buffer is filled with zero.
+  EXPECT_EQ(static_cast<int>(kTestDataSize*2),
+            std::count(buf->data(), buf->data() + kTestBufferSize, 0));
+}
+
+TEST_F(UploadDataStreamTest, ReadErrorAsync) {
+  // This element cannot be read.
+  MockUploadElementReader* reader =
+      new MockUploadElementReader(kTestDataSize, false);
+  reader->SetAsyncInitExpectation(OK);
+  reader->SetReadExpectation(ERR_FAILED);
+  element_readers_.push_back(reader);
+
+  // This element is ignored because of the error from the previous reader.
+  element_readers_.push_back(new UploadBytesElementReader(
+      kTestData, kTestDataSize));
+
+  UploadDataStream stream(&element_readers_, 0);
+
+  // Run Init().
+  TestCompletionCallback init_callback;
+  ASSERT_EQ(ERR_IO_PENDING, stream.Init(init_callback.callback()));
+  EXPECT_EQ(OK, init_callback.WaitForResult());
+  EXPECT_EQ(kTestDataSize*2, stream.size());
+  EXPECT_EQ(0U, stream.position());
+  EXPECT_FALSE(stream.IsEOF());
+
+  // Prepare a buffer filled with non-zero data.
+  scoped_refptr<IOBuffer> buf = new IOBuffer(kTestBufferSize);
+  std::fill_n(buf->data(), kTestBufferSize, -1);
+
+  // Read() results in success even when the reader returns error.
+  TestCompletionCallback read_callback;
+  ASSERT_EQ(ERR_IO_PENDING,
+            stream.Read(buf, kTestBufferSize, read_callback.callback()));
+  EXPECT_EQ(static_cast<int>(kTestDataSize*2), read_callback.WaitForResult());
+  EXPECT_EQ(kTestDataSize*2, stream.position());
+  EXPECT_TRUE(stream.IsEOF());
+
+  // The buffer is filled with zero.
+  EXPECT_EQ(static_cast<int>(kTestDataSize*2),
+            std::count(buf->data(), buf->data() + kTestBufferSize, 0));
 }
 
 TEST_F(UploadDataStreamTest, FileAndBytes) {

@@ -123,6 +123,11 @@ class NET_EXPORT UploadDataStream {
                          const CompletionCallback& callback,
                          int previous_result);
 
+  // Processes result of UploadElementReader::Read(). If |result| indicates
+  // success, updates |buf|'s offset. Otherwise, sets |read_failed_| to true.
+  void ProcessReadResult(scoped_refptr<DrainableIOBuffer> buf,
+                         int result);
+
   // These methods are provided only to be used by unit tests.
   static void ResetMergeChunks();
   static void set_merge_chunks(bool merge) { merge_chunks_ = merge; }
@@ -143,6 +148,9 @@ class NET_EXPORT UploadDataStream {
 
   const bool is_chunked_;
   bool last_chunk_appended_;
+
+  // True if an error occcured during read operation.
+  bool read_failed_;
 
   // True if the initialization was successful.
   bool initialized_successfully_;

@@ -80,21 +80,14 @@ int ReadInternal(scoped_refptr<IOBuffer> buf,
   const uint64 num_bytes_to_read =
       std::min(bytes_remaining, static_cast<uint64>(buf_length));
 
+  int result = 0;
   if (num_bytes_to_read > 0) {
-    int num_bytes_consumed = 0;
-    // file_stream is NULL if the target file is missing or not readable.
-    if (file_stream) {
-      num_bytes_consumed = file_stream->ReadSync(buf->data(),
-                                                 num_bytes_to_read);
-    }
-    if (num_bytes_consumed <= 0) {
-      // If there's less data to read than we initially observed, then
-      // pad with zero.  Otherwise the server will hang waiting for the
-      // rest of the data.
-      memset(buf->data(), 0, num_bytes_to_read);
-    }
+    DCHECK(file_stream);  // file_stream is non-null if content_length_ > 0.
+    result = file_stream->ReadSync(buf->data(), num_bytes_to_read);
+    if (result == 0)  // Reached end-of-file earlier than expected.
+      result = ERR_UPLOAD_FILE_CHANGED;
   }
-  return num_bytes_to_read;
+  return result;
 }
 
 }  // namespace
@@ -217,8 +210,10 @@ void UploadFileElementReader::OnReadCompleted(
     const CompletionCallback& callback,
     int result) {
   file_stream_.swap(file_stream);
-  DCHECK_GE(static_cast<int>(bytes_remaining_), result);
-  bytes_remaining_ -= result;
+  if (result > 0) {
+    DCHECK_GE(static_cast<int>(bytes_remaining_), result);
+    bytes_remaining_ -= result;
+  }
   if (!callback.is_null())
     callback.Run(result);
 }
@@ -277,8 +272,10 @@ int UploadFileElementReaderSync::Read(IOBuffer* buf,
                                       const CompletionCallback& callback) {
   const int result = ReadInternal(buf, buf_length, BytesRemaining(),
                                   file_stream_.get());
-  DCHECK_GE(static_cast<int>(bytes_remaining_), result);
-  bytes_remaining_ -= result;
+  if (result > 0) {
+    DCHECK_GE(static_cast<int>(bytes_remaining_), result);
+    bytes_remaining_ -= result;
+  }
   return result;
 }
 
