@@ -19,11 +19,20 @@ struct Config {
   // Maximum memory use for a prerendered page until it is killed.
   size_t max_bytes;
 
-  // Number of simultaneous prendered pages allowed.
-  size_t max_concurrency;
+  // Number of simultaneous prerender pages from link elements allowed. Enforced
+  // by PrerenderLinkManager.
+  size_t max_link_concurrency;
+
+  // Number of simultaneous prerender pages from link elements allowed per
+  // launching page. Enforced by PrerenderLinkManager.
+  size_t max_link_concurrency_per_launcher;
 
   // Is rate limiting enabled?
   bool rate_limit_enabled;
+
+  // The maximum time that a prerender can wait for launch in the
+  // PrerenderLinkManager.
+  base::TimeDelta max_wait_to_launch;
 
   // The default time to live of a newly created prerender. May be shortened to
   // abandon_time_to_live, below.

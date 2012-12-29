@@ -74,7 +74,7 @@ class PrerenderHistograms {
 
   // To be called when we know how many prerenders are running after starting
   // a prerender.
-  void RecordConcurrency(size_t prerender_count, size_t max_concurrency) const;
+  void RecordConcurrency(size_t prerender_count) const;
 
   // Called when we swap in a prerender.
   void RecordUsedPrerender(Origin origin) const;

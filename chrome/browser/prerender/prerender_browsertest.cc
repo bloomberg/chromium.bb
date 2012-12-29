@@ -222,7 +222,6 @@ class TestPrerenderContents : public PrerenderContents {
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
         quit_message_loop_on_destruction_(
-            expected_final_status != FINAL_STATUS_EVICTED &&
             expected_final_status != FINAL_STATUS_APP_TERMINATING &&
             expected_final_status != FINAL_STATUS_MAX),
         expected_pending_prerenders_(0),
@@ -1242,6 +1241,9 @@ IN_PROC_BROWSER_TEST_F(
 // Flaky, http://crbug.com/167340.
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest, DISABLED_PrerenderPageRemovingLinkWithTwoLinks) {
+  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
+  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
+
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
@@ -1274,6 +1276,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest,
     MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
+  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
+  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
@@ -1702,14 +1706,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
                    0);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/145248
-#define MAYBE_PrerenderInfiniteLoop DISABLED_PrerenderInfiniteLoop
-#else
-#define MAYBE_PrerenderInfiniteLoop PrerenderInfiniteLoop
-#endif
+// TODO(gavinp,sreeram): Fix http://crbug.com/145248 and deflake this test.
 // Checks that we don't prerender in an infinite loop.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderInfiniteLoop) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
   const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
 
@@ -1731,17 +1730,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderInfiniteLoop) {
   EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileB));
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// http://crbug.com/145248
-#define MAYBE_PrerenderInfiniteLoopMultiple \
-        DISABLED_PrerenderInfiniteLoopMultiple
-#else
-#define MAYBE_PrerenderInfiniteLoopMultiple PrerenderInfiniteLoopMultiple
-#endif
+// TODO(gavinp,sreeram): Fix http://crbug.com/145248 and deflake this test.
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderInfiniteLoopMultiple) {
+                       DISABLED_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "files/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
@@ -1751,7 +1744,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // This test is conceptually simplest if concurrency is at two, since we
   // don't have to worry about which of kHtmlFileB or kHtmlFileC gets evicted.
-  GetPrerenderManager()->mutable_config().max_concurrency = 2;
+  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
+  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
 
   std::deque<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_USED);

@@ -263,6 +263,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   Profile* profile() const { return profile_; }
 
+  // Classes which will be tested in prerender unit browser tests should use
+  // these methods to get times for comparison, so that the test framework can
+  // mock advancing/retarding time.
+  virtual base::Time GetCurrentTime() const;
+  virtual base::TimeTicks GetCurrentTimeTicks() const;
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
@@ -419,8 +425,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   base::TimeTicks GetExpiryTimeForNavigatedAwayPrerender() const;
 
   void DeleteOldEntries();
-  virtual base::Time GetCurrentTime() const;
-  virtual base::TimeTicks GetCurrentTimeTicks() const;
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
       const content::Referrer& referrer,

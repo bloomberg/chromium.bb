@@ -99,7 +99,6 @@ const int kHistoryLength = 100;
 bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
   return final_status != FINAL_STATUS_USED &&
       final_status != FINAL_STATUS_TIMED_OUT &&
-      final_status != FINAL_STATUS_EVICTED &&
       final_status != FINAL_STATUS_MANAGER_SHUTDOWN &&
       final_status != FINAL_STATUS_APP_TERMINATING &&
       final_status != FINAL_STATUS_WINDOW_OPENER &&
@@ -209,7 +208,8 @@ PrerenderManager::PrerenderManager(Profile* profile,
   // Certain experiments override our default config_ values.
   switch (PrerenderManager::GetMode()) {
     case PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
-      config_.max_concurrency = 3;
+      config_.max_link_concurrency = 4;
+      config_.max_link_concurrency_per_launcher = 2;
       break;
     case PrerenderManager::PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP:
       config_.time_to_live = base::TimeDelta::FromMinutes(15);
@@ -1046,14 +1046,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   DCHECK(IsControlGroup(experiment) ||
          prerender_contents->prerendering_has_started());
 
-  while (active_prerenders_.size() > config_.max_concurrency) {
-    prerender_contents = active_prerenders_.front()->contents();
-    DCHECK(prerender_contents);
-    prerender_contents->Destroy(FINAL_STATUS_EVICTED);
-  }
-
-  histograms_->RecordConcurrency(active_prerenders_.size(),
-                                 config_.max_concurrency);
+  if (GetMode() == PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP)
+    histograms_->RecordConcurrency(active_prerenders_.size());
 
   StartSchedulingPeriodicCleanups();
   return prerender_handle;

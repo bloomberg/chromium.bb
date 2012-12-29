@@ -167,16 +167,13 @@ void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   }
 }
 
-void PrerenderHistograms::RecordConcurrency(size_t prerender_count,
-                                            size_t max_concurrency) const {
-  static const size_t kMaxRecordableConcurrency = 3;
-  DCHECK_GE(kMaxRecordableConcurrency, max_concurrency);
-  if (max_concurrency > 1) {
-    UMA_HISTOGRAM_ENUMERATION(
-        StringPrintf("Prerender.PrerenderCountOf%" PRIuS "Max",
-                     max_concurrency),
-        prerender_count, kMaxRecordableConcurrency + 1);
-  }
+void PrerenderHistograms::RecordConcurrency(size_t prerender_count) const {
+  static const size_t kMaxRecordableConcurrency = 20;
+  DCHECK_GE(kMaxRecordableConcurrency, Config().max_link_concurrency);
+  UMA_HISTOGRAM_ENUMERATION(
+      StringPrintf("Prerender.PrerenderCountOf%" PRIuS "Max",
+                   kMaxRecordableConcurrency),
+      prerender_count, kMaxRecordableConcurrency + 1);
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {

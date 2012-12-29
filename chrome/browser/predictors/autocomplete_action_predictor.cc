@@ -140,8 +140,8 @@ void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
     const content::SessionStorageNamespaceMap& session_storage_namespace_map,
     const gfx::Size& size) {
-  if (prerender_handle_.get())
-    prerender_handle_->OnNavigateAway();
+  if (prerender_handle_)
+    prerender_handle_->OnCancel();
   if (prerender::PrerenderManager* prerender_manager =
           prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
     content::SessionStorageNamespace* session_storage_namespace = NULL;

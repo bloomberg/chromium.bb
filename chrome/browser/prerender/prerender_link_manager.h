@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_H_
 
-#include <map>
-#include <utility>
+#include <list>
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/gurl.h"
@@ -41,16 +41,12 @@ class PrerenderLinkManager : public ProfileKeyedService,
   // A <link rel=prerender ...> element has been inserted into the document.
   // The |prerender_id| must be unique per |child_id|, and is assigned by the
   // WebPrerendererClient.
-  // Returns true if the prerender was accepted by the prerender manager,
-  // and false if not.  In either case, the |prerender_id| is usable for
-  // future OnCancelPrerender and OnAbandonPrerender calls.
-  bool OnAddPrerender(
-      int child_id,
-      int prerender_id,
-      const GURL& url,
-      const content::Referrer& referrer,
-      const gfx::Size& size,
-      int render_view_route_id);
+  void OnAddPrerender(int child_id,
+                      int prerender_id,
+                      const GURL& url,
+                      const content::Referrer& referrer,
+                      const gfx::Size& size,
+                      int render_view_route_id);
 
   // A <link rel=prerender ...> element has been explicitly removed from a
   // document.
@@ -70,17 +66,50 @@ class PrerenderLinkManager : public ProfileKeyedService,
   friend class PrerenderBrowserTest;
   friend class PrerenderTest;
 
-  typedef std::pair<int, int> ChildAndPrerenderIdPair;
-  typedef std::map<ChildAndPrerenderIdPair, PrerenderHandle*>
-      IdPairToPrerenderHandleMap;
+  struct LinkPrerender {
+    LinkPrerender(int launcher_child_id,
+                  int prerender_id,
+                  const GURL& url,
+                  const content::Referrer& referrer,
+                  const gfx::Size& size,
+                  int render_view_route_id,
+                  base::TimeTicks creation_time);
+    ~LinkPrerender();
 
-  void RemovePrerender(
-      const IdPairToPrerenderHandleMap::iterator& id_to_handle_iter);
+    // Parameters from PrerenderLinkManager::OnAddPrerender():
+    int launcher_child_id;
+    int prerender_id;
+    GURL url;
+    content::Referrer referrer;
+    gfx::Size size;
+    int render_view_route_id;
+
+    // The time at which this Prerender was added to PrerenderLinkManager.
+    base::TimeTicks creation_time;
+
+    // Initially NULL, |handle| is set once we start this prerender. It is owned
+    // by this struct, and must be deleted before destructing this struct.
+    PrerenderHandle* handle;
+  };
 
   bool IsEmpty() const;
 
-  IdPairToPrerenderHandleMap::iterator FindPrerenderHandle(
-      PrerenderHandle* prerender_handle);
+  // Returns a count of currently running prerenders.
+  size_t CountRunningPrerenders() const;
+
+  // Start any prerenders that can be started, respecting concurrency limits for
+  // the system and per launcher.
+  void StartPrerenders();
+
+  LinkPrerender* FindByLauncherChildIdAndPrerenderId(int child_id,
+                                                     int prerender_id);
+
+  LinkPrerender* FindByPrerenderHandle(PrerenderHandle* prerender_handle);
+
+  void RemovePrerender(LinkPrerender* prerender);
+
+  // From ProfileKeyedService:
+  virtual void Shutdown() OVERRIDE;
 
   // From PrerenderHandle::Observer:
   virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) OVERRIDE;
@@ -88,12 +117,14 @@ class PrerenderLinkManager : public ProfileKeyedService,
   virtual void OnPrerenderAddAlias(PrerenderHandle* prerender_handle,
                                    const GURL& alias_url) OVERRIDE;
 
+  bool has_shutdown_;
+
   PrerenderManager* manager_;
 
-  // A map from child process id and prerender id to PrerenderHandles. We map
-  // from this pair because the prerender ids are only unique within their
-  // renderer process.
-  IdPairToPrerenderHandleMap ids_to_handle_map_;
+  // All prerenders known to this PrerenderLinkManager. Insertions are always
+  // made at the back, so the oldest prerender is at the front, and the youngest
+  // at the back.
+  std::list<LinkPrerender> prerenders_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLinkManager);
 };
