@@ -281,6 +281,36 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
+// Returns the color used to draw the background of a tab. |selected| selects
+// between the foreground and background tabs.
+- (NSColor*)backgroundColorForSelected:(bool)selected {
+  ThemeService* themeProvider =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+  if (!themeProvider)
+    return [[self window] backgroundColor];
+
+  int bitmapResources[2][2] = {
+    // Background window.
+    {
+      IDR_THEME_TAB_BACKGROUND_INACTIVE,  // Background tab.
+      IDR_THEME_TOOLBAR_INACTIVE,         // Active tab.
+    },
+    // Currently focused window.
+    {
+      IDR_THEME_TAB_BACKGROUND,  // Background tab.
+      IDR_THEME_TOOLBAR,         // Active tab.
+    },
+  };
+
+  bool usingDefaultTheme = themeProvider->UsingDefaultTheme();
+  // Themes don't have an inactive image so only look for one if there's no
+  // theme.
+  bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
+                !usingDefaultTheme;
+  return themeProvider->GetNSImageColorNamed(
+      bitmapResources[active][selected], true);
+}
+
 // Draws the tab background.
 - (void)drawFill:(NSRect)dirtyRect {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
@@ -298,33 +328,10 @@ const CGFloat kRapidCloseDist = 2.5;
 
   NSRect rect = [self bounds];
 
-  int bitmapResources[2][2] = {
-    // Background window.
-    {
-      IDR_THEME_TAB_BACKGROUND_INACTIVE,  // Background tab.
-      IDR_THEME_TOOLBAR_INACTIVE,         // Active tab.
-    },
-    // Currently focused window.
-    {
-      IDR_THEME_TAB_BACKGROUND,  // Background tab.
-      IDR_THEME_TOOLBAR,         // Active tab.
-    },
-  };
-
   bool selected = [self state];
 
   bool usingDefaultTheme = themeProvider && themeProvider->UsingDefaultTheme();
-  NSColor* backgroundImageColor;
-  if (themeProvider) {
-    // Themes don't have an inactive image so only look for one if there's no
-    // theme.
-    bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
-                  !usingDefaultTheme;
-    backgroundImageColor = themeProvider->GetNSImageColorNamed(
-        bitmapResources[active][selected], true);
-  } else {
-    backgroundImageColor = [[self window] backgroundColor];
-  }
+  NSColor* backgroundImageColor = [self backgroundColorForSelected:selected];
 
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
@@ -355,6 +362,11 @@ const CGFloat kRapidCloseDist = 2.5;
       backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
       CGContextSetAlpha(cgContext, backgroundAlpha);
     }
+
+    // For background tabs, this branch is taken to draw a highlight. The
+    // highlight is drawn using the foreground tab bitmap.
+    if (!selected && themeProvider)
+      backgroundImageColor = [self backgroundColorForSelected:YES];
 
     [backgroundImageColor set];
     // Themes can have partially transparent images. NSRectFill() is measurably
