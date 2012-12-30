@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -30,6 +31,14 @@ using webkit_glue::ResourceRequestBody;
 using webkit_glue::ResourceResponseInfo;
 
 namespace content {
+
+static void CrashOnMapFailure() {
+#if defined(OS_WIN)
+  DWORD last_err = GetLastError();
+  base::debug::Alias(&last_err);
+#endif
+  CHECK(false);
+}
 
 // Each resource request is assigned an ID scoped to this process.
 static int MakeRequestID() {
@@ -340,7 +349,10 @@ void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
       new base::SharedMemory(shm_handle, true));  // read only
 
   bool ok = request_info->buffer->Map(shm_size);
-  CHECK(ok);
+  if (!ok) {
+    CrashOnMapFailure();
+    return;
+  }
 
   request_info->buffer_size = shm_size;
 }
