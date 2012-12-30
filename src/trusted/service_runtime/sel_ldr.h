@@ -374,6 +374,14 @@ struct NaClApp {
    * fault_signal is non-zero.
    */
   Atomic32                  faulted_thread_count;
+#if !NACL_WINDOWS
+  /*
+   * A file descriptor of a pipe which becomes available for reading in
+   * the event that fault_signal for some NaClAppThread becomes non-zero.
+   */
+  int                       faulted_thread_fd_read;
+  int                       faulted_thread_fd_write;
+#endif
 
   const struct NaClValidatorInterface *validator;
 };

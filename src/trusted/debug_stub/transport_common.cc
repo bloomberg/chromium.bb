@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/transport.h"
 #include "native_client/src/trusted/debug_stub/util.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 using gdb_rsp::stringvec;
 using gdb_rsp::StringSplit;
@@ -76,6 +77,10 @@ class Transport : public ITransport {
     return false;
   }
 
+  virtual void WaitForDebugStubEvent(int timeout_ms,
+                                     struct NaClApp *nap,
+                                     bool ignore_input_from_gdb);
+
 // On windows, the header that defines this has other definition
 // colitions, so we define it outselves just in case
 #ifndef SD_BOTH
@@ -92,6 +97,9 @@ class Transport : public ITransport {
   // Copy buffered data to *dst up to len bytes and update dst and len.
   void CopyFromBuffer(char **dst, int32_t *len);
 
+  // Read available data from the socket. Return false on EOF or error.
+  bool ReadSomeData();
+
   static const int kBufSize = 4096;
   nacl::scoped_array<char> buf_;
   int32_t pos_;
@@ -107,25 +115,32 @@ void Transport::CopyFromBuffer(char **dst, int32_t *len) {
   *dst += copy_bytes;
 }
 
+bool Transport::ReadSomeData() {
+  while (true) {
+    int result = ::recv(handle_, buf_.get() + size_, kBufSize - size_, 0);
+    if (result > 0) {
+      size_ += result;
+      return true;
+    }
+    if (result == 0)
+      return false;
+    if (NaClSocketGetLastError() != EINTR)
+      return false;
+  }
+}
+
 bool Transport::Read(void *ptr, int32_t len) {
   char *dst = static_cast<char *>(ptr);
   if (pos_ < size_) {
     CopyFromBuffer(&dst, &len);
   }
   while (len > 0) {
-    int result = ::recv(handle_, buf_.get(), kBufSize, 0);
-    if (result > 0) {
-      pos_ = 0;
-      size_ = result;
-      CopyFromBuffer(&dst, &len);
-      continue;
-    }
-    if (result == 0) {
+    pos_ = 0;
+    size_ = 0;
+    if (!ReadSomeData()) {
       return false;
     }
-    if (NaClSocketGetLastError() != EINTR) {
-      return false;
-    }
+    CopyFromBuffer(&dst, &len);
   }
   return true;
 }
@@ -147,6 +162,67 @@ bool Transport::Write(const void *ptr, int32_t len) {
     }
   }
   return true;
+}
+
+void Transport::WaitForDebugStubEvent(int timeout_ms,
+                                      struct NaClApp *nap,
+                                      bool ignore_input_from_gdb) {
+  // If we are told to ignore messages from gdb, we will exit from this
+  // function only if new data is sent by gdb.
+  if ((pos_ < size_ && !ignore_input_from_gdb) ||
+      nap->faulted_thread_count > 0) {
+    // Clear faulted thread events to save debug stub loop iterations.
+    timeout_ms = 0;
+  }
+#if !NACL_WINDOWS
+  fd_set fds;
+
+  FD_ZERO(&fds);
+  FD_SET(nap->faulted_thread_fd_read, &fds);
+  int max_fd = nap->faulted_thread_fd_read;
+  if (size_ < kBufSize) {
+    FD_SET(handle_, &fds);
+    max_fd = std::max(max_fd, handle_);
+  }
+
+  int ret;
+  // We don't need sleep-polling on Linux now, so we set either zero or infinite
+  // timeout.
+  if (timeout_ms > 0) {
+    ret = select(max_fd + 1, &fds, NULL, NULL, NULL);
+  } else {
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    ret = select(max_fd + 1, &fds, NULL, NULL, &timeout);
+  }
+  if (ret < 0) {
+    NaClLog(LOG_FATAL,
+            "Transport::WaitForDebugStubEvent: Failed to wait for "
+            "debug stub event\n");
+  }
+
+  if (ret > 0) {
+    if (FD_ISSET(nap->faulted_thread_fd_read, &fds)) {
+      char buf[16];
+      if (read(nap->faulted_thread_fd_read, &buf, sizeof(buf)) < 0) {
+        NaClLog(LOG_FATAL,
+                "Transport::WaitForDebugStubEvent: Failed to read from "
+                "debug stub event pipe fd\n");
+      }
+    }
+    if (FD_ISSET(handle_, &fds))
+      ReadSomeData();
+  }
+#else
+  // Use polling where we haven't implemented proper waiting for debug event.
+  // TODO(mseaborn): This is slow.  We should use proper thread
+  // wakeups instead.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=2952
+  UNREFERENCED_PARAMETER(nap);
+  UNREFERENCED_PARAMETER(ignore_input_from_gdb);
+  IPlatform::Relinquish(timeout_ms);
+#endif
 }
 
 // Convert string in the form of [addr][:port] where addr is a

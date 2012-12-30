@@ -134,6 +134,14 @@ static void HandleSuspendSignal(struct NaClSignalContext *regs) {
   }
 }
 
+static void FireDebugStubEvent(int pipe_fd) {
+  char buf = 0;
+  if (write(pipe_fd, &buf, sizeof(buf)) != sizeof(buf)) {
+    NaClSignalErrorMessage("FireDebugStubEvent: Can't send debug stub event\n");
+    NaClAbort();
+  }
+}
+
 static void HandleUntrustedFault(int signal,
                                  struct NaClSignalContext *regs,
                                  struct NaClAppThread *natp) {
@@ -146,6 +154,7 @@ static void HandleUntrustedFault(int signal,
   /* Notify the debug stub by marking this thread as faulted. */
   natp->fault_signal = signal;
   AtomicIncrement(&natp->nap->faulted_thread_count, 1);
+  FireDebugStubEvent(natp->nap->faulted_thread_fd_write);
 
   /*
    * We now expect the debug stub to suspend this thread via the

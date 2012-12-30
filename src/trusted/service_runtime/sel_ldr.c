@@ -249,6 +249,10 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #endif
   nap->enable_faulted_thread_queue = 0;
   nap->faulted_thread_count = 0;
+#if !NACL_WINDOWS
+  nap->faulted_thread_fd_read = -1;
+  nap->faulted_thread_fd_write = -1;
+#endif
 
   return 1;
 

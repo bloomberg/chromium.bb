@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -66,6 +67,21 @@ void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
 }
 
 int NaClFaultedThreadQueueEnable(struct NaClApp *nap) {
+#if !NACL_WINDOWS
+  int fds[2];
+#if NACL_LINUX
+  int ret = pipe2(fds, O_CLOEXEC);
+#else
+  int ret = pipe(fds);
+#endif
+  if (ret < 0) {
+    NaClLog(LOG_FATAL,
+            "NaClFaultedThreadQueueEnable: Failed to allocate pipe for "
+            "faulted thread events\n");
+  }
+  nap->faulted_thread_fd_read = fds[0];
+  nap->faulted_thread_fd_write = fds[1];
+#endif
   nap->enable_faulted_thread_queue = 1;
   return NaClDebugExceptionHandlerEnsureAttached(nap);
 }

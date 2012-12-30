@@ -218,13 +218,9 @@ void Target::Run(Session *ses) {
   session_ = ses;
   NaClXMutexUnlock(&mutex_);
   do {
-    // We poll periodically for faulted threads or input on the socket.
-    // TODO(mseaborn): This is slow.  We should use proper thread
-    // wakeups instead.
-    // See http://code.google.com/p/nativeclient/issues/detail?id=2952
-
-    // Give everyone else a chance to use the lock
-    IPlatform::Relinquish(100);
+    bool ignore_input_from_gdb = step_over_breakpoint_thread_ != 0 ||
+        !initial_breakpoint_seen;
+    ses->WaitForDebugStubEvent(100, nap_, ignore_input_from_gdb);
 
     // Lock to prevent anyone else from modifying threads
     // or updating the signal information.

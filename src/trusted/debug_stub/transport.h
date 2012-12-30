@@ -14,6 +14,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_sockets.h"
 
+struct NaClApp;
+
 namespace port {
 
 class ITransport {
@@ -28,6 +30,11 @@ class ITransport {
 
   // Return true if there is data to read.
   virtual bool IsDataAvailable() = 0;
+
+  // Wait until there is input from GDB or some NaCl thread is faulted.
+  virtual void WaitForDebugStubEvent(int timeout_ms,
+                                     struct NaClApp *nap,
+                                     bool ignore_gdb) = 0;
 
   // Disconnect the transport, R/W and Select will now throw an exception
   virtual void Disconnect() = 0;
