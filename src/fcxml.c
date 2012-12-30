@@ -2438,11 +2438,6 @@ FcPopValue (FcConfigParse *parse)
 	value.u.d = vstack->u._double;
 	value.type = FcTypeDouble;
 	break;
-    case FcVStackMatrix:
-	value.u.m = FcExprMatrixCopyShallow (vstack->u.matrix);
-	if (value.u.m)
-	    value.type = FcTypeMatrix;
-	break;
     case FcVStackBool:
 	value.u.b = vstack->u.bool_;
 	value.type = FcTypeBool;
