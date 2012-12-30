@@ -900,15 +900,17 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
       backoff *= 2
 
     urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
-    if expected_return == False:
-      self.mox.StubOutWithMock(time, 'time')
-      start_time = 1
-      # Time is checked twice to bootstrap.
-      time.time().AndReturn(start_time)
-      time.time().AndReturn(start_time)
-      for time_plus in range(1, max_timeout + 1):
-        time.time().AndReturn(start_time + time_plus)
+    # Time is checked twice to bootstrap.
+    start_time = 1
+    self.mox.StubOutWithMock(time, 'time')
+    time.time().AndReturn(start_time)
+    time.time().AndReturn(start_time)
 
+    if expected_return == False:
+      for time_plus in xrange(max_timeout + 1):
+        time.time().AndReturn(start_time + time_plus)
+      self.mox.StubOutWithMock(cros_build_lib, 'Info')
+      cros_build_lib.Info(mox.IgnoreArg(), mox.IgnoreArg()).MultipleTimes()
       time.sleep(sleep_timeout).MultipleTimes()
 
     return_status.getcode().MultipleTimes().AndReturn(200)

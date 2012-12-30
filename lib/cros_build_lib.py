@@ -1386,16 +1386,13 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
       Warning('Could not get a status from %s', status_url)
       return True
 
-  # Check before looping with timeout.
-  start_time = time.time()
-
-  if _CanSubmit(status_url):
-    return True
   # Loop until either we run out of time or the tree is open.
-  Info('Waiting for the tree to open...')
-  while time.time() - start_time < max_timeout:
+  end_time = time.time() + max_timeout
+  while True:
+    time_left = end_time - time.time()
     if _CanSubmit(status_url):
       return True
+    elif time_left <= 0:
+      return False
+    Info('Waiting for the tree to open (%d minutes left)...', time_left / 60)
     time.sleep(sleep_timeout)
-
-  return False
