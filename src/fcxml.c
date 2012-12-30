@@ -105,14 +105,48 @@ FcExprCreateString (FcConfig *config, const FcChar8 *s)
     return e;
 }
 
+static FcExprMatrix *
+FcExprMatrixCopyShallow (const FcExprMatrix *matrix)
+{
+  FcExprMatrix *m = malloc (sizeof (FcExprMatrix));
+  if (m)
+  {
+    *m = *matrix;
+  }
+  return m;
+}
+
+static void
+FcExprMatrixFreeShallow (FcExprMatrix *m)
+{
+  if (!m)
+    return;
+
+  free (m);
+}
+
+static void
+FcExprMatrixFree (FcExprMatrix *m)
+{
+  if (!m)
+    return;
+
+  FcExprDestroy (m->xx);
+  FcExprDestroy (m->xy);
+  FcExprDestroy (m->yx);
+  FcExprDestroy (m->yy);
+
+  free (m);
+}
+
 static FcExpr *
-FcExprCreateMatrix (FcConfig *config, const FcMatrix *m)
+FcExprCreateMatrix (FcConfig *config, const FcExprMatrix *matrix)
 {
     FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpMatrix;
-	e->u.mval = FcMatrixCopy (m);
+	e->u.mexpr = FcExprMatrixCopyShallow (matrix);
     }
     return e;
 }
@@ -204,7 +238,7 @@ FcExprDestroy (FcExpr *e)
 	FcSharedStrFree (e->u.sval);
 	break;
     case FcOpMatrix:
-	FcMatrixFree (e->u.mval);
+	FcExprMatrixFree (e->u.mexpr);
 	break;
     case FcOpRange:
 	break;
@@ -451,7 +485,7 @@ typedef struct _FcVStack {
 
 	int		integer;
 	double		_double;
-	FcMatrix	*matrix;
+	FcExprMatrix	*matrix;
 	FcRange		range;
 	FcBool		bool_;
 	FcCharSet	*charset;
@@ -514,6 +548,10 @@ FcConfigMessage (FcConfigParse *parse, FcConfigSeverity severe, const char *fmt,
     fprintf (stderr, "\n");
     va_end (args);
 }
+
+
+static FcExpr *
+FcPopExpr (FcConfigParse *parse);
 
 
 static const char *
@@ -767,16 +805,13 @@ FcVStackPushDouble (FcConfigParse *parse, double _double)
 }
 
 static FcBool
-FcVStackPushMatrix (FcConfigParse *parse, FcMatrix *matrix)
+FcVStackPushMatrix (FcConfigParse *parse, FcExprMatrix *matrix)
 {
     FcVStack    *vstack;
-    matrix = FcMatrixCopy (matrix);
-    if (!matrix)
-	return FcFalse;
     vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
-    vstack->u.matrix = matrix;
+    vstack->u.matrix = FcExprMatrixCopyShallow (matrix);
     vstack->tag = FcVStackMatrix;
     return FcTrue;
 }
@@ -921,7 +956,7 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
     case FcVStackDouble:
 	break;
     case FcVStackMatrix:
-	FcMatrixFree (vstack->u.matrix);
+	FcExprMatrixFreeShallow (vstack->u.matrix);
 	break;
     case FcVStackRange:
     case FcVStackBool:
@@ -1304,38 +1339,18 @@ static void
 FcParseMatrix (FcConfigParse *parse)
 {
     FcVStack	*vstack;
-    enum { m_done, m_xx, m_xy, m_yx, m_yy } matrix_state = m_yy;
-    FcMatrix	m;
+    FcExprMatrix m;
+    int i;
 
-    while ((vstack = FcVStackPeek (parse)))
-    {
-	double	v;
-	switch (vstack->tag) {
-	case FcVStackInteger:
-	    v = vstack->u.integer;
-	    break;
-	case FcVStackDouble:
-	    v = vstack->u._double;
-	    break;
-	default:
-	    FcConfigMessage (parse, FcSevereError, "non-double matrix element");
-	    v = 1.0;
-	    break;
-	}
-	switch (matrix_state) {
-	case m_xx: m.xx = v; break;
-	case m_xy: m.xy = v; break;
-	case m_yx: m.yx = v; break;
-	case m_yy: m.yy = v; break;
-	default: break;
-	}
-	FcVStackPopAndDestroy (parse);
-	matrix_state--;
-    }
-    if (matrix_state != m_done)
-	FcConfigMessage (parse, FcSevereError, "wrong number of matrix elements");
+    m.yy = FcPopExpr (parse);
+    m.yx = FcPopExpr (parse);
+    m.xy = FcPopExpr (parse);
+    m.xx = FcPopExpr (parse);
+
+    if (FcPopExpr (parse))
+      FcConfigMessage (parse, FcSevereError, "wrong number of matrix elements");
     else
-	FcVStackPushMatrix (parse, &m);
+      FcVStackPushMatrix (parse, &m);
 }
 
 static void
@@ -2426,7 +2441,7 @@ FcPopValue (FcConfigParse *parse)
 	value.type = FcTypeDouble;
 	break;
     case FcVStackMatrix:
-	value.u.m = FcMatrixCopy (vstack->u.matrix);
+	value.u.m = FcExprMatrixCopyShallow (vstack->u.matrix);
 	if (value.u.m)
 	    value.type = FcTypeMatrix;
 	break;

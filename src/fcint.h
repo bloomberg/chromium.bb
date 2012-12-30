@@ -251,13 +251,17 @@ typedef enum _FcOpFlags {
 #define FC_OP_GET_FLAGS(_x_)	(((_x_) & 0xffff0000) >> 16)
 #define FC_OP(_x_,_f_)		(FC_OP_GET_OP (_x_) | ((_f_) << 16))
 
+typedef struct _FcExprMatrix {
+  struct _FcExpr *xx, *xy, *yx, *yy;
+} FcExprMatrix;
+
 typedef struct _FcExpr {
     FcOp   op;
     union {
 	int	    ival;
 	double	    dval;
 	const FcChar8	    *sval;
-	FcMatrix    *mval;
+	FcExprMatrix *mexpr;
 	FcBool	    bval;
 	FcCharSet   *cval;
 	FcLangSet   *lval;

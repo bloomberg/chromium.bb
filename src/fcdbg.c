@@ -249,11 +249,17 @@ FcExprPrint (const FcExpr *expr)
     case FcOpInteger: printf ("%d", expr->u.ival); break;
     case FcOpDouble: printf ("%g", expr->u.dval); break;
     case FcOpString: printf ("\"%s\"", expr->u.sval); break;
-    case FcOpMatrix: printf ("[%g %g %g %g]",
-			      expr->u.mval->xx,
-			      expr->u.mval->xy,
-			      expr->u.mval->yx,
-			      expr->u.mval->yy); break;
+    case FcOpMatrix:
+	printf ("[");
+	FcExprPrint (expr->u.mexpr->xx);
+	printf (" ");
+	FcExprPrint (expr->u.mexpr->xy);
+	printf (" ");
+	FcExprPrint (expr->u.mexpr->yx);
+	printf (" ");
+	FcExprPrint (expr->u.mexpr->yx);
+	printf ("]");
+	break;
     case FcOpRange: break;
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case FcOpCharSet: printf ("charset\n"); break;

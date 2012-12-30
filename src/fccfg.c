@@ -897,9 +897,27 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
-	v.type = FcTypeMatrix;
-	v.u.m = e->u.mval;
-	v = FcValueSave (v);
+	{
+	  FcMatrix m;
+	  v.type = FcTypeMatrix;
+	  FcValue xx, xy, yx, yy;
+	  xx = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->xx), v);
+	  xy = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->xy), v);
+	  yx = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->yx), v);
+	  yy = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->yy), v);
+	  if (xx.type == FcTypeDouble && xy.type == FcTypeDouble &&
+	      yx.type == FcTypeDouble && yy.type == FcTypeDouble)
+	  {
+	    m.xx = xx.u.d;
+	    m.xy = xy.u.d;
+	    m.yx = yx.u.d;
+	    m.yy = yy.u.d;
+	    v.u.m = &m;
+	  }
+	  else
+	    v.type = FcTypeVoid;
+	  v = FcValueSave (v);
+	}
 	break;
     case FcOpCharSet:
 	v.type = FcTypeCharSet;
