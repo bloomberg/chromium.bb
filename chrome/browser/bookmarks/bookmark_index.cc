@@ -13,9 +13,9 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/query_parser.h"
+#include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/l10n/l10n_util.h"
 
