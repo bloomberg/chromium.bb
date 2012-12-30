@@ -268,10 +268,10 @@ FcFStatFs (int fd, FcStatFS *statb)
     int ret = -1;
     FcBool flag = FcFalse;
 
-    memset (statb, 0, sizeof (FcStatFS));
-
 #if defined(HAVE_FSTATVFS) && (defined(HAVE_STRUCT_STATVFS_F_BASETYPE) || defined(HAVE_STRUCT_STATVFS_F_FSTYPENAME))
     struct statvfs buf;
+
+    memset (statb, 0, sizeof (FcStatFS));
 
     if ((ret = fstatvfs (fd, &buf)) == 0)
     {
@@ -283,6 +283,8 @@ FcFStatFs (int fd, FcStatFS *statb)
     }
 #elif defined(HAVE_FSTATFS) && (defined(HAVE_STRUCT_STATFS_F_FLAGS) || defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) || defined(__linux__))
     struct statfs buf;
+
+    memset (statb, 0, sizeof (FcStatFS));
 
     if ((ret = fstatfs (fd, &buf)) == 0)
     {
