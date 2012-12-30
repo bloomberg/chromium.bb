@@ -166,6 +166,12 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
+FilePath GetTemporaryFile() {
+  FilePath temp_file;
+  CHECK(file_util::CreateTemporaryFile(&temp_file));
+  return temp_file;
+}
+
 }  // namespace
 
 class MockExtensionProvider : public extensions::ExternalProviderInterface {
@@ -2084,6 +2090,13 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   const Extension* theme = *service_->extensions()->begin();
   EXPECT_EQ("name", theme->name());
   EXPECT_EQ("description", theme->description());
+
+  // Cleanup the "Cached Theme.pak" file. Ideally, this would be installed in a
+  // temporary directory, but it automatically installs to the extension's
+  // directory, and we don't want to copy the whole extension for a unittest.
+  FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
+  ASSERT_TRUE(file_util::PathExists(theme_file));
+  ASSERT_TRUE(file_util::Delete(theme_file, false));  // Not recursive.
 }
 
 // Tests that we can change the ID of an unpacked extension by adding a key
@@ -3598,14 +3611,18 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   std::string id = extension_v1->id();
   EXPECT_TRUE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v2_bad_requirements"), pem_path,
-                           path.AppendASCII("v2_bad_requirements.crx"));
-  UpdateExtension(id, path.AppendASCII("v2_bad_requirements.crx"), INSTALLED);
+  FilePath v2_bad_requirements_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v2_bad_requirements"),
+          pem_path,
+          v2_bad_requirements_crx);
+  UpdateExtension(id, v2_bad_requirements_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v3_good"), pem_path,
-                           path.AppendASCII("v3_good.crx"));
-  UpdateExtension(id, path.AppendASCII("v3_good.crx"), ENABLED);
+  FilePath v3_good_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v3_good"), pem_path, v3_good_crx);
+  UpdateExtension(id, v3_good_crx, ENABLED);
   EXPECT_TRUE(service_->IsExtensionEnabled(id));
 }
 
@@ -3624,14 +3641,18 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   service_->DisableExtension(id, Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v2_bad_requirements"), pem_path,
-                           path.AppendASCII("v2_bad_requirements.crx"));
-  UpdateExtension(id, path.AppendASCII("v2_bad_requirements.crx"), INSTALLED);
+  FilePath v2_bad_requirements_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v2_bad_requirements"),
+          pem_path,
+          v2_bad_requirements_crx);
+  UpdateExtension(id, v2_bad_requirements_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v3_good"), pem_path,
-                           path.AppendASCII("v3_good.crx"));
-  UpdateExtension(id, path.AppendASCII("v3_good.crx"), INSTALLED);
+  FilePath v3_good_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v3_good"), pem_path, v3_good_crx);
+  UpdateExtension(id, v3_good_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 }
 
@@ -3650,16 +3671,20 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   std::string id = extension_v1->id();
   EXPECT_TRUE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v2_bad_requirements_and_permissions"), pem_path,
-      path.AppendASCII("v2_bad_requirements_and_permissions.crx"));
-  UpdateExtension(
-      id,
-      path.AppendASCII("v2_bad_requirements_and_permissions.crx"), INSTALLED);
+  FilePath v2_bad_requirements_and_permissions_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v2_bad_requirements_and_permissions"),
+          pem_path,
+          v2_bad_requirements_and_permissions_crx);
+  UpdateExtension(id, v2_bad_requirements_and_permissions_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  PackCRX(path.AppendASCII("v3_bad_permissions"), pem_path,
-                           path.AppendASCII("v3_bad_permissions.crx"));
-  UpdateExtension(id, path.AppendASCII("v3_bad_permissions.crx"), INSTALLED);
+  FilePath v3_bad_permissions_crx = GetTemporaryFile();
+
+  PackCRX(path.AppendASCII("v3_bad_permissions"),
+          pem_path,
+          v3_bad_permissions_crx);
+  UpdateExtension(id, v3_bad_permissions_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 }
 
