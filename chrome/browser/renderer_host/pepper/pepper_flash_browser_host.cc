@@ -5,12 +5,12 @@
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
 #include "base/time.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_context.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
@@ -29,19 +29,21 @@
 using content::BrowserPpapiHost;
 using content::BrowserThread;
 using content::RenderProcessHost;
-using content::ResourceContext;
 
 namespace chrome {
 
 namespace {
 
-// Get the ResourceContext on the UI thread for the given render process ID.
-ResourceContext* GetResourceContext(int render_process_id) {
+// Get the CookieSettings on the UI thread for the given render process ID.
+scoped_refptr<CookieSettings> GetCookieSettings(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* render_process_host = RenderProcessHost::FromID(
       render_process_id);
-  if (render_process_host && render_process_host->GetBrowserContext())
-    return render_process_host->GetBrowserContext()->GetResourceContext();
+  if (render_process_host && render_process_host->GetBrowserContext()) {
+    Profile* profile =
+        Profile::FromBrowserContext(render_process_host->GetBrowserContext());
+    return CookieSettings::Factory::GetForProfile(profile);
+  }
   return NULL;
 }
 
@@ -53,7 +55,6 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      resource_context_(NULL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   int unused;
   host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
@@ -108,19 +109,18 @@ int32_t PepperFlashBrowserHost::OnMsgGetLocalTimeZoneOffset(
 
 int32_t PepperFlashBrowserHost::OnMsgGetLocalDataRestrictions(
     ppapi::host::HostMessageContext* context) {
-  // Getting the LocalDataRestrictions needs to be done on the IO thread,
-  // however it relies on the ResourceContext which can only be accessed from
-  // the UI thread. We lazily initialize |resource_context_| by grabbing the
-  // pointer from the UI thread and then call |GetLocalDataRestrictions| with
-  // it.
+  // Getting the Flash LSO settings requires using the CookieSettings which
+  // belong to the profile which lives on the UI thread. We lazily initialize
+  // |cookie_settings_| by grabbing the reference from the UI thread and then
+  // call |GetLocalDataRestrictions| with it.
   GURL document_url = host_->GetDocumentURLForInstance(pp_instance());
   GURL plugin_url = host_->GetPluginURLForInstance(pp_instance());
-  if (resource_context_) {
+  if (cookie_settings_.get()) {
     GetLocalDataRestrictions(context->MakeReplyMessageContext(), document_url,
-                             plugin_url, resource_context_);
+                             plugin_url, cookie_settings_);
   } else {
     BrowserThread::PostTaskAndReplyWithResult(BrowserThread::UI, FROM_HERE,
-        base::Bind(&GetResourceContext, render_process_id_),
+        base::Bind(&GetCookieSettings, render_process_id_),
         base::Bind(&PepperFlashBrowserHost::GetLocalDataRestrictions,
                    weak_factory_.GetWeakPtr(),
                    context->MakeReplyMessageContext(),
@@ -133,24 +133,25 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
     ppapi::host::ReplyMessageContext reply_context,
     const GURL& document_url,
     const GURL& plugin_url,
-    ResourceContext* resource_context) {
+    scoped_refptr<CookieSettings> cookie_settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Note that the resource context lives on the IO thread and is owned by the
-  // browser profile so its lifetime should outlast ours.
-  if (!resource_context_)
-    resource_context_ = resource_context;
+
+  // Lazily initialize |cookie_settings_|. The cookie settings are thread-safe
+  // ref-counted so as long as we hold a reference to them we can safely access
+  // them on the IO thread.
+  if (!cookie_settings_.get()) {
+    cookie_settings_ = cookie_settings;
+  } else {
+    DCHECK(cookie_settings_.get() == cookie_settings.get());
+  }
 
   PP_FlashLSORestrictions restrictions = PP_FLASHLSORESTRICTIONS_NONE;
-  if (resource_context_ && document_url.is_valid() && plugin_url.is_valid()) {
-    content::ContentBrowserClient* client =
-        content::GetContentClient()->browser();
-    if (!client->AllowPluginLocalDataAccess(document_url, plugin_url,
-                                            resource_context_)) {
+  if (cookie_settings_.get() && document_url.is_valid() &&
+      plugin_url.is_valid()) {
+    if (!cookie_settings_->IsReadingCookieAllowed(document_url, plugin_url))
       restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
-    } else if (client->AllowPluginLocalDataSessionOnly(plugin_url,
-                                                       resource_context_)) {
+    else if (cookie_settings_->IsCookieSessionOnly(plugin_url))
       restrictions = PP_FLASHLSORESTRICTIONS_IN_MEMORY;
-    }
   }
   SendReply(reply_context, PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply(
       static_cast<int32_t>(restrictions)));

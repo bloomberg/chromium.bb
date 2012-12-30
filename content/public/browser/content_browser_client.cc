@@ -109,19 +109,6 @@ bool ContentBrowserClient::AllowSetCookie(const GURL& url,
   return true;
 }
 
-bool ContentBrowserClient::AllowPluginLocalDataAccess(
-    const GURL& document_url,
-    const GURL& plugin_url,
-    content::ResourceContext* context) {
-  return true;
-}
-
-bool ContentBrowserClient::AllowPluginLocalDataSessionOnly(
-    const GURL& url,
-    content::ResourceContext* context) {
-  return false;
-}
-
 bool ContentBrowserClient::AllowSaveLocalState(ResourceContext* context) {
   return true;
 }

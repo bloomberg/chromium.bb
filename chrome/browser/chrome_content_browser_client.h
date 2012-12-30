@@ -106,13 +106,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options) OVERRIDE;
-  virtual bool AllowPluginLocalDataAccess(
-      const GURL& document_url,
-      const GURL& plugin_url,
-      content::ResourceContext* context) OVERRIDE;
-  virtual bool AllowPluginLocalDataSessionOnly(
-      const GURL& url,
-      content::ResourceContext* context) OVERRIDE;
   virtual bool AllowSaveLocalState(content::ResourceContext* context) OVERRIDE;
   virtual bool AllowWorkerDatabase(
       const GURL& url,

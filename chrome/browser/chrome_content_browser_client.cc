@@ -1102,24 +1102,6 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   return allow;
 }
 
-bool ChromeContentBrowserClient::AllowPluginLocalDataAccess(
-    const GURL& document_url,
-    const GURL& plugin_url,
-    content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  return io_data->GetCookieSettings()->IsReadingCookieAllowed(document_url,
-                                                              plugin_url);
-}
-
-bool ChromeContentBrowserClient::AllowPluginLocalDataSessionOnly(
-    const GURL& url,
-    content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  return io_data->GetCookieSettings()->IsCookieSessionOnly(url);
-}
-
 bool ChromeContentBrowserClient::AllowSaveLocalState(
     content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

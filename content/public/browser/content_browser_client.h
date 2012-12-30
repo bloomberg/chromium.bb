@@ -210,21 +210,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int render_view_id,
                               net::CookieOptions* options);
 
-  // Returns whether plug-ins should access locally stored data or whether all
-  // access should be blocked. The default is to allow local data access.
-  // This is called on the IO thread.
-  virtual bool AllowPluginLocalDataAccess(
-      const GURL& document_url,
-      const GURL& plugin_url,
-      content::ResourceContext* context);
-
-  // Returns whether plug-ins should keep locally stored data for the session
-  // only. The default is to store local data permanently.
-  // This is called on the IO thread.
-  virtual bool AllowPluginLocalDataSessionOnly(
-      const GURL& url,
-      content::ResourceContext* context);
-
   // This is called on the IO thread.
   virtual bool AllowSaveLocalState(ResourceContext* context);
 
