@@ -123,8 +123,8 @@ class _BackgroundSteps(multiprocessing.Process):
     sys.stdout.flush()
     sys.stderr.flush()
     orig_stdout, orig_stderr = sys.stdout, sys.stderr
-    stdout_fileno = sys.stdout.fileno()
-    stderr_fileno = sys.stderr.fileno()
+    stdout_fileno = sys.__stdout__.fileno()
+    stderr_fileno = sys.__stderr__.fileno()
     orig_stdout_fd, orig_stderr_fd = map(os.dup,
                                          [stdout_fileno, stderr_fileno])
     while self._steps:
@@ -133,8 +133,8 @@ class _BackgroundSteps(multiprocessing.Process):
       os.dup2(output.fileno(), stdout_fileno)
       os.dup2(output.fileno(), stderr_fileno)
       # Replace std[out|err] with unbuffered file objects
-      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-      sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+      sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
+      sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
       error = None
       try:
         results_lib.Results.Clear()
@@ -142,7 +142,6 @@ class _BackgroundSteps(multiprocessing.Process):
       except results_lib.StepFailure as ex:
         error = str(ex)
       except BaseException as ex:
-        traceback.print_exc(file=sys.stderr)
         error = traceback.format_exc()
         # If it's a fatal exception, don't run any more steps.
         if isinstance(ex, (SystemExit, KeyboardInterrupt)):
@@ -268,7 +267,7 @@ def _TaskRunner(queue, task, onexit=None):
     if not tracebacks:
       try:
         task(*x)
-      except Exception:
+      except BaseException:
         tracebacks.append(traceback.format_exc())
 
   # Run exit handlers.

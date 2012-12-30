@@ -9,6 +9,7 @@ import os
 import sys
 import tempfile
 import time
+import Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_test_lib
@@ -23,7 +24,7 @@ _TOTAL_BYTES = _NUM_THREADS * _NUM_WRITES * _BUFSIZE
 _GREETING = 'hello world'
 
 
-class ParallelMock(partial_mock.PartialCmdMock):
+class ParallelMock(partial_mock.PartialMock):
   """Run parallel steps in sequence for testing purposes.
 
   This class updates chromite.lib.parallel to just run processes in
@@ -42,6 +43,34 @@ class ParallelMock(partial_mock.PartialCmdMock):
     finally:
       for step in steps:
         step()
+
+
+class BackgroundTaskVerifier(partial_mock.PartialMock):
+  """Verify that queues are empty after BackgroundTaskRunner runs.
+
+  BackgroundTaskRunner should always empty its input queues, even if an
+  exception occurs. This is important for preventing a deadlock in the case
+  where a thread fails partway through (e.g. user presses Ctrl-C before all
+  input can be processed).
+  """
+
+  TARGET = 'chromite.lib.parallel'
+  ATTRS = ('BackgroundTaskRunner',)
+
+  @contextlib.contextmanager
+  def BackgroundTaskRunner(self, task, queue=None, processes=None, onexit=None):
+    if queue is None:
+      queue = multiprocessing.Queue()
+    try:
+      with self.backup['BackgroundTaskRunner'](task, queue, processes, onexit):
+        yield queue
+    finally:
+      try:
+        queue.get(False)
+      except Queue.Empty:
+        pass
+      else:
+        raise AssertionError('Expected empty queue after BackgroundTaskRunner')
 
 
 class TestBackgroundWrapper(cros_test_lib.TestCase):
@@ -152,6 +181,33 @@ class TestParallelMock(cros_test_lib.TestCase):
       parallel.RunTasksInProcessPool(self._Callback, [], processes=9,
                                      onexit=self._Callback)
       self.assertEqual(10, self._calls)
+
+
+class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
+  """Test cases where a child processes raise exceptions."""
+
+  def _SystemExit(self):
+    sys.stdout.write(_GREETING)
+    sys.exit(1)
+
+  def _KeyboardInterrupt(self):
+    sys.stdout.write(_GREETING)
+    raise KeyboardInterrupt()
+
+  def testExceptionRaising(self):
+    self.StartPatcher(BackgroundTaskVerifier())
+    for fn in (self._SystemExit, self._KeyboardInterrupt):
+      for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
+                   lambda: parallel.RunParallelSteps([fn])):
+        output_str = ex_str = None
+        with self.OutputCapturer() as capture:
+          try:
+            task()
+          except parallel.BackgroundFailure as ex:
+            output_str = capture.GetStdout()
+            ex_str = str(ex)
+        self.assertTrue('Traceback' in ex_str)
+        self.assertEqual(output_str, _GREETING)
 
 
 if __name__ == '__main__':
