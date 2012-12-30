@@ -1338,9 +1338,7 @@ FcParseString (FcConfigParse *parse, FcVStackTag tag)
 static void
 FcParseMatrix (FcConfigParse *parse)
 {
-    FcVStack	*vstack;
     FcExprMatrix m;
-    int i;
 
     m.yy = FcPopExpr (parse);
     m.yx = FcPopExpr (parse);

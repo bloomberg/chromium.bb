@@ -78,8 +78,6 @@ FcStrFree (FcChar8 *s)
 #define FcCaseFoldUpperCount(cf) \
     ((cf)->method == FC_CASE_FOLD_FULL ? 1 : (cf)->count)
 
-#define FC_STR_CANON_BUF_LEN	1024
-
 typedef struct _FcCaseWalker {
     const FcChar8   *read;
     const FcChar8   *src;
