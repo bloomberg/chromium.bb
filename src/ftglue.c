@@ -257,6 +257,5 @@ Exit:
 }
 
 #undef QALLOC
-#define __ftglue__
 #include "fcaliastail.h"
 #undef __ftglue__
