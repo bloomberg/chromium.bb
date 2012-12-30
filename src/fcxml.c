@@ -2423,7 +2423,7 @@ FcPopValue (FcConfigParse *parse)
 	break;
     case FcVStackDouble:
 	value.u.d = vstack->u._double;
-	value.type = FcTypeInteger;
+	value.type = FcTypeDouble;
 	break;
     case FcVStackMatrix:
 	value.u.m = FcMatrixCopy (vstack->u.matrix);
