@@ -182,7 +182,7 @@ FcLangNormalize (const FcChar8 *lang)
 {
     FcChar8 *result = NULL, *s, *orig;
     char *territory, *encoding, *modifier;
-    size_t llen, tlen = 0, mlen = 0, ssize;
+    size_t llen, tlen = 0, mlen = 0;
 
     if (!lang || !*lang)
 	return NULL;
@@ -197,10 +197,6 @@ FcLangNormalize (const FcChar8 *lang)
     s = FcStrCopy (lang);
     if (!s)
 	goto bail;
-    /* store the original length of 's' here to let FcMemFree know
-     * the correct size since we breaks 's' from now on.
-     */
-    ssize = strlen ((const char *)s) + 1;
 
     /* from the comments in glibc:
      *
@@ -289,8 +285,6 @@ FcLangNormalize (const FcChar8 *lang)
 	    /* we'll miss the opportunity to reduce the correct size
 	     * of the allocated memory for the string after that.
 	     */
-	    FcMemFree (FC_MEM_STRING, ssize);
-	    FcMemAlloc (FC_MEM_STRING, strlen((const char *)s) + 1);
 	    s = NULL;
 	    goto bail1;
 	}
@@ -307,8 +301,6 @@ FcLangNormalize (const FcChar8 *lang)
 	    /* we'll miss the opportunity to reduce the correct size
 	     * of the allocated memory for the string after that.
 	     */
-	    FcMemFree (FC_MEM_STRING, ssize);
-	    FcMemAlloc (FC_MEM_STRING, strlen((const char *)s) + 1);
 	    s = NULL;
 	    goto bail1;
 	}
@@ -329,8 +321,6 @@ FcLangNormalize (const FcChar8 *lang)
 	/* we'll miss the opportunity to reduce the correct size
 	 * of the allocated memory for the string after that.
 	 */
-	FcMemFree (FC_MEM_STRING, ssize);
-	FcMemAlloc (FC_MEM_STRING, strlen((const char *)s) + 1);
 	s = NULL;
     }
   bail1:
@@ -338,10 +328,7 @@ FcLangNormalize (const FcChar8 *lang)
 	FcStrFree (orig);
   bail0:
     if (s)
-    {
 	free (s);
-	FcMemFree (FC_MEM_STRING, ssize);
-    }
   bail:
     if (FcDebug () & FC_DBG_LANGSET)
     {
@@ -465,7 +452,6 @@ FcLangSetCreate (void)
     ls = malloc (sizeof (FcLangSet));
     if (!ls)
 	return 0;
-    FcMemAlloc (FC_MEM_LANGSET, sizeof (FcLangSet));
     memset (ls->map, '\0', sizeof (ls->map));
     ls->map_size = NUM_LANG_SET_MAP;
     ls->extra = 0;
@@ -477,7 +463,6 @@ FcLangSetDestroy (FcLangSet *ls)
 {
     if (ls->extra)
 	FcStrSetDestroy (ls->extra);
-    FcMemFree (FC_MEM_LANGSET, sizeof (FcLangSet));
     free (ls);
 }
 

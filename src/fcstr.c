@@ -44,7 +44,6 @@ FcStrCopy (const FcChar8 *s)
     r = (FcChar8 *) malloc (len);
     if (!r)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, len);
     memcpy (r, s, len);
     return r;
 }
@@ -59,7 +58,6 @@ FcStrPlus (const FcChar8 *s1, const FcChar8 *s2)
 
     if (!s)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, l);
     memcpy (s, s1, s1l);
     memcpy (s + s1l, s2, s2l + 1);
     return s;
@@ -68,7 +66,6 @@ FcStrPlus (const FcChar8 *s1, const FcChar8 *s2)
 void
 FcStrFree (FcChar8 *s)
 {
-    FcMemFree (FC_MEM_STRING, strlen ((char *) s) + 1);
     free (s);
 }
 
@@ -204,7 +201,6 @@ FcStrDowncase (const FcChar8 *s)
     d = dst = malloc (len + 1);
     if (!d)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, len + 1);
     FcStrCaseWalkerInit (s, &w);
     while ((*d++ = FcStrCaseWalkerNext (&w)));
     return dst;
@@ -780,7 +776,6 @@ FcStrBufDestroy (FcStrBuf *buf)
 {
     if (buf->allocated)
     {
-	FcMemFree (FC_MEM_STRBUF, buf->size);
 	free (buf->buf);
 	FcStrBufInit (buf, 0, 0);
     }
@@ -797,7 +792,6 @@ FcStrBufDone (FcStrBuf *buf)
 	ret = malloc (buf->len + 1);
     if (ret)
     {
-	FcMemAlloc (FC_MEM_STRING, buf->len + 1);
 	memcpy (ret, buf->buf, buf->len);
 	ret[buf->len] = '\0';
     }
@@ -830,7 +824,6 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 	if (buf->allocated)
 	{
 	    size = buf->size * 2;
-	    FcMemFree (FC_MEM_STRBUF, buf->size);
 	    new = realloc (buf->buf, size);
 	}
 	else
@@ -848,7 +841,6 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 	    buf->failed = FcTrue;
 	    return FcFalse;
 	}
-	FcMemAlloc (FC_MEM_STRBUF, size);
 	buf->size = size;
 	buf->buf = new;
     }
@@ -939,7 +931,6 @@ FcStrDirname (const FcChar8 *file)
     dir = malloc ((slash - file) + 1);
     if (!dir)
 	return 0;
-    FcMemAlloc (FC_MEM_STRING, (slash - file) + 1);
     strncpy ((char *) dir, (const char *) file, slash - file);
     dir[slash - file] = '\0';
     return dir;
@@ -968,7 +959,6 @@ FcStrCanonAbsoluteFilename (const FcChar8 *s)
     file = malloc (size);
     if (!file)
 	return NULL;
-    FcMemAlloc (FC_MEM_STRING, size);
     slash = NULL;
     f = file;
 #ifdef _WIN32
@@ -1088,7 +1078,6 @@ FcStrSetCreate (void)
     FcStrSet	*set = malloc (sizeof (FcStrSet));
     if (!set)
 	return 0;
-    FcMemAlloc (FC_MEM_STRSET, sizeof (FcStrSet));
     set->ref = 1;
     set->num = 0;
     set->size = 0;
@@ -1110,14 +1099,10 @@ _FcStrSetAppend (FcStrSet *set, FcChar8 *s)
 
 	if (!strs)
 	    return FcFalse;
-	FcMemAlloc (FC_MEM_STRSET, (set->size + 2) * sizeof (FcChar8 *));
 	if (set->num)
 	    memcpy (strs, set->strs, set->num * sizeof (FcChar8 *));
 	if (set->strs)
-	{
-	    FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
 	    free (set->strs);
-	}
 	set->size = set->size + 1;
 	set->strs = strs;
     }
@@ -1252,11 +1237,7 @@ FcStrSetDestroy (FcStrSet *set)
 	for (i = 0; i < set->num; i++)
 	    FcStrFree (set->strs[i]);
 	if (set->strs)
-	{
-	    FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
 	    free (set->strs);
-	}
-	FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
 	free (set);
     }
 }
@@ -1269,7 +1250,6 @@ FcStrListCreate (FcStrSet *set)
     list = malloc (sizeof (FcStrList));
     if (!list)
 	return 0;
-    FcMemAlloc (FC_MEM_STRLIST, sizeof (FcStrList));
     list->set = set;
     set->ref++;
     list->n = 0;
@@ -1288,7 +1268,6 @@ void
 FcStrListDone (FcStrList *list)
 {
     FcStrSetDestroy (list->set);
-    FcMemFree (FC_MEM_STRLIST, sizeof (FcStrList));
     free (list);
 }
 

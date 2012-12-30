@@ -34,7 +34,6 @@ FcPatternCreate (void)
     p = (FcPattern *) malloc (sizeof (FcPattern));
     if (!p)
 	return 0;
-    FcMemAlloc (FC_MEM_PATTERN, sizeof (FcPattern));
     p->num = 0;
     p->size = 0;
     p->elts_offset = FcPtrToOffset (p, NULL);
@@ -123,15 +122,7 @@ FcValueSave (FcValue v)
 FcValueListPtr
 FcValueListCreate (void)
 {
-    FcValueListPtr ret;
-
-    ret = calloc (1, sizeof (FcValueList));
-    if (ret)
-    {
-	FcMemAlloc(FC_MEM_VALLIST, sizeof (FcValueList));
-    }
-
-    return ret;
+    return calloc (1, sizeof (FcValueList));
 }
 
 void
@@ -160,7 +151,6 @@ FcValueListDestroy (FcValueListPtr l)
 	    break;
 	}
 	next = FcValueListNext(l);
-	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
 	free(l);
     }
 }
@@ -382,9 +372,7 @@ FcPatternDestroy (FcPattern *p)
     for (i = 0; i < p->num; i++)
 	FcValueListDestroy (FcPatternEltValues(&elts[i]));
 
-    FcMemFree (FC_MEM_PATELT, p->size * sizeof (FcPatternElt));
     free (elts);
-    FcMemFree (FC_MEM_PATTERN, sizeof (FcPattern));
     free (p);
 }
 
@@ -454,9 +442,6 @@ FcPatternObjectInsertElt (FcPattern *p, FcObject object)
 	    if (!e)
 		return FcFalse;
 	    p->elts_offset = FcPtrToOffset (p, e);
-	    if (p->size)
-		FcMemFree (FC_MEM_PATELT, p->size * sizeof (FcPatternElt));
-	    FcMemAlloc (FC_MEM_PATELT, s * sizeof (FcPatternElt));
 	    while (p->size < s)
 	    {
 		e[p->size].object = 0;
@@ -662,7 +647,6 @@ FcPatternObjectAddWithBinding  (FcPattern	*p,
 bail2:
     FcValueDestroy (value);
 bail1:
-    FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
     free (new);
 bail0:
     return FcFalse;
@@ -1187,7 +1171,6 @@ FcSharedStrFree (const FcChar8 *name)
 		*p = b->next;
 		size = sizeof (struct objectBucket) + strlen ((char *)name) + 1;
 		size = (size + 3) & ~3;
-		FcMemFree (FC_MEM_SHAREDSTR, size);
 		free (b);
 	    }
             return FcTrue;
@@ -1216,7 +1199,6 @@ FcSharedStr (const FcChar8 *name)
      */
     size = (size + 3) & ~3;
     b = malloc (size);
-    FcMemAlloc (FC_MEM_SHAREDSTR, size);
     if (!b)
         return NULL;
     b->next = 0;

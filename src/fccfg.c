@@ -47,7 +47,6 @@ FcConfigCreate (void)
     config = malloc (sizeof (FcConfig));
     if (!config)
 	goto bail0;
-    FcMemAlloc (FC_MEM_CONFIG, sizeof (FcConfig));
 
     config->configDirs = FcStrSetCreate ();
     if (!config->configDirs)
@@ -115,7 +114,6 @@ bail2:
     FcStrSetDestroy (config->configDirs);
 bail1:
     free (config);
-    FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));
 bail0:
     return 0;
 }
@@ -190,7 +188,6 @@ FcSubstDestroy (FcSubst *s)
 	if (s->edit)
 	    FcEditDestroy (s->edit);
 	free (s);
-	FcMemFree (FC_MEM_SUBST, sizeof (FcSubst));
 	s = n;
     }
 }
@@ -205,7 +202,6 @@ FcConfigAllocExpr (FcConfig *config)
     new_page = malloc (sizeof (FcExprPage));
     if (!new_page)
       return 0;
-    FcMemAlloc (FC_MEM_EXPR, sizeof (FcExprPage));
 
     new_page->next_page = config->expr_pool;
     new_page->next = new_page->exprs;
@@ -265,13 +261,11 @@ FcConfigDestroy (FcConfig *config)
     while (page)
     {
       FcExprPage *next = page->next_page;
-      FcMemFree (FC_MEM_EXPR, sizeof (FcExprPage));
       free (page);
       page = next;
     }
 
     free (config);
-    FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));
 }
 
 /*
@@ -640,7 +634,6 @@ FcConfigAddEdit (FcConfig	*config,
     subst = (FcSubst *) malloc (sizeof (FcSubst));
     if (!subst)
 	return FcFalse;
-    FcMemAlloc (FC_MEM_SUBST, sizeof (FcSubst));
     for (; *prev; prev = &(*prev)->next);
     *prev = subst;
     subst->next = 0;
@@ -1054,7 +1047,6 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    m = malloc (sizeof (FcMatrix));
 		    if (m)
 		    {
-			FcMemAlloc (FC_MEM_MATRIX, sizeof (FcMatrix));
 			FcMatrixMultiply (m, vl.u.m, vr.u.m);
 			v.u.m = m;
 		    }
@@ -1256,7 +1248,6 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
     l = (FcValueList *) malloc (sizeof (FcValueList));
     if (!l)
 	return 0;
-    FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList));
     if (FC_OP_GET_OP (e->op) == FcOpComma)
     {
 	l->value = FcConfigEvaluate (p, e->u.tree.left);
@@ -1272,7 +1263,6 @@ FcConfigValues (FcPattern *p, FcExpr *e, FcValueBinding binding)
     {
 	FcValueList  *next = FcValueListNext(l);
 
-	FcMemFree (FC_MEM_VALLIST, sizeof (FcValueList));
 	free (l);
 	l = next;
     }
@@ -1467,7 +1457,6 @@ FcConfigSubstituteWithPat (FcConfig    *config,
     st = (FcSubState *) malloc (config->maxObjects * sizeof (FcSubState));
     if (!st && config->maxObjects)
 	return FcFalse;
-    FcMemAlloc (FC_MEM_SUBSTATE, config->maxObjects * sizeof (FcSubState));
 
     if (FcDebug () & FC_DBG_EDIT)
     {
@@ -1653,7 +1642,6 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    FcPatternPrint (p);
 	}
     }
-    FcMemFree (FC_MEM_SUBSTATE, config->maxObjects * sizeof (FcSubState));
     free (st);
     if (FcDebug () & FC_DBG_EDIT)
     {
@@ -1766,7 +1754,6 @@ FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
 #endif
     strcat ((char *) path, (char *) file);
 
-    FcMemAlloc (FC_MEM_STRING, osize);
     if (access ((char *) path, R_OK) == 0)
 	return path;
 
@@ -1891,7 +1878,6 @@ FcConfigXdgCacheHome (void)
 	ret = malloc (len + 7 + 1);
 	if (ret)
 	{
-	    FcMemAlloc (FC_MEM_STRING, len + 7 + 1);
 	    memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".cache", 7);
 	    ret[len + 7] = 0;
@@ -1917,7 +1903,6 @@ FcConfigXdgConfigHome (void)
 	ret = malloc (len + 8 + 1);
 	if (ret)
 	{
-	    FcMemAlloc (FC_MEM_STRING, len + 8 + 1);
 	    memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".config", 8);
 	    ret[len + 8] = 0;
@@ -1943,7 +1928,6 @@ FcConfigXdgDataHome (void)
 	ret = malloc (len + 13 + 1);
 	if (ret)
 	{
-	    FcMemAlloc (FC_MEM_STRING, len + 13 + 1);
 	    memcpy (ret, home, len);
 	    memcpy (&ret[len], FC_DIR_SEPARATOR_S ".local" FC_DIR_SEPARATOR_S "share", 13);
 	    ret[len + 13] = 0;

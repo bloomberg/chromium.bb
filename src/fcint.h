@@ -84,43 +84,9 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #define FC_DBG_PARSE	64
 #define FC_DBG_SCAN	128
 #define FC_DBG_SCANV	256
-#define FC_DBG_MEMORY	512
 #define FC_DBG_CONFIG	1024
 #define FC_DBG_LANGSET	2048
 #define FC_DBG_OBJTYPES	4096
-
-#define FC_MEM_CHARSET	    0
-#define FC_MEM_CHARLEAF	    1
-#define FC_MEM_FONTSET	    2
-#define FC_MEM_FONTPTR	    3
-#define FC_MEM_OBJECTSET    4
-#define FC_MEM_OBJECTPTR    5
-#define FC_MEM_MATRIX	    6
-#define FC_MEM_PATTERN	    7
-#define FC_MEM_PATELT	    8
-#define FC_MEM_VALLIST	    9
-#define FC_MEM_SUBSTATE	    10
-#define FC_MEM_STRING	    11
-#define FC_MEM_LISTBUCK	    12
-#define FC_MEM_STRSET	    13
-#define FC_MEM_STRLIST	    14
-#define FC_MEM_CONFIG	    15
-#define FC_MEM_LANGSET	    16
-#define FC_MEM_ATOMIC	    17
-#define FC_MEM_BLANKS	    18
-#define FC_MEM_CACHE	    19
-#define FC_MEM_STRBUF	    20
-#define FC_MEM_SUBST	    21
-#define FC_MEM_OBJECTTYPE   22
-#define FC_MEM_CONSTANT	    23
-#define FC_MEM_TEST	    24
-#define FC_MEM_EXPR	    25
-#define FC_MEM_VSTACK	    26
-#define FC_MEM_ATTR	    27
-#define FC_MEM_PSTACK	    28
-#define FC_MEM_SHAREDSTR    29
-
-#define FC_MEM_NUM	    30
 
 #define _FC_ASSERT_STATIC1(_line, _cond) typedef int _static_assert_on_line_##_line##_failed[(_cond)?1:-1]
 #define _FC_ASSERT_STATIC0(_line, _cond) _FC_ASSERT_STATIC1 (_line, (_cond))
@@ -809,17 +775,6 @@ FcTestDestroy (FcTest *test);
 
 FcPrivate void
 FcEditDestroy (FcEdit *e);
-
-/* fcinit.c */
-
-FcPrivate void
-FcMemReport (void);
-
-FcPrivate void
-FcMemAlloc (int kind, int size);
-
-FcPrivate void
-FcMemFree (int kind, int size);
 
 /* fclang.c */
 FcPrivate FcLangSet *

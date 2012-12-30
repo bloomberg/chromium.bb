@@ -481,7 +481,6 @@ FcNameRegisterConstants (const FcConstant *consts, int nconsts)
     l = (FcConstantList *) malloc (sizeof (FcConstantList));
     if (!l)
 	return FcFalse;
-    FcMemAlloc (FC_MEM_CONSTANT, sizeof (FcConstantList));
     l->consts = consts;
     l->nconsts = nconsts;
     l->next = _FcConstants;
@@ -501,7 +500,6 @@ FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
 	if (l->consts == consts && l->nconsts == nconsts)
 	{
 	    *prev = l->next;
-	    FcMemFree (FC_MEM_CONSTANT, sizeof (FcConstantList));
 	    free ((void *) l);
 	    return FcTrue;
 	}

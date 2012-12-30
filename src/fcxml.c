@@ -65,7 +65,6 @@ FcTestDestroy (FcTest *test)
     if (test->next)
 	FcTestDestroy (test->next);
     FcExprDestroy (test->expr);
-    FcMemFree (FC_MEM_TEST, sizeof (FcTest));
     free (test);
 }
 
@@ -708,7 +707,6 @@ FcTestCreate (FcConfigParse *parse,
     {
 	const FcObjectType	*o;
 	
-	FcMemAlloc (FC_MEM_TEST, sizeof (FcTest));
 	test->next = 0;
 	test->kind = kind;
 	test->qual = qual;
@@ -759,7 +757,6 @@ FcVStackCreateAndPush (FcConfigParse *parse)
 	new = malloc (sizeof (FcVStack));
 	if (!new)
 	    return 0;
-	FcMemAlloc (FC_MEM_VSTACK, sizeof (FcVStack));
     }
     new->tag = FcVStackNone;
     new->prev = 0;
@@ -984,10 +981,7 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
     if (vstack == &parse->vstack_static[parse->vstack_static_used - 1])
 	parse->vstack_static_used--;
     else
-    {
-	FcMemFree (FC_MEM_VSTACK, sizeof (FcVStack));
 	free (vstack);
-    }
 }
 
 static void
@@ -1036,7 +1030,6 @@ FcConfigSaveAttr (const XML_Char **attr, FcChar8 **buf, int size_bytes)
 	    FcConfigMessage (0, FcSevereError, "out of memory");
 	    return 0;
 	}
-	FcMemAlloc (FC_MEM_ATTR, 1);    /* size is too expensive */
     }
     s = (FcChar8 *) (new + (i + 1));
     for (i = 0; attr[i]; i++)
@@ -1061,7 +1054,6 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
 	new = malloc (sizeof (FcPStack));
 	if (!new)
 	    return FcFalse;
-	FcMemAlloc (FC_MEM_PSTACK, sizeof (FcPStack));
     }
 
     new->prev = parse->pstack;
@@ -1087,18 +1079,12 @@ FcPStackPop (FcConfigParse *parse)
     parse->pstack = old->prev;
     FcStrBufDestroy (&old->str);
     if (old->attr && old->attr != old->attr_buf_static)
-    {
-	FcMemFree (FC_MEM_ATTR, 1); /* size is to expensive */
 	free (old->attr);
-    }
 
     if (old == &parse->pstack_static[parse->pstack_static_used - 1])
 	parse->pstack_static_used--;
     else
-    {
-	FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
 	free (old);
-    }
     return FcTrue;
 }
 
@@ -1889,8 +1875,6 @@ FcParseDir (FcConfigParse *parse)
 	    goto bail;
 	}
 	prefix = p;
-	FcMemFree (FC_MEM_STRING, plen + 1);
-	FcMemAlloc (FC_MEM_STRING, plen + 1 + dlen + 1);
 	prefix[plen] = FC_DIR_SEPARATOR;
 	memcpy (&prefix[plen + 1], data, dlen);
 	prefix[plen + 1 + dlen] = 0;
@@ -1986,8 +1970,6 @@ FcParseCacheDir (FcConfigParse *parse)
 	    goto bail;
 	}
 	prefix = p;
-	FcMemFree (FC_MEM_STRING, plen + 1);
-	FcMemAlloc (FC_MEM_STRING, plen + 1 + dlen + 1);
 	prefix[plen] = FC_DIR_SEPARATOR;
 	memcpy (&prefix[plen + 1], data, dlen);
 	prefix[plen + 1 + dlen] = 0;
@@ -2005,7 +1987,6 @@ FcParseCacheDir (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    goto bail;
 	}
-	FcMemAlloc (FC_MEM_STRING, 1000);
 	rc = GetTempPath (800, (LPSTR) data);
 	if (rc == 0 || rc > 800)
 	{
@@ -2035,7 +2016,6 @@ FcParseCacheDir (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    goto bail;
 	}
-	FcMemAlloc (FC_MEM_STRING, len);
 	strncpy((char *) data, szFPath, len);
     }
 #endif
@@ -2089,8 +2069,6 @@ FcParseInclude (FcConfigParse *parse)
 	    goto bail;
 	}
 	prefix = p;
-	FcMemFree (FC_MEM_STRING, plen + 1);
-	FcMemAlloc (FC_MEM_STRING, plen + 1 + dlen + 1);
 	prefix[plen] = FC_DIR_SEPARATOR;
 	memcpy (&prefix[plen + 1], s, dlen);
 	prefix[plen + 1 + dlen] = 0;
