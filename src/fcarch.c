@@ -66,7 +66,7 @@ FC_ASSERT_STATIC (0x08 + 6*SIZEOF_VOID_P == sizeof (FcCache));
 
 
 int
-main (int argc, char **argv)
+main (int argc FC_UNUSED, char **argv FC_UNUSED)
 {
     printf ("%s\n", FC_ARCHITECTURE);
     return 0;

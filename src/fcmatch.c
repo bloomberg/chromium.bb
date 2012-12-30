@@ -563,8 +563,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 }
 
 static FcPattern *
-FcFontSetMatchInternal (FcConfig    *config,
-			FcFontSet   **sets,
+FcFontSetMatchInternal (FcFontSet   **sets,
 			int	    nsets,
 			FcPattern   *p,
 			FcResult    *result)
@@ -658,7 +657,7 @@ FcFontSetMatch (FcConfig    *config,
 	if (!config)
 	    return 0;
     }
-    best = FcFontSetMatchInternal (config, sets, nsets, p, result);
+    best = FcFontSetMatchInternal (sets, nsets, p, result);
     if (best)
 	return FcFontRenderPrepare (config, p, best);
     else
@@ -691,7 +690,7 @@ FcFontMatch (FcConfig	*config,
     if (config->fonts[FcSetApplication])
 	sets[nsets++] = config->fonts[FcSetApplication];
 
-    best = FcFontSetMatchInternal (config, sets, nsets, p, result);
+    best = FcFontSetMatchInternal (sets, nsets, p, result);
     if (best)
 	return FcFontRenderPrepare (config, p, best);
     else
@@ -794,7 +793,7 @@ FcFontSetSortDestroy (FcFontSet *fs)
 }
 
 FcFontSet *
-FcFontSetSort (FcConfig	    *config,
+FcFontSetSort (FcConfig	    *config FC_UNUSED,
 	       FcFontSet    **sets,
 	       int	    nsets,
 	       FcPattern    *p,

@@ -2541,7 +2541,7 @@ FcParsePattern (FcConfigParse *parse)
 }
 
 static void
-FcEndElement(void *userData, const XML_Char *name)
+FcEndElement(void *userData, const XML_Char *name FC_UNUSED)
 {
     FcConfigParse   *parse = userData;
     FcChar8	    *data;
@@ -2733,9 +2733,9 @@ FcCharacterData (void *userData, const XML_Char *s, int len)
 static void
 FcStartDoctypeDecl (void	    *userData,
 		    const XML_Char  *doctypeName,
-		    const XML_Char  *sysid,
-		    const XML_Char  *pubid,
-		    int		    has_internal_subset)
+		    const XML_Char  *sysid FC_UNUSED,
+		    const XML_Char  *pubid FC_UNUSED,
+		    int		    has_internal_subset FC_UNUSED)
 {
     FcConfigParse   *parse = userData;
 
@@ -2766,7 +2766,7 @@ FcExternalSubsetDecl (void            *userData,
 #else /* ENABLE_LIBXML2 */
 
 static void
-FcEndDoctypeDecl (void *userData)
+FcEndDoctypeDecl (void *userData FC_UNUSED)
 {
 }
 

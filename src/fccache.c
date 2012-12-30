@@ -666,7 +666,7 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
  * the magic number and the size field
  */
 static FcBool
-FcDirCacheValidateHelper (int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure)
+FcDirCacheValidateHelper (int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure FC_UNUSED)
 {
     FcBool  ret = FcTrue;
     FcCache	c;

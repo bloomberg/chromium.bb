@@ -1190,7 +1190,7 @@ FcCharSetFreezeOrig (FcCharSetFreezer *freezer, const FcCharSet *orig, const FcC
 }
 
 static FcCharSet *
-FcCharSetFreezeBase (FcCharSetFreezer *freezer, FcCharSet *fcs, const FcCharSet *orig)
+FcCharSetFreezeBase (FcCharSetFreezer *freezer, FcCharSet *fcs)
 {
     FcChar32		hash = FcCharSetHash (fcs);
     FcCharSetEnt	**bucket = &freezer->set_hash_table[hash % FC_CHAR_SET_HASH_SIZE];
@@ -1289,7 +1289,7 @@ FcCharSetFreeze (FcCharSetFreezer *freezer, const FcCharSet *fcs)
 	if (!FcCharSetInsertLeaf (b, FcCharSetNumbers(fcs)[i] << 8, l))
 	    goto bail1;
     }
-    n = FcCharSetFreezeBase (freezer, b, fcs);
+    n = FcCharSetFreezeBase (freezer, b);
     if (!FcCharSetFreezeOrig (freezer, fcs, n))
     {
 	n = NULL;

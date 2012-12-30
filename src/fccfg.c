@@ -510,7 +510,7 @@ FcConfigGetConfigFiles (FcConfig    *config)
 }
 
 FcChar8 *
-FcConfigGetCache (FcConfig  *config)
+FcConfigGetCache (FcConfig  *config FC_UNUSED)
 {
     return NULL;
 }

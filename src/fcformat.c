@@ -790,7 +790,7 @@ interpret_simple (FcFormatContext *c,
 }
 
 static FcBool
-cescape (FcFormatContext *c,
+cescape (FcFormatContext *c FC_UNUSED,
 	 const FcChar8   *str,
 	 FcStrBuf        *buf)
 {
@@ -811,7 +811,7 @@ cescape (FcFormatContext *c,
 }
 
 static FcBool
-shescape (FcFormatContext *c,
+shescape (FcFormatContext *c FC_UNUSED,
 	  const FcChar8   *str,
 	  FcStrBuf        *buf)
 {
@@ -829,7 +829,7 @@ shescape (FcFormatContext *c,
 }
 
 static FcBool
-xmlescape (FcFormatContext *c,
+xmlescape (FcFormatContext *c FC_UNUSED,
 	   const FcChar8   *str,
 	   FcStrBuf        *buf)
 {

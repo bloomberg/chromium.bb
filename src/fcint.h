@@ -69,6 +69,12 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #  define FC_DIR_SEPARATOR_S       "/"
 #endif
 
+#if __GNUC__ >= 4
+#define FC_UNUSED	__attribute__((unused))
+#else
+#define FC_UNUSED
+#endif
+
 #define FC_DBG_MATCH	1
 #define FC_DBG_MATCHV	2
 #define FC_DBG_EDIT	4
