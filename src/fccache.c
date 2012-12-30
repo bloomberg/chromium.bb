@@ -527,7 +527,7 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
     FcCache	*cache;
     FcBool	allocated = FcFalse;
 
-    if (fd_stat->st_size < sizeof (FcCache))
+    if (fd_stat->st_size < (int) sizeof (FcCache))
 	return NULL;
     cache = FcCacheFindByStat (fd_stat);
     if (cache)
@@ -582,7 +582,7 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
     }
     if (cache->magic != FC_CACHE_MAGIC_MMAP ||
 	cache->version < FC_CACHE_CONTENT_VERSION ||
-	cache->size != fd_stat->st_size ||
+	cache->size != (intptr_t) fd_stat->st_size ||
 	!FcCacheTimeValid (cache, dir_stat) ||
 	!FcCacheInsert (cache, fd_stat))
     {
@@ -842,7 +842,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     FcChar8	    *test_dir;
     FcCacheSkip     *skip;
     struct stat     cache_stat;
-    int		    magic;
+    unsigned int    magic;
     int		    written;
 
     /*

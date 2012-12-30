@@ -307,7 +307,7 @@ FcObjectValidType (FcObject object, FcType type)
 		return FcTrue;
 	    break;
 	default:
-	    if (t->type == -1 || type == t->type)
+	    if (t->type == (unsigned int) -1 || type == t->type)
 		return FcTrue;
 	    break;
 	}
@@ -343,7 +343,7 @@ FcObjectGetSet (void)
 FcBool
 FcObjectInit (void)
 {
-    int	i;
+    unsigned int	i;
 
     if (FcObjectsInited)
 	return FcTrue;
@@ -371,7 +371,7 @@ FcObjectFini (void)
 	FcObjectBuckets[i] = 0;
     }
     for (i = 0; i < FcObjectsNumber; i++)
-	if (FcObjects[i].type == -1)
+	if (FcObjects[i].type == (unsigned int) -1)
 	    free ((void*) FcObjects[i].object);
     if (FcObjects != _FcBaseObjectTypes)
 	free (FcObjects);

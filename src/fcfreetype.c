@@ -1117,8 +1117,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
     int		    nstyle_lang = 0;
     int		    nfullname = 0;
     int		    nfullname_lang = 0;
-    int		    p, platform;
-    int		    n, nameid;
+    unsigned int    p, n;
+    int		    platform, nameid;
 
     FcChar8	    *style = 0;
     int		    st;
@@ -1199,7 +1199,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		}
 		else
 		{
-		    int	    sp;
+		    unsigned int	sp;
 
 		    for (sp = 0; sp < NUM_PLATFORM_ORDER; sp++)
 			if (sname.platform_id == platform_order[sp])

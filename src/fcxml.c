@@ -508,9 +508,9 @@ typedef struct _FcConfigParse {
     const FcChar8   *name;
     FcConfig	    *config;
     XML_Parser	    parser;
-    int             pstack_static_used;
+    unsigned int    pstack_static_used;
     FcPStack        pstack_static[8];
-    int             vstack_static_used;
+    unsigned int    vstack_static_used;
     FcVStack        vstack_static[64];
 } FcConfigParse;
 

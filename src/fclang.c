@@ -51,7 +51,7 @@ static void
 FcLangSetBitSet (FcLangSet    *ls,
 		 unsigned int  id)
 {
-  int bucket;
+  unsigned int bucket;
 
   id = fcLangCharSetIndices[id];
   bucket = id >> 5;
@@ -65,7 +65,7 @@ static FcBool
 FcLangSetBitGet (const FcLangSet *ls,
 		 unsigned int     id)
 {
-  int bucket;
+  unsigned int bucket;
 
   id = fcLangCharSetIndices[id];
   bucket = id >> 5;
@@ -79,7 +79,7 @@ static void
 FcLangSetBitReset (FcLangSet    *ls,
 		   unsigned int  id)
 {
-  int bucket;
+  unsigned int bucket;
 
   id = fcLangCharSetIndices[id];
   bucket = id >> 5;
