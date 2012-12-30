@@ -515,7 +515,17 @@ class DebugStubTest(unittest.TestCase):
       # TODO(eaeltsin):
       #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
+    func_addr = GetSymbols()['test_interrupt']
     with LaunchDebugStub('test_interrupt') as connection:
+      # Single stepping inside syscalls doesn't work. So we need to reach
+      # a point where interrupt will not catch the program inside syscall.
+      reply = connection.RspRequest('Z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+      reply = connection.RspRequest('c')
+      AssertReplySignal(reply, NACL_SIGTRAP)
+      reply = connection.RspRequest('z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+
       # Continue (program will spin forever), then interrupt.
       connection.RspSendOnly('c')
       reply = connection.RspInterrupt()
