@@ -209,7 +209,7 @@ class RepoRepository(object):
                                self.directory)
         paths = [os.path.join(self.directory, '.repo', x) for x in
                  ('manifest.xml', 'manifests.git', 'manifests', 'repo')]
-        cros_build_lib.SudoRunCommand(['rm', '-rf', paths])
+        cros_build_lib.SudoRunCommand(['rm', '-rf'] + paths)
         self._repo_update_needed = False
 
     # Wipe local_manifest.xml if it exists- it can interfere w/ things in
