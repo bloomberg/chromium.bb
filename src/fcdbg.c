@@ -43,10 +43,10 @@ _FcValuePrint (const FcValue v)
 	printf ("\"%s\"", v.u.s);
 	break;
     case FcTypeBool:
-	printf ("%s", v.u.b ? "FcTrue" : "FcFalse");
+	printf ("%s", v.u.b ? "True" : "False");
 	break;
     case FcTypeMatrix:
-	printf ("(%f %f; %f %f)", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
+	printf ("[%g %g; %g %g]", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
 	break;
     case FcTypeCharSet:	/* XXX */
 	FcCharSetPrint (v.u.c);
@@ -254,10 +254,10 @@ FcExprPrint (const FcExpr *expr)
 	FcExprPrint (expr->u.mexpr->xx);
 	printf (" ");
 	FcExprPrint (expr->u.mexpr->xy);
-	printf (" ");
+	printf ("; ");
 	FcExprPrint (expr->u.mexpr->yx);
 	printf (" ");
-	FcExprPrint (expr->u.mexpr->yx);
+	FcExprPrint (expr->u.mexpr->yy);
 	printf ("]");
 	break;
     case FcOpRange: break;
@@ -269,7 +269,16 @@ FcExprPrint (const FcExpr *expr)
 	printf ("\n");
 	break;
     case FcOpNil: printf ("nil\n"); break;
-    case FcOpField: printf ("%s", FcObjectName(expr->u.object)); break;
+    case FcOpField: printf ("%s ", FcObjectName(expr->u.name.object));
+      switch ((int) expr->u.name.kind) {
+      case FcMatchPattern:
+	  printf ("(pattern) ");
+	  break;
+      case FcMatchFont:
+	  printf ("(font) ");
+	  break;
+      }
+      break;
     case FcOpConst: printf ("%s", expr->u.constant); break;
     case FcOpQuest:
 	FcExprPrint (expr->u.tree.left);

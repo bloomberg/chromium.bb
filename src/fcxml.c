@@ -187,13 +187,13 @@ FcExprCreateLangSet (FcConfig *config, FcLangSet *langset)
 }
 
 static FcExpr *
-FcExprCreateField (FcConfig *config, const char *field)
+FcExprCreateName (FcConfig *config, FcExprName name)
 {
     FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpField;
-	e->u.object = FcObjectFromName (field);
+	e->u.name = name;
     }
     return e;
 }
@@ -453,9 +453,9 @@ typedef enum _FcVStackTag {
 
     FcVStackString,
     FcVStackFamily,
-    FcVStackField,
     FcVStackConstant,
     FcVStackGlob,
+    FcVStackName,
     FcVStackPattern,
 
     FcVStackPrefer,
@@ -489,6 +489,7 @@ typedef struct _FcVStack {
 	FcBool		bool_;
 	FcCharSet	*charset;
 	FcLangSet	*langset;
+	FcExprName	name;
 
 	FcTest		*test;
 	FcQual		qual;
@@ -631,7 +632,7 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
     case FcOpNil:
 	break;
     case FcOpField:
-	o = FcNameGetObjectType (FcObjectName (expr->u.object));
+	o = FcNameGetObjectType (FcObjectName (expr->u.name.object));
 	if (o)
 	    FcTypecheckValue (parse, o->type, type);
 	break;
@@ -865,6 +866,18 @@ FcVStackPushLangSet (FcConfigParse *parse, FcLangSet *langset)
 }
 
 static FcBool
+FcVStackPushName (FcConfigParse *parse, FcMatchKind kind, FcObject object)
+{
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
+    if (!vstack)
+	return FcFalse;
+    vstack->u.name.object = object;
+    vstack->u.name.kind = kind;
+    vstack->tag = FcVStackName;
+    return FcTrue;
+}
+
+static FcBool
 FcVStackPushTest (FcConfigParse *parse, FcTest *test)
 {
     FcVStack    *vstack = FcVStackCreateAndPush (parse);
@@ -938,10 +951,11 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
     switch (vstack->tag) {
     case FcVStackNone:
 	break;
+    case FcVStackName:
+	break;
     case FcVStackFamily:
 	break;
     case FcVStackString:
-    case FcVStackField:
     case FcVStackConstant:
     case FcVStackGlob:
 	FcStrFree (vstack->u.string);
@@ -1319,6 +1333,47 @@ FcParseString (FcConfigParse *parse, FcVStackTag tag)
     }
     if (!FcVStackPushString (parse, tag, s))
 	FcStrFree (s);
+}
+
+static void
+FcParseName (FcConfigParse *parse)
+{
+    const FcChar8   *kind_string;
+    FcMatchKind	    kind;
+    FcChar8 *s;
+    FcObject object;
+
+    kind_string = FcConfigGetAttribute (parse, "target");
+    if (!kind_string)
+	kind = FcMatchDefault;
+    else
+    {
+	if (!strcmp ((char *) kind_string, "pattern"))
+	    kind = FcMatchPattern;
+	else if (!strcmp ((char *) kind_string, "font"))
+	    kind = FcMatchFont;
+	else if (!strcmp ((char *) kind_string, "default"))
+	    kind = FcMatchDefault;
+	else
+	{
+	    FcConfigMessage (parse, FcSevereWarning, "invalid name target \"%s\"", kind_string);
+	    return;
+	}
+    }
+
+    if (!parse->pstack)
+	return;
+    s = FcStrBufDone (&parse->pstack->str);
+    if (!s)
+    {
+	FcConfigMessage (parse, FcSevereError, "out of memory");
+	return;
+    }
+    object = FcObjectFromName ((const char *) s);
+
+    FcVStackPushName (parse, kind, object);
+
+    FcStrFree (s);
 }
 
 static void
@@ -1722,8 +1777,8 @@ FcPopExpr (FcConfigParse *parse)
     case FcVStackFamily:
 	expr = FcExprCreateString (parse->config, vstack->u.string);
 	break;
-    case FcVStackField:
-	expr = FcExprCreateField (parse->config, (char *) vstack->u.string);
+    case FcVStackName:
+	expr = FcExprCreateName (parse->config, vstack->u.name);
 	break;
     case FcVStackConstant:
 	expr = FcExprCreateConst (parse->config, vstack->u.string);
@@ -2619,7 +2674,7 @@ FcEndElement(void *userData, const XML_Char *name FC_UNUSED)
 	FcParsePatelt (parse);
 	break;
     case FcElementName:
-	FcParseString (parse, FcVStackField);
+	FcParseName (parse);
 	break;
     case FcElementConst:
 	FcParseString (parse, FcVStackConstant);

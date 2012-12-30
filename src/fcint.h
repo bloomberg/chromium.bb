@@ -227,6 +227,12 @@ typedef struct _FcExprMatrix {
   struct _FcExpr *xx, *xy, *yx, *yy;
 } FcExprMatrix;
 
+typedef struct _FcExprName {
+  FcObject	object;
+  FcMatchKind	kind;
+} FcExprName;
+
+
 typedef struct _FcExpr {
     FcOp   op;
     union {
@@ -237,7 +243,8 @@ typedef struct _FcExpr {
 	FcBool	    bval;
 	FcCharSet   *cval;
 	FcLangSet   *lval;
-	FcObject    object;
+
+	FcExprName  name;
 	const FcChar8	    *constant;
 	struct {
 	    struct _FcExpr *left, *right;
