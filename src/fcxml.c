@@ -1175,7 +1175,7 @@ FcParseBlank (FcConfigParse *parse)
 	    if (!parse->config->blanks)
 		goto bail;
 	}
-	switch (v->tag) {
+	switch ((int) v->tag) {
 	case FcVStackInteger:
 	    if (!FcBlanksAdd (parse->config->blanks, v->u.integer))
 		goto bail;
@@ -1368,7 +1368,7 @@ FcParseRange (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereError, "too many elements in range");
 	    return;
 	}
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackInteger:
 	    n = vstack->u.integer;
 	    break;
@@ -1435,7 +1435,7 @@ FcParseCharSet (FcConfigParse *parse)
 
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackInteger:
 	    if (!FcCharSetAddChar (charset, vstack->u.integer))
 	    {
@@ -1479,7 +1479,7 @@ FcParseLangSet (FcConfigParse *parse)
 
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackString:
 	    if (!FcLangSetAdd (langset, vstack->u.string))
 	    {
@@ -1602,7 +1602,7 @@ FcParseAlias (FcConfigParse *parse)
 	return;
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackFamily:
 	    if (family)
 	    {
@@ -1731,7 +1731,7 @@ FcPopExpr (FcConfigParse *parse)
     FcExpr	*expr = 0;
     if (!vstack)
 	return 0;
-    switch (vstack->tag) {
+    switch ((int) vstack->tag) {
     case FcVStackNone:
 	break;
     case FcVStackString:
@@ -2349,7 +2349,7 @@ FcParseMatch (FcConfigParse *parse)
     }
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackTest:
 	    vstack->u.test->next = test;
 	    test = vstack->u.test;
@@ -2383,7 +2383,7 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackGlob:
 	    if (!FcConfigGlobAdd (parse->config,
 				  vstack->u.string,
@@ -2422,7 +2422,7 @@ FcPopValue (FcConfigParse *parse)
     if (!vstack)
 	return value;
 
-    switch (vstack->tag) {
+    switch ((int) vstack->tag) {
     case FcVStackString:
 	value.u.s = FcSharedStr (vstack->u.string);
 	if (value.u.s)
@@ -2521,7 +2521,7 @@ FcParsePattern (FcConfigParse *parse)
 	
     while ((vstack = FcVStackPeek (parse)))
     {
-	switch (vstack->tag) {
+	switch ((int) vstack->tag) {
 	case FcVStackPattern:
 	    if (!FcPatternAppend (pattern, vstack->u.pattern))
 	    {

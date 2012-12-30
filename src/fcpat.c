@@ -45,7 +45,7 @@ FcPatternCreate (void)
 void
 FcValueDestroy (FcValue v)
 {
-    switch (v.type) {
+    switch ((int) v.type) {
     case FcTypeString:
 	if (!FcSharedStrFree (v.u.s))
             FcStrFree ((FcChar8 *) v.u.s);
@@ -69,7 +69,7 @@ FcValueCanonicalize (const FcValue *v)
 {
     FcValue new;
 
-    switch (v->type)
+    switch ((int) v->type)
     {
     case FcTypeString:
 	new.u.s = FcValueString(v);
@@ -93,7 +93,7 @@ FcValueCanonicalize (const FcValue *v)
 FcValue
 FcValueSave (FcValue v)
 {
-    switch (v.type) {
+    switch ((int) v.type) {
     case FcTypeString:
 	v.u.s = FcSharedStr (v.u.s);
 	if (!v.u.s)
@@ -140,7 +140,7 @@ FcValueListDestroy (FcValueListPtr l)
     FcValueListPtr next;
     for (; l; l = next)
     {
-	switch (l->value.type) {
+	switch ((int) l->value.type) {
 	case FcTypeString:
 	    if (!FcSharedStrFree ((FcChar8 *)l->value.u.s))
                 FcStrFree ((FcChar8 *)l->value.u.s);
@@ -892,7 +892,7 @@ FcPatternObjectGetInteger (const FcPattern *p, FcObject object, int id, int *i)
     r = FcPatternObjectGet (p, object, id, &v);
     if (r != FcResultMatch)
 	return r;
-    switch (v.type) {
+    switch ((int) v.type) {
     case FcTypeDouble:
 	*i = (int) v.u.d;
 	break;
@@ -921,7 +921,7 @@ FcPatternObjectGetDouble (const FcPattern *p, FcObject object, int id, double *d
     r = FcPatternObjectGet (p, object, id, &v);
     if (r != FcResultMatch)
 	return r;
-    switch (v.type) {
+    switch ((int) v.type) {
     case FcTypeDouble:
 	*d = v.u.d;
 	break;
@@ -1293,7 +1293,7 @@ FcValueListSerializeAlloc (FcSerialize *serialize, const FcValueList *vl)
     {
 	if (!FcSerializeAlloc (serialize, vl, sizeof (FcValueList)))
 	    return FcFalse;
-	switch (vl->value.type) {
+	switch ((int) vl->value.type) {
 	case FcTypeString:
 	    if (!FcStrSerializeAlloc (serialize, vl->value.u.s))
 		return FcFalse;
@@ -1339,7 +1339,7 @@ FcValueListSerialize (FcSerialize *serialize, const FcValueList *vl)
 	
 	vl_serialized->next = NULL;
 	vl_serialized->value.type = vl->value.type;
-	switch (vl->value.type) {
+	switch ((int) vl->value.type) {
 	case FcTypeInteger:
 	    vl_serialized->value.u.i = vl->value.u.i;
 	    break;

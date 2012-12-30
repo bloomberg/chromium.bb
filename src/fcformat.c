@@ -358,7 +358,7 @@ skip_percent (FcFormatContext *c)
 
     /* skip an optional width specifier */
     if (strtol ((const char *) c->format, (char **) &c->format, 10))
-	/* don't care */;
+        {/* don't care */}
 
     if (!expect_char (c, '{'))
 	return FcFalse;

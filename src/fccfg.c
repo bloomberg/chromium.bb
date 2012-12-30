@@ -708,7 +708,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	case FcTypeInteger:
 	    break;	/* FcConfigPromote prevents this from happening */
 	case FcTypeDouble:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
@@ -735,7 +735,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeBool:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
@@ -750,7 +750,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeString:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpListing:
 		if (flags & FcOpFlagIgnoreBlanks)
@@ -775,7 +775,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeMatrix:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
@@ -790,7 +790,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeCharSet:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpContains:
 	    case FcOpListing:
 		/* left contains right if right is a subset of left */
@@ -811,7 +811,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeLangSet:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpContains:
 	    case FcOpListing:
 		ret = FcLangSetContains (left.u.l, right.u.l);
@@ -830,7 +830,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeVoid:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
@@ -841,7 +841,7 @@ FcConfigCompareValue (const FcValue	*left_o,
 	    }
 	    break;
 	case FcTypeFTFace:
-	    switch (op) {
+	    switch ((int) op) {
 	    case FcOpEqual:
 	    case FcOpContains:
 	    case FcOpListing:
@@ -882,7 +882,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     FcChar8     *str;
     FcOp	op = FC_OP_GET_OP (e->op);
 
-    switch (op) {
+    switch ((int) op) {
     case FcOpInteger:
 	v.type = FcTypeInteger;
 	v.u.i = e->u.ival;
@@ -899,8 +899,8 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     case FcOpMatrix:
 	{
 	  FcMatrix m;
-	  v.type = FcTypeMatrix;
 	  FcValue xx, xy, yx, yy;
+	  v.type = FcTypeMatrix;
 	  xx = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->xx), v);
 	  xy = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->xy), v);
 	  yx = FcConfigPromote (FcConfigEvaluate (p, e->u.mexpr->yx), v);
@@ -986,9 +986,9 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	vr = FcConfigPromote (vr, vl);
 	if (vl.type == vr.type)
 	{
-	    switch (vl.type) {
+	    switch ((int) vl.type) {
 	    case FcTypeDouble:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpPlus:	
 		    v.type = FcTypeDouble;
 		    v.u.d = vl.u.d + vr.u.d;
@@ -1017,7 +1017,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		}
 		break;
 	    case FcTypeBool:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpOr:
 		    v.type = FcTypeBool;
 		    v.u.b = vl.u.b || vr.u.b;
@@ -1032,7 +1032,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		}
 		break;
 	    case FcTypeString:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpPlus:
 		    v.type = FcTypeString;
 		    str = FcStrPlus (vl.u.s, vr.u.s);
@@ -1048,7 +1048,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		}
 		break;
 	    case FcTypeMatrix:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpTimes:
 		    v.type = FcTypeMatrix;
 		    m = malloc (sizeof (FcMatrix));
@@ -1069,7 +1069,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		}
 		break;
 	    case FcTypeCharSet:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpPlus:
 		    v.type = FcTypeCharSet;
 		    v.u.c = FcCharSetUnion (vl.u.c, vr.u.c);
@@ -1088,7 +1088,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		}
 		break;
 	    case FcTypeLangSet:
-		switch (op) {
+		switch ((int) op) {
 		case FcOpPlus:
 		    v.type = FcTypeLangSet;
 		    v.u.l = FcLangSetUnion (vl.u.l, vr.u.l);
@@ -1118,7 +1118,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpNot:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
-	switch (vl.type) {
+	switch ((int) vl.type) {
 	case FcTypeBool:
 	    v.type = FcTypeBool;
 	    v.u.b = !vl.u.b;
@@ -1131,7 +1131,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpFloor:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
-	switch (vl.type) {
+	switch ((int) vl.type) {
 	case FcTypeInteger:
 	    v = vl;
 	    break;
@@ -1147,7 +1147,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpCeil:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
-	switch (vl.type) {
+	switch ((int) vl.type) {
 	case FcTypeInteger:
 	    v = vl;
 	    break;
@@ -1163,7 +1163,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpRound:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
-	switch (vl.type) {
+	switch ((int) vl.type) {
 	case FcTypeInteger:
 	    v = vl;
 	    break;
@@ -1179,7 +1179,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpTrunc:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
-	switch (vl.type) {
+	switch ((int) vl.type) {
 	case FcTypeInteger:
 	    v = vl;
 	    break;

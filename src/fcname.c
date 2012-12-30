@@ -296,7 +296,7 @@ FcObjectValidType (FcObject object, FcType type)
     FcObjectType    *t = FcObjectFindById (object);
 
     if (t) {
-	switch (t->type) {
+	switch ((int) t->type) {
 	case FcTypeDouble:
 	case FcTypeInteger:
 	    if (type == FcTypeDouble || type == FcTypeInteger)
@@ -579,7 +579,7 @@ FcNameConvert (FcType type, FcChar8 *string)
     FcMatrix	m;
 
     v.type = type;
-    switch (v.type) {
+    switch ((int) v.type) {
     case FcTypeInteger:
 	if (!FcNameConstant (string, &v.u.i))
 	    v.u.i = atoi ((char *) string);
@@ -717,7 +717,7 @@ FcNameParse (const FcChar8 *name)
 		if ((c = FcNameGetConstant (save)))
 		{
 		    t = FcNameGetObjectType ((char *) c->object);
-		    switch (t->type) {
+		    switch ((int) t->type) {
 		    case FcTypeInteger:
 		    case FcTypeDouble:
 			if (!FcPatternAddInteger (pat, c->object, c->value))

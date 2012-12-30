@@ -1005,7 +1005,6 @@ static const FcStringConst  slantConsts[] = {
 
 #define NUM_SLANT_CONSTS    (int) (sizeof (slantConsts) / sizeof (slantConsts[0]))
 
-#define FcIsSlant(s)	    FcStringIsConst(s,slantConsts,NUM_SLANT_CONSTS)
 #define FcContainsSlant(s)  FcStringContainsConst (s,slantConsts,NUM_SLANT_CONSTS)
 
 static const FcStringConst  decorativeConsts[] = {
@@ -1019,7 +1018,6 @@ static const FcStringConst  decorativeConsts[] = {
 
 #define NUM_DECORATIVE_CONSTS	(int) (sizeof (decorativeConsts) / sizeof (decorativeConsts[0]))
 
-#define FcIsDecorative(s)   FcStringIsConst(s,decorativeConsts,NUM_DECORATIVE_CONSTS)
 #define FcContainsDecorative(s)	FcStringContainsConst (s,decorativeConsts,NUM_DECORATIVE_CONSTS)
 
 static double
@@ -2262,7 +2260,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 
     *advance = slot->metrics.horiAdvance;
 
-    switch (slot->format) {
+    switch ((int) slot->format) {
     case ft_glyph_format_bitmap:
 	/*
 	 * Bitmaps are assumed to be reasonable; if
@@ -2598,7 +2596,7 @@ addtag(FcChar8 *complex_, FT_ULong tag)
 
     if (*complex_ != '\0')
 	strcat ((char *) complex_, " ");
-    strcat ((char *) complex_, "otlayout:");
+    strcat ((char *) complex_, OTLAYOUT_HEAD);
     strcat ((char *) complex_, (char *) tagstring);
 }
 
