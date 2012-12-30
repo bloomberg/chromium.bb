@@ -196,11 +196,13 @@ NSImage* ApplyMask(NSImage* image, NSImage* mask) {
       const int kYOffset = 10;
       CGFloat width = size.width;
       CGFloat height = size.height;
-      [image drawAtPoint:NSZeroPoint
-                fromRect:NSMakeRect(0, [image size].height - height - kYOffset,
-                                    width, height)
-               operation:NSCompositeCopy
-                fraction:1.0];
+      // In some themes, the tab background image is narrower than the
+      // new tab button, so tile the background image.
+      NSDrawThreePartImage(
+          NSMakeRect(0, -([image size].height - height - kYOffset),
+                     width, [image size].height),
+          nil, image, nil, /*vertical=*/NO, NSCompositeCopy,
+          1.0, /*flipped=*/NO);
       [mask drawAtPoint:NSZeroPoint
                fromRect:NSMakeRect(0, 0, width, height)
               operation:NSCompositeDestinationIn
@@ -2177,7 +2179,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
 }
 
 - (void)setNewTabImages {
-  ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
+  ThemeService *theme =
+      static_cast<ThemeService*>([[tabStripView_ window] themeProvider]);
   if (!theme)
     return;
 
@@ -2189,8 +2192,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
 
   NSImage* foreground = ApplyMask(
       theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true), mask);
-  NSImage* background = ApplyMask(
-      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE, true), mask);
 
   [[newTabButton_ cell] setImage:Overlay(foreground, normal)
                   forButtonState:image_button_cell::kDefaultState];
@@ -2198,10 +2199,21 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
                   forButtonState:image_button_cell::kHoverState];
   [[newTabButton_ cell] setImage:Overlay(foreground, pressed)
                     forButtonState:image_button_cell::kPressedState];
-  [[newTabButton_ cell] setImage:Overlay(background, normal)
-                  forButtonState:image_button_cell::kDefaultStateBackground];
-  [[newTabButton_ cell] setImage:Overlay(background, hover)
-                  forButtonState:image_button_cell::kHoverStateBackground];
+
+  // IDR_THEME_TAB_BACKGROUND_INACTIVE is only used with the default theme.
+  if (theme->UsingDefaultTheme()) {
+    NSImage* background = ApplyMask(
+        theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE, true), mask);
+    [[newTabButton_ cell] setImage:Overlay(background, normal)
+                    forButtonState:image_button_cell::kDefaultStateBackground];
+    [[newTabButton_ cell] setImage:Overlay(background, hover)
+                    forButtonState:image_button_cell::kHoverStateBackground];
+  } else {
+    [[newTabButton_ cell] setImage:nil
+                    forButtonState:image_button_cell::kDefaultStateBackground];
+    [[newTabButton_ cell] setImage:nil
+                    forButtonState:image_button_cell::kHoverStateBackground];
+  }
 }
 
 @end
