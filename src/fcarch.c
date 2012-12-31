@@ -27,13 +27,13 @@
 #include <config.h>
 #endif
 
+#include "fcint.h"
+
 /* If architecture is hardcoded, skip the assert tests */
 
 #ifndef FC_ARCHITECTURE
 
 /* Make sure the cache structure is consistent with what we expect */
-
-#include "fcint.h"
 
 #include "fcarch.h"
 
