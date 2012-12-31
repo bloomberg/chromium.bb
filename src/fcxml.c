@@ -594,6 +594,10 @@ FcTypecheckValue (FcConfigParse *parse, FcType value, FcType type)
 	    return;
 	if (type == (FcType) -1)
 	    return;
+	/* It's perfectly fine to use user-define elements in expressions,
+	 * so don't warn in that case. */
+	if (value == (FcType) -1)
+	    return;
 	FcConfigMessage (parse, FcSevereWarning, "saw %s, expected %s",
 			 FcTypeName (value), FcTypeName (type));
     }
