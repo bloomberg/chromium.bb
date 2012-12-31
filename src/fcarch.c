@@ -28,13 +28,6 @@
 #endif
 
 #include "fcint.h"
-
-/* If architecture is hardcoded, skip the assert tests */
-
-#ifndef FC_ARCHITECTURE
-
-/* Make sure the cache structure is consistent with what we expect */
-
 #include "fcarch.h"
 
 FC_ASSERT_STATIC (1 == sizeof (char));
@@ -61,8 +54,6 @@ FC_ASSERT_STATIC (0x00 + 2*SIZEOF_VOID_P == sizeof (FcPatternElt));
 FC_ASSERT_STATIC (0x08 + 2*SIZEOF_VOID_P == sizeof (FcPattern));
 FC_ASSERT_STATIC (0x08 + 2*SIZEOF_VOID_P == sizeof (FcCharSet));
 FC_ASSERT_STATIC (0x08 + 6*SIZEOF_VOID_P == sizeof (FcCache));
-
-#endif
 
 
 int
