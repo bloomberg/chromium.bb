@@ -1,0 +1,7 @@
+<div contenteditable="true"><ul><li id="first" style="color:red;">first</li><li id="second" style="color:green;">second</li><li id="third" style="color:blue;">third</li></ul></div>
+<button onclick="document.execCommand('insertOrderedList', false);">OL</button>
+<script>
+window.getSelection().collapse(document.getElementById("second"), 0);
+window.getSelection().extend(document.getElementById("third"), 1);
+</script>
+

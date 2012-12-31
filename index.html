@@ -253,6 +253,14 @@ list marker highlight does not honor the <code>::selection</code> background
 color specified in the stylesheet.  In our product, we didn't want the list
 markers to be highlighted when selected.</p>
 
+<h3><a name="bugfix-listifySpans">bugfix/listifySpans</a> (Shezan Baig; D37507315)</h3>
+<p>Open <a href="repros/listifySpans.html">this link</a> in Chrome.  The second
+and third list items will be selected.  Click on the <code>OL</code> button to
+convert these items to an ordered list.  The second and third list items get
+placed into separate lists, but they should be on the same list.  Note that
+this doesn't happen if the first and second items are selected instead.</p>
+
+
 <h3><a name="bugfix-mouseLeaveMousePosition">bugfix/mouseLeaveMousePosition</a> (Zhen Yin)</h3>
 <p>TODO</p>
 
