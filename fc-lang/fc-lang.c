@@ -37,16 +37,6 @@
  * functions are also needed in slightly modified form
  */
 
-void
-FcMemAlloc (int kind, int size)
-{
-}
-
-void
-FcMemFree (int kind, int size)
-{
-}
-
 FcPrivate void
 FcCacheObjectReference (void *object)
 {
@@ -260,7 +250,6 @@ static int compare (const void *a, const void *b)
 #define MAX_LANG_SET_MAP    ((MAX_LANG + 31) / 32)
 
 #define BitSet(map, i)   ((map)[(entries[i].id)>>5] |= ((FcChar32) 1 << ((entries[i].id) & 0x1f)))
-#define BitGet(map, i)   ((map)[(entries[i].id)>>5] >> ((entries[i].id) & 0x1f)) & 1)
 
 int
 main (int argc, char **argv)
