@@ -25,13 +25,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace content;
-using namespace ::testing;
+using testing::_;
+using testing::Eq;
+using testing::Ne;
+using testing::Return;
+
+namespace content {
 
 namespace {
 
-const char* kTestUrl = "http://www.test.com/";
-const char* kUnsafeTestUrl = "about:crash";
+const char kTestUrl[] = "http://www.test.com/";
+const char kUnsafeTestUrl[] = "about:crash";
 
 void ContinueTestCase() {
   BrowserThread::PostTask(
@@ -48,15 +52,14 @@ class MockInterceptCallbackReceiver {
  public:
   MOCK_METHOD6(ShouldIgnoreNavigation, bool(RenderViewHost* source,
                                             const GURL& url,
-                                            const content::Referrer& referrer,
+                                            const Referrer& referrer,
                                             bool is_post,
                                             bool has_user_gesture,
                                             PageTransition page_transition));
 };
 
 // MockResourceController -----------------------------------------------------
-class MockResourceController
-    : public content::ResourceController {
+class MockResourceController : public ResourceController {
  public:
   enum Status {
     UNKNOWN,
@@ -70,7 +73,7 @@ class MockResourceController
 
   Status status() const { return status_; }
 
-  // content::ResourceController
+  // ResourceController:
   virtual void Cancel() {
     NOTREACHED();
   }
@@ -133,7 +136,7 @@ class TestIOThreadState {
   }
 
  private:
-  content::MockResourceContext resource_context_;
+  MockResourceContext resource_context_;
   net::URLRequest request_;
   scoped_ptr<InterceptNavigationResourceThrottle> throttle_;
   MockResourceController throttle_controller_;
@@ -238,8 +241,8 @@ class InterceptNavigationResourceThrottleTest
   }
 
   scoped_ptr<MockInterceptCallbackReceiver> mock_callback_receiver_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  TestBrowserThread ui_thread_;
+  TestBrowserThread io_thread_;
   TestIOThreadState* io_thread_state_;
 };
 
@@ -407,3 +410,5 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   // Wait for the request to finish processing.
   message_loop_.Run();
 }
+
+}  // namespace content
