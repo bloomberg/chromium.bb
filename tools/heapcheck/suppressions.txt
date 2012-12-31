@@ -1641,3 +1641,9 @@
    ...
    fun:ash::KeyboardOverlayViewTest_OpenAcceleratorsClose_Test::TestBody
 }
+{
+   bug_167866
+   Heapcheck:Leak
+   ...
+   fun:prerender::PrerenderTest_LinkManagerWaitToLaunchNotLaunched_Test::TestBody
+}
