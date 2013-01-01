@@ -123,7 +123,8 @@ const char kLocalMobileConfig[] =
 
 namespace chromeos {
 
-TEST(MobileConfigTest, Basic) {
+// This test crashes consistently with no obvious cause; see crbug.com/167926
+TEST(MobileConfigTest, DISABLED_Basic) {
   MobileConfig config(kGoodMobileConfig, "en-US");
   EXPECT_TRUE(config.IsReady());
 
