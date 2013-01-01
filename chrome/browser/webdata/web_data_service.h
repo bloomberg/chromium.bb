@@ -23,6 +23,7 @@
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"

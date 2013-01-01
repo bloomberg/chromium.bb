@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
 #define CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
 
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_source.h"
 
 // Base for WebDataService class hierarchy.
