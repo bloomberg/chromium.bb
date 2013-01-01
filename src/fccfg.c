@@ -164,7 +164,7 @@ FcConfigUptoDate (FcConfig *config)
         (font_time.set && (font_time.time - now) > 0))
 	{
 	    fprintf (stderr,
-                    "Fontconfig warning: Directory/file mtime in the future. New fonts may not be detected\n");
+                    "Fontconfig warning: Directory/file mtime in the future. New fonts may not be detected.\n");
 	    config->rescanTime = now;
 	    return FcTrue;
 	}
@@ -870,7 +870,6 @@ static FcValue
 FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 {
     FcValue	v, vl, vr;
-    FcResult	r;
     FcMatrix	*m;
     FcChar8     *str;
     FcOp	op = FC_OP_GET_OP (e->op);
@@ -928,11 +927,21 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 	break;
     case FcOpField:
 	if (kind == FcMatchFont && e->u.name.kind == FcMatchPattern)
-	    r = FcPatternObjectGet (p_pat, e->u.name.object, 0, &v);
-	else
-	    r = FcPatternObjectGet (p, e->u.name.object, 0, &v);
-	if (r != FcResultMatch)
+	{
+	    if (FcResultMatch != FcPatternObjectGet (p_pat, e->u.name.object, 0, &v))
+		v.type = FcTypeVoid;
+	}
+	else if (kind == FcMatchPattern && e->u.name.kind == FcMatchFont)
+	{
+	    fprintf (stderr,
+                    "Fontconfig warning: <name> tag has target=\"font\" in a <match target=\"pattern\">.\n");
 	    v.type = FcTypeVoid;
+	}
+	else
+	{
+	    if (FcResultMatch != FcPatternObjectGet (p, e->u.name.object, 0, &v))
+		v.type = FcTypeVoid;
+	}
 	v = FcValueSave (v);
 	break;
     case FcOpConst:
