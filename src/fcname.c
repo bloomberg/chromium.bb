@@ -279,7 +279,7 @@ FcNameConvert (FcType type, FcChar8 *string)
 	    v.u.i = atoi ((char *) string);
 	break;
     case FcTypeString:
-	v.u.s = FcSharedStr (string);
+	v.u.s = FcStrdup (string);
 	if (!v.u.s)
 	    v.type = FcTypeVoid;
 	break;

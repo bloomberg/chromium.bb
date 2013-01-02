@@ -45,8 +45,7 @@ FcValueDestroy (FcValue v)
 {
     switch ((int) v.type) {
     case FcTypeString:
-	if (!FcSharedStrFree (v.u.s))
-            FcStrFree ((FcChar8 *) v.u.s);
+	FcFree (v.u.s);
 	break;
     case FcTypeMatrix:
 	FcMatrixFree ((FcMatrix *) v.u.m);
@@ -93,7 +92,7 @@ FcValueSave (FcValue v)
 {
     switch ((int) v.type) {
     case FcTypeString:
-	v.u.s = FcSharedStr (v.u.s);
+	v.u.s = FcStrdup (v.u.s);
 	if (!v.u.s)
 	    v.type = FcTypeVoid;
 	break;
@@ -132,8 +131,7 @@ FcValueListDestroy (FcValueListPtr l)
     {
 	switch ((int) l->value.type) {
 	case FcTypeString:
-	    if (!FcSharedStrFree ((FcChar8 *)l->value.u.s))
-                FcStrFree ((FcChar8 *)l->value.u.s);
+	    FcFree (l->value.u.s);
 	    break;
 	case FcTypeMatrix:
 	    FcMatrixFree ((FcMatrix *)l->value.u.m);
@@ -1146,23 +1144,6 @@ bail0:
     return NULL;
 }
 
-
-/* We used to have a shared-str pool.  Removed to make thread-safety
- * work easier.  My measurements show that the extra overhead is not
- * significant by any means. */
-
-FcBool
-FcSharedStrFree (FcChar8 *name)
-{
-  free (name);
-  return FcTrue;
-}
-
-const FcChar8 *
-FcSharedStr (const FcChar8 *name)
-{
-  return strdup ((const char *) name);
-}
 
 FcBool
 FcPatternSerializeAlloc (FcSerialize *serialize, const FcPattern *pat)

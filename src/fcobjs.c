@@ -53,7 +53,7 @@ retry:
 	if (!ot)
 	    return NULL;
 
-	ot->object.object = strdup (str);
+	ot->object.object = FcStrdup (str);
 	ot->object.type = -1;
 	ot->id = fc_atomic_int_add (next_id, +1);
 	ot->next = ots;

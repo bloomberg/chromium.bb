@@ -1081,7 +1081,7 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 		case FcOpPlus:
 		    v.type = FcTypeString;
 		    str = FcStrPlus (vl.u.s, vr.u.s);
-		    v.u.s = FcSharedStr (str);
+		    v.u.s = FcStrdup (str);
 		    FcStrFree (str);
 			
 		    if (!v.u.s)

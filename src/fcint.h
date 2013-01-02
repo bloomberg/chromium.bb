@@ -115,6 +115,9 @@ typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
 
+#define FcStrdup(s) ((FcChar8 *) strdup ((const char *) (s)))
+#define FcFree(s) (free ((FcChar8 *) (s)))
+
 /*
  * Serialized data structures use only offsets instead of pointers
  * A low bit of 1 indicates an offset.
@@ -968,12 +971,6 @@ FcPatternObjectGetLangSet (const FcPattern *p, FcObject object, int n, FcLangSet
 
 FcPrivate FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
-
-FcPrivate const FcChar8 *
-FcSharedStr (const FcChar8 *name);
-
-FcPrivate FcBool
-FcSharedStrFree (FcChar8 *name);
 
 FcPrivate FcChar32
 FcStringHash (const FcChar8 *s);

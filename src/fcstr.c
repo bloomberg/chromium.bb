@@ -38,16 +38,7 @@
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
 {
-    int     len;
-    FcChar8 *r;
-    if (!s)
-	return 0;
-    len = strlen ((char *) s) + 1;
-    r = (FcChar8 *) malloc (len);
-    if (!r)
-	return 0;
-    memcpy (r, s, len);
-    return r;
+    return FcStrdup (s);
 }
 
 FcChar8 *

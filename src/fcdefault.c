@@ -92,7 +92,7 @@ retry:
     if (!lang)
     {
 	FcStrSet *langs = FcGetDefaultLangs ();
-	lang = (FcChar8 *) strdup ((const char *) langs->strs[0]);
+	lang = FcStrdup (langs->strs[0]);
 	FcStrSetDestroy (langs);
 
 	if (!fc_atomic_ptr_cmpexch (&default_lang, NULL, lang)) {
@@ -195,7 +195,7 @@ FcDefaultSubstitute (FcPattern *pattern)
      * exact matched "en" has higher score than ll-cc.
      */
     v2.type = FcTypeString;
-    v2.u.s = FcSharedStr ((FcChar8 *)"en-us");
+    v2.u.s = FcStrdup ("en-us");
     if (FcPatternObjectGet (pattern, FC_FAMILYLANG_OBJECT, 0, &v) == FcResultNoMatch)
     {
 	FcPatternObjectAdd (pattern, FC_FAMILYLANG_OBJECT, namelang, FcTrue);
@@ -211,7 +211,7 @@ FcDefaultSubstitute (FcPattern *pattern)
 	FcPatternObjectAdd (pattern, FC_FULLNAMELANG_OBJECT, namelang, FcTrue);
 	FcPatternObjectAddWithBinding (pattern, FC_FULLNAMELANG_OBJECT, v2, FcValueBindingWeak, FcTrue);
     }
-    FcSharedStrFree ((FcChar8 *) v2.u.s);
+    FcFree (v2.u.s);
 }
 #define __fcdefault__
 #include "fcaliastail.h"
