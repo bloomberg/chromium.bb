@@ -24,15 +24,21 @@
 
 #include "fcint.h"
 
+static unsigned int
+FcObjectTypeHash (register const char *str, register unsigned int len);
+
+static const struct FcObjectTypeInfo *
+FcObjectTypeLookup (register const char *str, register unsigned int len);
+
 #include "fcobjshash.h"
 
 #include <string.h>
 
-static int next_id = FC_MAX_BASE_OBJECT + 1;
+static fc_atomic_int_t next_id = FC_MAX_BASE_OBJECT + 1;
 struct FcObjectOtherTypeInfo {
     struct FcObjectOtherTypeInfo *next;
     FcObjectType object;
-    int id;
+    FcObject id;
 } *other_types;
 
 static FcObjectType *

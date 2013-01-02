@@ -4,7 +4,7 @@ CUT_OUT_BEGIN
 CUT_OUT_END
 %}
 %struct-type
-%language=C
+%language=ANSI-C
 %includes
 %enum
 %readonly-tables
