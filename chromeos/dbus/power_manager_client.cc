@@ -14,6 +14,8 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chromeos/dbus/power_manager/input_event.pb.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_state_control.pb.h"
 #include "chromeos/dbus/power_supply_properties.pb.h"
 #include "chromeos/dbus/video_activity_update.pb.h"
@@ -76,6 +78,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(
             &PowerManagerClientImpl::SoftwareScreenDimmingRequestedReceived,
             weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kInputEventSignal,
+        base::Bind(&PowerManagerClientImpl::InputEventReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kSuspendStateChangedSignal,
+        base::Bind(&PowerManagerClientImpl::SuspendStateChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -463,8 +481,70 @@ class PowerManagerClientImpl : public PowerManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenDimmingRequested(state));
   }
 
+  void InputEventReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::InputEvent proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kInputEventSignal << " signal";
+      return;
+    }
+
+    base::TimeTicks timestamp =
+        base::TimeTicks::FromInternalValue(proto.timestamp());
+    VLOG(1) << "Got " << power_manager::kInputEventSignal << " signal:"
+            << " type=" << proto.type() << " timestamp=" << proto.timestamp();
+    switch (proto.type()) {
+      case power_manager::InputEvent_Type_POWER_BUTTON_DOWN:
+      case power_manager::InputEvent_Type_POWER_BUTTON_UP: {
+        bool down =
+            (proto.type() == power_manager::InputEvent_Type_POWER_BUTTON_DOWN);
+        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
+                          PowerButtonEventReceived(down, timestamp));
+        break;
+      }
+      case power_manager::InputEvent_Type_LID_OPEN:
+      case power_manager::InputEvent_Type_LID_CLOSED: {
+        bool open =
+            (proto.type() == power_manager::InputEvent_Type_LID_OPEN);
+        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
+                          LidEventReceived(open, timestamp));
+        break;
+      }
+    }
+  }
+
+  void SuspendStateChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::SuspendState proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kSuspendStateChangedSignal << " signal";
+      return;
+    }
+
+    VLOG(1) << "Got " << power_manager::kSuspendStateChangedSignal << " signal:"
+            << " type=" << proto.type() << " wall_time=" << proto.wall_time();
+    base::Time wall_time =
+        base::Time::FromInternalValue(proto.wall_time());
+    switch (proto.type()) {
+      case power_manager::SuspendState_Type_SUSPEND_TO_MEMORY:
+        last_suspend_wall_time_ = wall_time;
+        break;
+      case power_manager::SuspendState_Type_RESUME:
+        FOR_EACH_OBSERVER(
+            PowerManagerClient::Observer, observers_,
+            SystemResumed(wall_time - last_suspend_wall_time_));
+        break;
+    }
+  }
+
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
+
+  // Wall time from the latest signal telling us that the system was about to
+  // suspend to memory.
+  base::Time last_suspend_wall_time_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

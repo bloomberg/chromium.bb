@@ -51,8 +51,8 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       webui_ready_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   set_should_emit_login_prompt_visible(false);
-  if (ash::Shell::GetInstance())
-    ash::Shell::GetInstance()->session_state_controller()->AddObserver(this);
+  ash::Shell::GetInstance()->session_state_controller()->AddObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 }
 
@@ -139,9 +139,8 @@ void WebUIScreenLocker::FocusUserPod() {
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
-
-  if (ash::Shell::GetInstance())
-    ash::Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  ash::Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);
@@ -279,20 +278,32 @@ void WebUIScreenLocker::OnWidgetClosing(views::Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootPowerManagerObserver override.
+// PowerManagerClient::Observer overrides.
 
-void WebUIScreenLocker::OnResume(const base::TimeDelta& sleep_duration) {
+void WebUIScreenLocker::LidEventReceived(bool open,
+                                         const base::TimeTicks& time) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
 }
 
-void WebUIScreenLocker::OnLidEvent(bool open, const base::TimeTicks& time) {
+void WebUIScreenLocker::SystemResumed(const base::TimeDelta& sleep_duration) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootPowerManagerObserver overrides.
+
+void WebUIScreenLocker::OnResume(const base::TimeDelta& sleep_duration) {
+  SystemResumed(sleep_duration);
+}
+
+void WebUIScreenLocker::OnLidEvent(bool open, const base::TimeTicks& time) {
+  LidEventReceived(open, time);
 }
 
 }  // namespace chromeos

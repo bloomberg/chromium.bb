@@ -62,6 +62,7 @@ PowerButtonObserver::PowerButtonObserver() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
 
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
@@ -76,6 +77,7 @@ PowerButtonObserver::PowerButtonObserver() {
 PowerButtonObserver::~PowerButtonObserver() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 void PowerButtonObserver::Observe(int type,
@@ -99,10 +101,15 @@ void PowerButtonObserver::Observe(int type,
   }
 }
 
-void PowerButtonObserver::OnPowerButtonEvent(
+void PowerButtonObserver::PowerButtonEventReceived(
     bool down, const base::TimeTicks& timestamp) {
   ash::Shell::GetInstance()->power_button_controller()->
       OnPowerButtonEvent(down, timestamp);
+}
+
+void PowerButtonObserver::OnPowerButtonEvent(
+    bool down, const base::TimeTicks& timestamp) {
+  PowerButtonEventReceived(down, timestamp);
 }
 
 void PowerButtonObserver::LockScreen() {

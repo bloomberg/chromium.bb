@@ -21,6 +21,8 @@ namespace chromeos {
 class RootPowerManagerObserver;
 
 // RootPowerManagerClient is used to communicate with the powerm process.
+// TODO(derat): Remove this class after the signals that it listens for have
+// been moved to powerd: http://crosbug.com/36804
 class CHROMEOS_EXPORT RootPowerManagerClient {
  public:
   // Adds and removes observers.
