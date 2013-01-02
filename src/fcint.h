@@ -86,7 +86,6 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #define FC_DBG_SCANV	256
 #define FC_DBG_CONFIG	1024
 #define FC_DBG_LANGSET	2048
-#define FC_DBG_OBJTYPES	4096
 
 #define _FC_ASSERT_STATIC1(_line, _cond) typedef int _static_assert_on_line_##_line##_failed[(_cond)?1:-1]
 #define _FC_ASSERT_STATIC0(_line, _cond) _FC_ASSERT_STATIC1 (_line, (_cond))
@@ -703,6 +702,10 @@ FcPrivate FcChar16 *
 FcCharSetGetNumbers(const FcCharSet *c);
 
 /* fcdbg.c */
+
+FcPrivate void
+FcValuePrintFile (FILE *f, const FcValue v);
+
 FcPrivate void
 FcValuePrintWithPosition (const FcValue v, FcBool show_pos_mark);
 

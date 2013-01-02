@@ -27,44 +27,52 @@
 #include <stdlib.h>
 
 static void
-_FcValuePrint (const FcValue v)
+_FcValuePrintFile (FILE *f, const FcValue v)
 {
     switch (v.type) {
     case FcTypeVoid:
-	printf ("<void>");
+	fprintf (f, "<void>");
 	break;
     case FcTypeInteger:
-	printf ("%d(i)", v.u.i);
+	fprintf (f, "%d(i)", v.u.i);
 	break;
     case FcTypeDouble:
-	printf ("%g(f)", v.u.d);
+	fprintf (f, "%g(f)", v.u.d);
 	break;
     case FcTypeString:
-	printf ("\"%s\"", v.u.s);
+	fprintf (f, "\"%s\"", v.u.s);
 	break;
     case FcTypeBool:
-	printf ("%s", v.u.b ? "True" : "False");
+	fprintf (f, "%s", v.u.b ? "True" : "False");
 	break;
     case FcTypeMatrix:
-	printf ("[%g %g; %g %g]", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
+	fprintf (f, "[%g %g; %g %g]", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
 	break;
     case FcTypeCharSet:	/* XXX */
-	FcCharSetPrint (v.u.c);
+	if (f == stdout)
+	    FcCharSetPrint (v.u.c);
 	break;
     case FcTypeLangSet:
 	FcLangSetPrint (v.u.l);
 	break;
     case FcTypeFTFace:
-	printf ("face");
+	fprintf (f, "face");
 	break;
     }
+}
+
+void
+FcValuePrintFile (FILE *f, const FcValue v)
+{
+    fprintf (f, " ");
+    _FcValuePrintFile (f, v);
 }
 
 void
 FcValuePrint (const FcValue v)
 {
     printf (" ");
-    _FcValuePrint (v);
+    _FcValuePrintFile (stdout, v);
 }
 
 void
@@ -74,7 +82,7 @@ FcValuePrintWithPosition (const FcValue v, FcBool show_pos_mark)
 	printf (" [insert here] ");
     else
 	printf (" ");
-    _FcValuePrint (v);
+    _FcValuePrintFile (stdout, v);
 }
 
 static void
