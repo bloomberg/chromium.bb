@@ -1092,10 +1092,26 @@ FcPStackPop (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "mismatching element");
 	return FcFalse;
     }
+
+    if (parse->pstack->attr)
+    {
+	/* Warn about unused attrs. */
+	FcChar8 **attrs = parse->pstack->attr;
+	while (*attrs)
+	{
+	    if (attrs[0][0])
+	    {
+		FcConfigMessage (parse, FcSevereError, "invalid attribute '%s'", attrs[0]);
+	    }
+	    attrs += 2;
+	}
+    }
+
     FcVStackClear (parse);
     old = parse->pstack;
     parse->pstack = old->prev;
     FcStrBufDestroy (&old->str);
+
     if (old->attr && old->attr != old->attr_buf_static)
 	free (old->attr);
 
@@ -1141,7 +1157,10 @@ FcConfigGetAttribute (FcConfigParse *parse, const char *attr)
     while (*attrs)
     {
 	if (!strcmp ((char *) *attrs, attr))
+	{
+	    attrs[0][0] = '\0'; /* Mark as used. */
 	    return attrs[1];
+	}
 	attrs += 2;
     }
     return 0;
