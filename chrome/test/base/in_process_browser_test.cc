@@ -155,7 +155,8 @@ void InProcessBrowserTest::SetUp() {
       captive_portal::CaptivePortalService::DISABLED_FOR_TESTING);
 #endif
 
-  chrome_browser_net::NetErrorTabHelper::set_enabled_for_testing(false);
+  chrome_browser_net::NetErrorTabHelper::set_state_for_testing(
+      chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
 

@@ -22,6 +22,12 @@ class NetErrorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NetErrorTabHelper> {
  public:
+  enum TestingState {
+    TESTING_DEFAULT,
+    TESTING_FORCE_DISABLED,
+    TESTING_FORCE_ENABLED
+  };
+
   virtual ~NetErrorTabHelper();
 
   // content::WebContentsObserver implementation.
@@ -35,7 +41,7 @@ class NetErrorTabHelper
 
   void OnDnsProbeFinished(DnsProbeService::Result result);
 
-  static void set_enabled_for_testing(bool enabled_for_testing);
+  static void set_state_for_testing(TestingState testing_state);
 
  protected:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
@@ -62,6 +68,8 @@ class NetErrorTabHelper
   // Whether the tab helper has started a DNS probe that has not yet returned
   // a result.
   bool dns_probe_running_;
+  // Whether we are enabled to run by the DnsProbe-Enable field trial.
+  const bool enabled_by_trial_;
   // "Use a web service to resolve navigation errors" preference is required
   // to allow probes.
   BooleanPrefMember resolve_errors_with_web_service_;

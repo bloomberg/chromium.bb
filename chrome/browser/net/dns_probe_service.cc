@@ -4,7 +4,9 @@
 
 #include "chrome/browser/net/dns_probe_service.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/net/dns_probe_job.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
@@ -12,6 +14,8 @@
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 
+using base::FieldTrialList;
+using base::StringToInt;
 using net::DnsClient;
 using net::DnsConfig;
 using net::IPAddressNumber;
@@ -40,6 +44,22 @@ IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   return IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
 }
 
+const int kAttemptsUseDefault = -1;
+
+const char kAttemptsFieldTrialName[] = "DnsProbe-Attempts";
+
+int GetAttemptsFromFieldTrial() {
+  std::string group = FieldTrialList::FindFullName(kAttemptsFieldTrialName);
+  if (group == "" || group == "default")
+    return kAttemptsUseDefault;
+
+  int attempts;
+  if (!StringToInt(group, &attempts))
+   return kAttemptsUseDefault;
+
+  return attempts;
+}
+
 bool IsLocalhost(const IPAddressNumber& ip) {
   return (ip.size() == net::kIPv4AddressSize)
          && (ip[0] == 127) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 1);
@@ -54,7 +74,8 @@ DnsProbeService::DnsProbeService()
     : system_result_(DnsProbeJob::SERVERS_UNKNOWN),
       public_result_(DnsProbeJob::SERVERS_UNKNOWN),
       state_(STATE_NO_RESULTS),
-      result_(PROBE_UNKNOWN) {
+      result_(PROBE_UNKNOWN),
+      dns_attempts_(GetAttemptsFromFieldTrial()) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
@@ -129,6 +150,8 @@ void DnsProbeService::StartProbes() {
     system_job_.reset();
     public_job_.reset();
     state_ = STATE_RESULTS_CACHED;
+    // TODO(ttuttle): Should this be BAD_CONFIG?  Currently I think it only
+    // happens when the system DnsConfig has no servers.
     result_ = PROBE_UNKNOWN;
     CallCallbacks();
     return;
@@ -278,8 +301,12 @@ void DnsProbeService::OnProbeJobComplete(DnsProbeJob* job,
 
 void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
   NetworkChangeNotifier::GetDnsConfig(config);
+
   // DNS probes don't need or want the suffix search list populated
   config->search.clear();
+
+  if (dns_attempts_ != kAttemptsUseDefault)
+    config->attempts = dns_attempts_;
 
   // Take notes in case the config turns out to be bad, so we can histogram
   // some useful data.
@@ -290,8 +317,12 @@ void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
 
 void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
   *config = DnsConfig();
+
   config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsPrimary));
   config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsSecondary));
+
+  if (dns_attempts_ != kAttemptsUseDefault)
+    config->attempts = dns_attempts_;
 }
 
 bool DnsProbeService::ResultsExpired() {

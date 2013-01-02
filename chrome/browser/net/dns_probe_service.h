@@ -78,6 +78,9 @@ class DnsProbeService : public net::NetworkChangeNotifier::IPAddressObserver {
   State state_;
   Result result_;
   base::Time probe_start_time_;
+  // How many DNS request attempts the probe jobs will make before giving up
+  // (Overrides the attempts field in the system DnsConfig.)
+  const int dns_attempts_;
   // How many nameservers the system config has.
   int system_nameserver_count_;
   // Whether the only system nameserver is 127.0.0.1.

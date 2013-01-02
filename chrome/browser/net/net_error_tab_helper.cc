@@ -5,6 +5,7 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
+using base::FieldTrialList;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -26,13 +28,22 @@ namespace chrome_browser_net {
 
 namespace {
 
-static bool enabled_for_testing_ = true;
+const char kDnsProbeFieldTrialName[] = "DnsProbe-Enable";
+const char kDnsProbeFieldTrialEnableGroupName[] = "enable";
+
+static NetErrorTabHelper::TestingState testing_state_ =
+    NetErrorTabHelper::TESTING_DEFAULT;
 
 // Returns whether |net_error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it.)
 bool IsDnsError(int net_error) {
   return net_error == net::ERR_NAME_NOT_RESOLVED ||
          net_error == net::ERR_NAME_RESOLUTION_FAILED;
+}
+
+bool GetEnabledByTrial() {
+  return (FieldTrialList::FindFullName(kDnsProbeFieldTrialName)
+          == kDnsProbeFieldTrialEnableGroupName);
 }
 
 void DnsProbeCallback(
@@ -63,6 +74,7 @@ void StartDnsProbe(
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
       dns_probe_running_(false),
+      enabled_by_trial_(GetEnabledByTrial()),
       pref_initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -134,13 +146,18 @@ void NetErrorTabHelper::PostStartDnsProbeTask() {
 }
 
 bool NetErrorTabHelper::ProbesAllowed() const {
+  if (testing_state_ != TESTING_DEFAULT)
+    return testing_state_ == TESTING_FORCE_ENABLED;
+
   // TODO(ttuttle): Disable on mobile?
-  return (pref_initialized_ && *resolve_errors_with_web_service_)
-         && enabled_for_testing_;
+  return enabled_by_trial_
+         && pref_initialized_
+         && *resolve_errors_with_web_service_;
 }
 
-void NetErrorTabHelper::set_enabled_for_testing(bool enabled_for_testing) {
-  enabled_for_testing_ = enabled_for_testing;
+// static
+void NetErrorTabHelper::set_state_for_testing(TestingState state) {
+  testing_state_ = state;
 }
 
 }  // namespace chrome_browser_net
