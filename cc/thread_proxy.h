@@ -152,13 +152,14 @@ private:
 
     base::WeakPtrFactory<ThreadProxy> m_weakFactoryOnImplThread;
 
+    base::WeakPtr<ThreadProxy> m_mainThreadWeakPtr;
+    base::WeakPtrFactory<ThreadProxy> m_weakFactory;
+
     scoped_ptr<LayerTreeHostImpl> m_layerTreeHostImpl;
 
     scoped_ptr<InputHandler> m_inputHandlerOnImplThread;
 
     scoped_ptr<Scheduler> m_schedulerOnImplThread;
-
-    scoped_refptr<ScopedThreadProxy> m_mainThreadProxy;
 
     // Holds on to the context we might use for compositing in between initializeContext()
     // and initializeRenderer() calls.

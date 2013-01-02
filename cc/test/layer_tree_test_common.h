@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/scoped_thread_proxy.h"
+#include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 
@@ -18,8 +18,6 @@ class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
-class Thread;
-
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
@@ -74,7 +72,6 @@ public:
     void endTest();
     void endTestAfterDelay(int delayMilliseconds);
 
-    void postSetNeedsAnimateToMainThread();
     void postAddAnimationToMainThread(Layer*);
     void postAddInstantAnimationToMainThread();
     void postSetNeedsCommitToMainThread();
@@ -96,7 +93,6 @@ protected:
 
     void realEndTest();
 
-    void dispatchSetNeedsAnimate();
     void dispatchAddInstantAnimation();
     void dispatchAddAnimation(Layer*);
     void dispatchSetNeedsCommit();
@@ -115,9 +111,6 @@ protected:
     scoped_ptr<MockLayerImplTreeHostClient> m_client;
     scoped_ptr<LayerTreeHost> m_layerTreeHost;
 
-protected:
-    scoped_refptr<ScopedThreadProxy> m_mainThreadProxy;
-
 private:
     bool m_beginning;
     bool m_endWhenBeginReturns;
@@ -128,6 +121,8 @@ private:
     scoped_ptr<Thread> m_mainCCThread;
     scoped_ptr<base::Thread> m_implThread;
     base::CancelableClosure m_timeout;
+    base::WeakPtr<ThreadedTest> m_mainThreadWeakPtr;
+    base::WeakPtrFactory<ThreadedTest> m_weakFactory;
 };
 
 class ThreadedTestThreadOnly : public ThreadedTest {

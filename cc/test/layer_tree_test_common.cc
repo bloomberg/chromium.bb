@@ -13,7 +13,6 @@
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/scoped_thread_proxy.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
@@ -226,7 +225,9 @@ ThreadedTest::ThreadedTest()
     , m_scheduled(false)
     , m_started(false)
     , m_implThread(0)
+    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
 {
+    m_mainThreadWeakPtr = m_weakFactory.GetWeakPtr();
 }
 
 ThreadedTest::~ThreadedTest()
@@ -240,47 +241,42 @@ void ThreadedTest::endTest()
     if (m_beginning)
         m_endWhenBeginReturns = true;
     else
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::realEndTest, base::Unretained(this)));
+        proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::endTestAfterDelay(int delayMilliseconds)
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::endTest, base::Unretained(this)));
-}
-
-void ThreadedTest::postSetNeedsAnimateToMainThread()
-{
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetNeedsAnimate, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::endTest, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postAddAnimationToMainThread(Layer* layerToReceiveAnimation)
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchAddAnimation, base::Unretained(this), base::Unretained(layerToReceiveAnimation)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchAddAnimation, m_mainThreadWeakPtr, base::Unretained(layerToReceiveAnimation)));
 }
 
 void ThreadedTest::postAddInstantAnimationToMainThread()
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchAddInstantAnimation, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchAddInstantAnimation, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetNeedsCommitToMainThread()
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetNeedsCommit, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetNeedsCommit, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postAcquireLayerTextures()
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchAcquireLayerTextures, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchAcquireLayerTextures, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetNeedsRedrawToMainThread()
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetNeedsRedraw, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetNeedsRedraw, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::postSetVisibleToMainThread(bool visible)
 {
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetVisible, base::Unretained(this), visible));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchSetVisible, m_mainThreadWeakPtr, visible));
 }
 
 void ThreadedTest::doBeginTest()
@@ -335,25 +331,17 @@ void ThreadedTest::scheduleComposite()
     if (!m_started || m_scheduled)
         return;
     m_scheduled = true;
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchComposite, base::Unretained(this)));
+    proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::dispatchComposite, m_mainThreadWeakPtr));
 }
 
 void ThreadedTest::realEndTest()
 {
-    if (m_layerTreeHost && m_layerTreeHost->proxy()->commitPendingForTesting()) {
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::realEndTest, base::Unretained(this)));
+    if (m_layerTreeHost && proxy()->commitPendingForTesting()) {
+        proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
         return;
     }
         
     MessageLoop::current()->Quit();
-}
-
-void ThreadedTest::dispatchSetNeedsAnimate()
-{
-    DCHECK(!proxy() || proxy()->isMainThread());
-
-    if (m_layerTreeHost.get())
-        m_layerTreeHost->setNeedsAnimate();
 }
 
 void ThreadedTest::dispatchAddInstantAnimation()
@@ -419,7 +407,6 @@ void ThreadedTest::runTest(bool threaded)
     }
 
     m_mainCCThread = cc::ThreadImpl::createForCurrentThread();
-    m_mainThreadProxy = ScopedThreadProxy::create(m_mainCCThread.get());
 
     initializeSettings(m_settings);
 

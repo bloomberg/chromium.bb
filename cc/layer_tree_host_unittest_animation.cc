@@ -86,7 +86,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback :
   }
 
   virtual void beginTest() OVERRIDE {
-    postSetNeedsAnimateToMainThread();
+    postSetNeedsCommitToMainThread();
   }
 
   virtual void animate(base::TimeTicks) OVERRIDE {

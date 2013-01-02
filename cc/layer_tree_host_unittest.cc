@@ -686,7 +686,7 @@ public:
 
         // We request animation only once.
         if (!m_animationRequested) {
-            m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
+            impl->proxy()->mainThread()->postTask(base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
             m_animationRequested = true;
         }
     }

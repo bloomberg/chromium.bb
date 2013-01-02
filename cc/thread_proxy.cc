@@ -13,7 +13,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
 #include "cc/scheduler.h"
-#include "cc/scoped_thread_proxy.h"
 #include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 
@@ -45,7 +44,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_inCompositeAndReadback(false)
     , m_manageTilesPending(false)
     , m_weakFactoryOnImplThread(ALLOW_THIS_IN_INITIALIZER_LIST(this))
-    , m_mainThreadProxy(ScopedThreadProxy::create(Proxy::mainThread()))
+    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
     , m_beginFrameCompletionEventOnImplThread(0)
     , m_readbackRequestOnImplThread(0)
     , m_commitCompletionEventOnImplThread(0)
@@ -310,7 +309,7 @@ void ThreadProxy::onSwapBuffersCompleteOnImplThread()
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::onSwapBuffersCompleteOnImplThread");
     m_schedulerOnImplThread->didSwapBuffersComplete();
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::didCompleteSwapBuffers, base::Unretained(this)));
+    Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::didCompleteSwapBuffers, m_mainThreadWeakPtr));
 }
 
 void ThreadProxy::onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval)
@@ -368,7 +367,7 @@ void ThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<Animati
 {
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::postAnimationEventsToMainThreadOnImplThread");
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::setAnimationEvents, base::Unretained(this), base::Passed(&events), wallClockTime));
+    Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::setAnimationEvents, m_mainThreadWeakPtr, base::Passed(&events), wallClockTime));
 }
 
 bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff)
@@ -429,7 +428,7 @@ void ThreadProxy::setDeferCommits(bool deferCommits)
         TRACE_EVENT_ASYNC_END0("cc", "ThreadProxy::setDeferCommits", this);
 
     if (!m_deferCommits && m_pendingDeferredCommit)
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(&m_pendingDeferredCommit)));
+        Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::beginFrame, m_mainThreadWeakPtr, base::Passed(&m_pendingDeferredCommit)));
 }
 
 bool ThreadProxy::commitRequested() const
@@ -462,6 +461,8 @@ void ThreadProxy::start()
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeImplOnImplThread, base::Unretained(this), &completion, handler.release()));
     completion.wait();
 
+    m_mainThreadWeakPtr = m_weakFactory.GetWeakPtr();
+
     m_started = true;
 }
 
@@ -480,7 +481,7 @@ void ThreadProxy::stop()
         completion.wait();
     }
 
-    m_mainThreadProxy->shutdown(); // Stop running tasks posted to us.
+    m_weakFactory.InvalidateWeakPtrs();
 
     DCHECK(!m_layerTreeHostImpl.get()); // verify that the impl deleted.
     m_layerTreeHost = 0;
@@ -534,7 +535,7 @@ void ThreadProxy::scheduledActionBeginFrame()
     beginFrameState->implTransform = m_layerTreeHostImpl->implTransform();
     DCHECK_GT(m_layerTreeHostImpl->memoryAllocationLimitBytes(), 0u);
     beginFrameState->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(&beginFrameState)));
+    Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::beginFrame, m_mainThreadWeakPtr, base::Passed(&beginFrameState)));
 
     if (m_beginFrameCompletionEventOnImplThread) {
         m_beginFrameCompletionEventOnImplThread->signal();
@@ -733,7 +734,7 @@ void ThreadProxy::scheduledActionCommit()
 void ThreadProxy::scheduledActionBeginContextRecreation()
 {
     DCHECK(isImplThread());
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginContextRecreation, base::Unretained(this)));
+    Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::beginContextRecreation, m_mainThreadWeakPtr));
 }
 
 ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal(bool forcedDraw)
@@ -791,7 +792,7 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     // Tell the main thread that the the newly-commited frame was drawn.
     if (m_nextFrameIsNewlyCommittedFrameOnImplThread) {
         m_nextFrameIsNewlyCommittedFrameOnImplThread = false;
-        m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::didCommitAndDrawFrame, base::Unretained(this)));
+        Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::didCommitAndDrawFrame, m_mainThreadWeakPtr));
     }
 
     return result;
