@@ -36,12 +36,14 @@ class DisplayView : public ash::internal::ActionableView {
         ash::kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* image =
+    image_ =
         new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    image->SetImage(
+    image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY).ToImageSkia());
-    AddChildView(image);
+    AddChildView(image_);
     label_ = new views::Label();
+    label_->SetMultiLine(true);
+    label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(label_);
     Update();
   }
@@ -108,7 +110,15 @@ class DisplayView : public ash::internal::ActionableView {
     return true;
   }
 
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) {
+    int label_max_width = bounds().width() - kTrayPopupPaddingHorizontal * 2 -
+        kTrayPopupPaddingBetweenItems - image_->GetPreferredSize().width();
+    label_->SizeToFit(label_max_width);
+    PreferredSizeChanged();
+  }
+
   user::LoginStatus login_status_;
+  views::ImageView* image_;
   views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayView);
