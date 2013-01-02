@@ -24,28 +24,17 @@ class InterceptedRequestData;
 // This class allows the Java-side embedder to substitute the default
 // URLRequest of a given request for an alternative job that will read data
 // from a Java stream.
-class AwRequestInterceptor : public net::URLRequestJobFactory::Interceptor {
+class AwRequestInterceptor : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   AwRequestInterceptor();
   virtual ~AwRequestInterceptor();
 
-  // net::URLRequestJobFactory::Interceptor overrides -------------------------
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptResponse(
+  // net::URLRequestJobFactory::ProtocolHandler override -----------------------
+  virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
-  net::URLRequestJob* MaybeInterceptInternal(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const;
   scoped_ptr<InterceptedRequestData> QueryForInterceptedRequestData(
       const GURL& location,
       net::URLRequest* request) const;

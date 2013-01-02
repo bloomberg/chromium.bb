@@ -73,8 +73,7 @@ AwRequestInterceptor::QueryForInterceptedRequestData(
   return io_thread_client->ShouldInterceptRequest(location, request).Pass();
 }
 
-net::URLRequestJob* AwRequestInterceptor::MaybeInterceptInternal(
-    const GURL& location,
+net::URLRequestJob* AwRequestInterceptor::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -93,7 +92,7 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptInternal(
     // the result of that call is a valid InterceptedRequestData* pointer or
     // NULL.
     user_data = new URLRequestUserData(
-        QueryForInterceptedRequestData(location, request));
+        QueryForInterceptedRequestData(request->url(), request));
     request->SetUserData(kURLRequestUserDataKey, user_data);
   }
 
@@ -103,25 +102,6 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptInternal(
   if (!intercepted_request_data)
     return NULL;
   return intercepted_request_data->CreateJobFor(request, network_delegate);
-}
-
-net::URLRequestJob* AwRequestInterceptor::MaybeIntercept(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return MaybeInterceptInternal(request->url(), request, network_delegate);
-}
-
-net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRedirect(
-    const GURL& location,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return MaybeInterceptInternal(location, request, network_delegate);
-}
-
-net::URLRequestJob* AwRequestInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return NULL;
 }
 
 } // namespace android_webview

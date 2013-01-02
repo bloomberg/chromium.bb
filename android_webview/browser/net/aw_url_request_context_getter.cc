@@ -18,6 +18,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
+#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context.h"
 
@@ -101,7 +102,6 @@ void AwURLRequestContextGetter::Init() {
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
-  job_factory->AddInterceptor(new AwRequestInterceptor());
 
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
@@ -118,6 +118,10 @@ void AwURLRequestContextGetter::Init() {
 
   job_factory_ = CreateAndroidJobFactoryAndCookieMonster(
       url_request_context_.get(), job_factory.Pass());
+  job_factory_.reset(new net::ProtocolInterceptJobFactory(
+      job_factory_.Pass(),
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new AwRequestInterceptor())));
   url_request_context_->set_job_factory(job_factory_.get());
 }
 
