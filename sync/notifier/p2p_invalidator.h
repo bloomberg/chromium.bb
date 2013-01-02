@@ -30,7 +30,7 @@ class PushClient;
 namespace syncer {
 
 // The channel to use for sync notifications.
-SYNC_EXPORT_PRIVATE extern const char kSyncP2PNotificationChannel[];
+SYNC_EXPORT extern const char kSyncP2PNotificationChannel[];
 
 // The intended recipient(s) of a P2P notification.
 enum P2PNotificationTarget {
@@ -41,11 +41,11 @@ enum P2PNotificationTarget {
   LAST_NOTIFICATION_TARGET = NOTIFY_ALL
 };
 
-std::string P2PNotificationTargetToString(
+SYNC_EXPORT_PRIVATE std::string P2PNotificationTargetToString(
     P2PNotificationTarget target);
 
 // If |target_str| can't be parsed, assumes NOTIFY_SELF.
-P2PNotificationTarget P2PNotificationTargetFromString(
+SYNC_EXPORT_PRIVATE P2PNotificationTarget P2PNotificationTargetFromString(
     const std::string& target_str);
 
 // Helper notification data class that can be serialized to and
@@ -88,8 +88,9 @@ class SYNC_EXPORT_PRIVATE P2PNotificationData {
   IncomingInvalidationSource source_;
 };
 
-class P2PInvalidator : public Invalidator,
-                       public notifier::PushClientObserver {
+class SYNC_EXPORT_PRIVATE P2PInvalidator
+    : public Invalidator,
+      public NON_EXPORTED_BASE(notifier::PushClientObserver) {
  public:
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be

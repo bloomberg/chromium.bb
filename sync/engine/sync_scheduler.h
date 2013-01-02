@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/nudge_source.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/sessions/sync_session.h"
@@ -25,7 +26,7 @@ namespace syncer {
 
 struct ServerConnectionEvent;
 
-struct ConfigurationParams {
+struct SYNC_EXPORT_PRIVATE ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
@@ -44,7 +45,8 @@ struct ConfigurationParams {
   base::Closure ready_task;
 };
 
-class SyncScheduler : public sessions::SyncSession::Delegate {
+class SYNC_EXPORT_PRIVATE SyncScheduler
+    : public sessions::SyncSession::Delegate {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is

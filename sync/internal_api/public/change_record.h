@@ -41,7 +41,7 @@ class SYNC_EXPORT ExtraPasswordChangeRecordData {
 // operation.  This gives the sync id of the node that changed, and the type
 // of change.  To get the actual property values after an ADD or UPDATE, the
 // client should get the node with InitByIdLookup(), using the provided id.
-struct ChangeRecord {
+struct SYNC_EXPORT_PRIVATE ChangeRecord {
   enum Action {
     ACTION_ADD,
     ACTION_DELETE,

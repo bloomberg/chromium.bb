@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
 const int32 kCurrentDBVersion = 85;
 
 // Iterate over the fields of |entry| and bind each to |statement| for

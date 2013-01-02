@@ -15,7 +15,7 @@ namespace syncable {
 SYNC_EXPORT extern const int64 kInvalidTransactionVersion;
 
 // Locks db in constructor, unlocks in destructor.
-class WriteTransaction : public BaseTransaction {
+class SYNC_EXPORT_PRIVATE WriteTransaction : public BaseTransaction {
  public:
   WriteTransaction(const tracked_objects::Location& from_here,
                    WriterTag writer, Directory* directory);

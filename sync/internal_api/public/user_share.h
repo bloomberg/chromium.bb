@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -19,7 +20,7 @@ class Directory;
 // user and their data (share).
 // This encompasses all pieces required to build transaction objects on the
 // syncable share.
-struct UserShare {
+struct SYNC_EXPORT_PRIVATE UserShare {
   UserShare();
   ~UserShare();
 

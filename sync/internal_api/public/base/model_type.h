@@ -123,7 +123,8 @@ SYNC_EXPORT void AddDefaultFieldValue(ModelType datatype,
 // local concept: the enum is not in the protocol.  The SyncEntity's ModelType
 // is inferred from the presence of particular datatype field in the
 // entity specifics.
-ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
+SYNC_EXPORT_PRIVATE ModelType GetModelType(
+    const sync_pb::SyncEntity& sync_entity);
 
 // Extract the model type from an EntitySpecifics field.  Note that there
 // are some ModelTypes (like TOP_LEVEL_FOLDER) that can't be inferred this way;
@@ -140,7 +141,7 @@ bool ShouldMaintainPosition(ModelType model_type);
 SYNC_EXPORT ModelTypeSet UserTypes();
 
 // This is the subset of UserTypes() that can be encrypted.
-ModelTypeSet EncryptableUserTypes();
+SYNC_EXPORT_PRIVATE ModelTypeSet EncryptableUserTypes();
 
 // Returns a list of all control types.
 //
@@ -179,7 +180,8 @@ SYNC_EXPORT bool IsControlType(ModelType model_type);
 //     }
 //     model_types.Put(model_type);
 //   }
-ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
+SYNC_EXPORT_PRIVATE ModelType GetModelTypeFromSpecificsFieldNumber(
+    int field_number);
 
 // Return the field number of the EntitySpecifics field associated with
 // a model type.
@@ -199,10 +201,10 @@ SYNC_EXPORT const char* ModelTypeToString(ModelType model_type);
 // Handles all model types, and not just real ones.
 //
 // Caller takes ownership of returned value.
-base::StringValue* ModelTypeToValue(ModelType model_type);
+SYNC_EXPORT_PRIVATE base::StringValue* ModelTypeToValue(ModelType model_type);
 
 // Converts a Value into a ModelType - complement to ModelTypeToValue().
-ModelType ModelTypeFromValue(const base::Value& value);
+SYNC_EXPORT_PRIVATE ModelType ModelTypeFromValue(const base::Value& value);
 
 // Returns the ModelType corresponding to the name |model_type_string|.
 SYNC_EXPORT ModelType ModelTypeFromString(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class SyncHttpBridgeTest : public testing::Test {
         test->GetTestRequestContextGetter()->GetURLRequestContext()->
         http_transaction_factory()->GetSession();
     EXPECT_EQ(test_session,
-              http_bridge->GetRequestContextGetter()->
+              http_bridge->GetRequestContextGetterForTest()->
                   GetURLRequestContext()->
                   http_transaction_factory()->GetSession());
     main_message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());

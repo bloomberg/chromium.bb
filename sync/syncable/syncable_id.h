@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/hash_tables.h"
+#include "sync/base/sync_export.h"
 
 class MockConnectionManager;
 
@@ -28,7 +29,7 @@ namespace syncable {
 struct EntryKernel;
 class Id;
 
-std::ostream& operator<<(std::ostream& out, const Id& id);
+SYNC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out, const Id& id);
 
 // For historical reasons, 3 concepts got everloaded into the Id:
 // 1. A unique, opaque identifier for the object.
@@ -40,7 +41,7 @@ std::ostream& operator<<(std::ostream& out, const Id& id);
 // 1. c<client only opaque id> for client items that have not been committed.
 // 2. r for the root item.
 // 3. s<server provided opaque id> for items that the server knows about.
-class Id {
+class SYNC_EXPORT Id {
  public:
   // This constructor will be handy even when we move away from int64s, just
   // for unit tests.
@@ -115,14 +116,15 @@ class Id {
   friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement);
   friend void BindFields(const EntryKernel& entry,
                          sql::Statement* statement);
-  friend std::ostream& operator<<(std::ostream& out, const Id& id);
+  SYNC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& out,
+                                                      const Id& id);
   friend class MockConnectionManager;
   friend class SyncableIdTest;
 
   std::string s_;
 };
 
-Id GetNullId();
+SYNC_EXPORT_PRIVATE Id GetNullId();
 
 }  // namespace syncable
 }  // namespace syncer

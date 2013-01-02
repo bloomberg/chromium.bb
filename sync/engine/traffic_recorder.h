@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace sync_pb {
@@ -20,7 +21,7 @@ class ClientToServerMessage;
 
 namespace syncer {
 
-class TrafficRecorder {
+class SYNC_EXPORT_PRIVATE TrafficRecorder {
  public:
   enum TrafficMessageType {
     CLIENT_TO_SERVER_MESSAGE,
@@ -28,7 +29,7 @@ class TrafficRecorder {
     UNKNOWN_MESSAGE_TYPE
   };
 
-  struct TrafficRecord {
+  struct SYNC_EXPORT_PRIVATE TrafficRecord {
     // The serialized message.
     std::string message;
     TrafficMessageType message_type;

@@ -31,7 +31,7 @@ ObjectIdSet ObjectIdInvalidationMapToSet(
 SYNC_EXPORT ObjectIdInvalidationMap ObjectIdSetToInvalidationMap(
     const ObjectIdSet& ids, const std::string& payload);
 
-bool ObjectIdInvalidationMapEquals(
+SYNC_EXPORT bool ObjectIdInvalidationMapEquals(
     const ObjectIdInvalidationMap& invalidation_map1,
     const ObjectIdInvalidationMap& invalidation_map2);
 
@@ -42,8 +42,9 @@ bool ObjectIdInvalidationMapFromValue(const base::ListValue& value,
                                ObjectIdInvalidationMap* out);
 
 // Converts between ObjectIdInvalidationMaps and ModelTypeInvalidationMaps.
-ModelTypeInvalidationMap ObjectIdInvalidationMapToModelTypeInvalidationMap(
-    const ObjectIdInvalidationMap& invalidation_map);
+SYNC_EXPORT_PRIVATE ModelTypeInvalidationMap
+    ObjectIdInvalidationMapToModelTypeInvalidationMap(
+        const ObjectIdInvalidationMap& invalidation_map);
 SYNC_EXPORT ObjectIdInvalidationMap
     ModelTypeInvalidationMapToObjectIdInvalidationMap(
         const ModelTypeInvalidationMap& invalidation_map);

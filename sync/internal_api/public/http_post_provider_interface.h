@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,15 @@
 
 #include <string>
 
+#include "sync/base/sync_export.h"
+
 namespace syncer {
 
 // An interface the embedding application (e.g. Chromium) implements to provide
 // required HTTP POST functionality to the syncer backend. This interface is
 // designed for one-time use. You create one, use it, and create another if you
 // want to make a subsequent POST.
-class HttpPostProviderInterface {
+class SYNC_EXPORT_PRIVATE HttpPostProviderInterface {
  public:
   // Add additional headers to the request.
   virtual void SetExtraRequestHeaders(const char* headers) = 0;

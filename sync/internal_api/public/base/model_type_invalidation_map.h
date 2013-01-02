@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -33,20 +33,20 @@ typedef std::map<ModelType, Invalidation> ModelTypeInvalidationMap;
 SYNC_EXPORT ModelTypeInvalidationMap ModelTypeSetToInvalidationMap(
     ModelTypeSet model_types, const std::string& payload);
 
-ModelTypeSet ModelTypeInvalidationMapToSet(
+SYNC_EXPORT_PRIVATE ModelTypeSet ModelTypeInvalidationMapToSet(
     const ModelTypeInvalidationMap& invalidation_map);
 
 std::string ModelTypeInvalidationMapToString(
     const ModelTypeInvalidationMap& invalidation_map);
 
 // Caller takes ownership of the returned dictionary.
-base::DictionaryValue* ModelTypeInvalidationMapToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ModelTypeInvalidationMapToValue(
     const ModelTypeInvalidationMap& invalidation_map);
 
 // Coalesce |update| into |original|, overwriting only when |update| has
 // a non-empty payload.
-void CoalesceStates(ModelTypeInvalidationMap* original,
-                    const ModelTypeInvalidationMap& update);
+SYNC_EXPORT_PRIVATE void CoalesceStates(ModelTypeInvalidationMap* original,
+                                        const ModelTypeInvalidationMap& update);
 
 }  // namespace syncer
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace tracked_objects {
@@ -23,22 +24,24 @@ class WriteTransaction;
 class MutableEntry;
 class Id;
 
-void ChangeEntryIDAndUpdateChildren(WriteTransaction* trans,
-                                    MutableEntry* entry,
-                                    const Id& new_id);
+SYNC_EXPORT_PRIVATE void ChangeEntryIDAndUpdateChildren(WriteTransaction* trans,
+                                                        MutableEntry* entry,
+                                                        const Id& new_id);
 
-bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
+SYNC_EXPORT_PRIVATE bool IsLegalNewParent(BaseTransaction* trans,
+                                          const Id& id,
+                                          const Id& parentid);
 
 bool SyncAssert(bool condition,
                 const tracked_objects::Location& location,
                 const char* msg,
                 BaseTransaction* trans);
 
-int GetUnsyncedEntries(BaseTransaction* trans,
-                       std::vector<int64> *handles);
+SYNC_EXPORT_PRIVATE int GetUnsyncedEntries(BaseTransaction* trans,
+                                           std::vector<int64> *handles);
 
 // Generates a fixed-length tag for the given string under the given model_type.
-std::string GenerateSyncableHash(
+SYNC_EXPORT_PRIVATE std::string GenerateSyncableHash(
     ModelType model_type, const std::string& client_tag);
 
 }  // namespace syncable

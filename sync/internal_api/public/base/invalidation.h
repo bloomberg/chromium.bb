@@ -32,6 +32,8 @@ class SYNC_EXPORT AckHandle {
 
   bool IsValid() const;
 
+  ~AckHandle();
+
  private:
   // Explicitly copyable and assignable for STL containers.
   AckHandle(const std::string& state, base::Time timestamp);
@@ -45,8 +47,9 @@ class SYNC_EXPORT AckHandle {
 // associated ack handle that an InvalidationHandler implementation can use to
 // acknowledge receipt of the invalidation. It does not embed the object ID,
 // since it is typically associated with it through ObjectIdInvalidationMap.
-struct Invalidation {
+struct SYNC_EXPORT Invalidation {
   Invalidation();
+  ~Invalidation();
 
   bool Equals(const Invalidation& other) const;
 

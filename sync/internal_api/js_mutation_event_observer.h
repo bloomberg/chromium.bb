@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/transaction_observer.h"
@@ -26,7 +27,7 @@ class JsEventHandler;
 
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
-class JsMutationEventObserver
+class SYNC_EXPORT_PRIVATE JsMutationEventObserver
     : public SyncManager::ChangeObserver,
       public syncable::TransactionObserver,
       public base::NonThreadSafe {

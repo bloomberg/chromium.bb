@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,9 +9,11 @@
 
 #include <string>
 
+#include "sync/base/sync_export.h"
+
 namespace syncer {
 
-class StateWriter {
+class SYNC_EXPORT_PRIVATE StateWriter {
  public:
   virtual ~StateWriter() {}
 

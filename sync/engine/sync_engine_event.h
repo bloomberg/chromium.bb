@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 namespace syncable {
@@ -16,7 +17,7 @@ class Id;
 
 namespace syncer {
 
-struct SyncEngineEvent {
+struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
   enum EventCause {
     ////////////////////////////////////////////////////////////////
     // Sent on entry of Syncer state machine
@@ -57,7 +58,7 @@ struct SyncEngineEvent {
   std::string updated_token;
 };
 
-class SyncEngineEventListener {
+class SYNC_EXPORT_PRIVATE SyncEngineEventListener {
  public:
   // TODO(tim): Consider splitting this up to multiple callbacks, rather than
   // have to do Event e(type); OnSyncEngineEvent(e); at all callsites,

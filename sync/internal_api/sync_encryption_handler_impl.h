@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/util/cryptographer.h"
@@ -41,7 +42,7 @@ class WriteTransaction;
 // sync methods.
 // All methods are non-thread-safe and should only be called from the sync
 // thread unless explicitly noted otherwise.
-class SyncEncryptionHandlerImpl
+class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
     : public SyncEncryptionHandler,
       public syncable::NigoriHandler {
  public:

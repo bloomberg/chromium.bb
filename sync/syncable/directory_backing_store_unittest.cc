@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -27,7 +28,7 @@
 namespace syncer {
 namespace syncable {
 
-extern const int32 kCurrentDBVersion;
+SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:

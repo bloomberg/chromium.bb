@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "net/base/network_change_notifier.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/all_status.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/sync_engine_event.h"
@@ -46,7 +47,7 @@ class SyncSessionContext;
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SyncManagerImpl :
+class SYNC_EXPORT_PRIVATE SyncManagerImpl :
     public SyncManager,
     public net::NetworkChangeNotifier::IPAddressObserver,
     public net::NetworkChangeNotifier::ConnectionTypeObserver,

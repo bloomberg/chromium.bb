@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_PROCESS_UPDATES_COMMAND_H_
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/syncer_types.h"
 
@@ -27,7 +28,8 @@ class Cryptographer;
 //
 // Postconditions - All of the verified SyncEntity data will be copied to
 //                  the server fields of the corresponding syncable entries.
-class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
+class SYNC_EXPORT_PRIVATE ProcessUpdatesCommand
+    : public ModelChangingSyncerCommand {
  public:
   ProcessUpdatesCommand();
   virtual ~ProcessUpdatesCommand();

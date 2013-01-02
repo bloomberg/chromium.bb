@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 // See README.js for design comments.
 
 #include <string>
+
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -19,7 +21,7 @@ template <typename T> class WeakHandle;
 // Interface representing the backend of chrome://sync-internals.  A
 // JsBackend can handle messages and can emit events to a
 // JsEventHandler.
-class JsBackend {
+class SYNC_EXPORT_PRIVATE JsBackend {
  public:
   // Starts emitting events to the given handler, if initialized.
   virtual void SetJsEventHandler(

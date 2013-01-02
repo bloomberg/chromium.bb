@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/system-resources.h"
+#include "sync/base/sync_export.h"
 #include "sync/notifier/push_client_channel.h"
 #include "sync/notifier/state_writer.h"
 
@@ -116,7 +117,8 @@ class SyncStorage : public invalidation::Storage {
   std::string cached_state_;
 };
 
-class SyncSystemResources : public invalidation::SystemResources {
+class SYNC_EXPORT_PRIVATE SyncSystemResources
+    : public NON_EXPORTED_BASE(invalidation::SystemResources) {
  public:
   SyncSystemResources(scoped_ptr<notifier::PushClient> push_client,
                       StateWriter* state_writer);

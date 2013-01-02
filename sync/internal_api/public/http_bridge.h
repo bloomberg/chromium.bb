@@ -38,10 +38,13 @@ namespace syncer {
 // This is a one-time use bridge. Create one for each request you want to make.
 // It is RefCountedThreadSafe because it can PostTask to the io loop, and thus
 // needs to stick around across context switches, etc.
-class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
-                   public HttpPostProviderInterface,
-                   public net::URLFetcherDelegate {
+class SYNC_EXPORT_PRIVATE HttpBridge
+    : public base::RefCountedThreadSafe<HttpBridge>,
+      public HttpPostProviderInterface,
+      public net::URLFetcherDelegate {
  public:
+  friend class SyncHttpBridgeTest;
+
   // A request context used for HTTP requests bridged from the sync backend.
   // A bridged RequestContext has a dedicated in-memory cookie store and does
   // not use a cache. Thus the same type can be used for incognito mode.
@@ -69,7 +72,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   };
 
   // Lazy-getter for RequestContext objects.
-  class RequestContextGetter : public net::URLRequestContextGetter {
+  class SYNC_EXPORT_PRIVATE RequestContextGetter
+      : public net::URLRequestContextGetter {
    public:
     RequestContextGetter(
         net::URLRequestContextGetter* baseline_context_getter,
@@ -118,11 +122,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-#if defined(UNIT_TEST)
-  net::URLRequestContextGetter* GetRequestContextGetter() const {
-    return context_getter_for_request_;
-  }
-#endif
+  net::URLRequestContextGetter* GetRequestContextGetterForTest() const;
 
  protected:
   friend class base::RefCountedThreadSafe<HttpBridge>;

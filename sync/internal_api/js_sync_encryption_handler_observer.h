@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -23,7 +24,8 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncEncryptionHandler events to a JsEventHandler.
-class JsSyncEncryptionHandlerObserver : public SyncEncryptionHandler::Observer {
+class SYNC_EXPORT_PRIVATE JsSyncEncryptionHandlerObserver
+    : public SyncEncryptionHandler::Observer {
  public:
   JsSyncEncryptionHandlerObserver();
   virtual ~JsSyncEncryptionHandlerObserver();

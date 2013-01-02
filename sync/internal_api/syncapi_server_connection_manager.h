@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/net/server_connection_manager.h"
 
 namespace syncer {
@@ -46,7 +47,8 @@ class SyncAPIBridgedConnection : public ServerConnectionManager::Connection {
 // A ServerConnectionManager subclass used by the syncapi layer. We use a
 // subclass so that we can override MakePost() to generate a POST object using
 // an instance of the HttpPostProviderFactory class.
-class SyncAPIServerConnectionManager : public ServerConnectionManager {
+class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
+    : public ServerConnectionManager {
  public:
   // Takes ownership of factory.
   SyncAPIServerConnectionManager(const std::string& server,

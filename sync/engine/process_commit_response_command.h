@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -38,7 +39,8 @@ class Directory;
 // trouble processing the request.
 //
 // See SyncerCommand documentation for more info.
-class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
+class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
+    : public ModelChangingSyncerCommand {
  public:
 
   // The commit_set parameter contains references to all the items which were

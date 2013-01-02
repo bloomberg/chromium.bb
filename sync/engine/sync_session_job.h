@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
 #include "sync/sessions/sync_session.h"
 
 namespace syncer {
 
-class SyncSessionJob {
+class SYNC_EXPORT_PRIVATE SyncSessionJob {
  public:
   enum Purpose {
     // Uninitialized state, should never be hit in practice.

@@ -58,6 +58,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "sync/base/sync_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -99,7 +100,7 @@ struct ParamTraits<T[]> {
 
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles
 // the interaction with the owner thread and its message loop.
-class WeakHandleCoreBase {
+class SYNC_EXPORT WeakHandleCoreBase {
  public:
   // Assumes the current thread is the owner thread.
   WeakHandleCoreBase();
@@ -125,7 +126,7 @@ class WeakHandleCoreBase {
 // WeakHandleCore<T> contains all the logic for WeakHandle<T>.
 template <typename T>
 class WeakHandleCore
-    : public NON_EXPORTED_BASE(WeakHandleCoreBase),
+    : public WeakHandleCoreBase,
       public base::RefCountedThreadSafe<WeakHandleCore<T> > {
  public:
   // Must be called on |ptr|'s owner thread, which is assumed to be

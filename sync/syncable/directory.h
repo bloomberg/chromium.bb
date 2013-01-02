@@ -151,7 +151,7 @@ class SYNC_EXPORT Directory {
 
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
-  struct PersistedKernelInfo {
+  struct SYNC_EXPORT_PRIVATE PersistedKernelInfo {
     PersistedKernelInfo();
     ~PersistedKernelInfo();
 
@@ -203,7 +203,7 @@ class SYNC_EXPORT Directory {
   // When the Directory is told to SaveChanges, a SaveChangesSnapshot is
   // constructed and forms a consistent snapshot of what needs to be sent to
   // the backing store.
-  struct SaveChangesSnapshot {
+  struct SYNC_EXPORT_PRIVATE SaveChangesSnapshot {
     SaveChangesSnapshot();
     ~SaveChangesSnapshot();
 

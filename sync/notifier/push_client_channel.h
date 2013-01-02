@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "sync/base/sync_export.h"
 
 namespace notifier {
 class PushClient;
@@ -22,9 +23,9 @@ namespace syncer {
 
 // A PushClientChannel is an implementation of NetworkChannel that
 // routes messages through a PushClient.
-class PushClientChannel
-    : public invalidation::NetworkChannel,
-      public notifier::PushClientObserver {
+class SYNC_EXPORT_PRIVATE PushClientChannel
+    : public NON_EXPORTED_BASE(invalidation::NetworkChannel),
+      public NON_EXPORTED_BASE(notifier::PushClientObserver) {
  public:
   // |push_client| is guaranteed to be destroyed only when this object
   // is destroyed.

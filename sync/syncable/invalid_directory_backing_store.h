@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,14 @@
 #define SYNC_SYNCABLE_INVALID_DIRECTORY_BACKING_STORE_H_
 
 #include "sync/syncable/directory_backing_store.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 namespace syncable {
 
 // A class used to test scenarios where loading a directory fails.
-class InvalidDirectoryBackingStore : public DirectoryBackingStore {
+class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
+    : public DirectoryBackingStore {
  public:
   InvalidDirectoryBackingStore();
   virtual ~InvalidDirectoryBackingStore();

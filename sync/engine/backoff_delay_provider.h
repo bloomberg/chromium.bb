@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_BACKOFF_DELAY_PROVIDER_H_
 
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -14,7 +15,7 @@ struct ModelNeutralState;
 }
 
 // A component used to get time delays associated with exponential backoff.
-class BackoffDelayProvider {
+class SYNC_EXPORT_PRIVATE BackoffDelayProvider {
  public:
   // Factory function to create a standard BackoffDelayProvider.
   static BackoffDelayProvider* FromDefaults();

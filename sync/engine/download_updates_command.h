@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ namespace syncer {
 // downloaded for all enabled datatypes (i.e., until the server indicates
 // changes_remaining == 0 in the GetUpdates response), or until an error
 // is encountered.
-class DownloadUpdatesCommand : public SyncerCommand {
+class SYNC_EXPORT_PRIVATE DownloadUpdatesCommand : public SyncerCommand {
  public:
   // |create_mobile_bookmarks_folder| controls whether or not to
   // create the mobile bookmarks folder if it's not already created.

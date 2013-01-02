@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/time.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/internal_api/public/util/immutable.h"
@@ -174,7 +175,7 @@ enum {
 
 
 
-struct EntryKernel {
+struct SYNC_EXPORT_PRIVATE EntryKernel {
  private:
   std::string string_fields[STRING_FIELDS_COUNT];
   sync_pb::EntitySpecifics specifics_fields[PROTO_FIELDS_COUNT];

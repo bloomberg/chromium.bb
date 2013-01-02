@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SYNC_SYNCABLE_ENTRY_H_
 #define SYNC_SYNCABLE_ENTRY_H_
 
+#include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
 
 namespace syncer {
@@ -41,7 +42,7 @@ enum GetByHandle {
   GET_BY_HANDLE
 };
 
-class Entry {
+class SYNC_EXPORT Entry {
  public:
   // After constructing, you must check good() to test whether the Get
   // succeeded.

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "net/base/backoff_entry.h"
+#include "sync/base/sync_export.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
@@ -23,9 +24,9 @@ namespace syncer {
 // periodically triggers a callback for each timeout period. The timeout is a
 // simple exponentially increasing time that starts at 60 seconds and is capped
 // at 600 seconds.
-class AckTracker {
+class SYNC_EXPORT_PRIVATE AckTracker {
  public:
-  class Delegate {
+  class SYNC_EXPORT_PRIVATE Delegate {
    public:
     virtual ~Delegate();
 

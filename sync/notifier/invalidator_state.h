@@ -30,8 +30,8 @@ InvalidatorState FromNotifierReason(
     notifier::NotificationsDisabledReason reason);
 
 // Should not be called when |state| == INVALIDATIONS_ENABLED.
-notifier::NotificationsDisabledReason ToNotifierReasonForTest(
-    InvalidatorState state);
+SYNC_EXPORT_PRIVATE notifier::NotificationsDisabledReason
+    ToNotifierReasonForTest(InvalidatorState state);
 
 }  // namespace syncer
 

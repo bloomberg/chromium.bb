@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
@@ -18,7 +19,7 @@ namespace syncer {
 
 class AllStatus;
 
-class ThrottledDataTypeTracker {
+class SYNC_EXPORT_PRIVATE ThrottledDataTypeTracker {
  public:
   // The given allstatus argument will be kept up to date on this object's list
   // of throttled types.  The argument may be NULL in tests.

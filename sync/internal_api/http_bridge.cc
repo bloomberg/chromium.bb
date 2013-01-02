@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,6 +310,11 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   // Wake the blocked syncer thread in MakeSynchronousPost.
   // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
   http_post_completed_.Signal();
+}
+
+net::URLRequestContextGetter* HttpBridge::GetRequestContextGetterForTest()
+    const {
+  return context_getter_for_request_;
 }
 
 }  // namespace syncer

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
+#include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace sync_pb {
@@ -34,7 +35,7 @@ static const int32 kUnsetPayloadLength = -1;
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
 // content_length may not be valid.
-struct HttpResponse {
+struct SYNC_EXPORT_PRIVATE HttpResponse {
   enum ServerConnectionCode {
     // For uninitialized state.
     NONE,
@@ -95,7 +96,7 @@ struct ServerConnectionEvent {
       connection_code(code) {}
 };
 
-class ServerConnectionEventListener {
+class SYNC_EXPORT_PRIVATE ServerConnectionEventListener {
  public:
   virtual void OnServerConnectionEvent(const ServerConnectionEvent& event) = 0;
  protected:
@@ -106,7 +107,8 @@ class ServerConnectionManager;
 // A helper class that automatically notifies when the status changes.
 // TODO(tim): This class shouldn't be exposed outside of the implementation,
 // bug 35060.
-class ScopedServerStatusWatcher : public base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE ScopedServerStatusWatcher
+    : public base::NonThreadSafe {
  public:
   ScopedServerStatusWatcher(ServerConnectionManager* conn_mgr,
                             HttpResponse* response);
@@ -120,7 +122,7 @@ class ScopedServerStatusWatcher : public base::NonThreadSafe {
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-class ServerConnectionManager {
+class SYNC_EXPORT_PRIVATE ServerConnectionManager {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response

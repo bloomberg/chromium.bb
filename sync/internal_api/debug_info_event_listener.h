@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
@@ -27,10 +28,11 @@ const unsigned int kMaxEntries = 25;
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
 // This class is not thread safe and should only be accessed on the sync thread.
-class DebugInfoEventListener : public SyncManager::Observer,
-                               public SyncEncryptionHandler::Observer,
-                               public sessions::DebugInfoGetter,
-                               public DataTypeDebugInfoListener {
+class SYNC_EXPORT_PRIVATE DebugInfoEventListener
+    : public SyncManager::Observer,
+      public SyncEncryptionHandler::Observer,
+      public sessions::DebugInfoGetter,
+      public DataTypeDebugInfoListener {
  public:
   DebugInfoEventListener();
   virtual ~DebugInfoEventListener();

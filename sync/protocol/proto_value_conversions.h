@@ -70,30 +70,30 @@ namespace syncer {
 // caller.
 
 // TODO(akalin): Perhaps extend this to decrypt?
-base::DictionaryValue* EncryptedDataToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);
 
 // Sub-protocol of AppSpecifics.
-base::DictionaryValue* AppSettingsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AppSettingsToValue(
     const sync_pb::AppNotificationSettings& app_notification_settings);
 
 // Sub-protocols of SessionSpecifics.
 
-base::DictionaryValue* SessionHeaderToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionHeaderToValue(
     const sync_pb::SessionHeader& session_header);
 
-base::DictionaryValue* SessionTabToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionTabToValue(
     const sync_pb::SessionTab& session_tab);
 
-base::DictionaryValue* SessionWindowToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionWindowToValue(
     const sync_pb::SessionWindow& session_window);
 
-base::DictionaryValue* TabNavigationToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* TabNavigationToValue(
     const sync_pb::TabNavigation& tab_navigation);
 
 // Sub-protocol of PasswordSpecifics.
 
-base::DictionaryValue* PasswordSpecificsDataToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
 // Sub-protocol of NigoriSpecifics.
@@ -116,71 +116,71 @@ base::DictionaryValue* KeystoreEncryptionToValue(
 
 // Main *SpecificsToValue functions.
 
-base::DictionaryValue* AppNotificationToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AppNotificationToValue(
     const sync_pb::AppNotification& app_notification_specifics);
 
 base::DictionaryValue* AppSettingSpecificsToValue(
     const sync_pb::AppSettingSpecifics& app_setting_specifics);
 
-base::DictionaryValue* AppSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& app_specifics);
 
-base::DictionaryValue* AutofillSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillSpecificsToValue(
     const sync_pb::AutofillSpecifics& autofill_specifics);
 
-base::DictionaryValue* AutofillProfileSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
 
-base::DictionaryValue* BookmarkSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
-base::DictionaryValue* DeviceInfoSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& device_info_specifics);
 
-base::DictionaryValue* ExperimentsSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto);
 
-base::DictionaryValue* ExtensionSettingSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ExtensionSettingSpecificsToValue(
     const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);
 
-base::DictionaryValue* ExtensionSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
 
 SYNC_EXPORT base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
     const sync_pb::HistoryDeleteDirectiveSpecifics&
         history_delete_directive_specifics);
 
-base::DictionaryValue* NigoriSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
 
-base::DictionaryValue* PasswordSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
 
-base::DictionaryValue* PreferenceSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
 
-base::DictionaryValue* SearchEngineSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
 
-base::DictionaryValue* SessionSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
 
-base::DictionaryValue* ThemeSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ThemeSpecificsToValue(
     const sync_pb::ThemeSpecifics& theme_specifics);
 
-base::DictionaryValue* TypedUrlSpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
 
 // Any present extensions are mapped to sub-dictionary values with the
 // key equal to the extension name.
-base::DictionaryValue* EntitySpecificsToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics);
 
-base::DictionaryValue* ClientToServerMessageToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ClientToServerMessageToValue(
     const sync_pb::ClientToServerMessage& proto,
     bool include_specifics);
 
-base::DictionaryValue* ClientToServerResponseToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ClientToServerResponseToValue(
     const sync_pb::ClientToServerResponse& proto,
     bool include_specifics);
 

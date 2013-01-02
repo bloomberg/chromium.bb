@@ -131,7 +131,7 @@ class SYNC_EXPORT SyncManager {
   // Like ChangeDelegate, except called only on the sync thread and
   // not while a transaction is held.  For objects that want to know
   // when changes happen, but don't need to process them.
-  class ChangeObserver {
+  class SYNC_EXPORT_PRIVATE ChangeObserver {
    public:
     // Ids referred to in |changes| may or may not be in the write
     // transaction specified by |write_transaction_id|.  If they're

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
@@ -19,7 +20,7 @@
 namespace syncer {
 class InvalidationHandler;
 
-class Invalidator {
+class SYNC_EXPORT Invalidator {
  public:
   Invalidator() {}
   virtual ~Invalidator() {}

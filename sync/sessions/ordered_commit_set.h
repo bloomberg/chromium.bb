@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/syncable_id.h"
@@ -19,7 +20,7 @@ namespace sessions {
 // TODO(ncarter): This code is more generic than just Commit and can
 // be reused elsewhere (e.g. ChangeReorderBuffer do similar things).  Merge
 // all these implementations.
-class OrderedCommitSet {
+class SYNC_EXPORT_PRIVATE OrderedCommitSet {
  public:
   // A list of indices into the full list of commit ids such that:
   // 1 - each element is an index belonging to a particular ModelSafeGroup.

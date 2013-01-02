@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
@@ -33,7 +34,7 @@ namespace syncer {
 
 // This class must live on the IO thread.
 // TODO(dcheng): Think of a name better than InvalidationInvalidator.
-class InvalidationNotifier
+class SYNC_EXPORT_PRIVATE InvalidationNotifier
     : public Invalidator,
       public SyncInvalidationListener::Delegate,
       public base::NonThreadSafe {

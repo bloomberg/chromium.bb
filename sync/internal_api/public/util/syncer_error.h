@@ -18,7 +18,7 @@ namespace syncer {
 // For convenience, functions which are invoked only by SyncerCommands may also
 // return a SyncerError.  It saves us having to write a conversion function, and
 // it makes refactoring easier.
-enum SyncerError {
+enum SYNC_EXPORT_PRIVATE SyncerError {
   UNSET = 0,       // Default value.
   CANNOT_DO_WORK,  // A model worker could not process a work item.
 

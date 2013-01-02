@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/sessions/ordered_commit_set.h"
@@ -24,7 +25,7 @@ namespace syncer {
 // locally modified items that are ready to be committed to the server.
 //
 // See SyncerCommand documentation for more info.
-class GetCommitIdsCommand : public SyncerCommand {
+class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
   friend class SyncerTest;
 
  public:

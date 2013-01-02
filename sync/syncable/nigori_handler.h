@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SYNC_SYNCABLE_NIGORI_HANDLER_H_
 #define SYNC_SYNCABLE_NIGORI_HANDLER_H_
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace google{
@@ -26,7 +27,7 @@ class BaseTransaction;
 // Sync internal interface for dealing with nigori node and querying
 // the current set of encrypted types. Not thread safe, so a sync transaction
 // must be held by a caller whenever invoking methods.
-class NigoriHandler {
+class SYNC_EXPORT_PRIVATE NigoriHandler {
  public:
   NigoriHandler();
   virtual ~NigoriHandler();

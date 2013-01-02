@@ -82,7 +82,7 @@ class SYNC_EXPORT SyncError {
 };
 
 // gmock printer helper.
-void PrintTo(const SyncError& sync_error, std::ostream* os);
+SYNC_EXPORT void PrintTo(const SyncError& sync_error, std::ostream* os);
 
 }  // namespace syncer
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -40,12 +41,12 @@ class WriteTransaction;
 
 namespace sessions {
 
-class SyncSession {
+class SYNC_EXPORT_PRIVATE SyncSession {
  public:
   // The Delegate services events that occur during the session requiring an
   // explicit (and session-global) action, as opposed to events that are simply
   // recorded in per-session state.
-  class Delegate {
+  class SYNC_EXPORT_PRIVATE Delegate {
    public:
     // The client was throttled and should cease-and-desist syncing activity
     // until the specified time.

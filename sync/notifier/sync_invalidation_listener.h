@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,6 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_state.h"
@@ -39,10 +40,10 @@ class RegistrationManager;
 
 // SyncInvalidationListener is not thread-safe and lives on the sync
 // thread.
-class SyncInvalidationListener
-    : public invalidation::InvalidationListener,
+class SYNC_EXPORT_PRIVATE SyncInvalidationListener
+    : public NON_EXPORTED_BASE(invalidation::InvalidationListener),
       public StateWriter,
-      public notifier::PushClientObserver,
+      public NON_EXPORTED_BASE(notifier::PushClientObserver),
       public base::NonThreadSafe {
  public:
   typedef base::Callback<invalidation::InvalidationClient*(
@@ -52,7 +53,7 @@ class SyncInvalidationListener
       const invalidation::string&,
       invalidation::InvalidationListener*)> CreateInvalidationClientCallback;
 
-  class Delegate {
+  class SYNC_EXPORT_PRIVATE Delegate {
    public:
     virtual ~Delegate();
 

@@ -71,7 +71,7 @@ class SYNC_EXPORT SyncChange {
 };
 
 // gmock printer helper.
-void PrintTo(const SyncChange& sync_change, std::ostream* os);
+SYNC_EXPORT void PrintTo(const SyncChange& sync_change, std::ostream* os);
 
 }  // namespace syncer
 

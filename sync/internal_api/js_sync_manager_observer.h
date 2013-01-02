@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -23,7 +24,7 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncManager events to a JsEventHandler.
-class JsSyncManagerObserver : public SyncManager::Observer {
+class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
  public:
   JsSyncManagerObserver();
   virtual ~JsSyncManagerObserver();

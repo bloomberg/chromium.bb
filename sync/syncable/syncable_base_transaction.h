@@ -6,6 +6,7 @@
 #define SYNC_SYNCABLE_SYNCABLE_BASE_TRANSACTION_H_
 
 #include "base/location.h"
+#include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace syncer {
@@ -29,7 +30,7 @@ enum WriterTag {
 // Make sure to update this if you update WriterTag.
 std::string WriterTagToString(WriterTag writer_tag);
 
-class BaseTransaction {
+class SYNC_EXPORT_PRIVATE BaseTransaction {
  public:
   inline Directory* directory() const { return directory_; }
   inline Id root_id() const { return Id(); }

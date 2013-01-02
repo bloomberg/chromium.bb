@@ -5,6 +5,7 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_READ_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_READ_TRANSACTION_H_
 
+#include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
@@ -12,7 +13,7 @@ class ReadTransaction;
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.
-class ReadTransaction : public BaseTransaction {
+class SYNC_EXPORT_PRIVATE ReadTransaction : public BaseTransaction {
  public:
   ReadTransaction(const tracked_objects::Location& from_here,
                   Directory* directory);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 // the internal sync API.  They are not to be used by clients of the API.
 
 #include <string>
+
+#include "sync/base/sync_export.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -23,8 +25,8 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto);
 
-void SyncAPINameToServerName(const std::string& syncer_name,
-                             std::string* out);
+SYNC_EXPORT_PRIVATE void SyncAPINameToServerName(const std::string& syncer_name,
+                                                 std::string* out);
 
 bool IsNameServerIllegalAfterTrimming(const std::string& name);
 

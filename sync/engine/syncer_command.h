@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 
 namespace syncer {
@@ -27,7 +28,7 @@ class SyncSession;
 //   cmd->Execute(session);
 //   delete cmd;
 
-class SyncerCommand {
+class SYNC_EXPORT_PRIVATE SyncerCommand {
  public:
   SyncerCommand();
   virtual ~SyncerCommand();

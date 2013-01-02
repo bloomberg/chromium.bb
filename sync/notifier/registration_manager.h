@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,6 +17,7 @@
 // For invalidation::InvalidationListener::RegistrationState.
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "google/cacheinvalidation/include/types.h"
+#include "sync/base/sync_export.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
@@ -31,7 +32,7 @@ using ::invalidation::InvalidationListener;
 // implementations include the syncer thread (both versions) and XMPP
 // retries.  The most sophisticated one is URLRequestThrottler; making
 // that generic should work for everyone.
-class RegistrationManager : public base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE RegistrationManager : public base::NonThreadSafe {
  public:
   // Constants for exponential backoff (used by tests).
   static const int kInitialRegistrationDelaySeconds;

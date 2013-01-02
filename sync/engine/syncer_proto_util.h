@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ SYNC_EXPORT_PRIVATE ModelTypeSet GetTypesToMigrate(
 SYNC_EXPORT_PRIVATE SyncProtocolError ConvertErrorPBToLocalType(
     const sync_pb::ClientToServerResponse_Error& error);
 
-class SyncerProtoUtil {
+class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
  public:
   // Posts the given message and fills the buffer with the returned value.
   // Returns true on success.  Also handles store birthday verification: will

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_SYNCABLE_IN_MEMORY_DIRECTORY_BACKING_STORE_H_
 
 #include "sync/syncable/directory_backing_store.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 namespace syncable {
@@ -19,12 +20,16 @@ namespace syncable {
 // When an InMemoryDirectoryBackingStore is destroyed, all data stored in this
 // database is lost.  If these limitations are a problem for you, consider using
 // TestDirectoryBackingStore.
-class InMemoryDirectoryBackingStore : public DirectoryBackingStore {
+class SYNC_EXPORT_PRIVATE InMemoryDirectoryBackingStore
+    : public DirectoryBackingStore {
  public:
   explicit InMemoryDirectoryBackingStore(const std::string& dir_name);
   virtual DirOpenResult Load(
       MetahandlesIndex* entry_bucket,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InMemoryDirectoryBackingStore);
 };
 
 }  // namespace syncable

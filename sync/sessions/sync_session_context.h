@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "sync/base/sync_export.h"
 #include "sync/engine/sync_engine_event.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/traffic_recorder.h"
@@ -45,7 +46,7 @@ static const int kDefaultMaxCommitBatchSize = 25;
 namespace sessions {
 class TestScopedSessionEventListener;
 
-class SyncSessionContext {
+class SYNC_EXPORT_PRIVATE SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::Directory* directory,

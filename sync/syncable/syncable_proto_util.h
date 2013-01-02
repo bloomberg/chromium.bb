@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace sync_pb {
@@ -21,7 +22,8 @@ syncable::Id SyncableIdFromProto(const std::string& proto_string);
 
 // Converts from a syncable::Id to a formatted std::string.  This is useful for
 // populating the fields of a protobuf which will be sent to the server.
-std::string SyncableIdToProto(const syncable::Id& syncable_id);
+SYNC_EXPORT_PRIVATE std::string SyncableIdToProto(
+    const syncable::Id& syncable_id);
 
 // Helper function to determine if this SyncEntity's properties indicate that it
 // is a folder.

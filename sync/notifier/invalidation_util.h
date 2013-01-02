@@ -25,7 +25,8 @@ class Invalidation;
 class ObjectId;
 
 // Gmock print helper
-void PrintTo(const invalidation::ObjectId& id, std::ostream* os);
+SYNC_EXPORT_PRIVATE void PrintTo(const invalidation::ObjectId& id,
+                                 std::ostream* os);
 
 }  // namespace invalidation
 
@@ -51,7 +52,8 @@ scoped_ptr<base::DictionaryValue> ObjectIdToValue(
 bool ObjectIdFromValue(const base::DictionaryValue& value,
                        invalidation::ObjectId* out);
 
-std::string ObjectIdToString(const invalidation::ObjectId& object_id);
+SYNC_EXPORT_PRIVATE std::string ObjectIdToString(
+    const invalidation::ObjectId& object_id);
 
 SYNC_EXPORT_PRIVATE ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet models);
 ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids);

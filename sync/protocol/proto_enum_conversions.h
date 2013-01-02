@@ -20,25 +20,27 @@ namespace syncer {
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
 
-const char* GetBrowserTypeString(
+SYNC_EXPORT_PRIVATE const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type);
 
-const char* GetPageTransitionString(
+SYNC_EXPORT_PRIVATE const char* GetPageTransitionString(
     sync_pb::SyncEnums::PageTransition page_transition);
 
-const char* GetPageTransitionRedirectTypeString(
+SYNC_EXPORT_PRIVATE const char* GetPageTransitionRedirectTypeString(
     sync_pb::SyncEnums::PageTransitionRedirectType
         redirect_type);
 
 SYNC_EXPORT const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
-const char* GetResponseTypeString(
+SYNC_EXPORT_PRIVATE const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type);
 
-const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type);
+SYNC_EXPORT_PRIVATE const char* GetErrorTypeString(
+    sync_pb::SyncEnums::ErrorType error_type);
 
-const char* GetActionString(sync_pb::SyncEnums::Action action);
+SYNC_EXPORT_PRIVATE const char* GetActionString(
+    sync_pb::SyncEnums::Action action);
 
 const char* GetDeviceTypeString(
     sync_pb::SyncEnums::DeviceType device_type);

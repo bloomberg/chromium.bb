@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/nudge_source.h"
 #include "sync/engine/sync_scheduler.h"
@@ -32,7 +33,7 @@ namespace syncer {
 
 class BackoffDelayProvider;
 
-class SyncSchedulerImpl : public SyncScheduler {
+class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of |syncer| and |delay_provider|.
@@ -116,7 +117,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
                            ConnectionChangeCanaryPreemptedByNudge);
 
-  struct WaitInterval {
+  struct SYNC_EXPORT_PRIVATE WaitInterval {
     enum Mode {
       // Uninitialized state, should not be set in practice.
       UNKNOWN = -1,

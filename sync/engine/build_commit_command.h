@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/syncable/entry_kernel.h"
 
@@ -28,7 +29,7 @@ class Entry;
 // committed.
 //
 // See SyncerCommand documentation for more info.
-class BuildCommitCommand : public SyncerCommand {
+class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
  public:
   // The batch_commit_set parameter contains a set of references to the items
   // that should be committed.

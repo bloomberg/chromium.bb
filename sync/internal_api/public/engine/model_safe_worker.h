@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ class SYNC_EXPORT ModelSafeWorker
 typedef std::map<ModelType, ModelSafeGroup> ModelSafeRoutingInfo;
 
 // Caller takes ownership of return value.
-base::DictionaryValue* ModelSafeRoutingInfoToValue(
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info);
 
 SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
@@ -82,9 +82,10 @@ SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
 
 // Make a ModelTypeInvalidationMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.
-ModelTypeInvalidationMap ModelSafeRoutingInfoToInvalidationMap(
-    const ModelSafeRoutingInfo& routes,
-    const std::string& payload);
+SYNC_EXPORT_PRIVATE ModelTypeInvalidationMap
+    ModelSafeRoutingInfoToInvalidationMap(
+        const ModelSafeRoutingInfo& routes,
+        const std::string& payload);
 
 SYNC_EXPORT ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info);

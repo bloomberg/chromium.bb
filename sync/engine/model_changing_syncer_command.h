@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_MODEL_CHANGING_SYNCER_COMMAND_H_
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
@@ -24,7 +25,7 @@ class SyncSession;
 // fields on any syncable::Entry.  If the operation involves creating a
 // WriteTransaction, this is a sign that ModelChangingSyncerCommand is likely
 // necessary.
-class ModelChangingSyncerCommand : public SyncerCommand {
+class SYNC_EXPORT_PRIVATE ModelChangingSyncerCommand : public SyncerCommand {
  public:
   ModelChangingSyncerCommand() : work_session_(NULL) { }
   virtual ~ModelChangingSyncerCommand() { }

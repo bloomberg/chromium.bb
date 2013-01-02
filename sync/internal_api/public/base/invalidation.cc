@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,14 @@ AckHandle::AckHandle(const std::string& state, base::Time timestamp)
     : state_(state), timestamp_(timestamp) {
 }
 
+AckHandle::~AckHandle() {
+}
+
 Invalidation::Invalidation()
     : ack_handle(AckHandle::InvalidAckHandle()) {
+}
+
+Invalidation::~Invalidation() {
 }
 
 bool Invalidation::Equals(const Invalidation& other) const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/directory.h"
@@ -22,6 +23,8 @@ class EntitySpecifics;
 
 namespace syncer {
 namespace syncable {
+
+SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
 struct ColumnSpec;
 typedef Directory::MetahandlesIndex MetahandlesIndex;
@@ -41,7 +44,7 @@ typedef Directory::MetahandlesIndex MetahandlesIndex;
 // This class is abstract so that we can extend it in interesting ways for use
 // in tests.  The concrete class used in non-test scenarios is
 // OnDiskDirectoryBackingStore.
-class DirectoryBackingStore : public base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
  public:
   explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();
