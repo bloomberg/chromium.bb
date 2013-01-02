@@ -359,6 +359,9 @@ FcPatternDestroy (FcPattern *p)
     int		    i;
     FcPatternElt    *elts;
 
+    if (!p)
+	return;
+
     if (p->ref == FC_REF_CONSTANT)
     {
 	FcCacheObjectDereference (p);
