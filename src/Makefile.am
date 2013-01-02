@@ -148,6 +148,7 @@ libfontconfig_la_SOURCES = \
 	fcserialize.c \
 	fcstat.c \
 	fcstr.c \
+	fcwindows.h \
 	fcxml.c \
 	ftglue.h \
 	ftglue.c

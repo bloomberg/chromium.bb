@@ -3,7 +3,7 @@
  *
  * Copyright © 2007  Chris Wilson
  * Copyright © 2009,2010  Red Hat, Inc.
- * Copyright © 2011,2012  Google, Inc.
+ * Copyright © 2011,2012,2013  Google, Inc.
  *
  * Permission is hereby granted, without written agreement and without
  * license or royalty fees, to use, copy, modify, and distribute this
@@ -48,8 +48,7 @@
 
 #elif !defined(FC_NO_MT) && defined(_MSC_VER) || defined(__MINGW32__)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "fcwindows.h"
 typedef CRITICAL_SECTION fc_mutex_impl_t;
 #define FC_MUTEX_IMPL_INIT	{ NULL, 0, 0, NULL, NULL, 0 }
 #define fc_mutex_impl_init(M)	InitializeCriticalSection (M)

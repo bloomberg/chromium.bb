@@ -28,12 +28,6 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-#if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
-#define STRICT
-#include <windows.h>
-#undef STRICT
-#endif
-
 #if defined (_WIN32) && !defined (R_OK)
 #define R_OK 4
 #endif
@@ -270,7 +264,7 @@ FcConfigDestroy (FcConfig *config)
     if (FcRefDec (&config->ref) != 1)
 	return;
 
-    fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
+    (void) fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
 
     FcStrSetDestroy (config->configDirs);
     FcStrSetDestroy (config->fontDirs);
@@ -1737,13 +1731,14 @@ FcConfigSubstitute (FcConfig	*config,
 
 #if defined (_WIN32)
 
-#  define WIN32_LEAN_AND_MEAN
-#  define WIN32_EXTRA_LEAN
-#  include <windows.h>
-
 static FcChar8 fontconfig_path[1000] = ""; /* MT-dontcare */
 
 #  if (defined (PIC) || defined (DLL_EXPORT))
+
+BOOL WINAPI
+DllMain (HINSTANCE hinstDLL,
+	 DWORD     fdwReason,
+	 LPVOID    lpvReserved);
 
 BOOL WINAPI
 DllMain (HINSTANCE hinstDLL,

@@ -1419,7 +1419,7 @@ static void
 FcParseRange (FcConfigParse *parse)
 {
     FcVStack	*vstack;
-    FcRange	r;
+    FcRange	r = {0, 0};
     FcChar32	n;
     int		count = 1;
 
@@ -1961,7 +1961,7 @@ FcParseDir (FcConfigParse *parse)
 #ifdef _WIN32
     if (strcmp ((const char *) data, "CUSTOMFONTDIR") == 0)
     {
-	char *p;
+	FcChar8 *p;
 	data = buffer;
 	if (!GetModuleFileName (NULL, (LPCH) buffer, sizeof (buffer) - 20))
 	{
@@ -1976,11 +1976,11 @@ FcParseDir (FcConfigParse *parse)
 	 */
 	p = _mbsrchr (data, '\\');
 	if (p) *p = '\0';
-	strcat (data, "\\fonts");
+	strcat ((char *) data, "\\fonts");
     }
     else if (strcmp ((const char *) data, "APPSHAREFONTDIR") == 0)
     {
-	char *p;
+	FcChar8 *p;
 	data = buffer;
 	if (!GetModuleFileName (NULL, (LPCH) buffer, sizeof (buffer) - 20))
 	{
@@ -1989,7 +1989,7 @@ FcParseDir (FcConfigParse *parse)
 	}
 	p = _mbsrchr (data, '\\');
 	if (p) *p = '\0';
-	strcat (data, "\\..\\share\\fonts");
+	strcat ((char *) data, "\\..\\share\\fonts");
     }
     else if (strcmp ((const char *) data, "WINDOWSFONTDIR") == 0)
     {
@@ -2002,8 +2002,8 @@ FcParseDir (FcConfigParse *parse)
 	    goto bail;
 	}
 	if (data [strlen ((const char *) data) - 1] != '\\')
-	    strcat (data, "\\");
-	strcat (data, "fonts");
+	    strcat ((char *) data, "\\");
+	strcat ((char *) data, "fonts");
     }
 #endif
     if (strlen ((char *) data) == 0)
@@ -2072,8 +2072,8 @@ FcParseCacheDir (FcConfigParse *parse)
 	    goto bail;
 	}
 	if (data [strlen ((const char *) data) - 1] != '\\')
-	    strcat (data, "\\");
-	strcat (data, "fontconfig\\cache");
+	    strcat ((char *) data, "\\");
+	strcat ((char *) data, "fontconfig\\cache");
     }
     else if (strcmp ((const char *) data, "LOCAL_APPDATA_FONTCONFIG_CACHE") == 0)
     {

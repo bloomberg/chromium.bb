@@ -3,9 +3,7 @@
  *
  * Copyright © 2007  Chris Wilson
  * Copyright © 2009,2010  Red Hat, Inc.
- * Copyright © 2011,2012  Google, Inc.
- *
- *  This is part of HarfBuzz, a text shaping library.
+ * Copyright © 2011,2012,2013  Google, Inc.
  *
  * Permission is hereby granted, without written agreement and without
  * license or royalty fees, to use, copy, modify, and distribute this
@@ -48,8 +46,7 @@
 
 #elif !defined(FC_NO_MT) && defined(_MSC_VER) || defined(__MINGW32__)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "fcwindows.h"
 
 /* mingw32 does not have MemoryBarrier.
  * MemoryBarrier may be defined as a macro or a function.
@@ -63,7 +60,7 @@ static inline void HBMemoryBarrier (void) {
 }
 #endif
 
-typedef int fc_atomic_int_t;
+typedef LONG fc_atomic_int_t;
 #define fc_atomic_int_add(AI, V)	InterlockedExchangeAdd (&(AI), (V))
 
 #define fc_atomic_ptr_get(P)		(HBMemoryBarrier (), (void *) *(P))

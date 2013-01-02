@@ -29,9 +29,6 @@
 #ifdef HAVE_REGEX_H
 #include <regex.h>
 #endif
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 /* Objects MT-safe for readonly access. */
 

@@ -44,9 +44,6 @@
 #endif
 
 #ifdef _WIN32
-
-#include <windows.h>
-
 #ifdef __GNUC__
 typedef long long INT64;
 #define EPOCH_OFFSET 11644473600ll

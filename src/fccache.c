@@ -77,7 +77,7 @@ FcCacheIsMmapSafe (int fd)
 	    status =  use ? MMAP_USE : MMAP_DONT_USE;
 	else
 	    status = MMAP_CHECK_FS;
-	fc_atomic_ptr_cmpexch (&static_status, NULL, (void *) status);
+	(void) fc_atomic_ptr_cmpexch (&static_status, NULL, (void *) status);
     }
 
     if (status == MMAP_CHECK_FS)
