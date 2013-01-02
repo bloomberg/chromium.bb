@@ -13,13 +13,4 @@ specific_include_rules = {
     "+chrome/test",
     "+content/public",
   ],
-  # TODO(erikwright): Bring this list to zero.
-  #
-  # Do not add to the list of temporarily-allowed dependencies below,
-  # and please do not introduce more #includes of these files.
-  'input_method_manager_impl\.cc': [
-    # TODO(erikwright): Much/all of language_preferences can/should be decoupled
-    # from chrome/browser.
-    "!chrome/browser/chromeos/language_preferences.h"
-  ],
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/chromeos/input_method/input_method_constants.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -193,7 +194,7 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
       language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id,
       PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHangulHanjaBindingKeys,
-                            language_prefs::kHangulHanjaBindingKeys,
+                            input_method::kHangulHanjaBindingKeys,
                             // Don't sync the pref as it's not user-configurable
                             PrefServiceSyncable::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
@@ -536,8 +537,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name) {
     SetInputMethodList();
   } else if (*pref_name == prefs::kLanguagePreloadEngines) {
-    SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
-                                     language_prefs::kPreloadEnginesConfigName,
+    SetLanguageConfigStringListAsCSV(input_method::kGeneralSectionName,
+                                     input_method::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
   }
 
@@ -558,7 +559,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kChewingBooleanPrefs[i].pref_name) {
       SetLanguageConfigBoolean(
-          language_prefs::kChewingSectionName,
+          input_method::kChewingSectionName,
           language_prefs::kChewingBooleanPrefs[i].ibus_config_name,
           chewing_boolean_prefs_[i].GetValue());
     }
@@ -568,7 +569,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
         *pref_name ==
         language_prefs::kChewingMultipleChoicePrefs[i].pref_name) {
       SetLanguageConfigString(
-          language_prefs::kChewingSectionName,
+          input_method::kChewingSectionName,
           language_prefs::kChewingMultipleChoicePrefs[i].ibus_config_name,
           chewing_multiple_choice_prefs_[i].GetValue());
     }
@@ -576,7 +577,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name ||
       *pref_name == language_prefs::kChewingHsuSelKeyType.pref_name) {
     SetLanguageConfigInteger(
-        language_prefs::kChewingSectionName,
+        input_method::kChewingSectionName,
         language_prefs::kChewingHsuSelKeyType.ibus_config_name,
         chewing_hsu_sel_key_type_.GetValue());
   }
@@ -584,27 +585,27 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kChewingIntegerPrefs[i].pref_name) {
       SetLanguageConfigInteger(
-          language_prefs::kChewingSectionName,
+          input_method::kChewingSectionName,
           language_prefs::kChewingIntegerPrefs[i].ibus_config_name,
           chewing_integer_prefs_[i].GetValue());
     }
   }
   if (!pref_name ||
       *pref_name == prefs::kLanguageHangulKeyboard) {
-    SetLanguageConfigString(language_prefs::kHangulSectionName,
-                            language_prefs::kHangulKeyboardConfigName,
+    SetLanguageConfigString(input_method::kHangulSectionName,
+                            input_method::kHangulKeyboardConfigName,
                             hangul_keyboard_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguageHangulHanjaBindingKeys) {
-    SetLanguageConfigString(language_prefs::kHangulSectionName,
-                            language_prefs::kHangulHanjaBindingKeysConfigName,
+    SetLanguageConfigString(input_method::kHangulSectionName,
+                            input_method::kHangulHanjaBindingKeysConfigName,
                             hangul_hanja_binding_keys_.GetValue());
   }
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     if (!pref_name ||
         *pref_name == language_prefs::kPinyinBooleanPrefs[i].pref_name) {
       SetLanguageConfigBoolean(
-          language_prefs::kPinyinSectionName,
+          input_method::kPinyinSectionName,
           language_prefs::kPinyinBooleanPrefs[i].ibus_config_name,
           pinyin_boolean_prefs_[i].GetValue());
     }
@@ -613,7 +614,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kPinyinIntegerPrefs[i].pref_name) {
       SetLanguageConfigInteger(
-          language_prefs::kPinyinSectionName,
+          input_method::kPinyinSectionName,
           language_prefs::kPinyinIntegerPrefs[i].ibus_config_name,
           pinyin_int_prefs_[i].GetValue());
     }
@@ -621,7 +622,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name ||
       *pref_name == language_prefs::kPinyinDoublePinyinSchema.pref_name) {
     SetLanguageConfigInteger(
-        language_prefs::kPinyinSectionName,
+        input_method::kPinyinSectionName,
         language_prefs::kPinyinDoublePinyinSchema.ibus_config_name,
         pinyin_double_pinyin_schema_.GetValue());
   }
@@ -629,7 +630,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kMozcBooleanPrefs[i].pref_name) {
       SetLanguageConfigBoolean(
-          language_prefs::kMozcSectionName,
+          input_method::kMozcSectionName,
           language_prefs::kMozcBooleanPrefs[i].ibus_config_name,
           mozc_boolean_prefs_[i].GetValue());
     }
@@ -638,7 +639,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kMozcMultipleChoicePrefs[i].pref_name) {
       SetLanguageConfigString(
-          language_prefs::kMozcSectionName,
+          input_method::kMozcSectionName,
           language_prefs::kMozcMultipleChoicePrefs[i].ibus_config_name,
           mozc_multiple_choice_prefs_[i].GetValue());
     }
@@ -647,7 +648,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (!pref_name ||
         *pref_name == language_prefs::kMozcIntegerPrefs[i].pref_name) {
       SetLanguageConfigInteger(
-          language_prefs::kMozcSectionName,
+          input_method::kMozcSectionName,
           language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
           mozc_integer_prefs_[i].GetValue());
     }
@@ -742,8 +743,8 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   if (!value.empty())
     base::SplitString(value, ',', &split_values);
 
-  if (section == std::string(language_prefs::kGeneralSectionName) &&
-      name == std::string(language_prefs::kPreloadEnginesConfigName)) {
+  if (section == std::string(input_method::kGeneralSectionName) &&
+      name == std::string(input_method::kPreloadEnginesConfigName)) {
     input_method_manager_->EnableInputMethods(split_values);
     return;
   }
@@ -762,8 +763,8 @@ void Preferences::SetInputMethodList() {
   const std::string previous_input_method_id =
       previous_input_method_.GetValue();
   const std::string current_input_method_id = current_input_method_.GetValue();
-  SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
-                                   language_prefs::kPreloadEnginesConfigName,
+  SetLanguageConfigStringListAsCSV(input_method::kGeneralSectionName,
+                                   input_method::kPreloadEnginesConfigName,
                                    preload_engines_.GetValue());
 
   // ChangeInputMethod() has to be called AFTER the value of |preload_engines_|

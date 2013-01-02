@@ -61,17 +61,6 @@ struct LanguageIntegerRangePreference {
   PrefServiceSyncable::PrefSyncStatus sync_status;
 };
 
-// ---------------------------------------------------------------------------
-// For ibus-daemon
-// ---------------------------------------------------------------------------
-extern const char kGeneralSectionName[];
-extern const char kPreloadEnginesConfigName[];
-
-// ---------------------------------------------------------------------------
-// For Traditional Chinese input method (ibus-mozc-chewing)
-// ---------------------------------------------------------------------------
-extern const char kChewingSectionName[];
-
 extern const LanguageBooleanPrefs kChewingBooleanPrefs[];
 // This is not ideal, but we should hard-code the number here as the value
 // is referenced in other header files as array sizes. We have a
@@ -94,10 +83,6 @@ extern const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType;
 // ---------------------------------------------------------------------------
 // For Korean input method (ibus-mozc-hangul)
 // ---------------------------------------------------------------------------
-extern const char kHangulSectionName[];
-extern const char kHangulKeyboardConfigName[];
-extern const char kHangulHanjaBindingKeysConfigName[];
-extern const char kHangulHanjaBindingKeys[];
 
 struct HangulKeyboardNameIDPair {
   int message_id;
@@ -111,7 +96,6 @@ const size_t kNumHangulKeyboardNameIDPairs = 5;
 // ---------------------------------------------------------------------------
 // For Simplified Chinese input method (ibus-mozc-pinyin)
 // ---------------------------------------------------------------------------
-extern const char kPinyinSectionName[];
 
 extern const LanguageBooleanPrefs kPinyinBooleanPrefs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.
@@ -133,7 +117,6 @@ const size_t kNumPinyinIntegerPrefs = 1;
 // ---------------------------------------------------------------------------
 // For Japanese input method (ibus-mozc)
 // ---------------------------------------------------------------------------
-extern const char kMozcSectionName[];
 
 extern const LanguageBooleanPrefs kMozcBooleanPrefs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.

@@ -12,10 +12,10 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_constants.h"
 #include "chrome/browser/chromeos/input_method/input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/language_preferences.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "unicode/uloc.h"
 
@@ -219,8 +219,8 @@ bool InputMethodManagerImpl::SetInputMethodConfig(
     const std::string& section,
     const std::string& config_name,
     const InputMethodConfigValue& value) {
-  DCHECK(section != language_prefs::kGeneralSectionName ||
-         config_name != language_prefs::kPreloadEnginesConfigName);
+  DCHECK(section != input_method::kGeneralSectionName ||
+         config_name != input_method::kPreloadEnginesConfigName);
 
   if (state_ == STATE_TERMINATING)
     return false;
