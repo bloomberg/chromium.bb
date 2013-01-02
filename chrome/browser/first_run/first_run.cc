@@ -573,7 +573,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     return EULA_EXIT_NOW;
 
   if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return DO_FIRST_RUN_TASKS;
+    DLOG(ERROR) << "Failed to copy master_preferences to user data dir.";
 
   DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
