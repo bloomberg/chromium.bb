@@ -1195,6 +1195,9 @@ FcPatternFormat (FcPattern *pat,
     FcChar8         buf_static[8192 - 1024];
     FcBool          ret;
 
+    if (!pat)
+	return NULL;
+
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
 
     ret = FcPatternFormatToBuf (pat, format, &buf);
