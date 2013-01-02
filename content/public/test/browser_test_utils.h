@@ -84,8 +84,8 @@ void SimulateKeyPress(WebContents* web_contents,
 // If you want to extract a result, use one of the below functions.
 // Returns true on success.
 bool ExecuteJavaScript(RenderViewHost* render_view_host,
-                       const std::wstring& frame_xpath,
-                       const std::wstring& script) WARN_UNUSED_RESULT;
+                       const std::string& frame_xpath,
+                       const std::string& script) WARN_UNUSED_RESULT;
 
 // The following methods executes the passed |script| in the frame pointed to by
 // |frame_xpath| (use empty string for main frame) and sets |result| to the
@@ -93,17 +93,17 @@ bool ExecuteJavaScript(RenderViewHost* render_view_host,
 // They return true on success, false if the script evaluation failed or did not
 // evaluate to the expected type.
 bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
-                                    const std::wstring& frame_xpath,
-                                    const std::wstring& script,
+                                    const std::string& frame_xpath,
+                                    const std::string& script,
                                     int* result) WARN_UNUSED_RESULT;
 bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
-                                     const std::wstring& frame_xpath,
-                                     const std::wstring& script,
+                                     const std::string& frame_xpath,
+                                     const std::string& script,
                                      bool* result) WARN_UNUSED_RESULT;
 bool ExecuteJavaScriptAndExtractString(
     RenderViewHost* render_view_host,
-    const std::wstring& frame_xpath,
-    const std::wstring& script,
+    const std::string& frame_xpath,
+    const std::string& script,
     std::string* result) WARN_UNUSED_RESULT;
 
 // Returns the cookies for the given url.

@@ -30,10 +30,9 @@ using content::RenderViewHost;
 
 namespace {
 
-std::wstring WrapForJavascriptAndExtract(
-    const wchar_t* javascript_expression) {
-  return std::wstring(L"window.domAutomationController.send(") +
-      javascript_expression + L")";
+std::string WrapForJavascriptAndExtract(const char* javascript_expression) {
+  return std::string("window.domAutomationController.send(") +
+      javascript_expression + ")";
 }
 
 class IsolatedAppTest : public ExtensionBrowserTest {
@@ -127,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   std::string script = base::StringPrintf(
         "document.location.href=\"%s\";",
         base_url.Resolve("app2/main.html").spec().c_str());
-  EXPECT_TRUE(ExecuteJavaScript(rvh, L"", ASCIIToWide(script)));
+  EXPECT_TRUE(ExecuteJavaScript(rvh, "", script));
   observer1.Wait();
 
   // This kind of navigation should not replace previous navigation entry.
@@ -183,25 +182,26 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   RenderViewHost* app2_rvh = tab1->GetRenderViewHost();
   RenderViewHost* non_app_rvh = tab2->GetRenderViewHost();
   ASSERT_TRUE(ExecuteJavaScript(
-      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
+      app1_rvh, "", "window.localStorage.setItem('testdata', 'ls_app1');"));
   ASSERT_TRUE(ExecuteJavaScript(
-      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
+      app2_rvh, "", "window.localStorage.setItem('testdata', 'ls_app2');"));
   ASSERT_TRUE(ExecuteJavaScript(
-      non_app_rvh, L"",
-      L"window.localStorage.setItem('testdata', 'ls_normal');"));
+      non_app_rvh,
+      "",
+      "window.localStorage.setItem('testdata', 'ls_normal');"));
 
-  const std::wstring& kRetrieveLocalStorage =
+  const std::string& kRetrieveLocalStorage =
       WrapForJavascriptAndExtract(
-          L"window.localStorage.getItem('testdata') || 'badval'");
+          "window.localStorage.getItem('testdata') || 'badval'");
   std::string result;
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      app1_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_app1", result);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      app2_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_app2", result);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      non_app_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_normal", result);
 
   // Check that each tab sees its own cookie.
@@ -288,24 +288,25 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   RenderViewHost* non_app_rvh =
       chrome::GetWebContentsAt(browser(), 2)->GetRenderViewHost();
   ASSERT_TRUE(ExecuteJavaScript(
-      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
+      app1_rvh, "", "window.localStorage.setItem('testdata', 'ls_app1');"));
   ASSERT_TRUE(ExecuteJavaScript(
-      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
+      app2_rvh, "", "window.localStorage.setItem('testdata', 'ls_app2');"));
   ASSERT_TRUE(ExecuteJavaScript(
-      non_app_rvh, L"",
-      L"window.localStorage.setItem('testdata', 'ls_normal');"));
+      non_app_rvh,
+      "",
+      "window.localStorage.setItem('testdata', 'ls_normal');"));
 
-  const std::wstring& kRetrieveLocalStorage =
-      WrapForJavascriptAndExtract(L"window.localStorage.getItem('testdata')");
+  const std::string& kRetrieveLocalStorage =
+      WrapForJavascriptAndExtract("window.localStorage.getItem('testdata')");
   std::string result;
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      app1_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_normal", result);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      app2_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_normal", result);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+      non_app_rvh, "", kRetrieveLocalStorage.c_str(), &result));
   EXPECT_EQ("ls_normal", result);
 }
 
@@ -455,37 +456,37 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScript(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"",
-      L"window.sessionStorage.setItem('testdata', 'ss_app1');"));
+      "",
+      "window.sessionStorage.setItem('testdata', 'ss_app1');"));
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("app2/main.html"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScript(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"",
-      L"window.sessionStorage.setItem('testdata', 'ss_app2');"));
+      "",
+      "window.sessionStorage.setItem('testdata', 'ss_app2');"));
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("non_app/main.html"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScript(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"",
-      L"window.sessionStorage.setItem('testdata', 'ss_normal');"));
+      "",
+      "window.sessionStorage.setItem('testdata', 'ss_normal');"));
 
   // Now, ensure that the sessionStorage is correctly partitioned, and persists
   // when we navigate around all over the dang place.
-  const std::wstring& kRetrieveSessionStorage =
+  const std::string& kRetrieveSessionStorage =
       WrapForJavascriptAndExtract(
-          L"window.sessionStorage.getItem('testdata') || 'badval'");
+          "window.sessionStorage.getItem('testdata') || 'badval'");
   std::string result;
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("app1/main.html"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"", kRetrieveSessionStorage.c_str(), &result));
+      "", kRetrieveSessionStorage.c_str(), &result));
   EXPECT_EQ("ss_app1", result);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -493,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"", kRetrieveSessionStorage.c_str(), &result));
+      "", kRetrieveSessionStorage.c_str(), &result));
   EXPECT_EQ("ss_app2", result);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -501,6 +502,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      L"", kRetrieveSessionStorage.c_str(), &result));
+      "", kRetrieveSessionStorage.c_str(), &result));
   EXPECT_EQ("ss_normal", result);
 }

@@ -22,7 +22,7 @@ class ClipboardApiTest : public ExtensionApiTest {
   bool ExecutePasteInSelectedTab(bool* result);
 
  private:
-  bool ExecuteScriptInSelectedTab(const std::wstring& script, bool* result);
+  bool ExecuteScriptInSelectedTab(const std::string& script, bool* result);
 };
 
 bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
@@ -54,22 +54,22 @@ bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
 }
 
 bool ClipboardApiTest::ExecuteCopyInSelectedTab(bool* result) {
-  const wchar_t kScript[] =
-      L"window.domAutomationController.send(document.execCommand('copy'))";
+  const char kScript[] =
+      "window.domAutomationController.send(document.execCommand('copy'))";
   return ExecuteScriptInSelectedTab(kScript, result);
 }
 
 bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
-  const wchar_t kScript[] =
-      L"window.domAutomationController.send(document.execCommand('paste'))";
+  const char kScript[] =
+      "window.domAutomationController.send(document.execCommand('paste'))";
   return ExecuteScriptInSelectedTab(kScript, result);
 }
 
-bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::wstring& script,
+bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::string& script,
                                                   bool* result) {
   if (!content::ExecuteJavaScriptAndExtractBool(
           chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          L"",
+          "",
           script,
           result)) {
     message_ = "Failed to execute script in selected tab.";

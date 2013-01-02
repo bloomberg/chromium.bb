@@ -178,14 +178,15 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     gfx::Rect new_bounds = GetNewTabContainerBounds(tab_container_size);
 
-    std::wostringstream js_call;
+    std::ostringstream js_call;
     js_call << "preCallResizeInChromium(";
     js_call << new_bounds.width() << ", " << new_bounds.height();
     js_call << ");";
 
     ASSERT_TRUE(content::ExecuteJavaScript(
         chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        L"", js_call.str()));
+        "",
+        js_call.str()));
 
     std::string message;
     ASSERT_TRUE(message_queue.WaitForMessage(&message));

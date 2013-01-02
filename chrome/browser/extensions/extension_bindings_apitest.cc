@@ -32,6 +32,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testLastError()", &result));
+      host->render_view_host(), "", "testLastError()", &result));
   EXPECT_TRUE(result);
 }

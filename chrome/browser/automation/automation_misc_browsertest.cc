@@ -75,13 +75,13 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
   ASSERT_TRUE(content::ExecuteJavaScript(
       view,
-      L"",
-      L"window.didClick = false;"
-      L"document.body.innerHTML ="
-      L"    '<a style=\\'position:absolute; left:0; top:0\\'>link</a>';"
-      L"document.querySelector('a').addEventListener('click', function() {"
-      L"  window.didClick = true;"
-      L"}, true);"));
+      "",
+      "window.didClick = false;"
+      "document.body.innerHTML ="
+      "    '<a style=\\'position:absolute; left:0; top:0\\'>link</a>';"
+      "document.querySelector('a').addEventListener('click', function() {"
+      "  window.didClick = true;"
+      "}, true);"));
   AutomationMouseEvent automation_event;
   automation_event.location_script_chain.push_back(
       ScriptEvaluationRequest("{'x': 5, 'y': 10}", ""));
@@ -100,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
   bool did_click = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       view,
-      L"",
-      L"window.domAutomationController.send(window.didClick);",
+      "",
+      "window.domAutomationController.send(window.didClick);",
       &did_click));
   EXPECT_TRUE(did_click);
 }

@@ -16,13 +16,13 @@
 using extensions::Extension;
 
 // Used to simulate a click on the first button named 'Options'.
-static const wchar_t* jscript_click_option_button =
-    L"(function() { "
-    L"  var button = document.evaluate(\"//button[text()='Options']\","
-    L"      document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,"
-    L"      null).snapshotItem(0);"
-    L"  button.click();"
-    L"})();";
+static const char kScriptClickOptionButton[] =
+    "(function() { "
+    "  var button = document.evaluate(\"//button[text()='Options']\","
+    "      document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,"
+    "      null).snapshotItem(0);"
+    "  button.click();"
+    "})();";
 
 // Test that an extension with an options page makes an 'Options' button appear
 // on chrome://extensions, and that clicking the button opens a new tab with the
@@ -41,8 +41,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_TRUE(content::ExecuteJavaScript(
-      tab_strip->GetActiveWebContents()->GetRenderViewHost(), L"",
-      jscript_click_option_button));
+      tab_strip->GetActiveWebContents()->GetRenderViewHost(),
+      "",
+      kScriptClickOptionButton));
 
   // If the options page hasn't already come up, wait for it.
   if (tab_strip->count() == 1) {

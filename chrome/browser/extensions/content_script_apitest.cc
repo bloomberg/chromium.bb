@@ -124,10 +124,11 @@ IN_PROC_BROWSER_TEST_F(
   // And check that its styles were affected by the styles that just got loaded.
   bool styles_injected;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send("
-      L"document.defaultView.getComputedStyle(document.body, null)."
-      L"getPropertyValue('background-color') == 'rgb(255, 0, 0)')",
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send("
+      "    document.defaultView.getComputedStyle(document.body, null)."
+      "        getPropertyValue('background-color') == 'rgb(255, 0, 0)')",
       &styles_injected));
   ASSERT_TRUE(styles_injected);
 }

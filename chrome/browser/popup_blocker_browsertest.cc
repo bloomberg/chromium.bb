@@ -54,7 +54,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
     // create a to-be-blocked window.
     WebContents* tab = chrome::GetActiveWebContents(browser);
-    CHECK(content::ExecuteJavaScript(tab->GetRenderViewHost(), L"", L""));
+    CHECK(content::ExecuteJavaScript(tab->GetRenderViewHost(), "", ""));
     BlockedContentTabHelper* blocked_content_tab_helper =
         BlockedContentTabHelper::FromWebContents(tab);
     std::vector<WebContents*> blocked_contents;

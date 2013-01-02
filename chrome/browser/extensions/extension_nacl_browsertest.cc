@@ -103,12 +103,14 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     bool content_handler_plugin_created = false;
     WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        web_contents->GetRenderViewHost(), L"",
-        L"window.domAutomationController.send(EmbeddedPluginCreated());",
+        web_contents->GetRenderViewHost(),
+        "",
+        "window.domAutomationController.send(EmbeddedPluginCreated());",
         &embedded_plugin_created));
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        web_contents->GetRenderViewHost(), L"",
-        L"window.domAutomationController.send(ContentHandlerPluginCreated());",
+        web_contents->GetRenderViewHost(),
+        "",
+        "window.domAutomationController.send(ContentHandlerPluginCreated());",
         &content_handler_plugin_created));
 
     EXPECT_EQ(should_create, embedded_plugin_created);

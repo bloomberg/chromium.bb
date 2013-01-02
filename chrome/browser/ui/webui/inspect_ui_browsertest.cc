@@ -48,9 +48,9 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorkersList) {
   ASSERT_TRUE(
       content::ExecuteJavaScriptAndExtractString(
           web_contents->GetRenderViewHost(),
-          L"",
-          L"window.domAutomationController.send("
-          L"'' + document.body.textContent);",
+          "",
+          "window.domAutomationController.send("
+          "    '' + document.body.textContent);",
           &result));
   ASSERT_TRUE(result.find(kSharedWorkerJs) != std::string::npos);
   ASSERT_TRUE(result.find(kSharedWorkerTestPage) != std::string::npos);

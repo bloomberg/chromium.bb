@@ -67,8 +67,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DOMProperty) {
   std::string do_not_track;
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::wstring(),
-      L"window.domAutomationController.send(navigator.doNotTrack)",
+      "",
+      "window.domAutomationController.send(navigator.doNotTrack)",
       &do_not_track));
   EXPECT_EQ("1", do_not_track);
 
@@ -78,9 +78,9 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DOMProperty) {
 
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::wstring(),
-      L"window.domAutomationController.send("
-      L"navigator.doNotTrack === null ? '0' : '1')",
+      "",
+      "window.domAutomationController.send("
+      "    navigator.doNotTrack === null ? '0' : '1')",
       &do_not_track));
   EXPECT_EQ("0", do_not_track);
 }

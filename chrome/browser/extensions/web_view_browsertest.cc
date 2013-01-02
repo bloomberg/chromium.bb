@@ -193,14 +193,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
                                  const char* script,
                                  const char* title) {
-    std::wstring js_script = ASCIIToWide(script);
     string16 expected_title(ASCIIToUTF16(title));
     string16 error_title(ASCIIToUTF16("error"));
 
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(error_title);
     EXPECT_TRUE(content::ExecuteJavaScript(web_contents->GetRenderViewHost(),
-                                           std::wstring(), js_script));
+                                           "", script));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 };
@@ -220,14 +219,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
 // storage isolation is enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   ASSERT_TRUE(StartTestServer());
-  const std::wstring kExpire =
-      L"var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
-  std::wstring cookie_script1(kExpire);
+  const std::string kExpire =
+      "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
+  std::string cookie_script1(kExpire);
   cookie_script1.append(
-      L"document.cookie = 'guest1=true; path=/; expires=' + expire + ';';");
-  std::wstring cookie_script2(kExpire);
+      "document.cookie = 'guest1=true; path=/; expires=' + expire + ';';");
+  std::string cookie_script2(kExpire);
   cookie_script2.append(
-      L"document.cookie = 'guest2=true; path=/; expires=' + expire + ';';");
+      "document.cookie = 'guest2=true; path=/; expires=' + expire + ';';");
 
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
@@ -250,9 +249,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
                                  &named_partition_contents2, NULL, NULL, NULL);
 
   EXPECT_TRUE(content::ExecuteJavaScript(
-      cookie_contents1->GetRenderViewHost(), std::wstring(), cookie_script1));
+      cookie_contents1->GetRenderViewHost(), "", cookie_script1));
   EXPECT_TRUE(content::ExecuteJavaScript(
-      cookie_contents2->GetRenderViewHost(), std::wstring(), cookie_script2));
+      cookie_contents2->GetRenderViewHost(), "", cookie_script2));
 
   int cookie_size;
   std::string cookie_value;
@@ -288,17 +287,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 // but persistent ones maintain state for cookies and HTML5 storage.
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
   ASSERT_TRUE(StartTestServer());
-  const std::wstring kExpire =
-      L"var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
-  std::wstring cookie_script1(kExpire);
+  const std::string kExpire =
+      "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
+  std::string cookie_script1(kExpire);
   cookie_script1.append(
-      L"document.cookie = 'inmemory=true; path=/; expires=' + expire + ';';");
-  std::wstring cookie_script2(kExpire);
+      "document.cookie = 'inmemory=true; path=/; expires=' + expire + ';';");
+  std::string cookie_script2(kExpire);
   cookie_script2.append(
-      L"document.cookie = 'persist1=true; path=/; expires=' + expire + ';';");
-  std::wstring cookie_script3(kExpire);
+      "document.cookie = 'persist1=true; path=/; expires=' + expire + ';';");
+  std::string cookie_script3(kExpire);
   cookie_script3.append(
-      L"document.cookie = 'persist2=true; path=/; expires=' + expire + ';';");
+      "document.cookie = 'persist2=true; path=/; expires=' + expire + ';';");
 
   // We don't care where the main browser is on this test.
   GURL blank_url("about:blank");
@@ -322,20 +321,24 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 
   // Set the inmemory=true cookie for tags with inmemory partitions.
   EXPECT_TRUE(content::ExecuteJavaScript(
-      cookie_contents1->GetRenderViewHost(), std::wstring(),
+      cookie_contents1->GetRenderViewHost(),
+      "",
       cookie_script1));
   EXPECT_TRUE(content::ExecuteJavaScript(
-      named_partition_contents1->GetRenderViewHost(), std::wstring(),
+      named_partition_contents1->GetRenderViewHost(),
+      "",
       cookie_script1));
 
   // For the two different persistent storage partitions, set the
   // two different cookies so we can check that they aren't comingled below.
   EXPECT_TRUE(content::ExecuteJavaScript(
-      persistent_partition_contents1->GetRenderViewHost(), std::wstring(),
+      persistent_partition_contents1->GetRenderViewHost(),
+      "",
       cookie_script2));
 
   EXPECT_TRUE(content::ExecuteJavaScript(
-      persistent_partition_contents3->GetRenderViewHost(), std::wstring(),
+      persistent_partition_contents3->GetRenderViewHost(),
+      "",
       cookie_script3));
 
   int cookie_size;
@@ -444,10 +447,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   GURL regular_url = test_server()->GetURL("files/title1.html");
 
   std::string output;
-  std::wstring get_local_storage(L"window.domAutomationController.send("
-      L"window.localStorage.getItem('foo') || 'badval')");
-  std::wstring get_session_storage(L"window.domAutomationController.send("
-      L"window.sessionStorage.getItem('bar') || 'badval')");
+  std::string get_local_storage("window.domAutomationController.send("
+      "window.localStorage.getItem('foo') || 'badval')");
+  std::string get_session_storage("window.domAutomationController.send("
+      "window.sessionStorage.getItem('bar') || 'badval')");
 
   content::WebContents* default_tag_contents1;
   content::WebContents* default_tag_contents2;
@@ -461,65 +464,87 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   // Initialize the storage for the first of the two tags that share a storage
   // partition.
   EXPECT_TRUE(content::ExecuteJavaScript(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      L"initDomStorage('page1')"));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      "initDomStorage('page1')"));
 
   // Let's test that the expected values are present in the first tag, as they
   // will be overwritten once we call the initDomStorage on the second tag.
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      get_local_storage.c_str(), &output));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      get_local_storage.c_str(),
+      &output));
   EXPECT_STREQ("local-page1", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      get_session_storage.c_str(), &output));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      get_session_storage.c_str(),
+      &output));
   EXPECT_STREQ("session-page1", output.c_str());
 
   // Now, init the storage in the second tag in the same storage partition,
   // which will overwrite the shared localStorage.
   EXPECT_TRUE(content::ExecuteJavaScript(
-      storage_contents2->GetRenderViewHost(), std::wstring(),
-      L"initDomStorage('page2')"));
+      storage_contents2->GetRenderViewHost(),
+      "",
+      "initDomStorage('page2')"));
 
   // The localStorage value now should reflect the one written through the
   // second tag.
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      get_local_storage.c_str(), &output));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      get_local_storage.c_str(),
+      &output));
   EXPECT_STREQ("local-page2", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents2->GetRenderViewHost(), std::wstring(),
-      get_local_storage.c_str(), &output));
+      storage_contents2->GetRenderViewHost(),
+      "",
+      get_local_storage.c_str(),
+      &output));
   EXPECT_STREQ("local-page2", output.c_str());
 
   // Session storage is not shared though, as each webview tag has separate
   // instance, even if they are in the same storage partition.
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      get_session_storage.c_str(), &output));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      get_session_storage.c_str(),
+      &output));
   EXPECT_STREQ("session-page1", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents2->GetRenderViewHost(), std::wstring(),
-      get_session_storage.c_str(), &output));
+      storage_contents2->GetRenderViewHost(),
+      "",
+      get_session_storage.c_str(),
+      &output));
   EXPECT_STREQ("session-page2", output.c_str());
 
   // Also, let's check that the main browser and another tag that doesn't share
   // the same partition don't have those values stored.
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      std::wstring(), get_local_storage.c_str(), &output));
+      "",
+      get_local_storage.c_str(),
+      &output));
   EXPECT_STREQ("badval", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(),
-      std::wstring(), get_session_storage.c_str(), &output));
+      "",
+      get_session_storage.c_str(),
+      &output));
   EXPECT_STREQ("badval", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      default_tag_contents1->GetRenderViewHost(), std::wstring(),
-      get_local_storage.c_str(), &output));
+      default_tag_contents1->GetRenderViewHost(),
+      "",
+      get_local_storage.c_str(),
+      &output));
   EXPECT_STREQ("badval", output.c_str());
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      default_tag_contents1->GetRenderViewHost(), std::wstring(),
-      get_session_storage.c_str(), &output));
+      default_tag_contents1->GetRenderViewHost(),
+      "",
+      get_session_storage.c_str(),
+      &output));
   EXPECT_STREQ("badval", output.c_str());
 }
 
@@ -548,11 +573,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
                             "readItemIDB complete");
 
   std::string output;
-  std::wstring get_value(
-      L"window.domAutomationController.send(getValueIDB() || 'badval')");
+  std::string get_value(
+      "window.domAutomationController.send(getValueIDB() || 'badval')");
 
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
+      storage_contents1->GetRenderViewHost(),
+      "",
       get_value.c_str(), &output));
   EXPECT_STREQ("page1", output.c_str());
 
@@ -564,7 +590,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ExecuteScriptWaitForTitle(storage_contents2, "readItemIDB(7)",
                             "readItemIDB complete");
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents2->GetRenderViewHost(), std::wstring(),
+      storage_contents2->GetRenderViewHost(),
+      "",
       get_value.c_str(), &output));
   EXPECT_STREQ("page1", output.c_str());
 
@@ -574,22 +601,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ExecuteScriptWaitForTitle(storage_contents2, "readItemIDB(7)",
                             "readItemIDB complete");
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents2->GetRenderViewHost(), std::wstring(),
+      storage_contents2->GetRenderViewHost(),
+      "",
       get_value.c_str(), &output));
   EXPECT_STREQ("page2", output.c_str());
 
   // Reset the document title, otherwise the next call will not see a change and
   // will hang waiting for it.
   EXPECT_TRUE(content::ExecuteJavaScript(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      L"document.title = 'foo'"));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      "document.title = 'foo'"));
 
   // Read through the first tag to ensure we have the second value.
   ExecuteScriptWaitForTitle(storage_contents1, "readItemIDB(7)",
                             "readItemIDB complete");
   EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-      storage_contents1->GetRenderViewHost(), std::wstring(),
-      get_value.c_str(), &output));
+      storage_contents1->GetRenderViewHost(),
+      "",
+      get_value.c_str(),
+      &output));
   EXPECT_STREQ("page2", output.c_str());
 
   // Now, let's confirm there is no database in the main browser and another
@@ -598,12 +629,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   // if it is not found. The two tags use database version 3, so we avoid
   // ambiguity.
   const char* script =
-    "indexedDB.open('isolation').onsuccess = function(e) {"
-    "  if (e.target.result.version == 1)"
-    "    document.title = 'db not found';"
-    "  else "
-    "    document.title = 'error';"
-    "}";
+      "indexedDB.open('isolation').onsuccess = function(e) {"
+      "  if (e.target.result.version == 1)"
+      "    document.title = 'db not found';"
+      "  else "
+      "    document.title = 'error';"
+      "}";
   ExecuteScriptWaitForTitle(chrome::GetWebContentsAt(browser(), 0),
                             script, "db not found");
   ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");

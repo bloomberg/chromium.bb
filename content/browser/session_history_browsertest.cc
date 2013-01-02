@@ -431,14 +431,18 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   int length;
   ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
       shell()->web_contents()->GetRenderViewHost(),
-      L"", L"domAutomationController.send(history.length)", &length));
+      "",
+      "domAutomationController.send(history.length)",
+      &length));
   EXPECT_EQ(1, length);
 
   NavigateToURL(shell(), GetURL("title1.html"));
 
   ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
       shell()->web_contents()->GetRenderViewHost(),
-      L"", L"domAutomationController.send(history.length)", &length));
+      "",
+      "domAutomationController.send(history.length)",
+      &length));
   EXPECT_EQ(2, length);
 
   // Now test that history.length is updated when the navigation is committed.
@@ -446,7 +450,9 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
 
   ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
       shell()->web_contents()->GetRenderViewHost(),
-      L"", L"domAutomationController.send(history.length)", &length));
+      "",
+      "domAutomationController.send(history.length)",
+      &length));
   EXPECT_EQ(3, length);
 
   GoBack();
@@ -457,7 +463,9 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
 
   ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
       shell()->web_contents()->GetRenderViewHost(),
-      L"", L"domAutomationController.send(history.length)", &length));
+      "",
+      "domAutomationController.send(history.length)",
+      &length));
   EXPECT_EQ(2, length);
 }
 

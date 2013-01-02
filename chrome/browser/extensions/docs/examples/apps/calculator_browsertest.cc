@@ -28,7 +28,8 @@ IN_PROC_BROWSER_TEST_F(CalculatorBrowserTest, Model) {
   bool success;
   bool executed = content::ExecuteJavaScriptAndExtractBool(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      L"", L"window.domAutomationController.send(window.runTests().success)",
+      "",
+      "window.domAutomationController.send(window.runTests().success)",
       &success);
 
   ASSERT_TRUE(executed);

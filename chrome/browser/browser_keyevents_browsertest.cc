@@ -35,24 +35,24 @@ using content::RenderViewHost;
 namespace {
 
 const char kTestingPage[] = "files/keyevents_test.html";
-const wchar_t kSuppressEventJS[] =
-    L"window.domAutomationController.send(setDefaultAction('%ls', %ls));";
-const wchar_t kGetResultJS[] =
-    L"window.domAutomationController.send(keyEventResult[%d]);";
-const wchar_t kGetResultLengthJS[] =
-    L"window.domAutomationController.send(keyEventResult.length);";
-const wchar_t kGetFocusedElementJS[] =
-    L"window.domAutomationController.send(focusedElement);";
-const wchar_t kSetFocusedElementJS[] =
-    L"window.domAutomationController.send(setFocusedElement('%ls'));";
-const wchar_t kGetTextBoxValueJS[] =
-    L"window.domAutomationController.send("
-    L"document.getElementById('%ls').value);";
-const wchar_t kSetTextBoxValueJS[] =
-    L"window.domAutomationController.send("
-    L"document.getElementById('%ls').value = '%ls');";
-const wchar_t kStartTestJS[] =
-    L"window.domAutomationController.send(startTest(%d));";
+const char kSuppressEventJS[] =
+    "window.domAutomationController.send(setDefaultAction('%ls', %ls));";
+const char kGetResultJS[] =
+    "window.domAutomationController.send(keyEventResult[%d]);";
+const char kGetResultLengthJS[] =
+    "window.domAutomationController.send(keyEventResult.length);";
+const char kGetFocusedElementJS[] =
+    "window.domAutomationController.send(focusedElement);";
+const char kSetFocusedElementJS[] =
+    "window.domAutomationController.send(setFocusedElement('%ls'));";
+const char kGetTextBoxValueJS[] =
+    "window.domAutomationController.send("
+    "    document.getElementById('%ls').value);";
+const char kSetTextBoxValueJS[] =
+    "window.domAutomationController.send("
+    "    document.getElementById('%ls').value = '%ls');";
+const char kStartTestJS[] =
+    "window.domAutomationController.send(startTest(%d));";
 
 // Maximum lenght of the result array in KeyEventTestData structure.
 const size_t kMaxResultLength = 10;
@@ -148,7 +148,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     bool actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"",
+        "",
         base::StringPrintf(kSuppressEventJS, type, GetBoolString(!suppress)),
         &actual));
     ASSERT_EQ(!suppress, actual);
@@ -174,7 +174,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"", kGetResultLengthJS, length));
+        "",
+        kGetResultLengthJS,
+        length));
   }
 
   void CheckResult(int tab_index, int length, const char* const result[]) {
@@ -186,7 +188,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
       std::string actual;
       ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
           chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-          L"", base::StringPrintf(kGetResultJS, i), &actual));
+          "",
+          base::StringPrintf(kGetResultJS, i),
+          &actual));
 
       // If more events were received than expected, then the additional events
       // must be keyup events.
@@ -202,7 +206,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     std::string actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"", kGetFocusedElementJS, &actual));
+        "",
+        kGetFocusedElementJS,
+        &actual));
     ASSERT_EQ(WideToUTF8(focused), actual);
   }
 
@@ -211,7 +217,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     bool actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"",
+        "",
         base::StringPrintf(kSetFocusedElementJS, focused),
         &actual));
     ASSERT_TRUE(actual);
@@ -223,7 +229,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     std::string actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"",
+        "",
         base::StringPrintf(kGetTextBoxValueJS, id),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
@@ -235,7 +241,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     std::string actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"",
+        "",
         base::StringPrintf(kSetTextBoxValueJS, id, value),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
@@ -246,7 +252,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     bool actual;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        L"", base::StringPrintf(kStartTestJS, result_length), &actual));
+        "",
+        base::StringPrintf(kStartTestJS, result_length),
+        &actual));
     ASSERT_TRUE(actual);
   }
 

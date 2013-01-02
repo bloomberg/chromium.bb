@@ -33,7 +33,6 @@
 static const int kDefaultWsPort = 8880;
 
 namespace content {
-
 namespace {
 
 class DOMOperationObserver : public NotificationObserver,
@@ -79,24 +78,24 @@ class DOMOperationObserver : public NotificationObserver,
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
 bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::wstring& frame_xpath,
-                             const std::wstring& original_script,
+                             const std::string& frame_xpath,
+                             const std::string& original_script,
                              scoped_ptr<Value>* result) WARN_UNUSED_RESULT;
 
 // Executes the passed |original_script| in the frame pointed to by
 // |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
 // of the script in |result|.  Returns true on success.
 bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::wstring& frame_xpath,
-                             const std::wstring& original_script,
+                             const std::string& frame_xpath,
+                             const std::string& original_script,
                              scoped_ptr<Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
-  std::wstring script = L"window.domAutomationController.setAutomationId(0);" +
-      original_script;
+  std::string script =
+      "window.domAutomationController.setAutomationId(0);" + original_script;
   DOMOperationObserver dom_op_observer(render_view_host);
-  render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(frame_xpath),
-                                                WideToUTF16Hack(script));
+  render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(frame_xpath),
+                                                UTF8ToUTF16(script));
   std::string json;
   if (!dom_op_observer.WaitAndGetResponse(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
@@ -281,16 +280,16 @@ void SimulateKeyPress(WebContents* web_contents,
 }
 
 bool ExecuteJavaScript(RenderViewHost* render_view_host,
-                       const std::wstring& frame_xpath,
-                       const std::wstring& original_script) {
-  std::wstring script =
-      original_script + L";window.domAutomationController.send(0);";
+                       const std::string& frame_xpath,
+                       const std::string& original_script) {
+  std::string script =
+      original_script + ";window.domAutomationController.send(0);";
   return ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, NULL);
 }
 
 bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
-                                    const std::wstring& frame_xpath,
-                                    const std::wstring& script,
+                                    const std::string& frame_xpath,
+                                    const std::string& script,
                                     int* result) {
   DCHECK(result);
   scoped_ptr<Value> value;
@@ -302,8 +301,8 @@ bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
 }
 
 bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
-                                     const std::wstring& frame_xpath,
-                                     const std::wstring& script,
+                                     const std::string& frame_xpath,
+                                     const std::string& script,
                                      bool* result) {
   DCHECK(result);
   scoped_ptr<Value> value;
@@ -315,8 +314,8 @@ bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
 }
 
 bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
-                                       const std::wstring& frame_xpath,
-                                       const std::wstring& script,
+                                       const std::string& frame_xpath,
+                                       const std::string& script,
                                        std::string* result) {
   DCHECK(result);
   scoped_ptr<Value> value;

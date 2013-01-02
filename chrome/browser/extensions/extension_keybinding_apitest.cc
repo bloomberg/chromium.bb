@@ -90,10 +90,11 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   // Verify the command worked.
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
-      L"setInterval(function(){"
-      L"  if(document.body.bgColor == 'red'){"
-      L"    window.domAutomationController.send(true)}}, 100)",
+      tab->GetRenderViewHost(),
+      "",
+      "setInterval(function(){"
+      "  if(document.body.bgColor == 'red'){"
+      "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
 
@@ -103,10 +104,11 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
 
   result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
-      L"setInterval(function(){"
-      L"  if(document.body.bgColor == 'blue'){"
-      L"    window.domAutomationController.send(true)}}, 100)",
+      tab->GetRenderViewHost(),
+      "",
+      "setInterval(function(){"
+      "  if(document.body.bgColor == 'blue'){"
+      "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
 }
@@ -150,10 +152,11 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
-      L"setInterval(function(){"
-      L"  if(document.body.bgColor == 'red'){"
-      L"    window.domAutomationController.send(true)}}, 100)",
+      tab->GetRenderViewHost(),
+      "",
+      "setInterval(function(){"
+      "  if(document.body.bgColor == 'red'){"
+      "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
 }

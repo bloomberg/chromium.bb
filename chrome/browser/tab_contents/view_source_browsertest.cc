@@ -107,9 +107,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DISABLED_TestViewSourceReload) {
       chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost();
 
   ASSERT_TRUE(
-      content::ExecuteJavaScript(rvh,
-                                 L"",
-                                 L"window.location.reload();"));
+      content::ExecuteJavaScript(rvh, "", "window.location.reload();"));
 
   content::WindowedNotificationObserver observer2(
       content::NOTIFICATION_LOAD_STOP,

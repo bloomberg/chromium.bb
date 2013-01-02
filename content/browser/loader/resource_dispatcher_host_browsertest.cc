@@ -69,7 +69,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
     ShellAddedObserver new_shell_observer;
 
     // Create dynamic popup.
-    if (!ExecuteJavaScript(render_view_host(), L"", L"OpenPopup();"))
+    if (!ExecuteJavaScript(render_view_host(), "", "OpenPopup();"))
       return false;
 
     Shell* new_shell = new_shell_observer.GetShell();
@@ -167,8 +167,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
   bool success = false;
   EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
       shell()->web_contents()->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(DidSyncRequestSucceed());",
+      "",
+      "window.domAutomationController.send(DidSyncRequestSucceed());",
       &success));
   EXPECT_TRUE(success);
 }
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   bool success = false;
   EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
       shell()->web_contents()->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(DidSucceed());",
+      "",
+      "window.domAutomationController.send(DidSucceed());",
       &success));
   EXPECT_TRUE(success);
 }
@@ -348,7 +348,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       "window.domAutomationController.send(true);";
   EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
       shell()->web_contents()->GetRenderViewHost(),
-      L"", ASCIIToWide(redirect_script), &success));
+      "",
+      redirect_script,
+      &success));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 

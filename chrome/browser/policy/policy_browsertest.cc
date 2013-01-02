@@ -237,12 +237,12 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   bool result = false;
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(),
-      std::wstring(),
-      L"var hasError = false;"
-      L"var error = document.getElementById('errorDetails');"
-      L"if (error)"
-      L"  hasError = error.textContent.indexOf('Error 138') == 0;"
-      L"domAutomationController.send(hasError);",
+      "",
+      "var hasError = false;"
+      "var error = document.getElementById('errorDetails');"
+      "if (error)"
+      "  hasError = error.textContent.indexOf('Error 138') == 0;"
+      "domAutomationController.send(hasError);",
       &result));
   EXPECT_TRUE(result);
 }
@@ -291,10 +291,10 @@ bool IsWebGLEnabled(content::WebContents* contents) {
   bool result = false;
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(),
-      std::wstring(),
-      L"var canvas = document.createElement('canvas');"
-      L"var context = canvas.getContext('experimental-webgl');"
-      L"domAutomationController.send(context != null);",
+      "",
+      "var canvas = document.createElement('canvas');"
+      "var context = canvas.getContext('experimental-webgl');"
+      "domAutomationController.send(context != null);",
       &result));
   return result;
 }
@@ -462,24 +462,24 @@ class PolicyTest : public InProcessBrowserTest {
     bool result = false;
     EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         web_contents->GetRenderViewHost(),
-        std::wstring(),
-        L"function btest_initCompleted(url) {"
-        L"  var img = new Image();"
-        L"  img.src = url;"
-        L"  img.onload = function() {"
-        L"    domAutomationController.send(img.width * img.height > 0);"
-        L"  };"
-        L"  img.onerror = function() {"
-        L"    domAutomationController.send(false);"
-        L"  };"
-        L"}"
-        L"function setupCurrentScreenshot(url) {"
-        L"  btest_initCompleted(url);"
-        L"}"
-        L"var img = document.getElementById("
-        L"    'current-screenshots-thumbnailDiv-0-image');"
-        L"if (img)"
-        L"  btest_initCompleted(img.src);",
+        "",
+        "function btest_initCompleted(url) {"
+        "  var img = new Image();"
+        "  img.src = url;"
+        "  img.onload = function() {"
+        "    domAutomationController.send(img.width * img.height > 0);"
+        "  };"
+        "  img.onerror = function() {"
+        "    domAutomationController.send(false);"
+        "  };"
+        "}"
+        "function setupCurrentScreenshot(url) {"
+        "  btest_initCompleted(url);"
+        "}"
+        "var img = document.getElementById("
+        "    'current-screenshots-thumbnailDiv-0-image');"
+        "if (img)"
+        "  btest_initCompleted(img.src);",
         &result));
     EXPECT_EQ(enabled, result);
 
@@ -1717,17 +1717,17 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   std::string text;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       contents->GetRenderViewHost(),
-      std::wstring(),
-      L"var nodes = document.querySelectorAll('body > pre');"
-      L"var result = '';"
-      L"for (var i = 0; i < nodes.length; ++i) {"
-      L"  var text = nodes[i].innerHTML;"
-      L"  if (text.indexOf('Histogram: Enterprise.Policies') === 0) {"
-      L"    result = text;"
-      L"    break;"
-      L"  }"
-      L"}"
-      L"domAutomationController.send(result);",
+      "",
+      "var nodes = document.querySelectorAll('body > pre');"
+      "var result = '';"
+      "for (var i = 0; i < nodes.length; ++i) {"
+      "  var text = nodes[i].innerHTML;"
+      "  if (text.indexOf('Histogram: Enterprise.Policies') === 0) {"
+      "    result = text;"
+      "    break;"
+      "  }"
+      "}"
+      "domAutomationController.send(result);",
       &text));
   ASSERT_FALSE(text.empty());
   const std::string kExpectedLabel =

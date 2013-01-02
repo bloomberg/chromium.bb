@@ -17,47 +17,47 @@ using extensions::Extension;
 
 namespace {
 
-const std::string kSubscribePage = "/subscribe.html";
-const std::string kFeedPageMultiRel = "files/feeds/feed_multi_rel.html";
-const std::string kValidFeedNoLinks = "files/feeds/feed_nolinks.xml";
-const std::string kValidFeed0 = "files/feeds/feed_script.xml";
-const std::string kValidFeed1 = "files/feeds/feed1.xml";
-const std::string kValidFeed2 = "files/feeds/feed2.xml";
-const std::string kValidFeed3 = "files/feeds/feed3.xml";
-const std::string kValidFeed4 = "files/feeds/feed4.xml";
-const std::string kValidFeed5 = "files/feeds/feed5.xml";
-const std::string kValidFeed6 = "files/feeds/feed6.xml";
-const std::string kInvalidFeed1 = "files/feeds/feed_invalid1.xml";
-const std::string kInvalidFeed2 = "files/feeds/feed_invalid2.xml";
+const char kSubscribePage[] = "/subscribe.html";
+const char kFeedPageMultiRel[] = "files/feeds/feed_multi_rel.html";
+const char kValidFeedNoLinks[] = "files/feeds/feed_nolinks.xml";
+const char kValidFeed0[] = "files/feeds/feed_script.xml";
+const char kValidFeed1[] = "files/feeds/feed1.xml";
+const char kValidFeed2[] = "files/feeds/feed2.xml";
+const char kValidFeed3[] = "files/feeds/feed3.xml";
+const char kValidFeed4[] = "files/feeds/feed4.xml";
+const char kValidFeed5[] = "files/feeds/feed5.xml";
+const char kValidFeed6[] = "files/feeds/feed6.xml";
+const char kInvalidFeed1[] = "files/feeds/feed_invalid1.xml";
+const char kInvalidFeed2[] = "files/feeds/feed_invalid2.xml";
 // We need a triple encoded string to prove that we are not decoding twice in
 // subscribe.js because one layer is also stripped off when subscribe.js passes
 // it to the XMLHttpRequest object.
-const std::string kFeedTripleEncoded = "files/feeds/url%25255Fdecoding.html";
+const char kFeedTripleEncoded[] = "files/feeds/url%25255Fdecoding.html";
 
-static const wchar_t* jscript_feed_title =
-    L"window.domAutomationController.send("
-    L"  document.getElementById('title') ? "
-    L"    document.getElementById('title').textContent : "
-    L"    \"element 'title' not found\""
-    L");";
-static const wchar_t* jscript_anchor =
-    L"window.domAutomationController.send("
-    L"  document.getElementById('anchor_0') ? "
-    L"    document.getElementById('anchor_0').textContent : "
-    L"    \"element 'anchor_0' not found\""
-    L");";
-static const wchar_t* jscript_desc =
-    L"window.domAutomationController.send("
-    L"  document.getElementById('desc_0') ? "
-    L"    document.getElementById('desc_0').textContent : "
-    L"    \"element 'desc_0' not found\""
-    L");";
-static const wchar_t* jscript_error =
-    L"window.domAutomationController.send("
-    L"  document.getElementById('error') ? "
-    L"    document.getElementById('error').textContent : "
-    L"    \"No error\""
-    L");";
+static const char kScriptFeedTitle[] =
+    "window.domAutomationController.send("
+    "  document.getElementById('title') ? "
+    "    document.getElementById('title').textContent : "
+    "    \"element 'title' not found\""
+    ");";
+static const char kScriptAnchor[] =
+    "window.domAutomationController.send("
+    "  document.getElementById('anchor_0') ? "
+    "    document.getElementById('anchor_0').textContent : "
+    "    \"element 'anchor_0' not found\""
+    ");";
+static const char kScriptDesc[] =
+    "window.domAutomationController.send("
+    "  document.getElementById('desc_0') ? "
+    "    document.getElementById('desc_0').textContent : "
+    "    \"element 'desc_0' not found\""
+    ");";
+static const char kScriptError[] =
+    "window.domAutomationController.send("
+    "  document.getElementById('error') ? "
+    "    document.getElementById('error').textContent : "
+    "    \"No error\""
+    ");";
 
 GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
                 bool direct_url, std::string extension_id) {
@@ -77,8 +77,8 @@ GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
 }
 
 bool ValidatePageElement(WebContents* tab,
-                         const std::wstring& frame,
-                         const std::wstring& javascript,
+                         const std::string& frame,
+                         const std::string& javascript,
                          const std::string& expected_value) {
   std::string returned_value;
   std::string error;
@@ -86,7 +86,8 @@ bool ValidatePageElement(WebContents* tab,
   if (!content::ExecuteJavaScriptAndExtractString(
           tab->GetRenderViewHost(),
           frame,
-          javascript, &returned_value))
+          javascript,
+          &returned_value))
     return false;
 
   EXPECT_STREQ(expected_value.c_str(), returned_value.c_str());
@@ -116,20 +117,20 @@ void NavigateToFeedAndValidate(net::TestServer* server,
 
   WebContents* tab = chrome::GetActiveWebContents(browser);
   ASSERT_TRUE(ValidatePageElement(tab,
-                                  L"",
-                                  jscript_feed_title,
+                                  "",
+                                  kScriptFeedTitle,
                                   expected_feed_title));
   ASSERT_TRUE(ValidatePageElement(tab,
-                                  L"//html/body/div/iframe[1]",
-                                  jscript_anchor,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptAnchor,
                                   expected_item_title));
   ASSERT_TRUE(ValidatePageElement(tab,
-                                  L"//html/body/div/iframe[1]",
-                                  jscript_desc,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptDesc,
                                   expected_item_desc));
   ASSERT_TRUE(ValidatePageElement(tab,
-                                  L"//html/body/div/iframe[1]",
-                                  jscript_error,
+                                  "//html/body/div/iframe[1]",
+                                  kScriptError,
                                   expected_error));
 }
 

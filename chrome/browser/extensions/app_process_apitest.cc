@@ -225,8 +225,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
             chrome::GetWebContentsAt(browser(), 6)->GetRenderProcessHost());
   bool windowOpenerValid = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetWebContentsAt(browser(), 6)->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(window.opener != null)",
+      chrome::GetWebContentsAt(browser(), 6)->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send(window.opener != null)",
       &windowOpenerValid));
   ASSERT_TRUE(windowOpenerValid);
 
@@ -435,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
   ASSERT_TRUE(content::ExecuteJavaScript(contents->GetRenderViewHost(),
-                                         L"", L"location.reload();"));
+                                         "", "location.reload();"));
   js_reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
       contents->GetRenderProcessHost()->GetID()));
@@ -447,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
   ASSERT_TRUE(content::ExecuteJavaScript(contents->GetRenderViewHost(),
-                                         L"", L"location = location;"));
+                                         "", "location = location;"));
   js_reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
       contents->GetRenderProcessHost()->GetID()));
@@ -556,8 +557,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
   // App has loaded, and chrome.app.isInstalled should be true.
   bool is_installed = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send(chrome.app.isInstalled)",
       &is_installed));
   ASSERT_TRUE(is_installed);
 }
@@ -625,8 +627,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
       contents->GetRenderProcessHost()->GetID()));
   bool is_installed = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      contents->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      contents->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send(chrome.app.isInstalled)",
       &is_installed));
   ASSERT_TRUE(is_installed);
 
@@ -639,8 +642,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
   chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      contents->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      contents->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send(chrome.app.isInstalled)",
       &is_installed));
   ASSERT_TRUE(is_installed);
 }

@@ -35,8 +35,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   bool empty_inner_html = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(document.body.innerHTML == '')",
+      "",
+      "window.domAutomationController.send(document.body.innerHTML == '')",
       &empty_inner_html));
   ASSERT_FALSE(empty_inner_html);
 }

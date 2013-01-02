@@ -85,8 +85,10 @@ class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
-        UTF8ToWide(script), &result));
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+        "",
+        script,
+        &result));
     EXPECT_TRUE(result);
   }
 

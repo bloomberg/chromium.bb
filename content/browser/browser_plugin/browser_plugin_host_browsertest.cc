@@ -274,9 +274,9 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
-  void ExecuteSyncJSFunction(RenderViewHost* rvh, const string16& jscript) {
+  void ExecuteSyncJSFunction(RenderViewHost* rvh, const std::string& jscript) {
     scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-        string16(), jscript));
+        string16(), UTF8ToUTF16(jscript)));
   }
 
   // This helper method does the following:
@@ -302,15 +302,15 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     // Allow the test to do some operations on the embedder before we perform
     // the first navigation of the guest.
     if (!embedder_code.empty())
-      ExecuteSyncJSFunction(rvh, ASCIIToUTF16(embedder_code));
+      ExecuteSyncJSFunction(rvh, embedder_code);
 
     if (!is_guest_data_url) {
       test_url = test_server()->GetURL(guest_url);
-      ExecuteSyncJSFunction(rvh,
-          ASCIIToUTF16(StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+      ExecuteSyncJSFunction(
+          rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     } else {
-      ExecuteSyncJSFunction(rvh,
-          ASCIIToUTF16(StringPrintf("SetSrc('%s');", guest_url.c_str())));
+      ExecuteSyncJSFunction(
+          rvh, StringPrintf("SetSrc('%s');", guest_url.c_str()));
     }
 
     // Wait to make sure embedder is created/attached to WebContents.
@@ -366,8 +366,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
                                         expected_title);
     // Hang the guest for a length of time.
     int spin_time = 10 * TestTimeouts::tiny_timeout().InMilliseconds();
-    ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
-        ASCIIToUTF16(StringPrintf("StartPauseMs(%d);", spin_time).c_str()));
+    ExecuteSyncJSFunction(
+        test_guest()->web_contents()->GetRenderViewHost(),
+        StringPrintf("StartPauseMs(%d);", spin_time).c_str());
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -510,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BrowserPluginVisibilityChanged) {
   // Hide the Browser Plugin.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').style.visibility = 'hidden'"));
+  ExecuteSyncJSFunction(
+      rvh, "document.getElementById('plugin').style.visibility = 'hidden'");
 
   // Make sure that the guest is hidden.
   test_guest()->WaitUntilHidden();
@@ -537,8 +538,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadGuest) {
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').reload()"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').reload()");
   test_guest()->WaitForReload();
 }
 
@@ -550,8 +550,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, StopGuest) {
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').stop()"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').stop()");
   test_guest()->WaitForStop();
 }
 
@@ -571,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
   RenderViewHostMessageObserver observer(rvh,
       ViewHostMsg_HasTouchEventHandlers::ID);
   ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
-                        ASCIIToUTF16("InstallTouchHandler();"));
+                        "InstallTouchHandler();");
   observer.WaitUntilMessageReceived();
   EXPECT_TRUE(rvh->has_touch_handler());
 
@@ -579,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
   // listening for touch events.
   observer.ResetState();
   ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
-                        ASCIIToUTF16("UninstallTouchHandler();"));
+                        "UninstallTouchHandler();");
   observer.WaitUntilMessageReceived();
   EXPECT_FALSE(rvh->has_touch_handler());
 }
@@ -597,8 +596,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(StringPrintf("SetSrc('%s');",
-        GetHTMLForGuestWithTitle("P2").c_str())));
+    ExecuteSyncJSFunction(
+        rvh,
+        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -610,8 +610,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(StringPrintf("SetSrc('%s');",
-        GetHTMLForGuestWithTitle("P3").c_str())));
+    ExecuteSyncJSFunction(
+        rvh,
+        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P3").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -623,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16("Back();"));
+    ExecuteSyncJSFunction(rvh, "Back();");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
@@ -646,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16("Forward();"));
+    ExecuteSyncJSFunction(rvh, "Forward();");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
@@ -663,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16("Go(-2);"));
+    ExecuteSyncJSFunction(rvh, "Go(-2);");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
@@ -691,8 +692,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(StringPrintf("SetTitle('%s');",
-        "modified")));
+    ExecuteSyncJSFunction(rvh, StringPrintf("SetTitle('%s');", "modified"));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -709,8 +709,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-    ExecuteSyncJSFunction(test_embedder()->web_contents()->GetRenderViewHost(),
-        ASCIIToUTF16(StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+    ExecuteSyncJSFunction(
+        test_embedder()->web_contents()->GetRenderViewHost(),
+        StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
     const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
         test_embedder()->guest_web_contents_for_testing();
@@ -731,8 +732,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').terminate()"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').terminate()");
 
   // Expect the guest to crash.
   test_guest()->WaitForExit();
@@ -753,15 +753,15 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(StringPrintf("SetSrc('%s');",
-        GetHTMLForGuestWithTitle("P2").c_str())));
+    ExecuteSyncJSFunction(
+        rvh,
+        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str()));
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
   // Kill the guest.
-  ExecuteSyncJSFunction(rvh,
-      ASCIIToUTF16("document.getElementById('plugin').terminate()"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').terminate()");
 
   // Expect the guest to report that it crashed.
   test_guest()->WaitForExit();
@@ -771,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16("Back();"));
+    ExecuteSyncJSFunction(rvh, "Back();");
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
@@ -792,8 +792,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -811,8 +810,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url = test_server()->GetURL("close-socket");
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -825,8 +824,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url("chrome://newtab");
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -839,8 +838,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         test_embedder()->web_contents()->GetRenderViewHost());
     GURL test_url("file://foo");
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("SetSrc('%s');", test_url.spec().c_str()));
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -859,8 +858,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
       "server-redirect?files/title1.html"));
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      StringPrintf("SetSrc('%s');", redirect_url.spec().c_str())));
+  ExecuteSyncJSFunction(
+      rvh, StringPrintf("SetSrc('%s');", redirect_url.spec().c_str()));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -949,8 +948,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
 
     // By the time we get here 'contentWindow' should be ready because the
     // guest has completed loading.
-    ExecuteSyncJSFunction(rvh,
-        ASCIIToUTF16(StringPrintf("PostMessage('%s, false');", kTesting)));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("PostMessage('%s, false');", kTesting));
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
@@ -975,8 +974,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
-    ExecuteSyncJSFunction(rvh,
-        ASCIIToUTF16(StringPrintf("PostMessage('%s, false');", kTesting)));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("PostMessage('%s, false');", kTesting));
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
@@ -991,17 +990,17 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
         test_guest()->web_contents()->GetRenderViewHost());
     GURL test_url = test_server()->GetURL(
         "files/browser_plugin_post_message_guest.html");
-    ExecuteSyncJSFunction(guest_rvh,
-        ASCIIToUTF16(StringPrintf("CreateChildFrame('%s');",
-                                  test_url.spec().c_str())));
+    ExecuteSyncJSFunction(
+        guest_rvh,
+        StringPrintf("CreateChildFrame('%s');", test_url.spec().c_str()));
 
     string16 actual_title = ready_watcher.WaitAndGetTitle();
     EXPECT_EQ(ASCIIToUTF16("ready"), actual_title);
 
     content::TitleWatcher iframe_watcher(test_embedder()->web_contents(),
                                         ASCIIToUTF16("iframe"));
-    ExecuteSyncJSFunction(rvh,
-        ASCIIToUTF16(StringPrintf("PostMessage('%s', true);", kTesting)));
+    ExecuteSyncJSFunction(
+        rvh, StringPrintf("PostMessage('%s', true);", kTesting));
 
     // The title will be updated to "iframe" at the last stage of the
     // process described above.
@@ -1020,8 +1019,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -1038,8 +1036,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
   // Renavigate the guest to |kHTMLForGuest|.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+  ExecuteSyncJSFunction(rvh, StringPrintf("SetSrc('%s');", kHTMLForGuest));
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
@@ -1072,16 +1069,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_VisibilityPreservation) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   // Hide the BrowserPlugin.
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').style.visibility = 'hidden';"));
+  ExecuteSyncJSFunction(
+      rvh, "document.getElementById('plugin').style.visibility = 'hidden';");
   test_guest()->WaitUntilHidden();
   // Kill the current guest.
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').terminate();"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').terminate();");
   test_guest()->WaitForExit();
   // Get a new guest.
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').reload();"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').reload();");
   test_guest()->WaitForLoadStop();
   // Verify that the guest is told to hide.
   test_guest()->WaitUntilHidden();
@@ -1118,8 +1113,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusPreservation) {
   {
     // Focus the BrowserPlugin. This will have the effect of also focusing the
     // current guest.
-    ExecuteSyncJSFunction(
-        rvh, ASCIIToUTF16("document.getElementById('plugin').focus();"));
+    ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').focus();");
     // Verify that key presses go to the guest.
     SimulateSpaceKeyPress(test_embedder()->web_contents());
     test_guest()->WaitForInput();
@@ -1133,14 +1127,12 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusPreservation) {
   }
 
   // Kill the current guest.
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      "document.getElementById('plugin').terminate();"));
+  ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').terminate();");
   test_guest()->WaitForExit();
 
   {
     // Get a new guest.
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        "document.getElementById('plugin').reload();"));
+    ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').reload();");
     test_guest()->WaitForLoadStop();
     // Verify that the guest is focused.
     scoped_ptr<base::Value> value(
@@ -1162,8 +1154,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
   {
     // Focus the BrowserPlugin. This will have the effect of also focusing the
     // current guest.
-    ExecuteSyncJSFunction(
-        rvh, ASCIIToUTF16("document.getElementById('plugin').focus();"));
+    ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').focus();");
     // Verify that key presses go to the guest.
     SimulateSpaceKeyPress(test_embedder()->web_contents());
     test_guest()->WaitForInput();
@@ -1209,12 +1200,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
     const string16 expected_title = ASCIIToUTF16("AutoSize(300, 400)");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+    ExecuteSyncJSFunction(
+        rvh,
         "document.getElementById('plugin').minWidth = 300;"
         "document.getElementById('plugin').minHeight = 200;"
         "document.getElementById('plugin').maxWidth = 600;"
         "document.getElementById('plugin').maxHeight = 400;"
-        "document.getElementById('plugin').autoSize = true;"));
+        "document.getElementById('plugin').autoSize = true;");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
@@ -1223,15 +1215,15 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
     const string16 expected_title = ASCIIToUTF16("AutoSize(350, 400)");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        "document.getElementById('plugin').minWidth = 350;"));
+    ExecuteSyncJSFunction(
+        rvh, "document.getElementById('plugin').minWidth = 350;");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
   {
     // Turn off autoSize and verify that the guest resizes to fit the container.
-    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-        "document.getElementById('plugin').autoSize = false;"));
+    ExecuteSyncJSFunction(
+        rvh, "document.getElementById('plugin').autoSize = false;");
     test_guest()->WaitForViewSize(gfx::Size(640, 480));
   }
 }

@@ -32,7 +32,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
     content::RenderViewHost* rvh =
         chrome::GetActiveWebContents(browser())->GetRenderViewHost();
     ASSERT_TRUE(rvh);
-    ASSERT_TRUE(content::ExecuteJavaScript(rvh, L"", L";"));
+    ASSERT_TRUE(content::ExecuteJavaScript(rvh, "", ";"));
   }
 };
 

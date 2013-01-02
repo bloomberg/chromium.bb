@@ -425,8 +425,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   WaitForAutoResizeWider enlarge(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
-      std::wstring(),
-      L"changeSize(50);"));
+      "",
+      "changeSize(50);"));
   enlarge.Wait();
   gfx::Rect bounds_on_grow = panel->GetBounds();
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
@@ -436,8 +436,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   WaitForAutoResizeNarrower shrink(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
-      std::wstring(),
-      L"changeSize(-30);"));
+      "",
+      "changeSize(-30);"));
   shrink.Wait();
   gfx::Rect bounds_on_shrink = panel->GetBounds();
   EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
@@ -1566,9 +1566,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   WaitForAutoResizeWider enlarge(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
-      std::wstring(),
-      L"document.body.innerHTML ="
-      L"'<nobr>line of text and a <button>Button</button>';"));
+      "",
+      "document.body.innerHTML ="
+      "    '<nobr>line of text and a <button>Button</button>';"));
   enlarge.Wait();
 
   // The panel should have become larger in both dimensions (the minimums

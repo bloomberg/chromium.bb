@@ -43,12 +43,14 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
   }
 
-  void RunScriptAndCheckResult(const std::wstring& script,
+  void RunScriptAndCheckResult(const std::string& script,
                                const std::string& result) {
     std::string data;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
-        script, &data));
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+        "",
+        script,
+        &data));
     ASSERT_EQ(data, result);
   }
 
@@ -101,16 +103,16 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
       FilePath().AppendASCII("simple_database.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  RunScriptAndCheckResult(L"createTable()", "done");
-  RunScriptAndCheckResult(L"insertRecord('text')", "done");
-  RunScriptAndCheckResult(L"getRecords()", "text");
+  RunScriptAndCheckResult("createTable()", "done");
+  RunScriptAndCheckResult("insertRecord('text')", "done");
+  RunScriptAndCheckResult("getRecords()", "text");
 
   RemoveAndWait(BrowsingDataRemover::REMOVE_SITE_DATA);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  RunScriptAndCheckResult(L"createTable()", "done");
-  RunScriptAndCheckResult(L"insertRecord('text2')", "done");
-  RunScriptAndCheckResult(L"getRecords()", "text2");
+  RunScriptAndCheckResult("createTable()", "done");
+  RunScriptAndCheckResult("insertRecord('text2')", "done");
+  RunScriptAndCheckResult("getRecords()", "text2");
 }
 
 // Profile::ClearNetworkingHistorySince should be exercised here too see whether

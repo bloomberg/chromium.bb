@@ -471,8 +471,8 @@ bool FocusedOnPage(WebContents* web_contents, std::string* result)
 bool FocusedOnPage(WebContents* web_contents, std::string* result) {
   return content::ExecuteJavaScriptAndExtractString(
       web_contents->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(getFocusedElement());",
+      "",
+      "window.domAutomationController.send(getFocusedElement());",
       result);
 }
 
@@ -516,8 +516,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   // Move the selection to link 1, after searching.
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       web_contents->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(selectLink1());",
+      "",
+      "window.domAutomationController.send(selectLink1());",
       &result));
 
   // End the find session.
@@ -590,8 +590,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   std::string result;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       web_contents->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(selectLink1());",
+      "",
+      "window.domAutomationController.send(selectLink1());",
       &result));
 
   // Do a find-next after the selection.  This should move forward
@@ -620,8 +620,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   std::string result;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       web_contents->GetRenderViewHost(),
-      std::wstring(),
-      L"window.domAutomationController.send(selectSpan());",
+      "",
+      "window.domAutomationController.send(selectSpan());",
       &result));
 
   // Do a find-next after the selection. This should select the 2nd occurrence

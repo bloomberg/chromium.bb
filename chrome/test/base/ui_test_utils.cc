@@ -564,11 +564,11 @@ class SnapshotTaker {
 
   bool TakeEntirePageSnapshot(RenderViewHost* rvh,
                               SkBitmap* bitmap) WARN_UNUSED_RESULT {
-    const wchar_t* script =
-        L"window.domAutomationController.send("
-        L"    JSON.stringify([document.width, document.height]))";
+    const char* script =
+        "window.domAutomationController.send("
+            "JSON.stringify([document.width, document.height]))";
     std::string json;
-    if (!content::ExecuteJavaScriptAndExtractString(rvh, L"", script, &json))
+    if (!content::ExecuteJavaScriptAndExtractString(rvh, "", script, &json))
       return false;
 
     // Parse the JSON.

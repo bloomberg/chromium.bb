@@ -50,8 +50,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-          the_browser->web_contents()->GetRenderViewHost(), L"",
-          L"window.domAutomationController.send(getLog())", &js_result));
+          the_browser->web_contents()->GetRenderViewHost(),
+          std::string(),
+          "window.domAutomationController.send(getLog())",
+          &js_result));
       FAIL() << "Failed: " << js_result;
     }
   }

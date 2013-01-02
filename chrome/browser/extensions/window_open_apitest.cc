@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      newtab->GetRenderViewHost(), L"", L"testExtensionApi()", &result));
+      newtab->GetRenderViewHost(), "", "testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }
 
@@ -429,6 +429,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   // Extension API should succeed.
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      newtab->GetRenderViewHost(), L"", L"testExtensionApi()", &result));
+      newtab->GetRenderViewHost(), "", "testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }

@@ -784,7 +784,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     bool original_prerender_page = false;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        L"", L"window.domAutomationController.send(IsOriginalPrerenderPage())",
+        "",
+        "window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
   }
@@ -803,8 +804,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        tab->GetRenderViewHost(), L"",
-        L"window.domAutomationController.send(DidBackToOriginalPagePass())",
+        tab->GetRenderViewHost(),
+        "",
+        "window.domAutomationController.send(DidBackToOriginalPagePass())",
         &js_result));
     EXPECT_TRUE(js_result);
   }
@@ -850,26 +852,28 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   bool DidReceivePrerenderStartEventForLinkNumber(int index) const {
     bool received_prerender_started;
-    std::wstring expression = base::StringPrintf(
-        L"window.domAutomationController.send(Boolean("
-            L"receivedPrerenderStartEvents[%d]))", index);
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send(Boolean("
+            "receivedPrerenderStartEvents[%d]))", index);
 
     CHECK(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        L"", expression,
+        "",
+        expression,
         &received_prerender_started));
     return received_prerender_started;
   }
 
   bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
     bool received_prerender_stopped;
-    std::wstring expression = base::StringPrintf(
-        L"window.domAutomationController.send(Boolean("
-            L"receivedPrerenderStopEvents[%d]))", index);
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send(Boolean("
+            "receivedPrerenderStopEvents[%d]))", index);
 
     CHECK(content::ExecuteJavaScriptAndExtractBool(
         chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        L"", expression,
+        "",
+        expression,
         &received_prerender_stopped));
     return received_prerender_stopped;
   }
@@ -1034,8 +1038,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
         ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-            prerender_contents->GetRenderViewHostMutable(), L"",
-            L"window.domAutomationController.send(DidPrerenderPass())",
+            prerender_contents->GetRenderViewHostMutable(),
+            "",
+            "window.domAutomationController.send(DidPrerenderPass())",
             &prerender_test_result));
         EXPECT_TRUE(prerender_test_result);
       }
@@ -1092,8 +1097,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
       bool display_test_result = false;
       ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-          web_contents->GetRenderViewHost(), L"",
-          L"window.domAutomationController.send(DidDisplayPass())",
+          web_contents->GetRenderViewHost(),
+          "",
+          "window.domAutomationController.send(DidDisplayPass())",
           &display_test_result));
       EXPECT_TRUE(display_test_result);
     }
@@ -1400,8 +1406,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      web_contents->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(DidDisplayPass())",
+      web_contents->GetRenderViewHost(),
+      "",
+      "window.domAutomationController.send(DidDisplayPass())",
       &display_test_result));
   EXPECT_TRUE(display_test_result);
 }
@@ -2567,8 +2574,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      web_contents->GetRenderViewHost(), L"",
-      L"DidDisplayReallyPass()",
+      web_contents->GetRenderViewHost(),
+      "",
+      "DidDisplayReallyPass()",
       &display_test_result));
   ASSERT_TRUE(display_test_result);
 }

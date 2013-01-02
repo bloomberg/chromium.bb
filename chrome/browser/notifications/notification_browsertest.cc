@@ -274,8 +274,8 @@ std::string NotificationsTest::CreateNotification(
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      L"",
-      UTF8ToWide(script),
+      "",
+      script,
       &result);
   if (success && result != "-1" && wait_for_new_balloon)
     success = observer.Wait();
@@ -301,8 +301,8 @@ bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      L"",
-      L"requestPermission();",
+      "",
+      "requestPermission();",
       &result);
   if (!success || result != "1")
     return false;
@@ -321,8 +321,8 @@ bool NotificationsTest::CancelNotification(
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      L"",
-      UTF8ToWide(script),
+      "",
+      script,
       &result);
   if (!success || result != "1")
     return false;
@@ -414,8 +414,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
   bool result;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      L"",
-      L"window.domAutomationController.send(request());",
+      "",
+      "window.domAutomationController.send(request());",
       &result));
   EXPECT_TRUE(result);
 
