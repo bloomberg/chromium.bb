@@ -38,8 +38,6 @@ class ChromeBrowserMainExtraParts {
   // MainMessageLoopRun methods.
   virtual void PreProfileInit() {}
   virtual void PostProfileInit() {}
-  virtual void PreInteractiveFirstRunInit() {}
-  virtual void PostInteractiveFirstRunInit() {}
   virtual void PreBrowserStart() {}
   virtual void PostBrowserStart() {}
   virtual void PreMainMessageLoopRun() {}

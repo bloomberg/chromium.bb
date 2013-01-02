@@ -64,7 +64,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 
     if (first_run)
-      command_line.AppendSwitch(switches::kFirstRun);
+      command_line.AppendSwitch(switches::kForceFirstRun);
     else
       command_line.AppendSwitch(switches::kNoFirstRun);
 
@@ -77,7 +77,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
          i != switch_map.end(); ++i) {
       const std::string& switch_name = i->first;
       if (switch_name == switches::kUserDataDir ||
-          switch_name == switches::kFirstRun ||
+          switch_name == switches::kForceFirstRun ||
           switch_name == switches::kNoFirstRun)
         continue;
 

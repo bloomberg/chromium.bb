@@ -489,8 +489,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       profile_(NULL),
       run_message_loop_(true),
       notify_result_(ProcessSingleton::PROCESS_NONE),
-      is_first_run_(false),
-      first_run_ui_bypass_(false),
+      do_first_run_tasks_(false),
       local_state_(NULL),
       restart_last_session_(false) {
   // If we're running tests (ui_task is non-null).
@@ -690,16 +689,26 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       << "Must be able to get user data directory!";
 #endif
 
+  // Whether this is First Run. |do_first_run_tasks_| should be prefered to this
+  // unless the desire is actually to know whether this is really First Run
+  // (i.e., even if --no-first-run is passed).
+  bool is_first_run = false;
   // Android's first run is done in Java instead of native.
 #if !defined(OS_ANDROID)
+
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
   // Ensure ProcessSingleton won't process messages too early. It will be
   // unlocked in PostBrowserStart().
   process_singleton_->Lock(NULL);
 
-  is_first_run_ =
-      (first_run::IsChromeFirstRun() ||
-          parsed_command_line().HasSwitch(switches::kFirstRun)) &&
+  bool force_first_run =
+      parsed_command_line().HasSwitch(switches::kForceFirstRun);
+  bool force_skip_first_run_tasks =
+      (!force_first_run &&
+       parsed_command_line().HasSwitch(switches::kNoFirstRun));
+
+  is_first_run =
+      (force_first_run || first_run::IsChromeFirstRun()) &&
       !ProfileManager::IsImportProcess(parsed_command_line());
 #endif
 
@@ -733,7 +742,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   local_state_ = InitializeLocalState(local_state_task_runner,
                                       parsed_command_line(),
-                                      is_first_run_);
+                                      is_first_run);
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
@@ -800,29 +809,30 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  first_run_ui_bypass_ = false;  // True to skip first run UI.
-  if (is_first_run_) {
+  if (is_first_run) {
     first_run::ProcessMasterPreferencesResult pmp_result =
         first_run::ProcessMasterPreferences(user_data_dir_,
                                             master_prefs_.get());
     if (pmp_result == first_run::EULA_EXIT_NOW)
       return chrome::RESULT_CODE_EULA_REFUSED;
 
-    first_run_ui_bypass_ = (pmp_result == first_run::SKIP_FIRST_RUN);
+    // Do first run tasks unless:
+    //  - Explicitly forced not to by |force_skip_first_run_tasks| or
+    //    |pmp_result|.
+    //  - Running in App mode, where showing the importer (first run) UI is
+    //    undesired.
+    do_first_run_tasks_ = (!force_skip_first_run_tasks &&
+                           pmp_result != first_run::SKIP_FIRST_RUN_TASKS &&
+                           !parsed_command_line().HasSwitch(switches::kApp) &&
+                           !parsed_command_line().HasSwitch(switches::kAppId));
 
-    AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
-
-    // If we are running in App mode, we do not want to show the importer
-    // (first run) UI.
-    if (!first_run_ui_bypass_ &&
-        (parsed_command_line().HasSwitch(switches::kApp) ||
-         parsed_command_line().HasSwitch(switches::kAppId) ||
-         parsed_command_line().HasSwitch(switches::kNoFirstRun)))
-      first_run_ui_bypass_ = true;
-
-    // Create Sentinel if no-first-run argument is passed in.
-    if (parsed_command_line().HasSwitch(switches::kNoFirstRun))
+    if (do_first_run_tasks_) {
+      AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
+    } else if (parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
+      // Create the First Run beacon anyways if --no-first-run was passed on the
+      // command line.
       first_run::CreateSentinel();
+    }
   }
 #endif
 
@@ -884,10 +894,6 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 //   ... additional setup, including CreateProfile()
 //   PostProfileInit()
 //   ... additional setup
-//   PreInteractiveFirstRunInit()
-//   ... first_run::AutoImport()
-//   PostInteractiveFirstRunInit()
-//   ... additional setup
 //   PreBrowserStart()
 //   ... browser_creator_->Start (OR parameters().ui_task->Run())
 //   PostBrowserStart()
@@ -901,16 +907,6 @@ void ChromeBrowserMainParts::PostProfileInit() {
   LaunchDevToolsHandlerIfNeeded(profile(), parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
-}
-
-void ChromeBrowserMainParts::PreInteractiveFirstRunInit() {
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->PreInteractiveFirstRunInit();
-}
-
-void ChromeBrowserMainParts::PostInteractiveFirstRunInit() {
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->PostInteractiveFirstRunInit();
 }
 
 void ChromeBrowserMainParts::PreBrowserStart() {
@@ -1122,7 +1118,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Profile creation ----------------------------------------------------------
 
-  if (is_first_run_) {
+  if (do_first_run_tasks_) {
     // Warn the ProfileManager that an import process will run, possibly
     // locking the WebDataService directory of the next Profile created.
     browser_process_->profile_manager()->SetWillImport();
@@ -1192,31 +1188,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Note that this be done _after_ the PrefService is initialized and all
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
-  if (is_first_run_) {
-    PreInteractiveFirstRunInit();
-
-    if (!first_run_ui_bypass_ ||
-        parsed_command_line().HasSwitch(switches::kFirstRunForceImport)) {
-      first_run::AutoImport(profile_,
-                            master_prefs_->homepage_defined,
-                            master_prefs_->do_import_items,
-                            master_prefs_->dont_import_items,
-                            process_singleton_.get());
-      first_run::DoFirstRunTasks(profile_, master_prefs_->make_chrome_default);
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
-      // TODO(thakis): Look into moving this POSIX-specific section to
-      // ChromeBrowserMainPartsPosix::PostInteractiveFirstRunInit().
-
-      // On Windows, the download is tagged with enable/disable stats so there
-      // is no need for this code.
-
-      // If stats reporting was turned on by the first run dialog then toggle
-      // the pref.
-      if (GoogleUpdateSettings::GetCollectStatsConsent())
-        local_state_->SetBoolean(prefs::kMetricsReportingEnabled, true);
-#endif  // OS_POSIX && !OS_CHROMEOS
-    }  // if (!first_run_ui_bypass_)
-    PostInteractiveFirstRunInit();
+  if (do_first_run_tasks_) {
+    first_run::AutoImport(profile_,
+                          master_prefs_->homepage_defined,
+                          master_prefs_->do_import_items,
+                          master_prefs_->dont_import_items,
+                          process_singleton_.get());
+    // Note: this can pop the first run consent dialog on linux.
+    first_run::DoPostImportTasks(profile_, master_prefs_->make_chrome_default);
 
     browser_process_->profile_manager()->OnImportFinished(profile_);
 
@@ -1226,7 +1205,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     } else {
       browser_creator_->set_is_default_browser_dialog_suppressed(true);
     }
-  }  // if (is_first_run_)
+  }  // if (do_first_run_tasks_)
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -1260,12 +1239,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
   PrefService* pref_service = profile_->GetPrefs();
-  int ping_delay = is_first_run_ ? master_prefs_->ping_delay :
+  int ping_delay = do_first_run_tasks_ ? master_prefs_->ping_delay :
       pref_service->GetInteger(first_run::GetPingDelayPrefName().c_str());
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   RLZTracker::InitRlzFromProfileDelayed(
-      profile_, is_first_run_, ping_delay < 0,
+      profile_, do_first_run_tasks_, ping_delay < 0,
       base::TimeDelta::FromMilliseconds(abs(ping_delay)));
 #endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
@@ -1362,7 +1341,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)
   // it won't still be accessible after browser is destroyed.
-  record_search_engine_ = is_first_run_ && !profile_->IsOffTheRecord();
+  record_search_engine_ = do_first_run_tasks_ && !profile_->IsOffTheRecord();
 #endif
 
   // Create the instance of the cloud print proxy service so that it can launch

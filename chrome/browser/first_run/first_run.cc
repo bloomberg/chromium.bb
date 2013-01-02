@@ -556,14 +556,14 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   // Chrome OS has its own out-of-box-experience code.  Create the sentinel to
   // mark the fact that we've run once but skip the full first-run flow.
   CreateSentinel();
-  return SKIP_FIRST_RUN;
+  return SKIP_FIRST_RUN_TASKS;
 #endif
 
   FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
   if (!install_prefs.get())
-    return SHOW_FIRST_RUN;
+    return DO_FIRST_RUN_TASKS;
 
   out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
 
@@ -573,7 +573,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     return EULA_EXIT_NOW;
 
   if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return SHOW_FIRST_RUN;
+    return DO_FIRST_RUN_TASKS;
 
   DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
@@ -583,7 +583,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
 
-  return SHOW_FIRST_RUN;
+  return DO_FIRST_RUN_TASKS;
 }
 
 void AutoImport(
@@ -678,7 +678,7 @@ void AutoImport(
 #endif  // !defined(USE_AURA)
 }
 
-void DoFirstRunTasks(Profile* profile, bool make_chrome_default) {
+void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
   if (make_chrome_default &&
       ShellIntegration::CanSetAsDefaultBrowser() ==
           ShellIntegration::SET_DEFAULT_UNATTENDED) {
@@ -704,6 +704,8 @@ void DoFirstRunTasks(Profile* profile, bool make_chrome_default) {
   SetShowWelcomePagePref();
   SetPersonalDataManagerFirstRunPref();
 #endif  // !defined(USE_AURA)
+
+  internal::DoPostImportPlatformSpecificTasks();
 }
 
 }  // namespace first_run

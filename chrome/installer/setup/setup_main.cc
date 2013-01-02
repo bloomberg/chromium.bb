@@ -588,7 +588,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
             *status = installer::EXISTING_VERSION_LAUNCHED;
             FilePath chrome_exe = install_path.Append(installer::kChromeExe);
             CommandLine cmd(chrome_exe);
-            cmd.AppendSwitch(switches::kFirstRun);
+            cmd.AppendSwitch(switches::kForceFirstRun);
             installer_state->WriteInstallerResult(*status, 0, NULL);
             VLOG(1) << "Launching existing system-level chrome instead.";
             base::LaunchProcess(cmd, base::LaunchOptions(), NULL);

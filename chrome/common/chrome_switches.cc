@@ -694,11 +694,8 @@ const char kFeedbackServer[]                = "feedback-server";
 const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 
 // Displays the First Run experience when the browser is started, regardless of
-// whether or not it's actually the first run.
-const char kFirstRun[]                      = "first-run";
-
-// Force a profile auto-import that would occur on a first run.
-const char kFirstRunForceImport[]           = "first-run-force-import";
+// whether or not it's actually the First Run (this overrides kNoFirstRun).
+const char kForceFirstRun[]                      = "force-first-run";
 
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
@@ -878,8 +875,10 @@ const char kNoEvents[]                      = "no-events";
 // then restart chrome without this switch again.
 const char kNoExperiments[]                 = "no-experiments";
 
-// Whether or not it's actually the first run. Overrides kFirstRun in case
-// you're for some reason tempted to pass them both.
+// Skip First Run tasks, whether or not it's actually the First Run. Overridden
+// by kForceFirstRun.
+// Also drops the First Run beacon so that First Run will not occur in
+// subsequent runs as well.
 const char kNoFirstRun[]                    = "no-first-run";
 
 // Support a separate switch that enables the v8 playback extension.

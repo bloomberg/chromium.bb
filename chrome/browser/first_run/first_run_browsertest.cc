@@ -59,6 +59,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
       prefs::kShouldShowWelcomePage));
 }
 
+#if !defined(OS_CHROMEOS)
 namespace {
 class FirstRunIntegrationBrowserTest : public InProcessBrowserTest {
  public:
@@ -66,8 +67,7 @@ class FirstRunIntegrationBrowserTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kFirstRun);
-    command_line->AppendSwitch(switches::kFirstRunForceImport);
+    command_line->AppendSwitch(switches::kForceFirstRun);
     EXPECT_FALSE(ProfileManager::DidPerformProfileImport());
 
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
@@ -85,3 +85,4 @@ class FirstRunIntegrationBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(FirstRunIntegrationBrowserTest, WaitForImport) {
   ASSERT_TRUE(ProfileManager::DidPerformProfileImport());
 }
+#endif  // !defined(OS_CHROMEOS)

@@ -10,12 +10,15 @@
 
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/object_watcher.h"
@@ -43,6 +46,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_update/google_update_idl.h"
@@ -378,6 +382,24 @@ bool ImportSettingsWin(Profile* profile,
 
 namespace first_run {
 namespace internal {
+
+void DoPostImportPlatformSpecificTasks() {
+  // Trigger the Active Setup command for system-level Chromes to finish
+  // configuring this user's install (e.g. per-user shortcuts).
+  // Delay the task slightly to give Chrome launch I/O priority while also
+  // making sure shortcuts are created promptly to avoid annoying the user by
+  // re-creating shortcuts he previously deleted.
+  static const int64 kTiggerActiveSetupDelaySeconds = 5;
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+  } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+    content::BrowserThread::GetBlockingPool()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&InstallUtil::TriggerActiveSetupCommand),
+        base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
+  }
+}
 
 bool ImportSettings(Profile* profile,
                     scoped_refptr<ImporterHost> importer_host,

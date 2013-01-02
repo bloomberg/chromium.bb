@@ -70,6 +70,8 @@ void SetRLZPref(first_run::MasterPrefs* out_prefs,
 
 // -- Platform-specific functions --
 
+void DoPostImportPlatformSpecificTasks();
+
 // Gives the full path to the sentinel file. The file might not exist.
 // This function has a common implementation on OS_POSIX and a windows specific
 // implementation.

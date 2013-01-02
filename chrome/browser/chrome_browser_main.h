@@ -78,8 +78,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // in order from PreMainMessageLoopRun(). See implementation for details.
   virtual void PreProfileInit();
   virtual void PostProfileInit();
-  virtual void PreInteractiveFirstRunInit();
-  virtual void PostInteractiveFirstRunInit();
   virtual void PreBrowserStart();
   virtual void PostBrowserStart();
 
@@ -185,8 +183,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized in PreMainMessageLoopRun, needed in
   // PreMainMessageLoopRunThreadsCreated.
-  bool is_first_run_;
-  bool first_run_ui_bypass_;
+  bool do_first_run_tasks_;
   PrefService* local_state_;
   FilePath user_data_dir_;
 

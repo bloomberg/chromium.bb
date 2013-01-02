@@ -50,8 +50,8 @@ enum FirstRunBubbleOptions {
 };
 
 enum ProcessMasterPreferencesResult {
-  SHOW_FIRST_RUN = 0,           // Should show the first run flow.
-  SKIP_FIRST_RUN,               // Should skip the first run flow.
+  DO_FIRST_RUN_TASKS = 0,       // Should do the first run tasks.
+  SKIP_FIRST_RUN_TASKS,         // Should skip the first run tasks.
   EULA_EXIT_NOW,                // Should immediately exit due to EULA flow.
 };
 
@@ -123,8 +123,8 @@ void AutoImport(Profile* profile,
                 ProcessSingleton* process_singleton);
 
 // Does remaining first run tasks for |profile| and makes Chrome default browser
-// if |make_chrome_default|.
-void DoFirstRunTasks(Profile* profile, bool make_chrome_default);
+// if |make_chrome_default|. This can pop the first run consent dialog on linux.
+void DoPostImportTasks(Profile* profile, bool make_chrome_default);
 
 // Imports bookmarks and/or browser items (depending on platform support)
 // in this process. This function is paired with first_run::ImportSettings().

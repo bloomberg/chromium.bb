@@ -16,7 +16,7 @@ namespace switches {
 const char* const kSwitchesToRemoveOnAutorestart[] = {
   switches::kApp,
   switches::kAppId,
-  switches::kFirstRun,
+  switches::kForceFirstRun,
   switches::kImport,
   switches::kImportFromFile,
   switches::kMakeDefaultBrowser,
