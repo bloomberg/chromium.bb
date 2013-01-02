@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/renderer_preferences.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "ui/gfx/font_render_params_linux.h"
@@ -97,21 +98,21 @@ void UpdateFromSystemSettings(
       theme_service->get_inactive_selection_bg_color();
   prefs->inactive_selection_fg_color =
       theme_service->get_inactive_selection_fg_color();
-#elif defined(USE_DEFAULT_RENDER_THEME)
-  // This color is 0x544d90fe modulated with 0xffffff.
-  prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
-  prefs->active_selection_fg_color = SK_ColorBLACK;
-  prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
-  prefs->inactive_selection_fg_color = SK_ColorBLACK;
-#endif
 
-#if defined(TOOLKIT_GTK)
   const base::TimeDelta cursor_blink_time = gfx::GetCursorBlinkCycle();
   prefs->caret_blink_interval =
       cursor_blink_time.InMilliseconds() ?
       cursor_blink_time.InMilliseconds() / kGtkCursorBlinkCycleFactor :
       0;
-#elif defined(USE_AURA)
+#elif defined(USE_DEFAULT_RENDER_THEME)
+  prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
+
+  // This color is 0x544d90fe modulated with 0xffffff.
+  prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
+  prefs->active_selection_fg_color = SK_ColorBLACK;
+  prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
+  prefs->inactive_selection_fg_color = SK_ColorBLACK;
+
   // WebKit accepts a single parameter to control the interval over which the
   // cursor is shown or hidden, so divide Views's time for the full cycle by two
   // and then convert to seconds.

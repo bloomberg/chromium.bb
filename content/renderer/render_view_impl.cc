@@ -163,6 +163,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
@@ -230,7 +231,6 @@
 //   * theming
 #include "ui/native_theme/native_theme_win.h"
 #elif defined(USE_X11)
-#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "ui/native_theme/native_theme.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
@@ -5310,24 +5310,25 @@ void RenderViewImpl::OnSetRendererPrefs(
   double old_zoom_level = renderer_preferences_.default_zoom_level;
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
-#if defined(TOOLKIT_GTK)
+
+#if defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
+#if defined(TOOLKIT_GTK)
   ui::NativeTheme::instance()->SetScrollbarColors(
       renderer_prefs.thumb_inactive_color,
       renderer_prefs.thumb_active_color,
       renderer_prefs.track_color);
-#endif
+#endif  // defined(TOOLKIT_GTK)
 
-#if defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
   if (webview()) {
 #if defined(TOOLKIT_GTK)
     webview()->setScrollbarColors(
         renderer_prefs.thumb_inactive_color,
         renderer_prefs.thumb_active_color,
         renderer_prefs.track_color);
-#endif
+#endif  // defined(TOOLKIT_GTK)
     webview()->setSelectionColors(
         renderer_prefs.active_selection_bg_color,
         renderer_prefs.active_selection_fg_color,
@@ -5335,7 +5336,7 @@ void RenderViewImpl::OnSetRendererPrefs(
         renderer_prefs.inactive_selection_fg_color);
     webview()->themeChanged();
   }
-#endif
+#endif  // defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
 
   // If the zoom level for this page matches the old zoom default, and this
   // is not a plugin, update the zoom level to match the new default.
