@@ -1193,14 +1193,18 @@ FcPatternFormat (FcPattern *pat,
 {
     FcStrBuf        buf;
     FcChar8         buf_static[8192 - 1024];
+    FcPattern      *alloced = NULL;
     FcBool          ret;
 
     if (!pat)
-	return NULL;
+	alloced = pat = FcPatternCreate ();
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
 
     ret = FcPatternFormatToBuf (pat, format, &buf);
+
+    if (alloced)
+      FcPatternDestroy (alloced);
 
     if (ret)
 	return FcStrBufDone (&buf);
