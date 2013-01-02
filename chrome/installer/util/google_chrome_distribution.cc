@@ -773,7 +773,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
         dir_age_hours = this_age;
     }
 
-    const bool experiment_enabled = false;
+    const bool experiment_enabled = true;
     const int kThirtyDays = 30 * 24;
 
     if (!experiment_enabled) {
