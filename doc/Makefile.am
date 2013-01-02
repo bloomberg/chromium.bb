@@ -118,6 +118,7 @@ noinst_PROGRAMS =	\
 edit_sgml_SOURCES =	\
 	edit-sgml.c	\
 	$(NULL)
+edit_sgml_CC = $(CC_FOR_BUILD)
 #
 check_SCRIPTS =			\
 	check-missing-doc	\
@@ -150,14 +151,9 @@ noinst_PROGRAMS +=	\
 htmldoc_DATA += $(HTML_DIR)/*
 
 ##
-if CROSS_COMPILING
-.fncs.sgml:
-	@echo Warning: cannot rebuild $@ when cross-compiling
-else
 .fncs.sgml:
 	$(AM_V_GEN) $(RM) $@; \
 	$(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$(srcdir)/$*.fncs' > $*.sgml
-endif
 .sgml.txt:
 	$(AM_V_GEN) $(RM) $@; \
 	$(DOC2TXT) $*.sgml

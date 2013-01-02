@@ -33,18 +33,13 @@ noinst_PROGRAMS=fc-case
 
 noinst_HEADERS=$(TARG)
 
-fc_case_SOURCES= \
-	fc-case.c
+fc_case_CC = $(CC_FOR_BUILD)
 
 CASEFOLDING=CaseFolding.txt
 SCASEFOLDING=${top_srcdir}/fc-case/CaseFolding.txt
 
 EXTRA_DIST = $(TARG) $(TMPL) $(CASEFOLDING)
 
-if CROSS_COMPILING
-$(TARG): $(STMPL) fc-case.c $(SCASEFOLDING)
-	@echo Warning: cannot rebuild $(TARG) when cross-compiling
-else
 ## BUILT_SOURCES doesn't effect to 'distcheck'
 ## so $(ALIAS_FILES) has to be appeared prior to fc-case$(EXEEXT)
 ## to make sure availability.
@@ -52,7 +47,6 @@ $(TARG): $(STMPL) $(ALIAS_FILES) fc-case$(EXEEXT) $(SCASEFOLDING)
 	$(AM_V_GEN) $(RM) $(TARG); \
 	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
-endif
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 

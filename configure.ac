@@ -105,6 +105,7 @@ AC_SUBST(WARN_CFLAGS)
 
 dnl ==========================================================================
 
+AC_ARG_VAR(CC_FOR_BUILD, [build system C compiler])
 AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
 AM_CONDITIONAL(ENABLE_SHARED, test "$enable_shared" = "yes")
 
