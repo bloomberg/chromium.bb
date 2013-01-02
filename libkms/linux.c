@@ -68,7 +68,7 @@ linux_name_from_sysfs(int fd, char **out)
 
 	ret = fstat(fd, &buffer);
 	if (ret)
-		return ret;
+		return -EINVAL;
 
 	if (!S_ISCHR(buffer.st_mode))
 		return -EINVAL;
