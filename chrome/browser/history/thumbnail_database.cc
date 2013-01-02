@@ -198,9 +198,21 @@ sql::InitStatus ThumbnailDatabase::Init(
     return sql::INIT_FAILURE;
   }
 
-  // Log in a UMA histogram if the structure of the favicons database is not
-  // what it should be.
-  LogIfFaviconDBStructureIncorrect();
+  // Raze the database if the structure of the favicons database is not what
+  // it should be. This error cannot be detected via the SQL error code because
+  // the error code for running SQL statements against a database with missing
+  // columns is SQLITE_ERROR which is not unique enough to act upon.
+  // TODO(pkotwicz): Revisit this in M27 and see if the razing can be removed.
+  // (crbug.com/166453)
+  if (IsFaviconDBStructureIncorrect()) {
+    LOG(ERROR) << "Raze thumbnail database because of invalid favicon db"
+               << "structure.";
+    UMA_HISTOGRAM_BOOLEAN("History.InvalidFaviconsDBStructure", true);
+
+    db_.Raze();
+    db_.Close();
+    return sql::INIT_FAILURE;
+  }
 
   return sql::INIT_OK;
 }
@@ -326,9 +338,8 @@ bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
                      "favicon_bitmaps(icon_id)");
 }
 
-void ThumbnailDatabase::LogIfFaviconDBStructureIncorrect() {
-  if (!db_.IsSQLValid("SELECT id, url, icon_type, sizes FROM favicons"))
-    UMA_HISTOGRAM_BOOLEAN("History.InvalidFaviconsDBStructure", true);
+bool ThumbnailDatabase::IsFaviconDBStructureIncorrect() {
+  return !db_.IsSQLValid("SELECT id, url, icon_type, sizes FROM favicons");
 }
 
 void ThumbnailDatabase::BeginTransaction() {

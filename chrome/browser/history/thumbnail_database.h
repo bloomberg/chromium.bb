@@ -376,13 +376,8 @@ class ThumbnailDatabase {
   // with no index).
   bool InitIconMappingIndex();
 
-  // For the purpose of determining how widespread crbug.com/151841 is, log in a
-  // UMA histogram if the |favicons| database is missing a column. This is
-  // important because the SQLite error code from running SQL statements against
-  // a database with missing columns is SQLITE_ERROR which is not unique enough
-  // to act upon.
-  // TODO(pkotwicz): remove this function once crbug.com/151841 is resolved.
-  void LogIfFaviconDBStructureIncorrect();
+  // Returns true if the |favicons| database is missing a column.
+  bool IsFaviconDBStructureIncorrect();
 
   // Adds a mapping between the given page_url and icon_id; The mapping will be
   // added to temp_icon_mapping table if is_temporary is true.
