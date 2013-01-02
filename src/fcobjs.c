@@ -56,7 +56,7 @@ retry:
 	ot->object.object = strdup (str);
 	ot->object.type = -1;
 	ot->id = fc_atomic_int_add (next_id, +1);
-	ot->next = ot;
+	ot->next = ots;
 
 	if (!fc_atomic_ptr_cmpexch (&other_types, ots, ot)) {
 	    free (ot);
