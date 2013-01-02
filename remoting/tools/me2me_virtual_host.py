@@ -824,7 +824,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if options.add_user:
     sudo_command = "gksudo --message" if os.getenv("DISPLAY") else "sudo -p"
     command = ("sudo -k && %(sudo)s "
-               "\"Please enter your password to enable Chrome Remote Desktop\" "
+               "\"Please enter your password to enable "
+               "Chrome Remote Desktop: \" "
                "-- sh -c "
                "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
                { 'group': CHROME_REMOTING_GROUP_NAME,
