@@ -211,6 +211,7 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
+const char kSetPolicyMethod[] = "SetPolicy";
 const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
 const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
