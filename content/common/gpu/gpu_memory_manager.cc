@@ -28,9 +28,21 @@ namespace {
 
 const int kDelayedScheduleManageTimeoutMs = 67;
 
+const size_t kBytesAllocatedUnmanagedStep = 16 * 1024 * 1024;
+
 void TrackValueChanged(size_t old_size, size_t new_size, size_t* total_size) {
   DCHECK(new_size > old_size || *total_size >= (old_size - new_size));
   *total_size += (new_size - old_size);
+}
+
+template<typename T>
+T RoundUp(T n, T mul) {
+  return ((n + mul - 1) / mul) * mul;
+}
+
+template<typename T>
+T RoundDown(T n, T mul) {
+  return (n / mul) * mul;
 }
 
 }
@@ -44,12 +56,17 @@ GpuMemoryManager::GpuMemoryManager(
           max_surfaces_with_frontbuffer_soft_limit),
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
+      bytes_minimum_per_client_(0),
+      bytes_minimum_per_client_overridden_(false),
       bytes_backgrounded_available_gpu_memory_(0),
       bytes_allocated_managed_current_(0),
       bytes_allocated_managed_visible_(0),
       bytes_allocated_managed_backgrounded_(0),
       bytes_allocated_unmanaged_current_(0),
       bytes_allocated_historical_max_(0),
+      bytes_allocated_unmanaged_high_(0),
+      bytes_allocated_unmanaged_low_(0),
+      bytes_unmanaged_limit_step_(kBytesAllocatedUnmanagedStep),
       window_count_has_been_received_(false),
       window_count_(0),
       disable_schedule_manage_(false)
@@ -78,7 +95,11 @@ GpuMemoryManager::~GpuMemoryManager() {
 }
 
 size_t GpuMemoryManager::GetAvailableGpuMemory() const {
-  return bytes_available_gpu_memory_;
+  // Allow unmanaged allocations to over-subscribe by at most (high_ - low_)
+  // before restricting managed (compositor) memory based on unmanaged usage.
+  if (bytes_allocated_unmanaged_low_ > bytes_available_gpu_memory_)
+    return 0;
+  return bytes_available_gpu_memory_ - bytes_allocated_unmanaged_low_;
 }
 
 size_t GpuMemoryManager::GetCurrentBackgroundedAvailableGpuMemory() const {
@@ -119,6 +140,8 @@ size_t GpuMemoryManager::GetMaximumTabAllocation() const {
 }
 
 size_t GpuMemoryManager::GetMinimumTabAllocation() const {
+  if (bytes_minimum_per_client_overridden_)
+    return bytes_minimum_per_client_;
 #if defined(OS_ANDROID)
   return 32 * 1024 * 1024;
 #elif defined(OS_CHROMEOS)
@@ -211,10 +234,18 @@ void GpuMemoryManager::UpdateAvailableGpuMemory() {
   // Never go above the maximum.
   bytes_available_gpu_memory_ = std::min(bytes_available_gpu_memory_,
                                          GetMaximumTotalGpuMemory());
+}
 
-  // Update the backgrounded available gpu memory because it depends on
-  // the available GPU memory.
-  UpdateBackgroundedAvailableGpuMemory();
+void GpuMemoryManager::UpdateUnmanagedMemoryLimits() {
+  // Set the limit to be [current_, current_ + step_ / 4), with the endpoints
+  // of the intervals rounded down and up to the nearest step_, to avoid
+  // thrashing the interval.
+  bytes_allocated_unmanaged_high_ = RoundUp(
+      bytes_allocated_unmanaged_current_ + bytes_unmanaged_limit_step_ / 4,
+      bytes_unmanaged_limit_step_);
+  bytes_allocated_unmanaged_low_ = RoundDown(
+      bytes_allocated_unmanaged_current_,
+      bytes_unmanaged_limit_step_);
 }
 
 void GpuMemoryManager::UpdateBackgroundedAvailableGpuMemory() {
@@ -223,7 +254,7 @@ void GpuMemoryManager::UpdateBackgroundedAvailableGpuMemory() {
 #if defined(OS_ANDROID)
   bytes_backgrounded_available_gpu_memory_ = 0;
 #else
-  bytes_backgrounded_available_gpu_memory_ = bytes_available_gpu_memory_ / 4;
+  bytes_backgrounded_available_gpu_memory_ = GetAvailableGpuMemory() / 4;
 #endif
 }
 
@@ -275,6 +306,14 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
                    "GpuMemoryUsage",
                    GetCurrentUsage());
   }
+
+  // If we've gone past our current limit on unmanaged memory, schedule a
+  // re-manage to take int account the unmanaged memory.
+  if (bytes_allocated_unmanaged_current_ >= bytes_allocated_unmanaged_high_)
+    ScheduleManage(true);
+  if (bytes_allocated_unmanaged_current_ < bytes_allocated_unmanaged_low_)
+    ScheduleManage(false);
+
   if (GetCurrentUsage() > bytes_allocated_historical_max_) {
       bytes_allocated_historical_max_ = GetCurrentUsage();
       // If we're blowing into new memory usage territory, spam the browser
@@ -430,6 +469,13 @@ void GpuMemoryManager::Manage() {
 
   // Update the amount of GPU memory available on the system.
   UpdateAvailableGpuMemory();
+
+  // Update the limit on unmanaged memory.
+  UpdateUnmanagedMemoryLimits();
+
+  // Update the backgrounded available gpu memory because it depends on
+  // the available GPU memory.
+  UpdateBackgroundedAvailableGpuMemory();
 
   // Determine which clients are "hibernated" (which determines the
   // distribution of frontbuffers and memory among clients that don't have

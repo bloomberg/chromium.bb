@@ -87,6 +87,8 @@ class CONTENT_EXPORT GpuMemoryManager :
                            TestBackgroundCutoff);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestBackgroundMru);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestUnmanagedTracking);
 
   typedef std::map<gpu::gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
       TrackingGroupMap;
@@ -101,6 +103,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory();
+  void UpdateUnmanagedMemoryLimits();
   void UpdateBackgroundedAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
@@ -159,6 +162,15 @@ class CONTENT_EXPORT GpuMemoryManager :
     bytes_available_gpu_memory_overridden_ = true;
   }
 
+  void TestingSetMinimumClientAllocation(size_t bytes) {
+    bytes_minimum_per_client_ = bytes;
+    bytes_minimum_per_client_overridden_ = true;
+  }
+
+  void TestingSetUnmanagedLimitStep(size_t bytes) {
+    bytes_unmanaged_limit_step_ = bytes;
+  }
+
   void TestingSetBackgroundedAvailableGpuMemory(size_t bytes) {
     bytes_backgrounded_available_gpu_memory_ = bytes;
   }
@@ -185,6 +197,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;
 
+  // The minimum allocation that may be given to a single renderer.
+  size_t bytes_minimum_per_client_;
+  bool bytes_minimum_per_client_overridden_;
+
   // The maximum amount of memory that can be allocated for GPU resources
   // in backgrounded renderers.
   size_t bytes_backgrounded_available_gpu_memory_;
@@ -195,6 +211,14 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t bytes_allocated_managed_backgrounded_;
   size_t bytes_allocated_unmanaged_current_;
   size_t bytes_allocated_historical_max_;
+
+  // If bytes_allocated_unmanaged_current_ leaves the interval [low_, high_),
+  // then ScheduleManage to take the change into account.
+  size_t bytes_allocated_unmanaged_high_;
+  size_t bytes_allocated_unmanaged_low_;
+
+  // Update bytes_allocated_unmanaged_low/high_ in intervals of step_.
+  size_t bytes_unmanaged_limit_step_;
 
   // The number of browser windows that exist. If we ever receive a
   // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory

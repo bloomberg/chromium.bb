@@ -145,6 +145,10 @@ class FakeClient : public GpuMemoryManagerClient {
     client_state_->SetManagedMemoryStats(stats);
   }
 
+  size_t BytesWhenVisible() const {
+    return allocation_.renderer_allocation.bytes_limit_when_visible;
+  }
+
   size_t BytesWhenNotVisible() const {
     return allocation_.renderer_allocation.bytes_limit_when_not_visible;
   }
@@ -809,6 +813,61 @@ TEST_F(GpuMemoryManagerTest, TestBackgroundMru) {
             stub2.BytesWhenNotVisible());
   EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
             stub3.BytesWhenNotVisible());
+}
+
+// Test GpuMemoryManager's tracking of unmanaged (e.g, WebGL) memory.
+TEST_F(GpuMemoryManagerTest, TestUnmanagedTracking) {
+  memmgr_.TestingSetAvailableGpuMemory(64);
+  memmgr_.TestingSetBackgroundedAvailableGpuMemory(16);
+  memmgr_.TestingSetUnmanagedLimitStep(16);
+  memmgr_.TestingSetMinimumClientAllocation(8);
+
+  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
+
+  // Expect that the one stub get the maximum tab allocation.
+  Manage();
+  EXPECT_EQ(memmgr_.GetMaximumTabAllocation(),
+            stub1.BytesWhenVisible());
+
+  // Now allocate some unmanaged memory and make sure the amount
+  // goes down.
+  memmgr_.TrackMemoryAllocatedChange(
+      stub1.tracking_group_.get(),
+      0,
+      48,
+      gpu::gles2::MemoryTracker::kUnmanaged);
+  Manage();
+  EXPECT_GT(memmgr_.GetMaximumTabAllocation(),
+            stub1.BytesWhenVisible());
+
+  // Now allocate the entire FB worth of unmanaged memory, and
+  // make sure that we stay stuck at the minimum tab allocation.
+  memmgr_.TrackMemoryAllocatedChange(
+      stub1.tracking_group_.get(),
+      48,
+      64,
+      gpu::gles2::MemoryTracker::kUnmanaged);
+  Manage();
+  EXPECT_EQ(memmgr_.GetMinimumTabAllocation(),
+            stub1.BytesWhenVisible());
+
+  // Far-oversubscribe the entire FB, and make sure we stay at
+  // the minimum allocation, and don't blow up.
+  memmgr_.TrackMemoryAllocatedChange(
+      stub1.tracking_group_.get(),
+      64,
+      999,
+      gpu::gles2::MemoryTracker::kUnmanaged);
+  Manage();
+  EXPECT_EQ(memmgr_.GetMinimumTabAllocation(),
+            stub1.BytesWhenVisible());
+
+  // Delete all tracked memory so we don't hit leak checks.
+  memmgr_.TrackMemoryAllocatedChange(
+      stub1.tracking_group_.get(),
+      999,
+      0,
+      gpu::gles2::MemoryTracker::kUnmanaged);
 }
 
 }  // namespace content
