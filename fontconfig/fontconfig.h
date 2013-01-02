@@ -181,10 +181,10 @@ typedef int		FcBool;
 #define FC_LCD_LEGACY	    3
 
 typedef enum _FcType {
-    FcTypeVoid, 
-    FcTypeInteger, 
-    FcTypeDouble, 
-    FcTypeString, 
+    FcTypeVoid,
+    FcTypeInteger,
+    FcTypeDouble,
+    FcTypeString,
     FcTypeBool,
     FcTypeMatrix,
     FcTypeCharSet,
