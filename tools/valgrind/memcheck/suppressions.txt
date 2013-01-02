@@ -6423,10 +6423,3 @@
    fun:vp8e_encode
    fun:vpx_codec_encode
 }
-{
-   bug_167855
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9prerender24UnitTestPrerenderManager27CreateNextPrerenderContentsERK4GURLNS_11FinalStatusE
-   fun:_ZN9prerender53PrerenderTest_LinkManagerWaitToLaunchNotLaunched_Test8TestBodyEv
-}

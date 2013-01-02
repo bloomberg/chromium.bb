@@ -1344,7 +1344,7 @@ TEST_F(PrerenderTest, LinkManagerWaitToLaunchNotLaunched) {
   GURL first_url("http://www.myexample.com");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          first_url, FINAL_STATUS_TIMED_OUT);
+          first_url, FINAL_STATUS_USED);
   EXPECT_TRUE(AddSimplePrerender(first_url));
 
   GURL second_url("http://www.neverlaunched.com");
