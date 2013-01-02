@@ -595,7 +595,7 @@ FcNameConvert (FcType type, FcChar8 *string)
 	v.u.d = strtod ((char *) string, 0);
 	break;
     case FcTypeMatrix:
-	m.xx = m.yy = 1.; m.xy = m.yx = 0.;
+	FcMatrixInit (&m);
 	sscanf ((char *) string, "%lg %lg %lg %lg", &m.xx, &m.xy, &m.yx, &m.yy);
 	v.u.m = FcMatrixCopy (&m);
 	break;
