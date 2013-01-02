@@ -102,6 +102,7 @@ nouveau_bo_create(struct kms_driver *kms,
 		pitch = (pitch + 512 - 1) & ~(512 - 1);
 		size = pitch * height;
 	} else {
+		free(bo);
 		return -EINVAL;
 	}
 
