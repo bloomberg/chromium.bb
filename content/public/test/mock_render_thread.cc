@@ -78,14 +78,14 @@ scoped_refptr<base::MessageLoopProxy>
 }
 
 void MockRenderThread::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  // We may hear this for views created from OnMsgCreateWindow as well,
+  // We may hear this for views created from OnCreateWindow as well,
   // in which case we don't want to track the new widget.
   if (routing_id_ == routing_id)
     widget_ = listener;
 }
 
 void MockRenderThread::RemoveRoute(int32 routing_id) {
-  // We may hear this for views created from OnMsgCreateWindow as well,
+  // We may hear this for views created from OnCreateWindow as well,
   // in which case we don't want to track the new widget.
   if (routing_id_ == routing_id)
     widget_ = NULL;
@@ -195,17 +195,17 @@ void MockRenderThread::SendCloseMessage() {
 }
 
 // The Widget expects to be returned valid route_id.
-void MockRenderThread::OnMsgCreateWidget(int opener_id,
-                                         WebKit::WebPopupType popup_type,
-                                         int* route_id,
-                                         int* surface_id) {
+void MockRenderThread::OnCreateWidget(int opener_id,
+                                      WebKit::WebPopupType popup_type,
+                                      int* route_id,
+                                      int* surface_id) {
   opener_id_ = opener_id;
   *route_id = routing_id_;
   *surface_id = surface_id_;
 }
 
 // The View expects to be returned a valid route_id different from its own.
-void MockRenderThread::OnMsgCreateWindow(
+void MockRenderThread::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
     int* surface_id,
@@ -222,8 +222,8 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;

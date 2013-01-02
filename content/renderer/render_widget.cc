@@ -243,10 +243,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
-    IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
-    IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
-    IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted,
-                        OnMsgSmoothScrollCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnPaintAtSize)
+    IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
+    IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted, OnSmoothScrollCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ScreenInfoChanged, OnScreenInfoChanged)
@@ -1509,10 +1508,10 @@ void RenderWidget::OnImeConfirmComposition(
 
 // This message causes the renderer to render an image of the
 // desired_size, regardless of whether the tab is hidden or not.
-void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
-                                    int tag,
-                                    const gfx::Size& page_size,
-                                    const gfx::Size& desired_size) {
+void RenderWidget::OnPaintAtSize(const TransportDIB::Handle& dib_handle,
+                                 int tag,
+                                 const gfx::Size& page_size,
+                                 const gfx::Size& desired_size) {
   if (!webwidget_ || !TransportDIB::is_valid_handle(dib_handle)) {
     if (TransportDIB::is_valid_handle(dib_handle)) {
       // Close our unused handle.
@@ -1587,7 +1586,7 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, tag, bounds.size()));
 }
 
-void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
+void RenderWidget::OnRepaint(const gfx::Size& size_to_paint) {
   // During shutdown we can just ignore this message.
   if (!webwidget_)
     return;
@@ -1602,7 +1601,7 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
   }
 }
 
-void RenderWidget::OnMsgSmoothScrollCompleted(int gesture_id) {
+void RenderWidget::OnSmoothScrollCompleted(int gesture_id) {
   PendingSmoothScrollGestureMap::iterator it =
       pending_smooth_scroll_gestures_.find(gesture_id);
   DCHECK(it != pending_smooth_scroll_gestures_.end());

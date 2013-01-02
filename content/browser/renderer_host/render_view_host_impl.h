@@ -468,77 +468,76 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void RequestToLockMouse(bool user_gesture,
                                   bool last_unlocked_by_target) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
-  virtual void OnMsgFocus() OVERRIDE;
-  virtual void OnMsgBlur() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // IPC message handlers.
-  void OnMsgShowView(int route_id,
-                     WindowOpenDisposition disposition,
-                     const gfx::Rect& initial_pos,
-                     bool user_gesture);
-  void OnMsgShowWidget(int route_id, const gfx::Rect& initial_pos);
-  void OnMsgShowFullscreenWidget(int route_id);
-  void OnMsgRunModal(int opener_id, IPC::Message* reply_msg);
-  void OnMsgRenderViewReady();
-  void OnMsgRenderViewGone(int status, int error_code);
-  void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
-                                            int64 parent_frame_id,
-                                            bool main_frame,
-                                            const GURL& url);
-  void OnMsgDidRedirectProvisionalLoad(int32 page_id,
-                                       const GURL& source_url,
-                                       const GURL& target_url);
-  void OnMsgDidFailProvisionalLoadWithError(
+  void OnShowView(int route_id,
+                  WindowOpenDisposition disposition,
+                  const gfx::Rect& initial_pos,
+                  bool user_gesture);
+  void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
+  void OnShowFullscreenWidget(int route_id);
+  void OnRunModal(int opener_id, IPC::Message* reply_msg);
+  void OnRenderViewReady();
+  void OnRenderViewGone(int status, int error_code);
+  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                         int64 parent_frame_id,
+                                         bool main_frame,
+                                         const GURL& url);
+  void OnDidRedirectProvisionalLoad(int32 page_id,
+                                    const GURL& source_url,
+                                    const GURL& target_url);
+  void OnDidFailProvisionalLoadWithError(
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
-  void OnMsgNavigate(const IPC::Message& msg);
-  void OnMsgUpdateState(int32 page_id,
-                        const std::string& state);
-  void OnMsgUpdateTitle(int32 page_id,
-                        const string16& title,
-                        WebKit::WebTextDirection title_direction);
-  void OnMsgUpdateEncoding(const std::string& encoding);
-  void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
-  void OnMsgClose();
-  void OnMsgRequestMove(const gfx::Rect& pos);
-  void OnMsgDidStartLoading();
-  void OnMsgDidStopLoading();
-  void OnMsgDidChangeLoadProgress(double load_progress);
-  void OnMsgDidDisownOpener();
-  void OnMsgDocumentAvailableInMainFrame();
-  void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgContextMenu(const ContextMenuParams& params);
-  void OnMsgToggleFullscreen(bool enter_fullscreen);
-  void OnMsgOpenURL(const ViewHostMsg_OpenURL_Params& params);
-  void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
-  void OnMsgDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
-                                            bool has_vertical_scrollbar);
-  void OnMsgDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
-                                                     bool is_pinned_to_right);
-  void OnMsgDidChangeNumWheelEvents(int count);
-  void OnMsgSelectionChanged(const string16& text,
-                             size_t offset,
-                             const ui::Range& range);
-  void OnMsgSelectionBoundsChanged(const gfx::Rect& start_rect,
-                                   WebKit::WebTextDirection start_direction,
-                                   const gfx::Rect& end_rect,
-                                   WebKit::WebTextDirection end_direction);
-  void OnMsgPasteFromSelectionClipboard();
-  void OnMsgRouteCloseEvent();
-  void OnMsgRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
-  void OnMsgRunJavaScriptMessage(const string16& message,
-                                 const string16& default_prompt,
-                                 const GURL& frame_url,
-                                 JavaScriptMessageType type,
-                                 IPC::Message* reply_msg);
-  void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
-                                   const string16& message,
-                                   bool is_reload,
-                                   IPC::Message* reply_msg);
-  void OnMsgStartDragging(const WebDropData& drop_data,
-                          WebKit::WebDragOperationsMask operations_allowed,
-                          const SkBitmap& bitmap,
-                          const gfx::Vector2d& bitmap_offset_in_dip,
-                          const DragEventSourceInfo& event_info);
+  void OnNavigate(const IPC::Message& msg);
+  void OnUpdateState(int32 page_id, const std::string& state);
+  void OnUpdateTitle(int32 page_id,
+                     const string16& title,
+                     WebKit::WebTextDirection title_direction);
+  void OnUpdateEncoding(const std::string& encoding);
+  void OnUpdateTargetURL(int32 page_id, const GURL& url);
+  void OnClose();
+  void OnRequestMove(const gfx::Rect& pos);
+  void OnDidStartLoading();
+  void OnDidStopLoading();
+  void OnDidChangeLoadProgress(double load_progress);
+  void OnDidDisownOpener();
+  void OnDocumentAvailableInMainFrame();
+  void OnDocumentOnLoadCompletedInMainFrame(int32 page_id);
+  void OnContextMenu(const ContextMenuParams& params);
+  void OnToggleFullscreen(bool enter_fullscreen);
+  void OnOpenURL(const ViewHostMsg_OpenURL_Params& params);
+  void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
+  void OnDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
+                                         bool has_vertical_scrollbar);
+  void OnDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
+                                                  bool is_pinned_to_right);
+  void OnDidChangeNumWheelEvents(int count);
+  void OnSelectionChanged(const string16& text,
+                          size_t offset,
+                          const ui::Range& range);
+  void OnSelectionBoundsChanged(const gfx::Rect& start_rect,
+                                WebKit::WebTextDirection start_direction,
+                                const gfx::Rect& end_rect,
+                                WebKit::WebTextDirection end_direction);
+  void OnPasteFromSelectionClipboard();
+  void OnRouteCloseEvent();
+  void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
+  void OnRunJavaScriptMessage(const string16& message,
+                              const string16& default_prompt,
+                              const GURL& frame_url,
+                              JavaScriptMessageType type,
+                              IPC::Message* reply_msg);
+  void OnRunBeforeUnloadConfirm(const GURL& frame_url,
+                                const string16& message,
+                                bool is_reload,
+                                IPC::Message* reply_msg);
+  void OnStartDragging(const WebDropData& drop_data,
+                       WebKit::WebDragOperationsMask operations_allowed,
+                       const SkBitmap& bitmap,
+                       const gfx::Vector2d& bitmap_offset_in_dip,
+                       const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
@@ -549,11 +548,11 @@ class CONTENT_EXPORT RenderViewHostImpl
                              const string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
-  void OnMsgShouldCloseACK(
+  void OnShouldCloseACK(
       bool proceed,
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
-  void OnMsgClosePageACK();
+  void OnClosePageACK();
   void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
@@ -574,11 +573,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnGetWindowSnapshot(const int snapshot_id);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-  void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
+  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
 #if defined(OS_ANDROID)
-  void OnMsgDidChangeBodyBackgroundColor(SkColor color);
+  void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
 #endif
 

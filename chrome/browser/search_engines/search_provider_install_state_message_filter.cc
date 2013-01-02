@@ -39,7 +39,7 @@ bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
                            *message_was_ok)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChromeViewHostMsg_GetSearchProviderInstallState,
-        OnMsgGetSearchProviderInstallState)
+        OnGetSearchProviderInstallState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -82,7 +82,7 @@ SearchProviderInstallStateMessageFilter::GetSearchProviderInstallState(
 }
 
 void
-SearchProviderInstallStateMessageFilter::OnMsgGetSearchProviderInstallState(
+SearchProviderInstallStateMessageFilter::OnGetSearchProviderInstallState(
     const GURL& page_location,
     const GURL& requested_host,
     IPC::Message* reply_msg) {

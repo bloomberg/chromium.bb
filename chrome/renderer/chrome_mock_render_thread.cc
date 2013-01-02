@@ -40,7 +40,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeMockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
-                        OnMsgOpenChannelToExtension)
+                        OnOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
@@ -66,7 +66,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void ChromeMockRenderThread::OnMsgOpenChannelToExtension(
+void ChromeMockRenderThread::OnOpenChannelToExtension(
     int routing_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,

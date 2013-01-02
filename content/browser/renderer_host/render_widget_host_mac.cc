@@ -8,13 +8,12 @@
 
 namespace content {
 
-void RenderWidgetHostImpl::OnMsgPluginFocusChanged(bool focused,
-                                                   int plugin_id) {
+void RenderWidgetHostImpl::OnPluginFocusChanged(bool focused, int plugin_id) {
   if (view_)
     view_->PluginFocusChanged(focused, plugin_id);
 }
 
-void RenderWidgetHostImpl::OnMsgStartPluginIme() {
+void RenderWidgetHostImpl::OnStartPluginIme() {
   if (view_)
     view_->StartPluginIme();
 }
@@ -23,7 +22,7 @@ void RenderWidgetHostImpl::OnAllocateFakePluginWindowHandle(
     bool opaque,
     bool root,
     gfx::PluginWindowHandle* id) {
-  // TODO(kbr): similar potential issue here as in OnMsgCreatePluginContainer.
+  // TODO(kbr): similar potential issue here as in OnCreatePluginContainer.
   // Possibly less of an issue because this is only used for the GPU plugin.
   if (view_) {
     *id = view_->AllocateFakePluginWindowHandle(opaque, root);

@@ -34,9 +34,9 @@ class SearchProviderInstallStateMessageFilter
       const GURL& requested_host);
 
   // Starts handling the message requesting the search provider install state.
-  void OnMsgGetSearchProviderInstallState(const GURL& page_location,
-                                          const GURL& requested_host,
-                                          IPC::Message* reply_msg);
+  void OnGetSearchProviderInstallState(const GURL& page_location,
+                                       const GURL& requested_host,
+                                       IPC::Message* reply_msg);
 
   // Sends the reply message about the search provider install state.
   void ReplyWithProviderInstallState(const GURL& page_location,

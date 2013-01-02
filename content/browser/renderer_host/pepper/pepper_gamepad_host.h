@@ -41,7 +41,7 @@ class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgRequestMemory(ppapi::host::HostMessageContext* context);
+  int32_t OnRequestMemory(ppapi::host::HostMessageContext* context);
 
   void GotUserGesture(const ppapi::host::ReplyMessageContext& in_context);
 

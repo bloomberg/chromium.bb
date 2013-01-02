@@ -48,18 +48,18 @@ class PepperFlashClipboardHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgRegisterCustomFormat(
+  int32_t OnRegisterCustomFormat(
       ppapi::host::HostMessageContext* host_context,
       const std::string& format_name);
-  int32_t OnMsgIsFormatAvailable(
+  int32_t OnIsFormatAvailable(
       ppapi::host::HostMessageContext* host_context,
       uint32_t clipboard_type,
       uint32_t format);
-  int32_t OnMsgReadData(
+  int32_t OnReadData(
       ppapi::host::HostMessageContext* host_context,
       uint32_t clipoard_type,
       uint32_t format);
-  int32_t OnMsgWriteData(
+  int32_t OnWriteData(
       ppapi::host::HostMessageContext* host_context,
       uint32_t clipboard_type,
       const std::vector<uint32_t>& formats,

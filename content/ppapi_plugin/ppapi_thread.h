@@ -88,14 +88,13 @@ class PpapiThread : public ChildThread,
   virtual void SetActiveURL(const std::string& url) OVERRIDE;
 
   // Message handlers.
-  void OnMsgLoadPlugin(const FilePath& path,
-                       const ppapi::PpapiPermissions& permissions);
-  void OnMsgCreateChannel(int renderer_id,
-                          bool incognito);
-  void OnMsgResourceReply(
+  void OnLoadPlugin(const FilePath& path,
+                    const ppapi::PpapiPermissions& permissions);
+  void OnCreateChannel(int renderer_id, bool incognito);
+  void OnResourceReply(
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
-  void OnMsgSetNetworkState(bool online);
+  void OnSetNetworkState(bool online);
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.

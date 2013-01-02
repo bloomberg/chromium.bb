@@ -40,7 +40,7 @@ bool RenderViewMouseLockDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewMouseLockDispatcher, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnMsgLockMouseACK)
+    IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
     IPC_MESSAGE_FORWARD(ViewMsg_MouseLockLost,
                         static_cast<MouseLockDispatcher*>(this),
                         MouseLockDispatcher::OnMouseLockLost)
@@ -49,9 +49,9 @@ bool RenderViewMouseLockDispatcher::OnMessageReceived(
   return handled;
 }
 
-void RenderViewMouseLockDispatcher::OnMsgLockMouseACK(bool succeeded) {
+void RenderViewMouseLockDispatcher::OnLockMouseACK(bool succeeded) {
   // Notify the base class.
-  OnLockMouseACK(succeeded);
+  MouseLockDispatcher::OnLockMouseACK(succeeded);
 
   // Mouse Lock removes the system cursor and provides all mouse motion as
   // .movementX/Y values on events all sent to a fixed target. This requires

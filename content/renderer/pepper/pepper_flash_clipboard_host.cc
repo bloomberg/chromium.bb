@@ -108,21 +108,21 @@ int32_t PepperFlashClipboardHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFlashClipboardHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
-        OnMsgRegisterCustomFormat);
+        OnRegisterCustomFormat);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashClipboard_IsFormatAvailable,
-        OnMsgIsFormatAvailable);
+        OnIsFormatAvailable);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashClipboard_ReadData,
-        OnMsgReadData);
+        OnReadData);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashClipboard_WriteData,
-        OnMsgWriteData);
+        OnWriteData);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashClipboardHost::OnMsgRegisterCustomFormat(
+int32_t PepperFlashClipboardHost::OnRegisterCustomFormat(
     ppapi::host::HostMessageContext* host_context,
     const std::string& format_name) {
   uint32_t format = custom_formats_.RegisterFormat(format_name);
@@ -133,7 +133,7 @@ int32_t PepperFlashClipboardHost::OnMsgRegisterCustomFormat(
   return PP_OK;
 }
 
-int32_t PepperFlashClipboardHost::OnMsgIsFormatAvailable(
+int32_t PepperFlashClipboardHost::OnIsFormatAvailable(
     ppapi::host::HostMessageContext* host_context,
     uint32_t clipboard_type,
     uint32_t format) {
@@ -178,7 +178,7 @@ int32_t PepperFlashClipboardHost::OnMsgIsFormatAvailable(
   return available ? PP_OK : PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashClipboardHost::OnMsgReadData(
+int32_t PepperFlashClipboardHost::OnReadData(
     ppapi::host::HostMessageContext* host_context,
     uint32_t clipboard_type,
     uint32_t format) {
@@ -263,7 +263,7 @@ int32_t PepperFlashClipboardHost::OnMsgReadData(
   return result;
 }
 
-int32_t PepperFlashClipboardHost::OnMsgWriteData(
+int32_t PepperFlashClipboardHost::OnWriteData(
     ppapi::host::HostMessageContext* host_context,
     uint32_t clipboard_type,
     const std::vector<uint32_t>& formats,

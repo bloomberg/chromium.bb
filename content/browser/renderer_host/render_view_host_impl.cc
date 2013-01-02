@@ -384,10 +384,10 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
   if (!IsRenderViewLive()) {
     // This RenderViewHostImpl doesn't have a live renderer, so just
     // skip running the onbeforeunload handler.
-    is_waiting_for_beforeunload_ack_ = true;  // Checked by OnMsgShouldCloseACK.
+    is_waiting_for_beforeunload_ack_ = true;  // Checked by OnShouldCloseACK.
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     base::TimeTicks now = base::TimeTicks::Now();
-    OnMsgShouldCloseACK(true, now, now);
+    OnShouldCloseACK(true, now, now);
     return;
   }
 
@@ -956,68 +956,66 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewHostImpl, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnMsgShowView)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnMsgShowWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
-                        OnMsgShowFullscreenWidget)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnMsgRunModal)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
+                        OnShowFullscreenWidget)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnRunModal)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnRenderViewGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                        OnMsgDidStartProvisionalLoadForFrame)
+                        OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
-                        OnMsgDidRedirectProvisionalLoad)
+                        OnDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
-                        OnMsgDidFailProvisionalLoadWithError)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnMsgNavigate(msg))
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnMsgUpdateState)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnMsgUpdateTitle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnMsgUpdateEncoding)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
+                        OnDidFailProvisionalLoadWithError)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnNavigate(msg))
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnUpdateTitle)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnUpdateEncoding)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
                         OnUpdateInspectorSetting)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnMsgDidStartLoading)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
-                        OnMsgDidChangeLoadProgress)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisownOpener,
-                        OnMsgDidDisownOpener)
+                        OnDidChangeLoadProgress)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisownOpener, OnDidDisownOpener)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
-                        OnMsgDocumentAvailableInMainFrame)
+                        OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
-                        OnMsgDocumentOnLoadCompletedInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen,
-                        OnMsgToggleFullscreen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
+                        OnDocumentOnLoadCompletedInMainFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnContextMenu)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
-                        OnMsgDidContentsPreferredSizeChange)
+                        OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollbarsForMainFrame,
-                        OnMsgDidChangeScrollbarsForMainFrame)
+                        OnDidChangeScrollbarsForMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
-                        OnMsgDidChangeScrollOffsetPinningForMainFrame)
+                        OnDidChangeScrollOffsetPinningForMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumWheelEvents,
-                        OnMsgDidChangeNumWheelEvents)
+                        OnDidChangeNumWheelEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
-                        OnMsgRouteCloseEvent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnMsgRouteMessageEvent)
+                        OnRouteCloseEvent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
-                                    OnMsgRunJavaScriptMessage)
+                                    OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
-                                    OnMsgRunBeforeUnloadConfirm)
-    IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnMsgStartDragging)
+                                    OnRunBeforeUnloadConfirm)
+    IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnMsgClosePageACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnShouldCloseACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
-                        OnMsgSelectionBoundsChanged)
+                        OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
@@ -1025,7 +1023,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
-                        OnMsgDidChangeBodyBackgroundColor)
+                        OnDidChangeBodyBackgroundColor)
 #endif
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
@@ -1034,7 +1032,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
                         OnCancelDesktopNotification)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
@@ -1096,10 +1094,10 @@ void RenderViewHostImpl::CreateNewFullscreenWidget(int route_id) {
   delegate_->CreateNewFullscreenWidget(route_id);
 }
 
-void RenderViewHostImpl::OnMsgShowView(int route_id,
-                                       WindowOpenDisposition disposition,
-                                       const gfx::Rect& initial_pos,
-                                       bool user_gesture) {
+void RenderViewHostImpl::OnShowView(int route_id,
+                                    WindowOpenDisposition disposition,
+                                    const gfx::Rect& initial_pos,
+                                    bool user_gesture) {
   if (!is_swapped_out_) {
     delegate_->ShowCreatedWindow(
         route_id, disposition, initial_pos, user_gesture);
@@ -1107,20 +1105,20 @@ void RenderViewHostImpl::OnMsgShowView(int route_id,
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
-void RenderViewHostImpl::OnMsgShowWidget(int route_id,
-                                         const gfx::Rect& initial_pos) {
+void RenderViewHostImpl::OnShowWidget(int route_id,
+                                      const gfx::Rect& initial_pos) {
   if (!is_swapped_out_)
     delegate_->ShowCreatedWidget(route_id, initial_pos);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
-void RenderViewHostImpl::OnMsgShowFullscreenWidget(int route_id) {
+void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
   if (!is_swapped_out_)
     delegate_->ShowCreatedFullscreenWidget(route_id);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
-void RenderViewHostImpl::OnMsgRunModal(int opener_id, IPC::Message* reply_msg) {
+void RenderViewHostImpl::OnRunModal(int opener_id, IPC::Message* reply_msg) {
   DCHECK(!run_modal_reply_msg_);
   run_modal_reply_msg_ = reply_msg;
   run_modal_opener_id_ = opener_id;
@@ -1140,14 +1138,14 @@ void RenderViewHostImpl::OnMsgRunModal(int opener_id, IPC::Message* reply_msg) {
   // an app-modal fashion.
 }
 
-void RenderViewHostImpl::OnMsgRenderViewReady() {
+void RenderViewHostImpl::OnRenderViewReady() {
   render_view_termination_status_ = base::TERMINATION_STATUS_STILL_RUNNING;
   SendScreenRects();
   WasResized();
   delegate_->RenderViewReady(this);
 }
 
-void RenderViewHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
+void RenderViewHostImpl::OnRenderViewGone(int status, int exit_code) {
   // Keep the termination status so we can get at it later when we
   // need to know why it died.
   render_view_termination_status_ =
@@ -1164,7 +1162,7 @@ void RenderViewHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
                             exit_code);
 }
 
-void RenderViewHostImpl::OnMsgDidStartProvisionalLoadForFrame(
+void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(
     int64 frame_id,
     int64 parent_frame_id,
     bool is_main_frame,
@@ -1173,7 +1171,7 @@ void RenderViewHostImpl::OnMsgDidStartProvisionalLoadForFrame(
       this, frame_id, parent_frame_id, is_main_frame, url);
 }
 
-void RenderViewHostImpl::OnMsgDidRedirectProvisionalLoad(
+void RenderViewHostImpl::OnDidRedirectProvisionalLoad(
     int32 page_id,
     const GURL& source_url,
     const GURL& target_url) {
@@ -1181,7 +1179,7 @@ void RenderViewHostImpl::OnMsgDidRedirectProvisionalLoad(
       this, page_id, source_url, target_url);
 }
 
-void RenderViewHostImpl::OnMsgDidFailProvisionalLoadWithError(
+void RenderViewHostImpl::OnDidFailProvisionalLoadWithError(
     const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   delegate_->DidFailProvisionalLoadWithError(this, params);
 }
@@ -1194,7 +1192,7 @@ void RenderViewHostImpl::OnMsgDidFailProvisionalLoadWithError(
 // level frame.  If the user explicitly requests a subframe navigation, we will
 // get a new page_id because we need to create a new navigation entry for that
 // action.
-void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
+void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
   PickleIterator iter(msg);
@@ -1212,7 +1210,7 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_cross_site_transition_ &&
       PageTransitionIsMainFrame(validated_params.transition)) {
-    OnMsgShouldCloseACK(true, send_should_close_start_time_,
+    OnShouldCloseACK(true, send_should_close_start_time_,
                         base::TimeTicks::Now());
     return;
   }
@@ -1270,12 +1268,12 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   // http://crbug.com/153701 is fixed.
 }
 
-void RenderViewHostImpl::OnMsgUpdateState(int32 page_id,
-                                          const std::string& state) {
+void RenderViewHostImpl::OnUpdateState(int32 page_id,
+                                       const std::string& state) {
   delegate_->UpdateState(this, page_id, state);
 }
 
-void RenderViewHostImpl::OnMsgUpdateTitle(
+void RenderViewHostImpl::OnUpdateTitle(
     int32 page_id,
     const string16& title,
     WebKit::WebTextDirection title_direction) {
@@ -1289,12 +1287,11 @@ void RenderViewHostImpl::OnMsgUpdateTitle(
                              title_direction));
 }
 
-void RenderViewHostImpl::OnMsgUpdateEncoding(const std::string& encoding_name) {
+void RenderViewHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
   delegate_->UpdateEncoding(this, encoding_name);
 }
 
-void RenderViewHostImpl::OnMsgUpdateTargetURL(int32 page_id,
-                                              const GURL& url) {
+void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
   if (!is_swapped_out_)
     delegate_->UpdateTargetURL(page_id, url);
 
@@ -1309,44 +1306,44 @@ void RenderViewHostImpl::OnUpdateInspectorSetting(
       this, key, value);
 }
 
-void RenderViewHostImpl::OnMsgClose() {
+void RenderViewHostImpl::OnClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   ClosePageIgnoringUnloadEvents();
 }
 
-void RenderViewHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
+void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
   if (!is_swapped_out_)
     delegate_->RequestMove(pos);
   Send(new ViewMsg_Move_ACK(GetRoutingID()));
 }
 
-void RenderViewHostImpl::OnMsgDidStartLoading() {
+void RenderViewHostImpl::OnDidStartLoading() {
   delegate_->DidStartLoading(this);
 }
 
-void RenderViewHostImpl::OnMsgDidStopLoading() {
+void RenderViewHostImpl::OnDidStopLoading() {
   delegate_->DidStopLoading(this);
 }
 
-void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {
+void RenderViewHostImpl::OnDidChangeLoadProgress(double load_progress) {
   delegate_->DidChangeLoadProgress(load_progress);
 }
 
-void RenderViewHostImpl::OnMsgDidDisownOpener() {
+void RenderViewHostImpl::OnDidDisownOpener() {
   delegate_->DidDisownOpener(this);
 }
 
-void RenderViewHostImpl::OnMsgDocumentAvailableInMainFrame() {
+void RenderViewHostImpl::OnDocumentAvailableInMainFrame() {
   delegate_->DocumentAvailableInMainFrame(this);
 }
 
-void RenderViewHostImpl::OnMsgDocumentOnLoadCompletedInMainFrame(
+void RenderViewHostImpl::OnDocumentOnLoadCompletedInMainFrame(
     int32 page_id) {
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 
-void RenderViewHostImpl::OnMsgContextMenu(const ContextMenuParams& params) {
+void RenderViewHostImpl::OnContextMenu(const ContextMenuParams& params) {
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
@@ -1372,13 +1369,13 @@ void RenderViewHostImpl::OnMsgContextMenu(const ContextMenuParams& params) {
   delegate_->ShowContextMenu(validated_params, type);
 }
 
-void RenderViewHostImpl::OnMsgToggleFullscreen(bool enter_fullscreen) {
+void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   delegate_->ToggleFullscreenMode(enter_fullscreen);
   WasResized();
 }
 
-void RenderViewHostImpl::OnMsgOpenURL(
+void RenderViewHostImpl::OnOpenURL(
     const ViewHostMsg_OpenURL_Params& params) {
   GURL validated_url(params.url);
   FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
@@ -1389,7 +1386,7 @@ void RenderViewHostImpl::OnMsgOpenURL(
       params.is_cross_site_redirect);
 }
 
-void RenderViewHostImpl::OnMsgDidContentsPreferredSizeChange(
+void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
     const gfx::Size& new_size) {
   delegate_->UpdatePreferredSize(new_size);
 }
@@ -1398,29 +1395,29 @@ void RenderViewHostImpl::OnRenderAutoResized(const gfx::Size& new_size) {
   delegate_->ResizeDueToAutoResize(new_size);
 }
 
-void RenderViewHostImpl::OnMsgDidChangeScrollbarsForMainFrame(
+void RenderViewHostImpl::OnDidChangeScrollbarsForMainFrame(
     bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
   if (view_)
     view_->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
 }
 
-void RenderViewHostImpl::OnMsgDidChangeScrollOffsetPinningForMainFrame(
+void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   if (view_)
     view_->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
 }
 
-void RenderViewHostImpl::OnMsgDidChangeNumWheelEvents(int count) {
+void RenderViewHostImpl::OnDidChangeNumWheelEvents(int count) {
 }
 
-void RenderViewHostImpl::OnMsgSelectionChanged(const string16& text,
-                                               size_t offset,
-                                               const ui::Range& range) {
+void RenderViewHostImpl::OnSelectionChanged(const string16& text,
+                                            size_t offset,
+                                            const ui::Range& range) {
   if (view_)
     view_->SelectionChanged(text, offset, range);
 }
 
-void RenderViewHostImpl::OnMsgSelectionBoundsChanged(
+void RenderViewHostImpl::OnSelectionBoundsChanged(
     const gfx::Rect& start_rect,
     WebKit::WebTextDirection start_direction,
     const gfx::Rect& end_rect,
@@ -1431,18 +1428,18 @@ void RenderViewHostImpl::OnMsgSelectionBoundsChanged(
   }
 }
 
-void RenderViewHostImpl::OnMsgRouteCloseEvent() {
+void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
 }
 
-void RenderViewHostImpl::OnMsgRouteMessageEvent(
+void RenderViewHostImpl::OnRouteMessageEvent(
     const ViewMsg_PostMessage_Params& params) {
   // Give to the delegate to route to the active RenderViewHost.
   delegate_->RouteMessageEvent(this, params);
 }
 
-void RenderViewHostImpl::OnMsgRunJavaScriptMessage(
+void RenderViewHostImpl::OnRunJavaScriptMessage(
     const string16& message,
     const string16& default_prompt,
     const GURL& frame_url,
@@ -1457,10 +1454,10 @@ void RenderViewHostImpl::OnMsgRunJavaScriptMessage(
                                   &are_javascript_messages_suppressed_);
 }
 
-void RenderViewHostImpl::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
-                                                     const string16& message,
-                                                     bool is_reload,
-                                                     IPC::Message* reply_msg) {
+void RenderViewHostImpl::OnRunBeforeUnloadConfirm(const GURL& frame_url,
+                                                  const string16& message,
+                                                  bool is_reload,
+                                                  IPC::Message* reply_msg) {
   // While a JS before unload dialog is showing, tabs in the same process
   // shouldn't process input events.
   GetProcess()->SetIgnoreInputEvents(true);
@@ -1468,7 +1465,7 @@ void RenderViewHostImpl::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
-void RenderViewHostImpl::OnMsgStartDragging(
+void RenderViewHostImpl::OnStartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask drag_operations_mask,
     const SkBitmap& bitmap,
@@ -1564,14 +1561,14 @@ void RenderViewHostImpl::OnUserGesture() {
   delegate_->OnUserGesture();
 }
 
-void RenderViewHostImpl::OnMsgShouldCloseACK(
+void RenderViewHostImpl::OnShouldCloseACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
   decrement_in_flight_event_count();
   StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
-  // may have cleared this state in OnMsgNavigate, in which case we can ignore
+  // may have cleared this state in OnNavigate, in which case we can ignore
   // this message.
   if (!is_waiting_for_beforeunload_ack_ || is_swapped_out_)
     return;
@@ -1609,7 +1606,7 @@ void RenderViewHostImpl::OnMsgShouldCloseACK(
     delegate_->DidCancelLoading();
 }
 
-void RenderViewHostImpl::OnMsgClosePageACK() {
+void RenderViewHostImpl::OnClosePageACK() {
   decrement_in_flight_event_count();
   ClosePageIgnoringUnloadEvents();
 }
@@ -1632,13 +1629,13 @@ bool RenderViewHostImpl::IsFullscreen() const {
   return delegate_->IsFullscreenForCurrentTab();
 }
 
-void RenderViewHostImpl::OnMsgFocus() {
+void RenderViewHostImpl::OnFocus() {
   // Note: We allow focus and blur from swapped out RenderViewHosts, even when
   // the active RenderViewHost is in a different BrowsingInstance (e.g., WebUI).
   delegate_->Activate();
 }
 
-void RenderViewHostImpl::OnMsgBlur() {
+void RenderViewHostImpl::OnBlur() {
   delegate_->Deactivate();
 }
 
@@ -1972,7 +1969,7 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
 }
 
 #if defined(OS_ANDROID)
-void RenderViewHostImpl::OnMsgDidChangeBodyBackgroundColor(SkColor color) {
+void RenderViewHostImpl::OnDidChangeBodyBackgroundColor(SkColor color) {
   if (GetView())
     GetView()->SetCachedBackgroundColor(color);
 }
@@ -2010,7 +2007,7 @@ void RenderViewHostImpl::OnCancelDesktopNotification(int notification_id) {
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-void RenderViewHostImpl::OnMsgShowPopup(
+void RenderViewHostImpl::OnShowPopup(
     const ViewHostMsg_ShowPopup_Params& params) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view) {
@@ -2050,7 +2047,7 @@ void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
 
   // Whenever we change swap out state, we should not be waiting for
   // beforeunload or unload acks.  We clear them here to be safe, since they
-  // can cause navigations to be ignored in OnMsgNavigate.
+  // can cause navigations to be ignored in OnNavigate.
   is_waiting_for_beforeunload_ack_ = false;
   is_waiting_for_unload_ack_ = false;
   has_timed_out_on_unload_ = false;

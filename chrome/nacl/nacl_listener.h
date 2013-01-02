@@ -36,7 +36,7 @@ class NaClListener : public IPC::Listener {
 #endif
 
  private:
-  void OnMsgStart(const nacl::NaClStartParams& params);
+  void OnStart(const nacl::NaClStartParams& params);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // A channel back to the browser.

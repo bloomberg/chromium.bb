@@ -38,11 +38,11 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgUpdateActivity(ppapi::host::HostMessageContext* host_context);
-  int32_t OnMsgGetLocalTimeZoneOffset(
+  int32_t OnUpdateActivity(ppapi::host::HostMessageContext* host_context);
+  int32_t OnGetLocalTimeZoneOffset(
       ppapi::host::HostMessageContext* host_context,
       const base::Time& t);
-  int32_t OnMsgGetLocalDataRestrictions(
+  int32_t OnGetLocalDataRestrictions(
       ppapi::host::HostMessageContext* context);
 
   void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,

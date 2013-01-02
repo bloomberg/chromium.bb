@@ -30,7 +30,7 @@ class CONTENT_EXPORT PepperPrintingHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgGetDefaultPrintSettings(
+  int32_t OnGetDefaultPrintSettings(
       ppapi::host::HostMessageContext* context);
 
   void PrintSettingsCallback(

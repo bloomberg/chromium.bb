@@ -113,17 +113,17 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   virtual ~RenderMessageFilter();
 
-  void OnMsgCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
-                         int* route_id,
-                         int* surface_id,
-                         int64* cloned_session_storage_namespace_id);
-  void OnMsgCreateWidget(int opener_id,
-                         WebKit::WebPopupType popup_type,
-                         int* route_id,
-                         int* surface_id);
-  void OnMsgCreateFullscreenWidget(int opener_id,
-                                   int* route_id,
-                                   int* surface_id);
+  void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
+                      int* route_id,
+                      int* surface_id,
+                      int64* cloned_session_storage_namespace_id);
+  void OnCreateWidget(int opener_id,
+                      WebKit::WebPopupType popup_type,
+                      int* route_id,
+                      int* surface_id);
+  void OnCreateFullscreenWidget(int opener_id,
+                                int* route_id,
+                                int* surface_id);
   void OnSetCookie(const IPC::Message& message,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

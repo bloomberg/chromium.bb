@@ -8,7 +8,7 @@
 
 namespace content {
 
-void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
+void RenderWidgetHostImpl::OnCreatePluginContainer(
     gfx::PluginWindowHandle id) {
   // TODO(piman): view_ can only be NULL with delayed view creation in
   // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
@@ -20,7 +20,7 @@ void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
   }
 }
 
-void RenderWidgetHostImpl::OnMsgDestroyPluginContainer(
+void RenderWidgetHostImpl::OnDestroyPluginContainer(
     gfx::PluginWindowHandle id) {
   if (view_) {
     view_->DestroyPluginContainer(id);

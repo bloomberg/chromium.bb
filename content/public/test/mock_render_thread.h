@@ -109,15 +109,15 @@ class MockRenderThread : public RenderThread {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // The Widget expects to be returned valid route_id.
-  void OnMsgCreateWidget(int opener_id,
-                         WebKit::WebPopupType popup_type,
-                         int* route_id,
-                         int* surface_id);
+  void OnCreateWidget(int opener_id,
+                      WebKit::WebPopupType popup_type,
+                      int* route_id,
+                      int* surface_id);
 
   // The View expects to be returned a valid route_id different from its own.
   // We do not keep track of the newly created widget in MockRenderThread,
   // so it must be cleaned up on its own.
-  void OnMsgCreateWindow(
+  void OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
     int* surface_id,
@@ -141,7 +141,7 @@ class MockRenderThread : public RenderThread {
 
   // We only keep track of one Widget, we learn its pointer when it
   // adds a new route.  We do not keep track of Widgets created with
-  // OnMsgCreateWindow.
+  // OnCreateWindow.
   IPC::Listener* widget_;
 
   // Routing id that will be assigned to a CreateWindow Widget.

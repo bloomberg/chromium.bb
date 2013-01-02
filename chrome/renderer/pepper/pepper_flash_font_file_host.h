@@ -37,8 +37,8 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgGetFontTable(ppapi::host::HostMessageContext* context,
-                            uint32_t table);
+  int32_t OnGetFontTable(ppapi::host::HostMessageContext* context,
+                         uint32_t table);
 
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;

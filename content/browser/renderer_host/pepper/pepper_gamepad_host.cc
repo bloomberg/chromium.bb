@@ -47,12 +47,12 @@ int32_t PepperGamepadHost::OnResourceMessageReceived(
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperGamepadHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Gamepad_RequestMemory,
-                                        OnMsgRequestMemory)
+                                        OnRequestMemory)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperGamepadHost::OnMsgRequestMemory(
+int32_t PepperGamepadHost::OnRequestMemory(
     ppapi::host::HostMessageContext* context) {
   if (is_started_)
     return PP_ERROR_FAILED;

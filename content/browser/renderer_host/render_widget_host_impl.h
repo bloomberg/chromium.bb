@@ -543,54 +543,50 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void RendererIsResponsive();
 
   // IPC message handlers
-  void OnMsgRenderViewReady();
-  void OnMsgRenderViewGone(int status, int error_code);
-  void OnMsgClose();
-  void OnMsgUpdateScreenRectsAck();
-  void OnMsgRequestMove(const gfx::Rect& pos);
-  void OnMsgSetTooltipText(const string16& tooltip_text,
-                           WebKit::WebTextDirection text_direction_hint);
-  void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
+  void OnRenderViewReady();
+  void OnRenderViewGone(int status, int error_code);
+  void OnClose();
+  void OnUpdateScreenRectsAck();
+  void OnRequestMove(const gfx::Rect& pos);
+  void OnSetTooltipText(const string16& tooltip_text,
+                        WebKit::WebTextDirection text_direction_hint);
+  void OnPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnCompositorSurfaceBuffersSwapped(int32 surface_id,
                                          uint64 surface_handle,
                                          int32 route_id,
                                          const gfx::Size& size,
                                          int32 gpu_process_host_id);
-  void OnMsgSwapCompositorFrame(const cc::CompositorFrame& frame);
-  void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnMsgUpdateIsDelayed();
-  void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
-                          InputEventAckState ack_result);
-  void OnMsgBeginSmoothScroll(
+  void OnSwapCompositorFrame(const cc::CompositorFrame& frame);
+  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+  void OnUpdateIsDelayed();
+  void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
+                       InputEventAckState ack_result);
+  void OnBeginSmoothScroll(
       int gesture_id,
       const ViewHostMsg_BeginSmoothScroll_Params &params);
-  void OnMsgSelectRangeAck();
-  virtual void OnMsgFocus();
-  virtual void OnMsgBlur();
-  void OnMsgHasTouchEventHandlers(bool has_handlers);
-
-  void OnMsgSetCursor(const WebCursor& cursor);
-  void OnMsgTextInputStateChanged(
+  void OnSelectRangeAck();
+  virtual void OnFocus();
+  virtual void OnBlur();
+  void OnHasTouchEventHandlers(bool has_handlers);
+  void OnSetCursor(const WebCursor& cursor);
+  void OnTextInputStateChanged(
       const ViewHostMsg_TextInputState_Params& params);
-  void OnMsgImeCompositionRangeChanged(
+  void OnImeCompositionRangeChanged(
       const ui::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
-  void OnMsgImeCancelComposition();
-
-  void OnMsgDidActivateAcceleratedCompositing(bool activated);
-
-  void OnMsgLockMouse(bool user_gesture,
-                      bool last_unlocked_by_target,
-                      bool privileged);
-  void OnMsgUnlockMouse();
-
-  void OnMsgShowDisambiguationPopup(const gfx::Rect& rect,
-                                    const gfx::Size& size,
-                                    const TransportDIB::Id& id);
+  void OnImeCancelComposition();
+  void OnDidActivateAcceleratedCompositing(bool activated);
+  void OnLockMouse(bool user_gesture,
+                   bool last_unlocked_by_target,
+                   bool privileged);
+  void OnUnlockMouse();
+  void OnShowDisambiguationPopup(const gfx::Rect& rect,
+                                 const gfx::Size& size,
+                                 const TransportDIB::Id& id);
 
 #if defined(OS_MACOSX)
-  void OnMsgPluginFocusChanged(bool focused, int plugin_id);
-  void OnMsgStartPluginIme();
+  void OnPluginFocusChanged(bool focused, int plugin_id);
+  void OnStartPluginIme();
   void OnAllocateFakePluginWindowHandle(bool opaque,
                                         bool root,
                                         gfx::PluginWindowHandle* id);
@@ -607,15 +603,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                           uint64 surface_handle);
 #endif
 #if defined(OS_ANDROID)
-  void OnMsgUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
-                            float page_scale_factor,
-                            float min_page_scale_factor,
-                            float max_page_scale_factor,
-                            const gfx::Size& content_size);
+  void OnUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
+                         float page_scale_factor,
+                         float min_page_scale_factor,
+                         float max_page_scale_factor,
+                         const gfx::Size& content_size);
 #endif
 #if defined(TOOLKIT_GTK)
-  void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
-  void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
+  void OnCreatePluginContainer(gfx::PluginWindowHandle id);
+  void OnDestroyPluginContainer(gfx::PluginWindowHandle id);
 #endif
 #if defined(OS_WIN)
   void OnWindowlessPluginDummyWindowCreated(
@@ -648,22 +644,22 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
 
-  // Called by OnMsgInputEventAck() to process a keyboard event ack message.
+  // Called by OnInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardEventAck(int type, bool processed);
 
-  // Called by OnMsgInputEventAck() to process a wheel event ack message.
+  // Called by OnInputEventAck() to process a wheel event ack message.
   // This could result in a task being posted to allow additional wheel
   // input messages to be coalesced.
   void ProcessWheelAck(bool processed);
 
-  // Called by OnMsgInputEventAck() to process a gesture event ack message.
+  // Called by OnInputEventAck() to process a gesture event ack message.
   // This validates the gesture for suppression of touchpad taps and sends one
   // previously queued coalesced gesture if it exists.
   void ProcessGestureAck(bool processed, int type);
 
   void SimulateTouchGestureWithMouse(const WebKit::WebMouseEvent& mouse_event);
 
-  // Called on OnMsgInputEventAck() to process a touch event ack message.
+  // Called on OnInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
   void ProcessTouchAck(InputEventAckState ack_result);
@@ -673,7 +669,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void DelayedAutoResized();
 
   // Called periodically to advance the active scroll gesture after being
-  // initiated by OnMsgBeginSmoothScroll.
+  // initiated by OnBeginSmoothScroll.
   void TickActiveSmoothScrollGesture();
 
   // Our delegate, which wants to know mainly about keyboard events.

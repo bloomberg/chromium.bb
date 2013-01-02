@@ -68,17 +68,17 @@ int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashBrowserHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
-                                        OnMsgUpdateActivity);
+                                        OnUpdateActivity);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
-                                      OnMsgGetLocalTimeZoneOffset);
+                                      OnGetLocalTimeZoneOffset);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_Flash_GetLocalDataRestrictions,
-        OnMsgGetLocalDataRestrictions);
+        OnGetLocalDataRestrictions);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashBrowserHost::OnMsgUpdateActivity(
+int32_t PepperFlashBrowserHost::OnUpdateActivity(
     ppapi::host::HostMessageContext* host_context) {
 #if defined(OS_WIN)
   // Reading then writing back the same value to the screensaver timeout system
@@ -96,7 +96,7 @@ int32_t PepperFlashBrowserHost::OnMsgUpdateActivity(
   return PP_OK;
 }
 
-int32_t PepperFlashBrowserHost::OnMsgGetLocalTimeZoneOffset(
+int32_t PepperFlashBrowserHost::OnGetLocalTimeZoneOffset(
     ppapi::host::HostMessageContext* host_context,
     const base::Time& t) {
   // The reason for this processing being in the browser process is that on
@@ -107,7 +107,7 @@ int32_t PepperFlashBrowserHost::OnMsgGetLocalTimeZoneOffset(
   return PP_OK;
 }
 
-int32_t PepperFlashBrowserHost::OnMsgGetLocalDataRestrictions(
+int32_t PepperFlashBrowserHost::OnGetLocalDataRestrictions(
     ppapi::host::HostMessageContext* context) {
   // Getting the Flash LSO settings requires using the CookieSettings which
   // belong to the profile which lives on the UI thread. We lazily initialize

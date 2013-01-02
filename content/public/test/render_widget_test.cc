@@ -43,15 +43,15 @@ void RenderWidgetTest::ResizeAndPaint(const gfx::Size& page_size,
           page_size.width() * page_size.height() * kNumBytesPerPixel,
           ++g_sequence_num));
 
-  // Go ahead and map the DIB into memory, so that we can use it below
-  // to fill tmp_bitmap.  Note that we need to do this before calling
-  // OnMsgPaintAtSize, or the last reference to the shared memory will
-  // be closed and the handle will no longer be valid.
+  // Go ahead and map the DIB into memory, so that we can use it below to fill
+  // tmp_bitmap.  Note that we need to do this before calling OnPaintAtSize, or
+  // the last reference to the shared memory will  be closed and the handle will
+  // no longer be valid.
   scoped_ptr<TransportDIB> mapped_pixels(TransportDIB::Map(pixels->handle()));
 
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMsgPaintAtSize(pixels->handle(), g_sequence_num, page_size,
-                         desired_size);
+  impl->OnPaintAtSize(pixels->handle(), g_sequence_num, page_size,
+                      desired_size);
   ProcessPendingMessages();
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_PaintAtSize_ACK::ID);

@@ -28,7 +28,7 @@ class RenderViewMouseLockDispatcher : public MouseLockDispatcher,
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnMsgLockMouseACK(bool succeeded);
+  void OnLockMouseACK(bool succeeded);
 
   RenderViewImpl* render_view_impl_;
 

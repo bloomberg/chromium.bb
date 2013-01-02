@@ -7,7 +7,7 @@
 
 namespace content {
 
-void RenderWidgetHostImpl::OnMsgUpdateFrameInfo(
+void RenderWidgetHostImpl::OnUpdateFrameInfo(
     const gfx::Vector2d& scroll_offset,
     float page_scale_factor,
     float min_page_scale_factor,

@@ -347,7 +347,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     LoadHTML(kTestPages[i].page);
     PrintWebViewHelper::Get(view_)->OnPrintPages();
 
-    // MockRenderThread::Send() just calls MockRenderThread::OnMsgReceived().
+    // MockRenderThread::Send() just calls MockRenderThread::OnReceived().
     // So, all IPC messages sent in the above RenderView::OnPrintPages() call
     // has been handled by the MockPrinter object, i.e. this printing job
     // has been already finished.

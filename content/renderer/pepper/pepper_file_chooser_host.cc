@@ -91,8 +91,7 @@ int32_t PepperFileChooserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFileChooserHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show,
-                                      OnMsgShow)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show, OnShow)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -125,7 +124,7 @@ void PepperFileChooserHost::StoreChosenFiles(
   handler_ = NULL;  // Handler deletes itself.
 }
 
-int32_t PepperFileChooserHost::OnMsgShow(
+int32_t PepperFileChooserHost::OnShow(
     ppapi::host::HostMessageContext* context,
     bool save_as,
     bool open_multiple,

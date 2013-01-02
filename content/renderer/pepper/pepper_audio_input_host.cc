@@ -60,11 +60,11 @@ int32_t PepperAudioInputHost::OnResourceMessageReceived(
     return result;
 
   IPC_BEGIN_MESSAGE_MAP(PepperAudioInputHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnOpen)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_StartOrStop,
-                                      OnMsgStartOrStop);
+                                      OnStartOrStop);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_AudioInput_Close,
-                                        OnMsgClose);
+                                        OnClose);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -89,7 +89,7 @@ webkit::ppapi::PluginDelegate* PepperAudioInputHost::GetPluginDelegate() {
   return NULL;
 }
 
-int32_t PepperAudioInputHost::OnMsgOpen(
+int32_t PepperAudioInputHost::OnOpen(
     ppapi::host::HostMessageContext* context,
     const std::string& device_id,
     PP_AudioSampleRate sample_rate,
@@ -116,7 +116,7 @@ int32_t PepperAudioInputHost::OnMsgOpen(
   }
 }
 
-int32_t PepperAudioInputHost::OnMsgStartOrStop(
+int32_t PepperAudioInputHost::OnStartOrStop(
     ppapi::host::HostMessageContext* /* context */,
     bool capture) {
   if (!audio_input_)
@@ -128,7 +128,7 @@ int32_t PepperAudioInputHost::OnMsgStartOrStop(
   return PP_OK;
 }
 
-int32_t PepperAudioInputHost::OnMsgClose(
+int32_t PepperAudioInputHost::OnClose(
     ppapi::host::HostMessageContext* /* context */) {
   Close();
   return PP_OK;

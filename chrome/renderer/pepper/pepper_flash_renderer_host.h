@@ -44,20 +44,20 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgGetProxyForURL(ppapi::host::HostMessageContext* host_context,
-                              const std::string& url);
-  int32_t OnMsgSetInstanceAlwaysOnTop(
+  int32_t OnGetProxyForURL(ppapi::host::HostMessageContext* host_context,
+                           const std::string& url);
+  int32_t OnSetInstanceAlwaysOnTop(
       ppapi::host::HostMessageContext* host_context,
       bool on_top);
-  int32_t OnMsgDrawGlyphs(ppapi::host::HostMessageContext* host_context,
-                          ppapi::proxy::PPBFlash_DrawGlyphs_Params params);
-  int32_t OnMsgNavigate(ppapi::host::HostMessageContext* host_context,
-                        const ppapi::URLRequestInfoData& data,
-                        const std::string& target,
+  int32_t OnDrawGlyphs(ppapi::host::HostMessageContext* host_context,
+                       ppapi::proxy::PPBFlash_DrawGlyphs_Params params);
+  int32_t OnNavigate(ppapi::host::HostMessageContext* host_context,
+                     const ppapi::URLRequestInfoData& data,
+                     const std::string& target,
                         bool from_user_action);
-  int32_t OnMsgIsRectTopmost(ppapi::host::HostMessageContext* host_context,
-                             const PP_Rect& rect);
-  int32_t OnMsgInvokePrinting(ppapi::host::HostMessageContext* host_context);
+  int32_t OnIsRectTopmost(ppapi::host::HostMessageContext* host_context,
+                          const PP_Rect& rect);
+  int32_t OnInvokePrinting(ppapi::host::HostMessageContext* host_context);
 
   base::WeakPtrFactory<PepperFlashRendererHost> weak_factory_;
   // A stack of ReplyMessageContexts to track Navigate() calls which have not

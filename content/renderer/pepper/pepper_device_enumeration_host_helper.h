@@ -71,10 +71,10 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
       ppapi::host::HostMessageContext* context,
       bool* handled);
 
-  int32_t OnMsgEnumerateDevices(ppapi::host::HostMessageContext* context);
-  int32_t OnMsgMonitorDeviceChange(ppapi::host::HostMessageContext* context,
-                                   uint32_t callback_id);
-  int32_t OnMsgStopMonitoringDeviceChange(
+  int32_t OnEnumerateDevices(ppapi::host::HostMessageContext* context);
+  int32_t OnMonitorDeviceChange(ppapi::host::HostMessageContext* context,
+                                uint32_t callback_id);
+  int32_t OnStopMonitoringDeviceChange(
       ppapi::host::HostMessageContext* context);
 
   void OnEnumerateDevicesComplete(

@@ -71,7 +71,7 @@ class PepperInProcessRouter {
   bool DummySendTo(IPC::Message *msg);
 
   // Handles resource reply messages from the host.
-  void OnMsgResourceReply(
+  void OnResourceReply(
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
 

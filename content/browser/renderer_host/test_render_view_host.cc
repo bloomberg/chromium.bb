@@ -288,13 +288,13 @@ void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
 
 void TestRenderViewHost::SendNavigateWithTransition(
     int page_id, const GURL& url, PageTransition transition) {
-  OnMsgDidStartProvisionalLoadForFrame(0, -1, true, url);
+  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
   SendNavigateWithParameters(page_id, url, transition, url);
 }
 
 void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
     int page_id, const GURL& url, const GURL& original_request_url) {
-  OnMsgDidStartProvisionalLoadForFrame(0, -1, true, url);
+  OnDidStartProvisionalLoadForFrame(0, -1, true, url);
   SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
       original_request_url);
 }
@@ -327,11 +327,11 @@ void TestRenderViewHost::SendNavigateWithParameters(
   params.original_request_url = original_request_url;
 
   ViewHostMsg_FrameNavigate msg(1, params);
-  OnMsgNavigate(msg);
+  OnNavigate(msg);
 }
 
 void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
-  OnMsgShouldCloseACK(proceed, base::TimeTicks(), base::TimeTicks());
+  OnShouldCloseACK(proceed, base::TimeTicks(), base::TimeTicks());
 }
 
 void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {
@@ -350,12 +350,12 @@ void TestRenderViewHost::SimulateWasShown() {
   WasShown();
 }
 
-void TestRenderViewHost::TestOnMsgStartDragging(
+void TestRenderViewHost::TestOnStartDragging(
     const WebDropData& drop_data) {
   WebKit::WebDragOperationsMask drag_operation = WebKit::WebDragOperationEvery;
   DragEventSourceInfo event_info;
-  OnMsgStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
-                     event_info);
+  OnStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
+                  event_info);
 }
 
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {

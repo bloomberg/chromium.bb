@@ -25,7 +25,7 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
 
  private:
   virtual ~BrowserPluginMessageFilter();
-  void OnMsgCreateWindow(
+  void OnCreateWindow(
       const ViewHostMsg_CreateWindow_Params& params,
       int* route_id,
       int* surface_id,

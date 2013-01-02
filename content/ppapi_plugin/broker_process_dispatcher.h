@@ -34,26 +34,26 @@ class BrokerProcessDispatcher
       const ppapi::FlashSiteSettings& sites);
 
  private:
-  void OnMsgGetSitesWithData(uint32 request_id,
-                             const FilePath& plugin_data_path);
-  void OnMsgClearSiteData(uint32 request_id,
-                          const FilePath& plugin_data_path,
-                          const std::string& site,
-                          uint64 flags,
-                          uint64 max_age);
-  void OnMsgDeauthorizeContentLicenses(uint32 request_id,
-                                       const FilePath& plugin_data_path);
-  void OnMsgGetPermissionSettings(
+  void OnGetSitesWithData(uint32 request_id,
+                          const FilePath& plugin_data_path);
+  void OnClearSiteData(uint32 request_id,
+                       const FilePath& plugin_data_path,
+                       const std::string& site,
+                       uint64 flags,
+                       uint64 max_age);
+  void OnDeauthorizeContentLicenses(uint32 request_id,
+                                    const FilePath& plugin_data_path);
+  void OnGetPermissionSettings(
       uint32 request_id,
       const FilePath& plugin_data_path,
       PP_Flash_BrowserOperations_SettingType setting_type);
-  void OnMsgSetDefaultPermission(
+  void OnSetDefaultPermission(
       uint32 request_id,
       const FilePath& plugin_data_path,
       PP_Flash_BrowserOperations_SettingType setting_type,
       PP_Flash_BrowserOperations_Permission permission,
       bool clear_site_specific);
-  void OnMsgSetSitePermission(
+  void OnSetSitePermission(
       uint32 request_id,
       const FilePath& plugin_data_path,
       PP_Flash_BrowserOperations_SettingType setting_type,

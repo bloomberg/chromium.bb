@@ -108,8 +108,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   // Allow poking at a few private members.
-  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
-  using RenderWidgetHostImpl::OnMsgUpdateRect;
+  using RenderWidgetHostImpl::OnPaintAtSizeAck;
+  using RenderWidgetHostImpl::OnUpdateRect;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::in_flight_size_;
   using RenderWidgetHostImpl::is_hidden_;
@@ -702,7 +702,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // resize ack pending flag.
   ViewHostMsg_UpdateRect_Params params;
   process_->InitUpdateRectParams(&params);
-  host_->OnMsgUpdateRect(params);
+  host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->in_flight_size_);
 
@@ -722,7 +722,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   process_->sink().ClearMessages();
   params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
   params.view_size = original_size.size();
-  host_->OnMsgUpdateRect(params);
+  host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(second_size.size(), host_->in_flight_size_);
   ASSERT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -730,7 +730,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
   params.view_size = second_size.size();
-  host_->OnMsgUpdateRect(params);
+  host_->OnUpdateRect(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   ASSERT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
@@ -934,7 +934,7 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   process_->sink().ClearMessages();
   ViewHostMsg_UpdateRect_Params params;
   process_->InitUpdateRectParams(&params);
-  host_->OnMsgUpdateRect(params);
+  host_->OnUpdateRect(params);
 
   // It should have sent out the ACK.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -968,7 +968,7 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
       NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
       Source<RenderWidgetHost>(host_.get()));
 
-  host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
+  host_->OnPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
   EXPECT_EQ(host_.get(), observer.host());
   EXPECT_EQ(kPaintAtSizeTag, observer.tag());
   EXPECT_EQ(20, observer.size().width());
@@ -2658,7 +2658,7 @@ TEST_F(RenderWidgetHostTest, IncorrectBitmapScaleFactor) {
   params.scale_factor = params.scale_factor * 2;
 
   EXPECT_EQ(0, process_->bad_msg_count());
-  host_->OnMsgUpdateRect(params);
+  host_->OnUpdateRect(params);
   EXPECT_EQ(1, process_->bad_msg_count());
 }
 #endif

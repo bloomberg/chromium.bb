@@ -140,10 +140,10 @@ bool PpapiThread::Send(IPC::Message* msg) {
 bool PpapiThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
-    IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
-    IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
-    IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnMsgSetNetworkState)
-    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
+    IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnLoadPlugin)
+    IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnCreateChannel)
+    IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnSetNetworkState)
+    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnResourceReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -226,8 +226,8 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
   plugin_dispatchers_.erase(plugin_dispatcher_id);
 }
 
-void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
-                                  const ppapi::PpapiPermissions& permissions) {
+void PpapiThread::OnLoadPlugin(const FilePath& path,
+                               const ppapi::PpapiPermissions& permissions) {
   SavePluginName(path);
 
   // This must be set before calling into the plugin so it can get the
@@ -353,7 +353,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
   library_.Reset(library.Release());
 }
 
-void PpapiThread::OnMsgCreateChannel(int renderer_id, bool incognito) {
+void PpapiThread::OnCreateChannel(int renderer_id, bool incognito) {
   IPC::ChannelHandle channel_handle;
 
   if (!plugin_entry_points_.get_interface ||  // Plugin couldn't be loaded.
@@ -365,14 +365,14 @@ void PpapiThread::OnMsgCreateChannel(int renderer_id, bool incognito) {
   Send(new PpapiHostMsg_ChannelCreated(channel_handle));
 }
 
-void PpapiThread::OnMsgResourceReply(
+void PpapiThread::OnResourceReply(
     const ppapi::proxy::ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
   ppapi::proxy::PluginDispatcher::DispatchResourceReply(reply_params,
                                                         nested_msg);
 }
 
-void PpapiThread::OnMsgSetNetworkState(bool online) {
+void PpapiThread::OnSetNetworkState(bool online) {
   // Note the browser-process side shouldn't send us these messages in the
   // first unless the plugin has dev permissions, so we don't need to check
   // again here. We don't want random plugins depending on this dev interface.

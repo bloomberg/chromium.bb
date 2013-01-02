@@ -370,10 +370,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnPreCacheFontCharacters)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
-                        OnMsgCreateFullscreenWidget)
+                        OnCreateFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
@@ -450,7 +450,7 @@ bool RenderMessageFilter::OffTheRecord() const {
   return incognito_;
 }
 
-void RenderMessageFilter::OnMsgCreateWindow(
+void RenderMessageFilter::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
     int* surface_id,
@@ -485,17 +485,17 @@ void RenderMessageFilter::OnMsgCreateWindow(
                                          cloned_namespace);
 }
 
-void RenderMessageFilter::OnMsgCreateWidget(int opener_id,
-                                            WebKit::WebPopupType popup_type,
-                                            int* route_id,
-                                            int* surface_id) {
+void RenderMessageFilter::OnCreateWidget(int opener_id,
+                                         WebKit::WebPopupType popup_type,
+                                         int* route_id,
+                                         int* surface_id) {
   render_widget_helper_->CreateNewWidget(
       opener_id, popup_type, route_id, surface_id);
 }
 
-void RenderMessageFilter::OnMsgCreateFullscreenWidget(int opener_id,
-                                                      int* route_id,
-                                                      int* surface_id) {
+void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
+                                                   int* route_id,
+                                                   int* surface_id) {
   render_widget_helper_->CreateNewFullscreenWidget(
       opener_id, route_id, surface_id);
 }

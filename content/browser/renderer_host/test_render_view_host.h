@@ -250,21 +250,21 @@ class TestRenderViewHost
   virtual void SimulateWasHidden() OVERRIDE;
   virtual void SimulateWasShown() OVERRIDE;
 
-  // Calls OnMsgNavigate on the RenderViewHost with the given information,
+  // Calls OnNavigate on the RenderViewHost with the given information,
   // including a custom original request URL.  Sets the rest of the
   // parameters in the message to the "typical" values.  This is a helper
   // function for simulating the most common types of loads.
   void SendNavigateWithOriginalRequestURL(
       int page_id, const GURL& url, const GURL& original_request_url);
 
-  // Calls OnMsgNavigate on the RenderViewHost with the given information.
+  // Calls OnNavigate on the RenderViewHost with the given information.
   // Sets the rest of the parameters in the message to the "typical" values.
   // This is a helper function for simulating the most common types of loads.
   void SendNavigateWithParameters(
       int page_id, const GURL& url, PageTransition transition,
       const GURL& original_request_url);
 
-  void TestOnMsgStartDragging(const WebDropData& drop_data);
+  void TestOnStartDragging(const WebDropData& drop_data);
 
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {

@@ -58,22 +58,22 @@ int32_t PepperFlashRendererHost::OnResourceMessageReceived(
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashRendererHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetProxyForURL,
-                                      OnMsgGetProxyForURL);
+                                      OnGetProxyForURL);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_SetInstanceAlwaysOnTop,
-                                      OnMsgSetInstanceAlwaysOnTop);
+                                      OnSetInstanceAlwaysOnTop);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_DrawGlyphs,
-                                      OnMsgDrawGlyphs);
+                                      OnDrawGlyphs);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_Navigate,
-                                      OnMsgNavigate);
+                                      OnNavigate);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_IsRectTopmost,
-                                      OnMsgIsRectTopmost);
+                                      OnIsRectTopmost);
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_InvokePrinting,
-                                        OnMsgInvokePrinting);
+                                        OnInvokePrinting);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashRendererHost::OnMsgGetProxyForURL(
+int32_t PepperFlashRendererHost::OnGetProxyForURL(
     ppapi::host::HostMessageContext* host_context,
     const std::string& url) {
   GURL gurl(url);
@@ -87,7 +87,7 @@ int32_t PepperFlashRendererHost::OnMsgGetProxyForURL(
   return PP_OK;
 }
 
-int32_t PepperFlashRendererHost::OnMsgSetInstanceAlwaysOnTop(
+int32_t PepperFlashRendererHost::OnSetInstanceAlwaysOnTop(
     ppapi::host::HostMessageContext* host_context,
     bool on_top) {
   webkit::ppapi::PluginInstance* plugin_instance =
@@ -99,7 +99,7 @@ int32_t PepperFlashRendererHost::OnMsgSetInstanceAlwaysOnTop(
   return PP_OK;
 }
 
-int32_t PepperFlashRendererHost::OnMsgDrawGlyphs(
+int32_t PepperFlashRendererHost::OnDrawGlyphs(
     ppapi::host::HostMessageContext* host_context,
     ppapi::proxy::PPBFlash_DrawGlyphs_Params params) {
   if (params.glyph_indices.size() != params.glyph_advances.size() ||
@@ -194,7 +194,7 @@ int32_t PepperFlashRendererHost::OnMsgDrawGlyphs(
 // cause re-entrancy or cause the instance to be destroyed. If the instance
 // is destroyed we need to ensure that we respond to all outstanding sync
 // messages so that the plugin process does not remain blocked.
-int32_t PepperFlashRendererHost::OnMsgNavigate(
+int32_t PepperFlashRendererHost::OnNavigate(
     ppapi::host::HostMessageContext* host_context,
     const ppapi::URLRequestInfoData& data,
     const std::string& target,
@@ -232,7 +232,7 @@ int32_t PepperFlashRendererHost::OnMsgNavigate(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperFlashRendererHost::OnMsgIsRectTopmost(
+int32_t PepperFlashRendererHost::OnIsRectTopmost(
     ppapi::host::HostMessageContext* host_context,
     const PP_Rect& rect) {
   webkit::ppapi::PluginInstance* plugin_instance =
@@ -243,7 +243,7 @@ int32_t PepperFlashRendererHost::OnMsgIsRectTopmost(
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashRendererHost::OnMsgInvokePrinting(
+int32_t PepperFlashRendererHost::OnInvokePrinting(
     ppapi::host::HostMessageContext* host_context) {
   PPB_PDF_Impl::InvokePrintingForInstance(pp_instance());
   return PP_OK;

@@ -31,12 +31,12 @@ int32_t PepperFlashFullscreenHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFlashFullscreenHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashFullscreen_SetFullscreen,
-        OnMsgSetFullscreen)
+        OnSetFullscreen)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashFullscreenHost::OnMsgSetFullscreen(
+int32_t PepperFlashFullscreenHost::OnSetFullscreen(
     ppapi::host::HostMessageContext* context,
     bool fullscreen) {
   webkit::ppapi::PluginInstance* plugin_instance =

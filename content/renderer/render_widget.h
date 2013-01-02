@@ -277,12 +277,12 @@ class CONTENT_EXPORT RenderWidget
       int selection_end);
   virtual void OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range);
-  void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
-                        int tag,
-                        const gfx::Size& page_size,
-                        const gfx::Size& desired_size);
-  void OnMsgRepaint(const gfx::Size& size_to_paint);
-  void OnMsgSmoothScrollCompleted(int gesture_id);
+  void OnPaintAtSize(const TransportDIB::Handle& dib_id,
+                     int tag,
+                     const gfx::Size& page_size,
+                     const gfx::Size& desired_size);
+  void OnRepaint(const gfx::Size& size_to_paint);
+  void OnSmoothScrollCompleted(int gesture_id);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
   void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);

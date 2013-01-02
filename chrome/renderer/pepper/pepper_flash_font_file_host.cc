@@ -44,12 +44,12 @@ int32_t PepperFlashFontFileHost::OnResourceMessageReceived(
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashFontFileHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFontFile_GetFontTable,
-                                      OnMsgGetFontTable)
+                                      OnGetFontTable)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperFlashFontFileHost::OnMsgGetFontTable(
+int32_t PepperFlashFontFileHost::OnGetFontTable(
     ppapi::host::HostMessageContext* context,
     uint32_t table) {
   std::string contents;

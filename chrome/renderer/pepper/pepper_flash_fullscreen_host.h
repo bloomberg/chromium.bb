@@ -27,8 +27,8 @@ class PepperFlashFullscreenHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  int32_t OnMsgSetFullscreen(ppapi::host::HostMessageContext* context,
-                             bool fullscreen);
+  int32_t OnSetFullscreen(ppapi::host::HostMessageContext* context,
+                          bool fullscreen);
 
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;

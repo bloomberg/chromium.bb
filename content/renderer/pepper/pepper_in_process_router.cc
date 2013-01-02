@@ -107,7 +107,7 @@ void PepperInProcessRouter::DispatchPluginMsg(IPC::Message* msg) {
   // Emulate the proxy by dispatching the relevant message here.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperInProcessRouter, *msg)
-    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
+    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnResourceReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "The message wasn't handled by the plugin.";
@@ -119,7 +119,7 @@ bool PepperInProcessRouter::DummySendTo(IPC::Message *msg) {
   return false;
 }
 
-void PepperInProcessRouter::OnMsgResourceReply(
+void PepperInProcessRouter::OnResourceReply(
     const ppapi::proxy::ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
   ppapi::Resource* resource =

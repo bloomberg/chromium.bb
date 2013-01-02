@@ -32,12 +32,12 @@ int32_t PepperPrintingHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperPrintingHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_Printing_GetDefaultPrintSettings,
-        OnMsgGetDefaultPrintSettings)
+        OnGetDefaultPrintSettings)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperPrintingHost::OnMsgGetDefaultPrintSettings(
+int32_t PepperPrintingHost::OnGetDefaultPrintSettings(
     ppapi::host::HostMessageContext* context) {
   print_settings_manager_->GetDefaultPrintSettings(
       base::Bind(&PepperPrintingHost::PrintSettingsCallback,

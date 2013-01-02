@@ -2712,7 +2712,7 @@ void RenderViewImpl::loadURLExternally(
 }
 
 void RenderViewImpl::Repaint(const gfx::Size& size) {
-  OnMsgRepaint(size);
+  OnRepaint(size);
 }
 
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,

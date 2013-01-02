@@ -45,11 +45,11 @@ class CONTENT_EXPORT PepperFileChooserHost
  private:
   class CompletionHandler;
 
-  int32_t OnMsgShow(ppapi::host::HostMessageContext* context,
-                    bool save_as,
-                    bool open_multiple,
-                    const std::string& suggested_file_name,
-                    const std::vector<std::string>& accept_mime_types);
+  int32_t OnShow(ppapi::host::HostMessageContext* context,
+                 bool save_as,
+                 bool open_multiple,
+                 const std::string& suggested_file_name,
+                 const std::vector<std::string>& accept_mime_types);
 
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;

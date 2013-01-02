@@ -323,45 +323,42 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHostImpl, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnRenderViewGone)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
-                        OnMsgUpdateScreenRectsAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
+                        OnUpdateScreenRectsAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                         OnCompositorSurfaceBuffersSwapped)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapCompositorFrame,
-                        OnMsgSwapCompositorFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnMsgUpdateIsDelayed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnMsgBeginSmoothScroll)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnMsgSelectRangeAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapCompositorFrame, OnSwapCompositorFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnInputEventAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
-                        OnMsgHasTouchEventHandlers)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
+                        OnHasTouchEventHandlers)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
-                        OnMsgTextInputStateChanged)
+                        OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
-                        OnMsgImeCompositionRangeChanged)
+                        OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
-                        OnMsgImeCancelComposition)
+                        OnImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
-                        OnMsgDidActivateAcceleratedCompositing)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnMsgLockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnMsgUnlockMouse)
+                        OnDidActivateAcceleratedCompositing)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
-                        OnMsgShowDisambiguationPopup)
+                        OnShowDisambiguationPopup)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged,
-                        OnMsgPluginFocusChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme,
-                        OnMsgStartPluginIme)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
                         OnAllocateFakePluginWindowHandle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
@@ -374,14 +371,13 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameInfo,
-                        OnMsgUpdateFrameInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameInfo, OnUpdateFrameInfo)
 #endif
 #if defined(TOOLKIT_GTK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
-                        OnMsgCreatePluginContainer)
+                        OnCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
-                        OnMsgDestroyPluginContainer)
+                        OnDestroyPluginContainer)
 #endif
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowCreated,
@@ -460,7 +456,7 @@ void RenderWidgetHostImpl::WasShown() {
   // 1. WasResized -> Send ViewMsg_Resize to render
   // 2. WasResized -> do nothing as resize_ack_pending_ is true
   // 3. WasHidden
-  // 4. OnMsgUpdateRect from (1) processed. Does NOT invoke WasResized as view
+  // 4. OnUpdateRect from (1) processed. Does NOT invoke WasResized as view
   //    is hidden. Now renderer/browser out of sync with what they think size
   //    is.
   // By invoking WasResized the renderer is updated as necessary. WasResized
@@ -1407,23 +1403,23 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
   }
 }
 
-void RenderWidgetHostImpl::OnMsgRenderViewReady() {
+void RenderWidgetHostImpl::OnRenderViewReady() {
   SendScreenRects();
   WasResized();
 }
 
-void RenderWidgetHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
+void RenderWidgetHostImpl::OnRenderViewGone(int status, int exit_code) {
   // TODO(evanm): This synchronously ends up calling "delete this".
   // Is that really what we want in response to this message?  I'm matching
   // previous behavior of the code here.
   Destroy();
 }
 
-void RenderWidgetHostImpl::OnMsgClose() {
+void RenderWidgetHostImpl::OnClose() {
   Shutdown();
 }
 
-void RenderWidgetHostImpl::OnMsgSetTooltipText(
+void RenderWidgetHostImpl::OnSetTooltipText(
     const string16& tooltip_text,
     WebTextDirection text_direction_hint) {
   // First, add directionality marks around tooltip text if necessary.
@@ -1455,7 +1451,7 @@ void RenderWidgetHostImpl::OnMsgSetTooltipText(
     view_->SetTooltipText(wrapped_tooltip_text);
 }
 
-void RenderWidgetHostImpl::OnMsgUpdateScreenRectsAck() {
+void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
   waiting_for_screen_rects_ack_ = false;
   if (!view_)
     return;
@@ -1468,7 +1464,7 @@ void RenderWidgetHostImpl::OnMsgUpdateScreenRectsAck() {
   SendScreenRects();
 }
 
-void RenderWidgetHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
+void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
   // Note that we ignore the position.
   if (view_) {
     view_->SetBounds(pos);
@@ -1476,7 +1472,7 @@ void RenderWidgetHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
   }
 }
 
-void RenderWidgetHostImpl::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
+void RenderWidgetHostImpl::OnPaintAtSizeAck(int tag, const gfx::Size& size) {
   std::pair<int, gfx::Size> details = std::make_pair(tag, size);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
@@ -1515,7 +1511,7 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
                                           gpu_process_host_id);
 }
 
-void RenderWidgetHostImpl::OnMsgSwapCompositorFrame(
+void RenderWidgetHostImpl::OnSwapCompositorFrame(
     const cc::CompositorFrame& frame) {
 #if defined(OS_ANDROID)
   gfx::Vector2dF scroll_offset = ScaleVector2d(
@@ -1534,9 +1530,9 @@ void RenderWidgetHostImpl::OnMsgSwapCompositorFrame(
 #endif
 }
 
-void RenderWidgetHostImpl::OnMsgUpdateRect(
+void RenderWidgetHostImpl::OnUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnMsgUpdateRect");
+  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnUpdateRect");
   TimeTicks paint_start = TimeTicks::Now();
 
   // Update our knowledge of the RenderWidget's size.
@@ -1631,7 +1627,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
 }
 
-void RenderWidgetHostImpl::OnMsgUpdateIsDelayed() {
+void RenderWidgetHostImpl::OnUpdateIsDelayed() {
   if (in_get_backing_store_)
     abort_get_backing_store_ = true;
 }
@@ -1701,9 +1697,9 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
       "x+y", params.bitmap_rect.x() + params.bitmap_rect.y());
 }
 
-void RenderWidgetHostImpl::OnMsgInputEventAck(
+void RenderWidgetHostImpl::OnInputEventAck(
     WebInputEvent::Type event_type, InputEventAckState ack_result) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnMsgInputEventAck");
+  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnInputEventAck");
   bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 
   if (!in_process_event_types_.empty() &&
@@ -1752,7 +1748,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(
   // source object.  On linux, specifying
   // Source<RenderWidgetHost> results in a very strange
   // runtime error in the epilogue of the enclosing
-  // (OnMsgInputEventAck) method, but not on other platforms; using
+  // (OnInputEventAck) method, but not on other platforms; using
   // 'void' instead is just as safe (since NotificationSource
   // is not actually typesafe) and avoids this error.
   NotificationService::current()->Notify(
@@ -1761,7 +1757,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(
       Details<int>(&type));
 }
 
-void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
+void RenderWidgetHostImpl::OnBeginSmoothScroll(
     int gesture_id, const ViewHostMsg_BeginSmoothScroll_Params &params) {
   if (!view_)
     return;
@@ -1847,7 +1843,7 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
       preferred_interval);
 }
 
-void RenderWidgetHostImpl::OnMsgSelectRangeAck() {
+void RenderWidgetHostImpl::OnSelectRangeAck() {
   select_range_pending_ = false;
   if (next_selection_range_.get()) {
     scoped_ptr<SelectionRange> next(next_selection_range_.Pass());
@@ -1885,19 +1881,19 @@ void RenderWidgetHostImpl::ProcessTouchAck(InputEventAckState ack_result) {
   touch_event_queue_->ProcessTouchAck(ack_result);
 }
 
-void RenderWidgetHostImpl::OnMsgFocus() {
+void RenderWidgetHostImpl::OnFocus() {
   // Only RenderViewHost can deal with that message.
   RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
   GetProcess()->ReceivedBadMessage();
 }
 
-void RenderWidgetHostImpl::OnMsgBlur() {
+void RenderWidgetHostImpl::OnBlur() {
   // Only RenderViewHost can deal with that message.
   RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   GetProcess()->ReceivedBadMessage();
 }
 
-void RenderWidgetHostImpl::OnMsgHasTouchEventHandlers(bool has_handlers) {
+void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
   if (has_touch_handler_ == has_handlers)
     return;
   has_touch_handler_ = has_handlers;
@@ -1909,44 +1905,44 @@ void RenderWidgetHostImpl::OnMsgHasTouchEventHandlers(bool has_handlers) {
 #endif
 }
 
-void RenderWidgetHostImpl::OnMsgSetCursor(const WebCursor& cursor) {
+void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   if (!view_) {
     return;
   }
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHostImpl::OnMsgTextInputStateChanged(
+void RenderWidgetHostImpl::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
   if (view_)
     view_->TextInputStateChanged(params);
 }
 
-void RenderWidgetHostImpl::OnMsgImeCompositionRangeChanged(
+void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
     const ui::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   if (view_)
     view_->ImeCompositionRangeChanged(range, character_bounds);
 }
 
-void RenderWidgetHostImpl::OnMsgImeCancelComposition() {
+void RenderWidgetHostImpl::OnImeCancelComposition() {
   if (view_)
     view_->ImeCancelComposition();
 }
 
-void RenderWidgetHostImpl::OnMsgDidActivateAcceleratedCompositing(
+void RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing(
     bool activated) {
   TRACE_EVENT1("renderer_host",
-               "RenderWidgetHostImpl::OnMsgDidActivateAcceleratedCompositing",
+               "RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing",
                "activated", activated);
   is_accelerated_compositing_active_ = activated;
   if (view_)
     view_->OnAcceleratedCompositingStateChange();
 }
 
-void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture,
-                                          bool last_unlocked_by_target,
-                                          bool privileged) {
+void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
+                                       bool last_unlocked_by_target,
+                                       bool privileged) {
 
   if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
@@ -1965,11 +1961,11 @@ void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture,
   }
 }
 
-void RenderWidgetHostImpl::OnMsgUnlockMouse() {
+void RenderWidgetHostImpl::OnUnlockMouse() {
   RejectMouseLockOrUnlockIfNecessary();
 }
 
-void RenderWidgetHostImpl::OnMsgShowDisambiguationPopup(
+void RenderWidgetHostImpl::OnShowDisambiguationPopup(
     const gfx::Rect& rect,
     const gfx::Size& size,
     const TransportDIB::Id& id) {

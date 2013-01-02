@@ -47,13 +47,13 @@ class PepperAudioInputHost
   virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() OVERRIDE;
 
  private:
-  int32_t OnMsgOpen(ppapi::host::HostMessageContext* context,
-                    const std::string& device_id,
-                    PP_AudioSampleRate sample_rate,
-                    uint32_t sample_frame_count);
-  int32_t OnMsgStartOrStop(ppapi::host::HostMessageContext* context,
-                           bool capture);
-  int32_t OnMsgClose(ppapi::host::HostMessageContext* context);
+  int32_t OnOpen(ppapi::host::HostMessageContext* context,
+                 const std::string& device_id,
+                 PP_AudioSampleRate sample_rate,
+                 uint32_t sample_frame_count);
+  int32_t OnStartOrStop(ppapi::host::HostMessageContext* context,
+                        bool capture);
+  int32_t OnClose(ppapi::host::HostMessageContext* context);
 
   void OnOpenComplete(int32_t result,
                       base::SharedMemoryHandle shared_memory_handle,

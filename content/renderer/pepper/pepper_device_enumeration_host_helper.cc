@@ -118,20 +118,20 @@ int32_t PepperDeviceEnumerationHostHelper::InternalHandleResourceMessage(
   *handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperDeviceEnumerationHostHelper, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_DeviceEnumeration_EnumerateDevices, OnMsgEnumerateDevices)
+        PpapiHostMsg_DeviceEnumeration_EnumerateDevices, OnEnumerateDevices)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_DeviceEnumeration_MonitorDeviceChange,
-        OnMsgMonitorDeviceChange)
+        OnMonitorDeviceChange)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_DeviceEnumeration_StopMonitoringDeviceChange,
-        OnMsgStopMonitoringDeviceChange)
+        OnStopMonitoringDeviceChange)
   IPC_END_MESSAGE_MAP()
 
   *handled = false;
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperDeviceEnumerationHostHelper::OnMsgEnumerateDevices(
+int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
     HostMessageContext* context) {
   if (enumerate_devices_context_.get())
     return PP_ERROR_INPROGRESS;
@@ -148,7 +148,7 @@ int32_t PepperDeviceEnumerationHostHelper::OnMsgEnumerateDevices(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperDeviceEnumerationHostHelper::OnMsgMonitorDeviceChange(
+int32_t PepperDeviceEnumerationHostHelper::OnMonitorDeviceChange(
     HostMessageContext* /* context */,
     uint32_t callback_id) {
   monitor_.reset(new ScopedRequest(
@@ -159,7 +159,7 @@ int32_t PepperDeviceEnumerationHostHelper::OnMsgMonitorDeviceChange(
   return monitor_->requested() ? PP_OK : PP_ERROR_FAILED;
 }
 
-int32_t PepperDeviceEnumerationHostHelper::OnMsgStopMonitoringDeviceChange(
+int32_t PepperDeviceEnumerationHostHelper::OnStopMonitoringDeviceChange(
     HostMessageContext* /* context */) {
   monitor_.reset(NULL);
   return PP_OK;
