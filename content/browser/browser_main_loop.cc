@@ -638,7 +638,6 @@ void BrowserMainLoop::InitializeMainThread() {
                                            MessageLoop::current()));
 }
 
-
 void BrowserMainLoop::BrowserThreadsStarted() {
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
@@ -686,7 +685,7 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed() &&
-      content::IsForceCompositingModeEnabled() &&
+      IsForceCompositingModeEnabled() &&
       !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
       !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {

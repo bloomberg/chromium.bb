@@ -20,7 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
@@ -88,12 +87,12 @@ void RendererWebIDBObjectStoreImpl::setIndexKeys(
     index_ids_list[i] = index_ids[i];
   }
 
-  std::vector<std::vector<content::IndexedDBKey> >
+  std::vector<std::vector<IndexedDBKey> >
           index_keys_list(index_keys.size());
   for (size_t i = 0; i < index_keys.size(); ++i) {
     index_keys_list[i].resize(index_keys[i].size());
     for (size_t j = 0; j < index_keys[i].size(); ++j) {
-      index_keys_list[i][j] = content::IndexedDBKey(index_keys[i][j]);
+      index_keys_list[i][j] = IndexedDBKey(index_keys[i][j]);
     }
   }
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_ObjectStoreSetIndexKeys(

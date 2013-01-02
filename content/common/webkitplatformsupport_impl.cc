@@ -25,14 +25,13 @@ WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }
 
 string16 WebKitPlatformSupportImpl::GetLocalizedString(int message_id) {
-  return content::GetContentClient()->GetLocalizedString(message_id);
+  return GetContentClient()->GetLocalizedString(message_id);
 }
 
 base::StringPiece WebKitPlatformSupportImpl::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) {
-  return content::GetContentClient()->GetDataResource(resource_id,
-                                                      scale_factor);
+  return GetContentClient()->GetDataResource(resource_id, scale_factor);
 }
 
 void WebKitPlatformSupportImpl::GetPlugins(

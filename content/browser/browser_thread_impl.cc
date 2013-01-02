@@ -46,8 +46,8 @@ struct BrowserThreadGlobals {
 
   // This array is protected by |lock|. The threads are not owned by this
   // array. Typically, the threads are owned on the UI thread by
-  // content::BrowserMainLoop. BrowserThreadImpl objects remove themselves from
-  // this array upon destruction.
+  // BrowserMainLoop. BrowserThreadImpl objects remove themselves from this
+  // array upon destruction.
   BrowserThreadImpl* threads[BrowserThread::ID_COUNT];
 
   // Only atomic operations are used on this array. The delegates are not owned

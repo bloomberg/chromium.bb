@@ -5142,7 +5142,7 @@ void RenderViewImpl::OnCSSInsertRequest(const string16& frame_xpath,
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    RenderThread::Get()->RegisterExtension(content::WebUIExtension::Get());
+    RenderThread::Get()->RegisterExtension(WebUIExtension::Get());
     new WebUIExtensionData(this);
   }
 

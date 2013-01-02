@@ -104,7 +104,7 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
   // On most platforms, the child executable is the same as the current
   // executable.
   if (child_path.empty())
-    PathService::Get(content::CHILD_PROCESS_EXE, &child_path);
+    PathService::Get(CHILD_PROCESS_EXE, &child_path);
 
 #if defined(OS_MACOSX)
   DCHECK(!(flags & CHILD_NO_PIE && flags & CHILD_ALLOW_HEAP_EXECUTION));

@@ -34,7 +34,7 @@ WorkerThread::WorkerThread() {
   webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 
-  appcache_dispatcher_.reset(new content::AppCacheDispatcher(this));
+  appcache_dispatcher_.reset(new AppCacheDispatcher(this));
 
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));
@@ -42,7 +42,7 @@ WorkerThread::WorkerThread() {
   db_message_filter_ = new DBMessageFilter();
   channel()->AddFilter(db_message_filter_.get());
 
-  indexed_db_message_filter_ = new content::IndexedDBMessageFilter;
+  indexed_db_message_filter_ = new IndexedDBMessageFilter;
   channel()->AddFilter(indexed_db_message_filter_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

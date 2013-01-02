@@ -320,9 +320,9 @@ void RenderThreadImpl::Init() {
   idle_notifications_to_skip_ = 0;
   compositor_initialized_ = false;
 
-  appcache_dispatcher_.reset(new content::AppCacheDispatcher(Get()));
+  appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
-  main_thread_indexed_db_dispatcher_.reset(new content::IndexedDBDispatcher());
+  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
   media_stream_center_ = NULL;
 

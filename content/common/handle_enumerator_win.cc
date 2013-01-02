@@ -17,40 +17,34 @@
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/handle_table.h"
 
+namespace content {
 namespace {
 
-typedef std::map<const string16, content::HandleType> HandleTypeMap;
+typedef std::map<const string16, HandleType> HandleTypeMap;
 
 HandleTypeMap& MakeHandleTypeMap() {
   HandleTypeMap& handle_types = *(new HandleTypeMap());
-  handle_types[sandbox::HandleTable::kTypeProcess] = content::ProcessHandle;
-  handle_types[sandbox::HandleTable::kTypeThread] = content::ThreadHandle;
-  handle_types[sandbox::HandleTable::kTypeFile] = content::FileHandle;
-  handle_types[sandbox::HandleTable::kTypeDirectory] =
-      content::DirectoryHandle;
-  handle_types[sandbox::HandleTable::kTypeKey] = content::KeyHandle;
-  handle_types[sandbox::HandleTable::kTypeWindowStation] =
-      content::WindowStationHandle;
-  handle_types[sandbox::HandleTable::kTypeDesktop] = content::DesktopHandle;
-  handle_types[sandbox::HandleTable::kTypeService] = content::ServiceHandle;
-  handle_types[sandbox::HandleTable::kTypeMutex] = content::MutexHandle;
-  handle_types[sandbox::HandleTable::kTypeSemaphore] =
-      content::SemaphoreHandle;
-  handle_types[sandbox::HandleTable::kTypeEvent] = content::EventHandle;
-  handle_types[sandbox::HandleTable::kTypeTimer] = content::TimerHandle;
-  handle_types[sandbox::HandleTable::kTypeNamedPipe] =
-      content::NamedPipeHandle;
-  handle_types[sandbox::HandleTable::kTypeJobObject] = content::JobHandle;
-  handle_types[sandbox::HandleTable::kTypeFileMap] = content::FileMapHandle;
-  handle_types[sandbox::HandleTable::kTypeAlpcPort] =
-      content::AlpcPortHandle;
+  handle_types[sandbox::HandleTable::kTypeProcess] = ProcessHandle;
+  handle_types[sandbox::HandleTable::kTypeThread] = ThreadHandle;
+  handle_types[sandbox::HandleTable::kTypeFile] = FileHandle;
+  handle_types[sandbox::HandleTable::kTypeDirectory] = DirectoryHandle;
+  handle_types[sandbox::HandleTable::kTypeKey] = KeyHandle;
+  handle_types[sandbox::HandleTable::kTypeWindowStation] = WindowStationHandle;
+  handle_types[sandbox::HandleTable::kTypeDesktop] = DesktopHandle;
+  handle_types[sandbox::HandleTable::kTypeService] = ServiceHandle;
+  handle_types[sandbox::HandleTable::kTypeMutex] = MutexHandle;
+  handle_types[sandbox::HandleTable::kTypeSemaphore] = SemaphoreHandle;
+  handle_types[sandbox::HandleTable::kTypeEvent] = EventHandle;
+  handle_types[sandbox::HandleTable::kTypeTimer] = TimerHandle;
+  handle_types[sandbox::HandleTable::kTypeNamedPipe] = NamedPipeHandle;
+  handle_types[sandbox::HandleTable::kTypeJobObject] = JobHandle;
+  handle_types[sandbox::HandleTable::kTypeFileMap] = FileMapHandle;
+  handle_types[sandbox::HandleTable::kTypeAlpcPort] = AlpcPortHandle;
 
   return handle_types;
 }
 
 }  // namespace
-
-namespace content {
 
 const size_t kMaxHandleNameLength = 1024;
 

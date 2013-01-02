@@ -165,8 +165,7 @@ class ChildProcessLauncher::Context
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
 
 #if defined(OS_WIN)
-    base::ProcessHandle handle = content::StartProcessWithAccess(
-        cmd_line, exposed_dir);
+    base::ProcessHandle handle = StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_ANDROID)
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);

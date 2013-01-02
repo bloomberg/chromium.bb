@@ -10,11 +10,12 @@
 using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;
 
+namespace content {
 namespace {
 
-scoped_ptr<content::PasswordForm> InitPasswordFormFromWebPasswordForm(
+scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
     const WebKit::WebPasswordFormData& web_password_form) {
-  content::PasswordForm* password_form = new content::PasswordForm();
+  PasswordForm* password_form = new PasswordForm();
   password_form->signon_realm = web_password_form.signonRealm.utf8();
   password_form->origin = web_password_form.origin;
   password_form->action = web_password_form.action;
@@ -27,17 +28,15 @@ scoped_ptr<content::PasswordForm> InitPasswordFormFromWebPasswordForm(
       web_password_form.passwordShouldAutocomplete;
   password_form->old_password_element = web_password_form.oldPasswordElement;
   password_form->old_password_value = web_password_form.oldPasswordValue;
-  password_form->scheme = content::PasswordForm::SCHEME_HTML;
+  password_form->scheme = PasswordForm::SCHEME_HTML;
   password_form->ssl_valid = false;
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
-  password_form->type = content::PasswordForm::TYPE_MANUAL;
-  return scoped_ptr<content::PasswordForm>(password_form);
+  password_form->type = PasswordForm::TYPE_MANUAL;
+  return scoped_ptr<PasswordForm>(password_form);
 }
 
 }  // namespace
-
-namespace content {
 
 scoped_ptr<PasswordForm> CreatePasswordForm(const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);

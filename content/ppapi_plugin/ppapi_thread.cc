@@ -238,7 +238,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
   // Trusted Pepper plugins may be "internal", i.e. built-in to the browser
   // binary.  If we're being asked to load such a plugin (e.g. the Chromoting
   // client) then fetch the entry points from the embedder, rather than a DLL.
-  std::vector<content::PepperPluginInfo> plugins;
+  std::vector<PepperPluginInfo> plugins;
   GetContentClient()->AddPepperPlugins(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (plugins[i].is_internal && plugins[i].path == path) {
