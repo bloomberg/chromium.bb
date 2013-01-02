@@ -539,6 +539,7 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/dbus/service_provider_test_helper.cc',
         'browser/chromeos/dbus/service_provider_test_helper.h',
+        'browser/chromeos/display/display_preferences_unittest.cc',
         'browser/chromeos/drive/drive_cache_metadata_unittest.cc',
         'browser/chromeos/drive/drive_cache_unittest.cc',
         'browser/chromeos/drive/drive_file_system_unittest.cc',
