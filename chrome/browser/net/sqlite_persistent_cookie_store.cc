@@ -21,7 +21,6 @@
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
@@ -546,10 +545,8 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   }
 
   int64 db_size = 0;
-  if (file_util::GetFileSize(path_, &db_size)) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+  if (file_util::GetFileSize(path_, &db_size))
     UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024 );
-  }
 
   db_.reset(new sql::Connection);
   db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
