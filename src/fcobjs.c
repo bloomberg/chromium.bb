@@ -40,8 +40,8 @@ _FcObjectLookupOtherTypeByName (const char *str, FcObject *id)
 {
     struct FcObjectOtherTypeInfo *ots, *ot;
 
-    /* XXX MT-unsafe */
-    ots = other_types;
+retry:
+    ots = fc_atomic_ptr_get (&other_types);
 
     for (ot = ots; ot; ot = ot->next)
 	if (0 == strcmp (ot->object.object, str))
@@ -55,10 +55,13 @@ _FcObjectLookupOtherTypeByName (const char *str, FcObject *id)
 
 	ot->object.object = strdup (str);
 	ot->object.type = -1;
-	ot->id = next_id++; /* MT_unsafe */
+	ot->id = fc_atomic_int_add (next_id, +1);
 	ot->next = ot;
 
-	other_types = ot;
+	if (!fc_atomic_ptr_cmpexch (&other_types, ots, ot)) {
+	    free (ot);
+	    goto retry;
+	}
     }
 
     if (id)
@@ -95,10 +98,9 @@ FcObjectLookupIdByName (const char *str)
 const char *
 FcObjectLookupOtherNameById (FcObject id)
 {
-    /* XXX MT-unsafe */
     struct FcObjectOtherTypeInfo *ot;
 
-    for (ot = other_types; ot; ot = ot->next)
+    for (ot = fc_atomic_ptr_get (&other_types); ot; ot = ot->next)
 	if (ot->id == id)
 	    return ot->object.object;
 
@@ -114,10 +116,9 @@ FcObjectLookupOtherTypeByName (const char *str)
 FcPrivate const FcObjectType *
 FcObjectLookupOtherTypeById (FcObject id)
 {
-    /* XXX MT-unsafe */
     struct FcObjectOtherTypeInfo *ot;
 
-    for (ot = other_types; ot; ot = ot->next)
+    for (ot = fc_atomic_ptr_get (&other_types); ot; ot = ot->next)
 	if (ot->id == id)
 	    return &ot->object;
 
@@ -125,6 +126,5 @@ FcObjectLookupOtherTypeById (FcObject id)
 }
 
 
-#define __fcobjs__
 #include "fcaliastail.h"
 #undef __fcobjs__
