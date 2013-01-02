@@ -9,7 +9,6 @@
 
 namespace content {
 
-class RenderViewHost;
 class WebContents;
 
 // Abstraction object for color choosers for each platform.
@@ -41,6 +40,6 @@ private:
   int identifier_;
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_COLOR_CHOOSER_H_
