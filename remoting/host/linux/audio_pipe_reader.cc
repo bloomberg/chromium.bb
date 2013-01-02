@@ -42,20 +42,6 @@ const int kPipeBufferSizeBytes = kPipeBufferSizeMs * kSampleBytesPerSecond /
 #define F_SETPIPE_SZ 1031
 #endif  // defined(F_SETPIPE_SZ)
 
-const int IsPacketOfSilence(const std::string& data) {
-  const int64* int_buf = reinterpret_cast<const int64*>(data.data());
-  for (size_t i = 0; i < data.size() / sizeof(int64); i++) {
-    if (int_buf[i] != 0)
-      return false;
-  }
-  for (size_t i = data.size() - data.size() % sizeof(int64);
-       i < data.size(); i++) {
-    if (data.data()[i] != 0)
-      return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -175,9 +161,6 @@ void AudioPipeReader::DoCapture() {
   if (stream_position_bytes - last_capture_position_ > kPipeBufferSizeBytes)
     last_capture_position_ = stream_position_bytes - kPipeBufferSizeBytes;
   DCHECK_LE(last_capture_position_, stream_position_bytes);
-
-  if (IsPacketOfSilence(data))
-    return;
 
   // Dispatch asynchronous notification to the stream observers.
   scoped_refptr<base::RefCountedString> data_ref =

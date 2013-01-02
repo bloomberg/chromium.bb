@@ -36,7 +36,8 @@ void AudioCapturerLinux::InitializePipeReader(
 
 AudioCapturerLinux::AudioCapturerLinux(
     scoped_refptr<AudioPipeReader> pipe_reader)
-    : pipe_reader_(pipe_reader) {
+    : pipe_reader_(pipe_reader),
+      silence_detector_(0) {
 }
 
 AudioCapturerLinux::~AudioCapturerLinux() {
@@ -44,6 +45,7 @@ AudioCapturerLinux::~AudioCapturerLinux() {
 
 bool AudioCapturerLinux::Start(const PacketCapturedCallback& callback) {
   callback_ = callback;
+  silence_detector_.Reset(kSamplingRate, AudioPacket::CHANNELS_STEREO);
   pipe_reader_->AddObserver(this);
   return true;
 }
@@ -60,6 +62,12 @@ bool AudioCapturerLinux::IsStarted() {
 void AudioCapturerLinux::OnDataRead(
     scoped_refptr<base::RefCountedString> data) {
   DCHECK(!callback_.is_null());
+
+  if (silence_detector_.IsSilence(
+          reinterpret_cast<const int16*>(data->data().data()),
+          data->data().size() / sizeof(int16))) {
+    return;
+  }
 
   scoped_ptr<AudioPacket> packet(new AudioPacket());
   packet->add_data(data->data());

@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/audio_silence_detector.h"
 #include "remoting/host/linux/audio_pipe_reader.h"
 
 class FilePath;
@@ -40,6 +41,8 @@ class AudioCapturerLinux : public AudioCapturer,
  private:
   scoped_refptr<AudioPipeReader> pipe_reader_;
   PacketCapturedCallback callback_;
+
+  AudioSilenceDetector silence_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioCapturerLinux);
 };

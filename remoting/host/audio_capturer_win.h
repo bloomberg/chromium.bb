@@ -14,6 +14,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/audio_silence_detector.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
@@ -28,8 +29,6 @@ class AudioCapturerWin : public AudioCapturer {
   virtual void Stop() OVERRIDE;
   virtual bool IsStarted() OVERRIDE;
 
-  static bool IsPacketOfSilence(const int16* samples, int number_of_samples);
-
  private:
   // Receives all packets from the audio capture endpoint buffer and pushes them
   // to the network.
@@ -41,6 +40,8 @@ class AudioCapturerWin : public AudioCapturer {
 
   scoped_ptr<base::RepeatingTimer<AudioCapturerWin> > capture_timer_;
   base::TimeDelta audio_device_period_;
+
+  AudioSilenceDetector silence_detector_;
 
   base::win::ScopedCoMem<WAVEFORMATEX> wave_format_ex_;
   base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
