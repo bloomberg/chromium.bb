@@ -19,7 +19,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 StarView::StarView(CommandUpdater* command_updater)
-    : command_updater_(command_updater) {
+    : command_updater_(command_updater),
+      suppress_mouse_released_action_(false) {
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
   set_accessibility_focusable(true);
@@ -54,12 +55,24 @@ bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 }
 
 bool StarView::OnMousePressed(const ui::MouseEvent& event) {
+  // If the bookmark bubble is showing then don't reshow it when the mouse is
+  // released.
+  suppress_mouse_released_action_ = chrome::IsBookmarkBubbleViewShowing();
+
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
 void StarView::OnMouseReleased(const ui::MouseEvent& event) {
+  // If this is the second click on this view then the bookmark bubble was
+  // showing on the mouse pressed event and is hidden now. Prevent the bubble
+  // from reshowing by doing nothing here.
+  if (suppress_mouse_released_action_) {
+    suppress_mouse_released_action_ = false;
+    return;
+  }
+
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
                               bookmark_utils::ENTRY_POINT_STAR_MOUSE,
