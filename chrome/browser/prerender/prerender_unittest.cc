@@ -1370,4 +1370,54 @@ TEST_F(PrerenderTest, LinkManagerWaitToLaunchNotLaunched) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+// Creates two prerenders, one of which should start when the first one expires.
+TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
+  SetConcurrency(1);
+  ASSERT_LT(prerender_manager()->config().max_wait_to_launch,
+            prerender_manager()->config().time_to_live);
+
+  GURL first_url("http://www.willexpire.com");
+  DummyPrerenderContents* first_prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          first_url, FINAL_STATUS_TIMED_OUT);
+  EXPECT_TRUE(AddSimplePrerender(first_url));
+  EXPECT_EQ(first_prerender_contents,
+            prerender_manager()->FindEntry(first_url));
+
+  // Insert the second prerender so it will be still be launchable when the
+  // first expires.
+  const TimeDelta wait_to_launch_second_prerender =
+      prerender_manager()->config().time_to_live -
+      prerender_manager()->config().max_wait_to_launch +
+      TimeDelta::FromSeconds(2);
+  const TimeDelta wait_for_first_prerender_to_expire =
+      prerender_manager()->config().time_to_live -
+      wait_to_launch_second_prerender +
+      TimeDelta::FromSeconds(1);
+  ASSERT_LT(prerender_manager()->config().time_to_live,
+            wait_to_launch_second_prerender +
+            wait_for_first_prerender_to_expire);
+  ASSERT_GT(prerender_manager()->config().max_wait_to_launch.InSeconds(),
+            wait_for_first_prerender_to_expire.InSeconds());
+
+  prerender_manager()->AdvanceTimeTicks(wait_to_launch_second_prerender);
+  GURL second_url("http://www.willlaunch.com");
+  DummyPrerenderContents* second_prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          second_url, FINAL_STATUS_USED);
+  EXPECT_FALSE(AddSimplePrerender(second_url));
+
+  // The first prerender is still running, but the second has not yet launched.
+  EXPECT_EQ(first_prerender_contents,
+            prerender_manager()->FindEntry(first_url));
+  PrerenderContents* null = NULL;
+  EXPECT_EQ(null, prerender_manager()->FindEntry(second_url));
+
+  // The first prerender should have died, giving life to the second one.
+  prerender_manager()->AdvanceTimeTicks(wait_for_first_prerender_to_expire);
+  EXPECT_EQ(null, prerender_manager()->FindEntry(first_url));
+  EXPECT_EQ(second_prerender_contents,
+            prerender_manager()->FindAndUseEntry(second_url));
+}
+
 }  // namespace prerender

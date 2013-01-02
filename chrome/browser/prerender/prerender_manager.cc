@@ -970,9 +970,6 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     origin = ORIGIN_GWS_PRERENDER;
   }
 
-  DeleteOldEntries();
-  to_delete_prerenders_.clear();
-
   GURL url = url_arg;
   GURL alias_url;
   uint8 experiment = GetQueryStringBasedExperiment(url_arg);
