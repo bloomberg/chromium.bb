@@ -1019,7 +1019,10 @@ int HttpCache::Transaction::DoCreateEntryComplete(int result) {
     return OK;
   }
 
-  if (result != OK) {
+  if (result == OK) {
+    UMA_HISTOGRAM_BOOLEAN("HttpCache.OpenToCreateRace", false);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("HttpCache.OpenToCreateRace", true);
     // We have a race here: Maybe we failed to open the entry and decided to
     // create one, but by the time we called create, another transaction already
     // created the entry. If we want to eliminate this issue, we need an atomic
