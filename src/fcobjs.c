@@ -53,7 +53,7 @@ retry:
 	if (!ot)
 	    return NULL;
 
-	ot->object.object = FcStrdup (str);
+	ot->object.object = (const char *) FcStrdup (str);
 	ot->object.type = -1;
 	ot->id = fc_atomic_int_add (next_id, +1);
 	ot->next = ots;
@@ -74,7 +74,7 @@ FcObject
 FcObjectLookupBuiltinIdByName (const char *str)
 {
     const struct FcObjectTypeInfo *o = FcObjectTypeLookup (str, strlen (str));
-    FcObject id;
+
     if (o)
 	return o->id;
 
