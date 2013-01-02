@@ -70,6 +70,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profile_startup.h"
 #endif
 
@@ -238,12 +239,22 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   PrefService* prefs = profile->GetPrefs();
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
 
+  // IsChromeFirstRun() looks for a sentinel file to determine whether the user
+  // is starting Chrome for the first time. On Chrome OS, the sentinel is stored
+  // in a location shared by all users and the check is meaningless. Query the
+  // UserManager instead to determine whether the user is new.
+#if defined(OS_CHROMEOS)
+  const bool is_first_run = chromeos::UserManager::Get()->IsCurrentUserNew();
+#else
+  const bool is_first_run = first_run::IsChromeFirstRun();
+#endif
+
   // The pref has an OS-dependent default value. For the first run only, this
   // default is overridden with SessionStartupPref::DEFAULT so that first run
   // behavior (sync promo, welcome page) is consistently invoked.
   // This applies only if the pref is still at its default and has not been
   // set by the user, managed prefs or policy.
-  if (first_run::IsChromeFirstRun() && SessionStartupPref::TypeIsDefault(prefs))
+  if (is_first_run && SessionStartupPref::TypeIsDefault(prefs))
     pref.type = SessionStartupPref::DEFAULT;
 
   if (command_line.HasSwitch(switches::kRestoreLastSession) ||

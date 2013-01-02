@@ -542,8 +542,8 @@ void UserImageManagerImpl::DownloadProfileData(const std::string& reason,
                                                bool download_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // For guest login there's no profile image to download.
-  if (UserManager::Get()->IsLoggedInAsGuest())
+  // GAIA profiles exist for regular users only.
+  if (!UserManager::Get()->IsLoggedInAsRegularUser())
     return;
 
   // Mark profile picture as needed.

@@ -259,8 +259,12 @@ void UserManagerImpl::GuestUserLoggedIn() {
 }
 
 void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
+  is_current_user_new_ = true;
   logged_in_user_ = user;
-  user_image_manager_->UserLoggedIn(user->email(), is_current_user_new_);
+  // The UserImageManager chooses a random avatar picture when a user logs in
+  // for the first time. Tell the UserImageManager that this user is not new to
+  // prevent the avatar from getting changed.
+  user_image_manager_->UserLoggedIn(user->email(), false);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 }
 

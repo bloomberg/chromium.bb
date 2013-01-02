@@ -136,6 +136,12 @@ void WallpaperManager::AddObservers() {
 }
 
 void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
+  // Some browser tests do not have a shell instance. As no wallpaper is needed
+  // in these tests anyway, avoid loading one, preventing crashes and speeding
+  // up the tests.
+  if (!ash::Shell::HasInstance())
+    return;
+
   WallpaperInfo info;
   if (GetLoggedInUserWallpaperInfo(&info)) {
     // TODO(sschmitz): We need an index for default wallpapers for the new UI.
@@ -449,9 +455,9 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
   WallpaperInfo info = current_user_wallpaper_info_;
   SetUserWallpaperInfo(username, info, is_persistent);
 
-  // Some browser tests do not have shell instance. And it is not necessary to
-  // create a wallpaper for these tests. Add HasInstance check to prevent tests
-  // crash and speed up the tests by avoid loading wallpaper.
+  // Some browser tests do not have a shell instance. As no wallpaper is needed
+  // in these tests anyway, avoid loading one, preventing crashes and speeding
+  // up the tests.
   if (ash::Shell::HasInstance())
     SetDefaultWallpaper();
 }
