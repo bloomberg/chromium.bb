@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
@@ -145,10 +146,13 @@ const char* kURLs[] = {
 void RedirectHostsToTestData(const char* const urls[], size_t size) {
   // Map the given hosts to the test data dir.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  FilePath base_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &base_path);
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
-    filter->AddUrlHandler(url, URLRequestMockHTTPJob::Factory);
+    filter->AddUrlProtocolHandler(url,
+        URLRequestMockHTTPJob::CreateProtocolHandler(base_path));
   }
 }
 

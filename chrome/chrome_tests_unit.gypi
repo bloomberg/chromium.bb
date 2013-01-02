@@ -135,8 +135,6 @@
         'browser/google_apis/test_util.h',
         'browser/media_gallery/media_galleries_test_util.cc',
         'browser/media_gallery/media_galleries_test_util.h',
-        'browser/net/url_request_mock_link_doctor_job.cc',
-        'browser/net/url_request_mock_link_doctor_job.h',
         'browser/net/url_request_mock_util.cc',
         'browser/net/url_request_mock_util.h',
         'browser/notifications/notification_test_util.cc',

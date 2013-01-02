@@ -98,17 +98,36 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
                            Extension::NO_FLAGS, error);
 }
 
+class SimpleTestJobProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  SimpleTestJobProtocolHandler() {}
+  virtual ~SimpleTestJobProtocolHandler() {}
+
+  // net::URLRequestJobFactory::ProtocolHandler
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new SimpleTestJob(request, network_delegate);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SimpleTestJobProtocolHandler);
+};
+
 }  // namespace
 
-class UserScriptListenerTest
-    : public ExtensionServiceTestBase,
-      public net::URLRequestJobFactory::ProtocolHandler {
+class UserScriptListenerTest : public ExtensionServiceTestBase {
  public:
   UserScriptListenerTest() {
     net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        "http", "google.com", this);
+        "http", "google.com",
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+            new SimpleTestJobProtocolHandler()));
     net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        "http", "example.com", this);
+        "http", "example.com",
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+            new SimpleTestJobProtocolHandler()));
   }
 
   ~UserScriptListenerTest() {
@@ -131,13 +150,6 @@ class UserScriptListenerTest
   virtual void TearDown() OVERRIDE {
     listener_ = NULL;
     MessageLoop::current()->RunUntilIdle();
-  }
-
-  // net::URLRequestJobFactory::ProtocolHandler
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new SimpleTestJob(request, network_delegate);
   }
 
  protected:

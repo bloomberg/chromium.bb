@@ -113,12 +113,13 @@ TEST(URLRequestFilter, BasicMatching) {
       &request_1, request_context.network_delegate(), url_1.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
-  // Check ProtocolHandler matching.
+  // Check ProtocolHandler hostname matching.
   URLRequestFilter::GetInstance()->ClearHandlers();
   EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  TestProtocolHandler test_protocol_handler;
   URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-      url_1.scheme(), url_1.host(), &test_protocol_handler);
+      url_1.scheme(), url_1.host(),
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new TestProtocolHandler()));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
         &request_1, request_context.network_delegate(), url_1.scheme());
@@ -127,6 +128,23 @@ TEST(URLRequestFilter, BasicMatching) {
     job_c = NULL;
   }
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+
+  // Check ProtocolHandler URL matching.
+  URLRequestFilter::GetInstance()->ClearHandlers();
+  EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
+  URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+      url_2,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new TestProtocolHandler()));
+  {
+    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
+        &request_2, request_context.network_delegate(), url_2.scheme());
+    EXPECT_EQ(job_c, found);
+    EXPECT_TRUE(job_c != NULL);
+    job_c = NULL;
+  }
+  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+
   URLRequestFilter::GetInstance()->ClearHandlers();
 }
 

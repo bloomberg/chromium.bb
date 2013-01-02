@@ -18,37 +18,68 @@ const char kMockHostname[] = "mock.http";
 const FilePath::CharType kMockHeaderFileSuffix[] =
     FILE_PATH_LITERAL(".mock-http-headers");
 
+namespace content {
+
 namespace {
 
-// This is the file path leading to the root of the directory to use as the
-// root of the http server. This returns a reference that can be assigned to.
-FilePath& BasePath() {
-  CR_DEFINE_STATIC_LOCAL(FilePath, base_path, ());
-  return base_path;
-}
+class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  // When |map_all_requests_to_base_path| is true, all request should return the
+  // contents of the file at |base_path|. When |map_all_requests_to_base_path|
+  // is false, |base_path| is the file path leading to the root of the directory
+  // to use as the root of the HTTP server.
+  explicit ProtocolHandler(const FilePath& base_path,
+                           bool map_all_requests_to_base_path)
+      : base_path_(base_path),
+        map_all_requests_to_base_path_(map_all_requests_to_base_path) {}
+  virtual ~ProtocolHandler() {}
+
+  // net::URLRequestJobFactory::ProtocolHandler implementation
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new URLRequestMockHTTPJob(request, network_delegate,
+        map_all_requests_to_base_path_ ? base_path_ : GetOnDiskPath(request));
+  }
+
+ private:
+  FilePath GetOnDiskPath(net::URLRequest* request) const {
+    // Conceptually we just want to "return base_path_ + request->url().path()".
+    // But path in the request URL is in URL space (i.e. %-encoded spaces).
+    // So first we convert base FilePath to a URL, then append the URL
+    // path to that, and convert the final URL back to a FilePath.
+    GURL file_url(net::FilePathToFileURL(base_path_));
+    std::string url = file_url.spec() + request->url().path();
+    FilePath file_path;
+    net::FileURLToFilePath(GURL(url), &file_path);
+    return file_path;
+  }
+
+  const FilePath base_path_;
+  const bool map_all_requests_to_base_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProtocolHandler);
+};
 
 }  // namespace
 
-namespace content {
-
 // static
-net::URLRequestJob* URLRequestMockHTTPJob::Factory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  return new URLRequestMockHTTPJob(request,
-                                   network_delegate,
-                                   GetOnDiskPath(BasePath(), request, scheme));
+void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
+  // Add kMockHostname to net::URLRequestFilter.
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->AddHostnameProtocolHandler("http", kMockHostname,
+      CreateProtocolHandler(base_path));
 }
 
 // static
-void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
-  BasePath() = base_path;
-
-  // Add kMockHostname to net::URLRequestFilter.
+void URLRequestMockHTTPJob::AddHostnameToFileHandler(
+    const std::string& hostname,
+    const FilePath& file_path) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameHandler("http", kMockHostname,
-                             URLRequestMockHTTPJob::Factory);
+  filter->AddHostnameProtocolHandler("http", hostname,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new ProtocolHandler(file_path, true)));
+
 }
 
 // static
@@ -71,18 +102,10 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
 }
 
 // static
-FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
-                                              net::URLRequest* request,
-                                              const std::string& scheme) {
-  // Conceptually we just want to "return base_path + request->url().path()".
-  // But path in the request URL is in URL space (i.e. %-encoded spaces).
-  // So first we convert base FilePath to a URL, then append the URL
-  // path to that, and convert the final URL back to a FilePath.
-  GURL file_url(net::FilePathToFileURL(base_path));
-  std::string url = file_url.spec() + request->url().path();
-  FilePath file_path;
-  net::FileURLToFilePath(GURL(url), &file_path);
-  return file_path;
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+URLRequestMockHTTPJob::CreateProtocolHandler(const FilePath& base_path) {
+  return scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+      new ProtocolHandler(base_path, false));
 }
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(
@@ -90,6 +113,8 @@ URLRequestMockHTTPJob::URLRequestMockHTTPJob(
     net::NetworkDelegate* network_delegate,
     const FilePath& file_path)
     : net::URLRequestFileJob(request, network_delegate, file_path) { }
+
+URLRequestMockHTTPJob::~URLRequestMockHTTPJob() { }
 
 // Public virtual version.
 void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {

@@ -24,6 +24,7 @@
 
 #include "base/callback.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -35,10 +36,11 @@ class URLRequestJob;
 
 class NET_EXPORT URLRequestFilter {
  public:
-  // scheme,hostname -> ProtocolFactory
+  // scheme,hostname -> ProtocolHandler
   typedef std::map<std::pair<std::string, std::string>,
-      base::Callback<URLRequest::ProtocolFactory> > HostnameHandlerMap;
-  typedef base::hash_map<std::string, URLRequest::ProtocolFactory*>
+      URLRequestJobFactory::ProtocolHandler* > HostnameHandlerMap;
+  // URL -> ProtocolHandler
+  typedef base::hash_map<std::string, URLRequestJobFactory::ProtocolHandler*>
       UrlHandlerMap;
 
   ~URLRequestFilter();
@@ -54,7 +56,7 @@ class NET_EXPORT URLRequestFilter {
   void AddHostnameProtocolHandler(
       const std::string& scheme,
       const std::string& hostname,
-      URLRequestJobFactory::ProtocolHandler* protocol_handler);
+      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
   void RemoveHostnameHandler(const std::string& scheme,
                              const std::string& hostname);
 
@@ -62,6 +64,9 @@ class NET_EXPORT URLRequestFilter {
   // old handlers for the URL if one existed.
   bool AddUrlHandler(const GURL& url,
                      URLRequest::ProtocolFactory* factory);
+  bool AddUrlProtocolHandler(
+      const GURL& url,
+      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
 
   void RemoveUrlHandler(const GURL& url);
 
@@ -89,11 +94,6 @@ class NET_EXPORT URLRequestFilter {
   int hit_count_;
 
  private:
-  void AddHostnameCallback(
-      const std::string& scheme,
-      const std::string& hostname,
-      base::Callback<URLRequest::ProtocolFactory> callback);
-
   // Singleton instance.
   static URLRequestFilter* shared_instance_;
 

@@ -46,21 +46,25 @@ class CannedResponseInterceptor {
   }
 
   virtual ~CannedResponseInterceptor() {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, delegate_);
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&Delegate::Unregister));
   }
 
  private:
   class Delegate : public net::URLRequestJobFactory::ProtocolHandler {
    public:
     explicit Delegate(const GURL& service_url) : service_url_(service_url) {}
-    ~Delegate() {
-      net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(
-          "http", "example.com");
-    }
+    ~Delegate() {}
 
     void Register() {
       net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-          "http", "example.com", this);
+          "http", "example.com",
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
+    }
+
+    static void Unregister() {
+      net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(
+          "http", "example.com");
     }
 
     // net::URLRequestJobFactory::ProtocolHandler overrides.

@@ -39,14 +39,17 @@ class URLRequestPrepackagedInterceptor::Delegate
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   Delegate() : hit_count_(0) {}
-  virtual ~Delegate() {
-    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
-                                                                "localhost");
-  }
+  virtual ~Delegate() {}
 
   void Register() {
     net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        "http", "localhost", this);
+        "http", "localhost",
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
+  }
+
+  static void Unregister() {
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                                "localhost");
   }
 
   // When requests for |url| arrive, respond with the contents of |path|. The
@@ -127,7 +130,8 @@ URLRequestPrepackagedInterceptor::URLRequestPrepackagedInterceptor()
 }
 
 URLRequestPrepackagedInterceptor::~URLRequestPrepackagedInterceptor() {
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, delegate_);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&Delegate::Unregister));
 }
 
 void URLRequestPrepackagedInterceptor::SetResponse(const GURL& url,

@@ -7,18 +7,30 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace net {
 
 namespace {
 
-URLRequestJob* ProtocolHandlerFactory(
-    URLRequestJobFactory::ProtocolHandler* protocol_handler,
-    URLRequest* request,
-    NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  return protocol_handler->MaybeCreateJob(request, network_delegate);
-}
+class URLRequestFilterProtocolHandler
+    : public URLRequestJobFactory::ProtocolHandler {
+ public:
+  explicit URLRequestFilterProtocolHandler(URLRequest::ProtocolFactory* factory)
+      : factory_(factory) {}
+  virtual ~URLRequestFilterProtocolHandler() {}
+
+  // URLRequestJobFactory::ProtocolHandler implementation
+  virtual URLRequestJob* MaybeCreateJob(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+    return factory_(request, network_delegate, request->url().scheme());
+  }
+
+ private:
+  URLRequest::ProtocolFactory* factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestFilterProtocolHandler);
+};
 
 }  // namespace
 
@@ -43,23 +55,19 @@ URLRequestFilter* URLRequestFilter::GetInstance() {
 
 void URLRequestFilter::AddHostnameHandler(const std::string& scheme,
     const std::string& hostname, URLRequest::ProtocolFactory* factory) {
-  AddHostnameCallback(scheme, hostname, base::Bind(factory));
+  AddHostnameProtocolHandler(
+      scheme, hostname,
+      scoped_ptr<URLRequestJobFactory::ProtocolHandler>(
+          new URLRequestFilterProtocolHandler(factory)));
 }
 
 void URLRequestFilter::AddHostnameProtocolHandler(
     const std::string& scheme,
     const std::string& hostname,
-    URLRequestJobFactory::ProtocolHandler* protocol_handler) {
-  AddHostnameCallback(scheme, hostname, base::Bind(ProtocolHandlerFactory,
-                                                   protocol_handler));
-}
-
-void URLRequestFilter::AddHostnameCallback(
-    const std::string& scheme,
-    const std::string& hostname,
-    base::Callback<URLRequest::ProtocolFactory> callback) {
+    scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
   DCHECK_EQ(0u, hostname_handler_map_.count(make_pair(scheme, hostname)));
-  hostname_handler_map_[make_pair(scheme, hostname)] = callback;
+  hostname_handler_map_[make_pair(scheme, hostname)] =
+      protocol_handler.release();
 
   // Register with the ProtocolFactory.
   URLRequest::Deprecated::RegisterProtocolFactory(
@@ -84,6 +92,7 @@ void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
       hostname_handler_map_.find(make_pair(scheme, hostname));
   DCHECK(iter != hostname_handler_map_.end());
 
+  delete iter->second;
   hostname_handler_map_.erase(iter);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would left no protocol factory for the scheme.
@@ -94,21 +103,27 @@ void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
 bool URLRequestFilter::AddUrlHandler(
     const GURL& url,
     URLRequest::ProtocolFactory* factory) {
+  return AddUrlProtocolHandler(
+      url,
+      scoped_ptr<URLRequestJobFactory::ProtocolHandler>(
+          new URLRequestFilterProtocolHandler(factory)));
+}
+
+
+bool URLRequestFilter::AddUrlProtocolHandler(
+    const GURL& url,
+    scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
   if (!url.is_valid())
     return false;
   DCHECK_EQ(0u, url_handler_map_.count(url.spec()));
-  url_handler_map_[url.spec()] = factory;
+  url_handler_map_[url.spec()] = protocol_handler.release();
 
   // Register with the ProtocolFactory.
   URLRequest::Deprecated::RegisterProtocolFactory(url.scheme(),
                                                   &URLRequestFilter::Factory);
-#ifndef NDEBUG
   // Check to see if this URL is masked by a hostname handler.
-  HostnameHandlerMap::iterator host_it =
-      hostname_handler_map_.find(make_pair(url.scheme(), url.host()));
-  if (host_it != hostname_handler_map_.end())
-    NOTREACHED();
-#endif  // !NDEBUG
+  DCHECK_EQ(0u, hostname_handler_map_.count(make_pair(url.scheme(),
+                                                      url.host())));
 
   return true;
 }
@@ -117,6 +132,7 @@ void URLRequestFilter::RemoveUrlHandler(const GURL& url) {
   UrlHandlerMap::iterator iter = url_handler_map_.find(url.spec());
   DCHECK(iter != url_handler_map_.end());
 
+  delete iter->second;
   url_handler_map_.erase(iter);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would left no protocol factory for the scheme.
@@ -140,8 +156,8 @@ void URLRequestFilter::ClearHandlers() {
     URLRequest::Deprecated::RegisterProtocolFactory(*scheme, NULL);
   }
 
-  url_handler_map_.clear();
-  hostname_handler_map_.clear();
+  STLDeleteValues(&url_handler_map_);
+  STLDeleteValues(&hostname_handler_map_);
   hit_count_ = 0;
 }
 
@@ -159,14 +175,14 @@ URLRequestJob* URLRequestFilter::FindRequestHandler(
     HostnameHandlerMap::iterator i =
         hostname_handler_map_.find(make_pair(scheme, hostname));
     if (i != hostname_handler_map_.end())
-      job = i->second.Run(request, network_delegate, scheme);
+      job = i->second->MaybeCreateJob(request, network_delegate);
 
     if (!job) {
       // Not in the hostname map, check the url map.
       const std::string& url = request->url().spec();
       UrlHandlerMap::iterator i = url_handler_map_.find(url);
       if (i != url_handler_map_.end())
-        job = i->second(request, network_delegate, scheme);
+        job = i->second->MaybeCreateJob(request, network_delegate);
     }
   }
   if (job) {
