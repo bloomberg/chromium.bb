@@ -7,22 +7,33 @@
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
+#include "cc/tile_priority.h"
 
 namespace cc {
 
 struct CC_EXPORT ManagedMemoryPolicy {
+     enum PriorityCutoff {
+        CUTOFF_ALLOW_NOTHING,
+        CUTOFF_ALLOW_REQUIRED_ONLY,
+        CUTOFF_ALLOW_NICE_TO_HAVE,
+        CUTOFF_ALLOW_EVERYTHING,
+    };
+
     ManagedMemoryPolicy(size_t bytesLimitWhenVisible);
     ManagedMemoryPolicy(size_t bytesLimitWhenVisible,
-                        int priorityCutoffWhenVisible,
+                        PriorityCutoff priorityCutoffWhenVisible,
                         size_t bytesLimitWhenNotVisible,
-                        int priorityCutoffWhenNotVisible);
+                        PriorityCutoff priorityCutoffWhenNotVisible);
     bool operator==(const ManagedMemoryPolicy&) const;
     bool operator!=(const ManagedMemoryPolicy&) const;
 
     size_t bytesLimitWhenVisible;
-    int priorityCutoffWhenVisible;
+    PriorityCutoff priorityCutoffWhenVisible;
     size_t bytesLimitWhenNotVisible;
-    int priorityCutoffWhenNotVisible;
+    PriorityCutoff priorityCutoffWhenNotVisible;
+
+    static int priorityCutoffToValue(PriorityCutoff priorityCutoff);
+    static TileMemoryLimitPolicy priorityCutoffToTileMemoryLimitPolicy(PriorityCutoff priorityCutoff);
 };
 
 }  // namespace cc

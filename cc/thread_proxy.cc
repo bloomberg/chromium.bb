@@ -397,6 +397,12 @@ void ThreadProxy::sendManagedMemoryStats()
     if (!m_layerTreeHost->contentsTextureManager())
         return;
 
+    // If we are using impl-side painting, then sendManagedMemoryStats is called
+    // directly after the tile manager's manage function, and doesn't need to
+    // interact with main thread's layer tree.
+    if (m_layerTreeHost->settings().implSidePainting)
+        return;
+
     m_layerTreeHostImpl->sendManagedMemoryStats(
         m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
         m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),

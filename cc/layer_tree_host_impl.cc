@@ -216,9 +216,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_visible(true)
     , m_contentsTexturesPurged(false)
     , m_managedMemoryPolicy(PrioritizedResourceManager::defaultMemoryAllocationLimit(),
-                            PriorityCalculator::allowEverythingCutoff(),
+                            ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
                             0,
-                            PriorityCalculator::allowNothingCutoff())
+                            ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING)
     , m_backgroundColor(0)
     , m_hasTransparentBackground(false)
     , m_needsUpdateDrawProperties(false)
@@ -326,6 +326,16 @@ void LayerTreeHostImpl::manageTiles()
 {
     DCHECK(m_tileManager);
     m_tileManager->ManageTiles();
+
+    size_t memoryRequiredBytes;
+    size_t memoryNiceToHaveBytes;
+    size_t memoryUsedBytes;
+    m_tileManager->GetMemoryStats(&memoryRequiredBytes,
+                                  &memoryNiceToHaveBytes,
+                                  &memoryUsedBytes);
+    sendManagedMemoryStats(memoryRequiredBytes,
+                           memoryNiceToHaveBytes,
+                           memoryUsedBytes);
 }
 
 void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
@@ -764,7 +774,8 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
 {
     bool evictedResources = m_client->reduceContentsTextureMemoryOnImplThread(
         m_visible ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible,
-        m_visible ? policy.priorityCutoffWhenVisible : policy.priorityCutoffWhenNotVisible);
+        ManagedMemoryPolicy::priorityCutoffToValue(
+            m_visible ? policy.priorityCutoffWhenVisible : policy.priorityCutoffWhenNotVisible));
     if (evictedResources) {
         setContentsTexturesPurged();
         m_client->setNeedsCommitOnImplThread();
@@ -773,10 +784,11 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
     m_client->sendManagedMemoryStats();
 
     if (m_tileManager) {
-      // TODO(nduca): Pass something useful into the memory manager.
+      LOG(INFO) << "Setting up initial tile manager policy";
       GlobalStateThatImpactsTilePriority new_state(m_tileManager->GlobalState());
-      new_state.memory_limit_in_bytes = PrioritizedResourceManager::defaultMemoryAllocationLimit();
-      new_state.memory_limit_policy = ALLOW_ANYTHING;
+      new_state.memory_limit_in_bytes = m_visible ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible;
+      new_state.memory_limit_policy = ManagedMemoryPolicy::priorityCutoffToTileMemoryLimitPolicy(
+          m_visible ? policy.priorityCutoffWhenVisible : policy.priorityCutoffWhenNotVisible);
       m_tileManager->SetGlobalState(new_state);
     }
 }

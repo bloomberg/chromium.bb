@@ -39,6 +39,18 @@ cc::TileManagerBin BinFromTilePriority(const cc::TilePriority& prio) {
   const double prepainting_window_time_seconds = 1.0;
   const double backfling_guard_distance_pixels = 314.0;
 
+  // Explicitly limit how far ahead we will prepaint for low and non-low res.
+  const double max_lores_paint_distance_pixels = 8192.0;
+  const double max_hires_paint_distance_pixels = 4096.0;
+  if (prio.resolution == cc::LOW_RESOLUTION) {
+    if (prio.distance_to_visible_in_pixels > max_lores_paint_distance_pixels)
+      return cc::NEVER_BIN;
+  }
+  else {
+    if (prio.distance_to_visible_in_pixels > max_hires_paint_distance_pixels)
+      return cc::NEVER_BIN;
+  }
+
   if (prio.time_to_needed_in_seconds() == std::numeric_limits<float>::max())
     return cc::NEVER_BIN;
 
@@ -147,7 +159,8 @@ ManagedTileState::ManagedTileState()
       can_be_freed(true),
       resource_is_being_initialized(false),
       contents_swizzled(false),
-      need_to_gather_pixel_refs(true) {
+      need_to_gather_pixel_refs(true),
+      gpu_memmgr_stats_bin(NEVER_BIN) {
 }
 
 ManagedTileState::~ManagedTileState() {
@@ -286,6 +299,7 @@ void TileManager::ManageTiles() {
     mts.resolution = prio.resolution;
     mts.time_to_needed_in_seconds = prio.time_to_needed_in_seconds();
     mts.raster_bin = BinFromTilePriority(prio);
+    mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
   }
 
   // Memory limit policy works by mapping some bin states to the NEVER bin.
@@ -397,6 +411,26 @@ int TileManager::GetDrawableTilesInBinCount(
   DCHECK(tree >= 0);
   DCHECK(tree < NUM_TREES);
   return drawable_tiles_in_bin_count_[bin][tree];
+}
+
+void TileManager::GetMemoryStats(
+    size_t* memoryRequiredBytes,
+    size_t* memoryNiceToHaveBytes,
+    size_t* memoryUsedBytes) {
+  *memoryRequiredBytes = 0;
+  *memoryNiceToHaveBytes = 0;
+  *memoryUsedBytes = 0;
+  for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    Tile* tile = *it;
+    ManagedTileState& mts = tile->managed_state();
+    size_t tile_bytes = tile->bytes_consumed_if_allocated();
+    if (mts.gpu_memmgr_stats_bin == NOW_BIN)
+      *memoryRequiredBytes += tile_bytes;
+    if (mts.gpu_memmgr_stats_bin != NEVER_BIN)
+      *memoryNiceToHaveBytes += tile_bytes;
+    if (mts.can_use_gpu_memory)
+      *memoryUsedBytes += tile_bytes;
+  }
 }
 
 void TileManager::ResetBinCounts() {

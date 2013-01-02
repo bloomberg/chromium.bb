@@ -1322,9 +1322,9 @@ void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocatio
     if (allocation.bytesLimitWhenVisible) {
         ManagedMemoryPolicy policy(
             allocation.bytesLimitWhenVisible,
-            priorityCutoffValue(allocation.priorityCutoffWhenVisible),
+            priorityCutoff(allocation.priorityCutoffWhenVisible),
             allocation.bytesLimitWhenNotVisible,
-            priorityCutoffValue(allocation.priorityCutoffWhenNotVisible));
+            priorityCutoff(allocation.priorityCutoffWhenNotVisible));
 
         if (allocation.enforceButDoNotKeepAsPolicy)
             m_client->enforceManagedMemoryPolicy(policy);
@@ -1339,20 +1339,21 @@ void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocatio
         m_discardBackbufferWhenNotVisible = oldDiscardBackbufferWhenNotVisible;
 }
 
-int GLRenderer::priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
+ManagedMemoryPolicy::PriorityCutoff GLRenderer::priorityCutoff(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
 {
+    // This is simple a 1:1 map, the names differ only because the WebKit names should be to match the cc names.
     switch (priorityCutoff) {
     case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
-        return PriorityCalculator::allowNothingCutoff();
+        return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
     case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
-        return PriorityCalculator::allowVisibleOnlyCutoff();
+        return ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
     case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby:
-        return PriorityCalculator::allowVisibleAndNearbyCutoff();
+        return ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
     case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
-        return PriorityCalculator::allowEverythingCutoff();
+        return ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING;
     }
     NOTREACHED();
-    return 0;
+    return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
 }
 
 void GLRenderer::enforceMemoryPolicy()

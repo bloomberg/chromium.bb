@@ -62,6 +62,9 @@ class CC_EXPORT ManagedTileState {
   TileManagerBin bin[NUM_TREES];
   // Bin used to determine raster priority.
   TileManagerBin raster_bin;
+  // The bin that the tile would have if the GPU memory manager had a maximally permissive policy,
+  // send to the GPU memory manager to determine policy.
+  TileManagerBin gpu_memmgr_stats_bin;
   TileResolution resolution;
   float time_to_needed_in_seconds;
 };
@@ -82,6 +85,9 @@ class CC_EXPORT TileManager {
 
   void ManageTiles();
   void CheckForCompletedSetPixels();
+  void GetMemoryStats(size_t* memoryRequiredBytes,
+                      size_t* memoryNiceToHaveBytes,
+                      size_t* memoryUsedBytes);
 
   void GetRenderingStats(RenderingStats* stats);
 

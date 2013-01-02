@@ -89,7 +89,7 @@ protected:
 
 private:
     static void toGLMatrix(float*, const gfx::Transform&);
-    static int priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff);
+    static ManagedMemoryPolicy::PriorityCutoff priorityCutoff(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff);
 
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
