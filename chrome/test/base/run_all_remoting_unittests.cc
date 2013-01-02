@@ -14,10 +14,10 @@
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // This is required for the JavaScript unittests.
   chrome::RegisterPathProvider();
-#endif // defined(OS_MACOSX) || defined(OS_LINUX)
+#endif // defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.

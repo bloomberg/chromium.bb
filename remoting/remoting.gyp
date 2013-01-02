@@ -142,14 +142,24 @@
       'resources/infographic_my_computers.png',
       'resources/infographic_remote_assistance.png',
       'resources/tick.png',
+      'webapp/connection_history.css',
+      'webapp/connection_stats.css',
+      'webapp/main.css',
+      'webapp/main.html',
+      'webapp/manifest.json',
+      'webapp/menu_button.css',
+      'webapp/oauth2_callback.html',
+      'webapp/scale-to-fit.png',
+      'webapp/spinner.gif',
+      'webapp/toolbar.css',
+    ],
+    'remoting_webapp_js_files': [
       'webapp/client_plugin.js',
       'webapp/client_plugin_async.js',
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/clipboard.js',
-      'webapp/connection_history.css',
       'webapp/connection_history.js',
-      'webapp/connection_stats.css',
       'webapp/connection_stats.js',
       'webapp/cs_oauth2_trampoline.js',
       'webapp/event_handlers.js',
@@ -162,23 +172,15 @@
       'webapp/host_table_entry.js',
       'webapp/l10n.js',
       'webapp/log_to_server.js',
-      'webapp/main.css',
-      'webapp/main.html',
-      'webapp/manifest.json',
-      'webapp/menu_button.css',
       'webapp/menu_button.js',
       'webapp/oauth2.js',
-      'webapp/oauth2_callback.html',
       'webapp/oauth2_callback.js',
       'webapp/plugin_settings.js',
       'webapp/remoting.js',
-      'webapp/scale-to-fit.png',
       'webapp/server_log_entry.js',
-      'webapp/spinner.gif',
       'webapp/stats_accumulator.js',
       'webapp/storage.js',
       'webapp/suspend_monitor.js',
-      'webapp/toolbar.css',
       'webapp/toolbar.js',
       'webapp/ui_mode.js',
       'webapp/wcs.js',
@@ -1693,6 +1695,7 @@
         '<(remoting_version_path)',
         '<(chrome_version_path)',
         '<@(remoting_webapp_files)',
+        '<@(remoting_webapp_js_files)',
         '<@(remoting_webapp_locale_files)',
       ],
 
@@ -1727,6 +1730,7 @@
             '<(remoting_version_path)',
             '<(chrome_version_path)',
             '<@(remoting_webapp_files)',
+            '<@(remoting_webapp_js_files)',
             '<@(remoting_webapp_locale_files)',
           ],
           'conditions': [
@@ -1749,6 +1753,7 @@
             '<(_zip_path)',
             '<(plugin_path)',
             '<@(remoting_webapp_files)',
+            '<@(remoting_webapp_js_files)',
             '--locales',
             '<@(remoting_webapp_locale_files)',
           ],
@@ -2308,7 +2313,11 @@
               '-lrpcrt4.lib',
             ],
           },
-        }, {  # else OS != "win"
+        }],
+        ['OS=="mac" or (OS=="linux" and chromeos==0)', {
+          # Javascript unittests are disabled on CrOS because they cause
+          # valgrind and test errors.
+          #
           # Javascript unittests are disabled on Windows because they add a
 	  # dependency on 'common_constants' which (only on Windows) requires
 	  # additional dependencies:
@@ -2333,8 +2342,9 @@
           'sources': [
             '../chrome/test/base/v8_unit_test.cc',
             '../chrome/test/base/v8_unit_test.h',
+            'webapp/all_js_load.gtestjs',
             'webapp/format_iq.gtestjs',
-            'webapp/format_iq.js',
+            '<@(remoting_webapp_js_files)',
           ],
         }],
         ['enable_remoting_host == 0', {

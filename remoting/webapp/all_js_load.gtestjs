@@ -1,0 +1,67 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for loading all our JS files.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function AllJsLoadTest () {
+}
+
+AllJsLoadTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @inheritDoc */
+  extraLibraries: [
+    // All of our Javascript files should be listed here unless they:
+    // (1) have their own .gtestjs file, or
+    // (2) are only used for testing.
+    'client_plugin_async.js',
+    'client_plugin.js',
+    'client_screen.js',
+    'client_session.js',
+    //'clipboard_event_proto.js',  // Only used by jscompiler.
+    'clipboard.js',
+    'connection_history.js',
+    'connection_stats.js',
+    //'cs_oauth2_trampoline.js',  // Disabled because it calls
+                                  // |chrome.i18n.getMessage| when loaded.
+    //'event_handlers.js',  // Disabled because it calls
+                            // |window.addEventListener| when loaded.
+    //'format_iq.js',  // Already covered by format_iq.gtestjs
+    'host_controller.js',
+    'host_list.js',
+    //'host_plugin_proto.js',  // Only used by jscompiler
+    'host_screen.js',
+    'host_session.js',
+    'host_setup_dialog.js',
+    'host_table_entry.js',
+    //'jscompiler_hacks.js',  // Only used by jscompiler.
+    'l10n.js',
+    'log_to_server.js',
+    'menu_button.js',
+    //'oauth2_callback.js',  // Disabled because it calls
+                             // |window.addEventListener| when loaded.
+    'oauth2.js',
+    'plugin_settings.js',
+    'remoting.js',
+    'server_log_entry.js',
+    'stats_accumulator.js',
+    'storage.js',
+    'suspend_monitor.js',
+    'toolbar.js',
+    'ui_mode.js',
+    //'viewer_plugin_proto.js',  // Only used by jscompiler.
+    //'wcs_iq_client_proto.js',  // Only used by jscompiler.
+    'wcs.js',
+    'wcs_loader.js',
+    'xhr.js',
+  ],
+};
+
+// Basic test to verify that all the JS files load without console errors.
+TEST_F('AllJsLoadTest', 'TestNoConsoleErrors', function() {
+  assertTrue(true);
+});
