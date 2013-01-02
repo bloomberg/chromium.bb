@@ -54,22 +54,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     public static final int MAX_RENDERERS_LIMIT = AndroidBrowserProcess.MAX_RENDERERS_LIMIT;
 
     /**
-     * Allow a callback to be notified when the SurfaceTexture of the TextureView has been
-     * updated.
-     *
-     * TODO(nileshagrawal): Remove this interface.
-     */
-    public static interface SurfaceTextureUpdatedListener {
-        /**
-         * Called when the {@link android.graphics.SurfaceTexture} of the
-         * {@link android.view.TextureView} held in this ContentView has been updated.
-         *
-         * @param view The ContentView that was updated.
-         */
-        public void onSurfaceTextureUpdated(ContentView view);
-    }
-
-    /**
      * Enable multi-process ContentView. This should be called by the application before
      * constructing any ContentView instances. If enabled, ContentView will run renderers in
      * separate processes up to the number of processes specified by maxRenderProcesses. If this is
@@ -100,10 +84,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
         return ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
     }
-
-    // Used for showing a temporary bitmap while the actual texture is being drawn.
-    private final ArrayList<SurfaceTextureUpdatedListener> mSurfaceTextureUpdatedListeners =
-            new ArrayList<SurfaceTextureUpdatedListener>();
 
     private ContentViewCore mContentViewCore;
 
@@ -180,24 +160,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
-    }
-
-    /**
-     * Allows an external source to listen to SurfaceTexture updates.
-     *
-     * @param listener
-     */
-    public void registerSurfaceTextureListener(SurfaceTextureUpdatedListener listener) {
-        if (!mSurfaceTextureUpdatedListeners.contains(listener)) {
-            mSurfaceTextureUpdatedListeners.add(listener);
-        }
-    }
-
-    /**
-     * Unregisters the current external listener that waits for SurfaceTexture updates.
-     */
-    public void unregisterSurfaceTextureListener(SurfaceTextureUpdatedListener listener) {
-        mSurfaceTextureUpdatedListeners.remove(listener);
     }
 
     /**

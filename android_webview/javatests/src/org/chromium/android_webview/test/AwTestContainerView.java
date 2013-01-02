@@ -145,12 +145,5 @@ class AwTestContainerView extends FrameLayout {
         public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
             return AwTestContainerView.super.awakenScrollBars(startDelay, invalidate);
         }
-
-        // TODO: Required ContentViewCore changes are not upstreamed yet.
-        /*
-        @Override
-        public void onSurfaceTextureUpdated() {
-        }
-        */
     }
 }
