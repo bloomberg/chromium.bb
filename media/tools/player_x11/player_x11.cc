@@ -20,7 +20,6 @@
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/audio_renderer_impl.h"
@@ -106,8 +105,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
                   scoped_refptr<media::Pipeline>* pipeline,
-                  MessageLoop* paint_message_loop,
-                  media::MessageLoopFactory* message_loop_factory) {
+                  MessageLoop* paint_message_loop) {
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
@@ -259,13 +257,10 @@ int main(int argc, char** argv) {
     return 1;
 
   // Initialize the pipeline thread and the pipeline.
-  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactory());
-  scoped_ptr<base::Thread> thread;
-  scoped_refptr<media::Pipeline> pipeline;
   MessageLoop message_loop;
-  thread.reset(new base::Thread("PipelineThread"));
-  thread->Start();
+  base::Thread media_thread("MediaThread");
+  media_thread.Start();
+  scoped_refptr<media::Pipeline> pipeline;
 
   PaintCB paint_cb;
   if (command_line->HasSwitch("use-gl")) {
@@ -280,9 +275,9 @@ int main(int argc, char** argv) {
       new DataSourceLogger(CreateFileDataSource(filename),
                            command_line->HasSwitch("streaming")));
 
-  if (InitPipeline(thread->message_loop_proxy(), data_source,
+  if (InitPipeline(media_thread.message_loop_proxy(), data_source,
                    paint_cb, command_line->HasSwitch("audio"),
-                   &pipeline, &message_loop, message_loop_factory.get())) {
+                   &pipeline, &message_loop)) {
     // Main loop of the application.
     g_running = true;
 
@@ -294,9 +289,7 @@ int main(int argc, char** argv) {
   }
 
   // Cleanup tasks.
-  message_loop_factory.reset();
-
-  thread->Stop();
+  media_thread.Stop();
 
   // Release callback which releases video renderer. Do this before cleaning up
   // X below since the video renderer has some X cleanup duties as well.

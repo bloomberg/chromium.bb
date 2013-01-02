@@ -220,4 +220,9 @@ void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(
   waiter->Signal();
 }
 
+scoped_refptr<base::MessageLoopProxy>
+RendererGpuVideoDecoderFactories::GetMessageLoop() {
+  return message_loop_;
+}
+
 }  // namespace content

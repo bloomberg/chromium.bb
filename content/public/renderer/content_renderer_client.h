@@ -22,7 +22,6 @@ class GURL;
 class SkBitmap;
 
 namespace WebKit {
-class WebAudioSourceProvider;
 class WebFrame;
 class WebMediaPlayerClient;
 class WebPlugin;
@@ -38,17 +37,10 @@ class PpapiInterfaceFactoryManager;
 struct WebPluginInfo;
 }
 
-namespace media {
-class AudioRendererSink;
-class FilterCollection;
-class MediaLog;
-class MessageLoopFactory;
-}
-
 namespace webkit_media {
-class MediaStreamClient;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerImpl;
+class WebMediaPlayerParams;
 }
 
 namespace content {
@@ -122,12 +114,7 @@ class CONTENT_EXPORT ContentRendererClient {
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-      media::FilterCollection* collection,
-      WebKit::WebAudioSourceProvider* audio_source_provider,
-      media::AudioRendererSink* audio_renderer_sink,
-      media::MessageLoopFactory* message_loop_factory,
-      webkit_media::MediaStreamClient* media_stream_client,
-      media::MediaLog* media_log);
+      const webkit_media::WebMediaPlayerParams& params);
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

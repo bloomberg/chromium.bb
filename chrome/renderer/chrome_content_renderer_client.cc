@@ -381,12 +381,7 @@ ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-    media::FilterCollection* collection,
-    WebKit::WebAudioSourceProvider* audio_source_provider,
-    media::AudioRendererSink* audio_renderer_sink,
-    media::MessageLoopFactory* message_loop_factory,
-    webkit_media::MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log) {
+    const webkit_media::WebMediaPlayerParams& params) {
 #if defined(OS_ANDROID)
   // Chromium for Android doesn't support prerender yet.
   return NULL;
@@ -394,9 +389,8 @@ ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
   if (!prerender::PrerenderHelper::IsPrerendering(render_view))
     return NULL;
 
-  return new prerender::PrerenderWebMediaPlayer(render_view, frame, client,
-      delegate, collection, audio_source_provider, audio_renderer_sink,
-      message_loop_factory, media_stream_client, media_log);
+  return new prerender::PrerenderWebMediaPlayer(
+      render_view, frame, client, delegate, params);
 #endif
 }
 

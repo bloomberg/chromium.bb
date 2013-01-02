@@ -35,6 +35,7 @@
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
 #include "webkit/media/webmediaplayer_delegate.h"
+#include "webkit/media/webmediaplayer_params.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/media/webvideoframe_impl.h"
@@ -120,18 +121,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    media::FilterCollection* collection,
-    WebKit::WebAudioSourceProvider* audio_source_provider,
-    media::AudioRendererSink* audio_renderer_sink,
-    media::MessageLoopFactory* message_loop_factory,
-    MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log)
+    const WebMediaPlayerParams& params)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(MessageLoop::current()),
-      filter_collection_(collection),
-      message_loop_factory_(message_loop_factory),
+      filter_collection_(new media::FilterCollection()),
+      media_thread_("MediaPipeline"),
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
@@ -140,24 +136,22 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       proxy_(new WebMediaPlayerProxy(main_loop_->message_loop_proxy(), this)),
       delegate_(delegate),
-      media_stream_client_(media_stream_client),
-      media_log_(media_log),
+      media_stream_client_(params.media_stream_client()),
+      media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
-      audio_source_provider_(audio_source_provider),
-      audio_renderer_sink_(audio_renderer_sink),
+      audio_source_provider_(params.audio_source_provider()),
       is_local_source_(false),
       supports_save_(true),
       starting_(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
-  scoped_refptr<base::MessageLoopProxy> pipeline_message_loop =
-      message_loop_factory_->GetMessageLoop(
-          media::MessageLoopFactory::kPipeline);
-  pipeline_ = new media::Pipeline(pipeline_message_loop, media_log_);
+  CHECK(media_thread_.Start());
+  pipeline_ = new media::Pipeline(
+      media_thread_.message_loop_proxy(), media_log_);
 
-  // Let V8 know we started new thread if we did not did it yet.
+  // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
   // Also, delaying GC until after player starts gets rid of starting lag --
   // collection happens in parallel with playing.
@@ -184,10 +178,18 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                         base::Unretained(decryptor_.get()));
   }
 
+  // Create the GPU video decoder if factories were provided.
+  if (params.gpu_factories()) {
+    filter_collection_->GetVideoDecoders()->push_back(
+        new media::GpuVideoDecoder(
+            media_thread_.message_loop_proxy(),
+            params.gpu_factories()));
+  }
+
   // Create default video renderer.
   scoped_refptr<media::VideoRendererBase> video_renderer =
       new media::VideoRendererBase(
-          pipeline_message_loop,
+          media_thread_.message_loop_proxy(),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
@@ -196,6 +198,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->set_frame_provider(video_renderer);
 
   // Create default audio renderer using the null sink if no sink was provided.
+  scoped_refptr<media::AudioRendererSink> audio_renderer_sink =
+      params.audio_renderer_sink();
   if (!audio_renderer_sink)
     audio_renderer_sink = new media::NullAudioSink();
 
@@ -267,13 +271,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 
-  scoped_refptr<base::MessageLoopProxy> message_loop =
-      message_loop_factory_->GetMessageLoop(
-          media::MessageLoopFactory::kPipeline);
-
   // Media streams pipelines can start immediately.
   if (BuildMediaStreamCollection(url, media_stream_client_,
-                                 message_loop,
+                                 media_thread_.message_loop_proxy(),
                                  filter_collection_.get())) {
     supports_save_ = false;
     StartPipeline();
@@ -288,7 +288,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
         base::Bind(&LogMediaSourceError, media_log_));
 
     BuildMediaSourceCollection(chunk_demuxer_,
-                               message_loop,
+                               media_thread_.message_loop_proxy(),
                                filter_collection_.get());
     supports_save_ = false;
     StartPipeline();
@@ -309,7 +309,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
   BuildDefaultCollection(proxy_->data_source(),
-                         message_loop,
+                         media_thread_.message_loop_proxy(),
                          filter_collection_.get());
 }
 
@@ -1194,7 +1194,7 @@ void WebMediaPlayerImpl::Destroy() {
     incremented_externally_allocated_memory_ = false;
   }
 
-  message_loop_factory_.reset();
+  media_thread_.Stop();
 
   // And then detach the proxy, it may live on the render thread for a little
   // longer until all the tasks are finished.

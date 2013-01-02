@@ -115,7 +115,6 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
-#include "media/base/message_loop_factory.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "net/base/data_url.h"
@@ -202,6 +201,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/media/webmediaplayer_ms.h"
+#include "webkit/media/webmediaplayer_params.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
@@ -2615,9 +2615,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           resource_context, gpu_channel_host, routing_id_));
 #endif
 
-  media::MessageLoopFactory* message_loop_factory =
-      new media::MessageLoopFactory();
-  media::FilterCollection* collection = new media::FilterCollection();
   RenderMediaLog* render_media_log = new RenderMediaLog();
 
   RenderAudioSourceProvider* audio_source_provider = NULL;
@@ -2628,6 +2625,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     audio_source_provider = new RenderAudioSourceProvider(routing_id_);
   }
 
+  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories;
   WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
@@ -2640,24 +2638,19 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-    collection->GetVideoDecoders()->push_back(new media::GpuVideoDecoder(
-        message_loop_factory->GetMessageLoop(
-            media::MessageLoopFactory::kPipeline),
-        factories_loop,
-        new RendererGpuVideoDecoderFactories(
-            gpu_channel_host, factories_loop, context3d)));
+    gpu_factories = new RendererGpuVideoDecoderFactories(
+        gpu_channel_host, factories_loop, context3d);
   }
 
+  webkit_media::WebMediaPlayerParams params(
+      audio_source_provider, audio_source_provider, gpu_factories,
+      media_stream_impl_, render_media_log);
   WebMediaPlayer* media_player =
       GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
-          this, frame, client, AsWeakPtr(), collection, audio_source_provider,
-          audio_source_provider, message_loop_factory, media_stream_impl_,
-          render_media_log);
+          this, frame, client, AsWeakPtr(), params);
   if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
-        frame, client, AsWeakPtr(), collection, audio_source_provider,
-        audio_source_provider, message_loop_factory, media_stream_impl_,
-        render_media_log);
+        frame, client, AsWeakPtr(), params);
   }
   return media_player;
 }

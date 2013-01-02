@@ -6,9 +6,6 @@
 
 #include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/render_view.h"
-#include "media/base/filter_collection.h"
-#include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 
@@ -19,22 +16,9 @@ PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-    media::FilterCollection* collection,
-    WebKit::WebAudioSourceProvider* audio_source_provider,
-    media::AudioRendererSink* audio_renderer_sink,
-    media::MessageLoopFactory* message_loop_factory,
-    webkit_media::MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log)
+    const webkit_media::WebMediaPlayerParams& params)
     : RenderViewObserver(render_view),
-      WebMediaPlayerImpl(frame,
-                         client,
-                         delegate,
-                         collection,
-                         audio_source_provider,
-                         audio_renderer_sink,
-                         message_loop_factory,
-                         media_stream_client,
-                         media_log),
+      WebMediaPlayerImpl(frame, client, delegate, params),
       is_prerendering_(true),
       url_loaded_(false),
       cors_mode_(CORSModeUnspecified) {

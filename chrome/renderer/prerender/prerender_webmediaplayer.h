@@ -8,13 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "media/base/audio_renderer_sink.h"
 #include "webkit/media/webmediaplayer_impl.h"
-
-namespace webkit_media {
-class MediaStreamClient;
-class WebMediaPlayerDelegate;
-}
 
 namespace prerender {
 
@@ -29,12 +23,7 @@ class PrerenderWebMediaPlayer
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-      media::FilterCollection* collection,
-      WebKit::WebAudioSourceProvider* audio_source_provider,
-      media::AudioRendererSink* audio_renderer_sink,
-      media::MessageLoopFactory* message_loop_factory,
-      webkit_media::MediaStreamClient* media_stream_client,
-      media::MediaLog* media_log);
+      const webkit_media::WebMediaPlayerParams& params);
   virtual ~PrerenderWebMediaPlayer();
 
   // WebMediaPlayerImpl methods:

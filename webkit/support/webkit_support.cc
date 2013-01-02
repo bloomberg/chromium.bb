@@ -31,7 +31,6 @@
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/message_loop_factory.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -66,6 +65,7 @@
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/media/webmediaplayer_ms.h"
+#include "webkit/media/webmediaplayer_params.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
@@ -420,22 +420,13 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
       new webkit_support::TestStreamTextureFactory(),
       true);
 #else
-  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactory());
-
-  scoped_ptr<media::FilterCollection> collection(
-      new media::FilterCollection());
-
+  webkit_media::WebMediaPlayerParams params(
+      NULL, NULL, NULL, NULL, new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,
       client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-      collection.release(),
-      NULL,
-      NULL,
-      message_loop_factory.release(),
-      media_stream_client,
-      new media::MediaLog());
+      params);
 #endif
 }
 

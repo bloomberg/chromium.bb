@@ -227,8 +227,6 @@
         'base/media_switches.cc',
         'base/media_switches.h',
         'base/media_win.cc',
-        'base/message_loop_factory.cc',
-        'base/message_loop_factory.h',
         'base/multi_channel_resampler.cc',
         'base/multi_channel_resampler.h',
         'base/pipeline.cc',

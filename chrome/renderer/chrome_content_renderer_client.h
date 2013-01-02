@@ -27,10 +27,6 @@ class Dispatcher;
 class Extension;
 }
 
-namespace media {
-class AudioRendererSink;
-}
-
 namespace prerender {
 class PrerenderDispatcher;
 }
@@ -80,12 +76,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-      media::FilterCollection* collection,
-      WebKit::WebAudioSourceProvider* audio_source_provider,
-      media::AudioRendererSink* audio_renderer_sink,
-      media::MessageLoopFactory* message_loop_factory,
-      webkit_media::MediaStreamClient* media_stream_client,
-      media::MediaLog* media_log) OVERRIDE;
+      const webkit_media::WebMediaPlayerParams& params) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
   virtual bool AllowPopup() OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,

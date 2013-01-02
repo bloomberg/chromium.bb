@@ -40,20 +40,18 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
+  // media::GpuVideoDecoder::Factories implementation.
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
-
   virtual bool CreateTextures(int32 count, const gfx::Size& size,
                               std::vector<uint32>* texture_ids,
                               uint32 texture_target) OVERRIDE;
-
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
-
   virtual void ReadPixels(uint32 texture_id, uint32 texture_target,
                           const gfx::Size& size, void* pixels) OVERRIDE;
-
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<RendererGpuVideoDecoderFactories>;

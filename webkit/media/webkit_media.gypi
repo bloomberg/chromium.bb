@@ -80,6 +80,8 @@
         'webmediaplayer_impl.h',
         'webmediaplayer_ms.cc',
         'webmediaplayer_ms.h',
+        'webmediaplayer_params.cc',
+        'webmediaplayer_params.h',
         'webmediaplayer_proxy.cc',
         'webmediaplayer_proxy.h',
         'webmediaplayer_util.cc',

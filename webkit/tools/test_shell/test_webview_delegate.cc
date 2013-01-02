@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/message_loop_factory.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
@@ -64,6 +63,7 @@
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
+#include "webkit/media/webmediaplayer_params.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
@@ -531,22 +531,13 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, const WebKit::WebURL& url, WebMediaPlayerClient* client) {
-  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactory());
-
-  scoped_ptr<media::FilterCollection> collection(
-      new media::FilterCollection());
-
+  webkit_media::WebMediaPlayerParams params(
+      NULL, NULL, NULL, NULL, new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,
       client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-      collection.release(),
-      NULL,
-      NULL,
-      message_loop_factory.release(),
-      NULL,
-      new media::MediaLog());
+      params);
 }
 
 WebApplicationCacheHost* TestWebViewDelegate::createApplicationCacheHost(

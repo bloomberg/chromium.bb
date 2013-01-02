@@ -55,13 +55,15 @@ class MEDIA_EXPORT GpuVideoDecoder
     // Close()ing the returned pointer.
     virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
 
+    // Returns the message loop the VideoDecodeAccelerator runs on.
+    virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
+
    protected:
     friend class base::RefCountedThreadSafe<Factories>;
     virtual ~Factories();
   };
 
-  GpuVideoDecoder(const scoped_refptr<base::MessageLoopProxy>& gvd_loop_proxy,
-                  const scoped_refptr<base::MessageLoopProxy>& vda_loop_proxy,
+  GpuVideoDecoder(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const scoped_refptr<Factories>& factories);
 
   // VideoDecoder implementation.
