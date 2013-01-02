@@ -291,19 +291,23 @@ void LogWarning(NSString* format, ...) {
                 ASL_QUERY_OP_EQUAL);
   asl_set_query(query, ASL_KEY_TIME, "-1m", ASL_QUERY_OP_GREATER_EQUAL);
 
-  // Log any messages found.
+  // Log any messages found, and take note of any messages that may indicate the
+  // app crashed or did not exit cleanly.
   aslresponse response = asl_search(NULL, query);
-  BOOL entryFound = NO;
+  BOOL badEntryFound = NO;
   aslmsg entry;
   while ((entry = aslresponse_next(response)) != NULL) {
-    entryFound = YES;
-    LogWarning(@"Console message: %s", asl_get(entry, ASL_KEY_MSG));
+    const char* message = asl_get(entry, ASL_KEY_MSG);
+    LogWarning(@"Console message: %s", message);
+    // Some messages are harmless, so don't trigger a failure for them.
+    if (strstr(message, "The following job tried to hijack the service"))
+      continue;
+    badEntryFound = YES;
   }
 
-  // launchd only sends messages if the process crashed or exits with a
-  // non-zero status, so if the query returned any results iossim should exit
-  // with non-zero status.
-  if (entryFound) {
+  // If the query returned any nasty-looking results, iossim should exit with
+  // non-zero status.
+  if (badEntryFound) {
     LogError(@"Simulated app crashed or exited with non-zero status");
     exit(kExitAppCrashed);
   }
