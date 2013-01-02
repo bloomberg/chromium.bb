@@ -410,6 +410,21 @@ TEST_F(PrerenderTest, ExpireTest) {
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
+// Ensure that we don't launch prerenders of bad urls (in this case, a mailto:
+// url)
+TEST_F(PrerenderTest, BadURLTest) {
+  GURL url("mailto:test@gmail.com");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_UNSUPPORTED_SCHEME);
+  EXPECT_FALSE(AddSimplePrerender(url));
+  EXPECT_FALSE(prerender_contents->prerendering_has_started());
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
+  DummyPrerenderContents* null = NULL;
+  EXPECT_EQ(null, prerender_manager()->FindEntry(url));
+}
+
 // When the user navigates away from a page, the prerenders it launched should
 // have their time to expiry shortened from the default time to live.
 TEST_F(PrerenderTest, LinkManagerNavigateAwayExpire) {

@@ -1025,8 +1025,11 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   active_prerenders_.push_back(
       new PrerenderData(this, prerender_contents,
                         GetExpiryTimeForNewPrerender()));
-  if (!prerender_contents->Init())
+  if (!prerender_contents->Init()) {
+    DCHECK(active_prerenders_.end() ==
+           FindIteratorForPrerenderContents(prerender_contents));
     return NULL;
+  }
 
   histograms_->RecordPrerenderStarted(origin);
   DCHECK(!prerender_contents->prerendering_has_started());
