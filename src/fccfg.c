@@ -1288,10 +1288,32 @@ static FcBool
 FcConfigAdd (FcValueListPtr *head,
 	     FcValueList    *position,
 	     FcBool	    append,
-	     FcValueList    *new)
+	     FcValueList    *new,
+	     FcObject        object)
 {
-    FcValueListPtr  *prev, last, v;
+    FcValueListPtr  *prev, l, last, v;
     FcValueBinding  sameBinding;
+
+    /*
+     * Make sure the stored type is valid for built-in objects
+     */
+    for (l = new; l != NULL; l = FcValueListNext (l))
+    {
+	if (!FcObjectValidType (object, l->value.type))
+	{
+	    fprintf (stderr,
+		     "Fontconfig warning: FcPattern object %s does not accept value", FcObjectName (object));
+	    FcValuePrintFile (stderr, l->value);
+	    fprintf (stderr, "\n");
+
+	    if (FcDebug () & FC_DBG_EDIT)
+	    {
+		printf ("Not adding\n");
+	    }
+
+	    return FcFalse;
+	}
+    }
 
     if (position)
 	sameBinding = position->binding;
@@ -1387,7 +1409,7 @@ FcConfigPatternAdd (FcPattern	*p,
 
 	if (!e)
 	    return;
-	FcConfigAdd (&e->values, 0, append, list);
+	FcConfigAdd (&e->values, 0, append, list, object);
     }
 }
 
@@ -1579,7 +1601,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		    /*
 		     * Append the new list of values after the current value
 		     */
-		    FcConfigAdd (&st[i].elt->values, thisValue, FcTrue, l);
+		    FcConfigAdd (&st[i].elt->values, thisValue, FcTrue, l, e->object);
 		    /*
 		     * Delete the marked value
 		     */
@@ -1621,7 +1643,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    case FcOpPrepend:
 		if (t)
 		{
-		    FcConfigAdd (&st[i].elt->values, st[i].value, FcFalse, l);
+		    FcConfigAdd (&st[i].elt->values, st[i].value, FcFalse, l, e->object);
 		    break;
 		}
 		/* fall through ... */
@@ -1631,7 +1653,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 	    case FcOpAppend:
 		if (t)
 		{
-		    FcConfigAdd (&st[i].elt->values, st[i].value, FcTrue, l);
+		    FcConfigAdd (&st[i].elt->values, st[i].value, FcTrue, l, e->object);
 		    break;
 		}
 		/* fall through ... */
