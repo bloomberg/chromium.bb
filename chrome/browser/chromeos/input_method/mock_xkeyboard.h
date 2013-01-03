@@ -33,16 +33,11 @@ class MockXKeyboard : public XKeyboard {
   virtual unsigned int GetNumLockMask() OVERRIDE;
   virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
                                   bool* out_num_lock_enabled) OVERRIDE;
-  virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
-  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 
   int set_current_keyboard_layout_by_name_count_;
   std::string last_layout_;
   bool caps_lock_is_enabled_;
   bool num_lock_is_enabled_;
-  bool auto_repeat_enabled_;
-  AutoRepeatRate auto_repeat_rate_;
-
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
 
  private:

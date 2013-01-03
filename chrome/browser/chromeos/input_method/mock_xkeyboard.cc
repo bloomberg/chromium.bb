@@ -63,15 +63,5 @@ void MockXKeyboard::GetLockedModifiers(bool* out_caps_lock_enabled,
   *out_num_lock_enabled = num_lock_is_enabled_;
 }
 
-bool MockXKeyboard::SetAutoRepeatEnabled(bool enabled) {
-  auto_repeat_enabled_ = enabled;
-  return true;
-}
-
-bool MockXKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
-  auto_repeat_rate_ = rate;
-  return true;
-}
-
 }  // namespace input_method
 }  // namespace chromeos

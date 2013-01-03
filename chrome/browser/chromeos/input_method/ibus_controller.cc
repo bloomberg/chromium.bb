@@ -17,11 +17,9 @@ IBusController::~IBusController() {
 }
 
 // static
-IBusController* IBusController::Create(
-    const scoped_refptr<base::SequencedTaskRunner>& default_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner) {
+IBusController* IBusController::Create() {
 #if defined(HAVE_IBUS)
-  return new IBusControllerImpl(default_task_runner, worker_task_runner);
+  return new IBusControllerImpl;
 #else
   return new MockIBusController;
 #endif

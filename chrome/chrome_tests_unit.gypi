@@ -84,8 +84,6 @@
         'browser/chromeos/input_method/mock_input_method_delegate.h',
         'browser/chromeos/input_method/mock_input_method_manager.cc',
         'browser/chromeos/input_method/mock_input_method_manager.h',
-        'browser/chromeos/input_method/mock_sequenced_task_runner.cc',
-        'browser/chromeos/input_method/mock_sequenced_task_runner.h',
         'browser/chromeos/input_method/mock_xkeyboard.cc',
         'browser/chromeos/input_method/mock_xkeyboard.h',
         'browser/chromeos/login/mock_login_status_consumer.cc',

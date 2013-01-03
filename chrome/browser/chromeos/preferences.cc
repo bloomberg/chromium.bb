@@ -525,8 +525,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
     const bool enabled = xkb_auto_repeat_enabled_.GetValue();
-    input_method::GetInputMethodManager()->GetXKeyboard()->
-        SetAutoRepeatEnabled(enabled);
+    input_method::XKeyboard::SetAutoRepeatEnabled(enabled);
   }
   if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
                      (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
@@ -788,8 +787,7 @@ void Preferences::UpdateAutoRepeatRate() {
   rate.repeat_interval_in_ms = xkb_auto_repeat_interval_pref_.GetValue();
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
-  input_method::GetInputMethodManager()->GetXKeyboard()->
-      SetAutoRepeatRate(rate);
+  input_method::XKeyboard::SetAutoRepeatRate(rate);
 }
 
 }  // namespace chromeos

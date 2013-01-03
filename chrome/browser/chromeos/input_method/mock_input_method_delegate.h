@@ -20,10 +20,6 @@ class MockInputMethodDelegate : public InputMethodDelegate {
   // InputMethodDelegate implementation:
   virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
   virtual std::string GetActiveLocale() const OVERRIDE;
-  virtual scoped_refptr<base::SequencedTaskRunner>
-      GetDefaultTaskRunner() const OVERRIDE;
-  virtual scoped_refptr<base::SequencedTaskRunner>
-      GetWorkerTaskRunner() const OVERRIDE;
 
   void set_hardware_keyboard_layout(const std::string& value) {
     hardware_keyboard_layout_ = value;
