@@ -691,17 +691,20 @@ void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
 }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-ScopedMTPDeviceMapEntry*
+scoped_refptr<ScopedMTPDeviceMapEntry>
 MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_device_delegate_map_.find(device_location);
   if (delegate_it != mtp_device_delegate_map_.end())
     return delegate_it->second;
-  ScopedMTPDeviceMapEntry* mtp_device_host = new ScopedMTPDeviceMapEntry(
-      device_location, base::Bind(
-          &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
-          base::Unretained(this), device_location));
+  scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host =
+      new ScopedMTPDeviceMapEntry(
+          device_location,
+          base::Bind(&MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
+                     base::Unretained(this),
+                     device_location));
+  mtp_device_host->Init();
   mtp_device_delegate_map_[device_location] = mtp_device_host;
   return mtp_device_host;
 }

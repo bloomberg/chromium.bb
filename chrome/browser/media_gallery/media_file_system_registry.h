@@ -115,7 +115,7 @@ class MediaFileSystemRegistry
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
-  ScopedMTPDeviceMapEntry* GetOrCreateScopedMTPDeviceMapEntry(
+  scoped_refptr<ScopedMTPDeviceMapEntry> GetOrCreateScopedMTPDeviceMapEntry(
       const FilePath::StringType& device_location);
 
   // Removes the ScopedMTPDeviceMapEntry associated with the given

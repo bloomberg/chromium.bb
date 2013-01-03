@@ -31,6 +31,9 @@ class ScopedMTPDeviceMapEntry
   ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
                           const base::Closure& on_destruction_callback);
 
+  // Most be called after creating the ScopedMTPDeviceMapEntry.
+  void Init();
+
  private:
   // Friend declarations for ref counted implementation.
   friend struct content::BrowserThread::DeleteOnThread<

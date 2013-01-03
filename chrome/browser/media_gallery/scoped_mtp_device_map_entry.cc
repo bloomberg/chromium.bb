@@ -40,6 +40,9 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const base::Closure& on_destruction_callback)
     : device_location_(device_location),
       on_destruction_callback_(on_destruction_callback) {
+}
+
+void ScopedMTPDeviceMapEntry::Init() {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   CreateMTPDeviceDelegateCallback callback =
       base::Bind(&ScopedMTPDeviceMapEntry::OnMTPDeviceDelegateCreated, this);
