@@ -119,7 +119,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   bool CanAccept(int id);
 
   // Returns true if the popup still has non-options entries to show the user.
-  bool HasAutofillEntries();
+  bool HasSuggestions();
 
   AutofillPopupView* view() { return view_; }
 

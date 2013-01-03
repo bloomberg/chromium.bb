@@ -430,7 +430,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 
   SetSelectedLine(kNoSelection);
 
-  if (HasAutofillEntries()) {
+  if (HasSuggestions()) {
     delegate_->ClearPreviewedForm();
     UpdateBoundsAndRedrawPopup();
   } else {
@@ -488,8 +488,8 @@ bool AutofillPopupControllerImpl::CanAccept(int id) {
       id != WebAutofillClient::MenuItemIDWarningMessage;
 }
 
-bool AutofillPopupControllerImpl::HasAutofillEntries() {
-  return names_.size() != 0 &&
+bool AutofillPopupControllerImpl::HasSuggestions() {
+  return identifiers_.size() != 0 &&
       (identifiers_[0] > 0 ||
        identifiers_[0] ==
            WebAutofillClient::MenuItemIDAutocompleteEntry ||

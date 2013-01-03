@@ -134,12 +134,10 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     if (!line_rect.Intersects(damage_rect))
       continue;
 
-    if (controller_->identifiers()[i] ==
-            WebAutofillClient::MenuItemIDSeparator) {
+    if (controller_->identifiers()[i] == WebAutofillClient::MenuItemIDSeparator)
       DrawSeparator(cr, line_rect);
-    } else {
+    else
       DrawAutofillEntry(cr, i, line_rect);
-    }
   }
 
   cairo_destroy(cr);
@@ -220,7 +218,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
       controller_->name_font().GetStringWidth(controller_->names()[index]);
 
   // Center the text within the line.
-  int row_height = controller_->GetRowBounds(index).height();
+  int row_height = entry_rect.height();
   int value_content_y = std::max(
       entry_rect.y(),
       entry_rect.y() +
