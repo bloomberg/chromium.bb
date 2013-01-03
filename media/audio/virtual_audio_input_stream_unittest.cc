@@ -33,11 +33,17 @@ class VirtualAudioInputStreamTest : public testing::Test {
         params_(
             AudioParameters::AUDIO_VIRTUAL,CHANNEL_LAYOUT_MONO, 8000, 8, 128),
         output_params_(
-            AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO, 8000, 8,
-            128),
+            AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_MONO, 8000, 8, 128),
         stream_(NULL),
         source_(CHANNEL_LAYOUT_STEREO, 200.0, 128),
         done_(false, false) {
+  }
+
+  void CreateAndOpenVirtualAudioInputStream() {
+    stream_ = static_cast<VirtualAudioInputStream*>(
+        audio_manager_->MakeAudioInputStream(params_, "1"));
+    ASSERT_TRUE(!!stream_);
+    stream_->Open();
   }
 
   void StartStreamAndRunTestsOnAudioThread(int num_output_streams,
@@ -45,7 +51,7 @@ class VirtualAudioInputStreamTest : public testing::Test {
                                            int num_streams_removed_per_round,
                                            int num_expected_source_callbacks) {
     ASSERT_TRUE(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
-    stream_->Open();
+    CreateAndOpenVirtualAudioInputStream();
     stream_->Start(&input_callback_);
     AddStreamsAndDoCallbacks(num_output_streams,
                              num_callback_iterations,
@@ -106,7 +112,7 @@ class VirtualAudioInputStreamTest : public testing::Test {
 
   void OpenAndCloseOnAudioThread() {
     ASSERT_TRUE(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
-    stream_->Open();
+    CreateAndOpenVirtualAudioInputStream();
 
     // Create 2 output streams, which we just open and close without starting.
     const int num_output_stream = 2;
@@ -129,7 +135,7 @@ class VirtualAudioInputStreamTest : public testing::Test {
                               int num_callback_iterations,
                               int num_expected_source_callbacks) {
     ASSERT_TRUE(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
-    stream_->Open();
+    CreateAndOpenVirtualAudioInputStream();
     stream_->Start(&input_callback_);
     StartStopCallback(true, num_output_streams, num_callback_iterations,
                       num_expected_source_callbacks);
@@ -217,10 +223,6 @@ class VirtualAudioInputStreamTest : public testing::Test {
 };
 
 TEST_F(VirtualAudioInputStreamTest, AttachAndDriveSingleStream) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
-
   const int num_output_streams = 1;
   const int num_callback_iterations = 1;
   const int num_streams_removed_per_round = 0;
@@ -239,10 +241,6 @@ TEST_F(VirtualAudioInputStreamTest, AttachAndDriveSingleStream) {
 }
 
 TEST_F(VirtualAudioInputStreamTest, AttachAndDriveMultipleStreams) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
-
   const int num_output_streams = 5;
   const int num_callback_iterations = 5;
   const int num_streams_removed_per_round = 0;
@@ -261,10 +259,6 @@ TEST_F(VirtualAudioInputStreamTest, AttachAndDriveMultipleStreams) {
 }
 
 TEST_F(VirtualAudioInputStreamTest, AttachAndRemoveStreams) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
-
   const int num_output_streams = 8;
   const int num_callback_iterations = 5;
   const int num_streams_removed_per_round = 1;
@@ -285,10 +279,6 @@ TEST_F(VirtualAudioInputStreamTest, AttachAndRemoveStreams) {
 // Opens/closes a VirtualAudioInputStream and a number of attached
 // VirtualAudioOutputStreams without calling Start()/Stop().
 TEST_F(VirtualAudioInputStreamTest, OpenAndClose) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
-
   audio_manager_->GetMessageLoop()->PostTask(
       FROM_HERE, base::Bind(
           &VirtualAudioInputStreamTest::OpenAndCloseOnAudioThread,
@@ -299,9 +289,10 @@ TEST_F(VirtualAudioInputStreamTest, OpenAndClose) {
 
 // Creates and closes and VirtualAudioInputStream.
 TEST_F(VirtualAudioInputStreamTest, CreateAndClose) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
+  audio_manager_->GetMessageLoop()->PostTask(
+      FROM_HERE, base::Bind(
+          &VirtualAudioInputStreamTest::CreateAndOpenVirtualAudioInputStream,
+          base::Unretained(this)));
 
   audio_manager_->GetMessageLoop()->PostTask(
       FROM_HERE, base::Bind(&VirtualAudioInputStreamTest::EndTest,
@@ -313,10 +304,6 @@ TEST_F(VirtualAudioInputStreamTest, CreateAndClose) {
 // Starts and stops VirtualAudioOutputStreams while attached to a
 // VirtualAudioInputStream.
 TEST_F(VirtualAudioInputStreamTest, AttachAndStartStopStreams) {
-  stream_ = static_cast<VirtualAudioInputStream*>(
-      audio_manager_->MakeAudioInputStream(params_, "1"));
-  DCHECK(stream_);
-
   const int num_output_streams = 4;
   const int num_callback_iterations = 5;
   const int num_expected_source_callbacks = 2 + 4 + 2 + 4 + 2;

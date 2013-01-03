@@ -79,6 +79,10 @@ scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const AudioParameters& params) {
+  // TODO(miu): Fix ~50 call points across several unit test modules to call
+  // this method on the audio thread, then uncomment the following:
+  // DCHECK(message_loop_->BelongsToCurrentThread());
+
   if (!params.IsValid()) {
     DLOG(ERROR) << "Audio parameters are invalid";
     return NULL;
@@ -128,6 +132,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
 
 AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const AudioParameters& params, const std::string& device_id) {
+  // TODO(miu): Fix ~20 call points across several unit test modules to call
+  // this method on the audio thread, then uncomment the following:
+  // DCHECK(message_loop_->BelongsToCurrentThread());
+
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
       device_id.empty()) {
     DLOG(ERROR) << "Audio parameters are invalid for device " << device_id;
@@ -159,9 +167,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
       // Make all current output streams recreate themselves as
       // VirtualAudioOutputStreams that will attach to the above
       // VirtualAudioInputStream.
-      message_loop_->PostTask(FROM_HERE, base::Bind(
-          &AudioManagerBase::NotifyAllOutputDeviceChangeListeners,
-          base::Unretained(this)));
+      NotifyAllOutputDeviceChangeListeners();
     } else {
       stream = NULL;
     }
