@@ -1603,6 +1603,8 @@
         'browser/profiles/chrome_version_service.h',
         'browser/profiles/gaia_info_update_service.cc',
         'browser/profiles/gaia_info_update_service.h',
+        'browser/profiles/gaia_info_update_service_factory.cc',
+        'browser/profiles/gaia_info_update_service_factory.h',
         'browser/profiles/off_the_record_profile_impl.cc',
         'browser/profiles/off_the_record_profile_impl.h',
         'browser/profiles/off_the_record_profile_io_data.cc',

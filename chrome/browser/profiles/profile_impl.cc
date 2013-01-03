@@ -57,7 +57,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
-#include "chrome/browser/profiles/gaia_info_update_service.h"
+#include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -432,7 +432,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   // kGoogleServicesUsername, initialize components that depend on it to reflect
   // the current value.
   UpdateProfileUserNameCache();
-  GetGAIAInfoUpdateService();
+  GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
@@ -873,14 +873,6 @@ ProfileImpl::GetSpeechRecognitionPreferences() {
 #else
   return NULL;
 #endif
-}
-
-GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
-  if (!gaia_info_update_service_.get() &&
-      GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(this)) {
-    gaia_info_update_service_.reset(new GAIAInfoUpdateService(this));
-  }
-  return gaia_info_update_service_.get();
 }
 
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
