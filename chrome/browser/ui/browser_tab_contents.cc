@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_switches.h"
@@ -121,7 +121,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(
       web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);

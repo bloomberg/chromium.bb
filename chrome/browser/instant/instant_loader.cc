@@ -11,11 +11,11 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -46,15 +46,15 @@ class InstantLoaderUserData : public base::SupportsUserData::Data {
 // WebContentsDelegateImpl -----------------------------------------------------
 
 class InstantLoader::WebContentsDelegateImpl
-    : public ConstrainedWindowTabHelperDelegate,
+    : public WebContentsModalDialogManagerDelegate,
       public CoreTabHelperDelegate,
       public content::WebContentsDelegate {
  public:
   explicit WebContentsDelegateImpl(InstantLoader* loader);
 
  private:
-  // Overridden from ConstrainedWindowTabHelperDelegate:
-  virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
+  // Overridden from WebContentsModalDialogManagerDelegate:
+  virtual bool ShouldFocusWebContentsModalDialog() OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
   virtual void SwapTabContents(content::WebContents* old_contents,
@@ -90,10 +90,11 @@ InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
     : loader_(loader) {
 }
 
-bool InstantLoader::WebContentsDelegateImpl::ShouldFocusConstrainedWindow() {
-  // Return false so that constrained windows are not initially focused. If we
-  // did otherwise the preview would prematurely get committed when focus goes
-  // to the constrained window.
+bool InstantLoader::WebContentsDelegateImpl::ShouldFocusWebContentsModalDialog(
+) {
+  // Return false so that web contents modal dialogs are not initially
+  // focused. If we did otherwise the preview would prematurely get committed
+  // when focus goes to the dialog.
   return false;
 }
 
@@ -364,9 +365,9 @@ void InstantLoader::SetupPreviewContents() {
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(true);
 
-  // A tab helper to control constrained windows.
-  ConstrainedWindowTabHelper::CreateForWebContents(contents());
-  ConstrainedWindowTabHelper::FromWebContents(contents())->
+  // A manager to control web contents modal dialogs.
+  WebContentsModalDialogManager::CreateForWebContents(contents());
+  WebContentsModalDialogManager::FromWebContents(contents())->
       set_delegate(delegate_.get());
 
   // A tab helper to catch prerender content swapping shenanigans.
@@ -410,7 +411,7 @@ void InstantLoader::CleanupPreviewContents() {
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(false);
 
-  ConstrainedWindowTabHelper::FromWebContents(contents())->
+  WebContentsModalDialogManager::FromWebContents(contents())->
       set_delegate(NULL);
 
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);

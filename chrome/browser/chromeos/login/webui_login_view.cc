@@ -22,7 +22,7 @@
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -161,7 +161,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
       web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
 
   // LoginHandlerViews uses a constrained window for the password manager view.
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
   renderer_preferences_util::UpdateFromSystemSettings(

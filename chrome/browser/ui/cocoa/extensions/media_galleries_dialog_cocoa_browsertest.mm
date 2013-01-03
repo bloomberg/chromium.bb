@@ -7,7 +7,7 @@
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,9 +40,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   scoped_nsobject<NSWindow> window([[dialog->alert_ window] retain]);
   EXPECT_TRUE([window isVisible]);
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  constrained_window_tab_helper->CloseAllDialogs();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->CloseAllDialogs();
   EXPECT_FALSE([window isVisible]);
 }
 

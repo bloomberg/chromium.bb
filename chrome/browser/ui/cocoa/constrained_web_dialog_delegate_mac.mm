@@ -46,7 +46,7 @@ class ConstrainedWebDialogDelegateMac :
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+  virtual WebContentsModalDialog* GetWindow() OVERRIDE {
     return impl_->GetWindow();
   }
   virtual WebContents* GetWebContents() OVERRIDE {

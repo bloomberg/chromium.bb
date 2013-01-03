@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -49,9 +49,9 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
 
  protected:
   size_t GetConstrainedWindowCount(WebContents* web_contents) const {
-    ConstrainedWindowTabHelper* constrained_window_tab_helper =
-        ConstrainedWindowTabHelper::FromWebContents(web_contents);
-    return constrained_window_tab_helper->dialog_count();
+    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(web_contents);
+    return web_contents_modal_dialog_manager->dialog_count();
   }
 };
 

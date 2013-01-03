@@ -23,9 +23,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
@@ -125,7 +125,7 @@ void ShellWindow::Init(const GURL& url,
 
   web_contents_.reset(WebContents::Create(WebContents::CreateParams(
       profile(), SiteInstance::CreateForURL(profile(), url))));
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents_.get());
+  WebContentsModalDialogManager::CreateForWebContents(web_contents_.get());
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
   WebIntentPickerController::CreateForWebContents(web_contents_.get());
 

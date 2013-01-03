@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
-#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"

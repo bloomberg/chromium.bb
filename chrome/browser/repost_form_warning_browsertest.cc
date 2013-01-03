@@ -6,7 +6,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,19 +37,17 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
   web_contents->GetController().Reload(true);
 
   // There should only be one dialog open.
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  size_t num_constrained_windows =
-      constrained_window_tab_helper->dialog_count();
-  EXPECT_EQ(1u, num_constrained_windows);
+  WebContentsModalDialogManager* web_contents_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  size_t num_dialogs = web_contents_dialog_manager->dialog_count();
+  EXPECT_EQ(1u, num_dialogs);
 
   // Navigate away from the page (this is when the test usually crashes).
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("bar"));
 
   // The dialog should've been closed.
-  num_constrained_windows =
-      constrained_window_tab_helper->dialog_count();
-  EXPECT_EQ(0u, num_constrained_windows);
+  num_dialogs = web_contents_dialog_manager->dialog_count();
+  EXPECT_EQ(0u, num_dialogs);
 }
 
 // If becomes flaky, disable on Windows and use http://crbug.com/47228

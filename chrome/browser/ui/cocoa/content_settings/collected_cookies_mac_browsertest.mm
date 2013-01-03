@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 
@@ -13,18 +13,18 @@ typedef InProcessBrowserTest CollectedCookiesMacTest;
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Close) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
 
   // Deletes itself.
   CollectedCookiesMac* dialog =
       new CollectedCookiesMac(chrome::GetActiveWebContents(browser()));
-  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
+  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
 
   dialog->PerformClose();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
+  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
 }
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Outlets) {

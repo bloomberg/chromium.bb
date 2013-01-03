@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
-#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"

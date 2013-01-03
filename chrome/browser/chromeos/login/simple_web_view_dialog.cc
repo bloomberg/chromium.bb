@@ -15,13 +15,13 @@
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -158,7 +158,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
       web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
 
   // LoginHandlerViews uses a constrained window for the password manager view.
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::CreateForWebContents(web_contents);
 }
 
 void SimpleWebViewDialog::Init() {

@@ -7,8 +7,6 @@
 
 #include "base/callback_forward.h"
 
-class ConstrainedWindow;
-
 namespace content {
 class DownloadItem;
 class WebContents;

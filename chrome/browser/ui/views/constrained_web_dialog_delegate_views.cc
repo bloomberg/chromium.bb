@@ -79,7 +79,7 @@ class ConstrainedWebDialogDelegateViewViews
       WebDialogWebContentsDelegate* tab_delegate);
   virtual ~ConstrainedWebDialogDelegateViewViews();
 
-  void set_window(ConstrainedWindow* window) {
+  void set_window(WebContentsModalDialog* window) {
     return impl_->set_window(window);
   }
 
@@ -97,7 +97,7 @@ class ConstrainedWebDialogDelegateViewViews
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+  virtual WebContentsModalDialog* GetWindow() OVERRIDE {
     return impl_->GetWindow();
   }
   virtual WebContents* GetWebContents() OVERRIDE {
@@ -197,8 +197,8 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
-  ConstrainedWindow* constrained_window =
+  WebContentsModalDialog* web_contents_modal_dialog =
       new ConstrainedWindowViews(web_contents, constrained_delegate);
-  constrained_delegate->set_window(constrained_window);
+  constrained_delegate->set_window(web_contents_modal_dialog);
   return constrained_delegate;
 }

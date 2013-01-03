@@ -12,11 +12,11 @@
 // A NSWindow subclass that gives a custom look (rounded corners and white
 // background).
 //
-// Unfortunately the word "window" here is overused. ConstrainedWindow is the
-// tab modal dialog controller. ConstrainedWindowCustomWindow is the custom
-// NSWindow that gives us the new look (rounded corners and white background).
+// Note that WebContentsModalDialog is the web contents modal dialog
+// controller. ConstrainedWindowCustomWindow is the custom NSWindow that gives
+// us the new look (rounded corners and white background).
 //
-// If a ConstrainedWindow is using ConstrainedWindowAlert to display its UI
+// If a WebContentsModalDialog is using ConstrainedWindowAlert to display its UI
 // then it doesn't have to use this class. On the other hand, if it has some
 // custom UI (say from a nib) then it should use this class.
 @interface ConstrainedWindowCustomWindow : ChromeEventProcessingWindow

@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
-class ConstrainedWindow;
+class WebContentsModalDialog;
 class GURL;
 
 namespace content {
@@ -83,7 +83,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   void SetModel(LoginModel* model);
 
-  void SetDialog(ConstrainedWindow* dialog);
+  void SetDialog(WebContentsModalDialog* dialog);
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -123,9 +123,9 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   bool handled_auth_;
   mutable base::Lock handled_auth_lock_;
 
-  // The ConstrainedWindow that is hosting our LoginView.
+  // The WebContentsModalDialog that is hosting our LoginView.
   // This should only be accessed on the UI loop.
-  ConstrainedWindow* dialog_;
+  WebContentsModalDialog* dialog_;
 
   // Who/where/what asked for the authentication.
   scoped_refptr<net::AuthChallengeInfo> auth_info_;

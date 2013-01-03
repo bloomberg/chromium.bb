@@ -31,11 +31,11 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_icon_loader.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -239,9 +239,9 @@ void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
 
   // As soon as the dialog is requested, block all input events
   // on the original tab.
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->BlockWebContentsInteraction(true);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->BlockWebContentsInteraction(true);
   SetDialogState(kPickerSetup);
 
   pending_async_count_++;
@@ -703,9 +703,9 @@ void WebIntentPickerController::Reset() {
   picker_shown_ = false;
 
   DCHECK(web_contents_);
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->BlockWebContentsInteraction(false);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->BlockWebContentsInteraction(false);
 }
 
 void WebIntentPickerController::OnShowExtensionInstallDialog(

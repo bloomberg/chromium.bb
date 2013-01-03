@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -242,7 +242,7 @@ void LoginHandler::SetModel(LoginModel* model) {
     login_model_->SetObserver(this);
 }
 
-void LoginHandler::SetDialog(ConstrainedWindow* dialog) {
+void LoginHandler::SetDialog(WebContentsModalDialog* dialog) {
   dialog_ = dialog;
 }
 
@@ -377,7 +377,7 @@ void LoginHandler::CancelAuthDeferred() {
 void LoginHandler::CloseContentsDeferred() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // The hosting ConstrainedWindow may have been freed.
+  // The hosting WebContentsModalDialog may have been freed.
   if (dialog_)
     dialog_->CloseWebContentsModalDialog();
 }

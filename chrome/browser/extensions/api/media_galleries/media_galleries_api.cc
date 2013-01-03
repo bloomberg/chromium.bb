@@ -19,8 +19,8 @@
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
@@ -173,12 +173,12 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   WebContents* contents = WebContents::FromRenderViewHost(render_view_host());
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(contents);
-  if (!constrained_window_tab_helper) {
-    // If there is no ConstrainedWindowTabHelper, then this contents is probably
-    // the background page for an app. Try to find a shell window to host the
-    // dialog.
+  WebContentsModalDialogManager* web_contents_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(contents);
+  if (!web_contents_dialog_manager) {
+    // If there is no WebContentsModalDialogManager, then this contents is
+    // probably the background page for an app. Try to find a shell window to
+    // host the dialog.
     ShellWindow* window = ShellWindowRegistry::Get(profile())->
         GetCurrentShellWindowForApp(GetExtension()->id());
     if (window) {

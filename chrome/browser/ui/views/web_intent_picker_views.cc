@@ -1048,7 +1048,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   scoped_ptr<WebContents> inline_web_contents_;
 
   // Indicate if dialog should display its own close button.
-  // TODO(groby): Only relevant until new ConstrainedWindow is implemented,
+  // TODO(groby): Only relevant until new WebContentsModalDialog is implemented,
   // from then on always true.
   bool use_close_button_;
 

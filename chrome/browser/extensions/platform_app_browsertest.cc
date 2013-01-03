@@ -24,10 +24,10 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -769,15 +769,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
 
-  // Verify that the shell window has a constrained window attached.
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
+  // Verify that the shell window has a dialog attached.
+  WebContentsModalDialogManager* web_contents_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_EQ(1u, web_contents_dialog_manager->dialog_count());
 
   // Close the constrained window and wait for the reply to the permission
   // request.
   ExtensionTestMessageListener listener("PermissionRequestDone", false);
-  constrained_window_tab_helper->CloseAllDialogs();
+  web_contents_dialog_manager->CloseAllDialogs();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
 

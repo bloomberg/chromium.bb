@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -217,7 +217,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   size_t GetConstrainedWindowCount() const {
-    return ConstrainedWindowTabHelper::FromWebContents(
+    return WebContentsModalDialogManager::FromWebContents(
         chrome::GetActiveWebContents(browser()))->dialog_count();
   }
 

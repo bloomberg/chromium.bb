@@ -11,7 +11,7 @@
 
 // This class implements an alert that has a constrained window look and feel
 // (close button on top right, WebUI style buttons, etc...). To use this class
-// subclass ConstrainedWindow and create an instance of this class.
+// subclass WebContentsModalDialog and create an instance of this class.
 // The alert can be shown by using the window accessor and calling
 // -[window orderFont:]. Normally this would be done by
 // ConstrainedWindowSheetController.

@@ -10,7 +10,7 @@
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -33,9 +33,9 @@ typedef SSLClientCertificateSelectorTestBase
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
 
   net::X509Certificate* cert = NULL;
   int count = 0;
@@ -49,11 +49,11 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE([selector panel]);
-  EXPECT_EQ(1u, constrained_window_tab_helper->dialog_count());
+  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
 
-  constrained_window_tab_helper->CloseAllDialogs();
+  web_contents_modal_dialog_manager->CloseAllDialogs();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, constrained_window_tab_helper->dialog_count());
+  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
 
   EXPECT_EQ(NULL, cert);
   EXPECT_EQ(1, count);

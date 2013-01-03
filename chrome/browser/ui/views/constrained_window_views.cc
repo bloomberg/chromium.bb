@@ -12,9 +12,9 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -584,9 +584,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->AddDialog(this);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->AddDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
   views::corewm::SetModalParent(GetNativeWindow(),
@@ -614,10 +614,10 @@ void ConstrainedWindowViews::CloseWebContentsModalDialog() {
 }
 
 void ConstrainedWindowViews::FocusWebContentsModalDialog() {
-  ConstrainedWindowTabHelper* helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  if ((!helper->delegate() ||
-       helper->delegate()->ShouldFocusConstrainedWindow()) &&
+  WebContentsModalDialogManager* manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  if ((!manager->delegate() ||
+       manager->delegate()->ShouldFocusWebContentsModalDialog()) &&
       widget_delegate() &&
       widget_delegate()->GetInitiallyFocusedView()) {
     widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
@@ -629,6 +629,13 @@ void ConstrainedWindowViews::FocusWebContentsModalDialog() {
 #endif
 }
 
+void ConstrainedWindowViews::PulseWebContentsModalDialog() {
+}
+
+bool ConstrainedWindowViews::CanShowWebContentsModalDialog() {
+  return true;
+}
+
 gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
 }
@@ -637,9 +644,9 @@ void ConstrainedWindowViews::NotifyTabHelperWillClose() {
   if (!web_contents_)
     return;
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->WillClose(this);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->WillClose(this);
 }
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {

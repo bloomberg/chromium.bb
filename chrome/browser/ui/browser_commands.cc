@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -51,6 +50,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -178,9 +178,9 @@ bool HasConstrainedWindow(const Browser* browser) {
   if (!web_contents)
     return false;
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  return constrained_window_tab_helper->dialog_count() > 0;
+  WebContentsModalDialogManager* web_contents_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  return web_contents_dialog_manager->dialog_count() > 0;
 }
 
 bool PrintPreviewShowing(const Browser* browser) {

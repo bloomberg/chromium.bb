@@ -6,10 +6,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -122,9 +122,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
-  ConstrainedWindowTabHelper* constrained_window_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  ASSERT_TRUE(constrained_window_helper != NULL);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  ASSERT_TRUE(web_contents_modal_dialog_manager != NULL);
 
   // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // test_dialog1's text field should still be the view that has focus.
   EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
-  ASSERT_EQ(2u, constrained_window_helper->dialog_count());
+  ASSERT_EQ(2u, web_contents_modal_dialog_manager->dialog_count());
 
   // Now send a VKEY_RETURN to the browser.  This should result in closing
   // test_dialog1.
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   EXPECT_TRUE(test_dialog1->done());
   EXPECT_FALSE(test_dialog2->done());
-  EXPECT_EQ(1u, constrained_window_helper->dialog_count());
+  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
 
   // test_dialog2 will be shown.  Focus should be on test_dialog2's text field.
   EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
-  EXPECT_EQ(0u, constrained_window_helper->dialog_count());
+  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
 }
 
 // Tests that the constrained window is closed properly when its tab is
@@ -196,9 +196,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
-  ConstrainedWindowTabHelper* constrained_window_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents);
-  ASSERT_TRUE(constrained_window_helper != NULL);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  ASSERT_TRUE(web_contents_modal_dialog_manager != NULL);
 
   // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
 // Tests that backspace is not processed before it's sent to the web contents.
 // We do not run this test on Aura because key events are sent to the web
 // contents through a different code path that does not call
-// views::FocusManager::OnKeyEvent when ConstrainedWindow is focused.
+// views::FocusManager::OnKeyEvent when WebContentsModalDialog is focused.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
                        BackspaceSentToWebContent) {
   content::WebContents* web_contents =

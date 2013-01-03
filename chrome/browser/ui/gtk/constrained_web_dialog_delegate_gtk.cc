@@ -28,8 +28,8 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
 
   virtual ~ConstrainedWebDialogDelegateGtk() {}
 
-  void set_window(ConstrainedWindow* window) {
-    return impl_->set_window(window);
+  void set_window(WebContentsModalDialog* dialog) {
+    return impl_->set_window(dialog);
   }
 
   // ConstrainedWebDialogDelegate interface
@@ -46,7 +46,7 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+  virtual WebContentsModalDialog* GetWindow() OVERRIDE {
     return impl_->GetWindow();
   }
   virtual WebContents* GetWebContents() OVERRIDE {
@@ -99,8 +99,8 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   ConstrainedWebDialogDelegateGtk* constrained_delegate =
       new ConstrainedWebDialogDelegateGtk(
           browser_context, delegate, tab_delegate);
-  ConstrainedWindow* constrained_window =
+  WebContentsModalDialog* web_contents_modal_dialog =
       new ConstrainedWindowGtk(web_contents, constrained_delegate);
-  constrained_delegate->set_window(constrained_window);
+  constrained_delegate->set_window(web_contents_modal_dialog);
   return constrained_delegate;
 }

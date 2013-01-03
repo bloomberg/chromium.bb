@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -66,7 +66,8 @@ void ConstrainedWebDialogDelegateBase::OnDialogCloseFromWebUI() {
   window_->CloseWebContentsModalDialog();
 }
 
-void ConstrainedWebDialogDelegateBase::set_window(ConstrainedWindow* window) {
+void ConstrainedWebDialogDelegateBase::set_window(
+    WebContentsModalDialog* window) {
   window_ = window;
 }
 
@@ -83,7 +84,7 @@ void ConstrainedWebDialogDelegateBase::ReleaseWebContentsOnDialogClose() {
   release_contents_on_close_ = true;
 }
 
-ConstrainedWindow* ConstrainedWebDialogDelegateBase::GetWindow() {
+WebContentsModalDialog* ConstrainedWebDialogDelegateBase::GetWindow() {
   return window_;
 }
 

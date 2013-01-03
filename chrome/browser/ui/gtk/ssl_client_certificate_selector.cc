@@ -93,7 +93,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   GtkWidget* select_button_;
 
   WebContents* web_contents_;
-  ConstrainedWindow* window_;
+  WebContentsModalDialog* window_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };

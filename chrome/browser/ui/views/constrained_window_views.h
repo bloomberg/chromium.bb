@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
@@ -51,12 +51,12 @@ class NativeConstrainedWindow {
 ///////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews
 //
-//  A ConstrainedWindow implementation that implements a Constrained Window as
-//  a child HWND with a custom window frame. The ConstrainedWindowViews owns
+//  A WebContentsModalDialog implementation that implements the dialog as a
+//  child HWND with a custom window frame. The ConstrainedWindowViews owns
 //  itself and will be deleted soon after being closed.
 //
 class ConstrainedWindowViews : public views::Widget,
-                               public ConstrainedWindow,
+                               public WebContentsModalDialog,
                                public NativeConstrainedWindowDelegate {
  public:
   ConstrainedWindowViews(content::WebContents* web_contents,
@@ -66,10 +66,12 @@ class ConstrainedWindowViews : public views::Widget,
   // Returns the WebContents that constrains this Constrained Window.
   content::WebContents* owner() const { return web_contents_; }
 
-  // Overridden from ConstrainedWindow:
+  // Overridden from WebContentsModalDialog:
   virtual void ShowWebContentsModalDialog() OVERRIDE;
   virtual void CloseWebContentsModalDialog() OVERRIDE;
   virtual void FocusWebContentsModalDialog() OVERRIDE;
+  virtual void PulseWebContentsModalDialog() OVERRIDE;
+  virtual bool CanShowWebContentsModalDialog() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // Default insets for the dialog:
