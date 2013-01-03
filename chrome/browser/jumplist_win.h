@@ -244,6 +244,8 @@ class JumpList : public TabRestoreServiceObserver,
   // Lock for most_visited_pages_, recently_closed_pages_, icon_urls_
   // as they may be used by up to 3 threads.
   base::Lock list_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(JumpList);
 };
 
 #endif  // CHROME_BROWSER_JUMPLIST_WIN_H_

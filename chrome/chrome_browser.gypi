@@ -2586,6 +2586,8 @@
             ['exclude', '^browser/hang_monitor/hung_plugin_action.h'],
             ['exclude', '^browser/hang_monitor/hung_window_detector.cc'],
             ['exclude', '^browser/hang_monitor/hung_window_detector.h'],
+            ['exclude', '^browser/jumplist_win.cc'],
+            ['exclude', '^browser/jumplist_win.h'],
             ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
             ['exclude', '^browser/tab_contents/web_drag_bookmark_handler_win.cc'],

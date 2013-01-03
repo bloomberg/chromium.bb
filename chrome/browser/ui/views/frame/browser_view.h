@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/load_complete_listener.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -95,7 +96,8 @@ class BrowserView : public BrowserWindow,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
-                    public gfx::SysColorChangeListener {
+                    public gfx::SysColorChangeListener,
+                    public LoadCompleteListener::Delegate {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -458,6 +460,10 @@ class BrowserView : public BrowserWindow,
   // Callback for the loading animation(s) associated with this view.
   virtual void LoadingAnimationCallback();
 
+  // LoadCompleteListener::Delegate implementation. Creates and initializes the
+  // |jumplist_| after the first page load.
+  virtual void OnLoadCompleted() OVERRIDE;
+
  private:
   friend class BrowserViewLayout;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
@@ -700,6 +706,9 @@ class BrowserView : public BrowserWindow,
   // This object is invoked by hung_window_detector_ when it detects a hung
   // plugin window.
   HungPluginAction hung_plugin_action_;
+
+  // Helper class to listen for completion of first page load.
+  scoped_ptr<LoadCompleteListener> load_complete_listener_;
 
   // The custom JumpList for Windows 7.
   scoped_refptr<JumpList> jumplist_;
