@@ -37,7 +37,7 @@ public class CleanupReference extends PhantomReference<Object> {
             @Override
             protected void finalize() throws Throwable {
                 try {
-                    Message.obtain(sHandler).sendToTarget();
+                    Message.obtain(sHandler, CLEANUP_REFS).sendToTarget();
                     // Create a new detector since this one has now been GC'd.
                     createGarbageCollectionDetector();
                 } finally {
@@ -47,6 +47,15 @@ public class CleanupReference extends PhantomReference<Object> {
         };
     }
 
+    // Message's sent in the |what| field to |sHandler|.
+
+    // Add a new reference to sRefs. |msg.obj| is the CleanupReference to add.
+    static final int ADD_REF = 1;
+    // Remove reference from sRefs. |msg.obj| is the CleanupReference to remove.
+    static final int REMOVE_REF = 2;
+    // Flush out pending items on the reference queue (i.e. run the finalizer actions).
+    static final int CLEANUP_REFS = 3;
+
     /**
      * This {@link Handler} polls {@link #sRefs}, looking for cleanup tasks that
      * are ready to run.
@@ -55,10 +64,22 @@ public class CleanupReference extends PhantomReference<Object> {
         @Override
         public void handleMessage(android.os.Message msg) {
             TraceEvent.begin();
-            CleanupReference ref = null;
+            CleanupReference ref = (CleanupReference) msg.obj;
+            switch (msg.what) {
+                case ADD_REF:
+                    sRefs.add(ref);
+                    break;
+                case REMOVE_REF:
+                    ref.runCleanupTaskInternal();
+                    break;
+                case CLEANUP_REFS:
+                    break; // Handled below
+            }
+
+            // Always run the cleanup loop here even when adding or removing refs, to avoid
+            // falling behind on rapid allocation/GC inner loops.
             while ((ref = (CleanupReference) sQueue.poll()) != null) {
-                ref.cleanupNow();
-                ref.clear();
+                ref.runCleanupTaskInternal();
             }
             TraceEvent.end();
         }
@@ -69,6 +90,7 @@ public class CleanupReference extends PhantomReference<Object> {
     /**
      * Keep a strong reference to {@link CleanupReference} so that it will
      * actually get enqueued.
+     * Only accessed on the UI thread.
      */
     private static Set<CleanupReference> sRefs = new HashSet<CleanupReference>();
 
@@ -82,13 +104,7 @@ public class CleanupReference extends PhantomReference<Object> {
     public CleanupReference(Object obj, Runnable cleanupTask) {
         super(obj, sQueue);
         mCleanupTask = cleanupTask;
-        sRefs.add(this);
-        // Proactively force a cleanup to catch anything that has been enqueued
-        // but is still waiting for the GC detector's finalizer to run.
-        // Note this could still run behind (if the main thread is consistently too
-        // busy to service messages) but we could investigate synchronously flushing the
-        // reference queue if this method is itself being called on the main thread.
-        Message.obtain(sHandler).sendToTarget();
+        handleOnUiThread(ADD_REF);
     }
 
     /**
@@ -96,10 +112,24 @@ public class CleanupReference extends PhantomReference<Object> {
      * after garbage collection.
      */
     public void cleanupNow() {
+        handleOnUiThread(REMOVE_REF);
+    }
+
+    private void handleOnUiThread(int what) {
+        Message msg = Message.obtain(sHandler, what, this);
+        if (Looper.myLooper() == sHandler.getLooper()) {
+            sHandler.handleMessage(msg);
+        } else {
+            msg.sendToTarget();
+        }
+    }
+
+    private void runCleanupTaskInternal() {
+        sRefs.remove(this);
         if (mCleanupTask != null) {
             mCleanupTask.run();
             mCleanupTask = null;
         }
-        sRefs.remove(this);
+        clear();
     }
 }
