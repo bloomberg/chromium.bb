@@ -123,9 +123,9 @@ def DownloadSDK8():
       'Running sdksetup.exe to download Win8 SDK (may request elevation)...\n')
   count = 0
   while count < 5:
-    rc = RunOrDie(target_path + ' /quiet '
-                  '/features OptionId.WindowsDesktopSoftwareDevelopmentKit '
-                  '/layout ' + standalone_path)
+    rc = os.system(target_path + ' /quiet '
+                   '/features OptionId.WindowsDesktopSoftwareDevelopmentKit '
+                   '/layout ' + standalone_path)
     if rc == 0:
       return standalone_path
       break
