@@ -128,25 +128,23 @@ void HandleForkRequest(const std::vector<int>& child_fds,
 static const char kNaClHelperReservedAtZero[] = "reserved_at_zero";
 static const char kNaClHelperRDebug[] = "r_debug";
 
-/*
- * Since we were started by nacl_helper_bootstrap rather than in the
- * usual way, the debugger cannot figure out where our executable
- * or the dynamic linker or the shared libraries are in memory,
- * so it won't find any symbols.  But we can fake it out to find us.
- *
- * The zygote passes --r_debug=0xXXXXXXXXXXXXXXXX.
- * nacl_helper_bootstrap replaces the Xs with the address of its _r_debug
- * structure.  The debugger will look for that symbol by name to
- * discover the addresses of key dynamic linker data structures.
- * Since all it knows about is the original main executable, which
- * is the bootstrap program, it finds the symbol defined there.  The
- * dynamic linker's structure is somewhere else, but it is filled in
- * after initialization.  The parts that really matter to the
- * debugger never change.  So we just copy the contents of the
- * dynamic linker's structure into the address provided by the option.
- * Hereafter, if someone attaches a debugger (or examines a core dump),
- * the debugger will find all the symbols in the normal way.
- */
+// Since we were started by nacl_helper_bootstrap rather than in the
+// usual way, the debugger cannot figure out where our executable
+// or the dynamic linker or the shared libraries are in memory,
+// so it won't find any symbols.  But we can fake it out to find us.
+//
+// The zygote passes --r_debug=0xXXXXXXXXXXXXXXXX.
+// nacl_helper_bootstrap replaces the Xs with the address of its _r_debug
+// structure.  The debugger will look for that symbol by name to
+// discover the addresses of key dynamic linker data structures.
+// Since all it knows about is the original main executable, which
+// is the bootstrap program, it finds the symbol defined there.  The
+// dynamic linker's structure is somewhere else, but it is filled in
+// after initialization.  The parts that really matter to the
+// debugger never change.  So we just copy the contents of the
+// dynamic linker's structure into the address provided by the option.
+// Hereafter, if someone attaches a debugger (or examines a core dump),
+// the debugger will find all the symbols in the normal way.
 static void CheckRDebug(char *argv0) {
   std::string r_debug_switch_value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
@@ -157,16 +155,14 @@ static void CheckRDebug(char *argv0) {
       struct r_debug *bootstrap_r_debug = (struct r_debug *) r_debug_addr;
       *bootstrap_r_debug = _r_debug;
 
-      /*
-       * Since the main executable (the bootstrap program) does not
-       * have a dynamic section, the debugger will not skip the
-       * first element of the link_map list as it usually would for
-       * an executable or PIE that was loaded normally.  But the
-       * dynamic linker has set l_name for the PIE to "" as is
-       * normal for the main executable.  So the debugger doesn't
-       * know which file it is.  Fill in the actual file name, which
-       * came in as our argv[0].
-       */
+      // Since the main executable (the bootstrap program) does not
+      // have a dynamic section, the debugger will not skip the
+      // first element of the link_map list as it usually would for
+      // an executable or PIE that was loaded normally.  But the
+      // dynamic linker has set l_name for the PIE to "" as is
+      // normal for the main executable.  So the debugger doesn't
+      // know which file it is.  Fill in the actual file name, which
+      // came in as our argv[0].
       struct link_map *l = _r_debug.r_map;
       if (l->l_name[0] == '\0')
         l->l_name = argv0;
@@ -174,14 +170,12 @@ static void CheckRDebug(char *argv0) {
   }
 }
 
-/*
- * The zygote passes --reserved_at_zero=0xXXXXXXXXXXXXXXXX.
- * nacl_helper_bootstrap replaces the Xs with the amount of prereserved
- * sandbox memory.
- *
- * CheckReservedAtZero parses the value of the argument reserved_at_zero
- * and returns the amount of prereserved sandbox memory.
- */
+// The zygote passes --reserved_at_zero=0xXXXXXXXXXXXXXXXX.
+// nacl_helper_bootstrap replaces the Xs with the amount of prereserved
+// sandbox memory.
+//
+// CheckReservedAtZero parses the value of the argument reserved_at_zero
+// and returns the amount of prereserved sandbox memory.
 static size_t CheckReservedAtZero() {
   size_t prereserved_sandbox_size = 0;
   std::string reserved_at_zero_switch_value =

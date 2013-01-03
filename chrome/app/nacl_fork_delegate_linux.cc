@@ -29,10 +29,8 @@ NaClForkDelegate::NaClForkDelegate()
       sandboxed_(false),
       fd_(-1) {}
 
-/*
- * Note these need to match up with their counterparts in nacl_helper_linux.c
- * and nacl_helper_bootstrap_linux.c.
- */
+// Note these need to match up with their counterparts in nacl_helper_linux.c
+// and nacl_helper_bootstrap_linux.c.
 const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
