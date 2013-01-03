@@ -5,9 +5,10 @@
 // StorageInfoProvider unit tests.
 
 #include "base/message_loop.h"
-#include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +18,8 @@ using api::experimental_system_info_storage::FromStorageUnitTypeString;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
 using content::BrowserThread;
-using testing::AnyNumber;
+using content::RunAllPendingInMessageLoop;
+using content::RunMessageLoop;
 using testing::Return;
 using testing::_;
 
@@ -30,7 +32,7 @@ struct TestUnitInfo {
   int change_step;
 };
 
-struct TestUnitInfo testing_data[] = {
+const struct TestUnitInfo kTestingData[] = {
   {"C:", "unknown", 1000, 10, 0},
   {"d:", "removable", 2000, 10, 1 },
   {"/home","harddisk", 3000, 10, 2},
@@ -38,8 +40,9 @@ struct TestUnitInfo testing_data[] = {
 };
 
 // The watching interval for unit test is 1 milliseconds.
-const unsigned int kWatchingIntervalMs = 1u;
-const int kCallTimes = 3;
+const size_t kWatchingIntervalMs = 1u;
+// The number of times of checking watched storages.
+const int kCheckTimes = 10;
 
 class MockStorageObserver : public StorageInfoProvider::Observer {
  public:
@@ -53,70 +56,145 @@ class MockStorageObserver : public StorageInfoProvider::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockStorageObserver);
 };
 
-class TestStorageInfoProvider : public StorageInfoProvider {
+// A testing observer used to provide the statistics of how many times
+// that the storage free space has been changed and check the change against
+// our expectation.
+class TestStorageObserver : public StorageInfoProvider::Observer {
  public:
-  TestStorageInfoProvider() {}
-
- private:
-  virtual ~TestStorageInfoProvider() {}
-
-  virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
-    info->clear();
-
-    for (size_t i = 0; i < arraysize(testing_data); i++) {
-      linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-      QueryUnitInfo(testing_data[i].id, unit.get());
-      info->push_back(unit);
-    }
-    return true;
+  TestStorageObserver() {
+    for (size_t i = 0; i < arraysize(kTestingData); ++i)
+      testing_data_.push_back(kTestingData[i]);
   }
 
-  virtual bool QueryUnitInfo(const std::string& id,
-                             StorageUnitInfo* info) OVERRIDE {
-    for (size_t i = 0; i < arraysize(testing_data); i++) {
-      if (testing_data[i].id == id) {
-        info->id = testing_data[i].id;
-        info->type = FromStorageUnitTypeString(testing_data[i].type);
-        info->capacity = testing_data[i].capacity;
-        info->available_capacity = testing_data[i].available_capacity;
-        // Increase the available capacity with a fix change step.
-        testing_data[i].available_capacity += testing_data[i].change_step;
-        return true;
+  virtual ~TestStorageObserver() {}
+
+  virtual void OnStorageFreeSpaceChanged(const std::string& id,
+                                         double old_value,
+                                         double new_value) OVERRIDE {
+    // The observer is added on UI thread, so the callback should be also
+    // called on UI thread.
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    for (size_t i = 0; i < testing_data_.size(); ++i) {
+      if (testing_data_[i].id == id) {
+        EXPECT_EQ(old_value, testing_data_[i].available_capacity);
+        EXPECT_EQ(new_value, testing_data_[i].available_capacity +
+                  testing_data_[i].change_step);
+        // Increase the available capacity with the change step for comparison
+        // next time.
+        testing_data_[i].available_capacity += testing_data_[i].change_step;
+        ++free_space_change_times_[id];
+        return;
       }
     }
-    return false;
+    EXPECT_TRUE(false);
   }
+
+  // Returns the number of change times for the given storage |id|.
+  int GetFreeSpaceChangeTimes(const std::string& id) {
+    if (ContainsKey(free_space_change_times_, id))
+      return free_space_change_times_[id];
+    return 0;
+  }
+
+ private:
+  // A copy of |kTestingData|.
+  std::vector<TestUnitInfo> testing_data_;
+  // Mapping of storage id and the times of free space has been changed.
+  std::map<std::string, int> free_space_change_times_;
 };
+
+class TestStorageInfoProvider : public StorageInfoProvider {
+ public:
+  TestStorageInfoProvider();
+
+ private:
+  virtual ~TestStorageInfoProvider();
+
+  virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
+  virtual bool QueryUnitInfo(const std::string& id,
+                             StorageUnitInfo* info) OVERRIDE;
+
+  // Called each time CheckWatchedStoragesOnBlockingPool is finished.
+  void OnCheckWatchedStoragesFinishedForTesting();
+
+  // The testing data maintained on the blocking pool.
+  std::vector<TestUnitInfo> testing_data_;
+  // The number of times for checking watched storage.
+  int checking_times_;
+};
+
+//
+// TestStorageInfoProvider Impl.
+//
+TestStorageInfoProvider::TestStorageInfoProvider(): checking_times_(0) {
+  for (size_t i = 0; i < arraysize(kTestingData); ++i)
+    testing_data_.push_back(kTestingData[i]);
+}
+
+TestStorageInfoProvider::~TestStorageInfoProvider() {}
+
+bool TestStorageInfoProvider::QueryInfo(StorageInfo* info) {
+  info->clear();
+
+  for (size_t i = 0; i < testing_data_.size(); ++i) {
+    linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
+    QueryUnitInfo(testing_data_[i].id, unit.get());
+    info->push_back(unit);
+  }
+  return true;
+}
+
+bool TestStorageInfoProvider::QueryUnitInfo(
+    const std::string& id, StorageUnitInfo* info) {
+  for (size_t i = 0; i < testing_data_.size(); ++i) {
+    if (testing_data_[i].id == id) {
+      info->id = testing_data_[i].id;
+      info->type = FromStorageUnitTypeString(testing_data_[i].type);
+      info->capacity = testing_data_[i].capacity;
+      info->available_capacity = testing_data_[i].available_capacity;
+      // Increase the available capacity with a fixed change step.
+      testing_data_[i].available_capacity += testing_data_[i].change_step;
+      return true;
+    }
+  }
+  return false;
+}
+
+void TestStorageInfoProvider::OnCheckWatchedStoragesFinishedForTesting() {
+  ++checking_times_;
+  if (checking_times_ < kCheckTimes)
+    return;
+  checking_times_ = 0;
+  // Once the number of checking times reaches up to kCheckTimes, we need to
+  // quit the message loop to given UI thread a chance to verify the results.
+  // Note the QuitClosure is actually bound to QuitCurrentWhenIdle, it means
+  // that the UI thread wil continue to process pending messages util idle.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      MessageLoop::QuitClosure());
+}
 
 class StorageInfoProviderTest : public testing::Test {
  public:
   StorageInfoProviderTest();
   virtual ~StorageInfoProviderTest();
 
-  MockStorageObserver& observer() { return observer_; }
-
  protected:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Run message loop until the given |ms| milliseconds has passed.
-  void RunMessageLoopUntilTimeout(int ms);
-
-  void RunMessageLoopUntilIdle();
-
-  // Reset the testing data once a round of querying operation is completed.
-  void ResetTestingData();
+  // Run message loop and flush blocking pool to make sure there is no pending
+  // tasks on blocking pool.
+  static void RunLoopAndFlushBlockingPool();
+  static void RunAllPendingAndFlushBlockingPool();
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  MockStorageObserver observer_;
+  scoped_refptr<TestStorageInfoProvider> storage_info_provider_;
 };
 
 StorageInfoProviderTest::StorageInfoProviderTest()
     : message_loop_(MessageLoop::TYPE_UI),
-      ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
+      ui_thread_(BrowserThread::UI, &message_loop_) {
 }
 
 StorageInfoProviderTest::~StorageInfoProviderTest() {
@@ -124,151 +202,127 @@ StorageInfoProviderTest::~StorageInfoProviderTest() {
 
 void StorageInfoProviderTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TestStorageInfoProvider* provider = new TestStorageInfoProvider();
-  provider->set_watching_interval(kWatchingIntervalMs);
-  // Now the provider is owned by the singleton instance.
-  StorageInfoProvider::InitializeForTesting(provider);
-  StorageInfoProvider::Get()->AddObserver(&observer_);
+  storage_info_provider_= new TestStorageInfoProvider();
+  storage_info_provider_->set_watching_interval(kWatchingIntervalMs);
 }
 
 void StorageInfoProviderTest::TearDown() {
-  StorageInfoProvider::Get()->RemoveObserver(&observer_);
+  RunAllPendingAndFlushBlockingPool();
 }
 
-void StorageInfoProviderTest::RunMessageLoopUntilTimeout(int ms) {
-  base::RunLoop run_loop;
-  message_loop_.PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(ms));
-  run_loop.Run();
-  ResetTestingData();
+void StorageInfoProviderTest::RunLoopAndFlushBlockingPool() {
+  RunMessageLoop();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
-void StorageInfoProviderTest::RunMessageLoopUntilIdle() {
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  ResetTestingData();
-}
-
-void StorageInfoProviderTest::ResetTestingData() {
-  for (size_t i = 0; i < arraysize(testing_data); ++i)
-    testing_data[i].available_capacity = 10;
+void StorageInfoProviderTest::RunAllPendingAndFlushBlockingPool() {
+  RunAllPendingInMessageLoop();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 TEST_F(StorageInfoProviderTest, WatchingNoChangedStorage) {
   // Case 1: watching a storage that the free space is not changed.
-  StorageInfoProvider::Get()->StartWatching(testing_data[0].id);
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[0].id,  _,  _))
+  MockStorageObserver observer;
+  storage_info_provider_->AddObserver(&observer);
+  storage_info_provider_->StartWatching(kTestingData[0].id);
+  EXPECT_CALL(observer, OnStorageFreeSpaceChanged(kTestingData[0].id,  _,  _))
       .Times(0);
-  RunMessageLoopUntilTimeout(10 * kWatchingIntervalMs);
-  StorageInfoProvider::Get()->StopWatching(testing_data[0].id);
-  RunMessageLoopUntilIdle();
+  RunLoopAndFlushBlockingPool();
+
+  storage_info_provider_->RemoveObserver(&observer);
+  storage_info_provider_->StopWatching(kTestingData[0].id);
+  RunAllPendingAndFlushBlockingPool();
 }
 
 TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   // Case 2: only watching one storage.
-  StorageInfoProvider::Get()->StartWatching(testing_data[1].id);
-  RunMessageLoopUntilIdle();
+  TestStorageObserver observer;
+  storage_info_provider_->AddObserver(&observer);
+  storage_info_provider_->StartWatching(kTestingData[1].id);
+  RunLoopAndFlushBlockingPool();
 
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id,  _,  _))
-      .WillRepeatedly(Return());
-  double base_value = testing_data[1].available_capacity;
-  int step = testing_data[1].change_step;
-  for (int i = 0; i < kCallTimes; i++) {
-    double expected_old_value = base_value + i * step;
-    double expected_new_value = base_value + (i + 1) * step;
-    EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id,
-        expected_old_value, expected_new_value)).WillOnce(Return());
+  // The times of free space change is at least |kCheckTimes|, it is not easy
+  // to anticiapte the accurate number since it is still possible for blocking
+  // pool to run the pending checking task after completing |kCheckTimes|
+  // checking tasks and posting Quit to the message loop of UI thread. The
+  // observer guarantees that the free space is changed with the expected
+  // delta value.
+  EXPECT_GE(observer.GetFreeSpaceChangeTimes(kTestingData[1].id),
+            kCheckTimes);
+  // Other storages should not be changed. The first two entries are skipped.
+  for (size_t i = 2; i < arraysize(kTestingData); ++i) {
+    EXPECT_EQ(0, observer.GetFreeSpaceChangeTimes(kTestingData[i].id));
   }
-  // The other storages won't get free space change notification.
-  for (size_t i = 2; i < arraysize(testing_data); ++i) {
-    EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[i].id, _, _))
-        .Times(0);
-  }
-  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
 
-  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
-  RunMessageLoopUntilIdle();
-  // The watched storage won't get free space change notification after
-  // stopping.
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id, _, _))
-      .Times(0);
-  RunMessageLoopUntilIdle();
+  storage_info_provider_->StopWatching(kTestingData[1].id);
+  // Give a chance to run StopWatching task on the blocking pool.
+  RunAllPendingAndFlushBlockingPool();
+
+  MockStorageObserver mock_observer;
+  storage_info_provider_->AddObserver(&mock_observer);
+  // The watched storage won't get free space change notification.
+  EXPECT_CALL(mock_observer,
+      OnStorageFreeSpaceChanged(kTestingData[1].id, _, _)).Times(0);
+  RunAllPendingAndFlushBlockingPool();
+
+  storage_info_provider_->RemoveObserver(&observer);
+  storage_info_provider_->RemoveObserver(&mock_observer);
 }
 
-TEST_F(StorageInfoProviderTest, DISABLED_WatchingMultipleStorages) {
+TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
   // Case 2: watching multiple storages. We ignore the first entry in
-  // |testing_data| since its change_step is zero.
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    StorageInfoProvider::Get()->StartWatching(testing_data[k].id);
-  }
-  // Run the message loop to given a chance for storage info provider to start
-  // watching.
-  RunMessageLoopUntilIdle();
+  // |kTestingData| since its change_step is zero.
+  TestStorageObserver observer;
+  storage_info_provider_->AddObserver(&observer);
 
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    EXPECT_CALL(observer(),
-        OnStorageFreeSpaceChanged(testing_data[k].id,  _, _))
-        .WillRepeatedly(Return());
-
-    double base_value = testing_data[k].available_capacity;
-    int step = testing_data[k].change_step;
-    for (int i = 0; i < kCallTimes; i++) {
-      double expected_old_value = base_value + i * step;
-      double expected_new_value = base_value + (i + 1) * step;
-      EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id,
-          expected_old_value, expected_new_value)).WillOnce(Return());
-    }
+  for (size_t k = 1; k < arraysize(kTestingData); ++k) {
+    storage_info_provider_->StartWatching(kTestingData[k].id);
   }
-  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
+  RunLoopAndFlushBlockingPool();
+
+  // Right now let's verify the results.
+  for (size_t k = 1; k < arraysize(kTestingData); ++k) {
+    // See the above comments about the reason why the times of free space
+    // changes is at least kCheckTimes.
+    EXPECT_GE(observer.GetFreeSpaceChangeTimes(kTestingData[k].id),
+              kCheckTimes);
+  }
 
   // Stop watching the first storage.
-  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
-  RunMessageLoopUntilIdle();
+  storage_info_provider_->StopWatching(kTestingData[1].id);
+  RunAllPendingAndFlushBlockingPool();
 
-  for (size_t k = 2; k < arraysize(testing_data); ++k) {
-    EXPECT_CALL(observer(),
-        OnStorageFreeSpaceChanged(testing_data[k].id,  _, _))
+  MockStorageObserver mock_observer;
+  storage_info_provider_->AddObserver(&mock_observer);
+  for (size_t k = 2; k < arraysize(kTestingData); ++k) {
+    EXPECT_CALL(mock_observer,
+        OnStorageFreeSpaceChanged(kTestingData[k].id,  _, _))
         .WillRepeatedly(Return());
-
-    double base_value = testing_data[k].available_capacity;
-    int step = testing_data[k].change_step;
-    for (int i = 0; i < kCallTimes; i++) {
-      double expected_old_value = base_value + i * step;
-      double expected_new_value = base_value + (i + 1) * step;
-      EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id,
-          expected_old_value, expected_new_value)).WillOnce(Return());
-    }
   }
-  // After stopping watching, the callback won't get called.
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id, _, _))
-      .Times(0);
-  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
 
-  // Stop watching all storages.
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    StorageInfoProvider::Get()->StopWatching(testing_data[k].id);
-  }
-  // Run the message loop to given a chance for storage info provider to stop
-  // watching.
-  RunMessageLoopUntilIdle();
+  // After stopping watching, the observer won't get change notification.
+  EXPECT_CALL(mock_observer,
+      OnStorageFreeSpaceChanged(kTestingData[1].id, _, _)).Times(0);
+  RunLoopAndFlushBlockingPool();
 
-  // After stopping watching, the callback won't get called.
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id, _, _))
-        .Times(0);
+  for (size_t k = 1; k < arraysize(kTestingData); ++k) {
+    storage_info_provider_->StopWatching(kTestingData[k].id);
   }
-  RunMessageLoopUntilIdle();
+  RunAllPendingAndFlushBlockingPool();
+  storage_info_provider_->RemoveObserver(&observer);
+  storage_info_provider_->RemoveObserver(&mock_observer);
 }
 
 TEST_F(StorageInfoProviderTest, WatchingInvalidStorage) {
   // Case 3: watching an invalid storage.
   std::string invalid_id("invalid_id");
-  StorageInfoProvider::Get()->StartWatching(invalid_id);
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(invalid_id, _, _))
-     .Times(0);
-  RunMessageLoopUntilTimeout(10 * kWatchingIntervalMs);
-  StorageInfoProvider::Get()->StopWatching(invalid_id);
-  RunMessageLoopUntilIdle();
+  MockStorageObserver mock_observer;
+  storage_info_provider_->AddObserver(&mock_observer);
+  storage_info_provider_->StartWatching(invalid_id);
+  EXPECT_CALL(mock_observer,
+      OnStorageFreeSpaceChanged(invalid_id, _, _)).Times(0);
+  RunAllPendingAndFlushBlockingPool();
+  storage_info_provider_->RemoveObserver(&mock_observer);
 }
 
 } // namespace extensions

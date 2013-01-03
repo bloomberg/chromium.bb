@@ -33,15 +33,13 @@ extern const char kStorageTypeRemovable[];
 typedef std::vector<linked_ptr<
     api::experimental_system_info_storage::StorageUnitInfo> > StorageInfo;
 
-class StorageInfoProvider
-    : public content::NotificationObserver,
-      public SystemInfoProvider<StorageInfo> {
+class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
  public:
   class Observer {
    public:
     virtual ~Observer() {}
 
-    // Called from FILE thread when the storage free space changes.
+    // Called when the storage free space changes.
     virtual void OnStorageFreeSpaceChanged(const std::string& id,
                                            double old_value,
                                            double new_value) = 0;
@@ -59,7 +57,7 @@ class StorageInfoProvider
   virtual void StopWatching(const std::string& id);
 
   // Set the watching time interval.
-  void set_watching_interval(unsigned int ms) { watching_interval_ = ms; }
+  void set_watching_interval(size_t ms) { watching_interval_ = ms; }
 
   // Get the information for the storage unit specified by the |id| parameter,
   // and output the result to the |info|.
@@ -71,43 +69,43 @@ class StorageInfoProvider
   virtual ~StorageInfoProvider();
 
  private:
+  friend class TestStorageInfoProvider;
   typedef std::map<std::string, double> StorageIDToSizeMap;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Start watching the given storage |id| on FILE thread.
-  void StartWatchingOnFileThread(const std::string& id);
-
-  // Stop the watching the the given storage |id| on FILE thread.
-  void StopWatchingOnFileThread(const std::string& id);
-
-  // Check if the free space changes for the watched storages by iterating over
-  // the |storage_id_to_size_map_|. It is called on FILE thread.
+  // Posts a task to check for free space changes on the blocking pool.
+  // Should be called on the UI thread.
   void CheckWatchedStorages();
 
-  // Force to destory the watching timer if the application is terminating or
-  // there is no any one storage to be watched. It is called on FILE thread.
-  void DestroyWatchingTimer();
+  // Check if the free space changes for the watched storages by iterating over
+  // the |storage_id_to_size_map_|. It is called on blocking pool.
+  void CheckWatchedStoragesOnBlockingPool();
 
-  // Mapping of the storage being watched and the recent free space value.
+  // Provides an explicit hook that tests can wait for to determine that the
+  // call to CheckWatchedStorages() has completed.
+  virtual void OnCheckWatchedStoragesFinishedForTesting() {}
+
+  // Add and remove the storage to be watched.
+  void AddWatchedStorageOnBlockingPool(const std::string& id);
+  void RemoveWatchedStorageOnBlockingPool(const std::string& id);
+
+  void StartWatchingTimerOnUIThread();
+  // Force to stop the watching timer or there is no any one storage to be
+  // watched. It is called on UI thread.
+  void StopWatchingTimerOnUIThread();
+
+  // Mapping of the storage being watched and the recent free space value. It
+  // is maintained on the blocking pool.
   StorageIDToSizeMap storage_id_to_size_map_;
 
   // The timer used for watching the storage free space changes periodically.
-  // It lives on the FILE thread.
-  base::RepeatingTimer<StorageInfoProvider>* watching_timer_;
+  base::RepeatingTimer<StorageInfoProvider> watching_timer_;
 
   // The thread-safe observer list that observe the changes happening on the
   // storages.
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
 
   // The time interval for watching the free space change, in milliseconds.
-  unsigned int watching_interval_;
-
-  // Used to observe app termination notification.
-  content::NotificationRegistrar registrar_;
+  size_t watching_interval_;
 };
 
 }  // namespace extensions

@@ -102,8 +102,7 @@ class StorageInfoProviderLinuxTest : public testing::Test {
     int bytes = file_util::WriteFile(mtab_file_, mtab_test_data,
                                      strlen(mtab_test_data));
     ASSERT_EQ(static_cast<int>(strlen(mtab_test_data)), bytes);
-    storage_info_provider_ =
-        new StorageInfoProviderLinuxWrapper(mtab_file_);
+    storage_info_provider_ = new StorageInfoProviderLinuxWrapper(mtab_file_);
   }
 
   virtual void TearDown() OVERRIDE {
