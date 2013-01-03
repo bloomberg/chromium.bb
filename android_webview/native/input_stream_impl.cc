@@ -18,6 +18,7 @@ using base::android::AttachCurrentThread;
 using base::android::ClearException;
 using base::android::JavaRef;
 using JNI_InputStream::Java_InputStream_available;
+using JNI_InputStream::Java_InputStream_close;
 using JNI_InputStream::Java_InputStream_skip;
 using JNI_InputStream::Java_InputStream_readI_AB_I_I;
 
@@ -45,6 +46,9 @@ InputStreamImpl::InputStreamImpl(const JavaRef<jobject>& stream)
 }
 
 InputStreamImpl::~InputStreamImpl() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_InputStream_close(env, jobject_.obj());
+  DCHECK(!ClearException(env));
 }
 
 bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
