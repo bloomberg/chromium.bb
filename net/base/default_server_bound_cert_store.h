@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "net/base/net_export.h"
 #include "net/base/server_bound_cert_store.h"
 
@@ -25,9 +24,6 @@ namespace net {
 // and synchronizes server bound certs to an optional permanent storage that
 // implements the PersistentStore interface. The use case is described in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html
-//
-// This class can be accessed by multiple threads. For example, it can be used
-// by IO and server bound cert management UI.
 class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
  public:
   class PersistentStore;
@@ -86,7 +82,6 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   // Called by all non-static functions to ensure that the cert store has
   // been initialized. This is not done during creating so it doesn't block
   // the window showing.
-  // Note: this method should always be called with lock_ held.
   void InitIfNecessary() {
     if (!initialized_) {
       if (store_)
@@ -116,9 +111,6 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   scoped_refptr<PersistentStore> store_;
 
   ServerBoundCertMap server_bound_certs_;
-
-  // Lock for thread-safety
-  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultServerBoundCertStore);
 };

@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
 #include "net/base/ssl_client_cert_type.h"
@@ -21,7 +22,8 @@ namespace net {
 
 // Owned only by a single ServerBoundCertService object, which is responsible
 // for deleting it.
-class NET_EXPORT ServerBoundCertStore {
+class NET_EXPORT ServerBoundCertStore
+    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // The ServerBoundCert class contains a private key in addition to the server
   // cert, and cert type.

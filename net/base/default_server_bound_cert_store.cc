@@ -19,7 +19,7 @@ DefaultServerBoundCertStore::DefaultServerBoundCertStore(
 
 void DefaultServerBoundCertStore::FlushStore(
     const base::Closure& completion_task) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
 
   if (initialized_ && store_)
     store_->Flush(completion_task);
@@ -34,7 +34,7 @@ bool DefaultServerBoundCertStore::GetServerBoundCert(
     base::Time* expiration_time,
     std::string* private_key_result,
     std::string* cert_result) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
   ServerBoundCertMap::iterator it = server_bound_certs_.find(server_identifier);
@@ -59,7 +59,7 @@ void DefaultServerBoundCertStore::SetServerBoundCert(
     base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
   InternalDeleteServerBoundCert(server_identifier);
@@ -72,7 +72,7 @@ void DefaultServerBoundCertStore::SetServerBoundCert(
 
 void DefaultServerBoundCertStore::DeleteServerBoundCert(
     const std::string& server_identifier) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
   InternalDeleteServerBoundCert(server_identifier);
 }
@@ -80,7 +80,7 @@ void DefaultServerBoundCertStore::DeleteServerBoundCert(
 void DefaultServerBoundCertStore::DeleteAllCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
   for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
        it != server_bound_certs_.end();) {
@@ -103,7 +103,7 @@ void DefaultServerBoundCertStore::DeleteAll() {
 
 void DefaultServerBoundCertStore::GetAllServerBoundCerts(
     ServerBoundCertList* server_bound_certs) {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
   for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
        it != server_bound_certs_.end(); ++it) {
@@ -112,14 +112,14 @@ void DefaultServerBoundCertStore::GetAllServerBoundCerts(
 }
 
 int DefaultServerBoundCertStore::GetCertCount() {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
   return server_bound_certs_.size();
 }
 
 void DefaultServerBoundCertStore::SetForceKeepSessionState() {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
   if (store_)
@@ -131,7 +131,7 @@ DefaultServerBoundCertStore::~DefaultServerBoundCertStore() {
 }
 
 void DefaultServerBoundCertStore::DeleteAllInMemory() {
-  base::AutoLock autolock(lock_);
+  DCHECK(CalledOnValidThread());
 
   for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
        it != server_bound_certs_.end(); ++it) {
@@ -141,8 +141,7 @@ void DefaultServerBoundCertStore::DeleteAllInMemory() {
 }
 
 void DefaultServerBoundCertStore::InitStore() {
-  lock_.AssertAcquired();
-
+  DCHECK(CalledOnValidThread());
   DCHECK(store_) << "Store must exist to initialize";
 
   // Initialize the store and sync in any saved persistent certs.
@@ -160,7 +159,7 @@ void DefaultServerBoundCertStore::InitStore() {
 
 void DefaultServerBoundCertStore::InternalDeleteServerBoundCert(
     const std::string& server_identifier) {
-  lock_.AssertAcquired();
+  DCHECK(CalledOnValidThread());
 
   ServerBoundCertMap::iterator it = server_bound_certs_.find(server_identifier);
   if (it == server_bound_certs_.end())
@@ -176,7 +175,7 @@ void DefaultServerBoundCertStore::InternalDeleteServerBoundCert(
 void DefaultServerBoundCertStore::InternalInsertServerBoundCert(
     const std::string& server_identifier,
     ServerBoundCert* cert) {
-  lock_.AssertAcquired();
+  DCHECK(CalledOnValidThread());
 
   if (store_)
     store_->AddServerBoundCert(*cert);
