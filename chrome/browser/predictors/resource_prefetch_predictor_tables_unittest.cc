@@ -22,6 +22,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   ResourcePrefetchPredictorTablesTest();
   virtual ~ResourcePrefetchPredictorTablesTest();
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  protected:
   void TestGetAllData();
@@ -78,7 +79,8 @@ class ResourcePrefetchPredictorTablesReopenTest
   virtual void SetUp() OVERRIDE {
     // Write data to the table, and then reopen the db.
     ResourcePrefetchPredictorTablesTest::SetUp();
-    tables_ = NULL;
+    ResourcePrefetchPredictorTablesTest::TearDown();
+
     db_.reset(new PredictorDatabase(&profile_));
     loop_.RunUntilIdle();
     tables_ = db_->resource_prefetch_tables();
@@ -99,6 +101,12 @@ ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
 void ResourcePrefetchPredictorTablesTest::SetUp() {
   tables_->DeleteAllData();
   InitializeSampleData();
+}
+
+void ResourcePrefetchPredictorTablesTest::TearDown() {
+  tables_ = NULL;
+  db_.reset();
+  loop_.RunUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TestGetAllData() {
