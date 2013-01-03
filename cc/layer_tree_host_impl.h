@@ -212,7 +212,7 @@ public:
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
     void createPendingTree();
-    void activatePendingTreeIfNeeded();
+    virtual void activatePendingTreeIfNeeded();
 
     // TODO(nduca): Remove these in favor of LayerTreeImpl.
     void setRootLayer(scoped_ptr<LayerImpl>);

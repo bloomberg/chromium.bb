@@ -472,5 +472,123 @@ MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
                      DeviceScaleFactor2, 2.0f,
                      ScrollRootScrollLayer, false)
 
+class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
+ public:
+  virtual void initializeSettings(LayerTreeSettings& settings) OVERRIDE {
+    settings.implSidePainting = true;
+  }
+
+  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    // Manual vsync tick.
+    if (impl->pendingTree())
+      impl->setNeedsRedraw();
+  }
+};
+
+class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
+ public:
+  ImplSidePaintingScrollTestSimple()
+      : initial_scroll_(10, 20),
+        main_thread_scroll_(40, 5),
+        impl_thread_scroll1_(2, -1),
+        impl_thread_scroll2_(-3, 10),
+        num_scrolls_(0),
+        can_activate_(true) {
+  }
+
+  virtual void beginTest() OVERRIDE {
+    m_layerTreeHost->rootLayer()->setScrollable(true);
+    m_layerTreeHost->rootLayer()->setScrollOffset(initial_scroll_);
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void layout() OVERRIDE {
+    Layer* root = m_layerTreeHost->rootLayer();
+    if (!m_layerTreeHost->commitNumber())
+      EXPECT_VECTOR_EQ(root->scrollOffset(), initial_scroll_);
+    else {
+      EXPECT_VECTOR_EQ(root->scrollOffset(), initial_scroll_ + impl_thread_scroll1_);
+
+      // Pretend like Javascript updated the scroll position itself with a
+      // change of main_thread_scroll.
+      root->setScrollOffset(initial_scroll_ + main_thread_scroll_ + impl_thread_scroll1_);
+    }
+  }
+
+  virtual bool canActivatePendingTree() OVERRIDE {
+    return can_activate_;
+  }
+
+  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ImplSidePaintingScrollTest::drawLayersOnThread(impl);
+
+    LayerImpl* root = impl->rootLayer();
+    root->setScrollable(true);
+    root->setMaxScrollOffset(gfx::Vector2d(100, 100));
+
+    LayerImpl* pending_root =
+        impl->activeTree()->FindPendingTreeLayerById(root->id());
+
+    switch (impl->activeTree()->source_frame_number()) {
+      case 0:
+        if (!impl->pendingTree()) {
+          can_activate_ = false;
+          EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2d());
+          root->scrollBy(impl_thread_scroll1_);
+
+          EXPECT_VECTOR_EQ(root->scrollOffset(), initial_scroll_);
+          EXPECT_VECTOR_EQ(root->scrollDelta(), impl_thread_scroll1_);
+          EXPECT_VECTOR_EQ(root->sentScrollDelta(), gfx::Vector2d());
+          postSetNeedsCommitToMainThread();
+        } else {
+          can_activate_ = true;
+          ASSERT_TRUE(pending_root);
+          EXPECT_EQ(impl->pendingTree()->source_frame_number(), 1);
+
+          root->scrollBy(impl_thread_scroll2_);
+          EXPECT_VECTOR_EQ(root->scrollOffset(), initial_scroll_);
+          EXPECT_VECTOR_EQ(root->scrollDelta(),
+              impl_thread_scroll1_ + impl_thread_scroll2_);
+          EXPECT_VECTOR_EQ(root->sentScrollDelta(), impl_thread_scroll1_);
+
+          EXPECT_VECTOR_EQ(pending_root->scrollOffset(),
+              initial_scroll_ + main_thread_scroll_ + impl_thread_scroll1_);
+          EXPECT_VECTOR_EQ(pending_root->scrollDelta(), impl_thread_scroll2_);
+          EXPECT_VECTOR_EQ(pending_root->sentScrollDelta(), gfx::Vector2d());
+        }
+        break;
+      case 1:
+        EXPECT_FALSE(impl->pendingTree());
+        EXPECT_VECTOR_EQ(root->scrollOffset(),
+            initial_scroll_ + main_thread_scroll_ + impl_thread_scroll1_);
+        EXPECT_VECTOR_EQ(root->scrollDelta(), impl_thread_scroll2_);
+        EXPECT_VECTOR_EQ(root->sentScrollDelta(), gfx::Vector2d());
+        endTest();
+        break;
+    }
+  }
+
+  virtual void applyScrollAndScale(
+      gfx::Vector2d scroll_delta, float scale) OVERRIDE {
+    gfx::Vector2d offset = m_layerTreeHost->rootLayer()->scrollOffset();
+    m_layerTreeHost->rootLayer()->setScrollOffset(offset + scroll_delta);
+    num_scrolls_++;
+  }
+
+  virtual void afterTest() OVERRIDE {
+    EXPECT_EQ(1, num_scrolls_);
+  }
+
+ private:
+  gfx::Vector2d initial_scroll_;
+  gfx::Vector2d main_thread_scroll_;
+  gfx::Vector2d impl_thread_scroll1_;
+  gfx::Vector2d impl_thread_scroll2_;
+  int num_scrolls_;
+  bool can_activate_;
+};
+
+MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestSimple);
+
 }  // namespace
 }  // namespace cc

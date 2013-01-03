@@ -37,6 +37,7 @@ public:
     virtual void didCommitAndDrawFrame() { }
     virtual void scheduleComposite() { }
     virtual void didDeferCommit() { }
+    virtual bool canActivatePendingTree();
 
     // Implementation of WebAnimationDelegate
     virtual void notifyAnimationStarted(double time) OVERRIDE { }
@@ -142,6 +143,7 @@ public:
     virtual void commitComplete() OVERRIDE;
     virtual bool prepareToDraw(FrameData&) OVERRIDE;
     virtual void drawLayers(FrameData&) OVERRIDE;
+    virtual void activatePendingTreeIfNeeded() OVERRIDE;
 
     // Make these public.
     typedef std::vector<LayerImpl*> LayerList;

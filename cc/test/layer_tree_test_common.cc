@@ -34,6 +34,11 @@ bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
     return true;
 }
 
+bool TestHooks::canActivatePendingTree()
+{
+    return true;
+}
+
 scoped_ptr<OutputSurface> TestHooks::createOutputSurface()
 {
     return createFakeOutputSurface();
@@ -68,6 +73,15 @@ void MockLayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     LayerTreeHostImpl::drawLayers(frame);
     m_testHooks->drawLayersOnThread(this);
+}
+
+void MockLayerTreeHostImpl::activatePendingTreeIfNeeded()
+{
+    if (!pendingTree())
+        return;
+
+    if (m_testHooks->canActivatePendingTree())
+        activatePendingTree();
 }
 
 void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)

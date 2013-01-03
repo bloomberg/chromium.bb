@@ -208,13 +208,13 @@ ResourceProvider::ResourceId LayerImpl::contentsResourceId() const
 
 void LayerImpl::setSentScrollDelta(const gfx::Vector2d& sentScrollDelta)
 {
+    // Pending tree never has sent scroll deltas
+    DCHECK(layerTreeImpl()->IsActiveTree());
+
+    if (m_sentScrollDelta == sentScrollDelta)
+        return;
+
     m_sentScrollDelta = sentScrollDelta;
-    if (layerTreeImpl()->IsActiveTree())
-    {
-        LayerImpl* pending_twin = layerTreeImpl()->FindPendingTreeLayerById(id());
-        if (pending_twin)
-            pending_twin->setSentScrollDelta(sentScrollDelta);
-    }
 }
 
 gfx::Vector2dF LayerImpl::scrollBy(const gfx::Vector2dF& scroll)
@@ -227,25 +227,7 @@ gfx::Vector2dF LayerImpl::scrollBy(const gfx::Vector2dF& scroll)
     newDelta.ClampToMax(maxDelta);
     gfx::Vector2dF unscrolled = m_scrollDelta + scroll - newDelta;
 
-    if (m_scrollDelta == newDelta)
-        return unscrolled;
-
-    if (layerTreeImpl()->IsActiveTree())
-    {
-        LayerImpl* pending_twin = layerTreeImpl()->FindPendingTreeLayerById(id());
-        if (pending_twin) {
-            // Don't send the full scroll to the new layer, as if it is larger
-            // then it may cause a jump during tree activation.  Instead,
-            // scroll it by the clamped amount that this layer scrolled.
-            pending_twin->scrollBy(newDelta - m_scrollDelta);
-        }
-    }
-
-    m_scrollDelta = newDelta;
-    if (m_scrollbarAnimationController)
-        m_scrollbarAnimationController->updateScrollOffset(this);
-    noteLayerPropertyChangedForSubtree();
-
+    setScrollDelta(newDelta);
     return unscrolled;
 }
 
@@ -733,7 +715,23 @@ void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
     if (m_scrollDelta == scrollDelta)
         return;
 
+    if (layerTreeImpl()->IsActiveTree())
+    {
+        LayerImpl* pending_twin = layerTreeImpl()->FindPendingTreeLayerById(id());
+        if (pending_twin) {
+            // The pending twin can't mirror the scroll delta of the active
+            // layer.  Although the delta - sent scroll delta difference is
+            // identical for both twins, the sent scroll delta for the pending
+            // layer is zero, as anything that has been sent has been baked
+            // into the layer's position/scroll offset as a part of commit.
+            DCHECK(pending_twin->sentScrollDelta().IsZero());
+            pending_twin->setScrollDelta(scrollDelta - sentScrollDelta());
+        }
+    }
+
     m_scrollDelta = scrollDelta;
+    if (m_scrollbarAnimationController)
+        m_scrollbarAnimationController->updateScrollOffset(this);
     noteLayerPropertyChangedForSubtree();
 }
 

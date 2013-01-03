@@ -9,6 +9,7 @@
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
+#include "cc/layer_tree_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -625,8 +626,20 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     m_updateRect.Union(layer->updateRect());
     layer->setUpdateRect(m_updateRect);
 
-    layer->setScrollDelta(layer->scrollDelta() - layer->sentScrollDelta());
-    layer->setSentScrollDelta(gfx::Vector2d());
+    if (layer->layerTreeImpl()->settings().implSidePainting) {
+        DCHECK(layer->layerTreeImpl()->IsPendingTree());
+        LayerImpl* active_twin = layer->layerTreeImpl()->FindActiveTreeLayerById(id());
+        // Update the scroll delta from the active layer, which may have
+        // adjusted its scroll delta prior to this pending layer being created.
+        // This code is identical to that in LayerImpl::setScrollDelta.
+        if (active_twin) {
+            DCHECK(layer->sentScrollDelta().IsZero());
+            layer->setScrollDelta(active_twin->scrollDelta() - active_twin->sentScrollDelta());
+        }
+    } else {
+        layer->setScrollDelta(layer->scrollDelta() - layer->sentScrollDelta());
+        layer->setSentScrollDelta(gfx::Vector2d());
+    }
 
     layer->setStackingOrderChanged(m_stackingOrderChanged);
 
