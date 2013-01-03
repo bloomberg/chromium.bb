@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Fri Dec  7 08:38:35 2012.
+// From ppb_file_io.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -138,7 +138,7 @@ const PPB_FileIO_1_0 g_ppb_fileio_thunk_1_0 = {
   &Write,
   &SetLength,
   &Flush,
-  &Close,
+  &Close
 };
 
 const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {
@@ -152,7 +152,7 @@ const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {
   &SetLength,
   &Flush,
   &Close,
-  &ReadToArray,
+  &ReadToArray
 };
 
 }  // namespace

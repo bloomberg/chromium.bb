@@ -34,7 +34,7 @@ void LogWithSource(PP_Instance instance,
 
 const PPB_Console_1_0 g_ppb_console_thunk_1_0 = {
   &Log,
-  &LogWithSource,
+  &LogWithSource
 };
 
 }  // namespace

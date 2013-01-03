@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_device_id.idl modified Tue Dec 11 13:47:18 2012.
+// From private/ppb_flash_device_id.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -37,7 +37,7 @@ int32_t GetDeviceID(PP_Resource device_id,
 
 const PPB_Flash_DeviceID_1_0 g_ppb_flash_deviceid_thunk_1_0 = {
   &Create,
-  &GetDeviceID,
+  &GetDeviceID
 };
 
 }  // namespace

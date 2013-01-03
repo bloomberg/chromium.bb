@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_system.idl modified Fri Dec  7 08:39:45 2012.
+// From ppb_file_system.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -51,7 +51,7 @@ const PPB_FileSystem_1_0 g_ppb_filesystem_thunk_1_0 = {
   &Create,
   &IsFileSystem,
   &Open,
-  &GetType,
+  &GetType
 };
 
 }  // namespace

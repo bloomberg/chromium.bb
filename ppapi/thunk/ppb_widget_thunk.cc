@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_widget_dev.idl modified Fri Nov 16 11:26:06 2012.
+// From dev/ppb_widget_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -63,7 +63,7 @@ const PPB_Widget_Dev_0_3 g_ppb_widget_dev_thunk_0_3 = {
   &Paint,
   &HandleEvent,
   &GetLocation,
-  &SetLocation,
+  &SetLocation
 };
 
 const PPB_Widget_Dev_0_4 g_ppb_widget_dev_thunk_0_4 = {
@@ -72,7 +72,7 @@ const PPB_Widget_Dev_0_4 g_ppb_widget_dev_thunk_0_4 = {
   &HandleEvent,
   &GetLocation,
   &SetLocation,
-  &SetScale,
+  &SetScale
 };
 
 }  // namespace

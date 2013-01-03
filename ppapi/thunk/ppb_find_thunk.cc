@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_find_dev.idl modified Mon Nov 26 10:29:49 2012.
+// From dev/ppb_find_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -35,7 +35,7 @@ void SelectedFindResultChanged(PP_Instance instance, int32_t index) {
 
 const PPB_Find_Dev_0_3 g_ppb_find_dev_thunk_0_3 = {
   &NumberOfFindResultsChanged,
-  &SelectedFindResultChanged,
+  &SelectedFindResultChanged
 };
 
 }  // namespace

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_websocket.idl modified Fri Dec 21 10:55:08 2012.
+// From ppb_websocket.idl modified Thu Dec 27 10:36:33 2012.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -142,7 +142,7 @@ const PPB_WebSocket_1_0 g_ppb_websocket_thunk_1_0 = {
   &GetExtensions,
   &GetProtocol,
   &GetReadyState,
-  &GetURL,
+  &GetURL
 };
 
 }  // namespace

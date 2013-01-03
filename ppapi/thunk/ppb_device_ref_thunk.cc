@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_device_ref_dev.idl modified Tue Nov 20 13:28:29 2012.
+// From dev/ppb_device_ref_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -40,7 +40,7 @@ struct PP_Var GetName(PP_Resource device_ref) {
 const PPB_DeviceRef_Dev_0_1 g_ppb_deviceref_dev_thunk_0_1 = {
   &IsDeviceRef,
   &GetType,
-  &GetName,
+  &GetName
 };
 
 }  // namespace

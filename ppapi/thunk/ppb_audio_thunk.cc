@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio.idl modified Tue Dec  4 10:41:02 2012.
+// From ppb_audio.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio.h"
@@ -62,7 +62,7 @@ const PPB_Audio_1_0 g_ppb_audio_thunk_1_0 = {
   &IsAudio,
   &GetCurrentConfig,
   &StartPlayback,
-  &StopPlayback,
+  &StopPlayback
 };
 
 }  // namespace

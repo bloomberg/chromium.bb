@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_resource_array_dev.idl modified Mon Nov 26 10:53:45 2012.
+// From dev/ppb_resource_array_dev.idl modified Thu Dec 20 13:10:26 2012.
 
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -50,7 +50,7 @@ const PPB_ResourceArray_Dev_0_1 g_ppb_resourcearray_dev_thunk_0_1 = {
   &Create,
   &IsResourceArray,
   &GetSize,
-  &GetAt,
+  &GetAt
 };
 
 }  // namespace

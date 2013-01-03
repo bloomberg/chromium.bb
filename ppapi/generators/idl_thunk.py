@@ -389,12 +389,14 @@ class TGen(GeneratorByFile):
         version_list.append((thunk_type, thunk_name))
 
         out.Write('const %s %s = {\n' % (thunk_type, thunk_name))
+        generated_functions = []
         for child in node.GetListOf('Member'):
           rtype, name, arrays, args = cgen.GetComponents(
               child, build, 'return')
-          if child.InReleases([build]):  # TEST
-            out.Write('  &%s,\n' % name)
-        out.Write('};\n\n')
+          if child.InReleases([build]):
+            generated_functions.append(name)
+        out.Write(',\n'.join(['  &%s' % f for f in generated_functions]))
+        out.Write('\n};\n\n')
 
     out.Write('}  // namespace\n')
     out.Write('\n')

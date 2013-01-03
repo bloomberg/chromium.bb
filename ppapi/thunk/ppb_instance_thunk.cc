@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_instance.idl modified Fri Dec 21 11:00:20 2012.
+// From ppb_instance.idl modified Thu Dec 27 10:36:33 2012.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_instance.h"
@@ -33,7 +33,7 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 
 const PPB_Instance_1_0 g_ppb_instance_thunk_1_0 = {
   &BindGraphics,
-  &IsFullFrame,
+  &IsFullFrame
 };
 
 }  // namespace
