@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "net/base/net_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"

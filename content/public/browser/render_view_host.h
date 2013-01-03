@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
-#include "base/values.h"
+#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
@@ -16,12 +16,12 @@ class FilePath;
 class GURL;
 struct WebDropData;
 
-namespace webkit_glue {
-struct WebPreferences;
-}
-
 namespace gfx {
 class Point;
+}
+
+namespace base {
+class Value;
 }
 
 namespace ui {
@@ -32,6 +32,10 @@ namespace WebKit {
 struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
+}
+
+namespace webkit_glue {
+struct WebPreferences;
 }
 
 namespace content {
@@ -56,6 +60,8 @@ struct CustomContextMenuContext;
 // WebContents (see WebContents for an example) but also as views, etc.
 class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
  public:
+  typedef base::Callback<void(const base::Value*)> JavascriptResultCallback;
+
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns NULL if the IDs do not correspond to a live RenderViewHost.
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
@@ -171,13 +177,27 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
                                            const string16& jscript) = 0;
 
   // Runs some javascript within the context of a frame in the page. The result
-  // is sent back via the notification EXECUTE_JAVASCRIPT_RESULT.
+  // is sent back via the notification NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT.
+  // This returns an int, used as a key to identify the corresponding
+  // notification.
+  // OBSOLETE. Use ExecuteJavascriptInWebFrameCallbackResult instead.
   virtual int ExecuteJavascriptInWebFrameNotifyResult(
       const string16& frame_xpath,
       const string16& jscript) = 0;
 
-  virtual Value* ExecuteJavascriptAndGetValue(const string16& frame_xpath,
-                                              const string16& jscript) = 0;
+  // Runs some javascript within the context of a frame in the page. The result
+  // is sent back via the provided callback.
+  virtual void ExecuteJavascriptInWebFrameCallbackResult(
+      const string16& frame_xpath,
+      const string16& jscript,
+      const JavascriptResultCallback& callback) = 0;
+
+  // Runs some javascript within the context of a frame in the page. A nested
+  // message loop is run to wait for the result, which is returned. THIS SHOULD
+  // ONLY BE USED BY TESTS. TODO(avi): Move into a test file.
+  virtual base::Value* ExecuteJavascriptAndGetValue(
+      const string16& frame_xpath,
+      const string16& jscript) = 0;
 
   // Tells the renderer to perform the given action on the plugin located at
   // the given point.

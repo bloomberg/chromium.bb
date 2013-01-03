@@ -9,10 +9,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -718,7 +719,15 @@ int RenderViewHostImpl::ExecuteJavascriptInWebFrameNotifyResult(
   return next_id++;
 }
 
-typedef std::pair<int, Value*> ExecuteDetailType;
+void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
+     const string16& frame_xpath,
+     const string16& jscript,
+     const JavascriptResultCallback& callback) {
+  int key = ExecuteJavascriptInWebFrameNotifyResult(frame_xpath, jscript);
+  javascript_callbacks_.insert(std::make_pair(key, callback));
+}
+
+typedef std::pair<int, base::Value*> ExecuteDetailType;
 
 ExecuteNotificationObserver::ExecuteNotificationObserver(int id)
 : id_(id) {
@@ -735,13 +744,13 @@ void ExecuteNotificationObserver::Observe(int type,
   int id = execute_details->first;
   if (id != id_)
     return;
-  Value* value = execute_details->second;
+  base::Value* value = execute_details->second;
   if (value)
     value_.reset(value->DeepCopy());
   MessageLoop::current()->Quit();
 }
 
-Value* RenderViewHostImpl::ExecuteJavascriptAndGetValue(
+base::Value* RenderViewHostImpl::ExecuteJavascriptAndGetValue(
     const string16& frame_xpath,
     const string16& jscript) {
   int id = ExecuteJavascriptInWebFrameNotifyResult(frame_xpath, jscript);
@@ -1917,18 +1926,29 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
   Send(new AccessibilityMsg_Notifications_ACK(GetRoutingID()));
 }
 
-void RenderViewHostImpl::OnScriptEvalResponse(int id, const ListValue& result) {
-  const Value* result_value;
+void RenderViewHostImpl::OnScriptEvalResponse(int id,
+                                              const base::ListValue& result) {
+  const base::Value* result_value;
   if (!result.Get(0, &result_value)) {
     // Programming error or rogue renderer.
     NOTREACHED() << "Got bad arguments for OnScriptEvalResponse";
     return;
   }
-  std::pair<int, const Value*> details(id, result_value);
-  NotificationService::current()->Notify(
-      NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      Source<RenderViewHost>(this),
-      Details<std::pair<int, const Value*> >(&details));
+
+  std::map<int, JavascriptResultCallback>::iterator it =
+      javascript_callbacks_.find(id);
+  if (it != javascript_callbacks_.end()) {
+    // ExecuteJavascriptInWebFrameCallbackResult was used; do callback.
+    it->second.Run(result_value);
+    javascript_callbacks_.erase(it);
+  } else {
+    // ExecuteJavascriptInWebFrameNotifyResult was used; broadcast result.
+    std::pair<int, const base::Value*> details(id, result_value);
+    NotificationService::current()->Notify(
+        NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
+        Source<RenderViewHost>(this),
+        Details<std::pair<int, const base::Value*> >(&details));
+  }
 }
 
 void RenderViewHostImpl::OnDidZoomURL(double zoom_level,

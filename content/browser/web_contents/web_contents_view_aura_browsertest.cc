@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"

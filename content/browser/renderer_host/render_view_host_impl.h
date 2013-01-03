@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -42,6 +43,7 @@ struct ViewMsg_StopFinding_Params;
 
 namespace base {
 class ListValue;
+class Value;
 }
 
 namespace ui {
@@ -79,11 +81,11 @@ class ExecuteNotificationObserver : public NotificationObserver {
 
   int id() const { return id_; }
 
-  Value* value() const { return value_.get(); }
+  base::Value* value() const { return value_.get(); }
 
  private:
   int id_;
-  scoped_ptr<Value> value_;
+  scoped_ptr<base::Value> value_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteNotificationObserver);
 };
@@ -193,8 +195,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual int ExecuteJavascriptInWebFrameNotifyResult(
       const string16& frame_xpath,
       const string16& jscript) OVERRIDE;
-  virtual Value* ExecuteJavascriptAndGetValue(const string16& frame_xpath,
-                                              const string16& jscript) OVERRIDE;
+  virtual void ExecuteJavascriptInWebFrameCallbackResult(
+      const string16& frame_xpath,
+      const string16& jscript,
+      const JavascriptResultCallback& callback) OVERRIDE;
+  virtual base::Value* ExecuteJavascriptAndGetValue(
+      const string16& frame_xpath,
+      const string16& jscript) OVERRIDE;
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const WebKit::WebPluginAction& action) OVERRIDE;
@@ -656,6 +663,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool unload_ack_is_for_cross_site_transition_;
 
   bool are_javascript_messages_suppressed_;
+
+  // The mapping of pending javascript calls created by
+  // ExecuteJavascriptInWebFrameCallbackResult and their corresponding
+  // callbacks.
+  std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
