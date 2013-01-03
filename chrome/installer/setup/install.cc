@@ -281,7 +281,7 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
 
   if (installer_state.system_install()) {
     ShellUtil::RemoveShortcut(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist, chrome_exe,
+        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist, chrome_exe.value(),
         ShellUtil::SYSTEM_LEVEL, NULL);
   }
 }

@@ -268,7 +268,8 @@ void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
     const string16 shortcut_name =
         shortcuts[i].BaseName().RemoveExtension().value();
     ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                              distribution, chrome_exe, ShellUtil::CURRENT_USER,
+                              distribution, chrome_exe.value(),
+                              ShellUtil::CURRENT_USER,
                               &shortcut_name);
   }
 

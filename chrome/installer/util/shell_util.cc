@@ -1154,35 +1154,6 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
   return ProbeOpenCommandHandlers(protocols, num_protocols);
 }
 
-// Removes shortcut at |shortcut_path| if it is a shortcut that points to
-// |target_exe|. If |delete_folder| is true, deletes the parent folder of
-// the shortcut completely. Returns true if either the shortcut was deleted
-// successfully or if the shortcut did not point to |target_exe|.
-bool MaybeRemoveShortcutAtPath(const FilePath& shortcut_path,
-                               const FilePath& target_exe,
-                               bool delete_folder) {
-  FilePath target_path;
-  if (!base::win::ResolveShortcut(shortcut_path, &target_path, NULL))
-    return false;
-
-  if (InstallUtil::ProgramCompare(target_exe).Evaluate(target_path.value())) {
-    // Unpin the shortcut if it was ever pinned by the user or the installer.
-    VLOG(1) << "Trying to unpin " << shortcut_path.value();
-    if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
-      VLOG(1) << shortcut_path.value()
-              << " wasn't pinned (or the unpin failed).";
-    }
-    if (delete_folder)
-      return file_util::Delete(shortcut_path.DirName(), true);
-    else
-      return file_util::Delete(shortcut_path, false);
-  }
-
-  // The shortcut at |shortcut_path| doesn't point to |target_exe|, act as if
-  // our shortcut had been deleted.
-  return true;
-}
-
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -1306,13 +1277,13 @@ bool ShellUtil::CreateOrUpdateShortcut(
   user_shortcut_path = user_shortcut_path.Append(shortcut_name);
   system_shortcut_path = system_shortcut_path.Append(shortcut_name);
 
-  FilePath* chosen_path;
+  FilePath *chosen_path;
   bool should_install_shortcut = true;
   if (properties.level == SYSTEM_LEVEL) {
     // Install the system-level shortcut if requested.
     chosen_path = &system_shortcut_path;
   } else if (operation != SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL ||
-             !file_util::PathExists(system_shortcut_path)) {
+             !file_util::PathExists(system_shortcut_path)){
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
     // not to create a user-level shortcut in that case.
@@ -1824,10 +1795,10 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 
 bool ShellUtil::RemoveShortcut(ShellUtil::ShortcutLocation location,
                                BrowserDistribution* dist,
-                               const FilePath& target_exe,
+                               const string16& target_exe,
                                ShellChange level,
                                const string16* shortcut_name) {
-  const bool delete_folder = (location == SHORTCUT_LOCATION_START_MENU);
+  bool delete_folder = (location == SHORTCUT_LOCATION_START_MENU);
 
   FilePath shortcut_folder;
   if (!GetShortcutPath(location, dist, level, &shortcut_folder) ||
@@ -1836,29 +1807,43 @@ bool ShellUtil::RemoveShortcut(ShellUtil::ShortcutLocation location,
     return false;
   }
 
-  if (!delete_folder && !shortcut_name) {
-    file_util::FileEnumerator enumerator(shortcut_folder, false,
-        file_util::FileEnumerator::FILES);
-    bool had_failures = false;
-    for (FilePath path = enumerator.Next(); !path.empty();
-         path = enumerator.Next()) {
-      if (path.Extension() != installer::kLnkExt)
-        continue;
-
-      if (!MaybeRemoveShortcutAtPath(path, target_exe, delete_folder))
-        had_failures = true;
-    }
-    return !had_failures;
-  }
-
-  const string16 shortcut_base_name(
+  string16 shortcut_base_name(
       (shortcut_name ? *shortcut_name : dist->GetAppShortCutName()) +
       installer::kLnkExt);
-  const FilePath shortcut_path(shortcut_folder.Append(shortcut_base_name));
+  FilePath shortcut_path(shortcut_folder.Append(shortcut_base_name));
+
   if (!file_util::PathExists(shortcut_path))
     return true;
 
-  return MaybeRemoveShortcutAtPath(shortcut_path, target_exe, delete_folder);
+  base::win::ScopedComPtr<IShellLink> i_shell_link;
+  base::win::ScopedComPtr<IPersistFile> i_persist_file;
+  wchar_t read_target[MAX_PATH] = {};
+  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER)) ||
+      FAILED(i_persist_file.QueryFrom(i_shell_link)) ||
+      FAILED(i_persist_file->Load(shortcut_path.value().c_str(), STGM_READ)) ||
+      FAILED(i_shell_link->GetPath(read_target, MAX_PATH, NULL,
+                                   SLGP_SHORTPATH))) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (InstallUtil::ProgramCompare(FilePath(target_exe)).Evaluate(read_target)) {
+    // Unpin the shortcut if it was ever pinned by the user or the installer.
+    VLOG(1) << "Trying to unpin " << shortcut_path.value();
+    if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
+      VLOG(1) << shortcut_path.value()
+              << " wasn't pinned (or the unpin failed).";
+    }
+    if (delete_folder)
+      return file_util::Delete(shortcut_folder, true);
+    else
+      return file_util::Delete(shortcut_path, false);
+  }
+
+  // The shortcut at |shortcut_path| doesn't point to |target_exe|, act as if
+  // our shortcut had been deleted.
+  return true;
 }
 
 void ShellUtil::RemoveTaskbarShortcuts(const string16& target_exe) {

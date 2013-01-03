@@ -135,6 +135,9 @@ int DoUninstallTasks(bool chrome_still_running) {
     VLOG(1) << "Executing uninstall actions";
     if (!first_run::RemoveSentinel())
       VLOG(1) << "Failed to delete sentinel file.";
+    // We want to remove user level shortcuts and we only care about the ones
+    // created by us and not by the installer so |alternate| is false.
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
@@ -142,15 +145,15 @@ int DoUninstallTasks(bool chrome_still_running) {
         ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
         ShellUtil::SHORTCUT_LOCATION_START_MENU,
       };
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
-        if (!ShellUtil::RemoveShortcut(user_shortcut_locations[i], dist,
-                                       chrome_exe, ShellUtil::CURRENT_USER,
-                                       NULL)) {
+        if (!ShellUtil::RemoveShortcut(
+                user_shortcut_locations[i], dist, chrome_exe.value(),
+                ShellUtil::CURRENT_USER, NULL)) {
           VLOG(1) << "Failed to delete shortcut at location "
                   << user_shortcut_locations[i];
         }
       }
+      // TODO(rlp): Cleanup profiles shortcuts.
     } else {
       NOTREACHED();
     }
