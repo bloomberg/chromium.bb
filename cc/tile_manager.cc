@@ -267,7 +267,7 @@ public:
       return ams.raster_bin < bms.raster_bin;
 
     if (ams.resolution != bms.resolution)
-      return ams.resolution < ams.resolution;
+      return ams.resolution < bms.resolution;
 
     return
       ams.time_to_needed_in_seconds <
