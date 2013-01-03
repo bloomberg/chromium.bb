@@ -4,8 +4,17 @@
 
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 
+#include "base/i18n/rtl.h"
 #include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,15 +29,24 @@ namespace {
 // close automatically.
 const int kBubbleCloseDelay = 1500;
 
+// The bubble's padding from the screen edge, used in fullscreen.
+const int kFullscreenPaddingEnd = 20;
+
 }  // namespace
 
 // static
 ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;
 
 // static
-void ZoomBubbleView::ShowBubble(views::View* anchor_view,
-                                content::WebContents* web_contents,
+void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
                                 bool auto_close) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  DCHECK(browser && browser->window() && browser->fullscreen_controller());
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* anchor_view = browser->window()->IsFullscreen() ? NULL :
+      browser_view->GetLocationBarView()->zoom_view();
+
   // If the bubble is already showing in this window and its |auto_close_| value
   // is equal to |auto_close|, the bubble can be reused and only the label text
   // needs to be updated.
@@ -42,8 +60,16 @@ void ZoomBubbleView::ShowBubble(views::View* anchor_view,
     // current bubble must be closed and a new one created.
     CloseBubble();
 
-    zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, auto_close);
+    zoom_bubble_ = new ZoomBubbleView(anchor_view,
+                                      web_contents,
+                                      auto_close,
+                                      browser->fullscreen_controller());
     views::BubbleDelegateView::CreateBubble(zoom_bubble_);
+
+    // Adjust for fullscreen after creation as it relies on the content size.
+    if (browser->window()->IsFullscreen())
+      zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
+
     zoom_bubble_->Show();
   }
 }
@@ -61,8 +87,10 @@ bool ZoomBubbleView::IsShowing() {
 
 ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
                                content::WebContents* web_contents,
-                               bool auto_close)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+                               bool auto_close,
+                               FullscreenController* fullscreen_controller)
+    : BubbleDelegateView(anchor_view, anchor_view ?
+          views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
       label_(NULL),
       web_contents_(web_contents),
       auto_close_(auto_close) {
@@ -70,9 +98,28 @@ ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
   set_anchor_insets(gfx::Insets(5, 0, 5, 0));
   set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                 content::Source<FullscreenController>(fullscreen_controller));
 }
 
 ZoomBubbleView::~ZoomBubbleView() {
+}
+
+void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
+  DCHECK(!anchor_view());
+
+  // TODO(dbeam): should RTL logic be done in views::BubbleDelegateView?
+  const size_t bubble_half_width = width() / 2;
+  const int x_pos = base::i18n::IsRTL() ?
+      screen_bounds.x() + bubble_half_width + kFullscreenPaddingEnd :
+      screen_bounds.right() - bubble_half_width - kFullscreenPaddingEnd;
+  set_anchor_point(gfx::Point(x_pos, screen_bounds.y()));
+
+  // Used to update |views::BubbleDelegate::anchor_point_| in a semi-hacky way.
+  // TODO(dbeam): update only the bounds of this view or its border or frame.
+  SizeToContents();
 }
 
 void ZoomBubbleView::Refresh() {
@@ -122,7 +169,7 @@ void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
 
   // If an auto-closing bubble was tapped, show a non-auto-closing bubble in
   // its place.
-  ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->web_contents_, false);
+  ShowBubble(zoom_bubble_->web_contents_, false);
   event->SetHandled();
 }
 
@@ -150,6 +197,13 @@ void ZoomBubbleView::Init() {
   AddChildView(set_default_button);
 
   StartTimerIfNecessary();
+}
+
+void ZoomBubbleView::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  CloseBubble();
 }
 
 void ZoomBubbleView::WindowClosing() {

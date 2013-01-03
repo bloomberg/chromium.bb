@@ -106,6 +106,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   // true if it was a user action and a bubble could be shown.
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
+  // Returns the zoom widget. Used by the zoom bubble for an anchor.
+  GtkWidget* zoom_widget() { return zoom_.get(); }
+
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
@@ -391,10 +394,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   void SetKeywordHintLabel(const string16& keyword);
 
   void ShowFirstRunBubbleInternal();
-
-  // Get the correct zoom bubble anchor according to whether the browser window
-  // is fullscreen or not.
-  GtkWidget* GetZoomBubbleAnchor();
 
   // Shows the zoom bubble.
   void ShowZoomBubble();

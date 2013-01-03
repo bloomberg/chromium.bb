@@ -85,6 +85,5 @@ int ZoomView::GetBuiltInHorizontalPadding() const {
 }
 
 void ZoomView::ActivateBubble() {
-  ZoomBubbleView::ShowBubble(
-      this, location_bar_delegate_->GetWebContents(), false);
+  ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(), false);
 }

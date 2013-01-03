@@ -10,21 +10,26 @@
 #include "base/basictypes.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 
+class FullscreenController;
+
 namespace content {
+class NotificationDetails;
+class NotificationSource;
 class WebContents;
 }
 
-class ZoomBubbleGtk {
+class ZoomBubbleGtk : public content::NotificationObserver {
  public:
   // Shows the zoom bubble below |anchor_widget| with an arrow pointing at
   // |anchor_widget|. If |anchor_widget| is a toplevel window, the bubble will
   // fixed positioned in the top right of corner of the widget with no arrow.
-  static void ShowBubble(GtkWidget* anchor,
-                         content::WebContents* web_contents,
+  static void ShowBubble(content::WebContents* web_contents,
                          bool auto_close);
 
   // Whether the zoom bubble is currently showing.
@@ -36,9 +41,15 @@ class ZoomBubbleGtk {
  private:
   ZoomBubbleGtk(GtkWidget* anchor,
                 content::WebContents* web_contents,
-                bool auto_close);
+                bool auto_close,
+                FullscreenController* fullscreen_controller);
 
   virtual ~ZoomBubbleGtk();
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Convenience method to start |timer_| if |auto_close_| is true.
   void StartTimerIfNecessary();
@@ -85,6 +96,9 @@ class ZoomBubbleGtk {
 
   // The BubbleGtk object containing the zoom bubble's content.
   BubbleGtk* bubble_;
+
+  // Used to register for fullscreen change notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomBubbleGtk);
 };

@@ -620,10 +620,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  content::Source<Profile>(browser()->profile()));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-                 content::Source<FullscreenController>(
-                     browser()->fullscreen_controller()));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile->GetPrefs(),
                                base::Bind(&LocationBarViewGtk::UpdateStarIcon,
@@ -1188,11 +1184,6 @@ void LocationBarViewGtk::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_FULLSCREEN_CHANGED: {
-      ZoomBubbleGtk::CloseBubble();
-      break;
-    }
-
     default:
       NOTREACHED();
   }
@@ -1532,7 +1523,7 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
   if (event->button == 1 && GetWebContents()) {
     // If the zoom icon is clicked, show the zoom bubble and keep it open until
     // it loses focus.
-    ZoomBubbleGtk::ShowBubble(GetZoomBubbleAnchor(), GetWebContents(), false);
+    ZoomBubbleGtk::ShowBubble(GetWebContents(), false);
     return TRUE;
   }
   return FALSE;
@@ -1581,17 +1572,10 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
 }
 
 void LocationBarViewGtk::ShowZoomBubble() {
-  if (!zoom_.get() || toolbar_model_->GetInputInProgress())
+  if (toolbar_model_->GetInputInProgress() || !GetWebContents())
     return;
 
-  ZoomBubbleGtk::ShowBubble(GetZoomBubbleAnchor(), GetWebContents(), true);
-}
-
-GtkWidget* LocationBarViewGtk::GetZoomBubbleAnchor() {
-  // |browser_->window()| is null until |browser_->CreateBrowserWindow()| has
-  // been called.
-  return browser_->window() && browser_->window()->IsFullscreen() ?
-      GTK_WIDGET(browser()->window()->GetNativeWindow()) : zoom_.get();
+  ZoomBubbleGtk::ShowBubble(GetWebContents(), true);
 }
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,

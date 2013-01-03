@@ -174,6 +174,9 @@ class LocationBarView : public LocationBar,
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
+  // The zoom icon view. It may not be visible.
+  ZoomView* zoom_view() { return zoom_view_; }
+
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // PageActions icon even though it has not been activated by the extension.
