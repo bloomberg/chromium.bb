@@ -71,7 +71,7 @@ void GpuWatchdogThread::CheckArmed() {
 
 void GpuWatchdogThread::Init() {
   // Schedule the first check.
-  OnCheck();
+  OnCheck(false);
 }
 
 void GpuWatchdogThread::CleanUp() {
@@ -120,14 +120,19 @@ void GpuWatchdogThread::OnAcknowledge() {
   weak_factory_.InvalidateWeakPtrs();
   armed_ = false;
 
+  // If it took a long time for the acknowledgement, assume the computer was
+  // recently suspended.
+  bool was_suspended = (base::Time::Now() > suspension_timeout_);
+
   // The monitored thread has responded. Post a task to check it again.
   message_loop()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr()),
+      base::Bind(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr(),
+          was_suspended),
       base::TimeDelta::FromMilliseconds(kCheckPeriodMs));
 }
 
-void GpuWatchdogThread::OnCheck() {
+void GpuWatchdogThread::OnCheck(bool after_suspend) {
   if (armed_)
     return;
 
@@ -140,7 +145,10 @@ void GpuWatchdogThread::OnCheck() {
   arm_cpu_time_ = GetWatchedThreadTime();
 #endif
 
-  arm_absolute_time_ = base::Time::Now();
+  // Immediately after the computer is woken up from being suspended it might
+  // be pretty sluggish, so allow some extra time before the next timeout.
+  base::TimeDelta timeout = timeout_ * (after_suspend ? 3 : 1);
+  suspension_timeout_ = base::Time::Now() + timeout * 2;
 
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
@@ -156,7 +164,7 @@ void GpuWatchdogThread::OnCheck() {
       base::Bind(
           &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
           weak_factory_.GetWeakPtr()),
-      timeout_);
+      timeout);
 }
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
@@ -180,9 +188,9 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // the watchdog check. This is to prevent the watchdog thread from terminating
   // when a machine wakes up from sleep or hibernation, which would otherwise
   // appear to be a hang.
-  if (base::Time::Now() - arm_absolute_time_ > timeout_ * 2) {
+  if (base::Time::Now() > suspension_timeout_) {
     armed_ = false;
-    OnCheck();
+    OnCheck(true);
     return;
   }
 

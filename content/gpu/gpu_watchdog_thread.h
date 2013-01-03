@@ -54,7 +54,7 @@ class GpuWatchdogThread : public base::Thread,
   virtual ~GpuWatchdogThread();
 
   void OnAcknowledge();
-  void OnCheck();
+  void OnCheck(bool after_suspend);
   void DeliberatelyTerminateToRecoverFromHang();
 
 #if defined(OS_WIN)
@@ -71,7 +71,9 @@ class GpuWatchdogThread : public base::Thread,
   base::TimeDelta arm_cpu_time_;
 #endif
 
-  base::Time arm_absolute_time_;
+  // Time after which it's assumed that the computer has been suspended since
+  // the task was posted.
+  base::Time suspension_timeout_;
 
   base::WeakPtrFactory<GpuWatchdogThread> weak_factory_;
 
