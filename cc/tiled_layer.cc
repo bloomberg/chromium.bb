@@ -14,8 +14,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace std;
-
 namespace cc {
 
 // Maximum predictive expansion of the visible area.
@@ -110,7 +108,7 @@ void TiledLayer::updateTileSizeAndTilingOption()
     int layerWidth = contentBounds().width();
     int layerHeight = contentBounds().height();
 
-    gfx::Size tileSize(min(defaultTileSize.width(), layerWidth), min(defaultTileSize.height(), layerHeight));
+    gfx::Size tileSize(std::min(defaultTileSize.width(), layerWidth), std::min(defaultTileSize.height(), layerHeight));
 
     // Tile if both dimensions large, or any one dimension large and the other
     // extends into a second tile but the total layer area isn't larger than that

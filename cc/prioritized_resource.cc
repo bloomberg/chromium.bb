@@ -4,13 +4,12 @@
 
 #include "cc/prioritized_resource.h"
 
+#include <algorithm>
+
 #include "cc/platform_color.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
-#include <algorithm>
-
-using namespace std;
 
 namespace cc {
 

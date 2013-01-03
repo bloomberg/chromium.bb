@@ -4,14 +4,13 @@
 
 #include "cc/prioritized_resource_manager.h"
 
+#include <algorithm>
+
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
-#include <algorithm>
-
-using namespace std;
 
 namespace cc {
 

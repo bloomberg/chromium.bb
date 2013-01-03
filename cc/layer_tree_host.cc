@@ -29,8 +29,6 @@
 #include "cc/thread_proxy.h"
 #include "cc/tree_synchronizer.h"
 
-using namespace std;
-
 namespace {
 static int numLayerTreeInstances;
 }
@@ -159,7 +157,7 @@ void LayerTreeHost::initializeRenderer()
     // Update m_settings based on partial update capability.
     size_t maxPartialTextureUpdates = 0;
     if (m_proxy->rendererCapabilities().allowPartialTextureUpdates)
-        maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
+        maxPartialTextureUpdates = std::min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
     m_settings.maxPartialTextureUpdates = maxPartialTextureUpdates;
 
     m_contentsTextureManager = PrioritizedResourceManager::create(m_proxy.get());
@@ -167,10 +165,10 @@ void LayerTreeHost::initializeRenderer()
 
     m_rendererInitialized = true;
 
-    m_settings.defaultTileSize = gfx::Size(min(m_settings.defaultTileSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
-                                           min(m_settings.defaultTileSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
-    m_settings.maxUntiledLayerSize = gfx::Size(min(m_settings.maxUntiledLayerSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
-                                               min(m_settings.maxUntiledLayerSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
+    m_settings.defaultTileSize = gfx::Size(std::min(m_settings.defaultTileSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
+                                           std::min(m_settings.defaultTileSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
+    m_settings.maxUntiledLayerSize = gfx::Size(std::min(m_settings.maxUntiledLayerSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
+                                               std::min(m_settings.maxUntiledLayerSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
 }
 
 LayerTreeHost::RecreateResult LayerTreeHost::recreateOutputSurface()
@@ -847,7 +845,7 @@ void LayerTreeHost::rateLimit()
 
 bool LayerTreeHost::bufferedUpdates()
 {
-    return m_settings.maxPartialTextureUpdates != numeric_limits<size_t>::max();
+    return m_settings.maxPartialTextureUpdates != std::numeric_limits<size_t>::max();
 }
 
 bool LayerTreeHost::requestPartialTextureUpdate()

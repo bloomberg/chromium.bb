@@ -14,8 +14,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"
 
-using namespace std;
-
 namespace cc {
 
 QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, const LayerImpl* layer, const OcclusionTrackerImpl& occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)

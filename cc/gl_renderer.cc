@@ -42,7 +42,6 @@
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace std;
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebGraphicsMemoryAllocation;
 using WebKit::WebSharedGraphicsContext3D;
@@ -98,7 +97,7 @@ bool GLRenderer::initialize()
     std::string extensionsString = UTF16ToASCII(m_context->getString(GL_EXTENSIONS));
     std::vector<std::string> extensionsList;
     base::SplitString(extensionsString, ' ', &extensionsList);
-    std::set<string> extensions(extensionsList.begin(), extensionsList.end());
+    std::set<std::string> extensions(extensionsList.begin(), extensionsList.end());
 
     if (settings().acceleratePainting && extensions.count("GL_EXT_texture_format_BGRA8888")
                                       && extensions.count("GL_EXT_read_format_bgra"))

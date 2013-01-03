@@ -14,8 +14,6 @@
 #include "cc/render_surface_impl.h"
 #include "ui/gfx/transform.h"
 
-using namespace std;
-
 namespace cc {
 
 inline static float perpProduct(const gfx::Vector2dF& u, const gfx::Vector2dF& v)
@@ -243,8 +241,8 @@ void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterato
 
         node.shape = LayerShape(layerWidth, layerHeight, drawTransform);
 
-        maxZ = max(maxZ, node.shape.transformOrigin.z());
-        minZ = min(minZ, node.shape.transformOrigin.z());
+        maxZ = std::max(maxZ, node.shape.transformOrigin.z());
+        minZ = std::min(minZ, node.shape.transformOrigin.z());
     }
 
     m_zRange = fabsf(maxZ - minZ);

@@ -15,8 +15,6 @@
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace std;
-
 namespace cc {
 
 static int s_nextLayerId = 1;
@@ -159,7 +157,7 @@ void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
     child->setParent(this);
     child->m_stackingOrderChanged = true;
 
-    index = min(index, m_children.size());
+    index = std::min(index, m_children.size());
     LayerList::iterator iter = m_children.begin();
     m_children.insert(iter + index, child);
     setNeedsFullTreeSync();

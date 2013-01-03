@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "cc/layer_tiling_data.h"
 
 #include "base/logging.h"
-
-using namespace std;
 
 namespace cc {
 
@@ -62,17 +59,17 @@ void LayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
 {
     DCHECK(!tileAt(i, j));
     tile->moveTo(i, j);
-    m_tiles.add(make_pair(i, j), tile.Pass());
+    m_tiles.add(std::make_pair(i, j), tile.Pass());
 }
 
 scoped_ptr<LayerTilingData::Tile> LayerTilingData::takeTile(int i, int j)
 {
-    return m_tiles.take_and_erase(make_pair(i, j));
+    return m_tiles.take_and_erase(std::make_pair(i, j));
 }
 
 LayerTilingData::Tile* LayerTilingData::tileAt(int i, int j) const
 {
-    return m_tiles.get(make_pair(i, j));
+    return m_tiles.get(std::make_pair(i, j));
 }
 
 void LayerTilingData::reset()

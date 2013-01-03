@@ -19,8 +19,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/quad_f.h"
 
-using namespace std;
-
 namespace cc {
 
 // Temporary diagnostic.

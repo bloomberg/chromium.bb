@@ -13,8 +13,6 @@
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace std;
-
 namespace cc {
 
 template<typename LayerType, typename RenderSurfaceType>

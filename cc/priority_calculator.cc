@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/priority_calculator.h"
-#include "ui/gfx/rect.h"
 
-using namespace std;
+#include "ui/gfx/rect.h"
 
 namespace cc {
 
@@ -65,16 +64,16 @@ int PriorityCalculator::lingeringPriority(int previousPriority)
     // FIXME: We should remove this once we have priorities for all
     //        textures (we can't currently calculate distances for
     //        off-screen textures).
-    return min(lingeringLimitPriority,
-               max(lingeringBasePriority, previousPriority + 1));
+    return std::min(lingeringLimitPriority,
+                    std::max(lingeringBasePriority, previousPriority + 1));
 }
 
 namespace {
 int manhattanDistance(const gfx::Rect& a, const gfx::Rect& b)
 {
     gfx::Rect c = gfx::UnionRects(a, b);
-    int x = max(0, c.width() - a.width() - b.width() + 1);
-    int y = max(0, c.height() - a.height() - b.height() + 1);
+    int x = std::max(0, c.width() - a.width() - b.width() + 1);
+    int y = std::max(0, c.height() - a.height() - b.height() + 1);
     return (x + y);
 }
 }
@@ -85,7 +84,7 @@ int PriorityCalculator::priorityFromDistance(const gfx::Rect& visibleRect, const
     int distance = manhattanDistance(visibleRect, textureRect);
     if (!distance)
         return visiblePriority(drawsToRootSurface);
-    return min(notVisibleLimitPriority, notVisibleBasePriority + distance);
+    return std::min(notVisibleLimitPriority, notVisibleBasePriority + distance);
 }
 
 // static
@@ -94,7 +93,7 @@ int PriorityCalculator::smallAnimatedLayerMinPriority()
     return smallAnimatedLayerPriority;
 }
 
-// static 
+// static
 int PriorityCalculator::highestPriority()
 {
     return mostHighPriority;
