@@ -16,7 +16,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 7
+_VERSION = 8
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -356,7 +356,7 @@ class APIDataSource(object):
     self._samples = samples
     self._disable_refs = disable_refs
 
-  def _GetPermsFromFile(self, filename):
+  def _GetFeatureFile(self, filename):
     try:
       perms = self._permissions_cache.GetFromFile('%s/%s' %
           (self._base_path, filename))
@@ -364,20 +364,38 @@ class APIDataSource(object):
     except FileNotFoundError:
       return {}
 
-  def _GetFeature(self, path):
+  def _GetFeatureData(self, path):
     # Remove 'experimental_' from path name to match the keys in
     # _permissions_features.json.
     path = model.UnixName(path.replace('experimental_', ''))
+
     for filename in ['_permission_features.json', '_manifest_features.json']:
-      api_perms = self._GetPermsFromFile(filename).get(path, None)
-      if api_perms is not None:
+      feature_data = self._GetFeatureFile(filename).get(path, None)
+      if feature_data is not None:
         break
-    if api_perms and api_perms['channel'] in ('trunk', 'dev', 'beta'):
-      api_perms[api_perms['channel']] = True
-    return api_perms
+
+    # There are specific cases in which the feature is actually a list of
+    # features where only one needs to match; but currently these are only
+    # used to whitelist features for specific extension IDs. Filter those out.
+    if isinstance(feature_data, list):
+      feature_list = feature_data
+      feature_data = None
+      for single_feature in feature_list:
+        if 'whitelist' in single_feature:
+          continue
+        if feature_data is not None:
+          # Note: if you are seeing the exception below, add more heuristics as
+          # required to form a single feature.
+          raise ValueError('Multiple potential features match %s. I can\'t '
+                           'decide which one to use. Please help!' % path)
+        feature_data = single_feature
+
+    if feature_data and feature_data['channel'] in ('trunk', 'dev', 'beta'):
+      feature_data[feature_data['channel']] = True
+    return feature_data
 
   def _GenerateHandlebarContext(self, handlebar_dict, path):
-    handlebar_dict['permissions'] = self._GetFeature(path)
+    handlebar_dict['permissions'] = self._GetFeatureData(path)
     handlebar_dict['samples'] = _LazySamplesGetter(path, self._samples)
     return handlebar_dict
 
