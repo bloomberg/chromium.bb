@@ -46,13 +46,13 @@ void BaseFormatView::SetUpView() {
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kBaseFormatPrimaryIconWidth, kBaseFormatPrimaryIconWidth));
-  icon->SetImage(notification_.image);
+  icon->SetImage(notification_.primary_icon);
 
   views::ImageView* second_icon = new views::ImageView;
   second_icon->SetImageSize(
       gfx::Size(kBaseFormatSecondaryIconWidth, kBaseFormatSecondaryIconWidth));
   // TODO: set up second image
-  second_icon->SetImage(notification_.image);
+  second_icon->SetImage(notification_.primary_icon);
 
   views::Label* title = new views::Label(notification_.title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);

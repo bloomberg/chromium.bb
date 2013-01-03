@@ -7,11 +7,14 @@
 
 #include <vector>
 
-#include "base/memory/weak_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 
 class GURL;
-class SkBitmap;
+
+namespace gfx {
+class ImageSkia;
+}
 
 // On Ash, a "BalloonView" is just a wrapper for ash notification entries.
 class BalloonViewAsh : public BalloonView {
@@ -27,26 +30,26 @@ class BalloonViewAsh : public BalloonView {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual BalloonHost* GetHost() const OVERRIDE;
 
+  void SetNotificationPrimaryIcon(const std::string& id,
+                                  const gfx::ImageSkia& image);
+
+  void SetNotificationSecondaryIcon(const std::string& id,
+                                    const gfx::ImageSkia& image);
+
  private:
-  // Favicon download callback.
-  void DidDownloadFavicon(
-      int id,
-      const GURL& image_url,
-      bool errored,
-      int requested_size,
-      const std::vector<SkBitmap>& bitmaps);
-  void FetchIcon(const Notification& notification);
-  std::string GetExtensionId(Balloon* balloon);
+  class ImageDownload;
+
+  typedef std::vector<linked_ptr<ImageDownload> > ImageDownloads;
+
+  void DownloadImages(const Notification& notification);
 
   BalloonCollection* collection_;
   Balloon* balloon_;
 
-  // Track the current notification id and download id so that it can be updated
-  // properly.
-  int current_download_id_;
-  std::string current_notification_id_;
-  std::string cached_notification_id_;
-  base::WeakPtrFactory<BalloonViewAsh> weak_ptr_factory_;
+  // Track the current notification id and downloads so the notification can be
+  // updated properly.
+  std::string notification_id_;
+  ImageDownloads downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewAsh);
 };

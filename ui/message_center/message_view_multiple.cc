@@ -20,9 +20,10 @@
 namespace {
 
 // Notification dimensions.
-const int kNotificationIconSize = 64;
+const int kNotificationPrimaryIconSize = 64;
+const int kNotificationSecondaryIconSize = 15;
 const int kNotificationPadding1Width = 12;
-const int kNotificationColumn1Width = kNotificationIconSize;
+const int kNotificationColumn1Width = kNotificationPrimaryIconSize;
 const int kNotificationPadding2Width = 12;
 const int kNotificationPadding3Width = 12;
 const int kNotificationColumn3Width = 26;
@@ -217,14 +218,15 @@ void MessageViewMultiple::SetUpView() {
                      kNotificationPadding4Width + kNotificationColumn4Width);
   columns->AddPaddingColumn(0, kNotificationPadding5Width);
 
-  // First row: Icon.
+  // First row: Primary icon.
   layout->StartRow(0, 0);
-  views::ImageView* icon = new views::ImageView;
-  icon->SetImageSize(gfx::Size(kNotificationIconSize, kNotificationIconSize));
-  icon->SetImage(notification_.image);
-  icon->set_border(CreateTopBorder(kNotificationColumn1Top));
-  icon->SetVerticalAlignment(views::ImageView::LEADING);
-  layout->AddView(icon, 1, 3 + 2 * notification_.items.size());
+  views::ImageView* primary_icon = new views::ImageView;
+  primary_icon->SetImageSize(gfx::Size(kNotificationPrimaryIconSize,
+                                       kNotificationPrimaryIconSize));
+  primary_icon->SetImage(notification_.primary_icon);
+  primary_icon->set_border(CreateTopBorder(kNotificationColumn1Top));
+  primary_icon->SetVerticalAlignment(views::ImageView::LEADING);
+  layout->AddView(primary_icon, 1, 3 + 2 * notification_.items.size());
 
   // First row: Title.
   // TODO(dharcourt): Skip the title Label when there's no title text.
@@ -257,7 +259,7 @@ void MessageViewMultiple::SetUpView() {
   DCHECK(close_button_);
   layout->AddView(close_button_);
 
-  // Two rows for each notification item, including appropriate padding.
+  // Rows for each notification item, including appropriate padding.
   layout->AddPaddingRow(0, 3);
   std::vector<NotificationList::NotificationItem>::const_iterator i;
   for (i = notification_.items.begin(); i != notification_.items.end(); ++i) {
@@ -267,23 +269,31 @@ void MessageViewMultiple::SetUpView() {
     layout->SkipColumns(2);
   }
 
-  // Two rows for padding and a horizontal separator line.
+  // Rows for horizontal separator line with appropriate padding.
   layout->StartRowWithPadding(0, 0, 0, 6);
   layout->SkipColumns(1);
   layout->AddView(new BoxView(1000000, 1, kNotificationSeparatorColor), 4, 1);
 
-  // Two rows for padding and the summary message and small icon.
+  // Last row: Summary message with padding.
   // TODO(dharcourt): Skip the message Label when there's no message text.
-  // TODO(dharcourt): Add a small icon to the right of the summary message.
-  layout->StartRowWithPadding(0, 0, 0, 6);
+  layout->StartRowWithPadding(0, 0, 0, 5);
   layout->SkipColumns(2);
   views::Label* message = new views::Label(notification_.message);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
   message->SetEnabledColor(kNotificationMessageColor);
   message->SetBackgroundColor(kNotificationMessageBackgroundColor);
+  message->set_border(CreateTopBorder(1));
   layout->AddView(message);
-  layout->SkipColumns(2);
+
+  // Last row: Secondary icon.
+  layout->SkipColumns(1);
+  views::ImageView* secondary_icon = new views::ImageView;
+  secondary_icon->SetImageSize(gfx::Size(kNotificationSecondaryIconSize,
+                                         kNotificationSecondaryIconSize));
+  secondary_icon->SetImage(notification_.secondary_icon);
+  secondary_icon->SetVerticalAlignment(views::ImageView::LEADING);
+  layout->AddView(secondary_icon);
 
   // Final row with the bottom padding.
   layout->AddPaddingRow(0, kNotificationPaddingBottom);

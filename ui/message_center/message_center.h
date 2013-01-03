@@ -89,12 +89,12 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
 
   // Adds a new notification. |id| is a unique identifier, used to update or
   // remove notifications. |title| and |meesage| describe the notification text.
-  // Use SetNotificationImage to set the icon image. If |extension_id| is
-  // provided then 'Disable extension' will appear in a dropdown menu and the
-  // id will be used to disable notifications from the extension. Otherwise if
-  // |display_source| is provided, a menu item showing the source and allowing
-  // notifications from that source to be disabled will be shown. All actual
-  // disabling is handled by the Delegate.
+  // Use SetNotificationPrimaryIcon and SetNotificationSecondaryIcon to set
+  // images. If |extension_id| is provided then 'Disable extension' will appear
+  // in a dropdown menu and the id will be used to disable notifications from
+  // the extension. Otherwise if |display_source| is provided, a menu item
+  // showing the source and allowing notifications from that source to be
+  // disabled will be shown. All actual disabling is handled by the Delegate.
   void AddNotification(ui::notifications::NotificationType type,
                        const std::string& id,
                        const string16& title,
@@ -114,9 +114,11 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   // Removes an existing notification.
   void RemoveNotification(const std::string& id);
 
-  // Sets the notification image.
-  void SetNotificationImage(const std::string& id,
-                            const gfx::ImageSkia& image);
+  void SetNotificationPrimaryIcon(const std::string& id,
+                                  const gfx::ImageSkia& image);
+
+  void SetNotificationSecondaryIcon(const std::string& id,
+                                    const gfx::ImageSkia& image);
 
   NotificationList* notification_list() { return notification_list_.get(); }
 
