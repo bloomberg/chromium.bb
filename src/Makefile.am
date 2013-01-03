@@ -108,7 +108,8 @@ fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 	/CUT_OUT_BEGIN/ { no_write=1; next; }; \
 	/CUT_OUT_END/ { no_write=0; next; }; \
 	{ if (!no_write) print; next; }; \
-	' - > $@.tmp && \
+	' - | \
+	sed 's/^ *//;s/ *, */,/' > $@.tmp && \
 	mv -f $@.tmp $@
 
 fcobjshash.h: fcobjshash.gperf
