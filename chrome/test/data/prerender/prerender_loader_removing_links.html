@@ -2,6 +2,8 @@
 <head>
 <title>Preloader</title>
 
+<script src="prerender_events_common.js"></script>
+
 <script>
 function ExtractGetParameterBadlyAndInsecurely(param, defaultValue) {
   var re = RegExp('[&?]' + param + '=([^&?#]*)');
@@ -13,17 +15,6 @@ function ExtractGetParameterBadlyAndInsecurely(param, defaultValue) {
 
 var numLinksToInsert =
     ExtractGetParameterBadlyAndInsecurely('links_to_insert', 1);
-
-var receivedPrerenderStartEvents = [];
-var receivedPrerenderStopEvents = [];
-
-function PrerenderStartHandlerForLink(index) {
-  receivedPrerenderStartEvents[index] = true;
-}
-
-function PrerenderStopHandlerForLink(index) {
-  receivedPrerenderStopEvents[index] = true;
-}
 
 function RemoveLinkElement(index) {
   var link = document.getElementById('prerenderElement' + index);
@@ -38,10 +29,7 @@ for (var i = 0; i < numLinksToInsert; ++i) {
       '<link id="prerenderElement' + i +
       '" rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
   var link = document.getElementById('prerenderElement' + i);
-  link.addEventListener('webkitprerenderstart',
-                        PrerenderStartHandlerForLink.bind(null, i), false);
-  link.addEventListener('webkitprerenderstop',
-                        PrerenderStopHandlerForLink.bind(null, i), false);
+  AddEventHandlersToLinkElement(link, i);
 }
 </script>
 <a id="toClick" href="REPLACE_WITH_DESTINATION_URL">Link To Click For First Prerender</a>

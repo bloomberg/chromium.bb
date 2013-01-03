@@ -2,18 +2,9 @@
 <head>
 <title>Preloader</title>
 
+<script src="prerender_events_common.js"></script>
+
 <script>
-  var receivedPrerenderStartEvents = [];
-  var receivedPrerenderStopEvents = [];
-
-  function PrerenderStartHandler() {
-    receivedPrerenderStartEvents[0] = true;
-  }
-
-  function PrerenderStopHandler() {
-    receivedPrerenderStopEvents[0] = true;
-  }
-
   function Click() {
     var eventObject = document.createEvent('MouseEvents');
     eventObject.initMouseEvent('click');
@@ -76,8 +67,7 @@
 <script>
   document.write('<link id="theprerender" rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
   prerender = document.getElementById('theprerender');
-  prerender.addEventListener('webkitprerenderstart', PrerenderStartHandler, false);
-  prerender.addEventListener('webkitprerenderstop', PrerenderStopHandler, false);
+  AddEventHandlersToLinkElement(prerender, 0);
 </script>
 <a target="_blank" id="toClickTarget"
    href="REPLACE_WITH_DESTINATION_URL">Link To click in new window</a>

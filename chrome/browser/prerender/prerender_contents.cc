@@ -140,6 +140,10 @@ class PrerenderContents::WebContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
+void PrerenderContents::Observer::OnPrerenderStopLoading(
+    PrerenderContents* contents) {
+}
+
 void PrerenderContents::Observer::OnPrerenderAddAlias(
     PrerenderContents* contents,
     const GURL& alias_url) {
@@ -467,6 +471,10 @@ void PrerenderContents::NotifyPrerenderStart() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStart(this));
 }
 
+void PrerenderContents::NotifyPrerenderStopLoading() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStopLoading(this));
+}
+
 void PrerenderContents::NotifyPrerenderStop() {
   DCHECK_NE(FINAL_STATUS_MAX, final_status_);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStop(this));
@@ -541,6 +549,7 @@ void PrerenderContents::RenderViewGone(base::TerminationStatus status) {
 void PrerenderContents::DidStopLoading(
     content::RenderViewHost* render_view_host) {
   has_stopped_loading_ = true;
+  NotifyPrerenderStopLoading();
 }
 
 void PrerenderContents::DidStartProvisionalLoadForFrame(

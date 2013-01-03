@@ -46,6 +46,18 @@ void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
   OnPrerenderAddAlias(prerender_id, prerender.url());
 }
 
+void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
+  DCHECK_NE(0u, prerenders_.count(prerender_id));
+  std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+
+  WebPrerender& prerender = it->second;
+  DCHECK(!prerender.isNull())
+      << "OnPrerenderStopLoading shouldn't be called from a unit test, the only"
+      << "context in which a WebPrerender in the dispatcher can be null.";
+
+  prerender.didSendLoadForPrerender();
+}
+
 void PrerenderDispatcher::OnPrerenderAddAlias(int prerender_id,
                                               const GURL& url) {
   DCHECK_NE(0u, prerenders_.count(prerender_id));
@@ -84,6 +96,8 @@ bool PrerenderDispatcher::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrerenderDispatcher, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStart, OnPrerenderStart)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStopLoading,
+                        OnPrerenderStopLoading)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderAddAlias, OnPrerenderAddAlias)
     IPC_MESSAGE_HANDLER(PrerenderMsg_OnPrerenderStop, OnPrerenderStop)
     IPC_MESSAGE_UNHANDLED(handled = false)

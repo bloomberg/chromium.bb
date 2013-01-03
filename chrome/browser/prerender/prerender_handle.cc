@@ -91,6 +91,21 @@ void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
     observer_->OnPrerenderStart(this);
 }
 
+void PrerenderHandle::OnPrerenderStopLoading(
+    PrerenderContents* prerender_contents) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(prerender_data_);
+  DCHECK_EQ(prerender_data_->contents(), prerender_contents);
+  if (observer_)
+    observer_->OnPrerenderStopLoading(this);
+}
+
+void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
+  DCHECK(CalledOnValidThread());
+  if (observer_)
+    observer_->OnPrerenderStop(this);
+}
+
 void PrerenderHandle::OnPrerenderAddAlias(PrerenderContents* prerender_contents,
                                           const GURL& alias_url) {
   DCHECK(CalledOnValidThread());
@@ -98,12 +113,6 @@ void PrerenderHandle::OnPrerenderAddAlias(PrerenderContents* prerender_contents,
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderAddAlias(this, alias_url);
-}
-
-void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
-  DCHECK(CalledOnValidThread());
-  if (observer_)
-    observer_->OnPrerenderStop(this);
 }
 
 void PrerenderHandle::OnPrerenderCreatedMatchCompleteReplacement(

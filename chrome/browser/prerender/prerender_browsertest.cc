@@ -864,6 +864,19 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return received_prerender_started;
   }
 
+  bool DidReceivePrerenderLoadEventForLinkNumber(int index) const {
+    bool received_prerender_loaded;
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send(Boolean("
+            "receivedPrerenderLoadEvents[%d]))", index);
+
+    CHECK(content::ExecuteJavaScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
+        "", expression,
+        &received_prerender_loaded));
+    return received_prerender_loaded;
+  }
+
   bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
     bool received_prerender_stopped;
     std::string expression = base::StringPrintf(
@@ -876,6 +889,15 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         expression,
         &received_prerender_stopped));
     return received_prerender_stopped;
+  }
+
+  bool HadPrerenderEventErrors() const {
+    bool had_prerender_event_errors;
+    CHECK(content::ExecuteJavaScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
+        "", "window.domAutomationController.send(Boolean("
+            "hadPrerenderEventErrors))", &had_prerender_event_errors));
+    return had_prerender_event_errors;
   }
 
   // Asserting on this can result in flaky tests.  PrerenderHandles are
@@ -1183,6 +1205,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
 
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_FALSE(HadPrerenderEventErrors());
 
   const GURL prerender_page_url =
       test_server()->GetURL("files/prerender/prerender_page.html");
@@ -1216,6 +1239,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
 
   EXPECT_FALSE(DidReceivePrerenderStartEventForLinkNumber(1));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
   // calls did a thread/process hop to the renderer which insured pending
   // renderer events have arrived.
@@ -1238,6 +1262,7 @@ IN_PROC_BROWSER_TEST_F(
   RemoveLinkElement(0);
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
   // calls did a thread/process hop to the renderer which insured pending
   // renderer events have arrived.
@@ -1265,6 +1290,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
   // calls did a thread/process hop to the renderer which insured pending
   // renderer events have arrived.
@@ -1298,6 +1324,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
+  EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
   // calls did a thread/process hop to the renderer which insured pending
   // renderer events have arrived.
@@ -2409,6 +2436,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CANCELLED, 1);
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_TRUE(DidReceivePrerenderLoadEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
 
   MessageLoop::current()->PostTask(
@@ -2417,6 +2445,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
 
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_TRUE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_FALSE(HadPrerenderEventErrors());
+}
+
+// PrerenderBrowserTest.PrerenderEventsNoLoad may pass flakily on regression,
+// so please be aggressive about filing bugs when this test is failing.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEventsNoLoad) {
+  // This should be canceled.
+  PrerenderTestURL("files/prerender/prerender_http_auth_container.html",
+                   FINAL_STATUS_AUTH_NEEDED,
+                   1);
+  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderLoadEventForLinkNumber(0));
+  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
+  EXPECT_FALSE(HadPrerenderEventErrors());
 }
 
 // Prerendering and history tests.

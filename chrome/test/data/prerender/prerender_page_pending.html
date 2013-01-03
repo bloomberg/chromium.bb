@@ -7,19 +7,10 @@ but not earlier.
 <head>
 <title>Prerender Page</title>
 
+<script src="prerender_events_common.js"></script>
+
 <script>
 var pageWasPrerendered = false;
-
-var receivedPrerenderStartEvents = [];
-var receivedPrerenderStopEvents = [];
-
-function PrerenderStartHandlerForLink(index) {
-  receivedPrerenderStartEvents[index] = true;
-}
-
-function PrerenderStopHandlerForLink(index) {
-  receivedPrerenderStopEvents[index] = true;
-}
 
 function DidPrerenderPass() {
   pageWasPrerendered = true;
@@ -33,10 +24,7 @@ function DidDisplayPass() {
 }
 
 var link = document.getElementById('thePrerender');
-link.addEventListener('webkitprerenderstart',
-                      PrerenderStartHandlerForLink.bind(null, 0), false);
-link.addEventListener('webkitprerenderstop',
-                      PrerenderStopHandlerForLink.bind(null, 0), false);
+AddEventHandlersToLinkElement(link, 0);
 </script>
 
 </head>

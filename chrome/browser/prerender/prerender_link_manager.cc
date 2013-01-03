@@ -309,15 +309,14 @@ void PrerenderLinkManager::OnPrerenderStart(
        new PrerenderMsg_OnPrerenderStart(prerender->prerender_id));
 }
 
-void PrerenderLinkManager::OnPrerenderAddAlias(
-    PrerenderHandle* prerender_handle,
-    const GURL& alias_url) {
+void PrerenderLinkManager::OnPrerenderStopLoading(
+    PrerenderHandle* prerender_handle) {
   LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
   if (!prerender)
     return;
+
   Send(prerender->launcher_child_id,
-       new PrerenderMsg_OnPrerenderAddAlias(prerender->prerender_id,
-                                            alias_url));
+       new PrerenderMsg_OnPrerenderStopLoading(prerender->prerender_id));
 }
 
 void PrerenderLinkManager::OnPrerenderStop(
@@ -330,6 +329,18 @@ void PrerenderLinkManager::OnPrerenderStop(
        new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
   RemovePrerender(prerender);
   StartPrerenders();
+}
+
+void PrerenderLinkManager::OnPrerenderAddAlias(
+    PrerenderHandle* prerender_handle,
+    const GURL& alias_url) {
+  LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
+  if (!prerender)
+    return;
+
+  Send(prerender->launcher_child_id,
+       new PrerenderMsg_OnPrerenderAddAlias(prerender->prerender_id,
+                                            alias_url));
 }
 
 }  // namespace prerender

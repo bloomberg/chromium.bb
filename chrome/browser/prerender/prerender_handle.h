@@ -35,6 +35,9 @@ class PrerenderHandle : public base::NonThreadSafe,
     // Signals that the prerender has started running.
     virtual void OnPrerenderStart(PrerenderHandle* handle) = 0;
 
+    // Signals that the prerender has had its load event.
+    virtual void OnPrerenderStopLoading(PrerenderHandle* handle) = 0;
+
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderHandle* handle) = 0;
 
@@ -80,6 +83,8 @@ class PrerenderHandle : public base::NonThreadSafe,
 
   // From PrerenderContents::Observer:
   virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
+  virtual void OnPrerenderStopLoading(PrerenderContents* prerender_contents)
+      OVERRIDE;
   virtual void OnPrerenderStop(PrerenderContents* prerender_contents) OVERRIDE;
   virtual void OnPrerenderAddAlias(PrerenderContents* prerender_contents,
                                    const GURL& alias_url) OVERRIDE;

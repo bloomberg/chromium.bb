@@ -49,6 +49,10 @@ IPC_MESSAGE_ROUTED1(PrerenderMsg_SetIsPrerendering,
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,
                      int /* prerender_id */)
 
+// Signals to launcher that a prerender is running.
+IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStopLoading,
+                     int /* prerender_id */)
+
 // Signals to a launcher that a new alias has been added to a prerender.
 IPC_MESSAGE_CONTROL2(PrerenderMsg_OnPrerenderAddAlias,
                      int /* prerender_id */,

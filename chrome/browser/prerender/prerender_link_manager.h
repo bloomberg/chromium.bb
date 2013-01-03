@@ -113,6 +113,8 @@ class PrerenderLinkManager : public ProfileKeyedService,
 
   // From PrerenderHandle::Observer:
   virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) OVERRIDE;
+  virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
+      OVERRIDE;
   virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
   virtual void OnPrerenderAddAlias(PrerenderHandle* prerender_handle,
                                    const GURL& alias_url) OVERRIDE;

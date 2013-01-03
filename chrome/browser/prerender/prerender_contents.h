@@ -75,6 +75,9 @@ class PrerenderContents : public content::NotificationObserver,
     // Signals that the prerender has started running.
     virtual void OnPrerenderStart(PrerenderContents* contents) = 0;
 
+    // Signals that the prerender has had its load event.
+    virtual void OnPrerenderStopLoading(PrerenderContents* contents);
+
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
 
@@ -292,6 +295,7 @@ class PrerenderContents : public content::NotificationObserver,
   // These call out to methods on our Observers, using our observer_list_. Note
   // that NotifyPrerenderStop() also clears the observer list.
   void NotifyPrerenderStart();
+  void NotifyPrerenderStopLoading();
   void NotifyPrerenderStop();
   void NotifyPrerenderAddAlias(const GURL& alias_url);
   void NotifyPrerenderCreatedMatchCompleteReplacement(
