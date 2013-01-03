@@ -294,9 +294,16 @@ bool GetRemovableStorageObjectIds(
   return true;
 }
 
-// Returns true if the portable device is mounted on a volume. |device_name|
-// specifies the name of the device.
-bool IsVolumeMountedPortableDevice(const string16& device_name) {
+// Returns true if the portable device belongs to a mass storage class.
+// |pnp_device_id| specifies the plug and play device id.
+// |device_name| specifies the name of the device.
+bool IsMassStoragePortableDevice(const string16& pnp_device_id,
+                                 const string16& device_name) {
+  // Based on testing, if the pnp device id starts with "\\?\wpdbusenumroot#",
+  // then the attached device belongs to a mass storage class.
+  if (StartsWith(pnp_device_id, L"\\\\?\\wpdbusenumroot#", false))
+    return true;
+
   // If the device is a volume mounted device, |device_name| will be
   // the volume name.
   return ((device_name.length() >= 2) && (device_name[1] == L':') &&
@@ -366,7 +373,7 @@ bool GetDeviceInfoOnBlockingThread(
   DCHECK(!pnp_device_id.empty());
   device_details->name = GetDeviceNameOnBlockingThread(portable_device_manager,
                                                        pnp_device_id);
-  if (IsVolumeMountedPortableDevice(device_details->name))
+  if (IsMassStoragePortableDevice(pnp_device_id, device_details->name))
     return false;
 
   device_details->location = pnp_device_id;
