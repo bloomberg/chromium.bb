@@ -118,6 +118,8 @@
         'common/content_settings_pattern_parser.cc',
         'common/content_settings_pattern_parser.h',
         'common/content_settings_types.h',
+        'common/crash_keys.cc',
+        'common/crash_keys.h',
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
         'common/descriptors_android.h',

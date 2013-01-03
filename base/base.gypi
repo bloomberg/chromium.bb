@@ -208,8 +208,6 @@
           'mac/bundle_locations.h',
           'mac/bundle_locations.mm',
           'mac/cocoa_protocols.h',
-          'mac/crash_logging.h',
-          'mac/crash_logging_mac.mm',
           'mac/foundation_util.h',
           'mac/foundation_util.mm',
           'mac/launchd.cc',

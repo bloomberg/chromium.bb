@@ -27,8 +27,8 @@
 // the backtrace from any such nested call should be sufficient to
 // drive a repro.
 #if defined(OS_MACOSX)
+#include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
-#include "base/mac/crash_logging.h"
 #include "base/sys_string_conversions.h"
 
 namespace {
@@ -169,8 +169,8 @@ void PluginChannelHost::RemoveRoute(int route_id) {
     base::debug::StackTrace trace;
     size_t count = 0;
     const void* const* addresses = trace.Addresses(&count);
-    base::mac::SetCrashKeyFromAddresses(
-        base::SysUTF8ToNSString(kRemoveRouteTraceKey), addresses, count);
+    base::debug::SetCrashKeyFromAddresses(
+        kRemoveRouteTraceKey, addresses, count);
   }
 #endif
 
@@ -214,8 +214,8 @@ void PluginChannelHost::OnChannelError() {
     base::debug::StackTrace trace;
     size_t count = 0;
     const void* const* addresses = trace.Addresses(&count);
-    base::mac::SetCrashKeyFromAddresses(
-        base::SysUTF8ToNSString(kChannelErrorTraceKey), addresses, count);
+    base::debug::SetCrashKeyFromAddresses(
+        kChannelErrorTraceKey, addresses, count);
   }
 #endif
 

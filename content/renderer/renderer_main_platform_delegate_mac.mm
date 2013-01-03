@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/crash_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"

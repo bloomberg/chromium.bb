@@ -8,15 +8,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
@@ -1044,16 +1045,16 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   // http://crbug.com/148882
   NSWindow* window = [cocoa_view_ window];
   if ([window windowNumber] <= 0) {
-    NSString* const kCrashKey = @"rwhvm_window";
+    const char* const kCrashKey = "rwhvm_window";
     if (!window) {
-      base::mac::SetCrashKeyValue(kCrashKey, @"Missing window");
+      base::debug::SetCrashKeyValue(kCrashKey, "Missing window");
     } else {
-      NSString* value =
-          [NSString stringWithFormat:@"window %s delegate %s controller %s",
-                    object_getClassName(window),
-                    object_getClassName([window delegate]),
-                    object_getClassName([window windowController])];
-      base::mac::SetCrashKeyValue(kCrashKey, value);
+      std::string value =
+          base::StringPrintf("window %s delegate %s controller %s",
+              object_getClassName(window),
+              object_getClassName([window delegate]),
+              object_getClassName([window windowController]));
+      base::debug::SetCrashKeyValue(kCrashKey, value);
     }
 
     return true;
