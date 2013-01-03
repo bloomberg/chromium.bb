@@ -103,7 +103,7 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
-                     const PipelineStatusCB& ended_cb,
+                     const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
                      const BufferingStateCB& buffering_state_cb) {
@@ -694,7 +694,7 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 }
 
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
-                         const PipelineStatusCB& ended_cb,
+                         const base::Closure& ended_cb,
                          const PipelineStatusCB& error_cb,
                          const PipelineStatusCB& seek_cb,
                          const BufferingStateCB& buffering_state_cb) {
@@ -851,9 +851,8 @@ void Pipeline::RunEndedCallbackIfNeeded() {
     clock_->EndOfStream();
   }
 
-  // TODO(scherkus): Change |ended_cb_| into a Closure.
   DCHECK_EQ(status_, PIPELINE_OK);
-  ended_cb_.Run(status_);
+  ended_cb_.Run();
 }
 
 void Pipeline::AudioDisabledTask() {

@@ -205,7 +205,7 @@ class WebMediaPlayerImpl
   void Repaint();
 
   void OnPipelineSeek(media::PipelineStatus status);
-  void OnPipelineEnded(media::PipelineStatus status);
+  void OnPipelineEnded();
   void OnPipelineError(media::PipelineStatus error);
   void OnPipelineBufferingState(
       media::Pipeline::BufferingState buffering_state);

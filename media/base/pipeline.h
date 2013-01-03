@@ -130,7 +130,7 @@ class MEDIA_EXPORT Pipeline
   //                    pipeline's buffering state changes.
   // It is an error to call this method after the pipeline has already started.
   void Start(scoped_ptr<FilterCollection> filter_collection,
-             const PipelineStatusCB& ended_cb,
+             const base::Closure& ended_cb,
              const PipelineStatusCB& error_cb,
              const PipelineStatusCB& seek_cb,
              const BufferingStateCB& buffering_state_cb);
@@ -289,7 +289,7 @@ class MEDIA_EXPORT Pipeline
   // methods are run as the result of posting a task to the PipelineInternal's
   // message loop.
   void StartTask(scoped_ptr<FilterCollection> filter_collection,
-                 const PipelineStatusCB& ended_cb,
+                 const base::Closure& ended_cb,
                  const PipelineStatusCB& error_cb,
                  const PipelineStatusCB& seek_cb,
                  const BufferingStateCB& buffering_state_cb);
@@ -445,7 +445,7 @@ class MEDIA_EXPORT Pipeline
   base::Closure stop_cb_;
 
   // Permanent callbacks passed in via Start().
-  PipelineStatusCB ended_cb_;
+  base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   BufferingStateCB buffering_state_cb_;
 

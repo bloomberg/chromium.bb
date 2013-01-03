@@ -57,11 +57,10 @@ PipelineStatusCB PipelineIntegrationTestBase::QuitOnStatusCB(
                     expected_status);
 }
 
-void PipelineIntegrationTestBase::OnEnded(PipelineStatus status) {
-  DCHECK_EQ(status, PIPELINE_OK);
+void PipelineIntegrationTestBase::OnEnded() {
   DCHECK(!ended_);
   ended_ = true;
-  pipeline_status_ = status;
+  pipeline_status_ = PIPELINE_OK;
   message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 

@@ -925,12 +925,8 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   GetClient()->timeChanged();
 }
 
-void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
+void WebMediaPlayerImpl::OnPipelineEnded() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status != media::PIPELINE_OK) {
-    OnPipelineError(status);
-    return;
-  }
   GetClient()->timeChanged();
 }
 

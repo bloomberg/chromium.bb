@@ -61,7 +61,7 @@ class CallbackHelper {
   MOCK_METHOD1(OnStart, void(PipelineStatus));
   MOCK_METHOD1(OnSeek, void(PipelineStatus));
   MOCK_METHOD0(OnStop, void());
-  MOCK_METHOD1(OnEnded, void(PipelineStatus));
+  MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD1(OnBufferingState, void(Pipeline::BufferingState));
 
@@ -533,7 +533,7 @@ TEST_F(PipelineTest, DisableAudioRenderer) {
   pipeline_->OnAudioDisabled();
 
   // Verify that ended event is fired when video ends.
-  EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
+  EXPECT_CALL(callbacks_, OnEnded());
   pipeline_->OnVideoRendererEnded();
 }
 
@@ -556,7 +556,7 @@ TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
   EXPECT_TRUE(pipeline_->HasVideo());
 
   // Verify that ended event is fired when video ends.
-  EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
+  EXPECT_CALL(callbacks_, OnEnded());
   pipeline_->OnVideoRendererEnded();
 }
 
@@ -576,7 +576,7 @@ TEST_F(PipelineTest, EndedCallback) {
   pipeline_->OnAudioRendererEnded();
   message_loop_.RunUntilIdle();
 
-  EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
+  EXPECT_CALL(callbacks_, OnEnded());
   pipeline_->OnVideoRendererEnded();
   message_loop_.RunUntilIdle();
 }
@@ -634,7 +634,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_GT(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of video stream and make sure OnEnded() callback occurs.
-  EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
+  EXPECT_CALL(callbacks_, OnEnded());
   pipeline_->OnVideoRendererEnded();
 }
 

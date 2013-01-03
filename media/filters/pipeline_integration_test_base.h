@@ -81,7 +81,7 @@ class PipelineIntegrationTestBase {
                                PipelineStatus status);
   void OnStatusCallback(PipelineStatus status);
   PipelineStatusCB QuitOnStatusCB(PipelineStatus expected_status);
-  void OnEnded(PipelineStatus status);
+  void OnEnded();
   void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);
   scoped_ptr<FilterCollection> CreateFilterCollection(
