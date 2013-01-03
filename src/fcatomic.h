@@ -94,7 +94,7 @@ typedef volatile int fc_atomic_int_t;
 #define fc_atomic_int_add(AI, V)	(((AI) += (V)) - (V))
 
 #define fc_atomic_ptr_get(P)		((void *) *(P))
-#define fc_atomic_ptr_cmpexch(P,O,N)	(* (void * volatile *) (P) == (void *) (O) ? (* (void * volatile *) (P) = (void *) (N), true) : false)
+#define fc_atomic_ptr_cmpexch(P,O,N)	(* (void * volatile *) (P) == (void *) (O) ? (* (void * volatile *) (P) = (void *) (N), FcTrue) : FcFalse)
 
 
 #else /* FC_NO_MT */
@@ -103,7 +103,7 @@ typedef int fc_atomic_int_t;
 #define fc_atomic_int_add(AI, V)	(((AI) += (V)) - (V))
 
 #define fc_atomic_ptr_get(P)		((void *) *(P))
-#define fc_atomic_ptr_cmpexch(P,O,N)	(* (void **) (P) == (void *) (O) ? (* (void **) (P) = (void *) (N), true) : false)
+#define fc_atomic_ptr_cmpexch(P,O,N)	(* (void **) (P) == (void *) (O) ? (* (void **) (P) = (void *) (N), FcTrue) : FcFalse)
 
 #endif
 
