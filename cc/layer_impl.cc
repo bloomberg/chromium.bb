@@ -789,16 +789,20 @@ const ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
     return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
 }
 
+inline scoped_ptr<ScrollbarAnimationController> createScrollbarAnimationControllerWithFade(LayerImpl* layer)
+{
+    double fadeoutDelay = 0.3;
+    double fadeoutLength = 0.3;
+    return ScrollbarAnimationControllerLinearFade::create(layer, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
+}
+
 void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
     if (!m_scrollbarAnimationController) {
-        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator) {
-            double fadeoutDelay = 0.3;
-            double fadeoutLength = 0.3;
-            m_scrollbarAnimationController = ScrollbarAnimationControllerLinearFade::create(this, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
-        } else {
+        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator)
+            m_scrollbarAnimationController = createScrollbarAnimationControllerWithFade(this);
+        else
             m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
-        }
     }
     m_scrollbarAnimationController->setHorizontalScrollbarLayer(scrollbarLayer);
     m_scrollbarAnimationController->updateScrollOffset(this);
@@ -816,8 +820,12 @@ const ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer() const
 
 void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
-    if (!m_scrollbarAnimationController)
-        m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+    if (!m_scrollbarAnimationController) {
+        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator)
+            m_scrollbarAnimationController = createScrollbarAnimationControllerWithFade(this);
+        else
+            m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+    }
     m_scrollbarAnimationController->setVerticalScrollbarLayer(scrollbarLayer);
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
