@@ -5,6 +5,11 @@
 {
   'variables': {
     'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../../..',
+      },{
+        'webkit_src_dir': '../../third_party/WebKit',
+      }],
       ['OS == "android" or OS == "ios"', {
         # Android and iOS don't use ffmpeg.
         'use_ffmpeg%': 0,
@@ -33,6 +38,7 @@
         '<(DEPTH)/media/media.gyp:yuv_convert',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'android/audio_decoder_android.cc',
