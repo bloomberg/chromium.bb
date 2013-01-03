@@ -328,8 +328,6 @@
         'browser/chromeos/input_method/input_method_config.h',
         'browser/chromeos/input_method/input_method_configuration.cc',
         'browser/chromeos/input_method/input_method_configuration.h',
-        'browser/chromeos/input_method/input_method_constants.cc',
-        'browser/chromeos/input_method/input_method_constants.h',
         'browser/chromeos/input_method/input_method_delegate.h',
         'browser/chromeos/input_method/input_method_delegate_impl.cc',
         'browser/chromeos/input_method/input_method_delegate_impl.h',
