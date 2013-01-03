@@ -311,12 +311,7 @@ void AutofillPopupViewGtk::SetInitialBounds() {
       gtk_widget_get_screen(GTK_WIDGET(controller_->container_view()));
   gint screen_height = gdk_screen_get_height(screen);
 
-  int x = 0;
-  int y = 0;
-  gdk_window_get_origin(
-      gtk_widget_get_window(controller_->container_view()), &x, &y);
-
-  int bottom_of_field = y + controller_->element_bounds().bottom();
+  int bottom_of_field = controller_->element_bounds().bottom();
   int popup_height = controller_->GetPopupRequiredHeight();
 
   // Find the correct top position of the popup so that is doesn't go off
@@ -324,14 +319,14 @@ void AutofillPopupViewGtk::SetInitialBounds() {
   int top_of_popup = 0;
   if (screen_height < bottom_of_field + popup_height) {
     // The popup must appear above the field.
-    top_of_popup = y + controller_->element_bounds().y() - popup_height;
+    top_of_popup = controller_->element_bounds().y() - popup_height;
   } else {
     // The popup can appear below the field.
     top_of_popup = bottom_of_field;
   }
 
   controller_->SetPopupBounds(gfx::Rect(
-      x + controller_->element_bounds().x(),
+      controller_->element_bounds().x(),
       top_of_popup,
       controller_->GetPopupRequiredWidth(),
       popup_height));

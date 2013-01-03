@@ -133,6 +133,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   gfx::NativeView container_view_;  // Weak reference.
 
   // The bounds of the text element that is the focus of the Autofill.
+  // These coordinates are in screen space.
   const gfx::Rect element_bounds_;
 
   // The bounds of the Autofill popup.

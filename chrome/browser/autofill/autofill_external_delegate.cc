@@ -164,13 +164,23 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 
 void AutofillExternalDelegate::EnsurePopupForElement(
     const gfx::Rect& element_bounds) {
+  // Convert element_bounds to be in screen space. If |web_contents_| is NULL
+  // then assume the element_bounds is already in screen space (since we don't
+  // have any other way of converting to screen space).
+  gfx::Rect element_bounds_in_screen_space = element_bounds;
+  if (web_contents_) {
+    gfx::Rect client_area;
+    web_contents_->GetContainerBounds(&client_area);
+    element_bounds_in_screen_space += client_area.OffsetFromOrigin();
+  }
+
   // |controller_| owns itself.
   controller_ = AutofillPopupControllerImpl::GetOrCreate(
       controller_,
       this,
       // web_contents() may be NULL during testing.
       web_contents() ? web_contents()->GetView()->GetContentNativeView() : NULL,
-      element_bounds);
+      element_bounds_in_screen_space);
 }
 
 void AutofillExternalDelegate::ApplyAutofillSuggestions(
