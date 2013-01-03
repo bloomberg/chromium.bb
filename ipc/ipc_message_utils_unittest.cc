@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,21 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
   ASSERT_FALSE(ParamTraits<Message>::Read(&outer_msg, &iter, &dummy));
   ASSERT_FALSE(ParamTraits<int>::Read(&nested_msg, &nested_iter,
                                       &result_content));
+}
+
+// Tests that detection of various bad parameters is working correctly.
+TEST(IPCMessageUtilsTest, ParameterValidation) {
+  IPC::Message message;
+  FilePath::StringType okString(FILE_PATH_LITERAL("hello"), 5);
+  FilePath::StringType badString(FILE_PATH_LITERAL("hel\0o"), 5);
+  FilePath okPath(okString);
+  FilePath badPath(badString);
+  ParamTraits<FilePath>::Write(&message, okPath);
+  ParamTraits<FilePath>::Write(&message, badPath);
+
+  PickleIterator iter(message);
+  ASSERT_TRUE(ParamTraits<FilePath>::Read(&message, &iter, &okPath));
+  ASSERT_FALSE(ParamTraits<FilePath>::Read(&message, &iter, &badPath));
 }
 
 }  // namespace IPC
