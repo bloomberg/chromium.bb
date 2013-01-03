@@ -123,11 +123,7 @@ class PepperWidget : public WebWidget {
   virtual void layout() {
   }
 
-#if WEBWIDGET_HAS_PAINT_OPTIONS
   virtual void paint(WebCanvas* canvas, const WebRect& rect, PaintOptions) {
-#else
-  virtual void paint(WebCanvas* canvas, const WebRect& rect) {
-#endif
     if (!widget_->plugin())
       return;
 
@@ -139,10 +135,8 @@ class PepperWidget : public WebWidget {
     widget_->plugin()->Paint(canvas, plugin_rect, rect);
   }
 
-#if WEBWIDGET_HAS_SETCOMPOSITORSURFACEREADY
   virtual void setCompositorSurfaceReady() {
   }
-#endif
 
   virtual void composite(bool finish) {
     if (!widget_->plugin())
