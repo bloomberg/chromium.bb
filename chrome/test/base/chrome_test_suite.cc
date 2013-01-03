@@ -170,8 +170,6 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     host_resolver_proc_ = NULL;
   }
 
-  scoped_ptr<BrowserProcess> browser_process_;
-
   scoped_ptr<chrome::ChromeContentClient> content_client_;
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
