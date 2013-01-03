@@ -55,6 +55,8 @@ from pylib import run_tests_helper
 from pylib import test_options_parser
 from pylib.base_test_sharder import BaseTestSharder
 from pylib.single_test_runner import SingleTestRunner
+from pylib.utils import time_profile
+from pylib.utils import xvfb
 
 
 _TEST_SUITES = ['base_unittests',
@@ -103,71 +105,6 @@ def FullyQualifiedTestSuites(exe, option_test_suite, build_type):
                       'Ensure it has been built.\n' %
                       (t, q, _TEST_SUITES))
   return qualified_test_suites
-
-
-class TimeProfile(object):
-  """Class for simple profiling of action, with logging of cost."""
-
-  def __init__(self, description):
-    self._description = description
-    self.Start()
-
-  def Start(self):
-    self._starttime = time.time()
-
-  def Stop(self):
-    """Stop profiling and dump a log."""
-    if self._starttime:
-      stoptime = time.time()
-      logging.info('%fsec to perform %s',
-                   stoptime - self._starttime, self._description)
-      self._starttime = None
-
-
-class Xvfb(object):
-  """Class to start and stop Xvfb if relevant.  Nop if not Linux."""
-
-  def __init__(self):
-    self._pid = 0
-
-  def _IsLinux(self):
-    """Return True if on Linux; else False."""
-    return sys.platform.startswith('linux')
-
-  def Start(self):
-    """Start Xvfb and set an appropriate DISPLAY environment.  Linux only.
-
-    Copied from tools/code_coverage/coverage_posix.py
-    """
-    if not self._IsLinux():
-      return
-    proc = subprocess.Popen(['Xvfb', ':9', '-screen', '0', '1024x768x24',
-                             '-ac'],
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    self._pid = proc.pid
-    if not self._pid:
-      raise Exception('Could not start Xvfb')
-    os.environ['DISPLAY'] = ':9'
-
-    # Now confirm, giving a chance for it to start if needed.
-    for _ in range(10):
-      proc = subprocess.Popen('xdpyinfo >/dev/null', shell=True)
-      _, retcode = os.waitpid(proc.pid, 0)
-      if retcode == 0:
-        break
-      time.sleep(0.25)
-    if retcode != 0:
-      raise Exception('Could not confirm Xvfb happiness')
-
-  def Stop(self):
-    """Stop Xvfb if needed.  Linux only."""
-    if self._pid:
-      try:
-        os.kill(self._pid, signal.SIGKILL)
-      except:
-        pass
-      del os.environ['DISPLAY']
-      self._pid = 0
 
 
 class TestSharder(BaseTestSharder):
@@ -311,7 +248,7 @@ def _RunATestSuite(options):
 
   if options.use_emulator:
     for n in range(options.emulator_count):
-      t = TimeProfile('Emulator launch %d' % n)
+      t = time_profile.TimeProfile('Emulator launch %d' % n)
       avd_name = None
       if n > 0:
         # Creates a temporary AVD for the extra emulators.
@@ -381,8 +318,8 @@ def Dispatch(options):
     return 0
 
   if options.use_xvfb:
-    xvfb = Xvfb()
-    xvfb.Start()
+    framebuffer = xvfb.Xvfb()
+    framebuffer.Start()
 
   all_test_suites = FullyQualifiedTestSuites(options.exe, options.test_suite,
                                              options.build_type)
@@ -394,7 +331,7 @@ def Dispatch(options):
     failures += _RunATestSuite(test_options)
 
   if options.use_xvfb:
-    xvfb.Stop()
+    framebuffer.Stop()
   return failures
 
 
