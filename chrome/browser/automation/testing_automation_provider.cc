@@ -5180,11 +5180,7 @@ void TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest(
     Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
-  WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser);
-  FullscreenExitBubbleType type =
-      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
-  browser->fullscreen_controller()->OnAcceptFullscreenPermission(
-      fullscreen_tab->GetURL(), type);
+  browser->fullscreen_controller()->OnAcceptFullscreenPermission();
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
@@ -5192,9 +5188,7 @@ void TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest(
     Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
-  FullscreenExitBubbleType type =
-      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
-  browser->fullscreen_controller()->OnDenyFullscreenPermission(type);
+  browser->fullscreen_controller()->OnDenyFullscreenPermission();
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 

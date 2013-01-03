@@ -101,9 +101,9 @@ class FullscreenController : public content::NotificationObserver {
   bool HandleUserPressedEscape();
 
   // Called by platform FullscreenExitBubble.
-  void OnAcceptFullscreenPermission(const GURL& url,
-                                    FullscreenExitBubbleType bubble_type);
-  void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
+  void ExitTabOrBrowserFullscreenToPreviousState();
+  void OnAcceptFullscreenPermission();
+  void OnDenyFullscreenPermission();
 
   // Called by Browser::LostMouseLock.
   void LostMouseLock();
@@ -113,6 +113,9 @@ class FullscreenController : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Bubble Content ////////////////////////////////////////////////////////////
+
+  GURL GetFullscreenExitBubbleURL() const;
   FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
 
  private:

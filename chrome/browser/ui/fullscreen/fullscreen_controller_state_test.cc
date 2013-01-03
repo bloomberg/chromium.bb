@@ -30,6 +30,9 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_NORMAL,                           // Event METRO_SNAP_FALSE
 #endif
+      STATE_NORMAL,                           // Event BUBBLE_EXIT_LINK
+      STATE_NORMAL,                           // Event BUBBLE_ALLOW
+      STATE_NORMAL,                           // Event BUBBLE_DENY
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
     { // STATE_BROWSER_FULLSCREEN_NO_CHROME:
@@ -40,6 +43,9 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event METRO_SNAP_FALSE
 #endif
+      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_ALLOW
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
 #if defined(OS_WIN)
@@ -49,6 +55,9 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event TAB_FULLSCREEN_FALSE
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_NORMAL,                           // Event METRO_SNAP_FALSE
+      STATE_METRO_SNAP,                       // Event BUBBLE_EXIT_LINK
+      STATE_METRO_SNAP,                       // Event BUBBLE_ALLOW
+      STATE_METRO_SNAP,                       // Event BUBBLE_DENY
       STATE_METRO_SNAP,                       // Event WINDOW_CHANGE
     },
 #endif
@@ -60,21 +69,22 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_TAB_FULLSCREEN,                   // Event METRO_SNAP_FALSE
 #endif
+      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
+      STATE_TAB_FULLSCREEN,                   // Event BUBBLE_ALLOW
+      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
       STATE_TAB_FULLSCREEN,                   // Event WINDOW_CHANGE
     },
     { // STATE_TAB_BROWSER_FULLSCREEN:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
-#if defined(OS_MACOSX)
-      // TODO(scheib) Mac exits browser mode too http://crbug.com/155642
-      STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
-#else
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
-#endif
 #if defined(OS_WIN)
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_TAB_BROWSER_FULLSCREEN,           // Event METRO_SNAP_FALSE
 #endif
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_EXIT_LINK
+      STATE_TAB_BROWSER_FULLSCREEN,           // Event BUBBLE_ALLOW
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_DENY
       STATE_TAB_BROWSER_FULLSCREEN,           // Event WINDOW_CHANGE
     },
     // STATE_TO_NORMAL:
@@ -86,6 +96,9 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_TO_NORMAL,                        // Event METRO_SNAP_FALSE
 #endif
+      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
+      STATE_TO_NORMAL,                        // Event BUBBLE_ALLOW
+      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
     // STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
@@ -97,17 +110,43 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event METRO_SNAP_FALSE
 #endif
+#if defined(OS_MACOSX)
+      // Mac window reports fullscreen immediately and an exit triggers exit.
+      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
+#else
+      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_EXIT_LINK
+#endif
+      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_ALLOW
+      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
     // STATE_TO_TAB_FULLSCREEN:
     { // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
       STATE_TO_TAB_FULLSCREEN,                // Event TOGGLE_FULLSCREEN
       STATE_TO_TAB_FULLSCREEN,                // Event TAB_FULLSCREEN_TRUE
+#if defined(OS_MACOSX)
+      // Mac runs as expected due to a forced NotifyTabOfExitIfNecessary();
+      STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
+#else
       // TODO(scheib) Should be a route back to NORMAL. http://crbug.com/154196
       STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_FALSE
+#endif
 #if defined(OS_WIN)
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
       STATE_TO_TAB_FULLSCREEN,                // Event METRO_SNAP_FALSE
+#endif
+#if defined(OS_MACOSX)
+      // Mac window reports fullscreen immediately and an exit triggers exit.
+      STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
+#else
+      STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_EXIT_LINK
+#endif
+      STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_ALLOW
+#if defined(OS_MACOSX)
+      // Mac window reports fullscreen immediately and an exit triggers exit.
+      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
+#else
+      STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_DENY
 #endif
       STATE_TAB_FULLSCREEN,                   // Event WINDOW_CHANGE
     },
@@ -183,6 +222,12 @@ const char* FullscreenControllerStateTest::GetEventString(Event event) {
     case METRO_SNAP_FALSE:
       return "METRO_SNAP_FALSE";
 #endif
+    case BUBBLE_EXIT_LINK:
+      return "BUBBLE_EXIT_LINK";
+    case BUBBLE_ALLOW:
+      return "BUBBLE_ALLOW";
+    case BUBBLE_DENY:
+      return "BUBBLE_DENY";
     case WINDOW_CHANGE:
       return "WINDOW_CHANGE";
     case EVENT_INVALID:
@@ -266,6 +311,15 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
       GetFullscreenController()->SetMetroSnapMode(false);
       break;
 #endif
+    case BUBBLE_EXIT_LINK:
+      GetFullscreenController()->ExitTabOrBrowserFullscreenToPreviousState();
+      break;
+    case BUBBLE_ALLOW:
+      GetFullscreenController()->OnAcceptFullscreenPermission();
+      break;
+    case BUBBLE_DENY:
+      GetFullscreenController()->OnDenyFullscreenPermission();
+      break;
     case WINDOW_CHANGE:
       ChangeWindowFullscreenState();
       break;
@@ -340,23 +394,11 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_TAB_BROWSER_FULLSCREEN:
 #if defined(OS_MACOSX)
-      EXPECT_TRUE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
           << GetAndClearDebugLog();
 #endif
-#if defined(OS_MACOSX)
-      // TODO(scheib) Mac is reporting incorrect IsFullscreenForBrowser().
-      // e.g. in FullscreenControllerStateTest.
-      //     STATE_BROWSER_FULLSCREEN_NO_CHROME__TAB_FULLSCREEN_TRUE
-      // At the end of ToggleFullscreenModeForTab
-      // tab_caused_fullscreen_ has incorrectly been set to true even
-      // though controller was already in browser fullscreen.
-      // http://crbug.com/155650
-      EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser())
-          << GetAndClearDebugLog();
-#else
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser())
           << GetAndClearDebugLog();
-#endif
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending())
           << GetAndClearDebugLog();
       EXPECT_FALSE(GetFullscreenController()->IsInMetroSnapMode())

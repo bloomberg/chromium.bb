@@ -96,13 +96,12 @@ const float kHideDuration = 0.7;
     [[self window] setIgnoresMouseEvents:YES];
 
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
-  browser_->fullscreen_controller()->OnAcceptFullscreenPermission(
-      url_, bubbleType_);
+  browser_->fullscreen_controller()->OnAcceptFullscreenPermission();
 }
 
 - (void)deny:(id)sender {
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
-  browser_->fullscreen_controller()->OnDenyFullscreenPermission(bubbleType_);
+  browser_->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
 - (void)showButtons:(BOOL)show {
@@ -152,7 +151,8 @@ const float kHideDuration = 0.7;
 - (BOOL) textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  chrome::ExecuteCommand(browser_, IDC_FULLSCREEN);
+  browser_->fullscreen_controller()->
+      ExitTabOrBrowserFullscreenToPreviousState();
   return YES;
 }
 

@@ -54,6 +54,12 @@ class FullscreenControllerStateTest {
     // FullscreenController::SetMetroSnapMode(flase)
     METRO_SNAP_FALSE,
 #endif
+    // FullscreenController::ExitTabOrBrowserFullscreenToPreviousState
+    BUBBLE_EXIT_LINK,
+    // FullscreenController::OnAcceptFullscreenPermission
+    BUBBLE_ALLOW,
+    // FullscreenController::OnDenyFullscreenPermission
+    BUBBLE_DENY,
     // FullscreenController::ChangeWindowFullscreenState()
     WINDOW_CHANGE,
     NUM_EVENTS,

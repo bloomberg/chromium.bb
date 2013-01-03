@@ -110,16 +110,16 @@ void FullscreenExitBubble::CheckMousePosition() {
 }
 
 void FullscreenExitBubble::ToggleFullscreen() {
-  chrome::ExecuteCommand(browser_, IDC_FULLSCREEN);
+  browser_->fullscreen_controller()->
+      ExitTabOrBrowserFullscreenToPreviousState();
 }
 
 void FullscreenExitBubble::Accept() {
-  browser_->fullscreen_controller()->OnAcceptFullscreenPermission(url_,
-                                                                  bubble_type_);
+  browser_->fullscreen_controller()->OnAcceptFullscreenPermission();
 }
 
 void FullscreenExitBubble::Cancel() {
-  browser_->fullscreen_controller()->OnDenyFullscreenPermission(bubble_type_);
+  browser_->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
 string16 FullscreenExitBubble::GetCurrentMessageText() const {

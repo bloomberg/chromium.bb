@@ -77,17 +77,11 @@ bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {
-  WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser());
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
-  browser()->fullscreen_controller()->OnAcceptFullscreenPermission(
-      fullscreen_tab->GetURL(), type);
+  browser()->fullscreen_controller()->OnAcceptFullscreenPermission();
 }
 
 void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
-  FullscreenExitBubbleType type =
-      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
-  browser()->fullscreen_controller()->OnDenyFullscreenPermission(type);
+  browser()->fullscreen_controller()->OnDenyFullscreenPermission();
 }
 
 void FullscreenControllerTest::GoBack() {
