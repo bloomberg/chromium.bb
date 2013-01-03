@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill/web_element_descriptor.h"
 #include "chrome/common/form_data.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/form_cache.h"
@@ -37,6 +38,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 
 using autofill::ClearPreviewedFormWithElement;
+using autofill::ClickElement;
 using autofill::FillForm;
 using autofill::FindFormAndFieldForInputElement;
 using autofill::FormWithElementIsAutofilled;
@@ -2809,6 +2811,32 @@ TEST_F(FormAutofillTest, MultipleLabelsPerElement) {
       "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
       "</FORM>",
       labels, names, values);
+}
+
+TEST_F(FormAutofillTest, ClickElement) {
+  LoadHTML("<BUTTON id=\"link\">Button</BUTTON>"
+           "<BUTTON name=\"button\">Button</BUTTON>");
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  // Successful retrieval by id.
+  autofill::WebElementDescriptor clicker;
+  clicker.retrieval_method = autofill::WebElementDescriptor::ID;
+  clicker.descriptor = "link";
+  EXPECT_TRUE(ClickElement(frame->document(), clicker));
+
+  // Successful retrieval by css selector.
+  clicker.retrieval_method = autofill::WebElementDescriptor::CSS_SELECTOR;
+  clicker.descriptor = "button[name=\"button\"]";
+  EXPECT_TRUE(ClickElement(frame->document(), clicker));
+
+  // Unsuccessful retrieval due to invalid CSS selector.
+  clicker.descriptor = "^*&";
+  EXPECT_FALSE(ClickElement(frame->document(), clicker));
+
+  // Unsuccessful retrieval because element does not exist.
+  clicker.descriptor = "#junk";
+  EXPECT_FALSE(ClickElement(frame->document(), clicker));
 }
 
 TEST_F(FormAutofillTest, SelectOneAsText) {

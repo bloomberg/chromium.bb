@@ -10,10 +10,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill/web_element_descriptor.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -26,7 +28,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+using WebKit::WebDocument;
 using WebKit::WebElement;
+using WebKit::WebExceptionCode;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
@@ -532,6 +536,18 @@ void PreviewFormField(const FormFieldData& data,
   }
 }
 
+std::string RetrievalMethodToString(
+    const autofill::WebElementDescriptor::RetrievalMethod& method) {
+  switch (method) {
+    case autofill::WebElementDescriptor::CSS_SELECTOR:
+      return "CSS_SELECTOR";
+    case autofill::WebElementDescriptor::ID:
+      return "ID";
+  }
+  NOTREACHED();
+  return "UNKNOWN";
+}
+
 }  // namespace
 
 namespace autofill {
@@ -557,6 +573,37 @@ const string16 GetFormIdentifier(const WebFormElement& form) {
     identifier = form.getAttribute(WebString("id"));
 
   return identifier;
+}
+
+bool ClickElement(const WebDocument& document,
+                  const WebElementDescriptor& element_descriptor) {
+  WebString web_descriptor = WebString::fromUTF8(element_descriptor.descriptor);
+  WebKit::WebElement element;
+
+  switch (element_descriptor.retrieval_method) {
+    case WebElementDescriptor::CSS_SELECTOR: {
+      WebExceptionCode ec = 0;
+      element = document.querySelector(web_descriptor, ec);
+      if (ec)
+        DVLOG(1) << "Query selector failed. Error code: " << ec << ".";
+      break;
+    }
+    case WebElementDescriptor::ID:
+      element = document.getElementById(web_descriptor);
+      break;
+  }
+
+  if (element.isNull()) {
+    DVLOG(1) << "Could not find "
+             << element_descriptor.descriptor
+             << " by "
+             << RetrievalMethodToString(element_descriptor.retrieval_method)
+             << ".";
+    return false;
+  }
+
+  element.simulateClick();
+  return true;
 }
 
 // Fills |autofillable_elements| with all the auto-fillable form control
