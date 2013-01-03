@@ -2505,13 +2505,13 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 
 WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                         const WebPluginParams& params) {
-#if defined(ENABLE_PLUGINS)
   WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
     return plugin;
   }
 
+#if defined(ENABLE_PLUGINS)
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
     return browser_plugin_manager()->CreateBrowserPlugin(this, frame, params);
   }

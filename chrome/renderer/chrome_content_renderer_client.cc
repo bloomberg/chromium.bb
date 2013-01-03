@@ -360,9 +360,13 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   }
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
+#if defined(ENABLE_PLUGINS)
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
       render_view->GetRoutingID(), GURL(params.url),
       frame->top()->document().url(), orig_mime_type, &output));
+#else
+  output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+#endif
   *plugin = CreatePlugin(render_view, frame, params, output);
   return true;
 }
