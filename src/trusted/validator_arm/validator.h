@@ -277,8 +277,10 @@ class DecodedInstruction {
     nacl_arm_dec::Instruction::Condition cond1 = inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = other.inst_.GetCondition();
     return !defines(nacl_arm_dec::Register::Conditions()) &&
-         !defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
-         SfiValidator::condition_implies[cond2][cond1];
+        !defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
+        // TODO(jfb) Put back mixed-condition handling. See issue #3221.
+        //           SfiValidator::condition_implies[cond2][cond1];
+        ((cond1 == nacl_arm_dec::Instruction::AL) || (cond1 == cond2));
   }
 
   // 'this' post-dominates 'other', where 'other' is the instruction
@@ -301,8 +303,10 @@ class DecodedInstruction {
     nacl_arm_dec::Instruction::Condition cond1 = other.inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = inst_.GetCondition();
     return !other.defines(nacl_arm_dec::Register::Conditions()) &&
-         !other.defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
-         SfiValidator::condition_implies[cond1][cond2];
+        !other.defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
+        // TODO(jfb) Put back mixed-condition handling. See issue #3221.
+        //           SfiValidator::condition_implies[cond1][cond2];
+        ((cond2 == nacl_arm_dec::Instruction::AL) || (cond1 == cond2));
   }
 
   // Checks that the execution of 'this' is conditional on the test result

@@ -498,6 +498,8 @@ static PatternMatch check_pc_writes(const SfiValidator& sfi,
  *
  *********************************************************/
 
+// See ARM ARM A8.3 Conditional execution.
+//
 // Flags are:
 //    N - Negative condition code flag.
 //    Z - Zero condition code flag.

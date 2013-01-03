@@ -993,6 +993,9 @@ TEST_F(ValidatorTests, AlwaysDominatesTest) {
                                    "conditional, but the subsequent " +
                                    name1 + " isn't.");
           } else if ((cond[1] == cond[0]) ||
+                     // TODO(jfb) Put back mixed-condition handling.
+                     //           See issue #3221.
+                     /*
                    (cond[1] == Instruction::EQ && cond[0] == Instruction::LS) ||
                    (cond[1] == Instruction::CC && cond[0] == Instruction::LS) ||
                    (cond[1] == Instruction::HI && cond[0] == Instruction::NE) ||
@@ -1001,7 +1004,8 @@ TEST_F(ValidatorTests, AlwaysDominatesTest) {
                    (cond[1] == Instruction::GT && cond[0] == Instruction::GE) ||
                    (cond[1] == Instruction::LE && cond[0] == Instruction::EQ) ||
                    (cond[1] == Instruction::LE && cond[0] == Instruction::LS) ||
-                   (cond[1] == Instruction::LE && cond[0] == Instruction::LT)) {
+                   (cond[1] == Instruction::LE && cond[0] == Instruction::LT) */
+                     false) {
             validation_should_pass(t->inst, NACL_ARRAY_SIZE(t->inst),
                                    kDefaultBaseAddr,
                                    message.str() + name1 + "'s "
