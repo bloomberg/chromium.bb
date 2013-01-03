@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
 
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwHttpAuthHandler;
@@ -54,6 +55,15 @@ class NullContentsClient extends AwContentsClient {
     @Override
     public void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
         handler.cancel();
+    }
+
+    @Override
+    public void onGeolocationPermissionsShowPrompt(String origin,
+            GeolocationPermissions.Callback callback) {
+    }
+
+    @Override
+    public void onGeolocationPermissionsHidePrompt() {
     }
 
     @Override

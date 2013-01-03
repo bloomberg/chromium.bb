@@ -220,12 +220,10 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
 
-    // TODO(kristianm): Make abstract when landed in Android
-    public void onGeolocationPermissionsShowPrompt(String origin,
-            GeolocationPermissions.Callback callback) {}
+    public abstract void onGeolocationPermissionsShowPrompt(String origin,
+            GeolocationPermissions.Callback callback);
 
-    // TODO(kristianm): Make abstract when landed in Android
-    public void onGeolocationPermissionsHidePrompt() {}
+    public abstract void onGeolocationPermissionsHidePrompt();
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 
