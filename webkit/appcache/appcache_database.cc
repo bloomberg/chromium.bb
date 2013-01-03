@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "sql/connection.h"
-#include "sql/diagnostic_error_delegate.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -137,15 +136,6 @@ const IndexInfo kIndexes[] = {
 
 const int kTableCount = ARRAYSIZE_UNSAFE(kTables);
 const int kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
-
-class HistogramUniquifier {
- public:
-  static const char* name() { return "Sqlite.AppCache.Error"; }
-};
-
-sql::ErrorDelegate* GetErrorHandlerForAppCacheDb() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
-}
 
 bool CreateTable(sql::Connection* db, const TableInfo& info) {
   std::string sql("CREATE TABLE ");
@@ -972,7 +962,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
 
-  db_->set_error_delegate(GetErrorHandlerForAppCacheDb());
+  db_->set_error_histogram_name("Sqlite.AppCache.Error");
 
   bool opened = false;
   if (use_in_memory_db) {

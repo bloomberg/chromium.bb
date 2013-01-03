@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/common/content_constants.h"
 #include "sql/connection.h"
-#include "sql/diagnostic_error_delegate.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -88,34 +87,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
 };
 
-// Uniquifier to use the sql::DiagnosticErrorDelegate template which
-// requires a static name() method.
-template <size_t unique>
-class HistogramUniquifier {
- public:
-  static const char* name() {
-    const char* kHistogramNames[] = {
-      "Sqlite.Thumbnail.Error",
-      "Sqlite.Text.Error",
-      "Sqlite.Web.Error"
-    };
-    return kHistogramNames[unique];
-  }
-};
-
 }  // namespace
-
-sql::ErrorDelegate* GetErrorHandlerForThumbnailDb() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<0> >();
-}
-
-sql::ErrorDelegate* GetErrorHandlerForTextDb() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<1> >();
-}
-
-sql::ErrorDelegate* GetErrorHandlerForWebDb() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<2> >();
-}
 
 DiagnosticTest* MakeSqliteWebDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("Web DB"),

@@ -219,8 +219,7 @@ sql::InitStatus ThumbnailDatabase::Init(
 
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
                                                 const FilePath& db_name) {
-  // Set the exceptional sqlite error handler.
-  db->set_error_delegate(GetErrorHandlerForThumbnailDb());
+  db->set_error_histogram_name("Sqlite.Thumbnail.Error");
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.

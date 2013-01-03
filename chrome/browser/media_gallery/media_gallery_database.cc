@@ -9,7 +9,6 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "sql/diagnostic_error_delegate.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -31,13 +30,6 @@ const int kCompatibleVersionNumber = 1;
 const FilePath::CharType kMediaGalleryDatabaseName[] =
     FILE_PATH_LITERAL(".media_gallery.db");
 
-class HistogramName {
- public:
-  static const char* name() {
-    return "Sqlite.MediaGallery.Error";
-  }
-};
-
 }  // namespace
 
 MediaGalleryDatabase::MediaGalleryDatabase() { }
@@ -45,8 +37,7 @@ MediaGalleryDatabase::MediaGalleryDatabase() { }
 MediaGalleryDatabase::~MediaGalleryDatabase() { }
 
 sql::InitStatus MediaGalleryDatabase::Init(const FilePath& database_dir) {
-  // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(new sql::DiagnosticErrorDelegate<HistogramName>());
+  db_.set_error_histogram_name("Sqlite.MediaGallery.Error");
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

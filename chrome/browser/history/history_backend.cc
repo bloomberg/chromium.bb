@@ -219,8 +219,6 @@ class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
   virtual int OnError(int error,
                       sql::Connection* connection,
                       sql::Statement* stmt) OVERRIDE {
-    sql::LogAndRecordErrorInHistogram<HistogramUniquifier>(error, connection);
-
     // Do not schedule killing database more than once. If the first time
     // failed, it is unlikely that a second time will be successful.
     if (!scheduled_killing_database_ && sql::IsErrorCatastrophic(error)) {
@@ -242,11 +240,6 @@ class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
   }
 
  private:
-  class HistogramUniquifier {
-   public:
-    static const char* name() { return "Sqlite.History.Error"; }
-  };
-
   // Do not increment the count on |HistoryBackend| as that would create a
   // circular reference (HistoryBackend -> HistoryDatabase -> Connection ->
   // ErrorDelegate -> HistoryBackend).

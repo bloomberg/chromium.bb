@@ -130,8 +130,7 @@ bool TextDatabase::Init() {
       return false;
   }
 
-  // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(GetErrorHandlerForTextDb());
+  db_.set_error_histogram_name("Sqlite.Text.Error");
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

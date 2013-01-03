@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/logins_table.h"
@@ -96,8 +95,7 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   if (!content::NotificationService::current())
     notification_service_.reset(content::NotificationService::Create());
 
-  // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(GetErrorHandlerForWebDb());
+  db_.set_error_histogram_name("Sqlite.Web.Error");
 
   // We don't store that much data in the tables so use a small page size.
   // This provides a large benefit for empty tables (which is very likely with

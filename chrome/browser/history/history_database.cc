@@ -68,6 +68,8 @@ HistoryDatabase::~HistoryDatabase() {
 
 sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
                                       sql::ErrorDelegate* error_delegate) {
+  db_.set_error_histogram_name("Sqlite.History.Error");
+
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(error_delegate);
 

@@ -143,6 +143,13 @@ class SQL_EXPORT Connection {
     error_delegate_.reset(delegate);
   }
 
+  // SQLite error codes for errors on all connections are logged to
+  // enum histogram "Sqlite.Error".  Setting this additionally logs
+  // errors to the histogram |name|.
+  void set_error_histogram_name(const std::string& name) {
+    error_histogram_name_ = name;
+  }
+
   // Initialization ------------------------------------------------------------
 
   // Initializes the SQL connection for the given file, returning true if the
@@ -456,6 +463,9 @@ class SQL_EXPORT Connection {
   // This object handles errors resulting from all forms of executing sqlite
   // commands or statements. It can be null which means default handling.
   scoped_ptr<ErrorDelegate> error_delegate_;
+
+  // Auxiliary error-code histogram.
+  std::string error_histogram_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };

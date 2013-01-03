@@ -108,7 +108,7 @@ class SQLitePersistentCookieStore::Backend
 
   class KillDatabaseErrorDelegate : public sql::ErrorDelegate {
    public:
-    KillDatabaseErrorDelegate(Backend* backend);
+    explicit KillDatabaseErrorDelegate(Backend* backend);
 
     virtual ~KillDatabaseErrorDelegate() {}
 
@@ -118,12 +118,6 @@ class SQLitePersistentCookieStore::Backend
                         sql::Statement* stmt) OVERRIDE;
 
    private:
-
-    class HistogramUniquifier {
-     public:
-      static const char* name() { return "Sqlite.Cookie.Error"; }
-    };
-
     // Do not increment the count on Backend, as that would create a circular
     // reference (Backend -> Connection -> ErrorDelegate -> Backend).
     Backend* backend_;
@@ -291,8 +285,6 @@ KillDatabaseErrorDelegate(Backend* backend)
 
 int SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::OnError(
     int error, sql::Connection* connection, sql::Statement* stmt) {
-  sql::LogAndRecordErrorInHistogram<HistogramUniquifier>(error, connection);
-
   // Do not attempt to kill database more than once. If the first time failed,
   // it is unlikely that a second time will be successful.
   if (!attempted_to_kill_database_ && sql::IsErrorCatastrophic(error)) {
@@ -549,6 +541,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);
+  db_->set_error_histogram_name("Sqlite.Cookie.Error");
   db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
 
   if (!db_->Open(path_)) {

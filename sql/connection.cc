@@ -653,8 +653,34 @@ void Connection::ClearCache() {
 }
 
 int Connection::OnSqliteError(int err, sql::Statement *stmt) {
+  // Strip extended error codes.
+  int base_err = err&0xff;
+
+  static size_t kSqliteErrorMax = 50;
+  UMA_HISTOGRAM_ENUMERATION("Sqlite.Error", base_err, kSqliteErrorMax);
+  if (!error_histogram_name_.empty()) {
+    // TODO(shess): The histogram macros create a bit of static
+    // storage for caching the histogram object.  Since SQLite is
+    // being used for I/O, generally without error, this code
+    // shouldn't execute often enough for such caching to be crucial.
+    // If it becomes an issue, the object could be cached alongside
+    // error_histogram_name_.
+    base::Histogram* histogram =
+        base::LinearHistogram::FactoryGet(
+            error_histogram_name_, 1, kSqliteErrorMax, kSqliteErrorMax + 1,
+            base::Histogram::kUmaTargetedHistogramFlag);
+    if (histogram)
+      histogram->Add(base_err);
+  }
+
+  // Always log the error.
+  LOG(ERROR) << "sqlite error " << err
+             << ", errno " << GetLastErrno()
+             << ": " << GetErrorMessage();
+
   if (error_delegate_.get())
     return error_delegate_->OnError(err, this, stmt);
+
   // The default handling is to assert on debug and to ignore on release.
   DLOG(FATAL) << GetErrorMessage();
   return err;
