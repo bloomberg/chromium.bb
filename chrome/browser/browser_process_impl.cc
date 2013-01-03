@@ -788,6 +788,9 @@ void BrowserProcessImpl::PreCreateThreads() {
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {
+  if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
+    ApplyDefaultBrowserPolicy();
+
 #if defined(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
@@ -802,11 +805,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   }
 #endif
 
-#endif  // defined(ENABLE_PLUGINS)
-
-  if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
-    ApplyDefaultBrowserPolicy();
-
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
 
@@ -816,6 +814,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     plugins_resource_service_->StartAfterDelay();
   }
 #endif
+#endif  // defined(ENABLE_PLUGINS)
 
 #if !defined(OS_ANDROID)
   if (browser_defaults::bookmarks_enabled &&

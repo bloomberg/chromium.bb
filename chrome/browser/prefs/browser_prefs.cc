@@ -157,7 +157,6 @@ void RegisterLocalState(PrefServiceSimple* local_state) {
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
-  PluginFinder::RegisterPrefs(local_state);
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
@@ -165,6 +164,10 @@ void RegisterLocalState(PrefServiceSimple* local_state) {
   SigninManagerFactory::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
+
+#if defined(ENABLE_PLUGINS)
+  PluginFinder::RegisterPrefs(local_state);
+#endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   PluginsResourceService::RegisterPrefs(local_state);
