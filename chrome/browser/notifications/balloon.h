@@ -110,6 +110,9 @@ class Balloon {
   // Called by script to cause the balloon to close.
   virtual void CloseByScript();
 
+  // Returns the ID of the extension that created this balloon's notification.
+  std::string GetExtensionId();
+
  private:
   // Non-owned pointer to the profile.
   Profile* profile_;

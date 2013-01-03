@@ -9,11 +9,9 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -36,15 +34,6 @@ const int kSecondaryIconImageSize = 15;
 // static
 message_center::MessageCenter* GetMessageCenter() {
   return ash::Shell::GetInstance()->GetWebNotificationTray()->message_center();
-}
-
-// static
-std::string GetExtensionId(Balloon* balloon) {
-  const ExtensionURLInfo url(balloon->notification().origin_url());
-  const ExtensionService* service = balloon->profile()->GetExtensionService();
-  const extensions::Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
-  return extension ? extension->id() : std::string();
 }
 
 }  // namespace
@@ -136,7 +125,7 @@ void BalloonViewAsh::Show(Balloon* balloon) {
                                       notification.title(),
                                       notification.body(),
                                       notification.display_source(),
-                                      GetExtensionId(balloon),
+                                      balloon->GetExtensionId(),
                                       notification.optional_fields());
   DownloadImages(notification);
 }

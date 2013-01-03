@@ -5,8 +5,10 @@
 #include "chrome/browser/notifications/balloon.h"
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/profiles/profile.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -77,4 +79,12 @@ void Balloon::CloseByScript() {
   // we simulate that with a script-initiated close but pass |by_user|=false.
   DCHECK(balloon_view_.get());
   balloon_view_->Close(false);
+}
+
+std::string Balloon::GetExtensionId() {
+  const ExtensionURLInfo url(notification().origin_url());
+  const ExtensionService* service = profile()->GetExtensionService();
+  const extensions::Extension* extension =
+      service->extensions()->GetExtensionOrAppByURL(url);
+  return extension ? extension->id() : std::string();
 }
