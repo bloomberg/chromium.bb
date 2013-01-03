@@ -22,6 +22,8 @@ fi
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
+CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools"
+
 SVN="svn"
 if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
   SVN="$base_dir/svn_bin/svn.exe"
@@ -70,6 +72,22 @@ function is_git_clone_repo {
 }
 
 function update_git_repo {
+  remote_url=$("$GIT" config --get remote.origin.url)
+  if [ -n "$remote_url" -a "$remote_url" != "$CANONICAL_GIT_URL" ]; then
+    echo "Your copy of depot_tools is configured to fetch from an obsolete URL:"
+    echo
+    echo "  $remote_url"
+    echo
+    read -t 60 -p "OK to update it to $CANONICAL_GIT_URL ? [Y/n] " -n 1
+    echo
+    if [ $? -ne "0" ]; then
+      echo "Timeout; not updating remote URL."
+    elif [ -z "$REPLY" -o "$REPLY" = "Y" -o "$REPLY" = "y" ]; then
+      "$GIT" config remote.origin.url "$CANONICAL_GIT_URL"
+      echo "Remote URL updated."
+    fi
+  fi
+
   if is_git_clone_repo; then
     git fetch -q origin &> /dev/null
     local REBASE_TXT STATUS
