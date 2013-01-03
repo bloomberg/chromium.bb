@@ -30,7 +30,6 @@ namespace host {
 
 class HostFactory;
 struct HostMessageContext;
-class InstanceMessageFilter;
 struct ReplyMessageContext;
 class ResourceHost;
 
@@ -70,10 +69,6 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // ownership of the pointer.
   void AddHostFactoryFilter(scoped_ptr<HostFactory> filter);
 
-  // Adds the given message filter to the host. The PpapiHost will take
-  // ownership of the pointer.
-  void AddInstanceMessageFilter(scoped_ptr<InstanceMessageFilter> filter);
-
   // Returns null if the resource doesn't exist.
   host::ResourceHost* GetResourceHost(PP_Resource resource) const;
 
@@ -108,12 +103,6 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // during iteration. If we add that capability, this should be replaced with
   // an ObserverList.
   ScopedVector<HostFactory> host_factory_filters_;
-
-  // Filters for instance messages. Note that since we don't support deleting
-  // these dynamically we don't need to worry about modifications during
-  // iteration. If we add that capability, this should be replaced with an
-  // ObserverList.
-  ScopedVector<InstanceMessageFilter> instance_message_filters_;
 
   typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;
   ResourceMap resources_;

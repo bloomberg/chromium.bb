@@ -202,8 +202,6 @@
         'renderer/pepper/pepper_flash_menu_host.h',
         'renderer/pepper/pepper_flash_renderer_host.cc',
         'renderer/pepper/pepper_flash_renderer_host.h',
-        'renderer/pepper/pepper_flash_renderer_message_filter.cc',
-        'renderer/pepper/pepper_flash_renderer_message_filter.h',
         'renderer/pepper/pepper_helper.cc',
         'renderer/pepper/pepper_helper.h',
         'renderer/pepper/ppb_nacl_private_impl.cc',
