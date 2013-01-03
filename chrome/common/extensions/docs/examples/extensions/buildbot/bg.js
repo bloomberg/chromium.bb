@@ -8,7 +8,8 @@
 // http://crbug.com/165276.
 
 var statusURL = "http://chromium-status.appspot.com/current?format=raw";
-var statusHistoryURL = "http://chromium-status.appspot.com/";
+var statusHistoryURL =
+  "http://chromium-status.appspot.com/allstatus?limit=20&format=json";
 var pollFrequencyInMs = 30000;
 
 function getUseNotifications(callback) {
@@ -31,23 +32,16 @@ function notifyStatusChange(treeState, status) {
 
 // The type parameter should be "open", "closed", or "throttled".
 function getLastStatusTime(callback, type) {
-  requestURL(statusHistoryURL, function(doc) {
-    var elements = doc.getElementsByClassName(type);
-    // The status history URL doesn't give the year, so use the current year.
-    // Check if the period spans Jan 1 00:00:00, which would result in a
-    // negative time span.
-    var now = new Date;
-    var time = new Date(elements[0].cells[1].innerText + " " +
-                        now.getFullYear());
-    if (time.getMonth() == 11 && now.getMonth() == 0) {
-      time.setFullYear(time.getFullYear() - 1);
-    }
+  requestURL(statusHistoryURL, function(text) {
+    var entries = JSON.parse(text);
 
-    // Status times are given to the minute.  Bias by 30 seconds to get the most
-    // accurate time, on average.
-    time.setTime(time.getTime() + 30000);
-    callback(time);
-  });
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].general_state == type) {
+        callback(new Date(entries[i].date + " UTC"));
+        return;
+      }
+    }
+  }, "text");
 }
 
 function updateTimeBadge(timeDeltaInMs) {
