@@ -73,11 +73,15 @@ void WaitableMessageLoopEvent::RunAndWait() {
 
 void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  if (signaled_) {
+    EXPECT_EQ(expected, status_);
+    return;
+  }
+
   base::Timer timer(false, false);
   timer.Start(FROM_HERE, TestTimeouts::action_timeout(), base::Bind(
       &WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
 
-  DCHECK(!signaled_) << "Already signaled";
   message_loop_->Run();
   EXPECT_TRUE(signaled_);
   EXPECT_EQ(expected, status_);
