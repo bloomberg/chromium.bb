@@ -104,17 +104,19 @@ noinst_PROGRAMS = fcarch
 	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) fclang.h
 
 fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
-	$(AM_V_GEN) $(CPP) -I$(top_srcdir) $< | $(GREP) '^[^#]' | awk ' \
-	/CUT_OUT_BEGIN/ { no_write=1; next; }; \
-	/CUT_OUT_END/ { no_write=0; next; }; \
-	{ if (!no_write) print; next; }; \
-	' - | \
-	sed 's/^ *//;s/ *, */,/' > $@.tmp && \
-	mv -f $@.tmp $@
+	$(AM_V_GEN) $(CPP) -I$(top_srcdir) $< | \
+	$(SED) 's/^ *//;s/ *, */,/' | \
+	$(GREP) '^[^#]' | \
+	awk ' \
+		/CUT_OUT_BEGIN/ { no_write=1; next; }; \
+		/CUT_OUT_END/ { no_write=0; next; }; \
+		{ if (!no_write) print; next; }; \
+	' - > $@.tmp && \
+	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 fcobjshash.h: fcobjshash.gperf
 	$(AM_V_GEN) $(top_srcdir)/missing --run gperf -m 100 $< > $@.tmp && \
-	mv -f $@.tmp $@
+	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 EXTRA_DIST += \
 	fcobjshash.gperf.h \
@@ -199,10 +201,10 @@ fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo Generating $@
 	(echo EXPORTS; \
 	(cat $(PUBLIC_FILES) $(PUBLIC_FT_FILES) || echo 'FcERROR ()' ) | \
-	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
+	$(GREP) '^Fc[^ ]* *(' | $(SED) -e 's/ *(.*$$//' -e 's/^/	/' | \
 	sort; \
 	echo LIBRARY libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll; \
 	echo VERSION @LIBT_CURRENT@.@LIBT_REVISION@) >$@
-	@ ! grep -q FcERROR $@ || ($(RM) $@; false)
+	@ ! $(GREP) -q FcERROR $@ || ($(RM) $@; false)
 
 -include $(top_srcdir)/git.mk
