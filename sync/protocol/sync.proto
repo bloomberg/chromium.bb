@@ -34,6 +34,7 @@ import "preference_specifics.proto";
 import "search_engine_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
+import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 
@@ -101,6 +102,7 @@ message EntitySpecifics {
   optional ExtensionSettingSpecifics extension_setting = 96159;
   optional AppSettingSpecifics app_setting = 103656;
   optional HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
+  optional SyncedNotificationSpecifics synced_notification = 153108;
   optional DeviceInfoSpecifics device_info = 154522;
   optional ExperimentsSpecifics experiments = 161496;
 }

@@ -28,6 +28,7 @@
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/protocol/synced_notification_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
@@ -220,6 +221,9 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
   return value;
 }
 
+// TODO(petewil): I will need new functions here for the SyncedNotifications
+// subtypes.
+
 DictionaryValue* AppNotificationToValue(
     const sync_pb::AppNotification& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -383,6 +387,13 @@ DictionaryValue* PreferenceSpecificsToValue(
   return value;
 }
 
+DictionaryValue* SyncedNotificationSpecificsToValue(
+    const sync_pb::SyncedNotificationSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  // TODO(petewil): Adjust this once we add actual types in protobuf.
+  return value;
+}
+
 DictionaryValue* SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -456,6 +467,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(preference, PreferenceSpecificsToValue);
   SET_FIELD(search_engine, SearchEngineSpecificsToValue);
   SET_FIELD(session, SessionSpecificsToValue);
+  SET_FIELD(synced_notification, SyncedNotificationSpecificsToValue);
   SET_FIELD(theme, ThemeSpecificsToValue);
   SET_FIELD(typed_url, TypedUrlSpecificsToValue);
   return value;

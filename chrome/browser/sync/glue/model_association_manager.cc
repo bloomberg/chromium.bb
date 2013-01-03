@@ -43,6 +43,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::TYPED_URLS,
   syncer::PASSWORDS,
   syncer::HISTORY_DELETE_DIRECTIVES,
+  syncer::SYNCED_NOTIFICATIONS,
 };
 
 COMPILE_ASSERT(arraysize(kStartOrder) ==

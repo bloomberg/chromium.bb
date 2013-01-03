@@ -230,6 +230,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncAppNotifications;
     case syncer::HISTORY_DELETE_DIRECTIVES:
       return prefs::kSyncHistoryDeleteDirectives;
+    case syncer::SYNCED_NOTIFICATIONS:
+      return prefs::kSyncSyncedNotifications;
     default:
       break;
   }

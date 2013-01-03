@@ -32,6 +32,7 @@
         'session_specifics.proto',
         'sync.proto',
         'sync_enums.proto',
+        'synced_notification_specifics.proto',
         'test.proto',
         'theme_specifics.proto',
         'typed_url_specifics.proto',

@@ -31,6 +31,7 @@ enum UserSelectableSyncType {
   EXTENSIONS = 6,
   SESSIONS = 7,
   APPS = 8,
+  SYNCED_NOTIFICATIONS = 9,
 
   // The datatypes below are implicitly synced, and are not exposed via user
   // selectable checkboxes.
@@ -45,7 +46,7 @@ enum UserSelectableSyncType {
   // EXPERIMENTS,
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
-  SELECTABLE_DATATYPE_COUNT = 9,
+  SELECTABLE_DATATYPE_COUNT = 10,
 };
 
 }  // namespace user_selectable_type

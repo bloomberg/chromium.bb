@@ -597,6 +597,7 @@ extern const char kSyncManaged[];
 extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];
 extern const char kSyncSuppressStart[];
+extern const char kSyncSyncedNotifications[];
 extern const char kGoogleServicesLastUsername[];
 extern const char kGoogleServicesUsername[];
 extern const char kGoogleServicesUsernamePattern[];

@@ -35,6 +35,7 @@ import search_engine_specifics_pb2
 import session_specifics_pb2
 import sync_pb2
 import sync_enums_pb2
+import synced_notification_specifics_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
 
@@ -59,9 +60,10 @@ ALL_TYPES = (
     PREFERENCE,
     SEARCH_ENGINE,
     SESSION,
+    SYNCED_NOTIFICATION,
     THEME,
     TYPED_URL,
-    EXTENSION_SETTINGS) = range(19)
+    EXTENSION_SETTINGS) = range(20)
 
 # An eumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -94,6 +96,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     PREFERENCE: SYNC_TYPE_FIELDS['preference'],
     SEARCH_ENGINE: SYNC_TYPE_FIELDS['search_engine'],
     SESSION: SYNC_TYPE_FIELDS['session'],
+    SYNCED_NOTIFICATION: SYNC_TYPE_FIELDS["synced_notification"],
     THEME: SYNC_TYPE_FIELDS['theme'],
     TYPED_URL: SYNC_TYPE_FIELDS['typed_url'],
     }
@@ -469,6 +472,8 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=PASSWORD),
       PermanentItem('google_chrome_preferences', name='Preferences',
                     parent_tag=ROOT_ID, sync_type=PREFERENCE),
+      PermanentItem('google_chrome_preferences', name='Synced Notifications',
+                    parent_tag=ROOT_ID, sync_type=SYNCED_NOTIFICATION),
       PermanentItem('google_chrome_search_engines', name='Search Engines',
                     parent_tag=ROOT_ID, sync_type=SEARCH_ENGINE),
       PermanentItem('google_chrome_sessions', name='Sessions',

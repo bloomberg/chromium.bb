@@ -76,6 +76,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case HISTORY_DELETE_DIRECTIVES:
       specifics->mutable_history_delete_directive();
       break;
+    case SYNCED_NOTIFICATIONS:
+      specifics->mutable_synced_notification();
+      break;
     case DEVICE_INFO:
       specifics->mutable_device_info();
       break;
@@ -145,6 +148,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       break;
     case HISTORY_DELETE_DIRECTIVES:
       return sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber;
+    case SYNCED_NOTIFICATIONS:
+      return sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber;
     case DEVICE_INFO:
       return sync_pb::EntitySpecifics::kDeviceInfoFieldNumber;
       break;
@@ -246,6 +251,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_history_delete_directive())
     return HISTORY_DELETE_DIRECTIVES;
 
+  if (specifics.has_synced_notification())
+    return SYNCED_NOTIFICATIONS;
+
   if (specifics.has_device_info())
     return DEVICE_INFO;
 
@@ -271,6 +279,8 @@ ModelTypeSet EncryptableUserTypes() {
   ModelTypeSet encryptable_user_types = UserTypes();
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
+  // Synced notifications are not encrypted since the server must see changes.
+  encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
   return encryptable_user_types;
 }
 
@@ -328,6 +338,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "App Notifications";
     case HISTORY_DELETE_DIRECTIVES:
       return "History Delete Directives";
+    case SYNCED_NOTIFICATIONS:
+      return "Synced Notifications";
     case DEVICE_INFO:
       return "Device Info";
     case EXPERIMENTS:
@@ -399,6 +411,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return APP_NOTIFICATIONS;
   else if (model_type_string == "History Delete Directives")
     return HISTORY_DELETE_DIRECTIVES;
+  else if (model_type_string == "Synced Notifications")
+    return SYNCED_NOTIFICATIONS;
   else if (model_type_string == "Device Info")
     return DEVICE_INFO;
   else if (model_type_string == "Experiments")
@@ -473,6 +487,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_app_notifications";
     case HISTORY_DELETE_DIRECTIVES:
       return "google_chrome_history_delete_directives";
+    case SYNCED_NOTIFICATIONS:
+      return "google_chrome_synced_notifications";
     case DEVICE_INFO:
       return "google_chrome_device_info";
     case EXPERIMENTS:
@@ -504,6 +520,7 @@ const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
 const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
 const char kHistoryDeleteDirectiveNotificationType[] =
     "HISTORY_DELETE_DIRECTIVE";
+const char kSyncedNotificationType[] = "SYNCED_NOTIFICATION";
 const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 const char kExperimentsNotificationType[] = "EXPERIMENTS";
 }  // namespace
@@ -558,6 +575,8 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case HISTORY_DELETE_DIRECTIVES:
       *notification_type = kHistoryDeleteDirectiveNotificationType;
+    case SYNCED_NOTIFICATIONS:
+      *notification_type = kSyncedNotificationType;
     case DEVICE_INFO:
       *notification_type = kDeviceInfoNotificationType;
       return true;
@@ -620,6 +639,8 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kHistoryDeleteDirectiveNotificationType) {
     *model_type = HISTORY_DELETE_DIRECTIVES;
+  } else if (notification_type == kSyncedNotificationType) {
+    *model_type = SYNCED_NOTIFICATIONS;
   } else if (notification_type == kDeviceInfoNotificationType) {
     *model_type = DEVICE_INFO;;
     return true;

@@ -83,7 +83,9 @@ enum ModelType {
   APP_NOTIFICATIONS,
   // History delete directives.
   HISTORY_DELETE_DIRECTIVES,
-  LAST_USER_MODEL_TYPE = HISTORY_DELETE_DIRECTIVES,
+  // Synced push notifications.
+  SYNCED_NOTIFICATIONS,
+  LAST_USER_MODEL_TYPE = SYNCED_NOTIFICATIONS,
 
   // An object representing a set of Nigori keys.
   NIGORI,
