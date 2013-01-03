@@ -32,10 +32,6 @@ class PepperInputHandler {
   float wheel_delta_x_;
   float wheel_delta_y_;
 
-  // Accumulates "ticks" derived from wheel events.
-  float wheel_ticks_x_;
-  float wheel_ticks_y_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);
 };
 

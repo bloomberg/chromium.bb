@@ -248,9 +248,6 @@ void EventExecutorWin::Core::HandleMouse(const MouseEvent& event) {
   if (event.has_wheel_delta_x() && event.has_wheel_delta_y()) {
     wheel_delta_x = static_cast<int>(event.wheel_delta_x());
     wheel_delta_y = static_cast<int>(event.wheel_delta_y());
-  } else if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
-    wheel_delta_x = event.wheel_offset_x() * WHEEL_DELTA;
-    wheel_delta_y = event.wheel_offset_y() * WHEEL_DELTA;
   }
 
   if (wheel_delta_x != 0 || wheel_delta_y != 0) {

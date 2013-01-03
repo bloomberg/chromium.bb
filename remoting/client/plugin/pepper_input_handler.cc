@@ -16,10 +16,7 @@ namespace remoting {
 PepperInputHandler::PepperInputHandler(protocol::InputStub* input_stub)
     : input_stub_(input_stub),
       wheel_delta_x_(0),
-      wheel_delta_y_(0),
-      wheel_ticks_x_(0),
-      wheel_ticks_y_(0)
-{
+      wheel_delta_y_(0) {
 }
 
 PepperInputHandler::~PepperInputHandler() {
@@ -113,28 +110,6 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
         protocol::MouseEvent mouse_event;
         mouse_event.set_wheel_delta_x(delta_x);
         mouse_event.set_wheel_delta_y(delta_y);
-
-        // Add legacy wheel "tick" offsets to the event.
-        // TODO(wez): Remove this once all hosts support the new
-        // fields.  See crbug.com/155668.
-#if defined(OS_WIN)
-        // Windows' standard value for WHEEL_DELTA.
-        const float kPixelsPerWheelTick = 120.0f;
-#elif defined(OS_MAC)
-        // From Source/WebKit/chromium/src/mac/WebInputFactory.mm.
-        const float kPixelsPerWheelTick = 40.0f;
-#else // OS_MAC
-        // From Source/WebKit/chromium/src/gtk/WebInputFactory.cc.
-        const float kPixelsPerWheelTick = 160.0f / 3.0f;
-#endif // OS_MAC
-        wheel_ticks_x_ += delta_x / kPixelsPerWheelTick;
-        wheel_ticks_y_ += delta_y / kPixelsPerWheelTick;
-        int ticks_x = static_cast<int>(wheel_ticks_x_);
-        int ticks_y = static_cast<int>(wheel_ticks_y_);
-        wheel_ticks_x_ -= ticks_x;
-        wheel_ticks_y_ -= ticks_y;
-        mouse_event.set_wheel_offset_x(ticks_x);
-        mouse_event.set_wheel_offset_y(ticks_y);
 
         input_stub_->InjectMouseEvent(mouse_event);
       }

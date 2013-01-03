@@ -259,17 +259,6 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
             NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
     if (event)
       CGEventPost(kCGHIDEventTap, event);
-  } else if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
-    int dx = event.wheel_offset_x();
-    int dy = event.wheel_offset_y();
-    // Note that |dy| (the vertical wheel) is the primary wheel.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    error = CGPostScrollWheelEvent(2, dy, dx);
-#pragma clang diagnostic pop
-    if (error != kCGErrorSuccess) {
-      LOG(WARNING) << "CGPostScrollWheelEvent error " << error;
-    }
   }
 }
 

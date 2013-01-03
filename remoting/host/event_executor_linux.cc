@@ -328,8 +328,6 @@ void EventExecutorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
     wheel_ticks_y_ += event.wheel_delta_y() * kWheelTicksPerPixel;
     ticks_y = static_cast<int>(wheel_ticks_y_);
     wheel_ticks_y_ -= ticks_y;
-  } else if (event.has_wheel_offset_y()) {
-    ticks_y = event.wheel_offset_y();
   }
   if (ticks_y != 0) {
     InjectScrollWheelClicks(VerticalScrollWheelToX11ButtonNumber(ticks_y),
@@ -341,8 +339,6 @@ void EventExecutorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
     wheel_ticks_x_ += event.wheel_delta_x() * kWheelTicksPerPixel;
     ticks_x = static_cast<int>(wheel_ticks_x_);
     wheel_ticks_x_ -= ticks_x;
-  } else if (event.has_wheel_offset_x()) {
-    ticks_x = event.wheel_offset_x();
   }
   if (ticks_x != 0) {
     InjectScrollWheelClicks(HorizontalScrollWheelToX11ButtonNumber(ticks_x),

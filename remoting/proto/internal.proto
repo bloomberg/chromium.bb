@@ -26,7 +26,6 @@ message ControlMessage {
 // Defines an event message on the event channel.
 message EventMessage {
   optional int64 sequence_number = 1;  // Client timestamp for event.
-  optional bool dummy = 2;       // Whether this is a dummy event.
 
   optional KeyEvent key_event = 3;
   optional MouseEvent mouse_event = 4;
