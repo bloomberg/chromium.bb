@@ -71,9 +71,10 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     if (!m_hudTexture)
         m_hudTexture = ScopedResource::create(resourceProvider);
 
-    // FIXME: Scale the HUD by deviceScale to make it more friendly under high DPI.
+    // TODO(danakj): Scale the HUD by deviceScale to make it more friendly under high DPI.
 
-    if (m_hudTexture->size() != bounds())
+    // TODO(danakj): The HUD could swap between two textures instead of creating a texture every frame in ubercompositor.
+    if (m_hudTexture->size() != bounds() || resourceProvider->inUseByConsumer(m_hudTexture->id()))
         m_hudTexture->Free();
 
     if (!m_hudTexture->id())
