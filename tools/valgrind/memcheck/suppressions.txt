@@ -6049,12 +6049,6 @@
    fun:_ZN7content23DevToolsHttpHandlerImpl4InitEv
 }
 {
-   bug_161274
-   Memcheck:Leak
-   ...
-   fun:_ZN3net25FtpNetworkTransactionTest18ExecuteTransactionEPNS_21FtpSocketDataProviderEPKcii
-}
-{
    bug_162825
    Memcheck:Uninitialized
    fun:bcmp

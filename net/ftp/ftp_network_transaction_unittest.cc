@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/host_port_pair.h"
@@ -820,15 +821,15 @@ class FtpNetworkTransactionTest
       MockRead(mock_data.c_str()),
     };
 
-    scoped_array<StaticSocketDataProvider*> data_sockets(
-        new StaticSocketDataProvider*[data_socket + 1]);
+    ScopedVector<StaticSocketDataProvider> data_sockets;
+    data_sockets.reserve(data_socket);
     for (int i = 0; i < data_socket + 1; i++) {
       // We only read from one data socket, other ones are dummy.
       if (i == data_socket) {
-        data_sockets[i] = new StaticSocketDataProvider(
-            data_reads, arraysize(data_reads), NULL, 0);
+        data_sockets.push_back(new StaticSocketDataProvider(
+                                   data_reads, arraysize(data_reads), NULL, 0));
       } else {
-        data_sockets[i] = new StaticSocketDataProvider;
+        data_sockets.push_back(new StaticSocketDataProvider);
       }
       mock_socket_factory_.AddSocketDataProvider(data_sockets[i]);
     }

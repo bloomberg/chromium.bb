@@ -1574,12 +1574,6 @@
    fun:net::FileStream::~FileStream
 }
 {
-   bug_161274
-   Heapcheck:Leak
-   ...
-   fun:net::FtpNetworkTransactionTest::ExecuteTransaction
-}
-{
    bug_163111_a
    Heapcheck:Leak
    ...
