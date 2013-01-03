@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.content.SharedPreferences;
 import android.webkit.ValueCallback;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.net.GURLUtils;
 
@@ -51,10 +50,17 @@ public final class AwGeolocationPermissions {
     }
 
     public void clearAll() {
+        SharedPreferences.Editor editor = null;
         for (String name : mSharedPreferences.getAll().keySet()) {
             if (name.startsWith(PREF_PREFIX)) {
-                mSharedPreferences.edit().remove(name).apply();
+                if (editor == null) {
+                    editor = mSharedPreferences.edit();
+                }
+                editor.remove(name);
             }
+        }
+        if (editor != null) {
+            editor.apply();
         }
     }
 
@@ -70,6 +76,7 @@ public final class AwGeolocationPermissions {
         }
         final boolean finalAllowed = allowed;
         ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 callback.onReceiveValue(finalAllowed);
             }
@@ -84,6 +91,7 @@ public final class AwGeolocationPermissions {
             }
         }
         ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 callback.onReceiveValue(origins);
             }
