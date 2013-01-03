@@ -4,10 +4,14 @@
 
 #include "chrome/common/child_process_logging.h"
 
+#include <map>
+#include <string>
+
 #import <Foundation/Foundation.h>
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
-#include "base/mac/crash_logging.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -24,63 +28,60 @@ class MockBreakpadKeyValueStore {
   MockBreakpadKeyValueStore() {
     // Only one of these objects can be active at once.
     DCHECK(dict == NULL);
-    dict = [[NSMutableDictionary alloc] init];
+    dict = new std::map<std::string, std::string>;
   }
 
   ~MockBreakpadKeyValueStore() {
     // Only one of these objects can be active at once.
     DCHECK(dict != NULL);
-    [dict release];
+    delete dict;
     dict = NULL;
   }
 
-  static void SetKeyValue(NSString* key, NSString* value) {
+  static void SetKeyValue(const base::StringPiece& key,
+                          const base::StringPiece& value) {
     DCHECK(dict != NULL);
-    [dict setObject:value forKey:key];
+    (*dict)[key.as_string()] = value.as_string();
   }
 
-  static void ClearKeyValue(NSString *key) {
+  static void ClearKeyValue(const base::StringPiece& key) {
     DCHECK(dict != NULL);
-    [dict removeObjectForKey:key];
+    dict->erase(key.as_string());
   }
 
-  int CountDictionaryEntries() {
-    return [dict count];
+  size_t CountDictionaryEntries() {
+    return dict->size();
   }
 
-  bool VerifyDictionaryContents(const std::string &url) {
+  bool VerifyDictionaryContents(const std::string& url) {
     using child_process_logging::kMaxNumCrashURLChunks;
     using child_process_logging::kMaxNumURLChunkValueLength;
     using child_process_logging::kUrlChunkFormatStr;
 
-    int num_url_chunks = CountDictionaryEntries();
-    EXPECT_TRUE(num_url_chunks <= kMaxNumCrashURLChunks);
+    size_t num_url_chunks = CountDictionaryEntries();
+    EXPECT_LE(num_url_chunks, kMaxNumCrashURLChunks);
 
-    NSString *kUrlChunkFormatStr_utf8 = [NSString
-        stringWithUTF8String:kUrlChunkFormatStr];
-
-    NSString *accumulated_url = @"";
-    for (int i = 0; i < num_url_chunks; ++i) {
+    std::string accumulated_url;
+    for (size_t i = 0; i < num_url_chunks; ++i) {
       // URL chunk names are 1-based.
-      NSString *key = [NSString stringWithFormat:kUrlChunkFormatStr_utf8, i+1];
-      EXPECT_TRUE(key != NULL);
-      NSString *value = [dict objectForKey:key];
-      EXPECT_TRUE([value length] > 0);
-      EXPECT_TRUE([value length] <= (unsigned)kMaxNumURLChunkValueLength);
-      accumulated_url = [accumulated_url stringByAppendingString:value];
+      std::string key = base::StringPrintf(kUrlChunkFormatStr, i + 1);
+      std::string value = (*dict)[key];
+      EXPECT_GT(value.length(), 0u);
+      EXPECT_LE(value.length(),
+                static_cast<size_t>(kMaxNumURLChunkValueLength));
+      accumulated_url += value;
     }
 
-    NSString *expected_url = [NSString stringWithUTF8String:url.c_str()];
-    return([accumulated_url isEqualToString:expected_url]);
+    return url == accumulated_url;
   }
 
  private:
-  static NSMutableDictionary* dict;
+  static std::map<std::string, std::string>* dict;
   DISALLOW_COPY_AND_ASSIGN(MockBreakpadKeyValueStore);
 };
 
 // static
-NSMutableDictionary* MockBreakpadKeyValueStore::dict;
+std::map<std::string, std::string>* MockBreakpadKeyValueStore::dict;
 
 }  // namespace
 
@@ -89,9 +90,9 @@ NSMutableDictionary* MockBreakpadKeyValueStore::dict;
 void SetActiveURLWithMock(const GURL& url) {
   using child_process_logging::SetActiveURLImpl;
 
-  base::mac::SetCrashKeyValueFuncPtr setFunc =
+  base::debug::SetCrashKeyValueFuncT setFunc =
       MockBreakpadKeyValueStore::SetKeyValue;
-  base::mac::ClearCrashKeyValueFuncPtr clearFunc =
+  base::debug::ClearCrashKeyValueFuncT clearFunc =
       MockBreakpadKeyValueStore::ClearKeyValue;
 
   SetActiveURLImpl(url, setFunc, clearFunc);
@@ -116,14 +117,14 @@ TEST_F(ChildProcessLoggingTest, TestUrlSplitting) {
   // Check that Clearing NULL URL works.
   MockBreakpadKeyValueStore mock;
   SetActiveURLWithMock(GURL());
-  EXPECT_EQ(mock.CountDictionaryEntries(), 0);
+  EXPECT_EQ(0u, mock.CountDictionaryEntries());
 
   // Check that we can set a URL.
   SetActiveURLWithMock(GURL(short_url.c_str()));
   EXPECT_TRUE(mock.VerifyDictionaryContents(short_url));
-  EXPECT_EQ(mock.CountDictionaryEntries(), 1);
+  EXPECT_EQ(1u, mock.CountDictionaryEntries());
   SetActiveURLWithMock(GURL());
-  EXPECT_EQ(mock.CountDictionaryEntries(), 0);
+  EXPECT_EQ(0u, mock.CountDictionaryEntries());
 
   // Check that we can replace a long url with a short url.
   SetActiveURLWithMock(GURL(long_url.c_str()));
@@ -131,7 +132,7 @@ TEST_F(ChildProcessLoggingTest, TestUrlSplitting) {
   SetActiveURLWithMock(GURL(short_url.c_str()));
   EXPECT_TRUE(mock.VerifyDictionaryContents(short_url));
   SetActiveURLWithMock(GURL());
-  EXPECT_EQ(mock.CountDictionaryEntries(), 0);
+  EXPECT_EQ(0u, mock.CountDictionaryEntries());
 
 
   // Check that overflow works correctly.
@@ -139,5 +140,5 @@ TEST_F(ChildProcessLoggingTest, TestUrlSplitting) {
   EXPECT_TRUE(mock.VerifyDictionaryContents(
       overflow_url.substr(0, max_num_chars_stored_in_dump)));
   SetActiveURLWithMock(GURL());
-  EXPECT_EQ(mock.CountDictionaryEntries(), 0);
+  EXPECT_EQ(0u, mock.CountDictionaryEntries());
 }

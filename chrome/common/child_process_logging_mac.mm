@@ -20,47 +20,41 @@
 
 namespace child_process_logging {
 
-using base::mac::SetCrashKeyValueFuncPtr;
-using base::mac::ClearCrashKeyValueFuncPtr;
-using base::mac::SetCrashKeyValue;
-using base::mac::ClearCrashKey;
+using base::debug::SetCrashKeyValueFuncT;
+using base::debug::ClearCrashKeyValueFuncT;
+using base::debug::SetCrashKeyValue;
+using base::debug::ClearCrashKey;
 
-const int kMaxNumCrashURLChunks = 8;
-const int kMaxNumURLChunkValueLength = 255;
-const char *kUrlChunkFormatStr = "url-chunk-%d";
-const char *kGuidParamName = "guid";
-const char *kGPUVendorIdParamName = "gpu-venid";
-const char *kGPUDeviceIdParamName = "gpu-devid";
-const char *kGPUDriverVersionParamName = "gpu-driver";
-const char *kGPUPixelShaderVersionParamName = "gpu-psver";
-const char *kGPUVertexShaderVersionParamName = "gpu-vsver";
-const char *kGPUGLVersionParamName = "gpu-glver";
-const char *kNumberOfViews = "num-views";
-NSString* const kNumExtensionsName = @"num-extensions";
-NSString* const kExtensionNameFormat = @"extension-%zu";
-NSString* const kPrinterInfoNameFormat = @"prn-info-%zu";
+const size_t kMaxNumCrashURLChunks = 8;
+const size_t kMaxNumURLChunkValueLength = 255;
+const char* kUrlChunkFormatStr = "url-chunk-%d";
+const char* kGuidParamName = "guid";
+const char* kGPUVendorIdParamName = "gpu-venid";
+const char* kGPUDeviceIdParamName = "gpu-devid";
+const char* kGPUDriverVersionParamName = "gpu-driver";
+const char* kGPUPixelShaderVersionParamName = "gpu-psver";
+const char* kGPUVertexShaderVersionParamName = "gpu-vsver";
+const char* kGPUGLVersionParamName = "gpu-glver";
+const char* kNumberOfViews = "num-views";
+const char* kNumExtensionsName = "num-extensions";
+const char* kExtensionNameFormat = "extension-%zu";
+const char* kPrinterInfoNameFormat = "prn-info-%zu";
 
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
 static char g_client_id[kClientIdSize];
 
 void SetActiveURLImpl(const GURL& url,
-                      SetCrashKeyValueFuncPtr set_key_func,
-                      ClearCrashKeyValueFuncPtr clear_key_func) {
-
-  NSString *kUrlChunkFormatStr_utf8 = [NSString
-      stringWithUTF8String:kUrlChunkFormatStr];
-
+                      SetCrashKeyValueFuncT set_key_func,
+                      ClearCrashKeyValueFuncT clear_key_func) {
   // First remove any old url chunks we might have lying around.
-  for (int i = 0; i < kMaxNumCrashURLChunks; i++) {
+  for (size_t i = 0; i < kMaxNumCrashURLChunks; i++) {
     // On Windows the url-chunk items are 1-based, so match that.
-    NSString *key = [NSString stringWithFormat:kUrlChunkFormatStr_utf8, i+1];
-    clear_key_func(key);
+    clear_key_func(base::StringPrintf(kUrlChunkFormatStr, i + 1));
   }
 
-  const std::string& raw_url_utf8 = url.possibly_invalid_spec();
-  NSString *raw_url = [NSString stringWithUTF8String:raw_url_utf8.c_str()];
-  size_t raw_url_length = [raw_url length];
+  const std::string& raw_url = url.possibly_invalid_spec();
+  size_t raw_url_length = raw_url.length();
 
   // Bail on zero-length URLs.
   if (raw_url_length == 0) {
@@ -68,30 +62,26 @@ void SetActiveURLImpl(const GURL& url,
   }
 
   // Parcel the URL up into up to 8, 255 byte segments.
-  size_t start_ofs = 0;
-  for (int i = 0;
-       i < kMaxNumCrashURLChunks && start_ofs < raw_url_length;
+  size_t offset = 0;
+  for (size_t i = 0;
+       i < kMaxNumCrashURLChunks && offset < raw_url_length;
        ++i) {
 
     // On Windows the url-chunk items are 1-based, so match that.
-    NSString *key = [NSString stringWithFormat:kUrlChunkFormatStr_utf8, i+1];
-    NSRange range;
-    range.location = start_ofs;
-    range.length = std::min((size_t)kMaxNumURLChunkValueLength,
-                            raw_url_length - start_ofs);
-    NSString *value = [raw_url substringWithRange:range];
+    std::string key = base::StringPrintf(kUrlChunkFormatStr, i + 1);
+    size_t length = std::min(kMaxNumURLChunkValueLength,
+                             raw_url_length - offset);
+    std::string value = raw_url.substr(offset, length);
     set_key_func(key, value);
 
     // Next chunk.
-    start_ofs += kMaxNumURLChunkValueLength;
+    offset += kMaxNumURLChunkValueLength;
   }
 }
 
 void SetClientIdImpl(const std::string& client_id,
-                     SetCrashKeyValueFuncPtr set_key_func) {
-  NSString *key = [NSString stringWithUTF8String:kGuidParamName];
-  NSString *value = [NSString stringWithUTF8String:client_id.c_str()];
-  set_key_func(key, value);
+                     SetCrashKeyValueFuncT set_key_func) {
+  set_key_func(kGuidParamName, client_id);
 }
 
 void SetActiveURL(const GURL& url) {
@@ -116,16 +106,15 @@ std::string GetClientId() {
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   // Log the count separately to track heavy users.
   const int count = static_cast<int>(extension_ids.size());
-  SetCrashKeyValue(kNumExtensionsName,
-                   [NSString stringWithFormat:@"%i", count]);
+  SetCrashKeyValue(kNumExtensionsName, base::IntToString(count));
 
   // Record up to |kMaxReportedActiveExtensions| extensions, clearing
   // keys if there aren't that many.
   std::set<std::string>::const_iterator iter = extension_ids.begin();
   for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
-    NSString* key = [NSString stringWithFormat:kExtensionNameFormat, i];
+    std::string key = base::StringPrintf(kExtensionNameFormat, i);
     if (iter != extension_ids.end()) {
-      SetCrashKeyValue(key, [NSString stringWithUTF8String:iter->c_str()]);
+      SetCrashKeyValue(key, *iter);
       ++iter;
     } else {
       ClearCrashKey(key);
@@ -134,14 +123,12 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
 }
 
 void SetGpuKeyValue(const char* param_name, const std::string& value_str,
-                    SetCrashKeyValueFuncPtr set_key_func) {
-  NSString *key = [NSString stringWithUTF8String:param_name];
-  NSString *value = [NSString stringWithUTF8String:value_str.c_str()];
-  set_key_func(key, value);
+                    SetCrashKeyValueFuncT set_key_func) {
+  set_key_func(param_name, value_str);
 }
 
 void SetGpuInfoImpl(const content::GPUInfo& gpu_info,
-                    SetCrashKeyValueFuncPtr set_key_func) {
+                    SetCrashKeyValueFuncT set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
                  base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id),
                  set_key_func);
@@ -168,23 +155,22 @@ void SetGpuInfo(const content::GPUInfo& gpu_info) {
 
 void SetPrinterInfo(const char* printer_info) {
   std::vector<std::string> info;
-  base::SplitString(printer_info, L';', &info);
+  base::SplitString(printer_info, ';', &info);
   info.resize(kMaxReportedPrinterRecords);
   for (size_t i = 0; i < info.size(); ++i) {
-    NSString* key = [NSString stringWithFormat:kPrinterInfoNameFormat, i];
-    ClearCrashKey(key);
+    std::string key = base::StringPrintf(kPrinterInfoNameFormat, i);
     if (!info[i].empty()) {
-      NSString *value = [NSString stringWithUTF8String:info[i].c_str()];
-      SetCrashKeyValue(key, value);
+      SetCrashKeyValue(key, info[i]);
+    } else {
+      ClearCrashKey(key);
     }
   }
 }
 
 void SetNumberOfViewsImpl(int number_of_views,
-                          SetCrashKeyValueFuncPtr set_key_func) {
-  NSString *key = [NSString stringWithUTF8String:kNumberOfViews];
-  NSString *value = [NSString stringWithFormat:@"%d", number_of_views];
-  set_key_func(key, value);
+                          SetCrashKeyValueFuncT set_key_func) {
+  std::string value = base::IntToString(number_of_views);
+  set_key_func(kNumberOfViews, value);
 }
 
 void SetNumberOfViews(int number_of_views) {
@@ -197,43 +183,41 @@ void SetCommandLine(const CommandLine* command_line) {
     return;
 
   // These should match the corresponding strings in breakpad_win.cc.
-  NSString* const kNumSwitchesKey = @"num-switches";
-  NSString* const kSwitchKeyFormat = @"switch-%zu";  // 1-based.
+  const char* kNumSwitchesKey = "num-switches";
+  const char* kSwitchKeyFormat = "switch-%zu";  // 1-based.
 
   // Note the total number of switches, not including the exec path.
   const CommandLine::StringVector& argv = command_line->argv();
   SetCrashKeyValue(kNumSwitchesKey,
-                   [NSString stringWithFormat:@"%zu", argv.size() - 1]);
+                   base::StringPrintf("%zu", argv.size() - 1));
 
   size_t key_i = 0;
-  for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i) {
+  for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i, ++key_i) {
     // TODO(shess): Skip boring switches.
-    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, (key_i + 1)];
-    NSString* value = base::SysUTF8ToNSString(argv[i]);
-    SetCrashKeyValue(key, value);
-    key_i++;
+    std::string key = base::StringPrintf(kSwitchKeyFormat, key_i + 1);
+    SetCrashKeyValue(key, argv[i]);
   }
 
   // Clear out any stale keys.
   for (; key_i < kMaxSwitches; ++key_i) {
-    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, (key_i + 1)];
+    std::string key = base::StringPrintf(kSwitchKeyFormat, key_i + 1);
     ClearCrashKey(key);
   }
 }
 
 void SetExperimentList(const std::vector<string16>& experiments) {
   // These should match the corresponding strings in breakpad_win.cc.
-  NSString* const kNumExperimentsKey = @"num-experiments";
-  NSString* const kExperimentChunkFormat = @"experiment-chunk-%zu";  // 1-based.
+  const char* kNumExperimentsKey = "num-experiments";
+  const char* kExperimentChunkFormat = "experiment-chunk-%zu";  // 1-based
 
   std::vector<string16> chunks;
   chrome_variations::GenerateVariationChunks(experiments, &chunks);
 
   // Store up to |kMaxReportedVariationChunks| chunks.
   for (size_t i = 0; i < kMaxReportedVariationChunks; ++i) {
-    NSString* key = [NSString stringWithFormat:kExperimentChunkFormat, i + 1];
+    std::string key = base::StringPrintf(kExperimentChunkFormat, i + 1);
     if (i < chunks.size()) {
-      NSString* value = base::SysUTF16ToNSString(chunks[i]);
+      std::string value = UTF16ToUTF8(chunks[i]);
       SetCrashKeyValue(key, value);
     } else {
       ClearCrashKey(key);
@@ -245,14 +229,13 @@ void SetExperimentList(const std::vector<string16>& experiments) {
   // correlating stability with the number of experiments running
   // simultaneously.
   SetCrashKeyValue(kNumExperimentsKey,
-                   [NSString stringWithFormat:@"%zu", experiments.size()]);
+                   base::StringPrintf("%zu", experiments.size()));
 }
 
 void SetChannel(const std::string& channel) {
   // This should match the corresponding string in breakpad_win.cc.
-  NSString* const kChannelKey = @"channel";
-
-  SetCrashKeyValue(kChannelKey, base::SysUTF8ToNSString(channel));
+  const std::string kChannelKey = "channel";
+  SetCrashKeyValue(kChannelKey, channel);
 }
 
 }  // namespace child_process_logging

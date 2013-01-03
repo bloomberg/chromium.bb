@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/mac/crash_logging.h"
+#include "base/debug/crash_logging.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
@@ -157,12 +157,12 @@ class ScopedPrinterInfoSetter {
 namespace child_process_logging {
 
 void SetActiveURLImpl(const GURL& url,
-                      base::mac::SetCrashKeyValueFuncPtr set_key_func,
-                      base::mac::ClearCrashKeyValueFuncPtr clear_key_func);
+                      base::debug::SetCrashKeyValueFuncT set_key_func,
+                      base::debug::ClearCrashKeyValueFuncT clear_key_func);
 
-extern const int kMaxNumCrashURLChunks;
-extern const int kMaxNumURLChunkValueLength;
-extern const char *kUrlChunkFormatStr;
+extern const size_t kMaxNumCrashURLChunks;
+extern const size_t kMaxNumURLChunkValueLength;
+extern const char* kUrlChunkFormatStr;
 
 }  // namespace child_process_logging
 

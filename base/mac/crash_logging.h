@@ -15,15 +15,13 @@
 class NSString;
 #endif
 
+// !!! DEPRECATED !!!!
+// Please use base/debug/crash_logging.h instead.
+//
+// TODO(rsesek): Convert all callers to the new API.
+
 namespace base {
 namespace mac {
-
-typedef void (*SetCrashKeyValueFuncPtr)(NSString*, NSString*);
-typedef void (*ClearCrashKeyValueFuncPtr)(NSString*);
-
-// Set the low level functions used to supply crash keys to Breakpad.
-BASE_EXPORT void SetCrashKeyFunctions(SetCrashKeyValueFuncPtr set_key_func,
-                          ClearCrashKeyValueFuncPtr clear_key_func);
 
 // Set and clear meta information for Minidump.
 // IMPORTANT: On OS X, the key/value pairs are sent to the crash server

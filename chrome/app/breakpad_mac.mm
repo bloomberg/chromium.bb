@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #import "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #import "base/logging.h"
@@ -54,6 +55,16 @@ void ClearCrashKeyValue(NSString* key) {
   }
 
   BreakpadRemoveUploadParameter(gBreakpadRef, key);
+}
+
+void SetCrashKeyValueImpl(const base::StringPiece& key,
+                          const base::StringPiece& value) {
+  SetCrashKeyValue(base::SysUTF8ToNSString(key.as_string()),
+                   base::SysUTF8ToNSString(value.as_string()));
+}
+
+void ClearCrashKeyValueImpl(const base::StringPiece& key) {
+  ClearCrashKeyValue(base::SysUTF8ToNSString(key.as_string()));
 }
 
 bool FatalMessageHandler(int severity, const char* file, int line,
@@ -248,8 +259,8 @@ void InitCrashReporter() {
 
   // Enable child process crashes to include the page URL.
   // TODO: Should this only be done for certain process types?
-  base::mac::SetCrashKeyFunctions(SetCrashKeyValue,
-                                  ClearCrashKeyValue);
+  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueImpl,
+                                             &ClearCrashKeyValueImpl);
 
   if (!is_browser) {
     // Get the guid from the command line switch.
