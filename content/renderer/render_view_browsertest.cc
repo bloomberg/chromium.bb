@@ -578,7 +578,8 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
 
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.
-TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
+// Disabled: http://crbug.com/157357 .
+TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Load page A.
   LoadHTML("<div>Page A</div>");
 
