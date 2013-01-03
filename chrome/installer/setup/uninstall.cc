@@ -476,13 +476,24 @@ DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
   return result;
 }
 
+// Moves setup to a temporary file, outside of the install folder. Also attempts
+// to change the current directory to the TMP directory. On Windows, each
+// process has a handle to its CWD. If setup.exe's CWD happens to be within the
+// install directory, deletion will fail as a result of the open handle.
 bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
                                  const FilePath& setup_exe) {
   bool ret = false;
+  FilePath tmp_dir;
   FilePath temp_file;
-  if (!file_util::CreateTemporaryFile(&temp_file)) {
+  if (!PathService::Get(base::DIR_TEMP, &tmp_dir)) {
+    NOTREACHED();
+  } else if (!file_util::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
   } else {
+    VLOG(1) << "Changing current directory to: " << tmp_dir.value();
+    if (!file_util::SetCurrentDirectory(tmp_dir))
+      PLOG(ERROR) << "Failed to change the current directory.";
+
     VLOG(1) << "Attempting to move setup to: " << temp_file.value();
     ret = file_util::Move(setup_exe, temp_file);
     PLOG_IF(ERROR, !ret) << "Failed to move setup to " << temp_file.value();
