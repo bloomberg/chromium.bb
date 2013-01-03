@@ -16,7 +16,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/resource_context.h"

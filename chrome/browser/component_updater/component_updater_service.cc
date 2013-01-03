@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"

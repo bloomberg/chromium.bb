@@ -7,7 +7,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 
 namespace content {

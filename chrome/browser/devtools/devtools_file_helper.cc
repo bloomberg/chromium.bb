@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 

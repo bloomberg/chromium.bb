@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SAVE_FILE_RESOURCE_HANDLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SAVE_FILE_RESOURCE_HANDLER_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
+#define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
@@ -89,4 +90,4 @@ class SaveFileResourceHandler : public ResourceHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SAVE_FILE_RESOURCE_HANDLER_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_

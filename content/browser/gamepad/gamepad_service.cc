@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_provider.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {

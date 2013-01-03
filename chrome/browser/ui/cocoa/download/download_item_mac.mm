@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/download/download_item_mac.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"

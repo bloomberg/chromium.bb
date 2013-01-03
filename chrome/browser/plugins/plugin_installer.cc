@@ -15,6 +15,7 @@
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

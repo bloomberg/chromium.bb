@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_view_host.h"

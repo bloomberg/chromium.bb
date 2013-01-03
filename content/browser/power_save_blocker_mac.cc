@@ -12,7 +12,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 namespace {

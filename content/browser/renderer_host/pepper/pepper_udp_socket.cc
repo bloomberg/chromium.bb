@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"

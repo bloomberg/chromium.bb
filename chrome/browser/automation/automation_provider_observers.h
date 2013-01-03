@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -1225,9 +1226,9 @@ class PasswordStoreLoginsChangedObserver
 // in the omnibox popup.
 class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
  public:
-   OmniboxAcceptNotificationObserver(content::NavigationController* controller,
-                                     AutomationProvider* automation,
-                                     IPC::Message* reply_message);
+  OmniboxAcceptNotificationObserver(content::NavigationController* controller,
+                                    AutomationProvider* automation,
+                                    IPC::Message* reply_message);
   virtual ~OmniboxAcceptNotificationObserver();
 
   // Overridden from content::NotificationObserver:

@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -411,7 +410,7 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
   }
 
   if (ws_event.has_status()) {
-    switch(ws_event.status()) {
+    switch (ws_event.status()) {
       case proto::SpeechRecognitionEvent::STATUS_SUCCESS:
         break;
       case proto::SpeechRecognitionEvent::STATUS_NO_SPEECH:

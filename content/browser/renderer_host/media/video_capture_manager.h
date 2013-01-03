@@ -18,7 +18,6 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 

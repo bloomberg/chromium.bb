@@ -12,6 +12,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"

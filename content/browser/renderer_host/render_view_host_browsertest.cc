@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"

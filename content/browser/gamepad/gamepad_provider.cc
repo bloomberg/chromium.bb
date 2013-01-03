@@ -18,7 +18,6 @@
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
 #include "content/common/gamepad_user_gesture.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 

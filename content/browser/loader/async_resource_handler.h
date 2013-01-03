@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
 #include "googleurl/src/gurl.h"
 

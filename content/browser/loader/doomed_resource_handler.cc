@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/doomed_resource_handler.h"
 
+#include "base/logging.h"
 #include "net/url_request/url_request_status.h"
 
 namespace content {

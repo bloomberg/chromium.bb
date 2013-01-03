@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_constants_internal.h"
-#include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"

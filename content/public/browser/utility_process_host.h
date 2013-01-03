@@ -7,10 +7,13 @@
 
 #include "base/process_util.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"
 
 class FilePath;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace content {
 class UtilityProcessHostClient;

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -42,10 +43,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/image/image.h"
-
-#if !defined(OS_MACOSX)
-#include "content/public/browser/browser_thread.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"

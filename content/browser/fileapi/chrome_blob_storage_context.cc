@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/blob/blob_storage_controller.h"
 
 using base::UserDataAdapter;

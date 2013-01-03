@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 using content::DownloadManager;
