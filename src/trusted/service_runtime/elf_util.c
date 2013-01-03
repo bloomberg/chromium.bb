@@ -680,7 +680,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
      * is local and not shared between processes.
      */
     if ((*gfile->vtbl->Seek)(gfile, (off_t) offset, SEEK_SET) == (off_t) -1) {
-      NaClLog(1, "NaClElfImageLoadDynamically: seek failed\n");
+      NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: seek failed\n");
       return LOAD_READ_ERROR;
     }
 
@@ -694,12 +694,12 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
        */
       char *code_copy = malloc(filesz);
       if (NULL == code_copy) {
-        NaClLog(1, "NaClElfImageLoadDynamically: malloc failed\n");
+        NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: malloc failed\n");
         return LOAD_NO_MEMORY;
       }
       if ((Elf_Word) (*gfile->vtbl->Read)(gfile, code_copy, filesz) != filesz) {
         free(code_copy);
-        NaClLog(1, "NaClElfImageLoadDynamically: "
+        NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                 "failed to read code segment\n");
         return LOAD_READ_ERROR;
       }
@@ -707,7 +707,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
                                      code_copy, (uint32_t) filesz);
       free(code_copy);
       if (0 != result) {
-        NaClLog(1, "NaClElfImageLoadDynamically: "
+        NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                 "failed to load code segment\n");
         return LOAD_UNLOADABLE;
       }
@@ -729,11 +729,12 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
           NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
           -1, 0);
       if ((int32_t) vaddr != result) {
-        NaClLog(1, "NaClElfImageLoadDynamically: failed to map data segment\n");
+        NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
+                "failed to map data segment\n");
         return LOAD_UNLOADABLE;
       }
       if ((Elf_Word) (*gfile->vtbl->Read)(gfile, paddr, filesz) != filesz) {
-        NaClLog(1, "NaClElfImageLoadDynamically: "
+        NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                 "failed to read data segment\n");
         return LOAD_READ_ERROR;
       }
@@ -748,7 +749,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
         /* Handle read-only data segment. */
         int rc = NaCl_mprotect(paddr, mapping_size, NACL_ABI_PROT_READ);
         if (0 != rc) {
-          NaClLog(1, "NaClElfImageLoadDynamically: "
+          NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                   "failed to mprotect read-only data segment\n");
           return LOAD_MPROTECT_FAIL;
         }

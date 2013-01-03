@@ -81,6 +81,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   int file_desc;
   struct GioPio gio_pio;
   struct Gio *gio_desc;
+  NaClErrorCode errcode;
 
   if (irt_fd == -1) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Integrated runtime (IRT) not present.\n");
@@ -100,10 +101,11 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   }
   gio_desc = (struct Gio *) &gio_pio;
 
-  if (NaClAppLoadFileDynamically(nap, gio_desc) != LOAD_OK) {
+  errcode = NaClAppLoadFileDynamically(nap, gio_desc);
+  if (errcode != LOAD_OK) {
     NaClLog(LOG_FATAL,
-            "NaClLoadIrt: Failed to load the integrated runtime (IRT).  "
-            "The user executable was probably not built to use the IRT.\n");
+            "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",
+            NaClErrorString(errcode));
   }
 
   (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
