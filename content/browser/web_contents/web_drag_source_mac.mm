@@ -28,7 +28,6 @@
 #include "net/base/file_stream.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image.h"
@@ -45,6 +44,10 @@ using content::RenderViewHostImpl;
 using net::FileStream;
 
 namespace {
+
+// An unofficial standard pasteboard title type to be provided alongside the
+// |NSURLPboardType|.
+NSString* const kNSURLTitlePboardType = @"public.url-name";
 
 // Converts a string16 into a FilePath. Use this method instead of
 // -[NSString fileSystemRepresentation] to prevent exceptions from being thrown.
@@ -158,6 +161,29 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     // See comment on |kHtmlHeader| above.
     [pboard setString:SysUTF16ToNSString(kHtmlHeader + dropData_->html.string())
               forType:NSHTMLPboardType];
+
+  // URL.
+  } else if ([type isEqualToString:NSURLPboardType]) {
+    DCHECK(dropData_->url.is_valid());
+    NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
+    // If NSURL creation failed, check for a badly-escaped JavaScript URL.
+    // Strip out any existing escapes and then re-escape uniformly.
+    if (!url && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
+      net::UnescapeRule::Type unescapeRules =
+          net::UnescapeRule::SPACES |
+          net::UnescapeRule::URL_SPECIAL_CHARS |
+          net::UnescapeRule::CONTROL_CHARS;
+      std::string unescapedUrlString =
+          net::UnescapeURLComponent(dropData_->url.spec(), unescapeRules);
+      std::string escapedUrlString =
+          net::EscapeUrlEncodedData(unescapedUrlString, false);
+      url = [NSURL URLWithString:SysUTF8ToNSString(escapedUrlString)];
+    }
+    [url writeToPasteboard:pboard];
+  // URL title.
+  } else if ([type isEqualToString:kNSURLTitlePboardType]) {
+    [pboard setString:SysUTF16ToNSString(dropData_->url_title)
+              forType:kNSURLTitlePboardType];
 
   // File contents.
   } else if ([type isEqualToString:base::mac::CFToNSCast(fileUTI_.get())]) {
@@ -344,31 +370,10 @@ void PromiseWriterHelper(const WebDropData& drop_data,
              owner:contentsView_];
 
   // URL (and title).
-  if (dropData_->url.is_valid()) {
-    NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
-    // If NSURL creation failed, check for a badly-escaped JavaScript URL.
-    // Strip out any existing escapes and then re-escape uniformly.
-    if (!url && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
-      net::UnescapeRule::Type unescapeRules =
-          net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS |
-          net::UnescapeRule::CONTROL_CHARS;
-      std::string unescapedUrlString =
-          net::UnescapeURLComponent(dropData_->url.spec(), unescapeRules);
-      std::string escapedUrlString =
-          net::EscapeUrlEncodedData(unescapedUrlString, false);
-      url = [NSURL URLWithString:SysUTF8ToNSString(escapedUrlString)];
-    }
-    if (url) {
-      NSString* urlTitle = nil;
-      if (!dropData_->url_title.empty())
-        urlTitle = SysUTF16ToNSString(dropData_->url_title);
-      else
-        urlTitle = [url lastPathComponent];
-
-      [pasteboard_ setDataForURL:[url absoluteString] title:urlTitle];
-    }
-  }
+  if (dropData_->url.is_valid())
+    [pasteboard_ addTypes:[NSArray arrayWithObjects:NSURLPboardType,
+                                                    kNSURLTitlePboardType, nil]
+                    owner:contentsView_];
 
   // MIME type.
   std::string mimeType;
