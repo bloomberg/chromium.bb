@@ -49,6 +49,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
   // enrollment.
   void StartEnrollment(const std::string& auth_token,
+                       bool is_auto_enrollment,
                        const AllowedDeviceModes& allowed_modes,
                        const EnrollmentCallback& callback);
 

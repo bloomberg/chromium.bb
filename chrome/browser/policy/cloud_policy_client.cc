@@ -71,15 +71,21 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   NotifyRegistrationStateChanged();
 }
 
-void CloudPolicyClient::Register(const std::string& auth_token) {
+void CloudPolicyClient::Register(const std::string& auth_token,
+                                 const std::string& client_id,
+                                 bool is_auto_enrollement) {
   DCHECK(service_);
   DCHECK(!auth_token.empty());
   DCHECK(!is_registered());
 
-  // Generate a new client ID. This is intentionally done on each new
-  // registration request in order to preserve privacy. Reusing IDs would mean
-  // the server could track clients by their registration attempts.
-  client_id_ = base::GenerateGUID();
+  if (client_id.empty()) {
+    // Generate a new client ID. This is intentionally done on each new
+    // registration request in order to preserve privacy. Reusing IDs would mean
+    // the server could track clients by their registration attempts.
+    client_id_ = base::GenerateGUID();
+  } else {
+    client_id_ = client_id;
+  }
 
   request_job_.reset(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION));
@@ -88,11 +94,15 @@ void CloudPolicyClient::Register(const std::string& auth_token) {
 
   em::DeviceRegisterRequest* request =
       request_job_->GetRequest()->mutable_register_request();
+  if (!client_id.empty())
+    request->set_reregister(true);
   SetRegistrationType(request);
   if (!machine_id_.empty())
     request->set_machine_id(machine_id_);
   if (!machine_model_.empty())
     request->set_machine_model(machine_model_);
+  if (is_auto_enrollement)
+    request->set_auto_enrolled(true);
 
   request_job_->Start(base::Bind(&CloudPolicyClient::OnRegisterCompleted,
                                  base::Unretained(this)));

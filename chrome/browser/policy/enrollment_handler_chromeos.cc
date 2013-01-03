@@ -30,12 +30,16 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     EnterpriseInstallAttributes* install_attributes,
     scoped_ptr<CloudPolicyClient> client,
     const std::string& auth_token,
+    const std::string& client_id,
+    bool is_auto_enrollment,
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& completion_callback)
     : store_(store),
       install_attributes_(install_attributes),
       client_(client.Pass()),
       auth_token_(auth_token),
+      client_id_(client_id),
+      is_auto_enrollment_(is_auto_enrollment),
       allowed_device_modes_(allowed_device_modes),
       completion_callback_(completion_callback),
       device_mode_(DEVICE_MODE_NOT_SET),
@@ -140,7 +144,7 @@ void EnrollmentHandlerChromeOS::AttemptRegistration() {
   CHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (store_->is_initialized()) {
     enrollment_step_ = STEP_REGISTRATION;
-    client_->Register(auth_token_);
+    client_->Register(auth_token_, client_id_, is_auto_enrollment_);
   }
 }
 

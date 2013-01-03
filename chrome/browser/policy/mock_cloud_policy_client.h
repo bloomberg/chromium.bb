@@ -17,7 +17,7 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   virtual ~MockCloudPolicyClient();
 
   MOCK_METHOD2(SetupRegistration, void(const std::string&, const std::string&));
-  MOCK_METHOD1(Register, void(const std::string&));
+  MOCK_METHOD3(Register, void(const std::string&, const std::string&, bool));
   MOCK_METHOD0(FetchPolicy, void(void));
   MOCK_METHOD0(Unregister, void(void));
 

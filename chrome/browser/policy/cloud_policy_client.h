@@ -97,7 +97,9 @@ class CloudPolicyClient {
 
   // Attempts to register with the device management service. Results in a
   // registration change or error notification.
-  virtual void Register(const std::string& auth_token);
+  virtual void Register(const std::string& auth_token,
+                        const std::string& client_id,
+                        bool is_auto_enrollment);
 
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered

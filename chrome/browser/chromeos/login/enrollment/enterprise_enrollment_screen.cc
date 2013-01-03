@@ -365,7 +365,7 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
     modes[policy::DEVICE_MODE_KIOSK] = !is_auto_enrollment_;
     connector->ScheduleServiceInitialization(0);
     connector->GetDeviceCloudPolicyManager()->StartEnrollment(
-        token, modes,
+        token, is_auto_enrollment_, modes,
         base::Bind(&EnterpriseEnrollmentScreen::ReportEnrollmentStatus,
                    weak_ptr_factory_.GetWeakPtr()));
     return;

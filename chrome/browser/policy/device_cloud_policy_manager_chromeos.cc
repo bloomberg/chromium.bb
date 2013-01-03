@@ -12,7 +12,10 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -74,6 +77,7 @@ void DeviceCloudPolicyManagerChromeOS::Connect(
 
 void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
     const std::string& auth_token,
+    bool is_auto_enrollment,
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& callback) {
   CHECK(device_management_service_);
@@ -82,6 +86,7 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
   enrollment_handler_.reset(
       new EnrollmentHandlerChromeOS(
           device_store_.get(), install_attributes_, CreateClient(), auth_token,
+          install_attributes_->GetDeviceId(), is_auto_enrollment,
           allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
                      base::Unretained(this), callback)));

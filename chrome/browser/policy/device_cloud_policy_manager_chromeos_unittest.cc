@@ -22,8 +22,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::AnyNumber;
 using testing::AtMost;
+using testing::DoAll;
 using testing::Mock;
+using testing::SaveArg;
 using testing::_;
 
 namespace em = enterprise_management;
@@ -120,22 +123,17 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     : public DeviceCloudPolicyManagerChromeOSTest {
  public:
   void Done(EnrollmentStatus status) {
-    EXPECT_EQ(expected_enrollment_status_, status.status());
-    EXPECT_EQ(expected_dm_status_, status.client_status());
-    EXPECT_EQ(expected_validation_status_, status.validation_status());
-    EXPECT_EQ(expected_store_status_, status.store_status());
+    status_ = status;
     done_ = true;
   }
 
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentTest()
-      : register_status_(DM_STATUS_SUCCESS),
+      : is_auto_enrollment_(false),
+        register_status_(DM_STATUS_SUCCESS),
         fetch_status_(DM_STATUS_SUCCESS),
         store_result_(true),
-        expected_enrollment_status_(EnrollmentStatus::STATUS_SUCCESS),
-        expected_dm_status_(DM_STATUS_SUCCESS),
-        expected_validation_status_(CloudPolicyValidatorBase::VALIDATION_OK),
-        expected_store_status_(CloudPolicyStore::STATUS_OK),
+        status_(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)),
         done_(false) {}
 
   virtual void SetUp() OVERRIDE {
@@ -167,30 +165,26 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
                      scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
   }
 
-  virtual void TearDown() OVERRIDE {
-    RunTest();
+  void ExpectFailedEnrollment(EnrollmentStatus::Status status) {
+    EXPECT_EQ(status, status_.status());
+    EXPECT_FALSE(store_->is_managed());
+    PolicyBundle empty_bundle;
+    EXPECT_TRUE(manager_.policies().Equals(empty_bundle));
+  }
 
-    // Enrollment should have completed.
-    EXPECT_TRUE(done_);
+  void ExpectSuccessfulEnrollment() {
+    EXPECT_EQ(EnrollmentStatus::STATUS_SUCCESS, status_.status());
+    EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
+    EXPECT_TRUE(store_->has_policy());
+    EXPECT_TRUE(store_->is_managed());
+    ASSERT_TRUE(manager_.core()->client());
+    EXPECT_TRUE(manager_.core()->client()->is_registered());
+
     PolicyBundle bundle;
-    if (expected_enrollment_status_ != EnrollmentStatus::STATUS_SUCCESS) {
-      EXPECT_FALSE(store_->has_policy());
-      EXPECT_FALSE(store_->is_managed());
-      EXPECT_TRUE(manager_.policies().Equals(bundle));
-    } else {
-      EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
-      EXPECT_TRUE(store_->has_policy());
-      EXPECT_TRUE(store_->is_managed());
-      ASSERT_TRUE(manager_.core()->client());
-      EXPECT_TRUE(manager_.core()->client()->is_registered());
-
-      bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
-          key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
-      EXPECT_TRUE(manager_.policies().Equals(bundle));
-    }
-
-    DeviceCloudPolicyManagerChromeOSTest::TearDown();
+    bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
+        key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
+    EXPECT_TRUE(manager_.policies().Equals(bundle));
   }
 
   void RunTest() {
@@ -201,11 +195,13 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Times(AtMost(1))
         .WillOnce(device_management_service_.CreateAsyncJob(&register_job));
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-        .Times(AtMost(1));
+        .Times(AtMost(1))
+        .WillOnce(DoAll(SaveArg<5>(&client_id_),
+                        SaveArg<6>(&register_request_)));
     DeviceCloudPolicyManagerChromeOS::AllowedDeviceModes modes;
     modes[DEVICE_MODE_ENTERPRISE] = true;
     manager_.StartEnrollment(
-        "auth token", modes,
+        "auth token", is_auto_enrollment_, modes,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     Mock::VerifyAndClearExpectations(&device_management_service_);
@@ -257,6 +253,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     ReloadDeviceSettings();
   }
 
+  bool is_auto_enrollment_;
+
   DeviceManagementStatus register_status_;
   em::DeviceManagementResponse register_response_;
 
@@ -266,10 +264,10 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   bool store_result_;
   std::string loaded_blob_;
 
-  EnrollmentStatus::Status expected_enrollment_status_;
-  DeviceManagementStatus expected_dm_status_;
-  CloudPolicyValidatorBase::Status expected_validation_status_;
-  CloudPolicyStore::Status expected_store_status_;
+  em::DeviceManagementRequest register_request_;
+  std::string client_id_;
+  EnrollmentStatus status_;
+
   bool done_;
 
  private:
@@ -277,7 +275,15 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 };
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Success) {
-  // The defaults should result in successful enrollment.
+  RunTest();
+  ExpectSuccessfulEnrollment();
+}
+
+TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, AutoEnrollment) {
+  is_auto_enrollment_ = true;
+  RunTest();
+  ExpectSuccessfulEnrollment();
+  EXPECT_TRUE(register_request_.register_request().auto_enrolled());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {
@@ -285,18 +291,25 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {
             install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
                                            DEVICE_MODE_ENTERPRISE,
                                            PolicyBuilder::kFakeDeviceId));
+
+  RunTest();
+  ExpectSuccessfulEnrollment();
+  EXPECT_TRUE(register_request_.register_request().reregister());
+  EXPECT_EQ(PolicyBuilder::kFakeDeviceId, client_id_);
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, RegistrationFailed) {
   register_status_ = DM_STATUS_REQUEST_FAILED;
-  expected_enrollment_status_ = EnrollmentStatus::STATUS_REGISTRATION_FAILED;
-  expected_dm_status_ = DM_STATUS_REQUEST_FAILED;
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_REGISTRATION_FAILED);
+  EXPECT_EQ(DM_STATUS_REQUEST_FAILED, status_.client_status());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {
   fetch_status_ = DM_STATUS_REQUEST_FAILED;
-  expected_enrollment_status_ = EnrollmentStatus::STATUS_POLICY_FETCH_FAILED;
-  expected_dm_status_ = DM_STATUS_REQUEST_FAILED;
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_POLICY_FETCH_FAILED);
+  EXPECT_EQ(DM_STATUS_REQUEST_FAILED, status_.client_status());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
@@ -304,21 +317,26 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
   fetch_response_.clear_policy_response();
   fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
       device_policy_.policy());
-  expected_enrollment_status_ = EnrollmentStatus::STATUS_VALIDATION_FAILED;
-  expected_validation_status_ =
-      CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE;
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_VALIDATION_FAILED);
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
+            status_.validation_status());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
   store_result_ = false;
-  expected_enrollment_status_ = EnrollmentStatus::STATUS_STORE_ERROR;
-  expected_store_status_ = CloudPolicyStore::STATUS_STORE_ERROR;
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_STORE_ERROR);
+  EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,
+            status_.store_status());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   loaded_blob_.clear();
-  expected_enrollment_status_ = EnrollmentStatus::STATUS_STORE_ERROR;
-  expected_store_status_ = CloudPolicyStore::STATUS_LOAD_ERROR;
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_STORE_ERROR);
+  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
+            status_.store_status());
 }
 
 }  // namespace
