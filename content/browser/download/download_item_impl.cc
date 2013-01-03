@@ -1068,7 +1068,9 @@ void DownloadItemImpl::MaybeCompleteDownload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_save_package_download_);
 
-  if (!IsDownloadReadyForCompletion())
+  if (!IsDownloadReadyForCompletion(
+          base::Bind(&DownloadItemImpl::MaybeCompleteDownload,
+                     weak_ptr_factory_.GetWeakPtr())))
     return;
 
   // TODO(rdsmith): DCHECK that we only pass through this point
@@ -1089,16 +1091,6 @@ void DownloadItemImpl::MaybeCompleteDownload() {
 void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (state_ != IN_PROGRESS_INTERNAL)
-    return;
-
-  // Give the delegate a chance to override.
-  delegate_->ReadyForDownloadCompletion(
-      this, base::Bind(&DownloadItemImpl::ReadyForDownloadCompletionDone,
-                       weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DownloadItemImpl::ReadyForDownloadCompletionDone() {
   if (state_ != IN_PROGRESS_INTERNAL)
     return;
 
@@ -1253,12 +1245,8 @@ void DownloadItemImpl::CancelDownloadFile() {
   }
 }
 
-bool DownloadItemImpl::IsDownloadReadyForCompletion() {
-  VLOG(20) << __FUNCTION__ << " " << AllDataSaved()
-           << " " << (GetSafetyState() != DownloadItem::DANGEROUS)
-           << " " << (state_ == IN_PROGRESS_INTERNAL)
-           << " " << !GetTargetFilePath().empty()
-           << " " << (target_path_.DirName() == current_path_.DirName());
+bool DownloadItemImpl::IsDownloadReadyForCompletion(
+    const base::Closure& state_change_notification) {
   // If we don't have all the data, the download is not ready for
   // completion.
   if (!AllDataSaved())
@@ -1282,6 +1270,11 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion() {
   // This is checked in NeedsRename(). Without this conditional,
   // browser_tests:DownloadTest.DownloadMimeType fails the DCHECK.
   if (target_path_.DirName() != current_path_.DirName())
+    return false;
+
+  // Give the delegate a chance to hold up a stop sign.  It'll call
+  // use back through the passed callback if it does and that state changes.
+  if (!delegate_->ShouldCompleteDownload(this, state_change_notification))
     return false;
 
   return true;

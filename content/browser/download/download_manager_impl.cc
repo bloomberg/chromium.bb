@@ -237,14 +237,15 @@ void DownloadManagerImpl::DetermineDownloadTarget(
   }
 }
 
-void DownloadManagerImpl::ReadyForDownloadCompletion(
+bool DownloadManagerImpl::ShouldCompleteDownload(
     DownloadItemImpl* item, const base::Closure& complete_callback) {
   if (!delegate_ ||
       delegate_->ShouldCompleteDownload(item, complete_callback)) {
-    complete_callback.Run();
+    return true;
   }
   // Otherwise, the delegate has accepted responsibility to run the
   // callback when the download is ready for completion.
+  return false;
 }
 
 bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {

@@ -44,11 +44,10 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
       DownloadItemImpl* download, const DownloadTargetCallback& callback);
 
   // Allows the delegate to delay completion of the download.  This function
-  // will call the callback passed when the download is ready for completion.
-  // This may be done immediately, from within the routine itself, or it
-  // may be delayed.
-  // This routine should only be called once per download.
-  virtual void ReadyForDownloadCompletion(
+  // will either return true (if the download may complete now) or will return
+  // false and call the provided callback at some future point.  This function
+  // may be called repeatedly.
+  virtual bool ShouldCompleteDownload(
       DownloadItemImpl* download,
       const base::Closure& complete_callback);
 

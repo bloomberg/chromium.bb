@@ -120,7 +120,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // (Note that |GetBrowserContext| are present in both interfaces.)
   virtual void DetermineDownloadTarget(
       DownloadItemImpl* item, const DownloadTargetCallback& callback) OVERRIDE;
-  virtual void ReadyForDownloadCompletion(
+  virtual bool ShouldCompleteDownload(
       DownloadItemImpl* item, const base::Closure& complete_callback) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool ShouldOpenDownload(

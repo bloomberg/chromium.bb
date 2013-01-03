@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -265,10 +266,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // DownloadItem::Completed().
   void OnDownloadCompleting();
 
-  // Called after the delegate has given the go-ahead to actually complete
-  // the download.
-  void ReadyForDownloadCompletionDone();
-
   void OnDownloadRenamedToFinalName(DownloadInterruptReason reason,
                                     const FilePath& full_path);
 
@@ -288,8 +285,10 @@ class CONTENT_EXPORT DownloadItemImpl
   // Cancel the DownloadFile if we have it.
   void CancelDownloadFile();
 
-  // Check if a download is ready for completion.
-  bool IsDownloadReadyForCompletion();
+  // Check if a download is ready for completion.  The callback provided
+  // may be called at some point in the future if an external entity
+  // state has change s.t. this routine should be checked again.
+  bool IsDownloadReadyForCompletion(const base::Closure& state_change_notify);
 
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadInternalState new_state);

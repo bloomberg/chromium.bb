@@ -37,10 +37,10 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
                target_path);
 }
 
-void DownloadItemImplDelegate::ReadyForDownloadCompletion(
+bool DownloadItemImplDelegate::ShouldCompleteDownload(
     DownloadItemImpl* download,
     const base::Closure& complete_callback) {
-  complete_callback.Run();
+  return true;
 }
 
 bool DownloadItemImplDelegate::ShouldOpenDownload(
