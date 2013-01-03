@@ -84,7 +84,13 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
    * the same state when returning to trusted code.
    */
 #if NACL_WINDOWS
-  ntcp->sys_fcw = _control87(0, 0);
+  {
+    uint16_t sys_fcw;
+    __asm {
+      fnstcw sys_fcw;
+    }
+    ntcp->sys_fcw = sys_fcw;
+  }
 #else
   __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
 #endif

@@ -49,6 +49,7 @@
             '../../win/nacl_signal_64.c',
             'nacl_switch_unwind_win.asm',
             'sel_addrspace_win_x86_64.c',
+            'fnstcw.S',
             'fxsaverstor.S',
           ] },
         ],
