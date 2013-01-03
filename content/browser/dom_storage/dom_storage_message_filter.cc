@@ -40,7 +40,9 @@ void DOMStorageMessageFilter::InitializeInSequence() {
 }
 
 void DOMStorageMessageFilter::UninitializeInSequence() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(michaeln): Restore this DCHECK once crbug/166470 and crbug/164403
+  // are resolved.
+  // DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   context_->RemoveEventObserver(this);
   host_.reset();
 }
