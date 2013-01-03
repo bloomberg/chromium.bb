@@ -32,6 +32,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
@@ -50,6 +51,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -850,10 +852,24 @@ bool DownloadsDragFunction::RunImpl() {
   scoped_ptr<extensions::api::downloads::Drag::Params> params(
       extensions::api::downloads::Drag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  error_ = download_extension_errors::kNotImplementedError;
-  if (error_.empty())
-    RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
-  return error_.empty();
+  DownloadItem* download_item = GetDownload(
+      profile(), include_incognito(), params->download_id);
+  content::WebContents* web_contents =
+      dispatcher()->delegate()->GetAssociatedWebContents();
+  if (!download_item || !web_contents) {
+    error_ = download_extension_errors::kInvalidOperationError;
+    return false;
+  }
+  RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
+  gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
+      download_item->GetUserVerifiedFilePath(), IconLoader::NORMAL);
+  gfx::NativeView view = web_contents->GetNativeView();
+  {
+    // Enable nested tasks during DnD, while |DragDownload()| blocks.
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    download_util::DragDownload(download_item, icon, view);
+  }
+  return true;
 }
 
 DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()

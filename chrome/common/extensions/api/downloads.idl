@@ -382,8 +382,8 @@ namespace downloads {
     // downloads.
     [nodoc] static void acceptDanger(long downloadId);
 
-    // Initiate dragging the file to another application.
-    [nodoc] static void drag(long downloadId);
+    // Initiate dragging the downloaded file to another application.
+    static void drag(long downloadId);
   };
 
   interface Events {
