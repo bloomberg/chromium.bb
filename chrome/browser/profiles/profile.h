@@ -21,7 +21,6 @@ class ChromeURLDataManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
-class GAIAInfoUpdateService;
 class HostContentSettingsMap;
 class PasswordStore;
 class PrefServiceSyncable;
@@ -204,9 +203,6 @@ class Profile : public content::BrowserContext {
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;
-
-  // Accessor. The instance is created upon first access.
-  virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() = 0;
 
   // Returns the ManagedModePolicyProvider for this profile, if it exists.
   virtual policy::ManagedModePolicyProvider* GetManagedModePolicyProvider() = 0;

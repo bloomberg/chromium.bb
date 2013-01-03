@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 
 class PrefServiceSyncable;
 class Profile;
@@ -19,7 +20,8 @@ class ProfileDownloader;
 
 // This service kicks off a download of the user's name and profile picture.
 // The results are saved in the profile info cache.
-class GAIAInfoUpdateService : public ProfileDownloaderDelegate {
+class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
+                              public ProfileKeyedService {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   virtual ~GAIAInfoUpdateService();
@@ -29,9 +31,6 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate {
 
   // Checks if downloading GAIA info for the given profile is allowed.
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
-
-  // Register prefs for a profile.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // ProfileDownloaderDelegate:
   virtual bool NeedsProfilePicture() const OVERRIDE;

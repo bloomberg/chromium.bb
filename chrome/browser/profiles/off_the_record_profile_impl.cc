@@ -229,10 +229,6 @@ ExtensionSpecialStoragePolicy*
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
 }
 
-GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
-  return NULL;
-}
-
 policy::ManagedModePolicyProvider*
     OffTheRecordProfileImpl::GetManagedModePolicyProvider() {
   return profile_->GetManagedModePolicyProvider();
