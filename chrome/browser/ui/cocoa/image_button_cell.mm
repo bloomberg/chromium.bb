@@ -121,6 +121,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   DCHECK_GE(state, 0);
   DCHECK_LT(state, image_button_cell::kButtonStateCount);
   image_[state].reset([image retain]);
+  [[self controlView] setNeedsDisplay:YES];
 }
 
 - (void)setOverlayImageID:(NSInteger)imageID {

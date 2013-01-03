@@ -77,4 +77,15 @@ TEST_F(ImageButtonCellTest, DisplayWithDisabled) {
   [view_ display];
 }
 
+TEST_F(ImageButtonCellTest, NewImageCausesDisplay) {
+  [[view_ cell] setImageID:IDR_STOP
+            forButtonState:image_button_cell::kDefaultState];
+  [view_ display];
+  EXPECT_FALSE([view_ needsDisplay]);
+
+  [[view_ cell] setImageID:IDR_RELOAD
+            forButtonState:image_button_cell::kDefaultState];
+  EXPECT_TRUE([view_ needsDisplay]);
+}
+
 } // namespace
