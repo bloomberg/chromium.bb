@@ -289,8 +289,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         policy_connector->GetDeviceCloudPolicyManager();
     if (policy_manager)
       policy_manager->core()->store()->AddObserver(this);
-    enterprise_domain_ =
-        policy_connector->GetEnterpriseDomain();
+    UpdateEnterpriseDomain();
   }
 
   virtual ~SystemTrayDelegate() {

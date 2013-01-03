@@ -70,7 +70,8 @@ views::View* EnterpriseDefaultView::CreateChildView(
 }
 
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_ENTERPRISE_LIGHT) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_ENTERPRISE_LIGHT),
+      default_view_(NULL) {
   Shell::GetInstance()->system_tray_notifier()->
       AddEnterpriseDomainObserver(this);
 }
