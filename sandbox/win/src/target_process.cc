@@ -198,7 +198,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   }
 
   base_address_ = GetBaseAddress(exe_path, entry_point);
-  sandbox_process_info_.Swap(&process_info);
+  sandbox_process_info_.Set(process_info.Take());
   return win_result;
 }
 
@@ -324,10 +324,11 @@ void TargetProcess::Terminate() {
   ::TerminateProcess(sandbox_process_info_.process_handle(), 0);
 }
 
-
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
   TargetProcess* target = new TargetProcess(NULL, NULL, NULL, NULL);
-  target->sandbox_process_info_.Receive()->hProcess = process;
+  PROCESS_INFORMATION process_info = {};
+  process_info.hProcess = process;
+  target->sandbox_process_info_.Set(process_info);
   target->base_address_ = base_address;
   return target;
 }

@@ -12,15 +12,6 @@ namespace win {
 
 namespace {
 
-// Closes the provided handle if it is not NULL.
-void CheckAndCloseHandle(HANDLE handle) {
-  if (!handle)
-    return;
-  if (::CloseHandle(handle))
-    return;
-  CHECK(false);
-}
-
 // Duplicates source into target, returning true upon success. |target| is
 // guaranteed to be untouched in case of failure. Succeeds with no side-effects
 // if source is NULL.
@@ -42,35 +33,38 @@ bool CheckAndDuplicateHandle(HANDLE source, HANDLE* target) {
 }  // namespace
 
 ScopedProcessInformation::ScopedProcessInformation()
-    : process_information_() {
+    : process_id_(0), thread_id_(0) {
 }
 
 ScopedProcessInformation::~ScopedProcessInformation() {
   Close();
 }
 
-PROCESS_INFORMATION* ScopedProcessInformation::Receive() {
+ScopedProcessInformation::Receiver ScopedProcessInformation::Receive() {
   DCHECK(!IsValid()) << "process_information_ must be NULL";
-  return &process_information_;
+  return Receiver(this);
 }
 
 bool ScopedProcessInformation::IsValid() const {
-  return process_information_.hThread || process_information_.hProcess ||
-    process_information_.dwProcessId || process_information_.dwThreadId;
+  return process_id_ || process_handle_.Get() ||
+         thread_id_ || thread_handle_.Get();
 }
-
 
 void ScopedProcessInformation::Close() {
-  CheckAndCloseHandle(process_information_.hThread);
-  CheckAndCloseHandle(process_information_.hProcess);
-  Reset();
+  process_handle_.Close();
+  thread_handle_.Close();
+  process_id_ = 0;
+  thread_id_ = 0;
 }
 
-void ScopedProcessInformation::Swap(ScopedProcessInformation* other) {
-  DCHECK(other);
-  PROCESS_INFORMATION temp = other->process_information_;
-  other->process_information_ = process_information_;
-  process_information_ = temp;
+void ScopedProcessInformation::Set(const PROCESS_INFORMATION& process_info) {
+  if (IsValid())
+    Close();
+
+  process_handle_.Set(process_info.hProcess);
+  thread_handle_.Set(process_info.hThread);
+  process_id_ = process_info.dwProcessId;
+  thread_id_ = process_info.dwThreadId;
 }
 
 bool ScopedProcessInformation::DuplicateFrom(
@@ -78,17 +72,12 @@ bool ScopedProcessInformation::DuplicateFrom(
   DCHECK(!IsValid()) << "target ScopedProcessInformation must be NULL";
   DCHECK(other.IsValid()) << "source ScopedProcessInformation must be valid";
 
-  ScopedHandle duplicate_process;
-  ScopedHandle duplicate_thread;
-
   if (CheckAndDuplicateHandle(other.process_handle(),
-                              duplicate_process.Receive()) &&
+                              process_handle_.Receive()) &&
       CheckAndDuplicateHandle(other.thread_handle(),
-                              duplicate_thread.Receive())) {
-    process_information_.dwProcessId = other.process_id();
-    process_information_.dwThreadId = other.thread_id();
-    process_information_.hProcess = duplicate_process.Take();
-    process_information_.hThread = duplicate_thread.Take();
+                              thread_handle_.Receive())) {
+    process_id_ = other.process_id();
+    thread_id_ = other.thread_id();
     return true;
   }
 
@@ -96,30 +85,25 @@ bool ScopedProcessInformation::DuplicateFrom(
 }
 
 PROCESS_INFORMATION ScopedProcessInformation::Take() {
-  PROCESS_INFORMATION process_information = process_information_;
-  Reset();
+  PROCESS_INFORMATION process_information = {};
+  process_information.hProcess = process_handle_.Take();
+  process_information.hThread = thread_handle_.Take();
+  process_information.dwProcessId = process_id();
+  process_information.dwThreadId = thread_id();
+  process_id_ = 0;
+  thread_id_ = 0;
+
   return process_information;
 }
 
 HANDLE ScopedProcessInformation::TakeProcessHandle() {
-  HANDLE process = process_information_.hProcess;
-  process_information_.hProcess = NULL;
-  process_information_.dwProcessId = 0;
-  return process;
+  process_id_ = 0;
+  return process_handle_.Take();
 }
 
 HANDLE ScopedProcessInformation::TakeThreadHandle() {
-  HANDLE thread = process_information_.hThread;
-  process_information_.hThread = NULL;
-  process_information_.dwThreadId = 0;
-  return thread;
-}
-
-void ScopedProcessInformation::Reset() {
-  process_information_.hThread = NULL;
-  process_information_.hProcess = NULL;
-  process_information_.dwProcessId = 0;
-  process_information_.dwThreadId = 0;
+  thread_id_ = 0;
+  return thread_handle_.Take();
 }
 
 }  // namespace win
