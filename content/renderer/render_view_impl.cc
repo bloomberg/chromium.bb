@@ -3408,9 +3408,7 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     document_state->set_commit_load_time(Time::Now());
 
   if (document_state->must_reset_scroll_and_scale_state()) {
-#if defined(OS_ANDROID) // crbug.com/153907
     webview()->resetScrollAndScaleState();
-#endif
     document_state->set_must_reset_scroll_and_scale_state(false);
   }
 
