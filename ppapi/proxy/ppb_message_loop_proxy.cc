@@ -45,14 +45,12 @@ MessageLoopResource::MessageLoopResource(ForMainThread for_main_thread)
 
   // This must be called only once, so the slot must be empty.
   CHECK(!PluginGlobals::Get()->msg_loop_slot());
-  base::ThreadLocalStorage::Slot* slot =
-      new base::ThreadLocalStorage::Slot(&ReleaseMessageLoop);
+  // We don't add a reference for TLS here, so we don't release it. Instead,
+  // this loop is owned by PluginGlobals. Contrast with AttachToCurrentThread
+  // where we register ReleaseMessageLoop with TLS and call AddRef.
+  base::ThreadLocalStorage::Slot* slot = new base::ThreadLocalStorage::Slot();
   PluginGlobals::Get()->set_msg_loop_slot(slot);
 
-  // Take a ref to the MessageLoop on behalf of the TLS. Note that this is an
-  // internal ref and not a plugin ref so the plugin can't accidentally
-  // release it. This is released by ReleaseMessageLoop().
-  AddRef();
   slot->Set(this);
 
   loop_proxy_ = base::MessageLoopProxy::current();
