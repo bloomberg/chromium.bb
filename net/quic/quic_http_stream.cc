@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_http_stream.h"
 
+#include "base/callback_helpers.h"
 #include "base/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -25,6 +26,7 @@ QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
       request_info_(NULL),
       request_body_stream_(NULL),
       response_info_(NULL),
+      response_status_(OK),
       response_headers_received_(false),
       read_buf_(new GrowableIOBuffer()),
       user_buffer_len_(0),
@@ -98,10 +100,13 @@ UploadProgress QuicHttpStream::GetUploadProgress() const {
 
 int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   CHECK(!callback.is_null());
+
+  if (stream_ == NULL)
+    return response_status_;
+
   // Check if we already have the response headers. If so, return synchronously.
-  if (response_headers_received_) {
+  if (response_headers_received_)
     return OK;
-  }
 
   // Still waiting for the response, return IO_PENDING.
   CHECK(callback_.is_null());
@@ -144,7 +149,7 @@ int QuicHttpStream::ReadResponseBody(
 
   if (!stream_) {
     // If the stream is already closed, there is no body to read.
-    return 0;
+    return response_status_;
   }
 
   CHECK(callback_.is_null());
@@ -263,12 +268,22 @@ int QuicHttpStream::OnDataReceived(const char* data, int length) {
 }
 
 void QuicHttpStream::OnClose(QuicErrorCode error) {
-  // TOOD(rch): find better errors.
-  int status = error == QUIC_NO_ERROR && response_headers_received_ ?
-      OK : ERR_ABORTED;
+  if (error != QUIC_NO_ERROR) {
+    response_status_ = ERR_QUIC_PROTOCOL_ERROR;
+  } else if (!response_headers_received_) {
+    response_status_ = ERR_ABORTED;
+  }
+
   stream_ = NULL;
   if (!callback_.is_null())
-    DoCallback(status);
+    DoCallback(response_status_);
+}
+
+void QuicHttpStream::OnError(int error) {
+  stream_ = NULL;
+  response_status_ = error;
+  if (!callback_.is_null())
+    DoCallback(response_status_);
 }
 
 void QuicHttpStream::OnIOComplete(int rv) {
@@ -285,9 +300,7 @@ void QuicHttpStream::DoCallback(int rv) {
 
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
-  CompletionCallback c = callback_;
-  callback_.Reset();
-  c.Run(rv);
+  base::ResetAndReturn(&callback_).Run(rv);
 }
 
 int QuicHttpStream::DoLoop(int rv) {

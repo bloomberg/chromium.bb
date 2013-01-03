@@ -90,6 +90,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory {
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
 
+  // Closes all current sessions.
+  void CloseAllSessions(int error);
+
  private:
   class Job;
 

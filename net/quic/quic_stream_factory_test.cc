@@ -227,5 +227,67 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
+TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
+  scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 1));
+  scoped_ptr<QuicEncryptedPacket> rst3(ConstructRstPacket(3, 3));
+  MockWrite writes[] = {
+    MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+  };
+  scoped_ptr<QuicEncryptedPacket> shlo(ConstructShlo());
+  scoped_ptr<QuicEncryptedPacket> ack2(ConstructAckPacket(2, 0));
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, shlo->data(), shlo->length()),
+    MockRead(SYNCHRONOUS, ack2->data(), ack2->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+  StaticSocketDataProvider socket_data(reads, arraysize(reads),
+                                       writes, arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  MockWrite writes2[] = {
+    MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+    MockWrite(SYNCHRONOUS, rst3->data(), rst3->length()),
+  };
+  MockRead reads2[] = {
+    MockRead(SYNCHRONOUS, shlo->data(), shlo->length()),
+    MockRead(SYNCHRONOUS, ack2->data(), ack2->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+  StaticSocketDataProvider socket_data2(reads2, arraysize(reads2),
+                                        writes2, arraysize(writes2));
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+
+  // Close the session and verify that stream saw the error.
+  factory_.CloseAllSessions(ERR_INTERNET_DISCONNECTED);
+  EXPECT_EQ(ERR_INTERNET_DISCONNECTED,
+            stream->ReadResponseHeaders(callback_.callback()));
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, net_log_,
+                                             callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  stream.reset();  // Will reset stream 3.
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
 }  // namespace test
 }  // namespace net

@@ -16,17 +16,16 @@ QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
 }
 
 QuicReliableClientStream::~QuicReliableClientStream() {
-  if (delegate_) {
+  if (delegate_)
     delegate_->OnClose(error());
-  }
 }
 
 uint32 QuicReliableClientStream::ProcessData(const char* data,
                                              uint32 data_len) {
   // TODO(rch): buffer data if we don't have a delegate.
-  if (!delegate_) {
+  if (!delegate_)
     return ERR_ABORTED;
-  }
+
   int rv = delegate_->OnDataReceived(data, data_len);
   if (rv != OK) {
     DLOG(ERROR) << "Delegate refused data, rv: " << rv;
@@ -48,6 +47,14 @@ void QuicReliableClientStream::SetDelegate(
     QuicReliableClientStream::Delegate* delegate) {
   DCHECK((!delegate_ && delegate) || (delegate_ && !delegate));
   delegate_ = delegate;
+}
+
+void QuicReliableClientStream::OnError(int error) {
+  if (delegate_) {
+    QuicReliableClientStream::Delegate* delegate = delegate_;
+    delegate_ = NULL;
+    delegate->OnError(error);
+  }
 }
 
 }  // namespace net

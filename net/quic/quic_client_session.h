@@ -45,6 +45,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // and passing the data along to the QuicConnection.
   void StartReading();
 
+  // Close the session because of |error|.
+  void CloseSessionOnError(int error);
+
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(

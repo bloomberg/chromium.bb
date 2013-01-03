@@ -25,6 +25,7 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
   MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD1(OnClose, void(QuicErrorCode));
+  MOCK_METHOD1(OnError, void(int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -66,6 +67,13 @@ TEST_F(QuicReliableClientStreamTest, ProcessDataWithError) {
 
 
   EXPECT_EQ(0u, stream_.ProcessData(data, arraysize(data)));
+}
+
+TEST_F(QuicReliableClientStreamTest, OnError) {
+  EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED));
+
+  stream_.OnError(ERR_INTERNET_DISCONNECTED);
+  EXPECT_FALSE(stream_.GetDelegate());
 }
 
 }  // namespace

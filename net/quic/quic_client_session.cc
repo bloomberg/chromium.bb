@@ -103,6 +103,16 @@ void QuicClientSession::StartReading() {
                  weak_factory_.GetWeakPtr(), rv));
 }
 
+void QuicClientSession::CloseSessionOnError(int error) {
+  while (!streams()->empty()) {
+    ReliableQuicStream* stream = streams()->begin()->second;
+    QuicStreamId id = stream->id();
+    static_cast<QuicReliableClientStream*>(stream)->OnError(error);
+    CloseStream(id);
+  }
+  stream_factory_->OnSessionClose(this);
+}
+
 void QuicClientSession::OnReadComplete(int result) {
   read_pending_ = false;
   // TODO(rch): Inform the connection about the result.

@@ -524,6 +524,9 @@ NET_ERROR(CONTENT_LENGTH_MISMATCH, -354)
 // terminating zero-length chunk was never sent when the connection is closed.
 NET_ERROR(INCOMPLETE_CHUNKED_ENCODING, -355)
 
+// There is a QUIC protocol error.
+NET_ERROR(QUIC_PROTOCOL_ERROR, -356)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

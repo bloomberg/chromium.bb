@@ -183,6 +183,7 @@ void HttpNetworkSession::CloseAllConnections() {
   normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   spdy_session_pool_.CloseCurrentSessions(ERR_ABORTED);
+  quic_stream_factory_.CloseAllSessions(ERR_ABORTED);
 }
 
 void HttpNetworkSession::CloseIdleConnections() {

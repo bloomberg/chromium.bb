@@ -315,6 +315,7 @@ void QuicStreamFactory::OnSessionClose(QuicClientSession* session) {
     active_sessions_.erase(*it);
   }
   all_sessions_.erase(session);
+  session_aliases_.erase(session);
   delete session;
 }
 
@@ -323,6 +324,13 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   Job* job = active_requests_[request];
   job_requests_map_[job].erase(request);
   active_requests_.erase(request);
+}
+
+void QuicStreamFactory::CloseAllSessions(int error) {
+  while (!active_sessions_.empty()) {
+    active_sessions_.begin()->second->CloseSessionOnError(error);
+  }
+  DCHECK(all_sessions_.empty());
 }
 
 bool QuicStreamFactory::HasActiveSession(

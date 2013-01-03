@@ -45,6 +45,9 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
     // Called when the stream is closed by the peer.
     virtual void OnClose(QuicErrorCode error) = 0;
 
+    // Called when the stream is closed because of an error.
+    virtual void OnError(int error) = 0;
+
    protected:
     virtual ~Delegate() {}
 
@@ -67,6 +70,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
   // called on the delegate.
   void SetDelegate(Delegate* delegate);
   Delegate* GetDelegate() { return delegate_; }
+  void OnError(int error);
 
  private:
   Delegate* delegate_;

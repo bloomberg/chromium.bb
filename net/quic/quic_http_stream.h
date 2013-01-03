@@ -58,6 +58,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   virtual int OnSendDataComplete(int status, bool* eof) OVERRIDE;
   virtual int OnDataReceived(const char* data, int length) OVERRIDE;
   virtual void OnClose(QuicErrorCode error) OVERRIDE;
+  virtual void OnError(int error) OVERRIDE;
 
  private:
   enum State {
@@ -102,6 +103,11 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   // |response_info_| is the HTTP response data object which is filled in
   // when a the response headers are read.  It is not owned by this stream.
   HttpResponseInfo* response_info_;
+  // Because response data is buffered, also buffer the response status if the
+  // stream is explicitly closed via OnError or OnClose with an error.
+  // Once all buffered data has been returned, this will be used as the final
+  // response.
+  int response_status_;
 
   bool response_headers_received_;
 
