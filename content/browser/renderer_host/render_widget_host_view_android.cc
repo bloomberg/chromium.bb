@@ -28,6 +28,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/size_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
@@ -130,11 +131,23 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 }
 
 WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
-    const gfx::Size& size) {
+    float scale,
+    gfx::Size* out_size) {
+  gfx::Size size(gfx::ToCeiledSize(
+      gfx::ScaleSize(texture_size_in_layer_, scale)));
+
   if (!CompositorImpl::IsInitialized() ||
       texture_id_in_layer_ == 0 ||
-      texture_size_in_layer_.IsEmpty())
+      texture_size_in_layer_.IsEmpty() ||
+      size.IsEmpty()) {
+    if (out_size)
+        out_size->SetSize(0, 0);
+
     return 0;
+  }
+
+  if (out_size)
+    *out_size = size;
 
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
   return helper->CopyAndScaleTexture(texture_id_in_layer_,

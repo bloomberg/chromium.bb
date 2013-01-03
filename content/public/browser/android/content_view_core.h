@@ -44,7 +44,9 @@ class ContentViewCore {
   virtual void OnWebPreferencesUpdated() = 0;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
-  virtual unsigned int GetScaledContentTexture(const gfx::Size& size) = 0;
+  virtual unsigned int GetScaledContentTexture(
+      float scale,
+      gfx::Size* out_size) = 0;
 
  protected:
   virtual ~ContentViewCore() {};

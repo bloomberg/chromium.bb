@@ -558,12 +558,13 @@ void ContentViewCoreImpl::ShowPastePopup(int x, int y) {
 }
 
 unsigned int ContentViewCoreImpl::GetScaledContentTexture(
-    const gfx::Size& size) {
+    float scale,
+    gfx::Size* out_size) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view)
     return 0;
 
-  return view->GetScaledContentTexture(size);
+  return view->GetScaledContentTexture(scale, out_size);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {

@@ -54,7 +54,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
-  virtual unsigned int GetScaledContentTexture(const gfx::Size& size) OVERRIDE;
+  virtual unsigned int GetScaledContentTexture(
+      float scale,
+      gfx::Size* out_size) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
