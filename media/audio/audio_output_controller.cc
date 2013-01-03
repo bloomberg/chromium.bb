@@ -119,7 +119,8 @@ void AudioOutputController::DoCreate() {
     return;
   DCHECK(state_ == kEmpty || state_ == kRecreating) << state_;
 
-  DoStopCloseAndClearStream(NULL);
+  DoStopCloseAndClearStream(NULL);  // Calls RemoveOutputDeviceChangeListener().
+
   stream_ = audio_manager_->MakeAudioOutputStreamProxy(params_);
   if (!stream_) {
     state_ = kError;
@@ -140,8 +141,7 @@ void AudioOutputController::DoCreate() {
 
   // Everything started okay, so register for state change callbacks if we have
   // not already done so.
-  if (state_ != kRecreating)
-    audio_manager_->AddOutputDeviceChangeListener(this);
+  audio_manager_->AddOutputDeviceChangeListener(this);
 
   // We have successfully opened the stream. Set the initial volume.
   stream_->SetVolume(volume_);
@@ -177,6 +177,7 @@ void AudioOutputController::DoPlay() {
   // TODO(vrk): The polling here and in WaitTillDataReady() is pretty clunky.
   // Refine the API such that polling is no longer needed. (crbug.com/112196)
   number_polling_attempts_left_ = kPollNumAttempts;
+  DCHECK(!weak_this_.HasWeakPtrs());
   message_loop_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AudioOutputController::PollAndStartIfDataReady,
@@ -348,12 +349,11 @@ void AudioOutputController::DoStopCloseAndClearStream(WaitableEvent* done) {
 
   // Allow calling unconditionally and bail if we don't have a stream_ to close.
   if (stream_) {
+    audio_manager_->RemoveOutputDeviceChangeListener(this);
+
     stream_->Stop();
     stream_->Close();
     stream_ = NULL;
-
-    audio_manager_->RemoveOutputDeviceChangeListener(this);
-    audio_manager_ = NULL;
 
     weak_this_.InvalidateWeakPtrs();
   }
@@ -369,13 +369,9 @@ void AudioOutputController::OnDeviceChange() {
   // We should always have a stream by this point.
   CHECK(stream_);
 
-  // Preserve the original state and shutdown the stream.
-  State original_state = state_;
-  stream_->Stop();
-  stream_->Close();
-  stream_ = NULL;
-
-  // Recreate the stream, exit if we ran into an error.
+  // Recreate the stream (DoCreate() will first shut down an existing stream).
+  // Exit if we ran into an error.
+  const State original_state = state_;
   state_ = kRecreating;
   DoCreate();
   if (!stream_ || state_ == kError)

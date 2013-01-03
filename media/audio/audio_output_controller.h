@@ -196,10 +196,13 @@ class MEDIA_EXPORT AudioOutputController
   // Signals event when done if it is not NULL.
   void DoStopCloseAndClearStream(base::WaitableEvent *done);
 
-  AudioManager* audio_manager_;
+  AudioManager* const audio_manager_;
 
   // |handler_| may be called only if |state_| is not kClosed.
   EventHandler* handler_;
+
+  // Note: It's important to invalidate the weak pointers whenever stream_ is
+  // changed.  See comment for weak_this_.
   AudioOutputStream* stream_;
 
   // The current volume of the audio stream.
@@ -226,10 +229,8 @@ class MEDIA_EXPORT AudioOutputController
 
   AudioParameters params_;
 
-  // Used to post delayed tasks to ourselves that we can cancel.
-  // We don't want the tasks to hold onto a reference as it will slow down
-  // shutdown and force it to wait for the most delayed task.
-  // Also, if we're shutting down, we do not want to poll for more data.
+  // Used to auto-cancel the delayed tasks that are created to poll for data
+  // (when starting-up a stream).
   base::WeakPtrFactory<AudioOutputController> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
