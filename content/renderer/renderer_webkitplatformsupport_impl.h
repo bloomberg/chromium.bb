@@ -34,61 +34,61 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
     plugin_refresh_allowed_ = plugin_refresh_allowed;
   }
   // WebKitPlatformSupport methods:
-  virtual WebKit::WebClipboard* clipboard() OVERRIDE;
-  virtual WebKit::WebMimeRegistry* mimeRegistry() OVERRIDE;
-  virtual WebKit::WebFileUtilities* fileUtilities() OVERRIDE;
-  virtual WebKit::WebSandboxSupport* sandboxSupport() OVERRIDE;
-  virtual WebKit::WebCookieJar* cookieJar() OVERRIDE;
-  virtual bool sandboxEnabled() OVERRIDE;
+  virtual WebKit::WebClipboard* clipboard();
+  virtual WebKit::WebMimeRegistry* mimeRegistry();
+  virtual WebKit::WebFileUtilities* fileUtilities();
+  virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual WebKit::WebCookieJar* cookieJar();
+  virtual bool sandboxEnabled();
   virtual unsigned long long visitedLinkHash(
-      const char* canonicalURL, size_t length) OVERRIDE;
-  virtual bool isLinkVisited(unsigned long long linkHash) OVERRIDE;
-  virtual WebKit::WebMessagePortChannel* createMessagePortChannel() OVERRIDE;
-  virtual void prefetchHostName(const WebKit::WebString&) OVERRIDE;
+      const char* canonicalURL, size_t length);
+  virtual bool isLinkVisited(unsigned long long linkHash);
+  virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
+  virtual void prefetchHostName(const WebKit::WebString&);
   virtual void cacheMetadata(
-      const WebKit::WebURL&, double, const char*, size_t) OVERRIDE;
-  virtual WebKit::WebString defaultLocale() OVERRIDE;
-  virtual void suddenTerminationChanged(bool enabled) OVERRIDE;
+      const WebKit::WebURL&, double, const char*, size_t);
+  virtual WebKit::WebString defaultLocale();
+  virtual void suddenTerminationChanged(bool enabled);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota) OVERRIDE;
+      const WebKit::WebString& path, unsigned quota);
   virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags) OVERRIDE;
+      const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
-                                 bool sync_dir) OVERRIDE;
+                                 bool sync_dir);
   virtual long databaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name) OVERRIDE;
+      const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
-      const WebKit::WebString& vfs_file_name) OVERRIDE;
+      const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetSpaceAvailableForOrigin(
-      const WebKit::WebString& origin_identifier) OVERRIDE;
+      const WebKit::WebString& origin_identifier);
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const WebKit::WebString& challenge,
-      const WebKit::WebURL& url) OVERRIDE;
-  virtual void screenColorProfile(WebKit::WebVector<char>* to_profile) OVERRIDE;
-  virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
-  virtual WebKit::WebFileSystem* fileSystem() OVERRIDE;
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
+      const WebKit::WebURL& url);
+  virtual void screenColorProfile(WebKit::WebVector<char>* to_profile);
+  virtual WebKit::WebIDBFactory* idbFactory();
+  virtual WebKit::WebFileSystem* fileSystem();
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual bool canAccelerate2dCanvas();
-  virtual double audioHardwareSampleRate() OVERRIDE;
-  virtual size_t audioHardwareBufferSize() OVERRIDE;
+  virtual double audioHardwareSampleRate();
+  virtual size_t audioHardwareBufferSize();
   virtual WebKit::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned channels, double sample_rate,
-      WebKit::WebAudioDevice::RenderCallback* callback) OVERRIDE;
-  virtual WebKit::WebBlobRegistry* blobRegistry() OVERRIDE;
-  virtual void sampleGamepads(WebKit::WebGamepads&) OVERRIDE;
-  virtual WebKit::WebString userAgent(const WebKit::WebURL& url) OVERRIDE;
+      WebKit::WebAudioDevice::RenderCallback* callback);
+  virtual WebKit::WebBlobRegistry* blobRegistry();
+  virtual void sampleGamepads(WebKit::WebGamepads&);
+  virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
   virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
-      WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
+      WebKit::WebRTCPeerConnectionHandlerClient* client);
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
-      WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
-  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
+      WebKit::WebMediaStreamCenterClient* client);
+  virtual bool canHyphenate(const WebKit::WebString& locale);
   virtual size_t computeLastHyphenLocation(const char16* characters,
       size_t length,
       size_t before_index,
-      const WebKit::WebString& locale) OVERRIDE;
+      const WebKit::WebString& locale);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
