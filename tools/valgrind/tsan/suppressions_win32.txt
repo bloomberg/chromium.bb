@@ -153,37 +153,6 @@
   fun:BaseThreadInitThunk
 }
 {
-  bug_110514_a
-  ThreadSanitizer:Race
-  fun:memset
-  fun:_malloc_dbg
-  ...
-  fun:??2@YAPAXIABU_DebugHeapTag_t@std@@PADH@Z
-  fun:??0?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAE@XZ
-}
-{
-  bug_110514_b
-  ThreadSanitizer:Race
-  fun:memset
-  fun:_malloc_dbg
-  ...
-  fun:??2@YAPAXIABU_DebugHeapTag_t@std@@PADH@Z
-  fun:?_Init@ios_base@std@@IAEXXZ
-}
-{
-  bug_110514_c
-  ThreadSanitizer:Race
-  fun:memset
-  fun:_free_dbg
-  ...
-  fun:??3@YAXPAX@Z
-  fun:??_V@YAXPAX@Z
-  fun:scoped_array::reset
-  fun:media::DataBuffer::DataBuffer
-  ...
-  fun:media::FFmpegAudioDecoder::DoDecodeBuffer
-}
-{
   bug_144928_a
   ThreadSanitizer:Race
   fun:google_breakpad::CrashGenerationServer::Handle*
