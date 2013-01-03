@@ -131,10 +131,10 @@ void AudioPipeReader::DoCapture() {
   while (pos < data.size()) {
     int read_result = HANDLE_EINTR(
        read(pipe_fd_, string_as_array(&data) + pos, data.size() - pos));
-    if (read_result >= 0) {
+    if (read_result > 0) {
       pos += read_result;
     } else {
-      if (errno != EWOULDBLOCK && errno != EAGAIN)
+      if (read_result < 0 && errno != EWOULDBLOCK && errno != EAGAIN)
         PLOG(ERROR) << "read";
       break;
     }
