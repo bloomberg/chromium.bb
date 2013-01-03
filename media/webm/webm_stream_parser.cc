@@ -364,9 +364,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     audio_config.CopyFrom(config_helper.audio_config());
   }
 
-  // TODO(xhwang): Support decryption of audio (see http://crbug.com/123421).
   bool is_video_encrypted = !tracks_parser.video_encryption_key_id().empty();
-
   VideoDecoderConfig video_config;
   if (is_video_encrypted) {
     const VideoDecoderConfig& original_video_config =
