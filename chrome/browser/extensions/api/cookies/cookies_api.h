@@ -13,10 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -192,7 +192,7 @@ class GetAllCookieStoresFunction : public CookiesFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CookiesAPI : public ProfileKeyedService,
+class CookiesAPI : public ProfileKeyedAPI,
                    public extensions::EventRouter::Observer {
  public:
   explicit CookiesAPI(Profile* profile);
@@ -206,11 +206,25 @@ class CookiesAPI : public ProfileKeyedService,
       OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<CookiesAPI>;
+
   Profile* profile_;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "CookiesAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<CookiesEventRouter> cookies_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookiesAPI);
 };
+
+template <>
+ProfileKeyedAPIFactory<CookiesAPI>*
+ProfileKeyedAPIFactory<CookiesAPI>::GetInstance();
 
 }  // namespace extensions
 

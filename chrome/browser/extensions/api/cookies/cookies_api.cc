@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -559,6 +560,15 @@ void CookiesAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   cookies_event_router_.reset(new CookiesEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<CookiesAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+template <>
+ProfileKeyedAPIFactory<CookiesAPI>*
+ProfileKeyedAPIFactory<CookiesAPI>::GetInstance() {
+  return &g_factory.Get();
 }
 
 }  // namespace extensions

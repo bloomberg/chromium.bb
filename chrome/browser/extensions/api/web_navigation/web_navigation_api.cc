@@ -768,4 +768,13 @@ void WebNavigationAPI::OnListenerAdded(
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<WebNavigationAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+template <>
+ProfileKeyedAPIFactory<WebNavigationAPI>*
+ProfileKeyedAPIFactory<WebNavigationAPI>::GetInstance() {
+  return &g_factory.Get();
+}
+
 }  // namespace extensions

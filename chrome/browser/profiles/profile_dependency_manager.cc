@@ -17,13 +17,13 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_factory.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
-#include "chrome/browser/extensions/api/cookies/cookies_api_factory.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
 #include "chrome/browser/extensions/api/history/history_api_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
-#include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
+#include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
@@ -33,7 +33,7 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
-#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_factory.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -247,7 +247,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::BookmarkAPIFactory::GetInstance();
   extensions::BluetoothAPIFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
-  extensions::CookiesAPIFactory::GetInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::FontSettingsAPIFactory::GetInstance();
@@ -257,16 +256,18 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::InputImeAPIFactory::GetInstance();
   extensions::InputMethodAPIFactory::GetInstance();
 #endif
-  extensions::ManagedModeAPIFactory::GetInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
   extensions::OmniboxAPIFactory::GetInstance();
   extensions::PreferenceAPIFactory::GetInstance();
+  extensions::ProfileKeyedAPIFactory<extensions::CookiesAPI>::GetInstance();
+  extensions::ProfileKeyedAPIFactory<extensions::ManagedModeAPI>::GetInstance();
   extensions::ProfileKeyedAPIFactory<extensions::ProcessesAPI>::GetInstance();
   extensions::ProfileKeyedAPIFactory<extensions::TabsWindowsAPI>::GetInstance();
+  extensions::ProfileKeyedAPIFactory
+      <extensions::WebNavigationAPI>::GetInstance();
   extensions::PushMessagingAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
-  extensions::WebNavigationAPIFactory::GetInstance();
   ExtensionManagementAPIFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();

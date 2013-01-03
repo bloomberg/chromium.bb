@@ -9,9 +9,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
@@ -81,8 +81,8 @@ class SetPolicyFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ManagedModeAPI : public ProfileKeyedService,
-                   public extensions::EventRouter::Observer {
+class ManagedModeAPI : public ProfileKeyedAPI,
+                       public extensions::EventRouter::Observer {
  public:
   explicit ManagedModeAPI(Profile* profile);
   virtual ~ManagedModeAPI();
@@ -95,11 +95,25 @@ class ManagedModeAPI : public ProfileKeyedService,
       OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<ManagedModeAPI>;
+
   Profile* profile_;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "ManagedModeAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<ManagedModeEventRouter> managed_mode_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagedModeAPI);
 };
+
+template <>
+ProfileKeyedAPIFactory<ManagedModeAPI>*
+ProfileKeyedAPIFactory<ManagedModeAPI>::GetInstance();
 
 }  // namespace extensions
 

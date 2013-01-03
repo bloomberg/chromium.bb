@@ -12,11 +12,11 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
@@ -213,8 +213,8 @@ class GetAllFramesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getAllFrames")
 };
 
-class WebNavigationAPI : public ProfileKeyedService,
-                   public extensions::EventRouter::Observer {
+class WebNavigationAPI : public ProfileKeyedAPI,
+                         public extensions::EventRouter::Observer {
  public:
   explicit WebNavigationAPI(Profile* profile);
   virtual ~WebNavigationAPI();
@@ -227,11 +227,25 @@ class WebNavigationAPI : public ProfileKeyedService,
       OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<WebNavigationAPI>;
+
   Profile* profile_;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "WebNavigationAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<WebNavigationEventRouter> web_navigation_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNavigationAPI);
 };
+
+template <>
+ProfileKeyedAPIFactory<WebNavigationAPI>*
+ProfileKeyedAPIFactory<WebNavigationAPI>::GetInstance();
 
 }  // namespace extensions
 

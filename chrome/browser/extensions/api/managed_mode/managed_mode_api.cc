@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -140,6 +141,15 @@ void ManagedModeAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   managed_mode_event_router_.reset(new ManagedModeEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<ManagedModeAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+template <>
+ProfileKeyedAPIFactory<ManagedModeAPI>*
+ProfileKeyedAPIFactory<ManagedModeAPI>::GetInstance() {
+  return &g_factory.Get();
 }
 
 }  // namespace extensions
