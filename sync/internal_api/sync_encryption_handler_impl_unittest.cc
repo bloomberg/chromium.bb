@@ -1311,7 +1311,6 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   sync_pb::EncryptedData encrypted;
   KeyParams old_key = {"localhost", "dummy", kOldKey};
   KeyParams cur_key = {"localhost", "dummy", kCurKey};
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
   GetCryptographer()->AddKey(old_key);
   GetCryptographer()->AddKey(cur_key);
 
@@ -1874,7 +1873,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
   sync_pb::EncryptedData encrypted;
   KeyParams old_key = {"localhost", "dummy", kOldKey};
   KeyParams cur_key = {"localhost", "dummy", kCurKey};
-  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
   GetCryptographer()->AddKey(old_key);
   GetCryptographer()->AddKey(cur_key);
 

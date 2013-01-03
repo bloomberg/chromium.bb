@@ -155,8 +155,6 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   std::string AddRow(const TestUrlInfo& test_row) {
-    AutocompleteActionPredictor::DBCacheKey key = { test_row.user_text,
-                                                    test_row.url };
     AutocompleteActionPredictorTable::Row row =
         CreateRowFromTestUrlInfo(test_row);
     predictor_->AddAndUpdateRows(

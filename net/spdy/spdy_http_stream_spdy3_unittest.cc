@@ -528,8 +528,8 @@ void GetECServerBoundCertAndProof(
 
 // Constructs a standard SPDY SYN_STREAM frame for a GET request with
 // a credential set.
-SpdyFrame* ConstructCredentialRequestFrame(int slot, const GURL& url,
-                                           int stream_id) {
+SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
+                                           SpdyStreamId stream_id) {
   const SpdyHeaderInfo syn_headers = {
     SYN_STREAM,
     stream_id,

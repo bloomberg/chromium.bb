@@ -377,8 +377,8 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
 
   const struct TestCase {
     const char* name;
-    int num_cookies;
-    int num_old_cookies;
+    size_t num_cookies;
+    size_t num_old_cookies;
   } test_cases[] = {
     {
       // A whole lot of recent cookies; gc shouldn't happen.

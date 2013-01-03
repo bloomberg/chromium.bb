@@ -40,10 +40,10 @@ GLuint PointCoordTest::SetupQuad(
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   float vertices[] = {
-    -0.5 + pixel_offset, -0.5 + pixel_offset,
-     0.5 + pixel_offset, -0.5 + pixel_offset,
-    -0.5 + pixel_offset,  0.5 + pixel_offset,
-     0.5 + pixel_offset,  0.5 + pixel_offset,
+    -0.5f + pixel_offset, -0.5f + pixel_offset,
+     0.5f + pixel_offset, -0.5f + pixel_offset,
+    -0.5f + pixel_offset,  0.5f + pixel_offset,
+     0.5f + pixel_offset,  0.5f + pixel_offset,
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glEnableVertexAttribArray(position_location);
@@ -136,8 +136,8 @@ TEST_F(PointCoordTest, MAYBE_RenderTo) {
           GLfloat s = 0.5 + (xf + 0.5 - xw) / max_point_size;
           GLfloat t = 0.5 + (yf + 0.5 - yw) / max_point_size;
           uint8 color[4] = {
-            s * 255,
-            (1 - t) * 255,
+            static_cast<uint8>(s * 255),
+            static_cast<uint8>((1 - t) * 255),
             0,
             255,
           };

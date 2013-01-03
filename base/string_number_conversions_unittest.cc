@@ -203,7 +203,7 @@ TEST(StringNumberConversionsTest, StringToInt64) {
 TEST(StringNumberConversionsTest, HexStringToInt) {
   static const struct {
     std::string input;
-    int output;
+    int64 output;
     bool success;
   } cases[] = {
     {"0", 0, true},

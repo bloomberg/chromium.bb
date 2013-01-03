@@ -40,9 +40,9 @@ void VerifyResult(const Pickle& pickle) {
 
   bool outbool;
   EXPECT_TRUE(pickle.ReadBool(&iter, &outbool));
-  EXPECT_EQ(testbool1, outbool);
+  EXPECT_FALSE(outbool);
   EXPECT_TRUE(pickle.ReadBool(&iter, &outbool));
-  EXPECT_EQ(testbool2, outbool);
+  EXPECT_TRUE(outbool);
 
   uint16 outuint16;
   EXPECT_TRUE(pickle.ReadUInt16(&iter, &outuint16));

@@ -365,13 +365,13 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      int extra_header_count,
                                      bool compressed,
-                                     int stream_id,
+                                     SpdyStreamId stream_id,
                                      RequestPriority request_priority,
                                      SpdyControlType type,
                                      SpdyControlFlags flags,
                                      const char* const* kHeaders,
                                      int kHeadersSize,
-                                     int associated_stream_id) {
+                                     SpdyStreamId associated_stream_id) {
   const SpdyHeaderInfo kSynStartHeader = {
     type,                         // Kind = Syn
     stream_id,                    // Stream ID
@@ -400,7 +400,7 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 // Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGet(const char* const url,
                             bool compressed,
-                            int stream_id,
+                            SpdyStreamId stream_id,
                             RequestPriority request_priority) {
   const SpdyHeaderInfo kSynStartHeader = {
     SYN_STREAM,                   // Kind = Syn

@@ -42,7 +42,7 @@ void VerifyCertificateSignature(const std::string& der_cert,
   SECItem der_cert_item = {
     siDERCertBuffer,
     reinterpret_cast<unsigned char*>(const_cast<char*>(der_cert.data())),
-    der_cert.size()
+    static_cast<unsigned int>(der_cert.size())
   };
   SECStatus rv = SEC_ASN1DecodeItem(arena.get(), &sd,
                                     SEC_ASN1_GET(CERT_SignedDataTemplate),
@@ -85,7 +85,7 @@ void VerifyDomainBoundCert(const std::string& domain,
   SECItem extension_object = {
     siAsciiString,
     (unsigned char*)domain.data(),
-    domain.size()
+    static_cast<unsigned int>(domain.size())
   };
 
   // IA5Encode and arena allocate SECItem.

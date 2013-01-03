@@ -246,7 +246,7 @@ void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
       L"password_element",
       autofillable ? L"username_value" : NULL,
       autofillable ? L"password_value" : NULL,
-      autofillable, false, i + 1 };
+      autofillable, false, static_cast<double>(i + 1) };
     forms->push_back(CreatePasswordFormFromData(data));
   }
 }
