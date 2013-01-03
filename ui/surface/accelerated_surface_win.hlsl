@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // @gyp_namespace(ui_surface)
-// Compiles into C++ as 'accelerated_surface_transformer_win_hlsl_compiled.h'
+// Compiles into C++ as 'accelerated_surface_win_hlsl_compiled.h'
 
 struct Vertex {
   float4 position : POSITION;
