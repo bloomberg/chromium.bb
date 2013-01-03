@@ -159,6 +159,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // True if |HideInternal| has already been called.
   bool is_hiding_;
+
+  // True if the delegate should be informed when |this| is destroyed.
+  bool inform_delegate_of_destruction_;
 };
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_

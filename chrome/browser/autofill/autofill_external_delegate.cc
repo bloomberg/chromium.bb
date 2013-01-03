@@ -265,7 +265,6 @@ void AutofillExternalDelegate::ControllerDestroyed() {
 
 void AutofillExternalDelegate::HideAutofillPopup() {
   if (controller_) {
-    ClearPreviewedForm();
     controller_->Hide();
     // Go ahead and invalidate |controller_|. After calling Hide(), it won't
     // inform |this| of its destruction.
@@ -412,5 +411,3 @@ void AutofillExternalDelegate::Observe(
     NOTREACHED();
   }
 }
-
-

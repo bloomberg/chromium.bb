@@ -93,14 +93,15 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       element_bounds_(element_bounds),
       selected_line_(kNoSelection),
       delete_icon_hovered_(false),
-      is_hiding_(false) {
+      is_hiding_(false),
+      inform_delegate_of_destruction_(true) {
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
 #endif
 }
 
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {
-  if (delegate_)
+  if (inform_delegate_of_destruction_)
     delegate_->ControllerDestroyed();
 }
 
@@ -135,7 +136,7 @@ void AutofillPopupControllerImpl::Show(
 }
 
 void AutofillPopupControllerImpl::Hide() {
-  delegate_ = NULL;
+  inform_delegate_of_destruction_ = false;
   HideInternal();
 }
 
@@ -338,6 +339,8 @@ void AutofillPopupControllerImpl::HideInternal() {
     return;
   is_hiding_ = true;
 
+  SetSelectedLine(kNoSelection);
+
   if (view_)
     view_->Hide();
   else
@@ -358,6 +361,8 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
 
   if (selected_line_ != kNoSelection)
     delegate_->DidSelectSuggestion(identifiers_[selected_line_]);
+  else
+    delegate_->ClearPreviewedForm();
 }
 
 void AutofillPopupControllerImpl::SelectNextLine() {
