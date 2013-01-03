@@ -26,7 +26,7 @@ deps = {
     'src/chrome/test/data/perf/third_party/octane':
         Var('git_url') + '/external/octane-benchmark.git@9ac27bfd9e0bc73663db0c0551440215d8b20d09',
     'src/googleurl':
-        Var('git_url') + '/external/google-url.git@ae822b39a0665aaca689c164305fd1690e36ae16',
+        Var('git_url') + '/external/google-url.git@51fbd9c2993136707b4b0cd5a0a59beb8f3b0e4a',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@d932654fa84ebf2908a66a01ce0586e05f6477fc',
     'src/sandbox/linux/seccomp-legacy':
