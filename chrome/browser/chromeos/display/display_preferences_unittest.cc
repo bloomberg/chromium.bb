@@ -163,8 +163,10 @@ TEST_F(DisplayPreferencesTest, BasicSaves) {
   SetDisplayOverscan(ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay(),
                      gfx::Insets(10, 11, 12, 13));
 
-  base::DictionaryValue* serialized_value = new base::DictionaryValue();
-  ASSERT_TRUE(ash::DisplayLayout::ConvertToValue(layout, serialized_value));
+  scoped_ptr<base::DictionaryValue> serialized_value(
+      new base::DictionaryValue());
+  ASSERT_TRUE(ash::DisplayLayout::ConvertToValue(layout,
+                                                 serialized_value.get()));
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
