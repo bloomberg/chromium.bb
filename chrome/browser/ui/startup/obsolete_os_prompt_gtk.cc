@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 
-#include "base/logging.h"
+#include <gtk/gtk.h>
+
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {

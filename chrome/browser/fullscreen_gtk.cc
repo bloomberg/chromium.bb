@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
 

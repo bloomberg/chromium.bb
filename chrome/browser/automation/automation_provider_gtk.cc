@@ -14,7 +14,6 @@
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/automation_messages.h"
 #include "ui/gfx/point.h"
