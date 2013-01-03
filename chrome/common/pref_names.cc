@@ -426,6 +426,10 @@ const char kDefaultSearchProviderPrepopulateID[] =
 const char kDefaultSearchProviderAlternateURLs[] =
     "default_search_provider.alternate_urls";
 
+// Search term placement query parameter for the default search provider.
+const char kDefaultSearchProviderSearchTermsReplacementKey[] =
+    "default_search_provider.search_terms_replacement_key";
+
 // The dictionary key used when the default search providers are given
 // in the preferences file. Normally they are copied from the master
 // preferences file.

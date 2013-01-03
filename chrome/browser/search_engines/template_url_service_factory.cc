@@ -80,6 +80,10 @@ void TemplateURLServiceFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kDefaultSearchProviderAlternateURLs,
                           PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      std::string(),
+      PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool TemplateURLServiceFactory::ServiceRedirectedInIncognito() const {

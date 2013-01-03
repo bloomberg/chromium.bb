@@ -23,15 +23,23 @@
       "optional": true
     },
     // If omitted, this engine does not support suggestions.
-    { "field": "suggest_url", "type": "string", "optional": true  },
+    { "field": "suggest_url", "type": "string", "optional": true },
     // If omitted, this engine does not support instant.
-    { "field": "instant_url", "type": "string", "optional": true  },
+    { "field": "instant_url", "type": "string", "optional": true },
     // A list of URL patterns that can be used, in addition to |search_url|,
     // to extract search terms from a URL.
     {
       "field": "alternate_urls",
       "type": "array",
       "contents": { "type": "string" },
+      "optional": true
+    },
+    // A parameter that, if present in the query or ref parameters of a
+    // search_url or instant_url, causes Chrome to replace the URL with the
+    // search term.
+    {
+      "field": "search_terms_replacement_key",
+      "type": "string",
       "optional": true
     },
     {

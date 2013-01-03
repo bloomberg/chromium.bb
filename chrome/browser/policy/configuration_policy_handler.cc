@@ -92,6 +92,9 @@ const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
   { key::kDefaultSearchProviderAlternateURLs,
     prefs::kDefaultSearchProviderAlternateURLs,
     Value::TYPE_LIST },
+  { key::kDefaultSearchProviderSearchTermsReplacementKey,
+    prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+    Value::TYPE_STRING },
 };
 
 // List of entries determining which proxy policies can be specified, depending
@@ -825,6 +828,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
     prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
                     new ListValue());
+    prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+                     std::string());
   } else {
     // The search URL is required.  The other entries are optional.  Just make
     // sure that they are all specified via policy, so that the regular prefs
@@ -842,6 +847,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
       EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
+      EnsureStringPrefExists(prefs,
+          prefs::kDefaultSearchProviderSearchTermsReplacementKey);
 
       // For the name and keyword, default to the host if not specified.  If
       // there is no host (file: URLs?  Not sure), use "_" to guarantee that the

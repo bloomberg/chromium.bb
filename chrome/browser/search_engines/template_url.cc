@@ -58,6 +58,8 @@ const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
 const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
+const char kGoogleInstantExtendedEnabledKey[] =
+    "google:instantExtendedEnabledKey";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGoogleRLZParameter[] = "google:RLZ";
@@ -571,6 +573,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
                                         start));
+  } else if (parameter == kGoogleInstantExtendedEnabledKey) {
+    url->insert(start, google_util::kInstantExtendedAPIParam);
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));

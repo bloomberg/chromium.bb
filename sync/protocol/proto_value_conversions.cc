@@ -413,6 +413,7 @@ DictionaryValue* SearchEngineSpecificsToValue(
   SET_INT64(last_modified);
   SET_STR(sync_guid);
   SET_STR_REP(alternate_urls);
+  SET_STR(search_terms_replacement_key);
   return value;
 }
 

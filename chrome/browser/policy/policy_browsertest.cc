@@ -659,6 +659,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   const std::string kAlternateURL0(
       "http://search.example/search#q={searchTerms}");
   const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
+  const std::string kSearchTermsReplacementKey("zekey");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -670,7 +671,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_FALSE(
     default_search->alternate_urls().size() == 2 &&
     default_search->alternate_urls()[0] == kAlternateURL0 &&
-    default_search->alternate_urls()[1] == kAlternateURL1);
+    default_search->alternate_urls()[1] == kAlternateURL1 &&
+    default_search->search_terms_replacement_key() ==
+        kSearchTermsReplacementKey);
 
   // Override the default search provider using policies.
   PolicyMap policies;
@@ -685,6 +688,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   alternate_urls->AppendString(kAlternateURL1);
   policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, alternate_urls);
+  policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kSearchTermsReplacementKey));
   provider_.UpdateChromePolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -693,6 +699,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(2U, default_search->alternate_urls().size());
   EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
+  EXPECT_EQ(kSearchTermsReplacementKey,
+            default_search->search_terms_replacement_key());
 
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());

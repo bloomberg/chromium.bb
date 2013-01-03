@@ -168,6 +168,7 @@ extern const char kDefaultSearchProviderKeyword[];
 extern const char kDefaultSearchProviderID[];
 extern const char kDefaultSearchProviderPrepopulateID[];
 extern const char kDefaultSearchProviderAlternateURLs[];
+extern const char kDefaultSearchProviderSearchTermsReplacementKey[];
 extern const char kSearchProviderOverrides[];
 extern const char kSearchProviderOverridesVersion[];
 extern const char kPromptForDownload[];

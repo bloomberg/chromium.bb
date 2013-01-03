@@ -21,7 +21,7 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 48;
+const int WebDatabase::kCurrentVersionNumber = 49;
 
 namespace {
 
@@ -355,6 +355,14 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(48);
 
       ChangeVersion(&meta_table_, 48, true);
+      // FALL THROUGH
+
+    case 48:
+      if (!keyword_table_->
+          MigrateToVersion49AddSearchTermsReplacementKeyColumn())
+        return FailedMigrationTo(49);
+
+      ChangeVersion(&meta_table_, 49, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

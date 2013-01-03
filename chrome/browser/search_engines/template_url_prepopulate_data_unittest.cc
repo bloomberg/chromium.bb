@@ -128,6 +128,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_TRUE(t_urls[0]->suggestions_url().empty());
   EXPECT_TRUE(t_urls[0]->instant_url().empty());
   EXPECT_EQ(0u, t_urls[0]->alternate_urls().size());
+  EXPECT_TRUE(t_urls[0]->search_terms_replacement_key().empty());
 
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
@@ -135,6 +136,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   ListValue* alternate_urls = new ListValue;
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", alternate_urls);
+  entry->SetString("search_terms_replacement_key", "espv");
   overrides = new ListValue;
   overrides->Append(entry->DeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
@@ -156,6 +158,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   ASSERT_EQ(1u, t_urls[0]->alternate_urls().size());
   EXPECT_EQ("http://foo.com/alternate?q={searchTerms}",
             t_urls[0]->alternate_urls()[0]);
+  EXPECT_EQ("espv", t_urls[0]->search_terms_replacement_key());
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
@@ -212,6 +215,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
     EXPECT_FALSE(t_urls[default_index]->alternate_urls()[i].empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
       TemplateURLPrepopulateData::GetEngineType(t_urls[default_index]->url()));
+  EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key().empty());
 }
 
 TEST(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {

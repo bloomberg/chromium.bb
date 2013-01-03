@@ -152,6 +152,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.sync_guid = "1234-5678-90AB-CDEF";
   keyword.alternate_urls.push_back("a_url1");
   keyword.alternate_urls.push_back("a_url2");
+  keyword.search_terms_replacement_key = "espv";
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
@@ -162,10 +163,11 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
   keyword.alternate_urls.clear();
+  keyword.search_terms_replacement_key.clear();
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
-      "http://url/1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]"
+      "http://url/1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
       "2short_nameurlhttp://favicon.url/http://url/1http://originating.url/00"
       "Shift_JIS1url250http://instant2/0FEDC-BA09-8765-4321[]";
 
@@ -194,6 +196,7 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.sync_guid = "1234-5678-90AB-CDEF";
   keyword.alternate_urls.push_back("a_url1");
   keyword.alternate_urls.push_back("a_url2");
+  keyword.search_terms_replacement_key = "espv";
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
@@ -204,13 +207,14 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
   keyword.alternate_urls.clear();
+  keyword.search_terms_replacement_key.clear();
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_nameurlhttp://favicon.url/http://url/1"
       "http://originating.url/00Shift_JIS1url250http://instant2/0"
       "FEDC-BA09-8765-4321[]"
       "2short_namekeywordhttp://favicon.url/http://url/1001"
-      "url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]";
+      "url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv";
 
   std::string contents;
   EXPECT_TRUE(keyword_table->GetTableContents("keywords",

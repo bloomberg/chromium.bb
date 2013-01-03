@@ -213,7 +213,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 48;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 49;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -2054,5 +2054,48 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion47ToCurrent) {
     EXPECT_NE(0, default_search_provider_id);
 
     EXPECT_NO_FATAL_FAILURE(CheckNoBackupData(connection, &meta_table));
+  }
+}
+
+// Tests that the |search_terms_replacement_key| column is added to the keyword
+// table schema for a version 49 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion48ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_48.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 48 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 48, 48));
+
+    ASSERT_FALSE(connection.DoesColumnExist("keywords",
+                                            "search_terms_replacement_key"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // A new column should have been created.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords",
+                                           "search_terms_replacement_key"));
   }
 }

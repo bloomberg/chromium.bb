@@ -567,6 +567,7 @@ class ConfigurationPolicyPrefStoreDefaultSearchTest
   static const char* const kIconURL;
   static const char* const kName;
   static const char* const kKeyword;
+  static const char* const kReplacementKey;
 
   // Build a default search policy by setting search-related keys in |policy| to
   // reasonable values. You can update any of the keys after calling this
@@ -586,6 +587,8 @@ const char* const ConfigurationPolicyPrefStoreDefaultSearchTest::kName =
     "MyName";
 const char* const ConfigurationPolicyPrefStoreDefaultSearchTest::kKeyword =
     "MyKeyword";
+const char* const
+    ConfigurationPolicyPrefStoreDefaultSearchTest::kReplacementKey = "espv";
 
 void ConfigurationPolicyPrefStoreDefaultSearchTest::
     BuildDefaultSearchPolicy(PolicyMap* policy) {
@@ -608,6 +611,9 @@ void ConfigurationPolicyPrefStoreDefaultSearchTest::
               POLICY_SCOPE_USER, encodings);
   policy->Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, default_alternate_urls_.DeepCopy());
+  policy->Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
+              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              base::Value::CreateStringValue(kReplacementKey));
 }
 
 // Checks that if the policy for default search is valid, i.e. there's a
@@ -647,6 +653,11 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
   EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
                              &value));
   EXPECT_TRUE(base::ListValue().Equals(value));
+
+  EXPECT_TRUE(
+      store_->GetValue(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      &value));
+  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 }
 
 // Checks that for a fully defined search policy, all elements have been
@@ -679,6 +690,11 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   EXPECT_TRUE(store_->GetValue(
       prefs::kDefaultSearchProviderAlternateURLs, &value));
   EXPECT_TRUE(default_alternate_urls_.Equals(value));
+
+  EXPECT_TRUE(
+      store_->GetValue(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      &value));
+  EXPECT_TRUE(base::StringValue(kReplacementKey).Equals(value));
 }
 
 // Checks that if the default search policy is missing, that no elements of the
@@ -697,6 +713,8 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
                                 NULL));
+  EXPECT_FALSE(store_->GetValue(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the
@@ -718,6 +736,8 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
                                 NULL));
+  EXPECT_FALSE(store_->GetValue(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the

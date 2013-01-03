@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 170
+#   For your editing convenience: highest ID currently used: 171
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1789,6 +1789,24 @@
           'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
 
           This policy is optional. If not set, no alternate urls will be used to extract search terms.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderSearchTermsReplacementKey',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:25-', 'chrome_os:0.25-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'espv',
+          'id': 171,
+          'caption': '''Parameter controlling search term placement for the default search provider.''',
+          'desc': '''A parameter that, if present in the query or ref parameter of a search URL, indicates that Chrome should perform search terms replacement in the omnibox.
+
+          This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },

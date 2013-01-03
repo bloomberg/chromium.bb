@@ -352,6 +352,10 @@ struct TemplateURLData {
   // search terms from a URL.
   std::vector<std::string> alternate_urls;
 
+  // A parameter that, if present in the query or ref parameters of a search_url
+  // or instant_url, causes Chrome to replace the URL with the search term.
+  std::string search_terms_replacement_key;
+
  private:
   // Private so we can enforce using the setters and thus enforce that these
   // fields are never empty.
@@ -426,6 +430,10 @@ class TemplateURL {
   int prepopulate_id() const { return data_.prepopulate_id; }
 
   const std::string& sync_guid() const { return data_.sync_guid; }
+
+  const std::string& search_terms_replacement_key() const {
+    return data_.search_terms_replacement_key;
+  }
 
   const TemplateURLRef& url_ref() const { return url_ref_; }
   const TemplateURLRef& suggestions_url_ref() const {

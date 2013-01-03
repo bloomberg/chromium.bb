@@ -62,5 +62,8 @@ message SearchEngineSpecifics {
   // A list of URL patterns that can be used, in addition to |url| and
   // |instant_url|, to extract search terms from a URL.
   repeated string alternate_urls = 19;
+  // Parameter that, if present in a search URL, indicates that Chrome should
+  // perform search terms replacement in the omnibox.
+  optional string search_terms_replacement_key = 20;
 }
 

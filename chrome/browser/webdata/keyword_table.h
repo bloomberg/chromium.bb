@@ -53,6 +53,10 @@ class Statement;
 //                          version 39.
 //   alternate_urls         See TemplateURLData::alternate_urls. This was added
 //                          in version 47.
+//   search_terms_replacement_key
+//                          See TemplateURLData::search_terms_replacement_key.
+//                          This was added in version 49.
+//
 //
 // This class also manages some fields in the |meta| table:
 //
@@ -113,6 +117,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
   bool MigrateToVersion47AddAlternateURLsColumn();
   bool MigrateToVersion48RemoveKeywordsBackup();
+  bool MigrateToVersion49AddSearchTermsReplacementKeyColumn();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);

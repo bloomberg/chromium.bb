@@ -777,6 +777,14 @@
     ]
   },
 
+  "DefaultSearchProviderSearchTermsReplacementKey": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderSearchTermsReplacementKey": "espv" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.search_terms_replacement_key" }
+    ]
+  },
+
   "DefaultCookiesSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultCookiesSetting": 2 },
