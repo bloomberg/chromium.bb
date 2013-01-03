@@ -53,6 +53,8 @@ class ShellUtil {
     // present.
     SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL,
     // Overwrite an existing shortcut (fail if the shortcut doesn't exist).
+    // If the arguments are not specified on the new shortcut, keep the old
+    // shortcut's arguments.
     SHELL_SHORTCUT_REPLACE_EXISTING,
     // Update specified properties only on an existing shortcut.
     SHELL_SHORTCUT_UPDATE_EXISTING,

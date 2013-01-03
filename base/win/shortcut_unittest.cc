@@ -212,7 +212,7 @@ TEST_F(ShortcutTest, FailUpdateShortcutThatDoesNotExist) {
   ASSERT_FALSE(file_util::PathExists(link_file_));
 }
 
-TEST_F(ShortcutTest, TruncateShortcutAllProperties) {
+TEST_F(ShortcutTest, ReplaceShortcutAllProperties) {
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
       link_file_, link_properties_, base::win::SHORTCUT_CREATE_ALWAYS));
 
@@ -222,29 +222,46 @@ TEST_F(ShortcutTest, TruncateShortcutAllProperties) {
   base::win::ValidateShortcut(link_file_, link_properties_2_);
 }
 
-TEST_F(ShortcutTest, TruncateShortcutSomeProperties) {
+TEST_F(ShortcutTest, ReplaceShortcutSomeProperties) {
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
       link_file_, link_properties_, base::win::SHORTCUT_CREATE_ALWAYS));
 
   base::win::ShortcutProperties new_properties;
   new_properties.set_target(link_properties_2_.target);
+  new_properties.set_arguments(link_properties_2_.arguments);
   new_properties.set_description(link_properties_2_.description);
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
       link_file_, new_properties, base::win::SHORTCUT_REPLACE_EXISTING));
 
   // Expect only properties in |new_properties| to be set, all other properties
   // should have been overwritten.
-  base::win::ShortcutProperties expected_properties = new_properties;
+  base::win::ShortcutProperties expected_properties(new_properties);
   expected_properties.set_working_dir(FilePath());
-  expected_properties.set_arguments(string16());
   expected_properties.set_icon(FilePath(), 0);
   expected_properties.set_app_id(string16());
   expected_properties.set_dual_mode(false);
   base::win::ValidateShortcut(link_file_, expected_properties);
 }
 
-TEST_F(ShortcutTest, FailTruncateShortcutThatDoesNotExist) {
+TEST_F(ShortcutTest, FailReplaceShortcutThatDoesNotExist) {
   ASSERT_FALSE(base::win::CreateOrUpdateShortcutLink(
       link_file_, link_properties_, base::win::SHORTCUT_REPLACE_EXISTING));
   ASSERT_FALSE(file_util::PathExists(link_file_));
+}
+
+// Test that the old arguments remain on the replaced shortcut when not
+// otherwise specified.
+TEST_F(ShortcutTest, ReplaceShortcutKeepOldArguments) {
+  ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
+      link_file_, link_properties_, base::win::SHORTCUT_CREATE_ALWAYS));
+
+  // Do not explicitly set the arguments.
+  link_properties_2_.options &=
+      ~base::win::ShortcutProperties::PROPERTIES_ARGUMENTS;
+  ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
+      link_file_, link_properties_2_, base::win::SHORTCUT_REPLACE_EXISTING));
+
+  base::win::ShortcutProperties expected_properties(link_properties_2_);
+  expected_properties.set_arguments(link_properties_.arguments);
+  base::win::ValidateShortcut(link_file_, expected_properties);
 }

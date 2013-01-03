@@ -18,6 +18,8 @@ enum ShortcutOperation {
   // Create a new shortcut (overwriting if necessary).
   SHORTCUT_CREATE_ALWAYS = 0,
   // Overwrite an existing shortcut (fails if the shortcut doesn't exist).
+  // If the arguments are not specified on the new shortcut, keep the old
+  // shortcut's arguments.
   SHORTCUT_REPLACE_EXISTING,
   // Update specified properties only on an existing shortcut.
   SHORTCUT_UPDATE_EXISTING,

@@ -229,6 +229,7 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelQuickLaunchShortcut) {
   ShellUtil::ShortcutProperties new_properties(ShellUtil::SYSTEM_LEVEL);
   product_->AddDefaultShortcutProperties(chrome_exe_, &new_properties);
   new_properties.set_description(L"New description");
+  new_properties.set_arguments(L"--new-arguments");
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
                   dist_, new_properties,
@@ -238,7 +239,6 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelQuickLaunchShortcut) {
   // properties that don't have a default value to be set back to their default
   // (as validated in ValidateChromeShortcut()) or unset if they don't .
   ShellUtil::ShortcutProperties expected_properties(new_properties);
-  expected_properties.set_arguments(string16());
   expected_properties.set_dual_mode(false);
 
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
