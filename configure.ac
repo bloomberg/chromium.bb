@@ -633,7 +633,6 @@ AC_ARG_ENABLE(docs,
 AM_CONDITIONAL(ENABLE_DOCS, test "x$enable_docs" = xyes)
 
 if test "x$enable_docs" = xyes; then
-	DOCSRC="doc"
 	tmp=funcs.$$
 	cat $srcdir/doc/*.fncs | awk '
 	/^@TITLE@/	{ if (!done) { printf ("%s\n", $2); done = 1; } }
@@ -643,11 +642,8 @@ if test "x$enable_docs" = xyes; then
 	echo DOCMAN3 $DOCMAN3
 	rm -f $tmp
 else
-	DOCSRC=""
 	DOCMAN3=""
 fi
-
-AC_SUBST(DOCSRC)
 AC_SUBST(DOCMAN3)
 
 

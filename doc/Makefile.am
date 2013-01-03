@@ -199,10 +199,18 @@ all-local: $(BUILT_DOCS) $(HTML_DIR)/*
 clean-local:
 	$(RM) -r $(HTML_DIR) devel-man
 	[ "x$(builddir)" != "x$(srcdir)" ] && $(RM) $(builddir)/*.sgml || :
+dist-local-check-docs-enabled:
+	@true
 else
 htmldoc_DATA += $(srcdir)/$(HTML_DIR)/*
 all-local:
 clean-local:
+dist-local-check-docs-enabled:
+	@echo "*** --enable-man must be used in order to make dist"
+	@false
 endif
+
+# force doc rebulid after configure
+dist-hook-local: dist-local-check-docs-enabled
 
 -include $(top_srcdir)/git.mk
