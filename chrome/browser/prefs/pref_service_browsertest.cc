@@ -34,7 +34,14 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
   browser()->window()->SetBounds(gfx::Rect(20, 30, 400, 500));
 }
 
-IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, Test) {
+// Fails on Chrome OS as the browser thinks it is restarting after a crash, see
+// http://crbug.com/168044
+#if defined(OS_CHROMEOS)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, MAYBE_Test) {
   gfx::Rect bounds = browser()->window()->GetBounds();
   gfx::Rect expected_bounds(gfx::Rect(20, 30, 400, 500));
   ASSERT_EQ(expected_bounds.ToString(), bounds.ToString());
