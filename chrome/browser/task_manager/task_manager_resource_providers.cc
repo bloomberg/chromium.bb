@@ -502,6 +502,16 @@ void TaskManagerTabContentsResourceProvider::Add(WebContents* web_contents) {
   if (!updating_)
     return;
 
+  // The contents that are tracked by this resource provider are those that
+  // are tab contents (WebContents serving as a tab in a Browser), instant
+  // pages, prerender pages, and background printed pages.
+  if (!chrome::FindBrowserWithWebContents(web_contents) &&
+      !IsContentsPrerendering(web_contents) &&
+      !IsContentsInstant(web_contents) &&
+      !IsContentsBackgroundPrinted(web_contents)) {
+    return;
+  }
+
   // Don't add dead tabs or tabs that haven't yet connected.
   if (!web_contents->GetRenderProcessHost()->GetHandle() ||
       !web_contents->WillNotifyDisconnection()) {
@@ -556,16 +566,6 @@ void TaskManagerTabContentsResourceProvider::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
-
-  // The contents that are tracked by this resource provider are those that
-  // are tab contents (WebContents serving as a tab in a Browser), instant
-  // pages, prerender pages, and background printed pages.
-  if (!chrome::FindBrowserWithWebContents(web_contents) &&
-      !IsContentsPrerendering(web_contents) &&
-      !IsContentsInstant(web_contents) &&
-      !IsContentsBackgroundPrinted(web_contents)) {
-    return;
-  }
 
   switch (type) {
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
