@@ -80,7 +80,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
  protected:
   void AddUrlToHistory(const std::string& url, int visit_count) {
-    HistoryServiceFactory::GetForProfile(&profile_,
+    HistoryServiceFactory::GetForProfile(profile_.get(),
                                          Profile::EXPLICIT_ACCESS)->
         AddPageWithDetails(
             GURL(url),
@@ -90,7 +90,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
             base::Time::Now(),
             false,
             history::SOURCE_BROWSED);
-    profile_.BlockUntilHistoryProcessesPendingRequests();
+    profile_->BlockUntilHistoryProcessesPendingRequests();
   }
 
   NavigationID CreateNavigationID(int process_id,
@@ -126,7 +126,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     predictor_->StartInitialization();
     base::RunLoop loop;
     loop.RunUntilIdle();  // Runs the DB lookup.
-    profile_.BlockUntilHistoryProcessesPendingRequests();
+    profile_->BlockUntilHistoryProcessesPendingRequests();
   }
 
   bool URLRequestSummaryAreEqual(const URLRequestSummary& lhs,
@@ -149,7 +149,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     // TODO(shishir): Enable the prefetching mode in the tests.
     config.mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
     config.mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-    predictor_.reset(new ResourcePrefetchPredictor(config, &profile_));
+    predictor_.reset(new ResourcePrefetchPredictor(config, profile_.get()));
     predictor_->set_mock_tables(mock_tables_);
   }
 
@@ -158,7 +158,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 
   scoped_ptr<ResourcePrefetchPredictor> predictor_;
   scoped_refptr<StrictMock<MockResourcePrefetchPredictorTables> > mock_tables_;
@@ -173,6 +173,7 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
     : loop_(MessageLoop::TYPE_DEFAULT),
       ui_thread_(content::BrowserThread::UI, &loop_),
       db_thread_(content::BrowserThread::DB, &loop_),
+      profile_(new TestingProfile()),
       predictor_(NULL),
       mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
       empty_url_data_(PREFETCH_KEY_TYPE_URL, ""),
@@ -180,14 +181,16 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
 }
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
+  profile_.reset(NULL);
+  loop_.RunUntilIdle();
 }
 
 void ResourcePrefetchPredictorTest::SetUp() {
   InitializeSampleData();
 
-  profile_.CreateHistoryService(true, false);
-  profile_.BlockUntilHistoryProcessesPendingRequests();
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(&profile_,
+  profile_->CreateHistoryService(true, false);
+  profile_->BlockUntilHistoryProcessesPendingRequests();
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile_.get(),
                                                    Profile::EXPLICIT_ACCESS));
   // Initialize the predictor with empty data.
   ResetPredictor();
@@ -204,7 +207,7 @@ void ResourcePrefetchPredictorTest::SetUp() {
 
 void ResourcePrefetchPredictorTest::TearDown() {
   predictor_.reset(NULL);
-  profile_.DestroyHistoryService();
+  profile_->DestroyHistoryService();
 }
 
 void ResourcePrefetchPredictorTest::InitializeSampleData() {
@@ -373,7 +376,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
-  profile_.BlockUntilHistoryProcessesPendingRequests();
+  profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
@@ -440,7 +443,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
-  profile_.BlockUntilHistoryProcessesPendingRequests();
+  profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
@@ -532,7 +535,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
-  profile_.BlockUntilHistoryProcessesPendingRequests();
+  profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
@@ -585,7 +588,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
-  profile_.BlockUntilHistoryProcessesPendingRequests();
+  profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {

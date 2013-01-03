@@ -86,7 +86,14 @@ class AutocompleteActionPredictorTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &loop_),
         db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
-        predictor_(new AutocompleteActionPredictor(&profile_)) {
+        profile_(new TestingProfile()),
+        predictor_(new AutocompleteActionPredictor(profile_.get())) {
+  }
+
+  ~AutocompleteActionPredictorTest() {
+    predictor_.reset(NULL);
+    profile_.reset(NULL);
+    loop_.RunUntilIdle();
   }
 
   void SetUp() {
@@ -95,8 +102,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
     predictor_->CreateLocalCachesFromDatabase();
-    profile_.CreateHistoryService(true, false);
-    profile_.BlockUntilHistoryProcessesPendingRequests();
+    profile_->CreateHistoryService(true, false);
+    profile_->BlockUntilHistoryProcessesPendingRequests();
 
     ASSERT_TRUE(predictor_->initialized_);
     ASSERT_TRUE(db_cache()->empty());
@@ -104,7 +111,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   void TearDown() {
-    profile_.DestroyHistoryService();
+    profile_->DestroyHistoryService();
     predictor_->Shutdown();
   }
 
@@ -121,7 +128,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   history::URLID AddRowToHistory(const TestUrlInfo& test_row) {
     HistoryService* history =
-        HistoryServiceFactory::GetForProfile(&profile_,
+        HistoryServiceFactory::GetForProfile(profile_.get(),
                                              Profile::EXPLICIT_ACCESS);
     CHECK(history);
     history::URLDatabase* url_db = history->InMemoryDatabase();
@@ -183,7 +190,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   void DeleteOldIdsFromCaches(
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(&profile_,
+        HistoryServiceFactory::GetForProfile(profile_.get(),
                                              Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
@@ -211,7 +218,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<AutocompleteActionPredictor> predictor_;
 };
 

@@ -98,6 +98,7 @@ void AutocompleteActionPredictorTableTest::SetUp() {
 
 void AutocompleteActionPredictorTableTest::TearDown() {
   db_.reset(NULL);
+  loop_.RunUntilIdle();
   test_db_.clear();
 }
 
