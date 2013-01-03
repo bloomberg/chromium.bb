@@ -557,7 +557,6 @@ int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
   SourceBufferRange* new_range_for_append = NULL;
 
   while (!ranges_.empty() && bytes_to_free > 0) {
-
     SourceBufferRange* current_range = NULL;
     BufferQueue buffers;
     int bytes_deleted = 0;
@@ -1061,6 +1060,11 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
     return false;
   }
 
+  if (audio_configs_[0]->is_encrypted() != config.is_encrypted()) {
+    MEDIA_LOG(log_cb_) << "Audio encryption changes not allowed.";
+    return false;
+  }
+
   // Check to see if the new config matches an existing one.
   for (size_t i = 0; i < audio_configs_.size(); ++i) {
     if (config.Matches(*audio_configs_[i])) {
@@ -1088,6 +1092,11 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 
   if (video_configs_[0]->codec() != config.codec()) {
     MEDIA_LOG(log_cb_) <<"Video codec changes not allowed.";
+    return false;
+  }
+
+  if (video_configs_[0]->is_encrypted() != config.is_encrypted()) {
+    MEDIA_LOG(log_cb_) << "Video encryption changes not allowed.";
     return false;
   }
 
