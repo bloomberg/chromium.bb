@@ -21,7 +21,7 @@ test -x $HOST_PATH || exit 0
 
 . /lib/lsb/init-functions
 
-if [ "$(whoami)" == "root" ]; then
+if [ "$(whoami)" = "root" ]; then
   # Extract list of users in the chrome-remoting group.
   USERS=$(getent group $CHROME_REMOTING_GROUP |
           awk -F ':' '{ gsub(",", " ", $4); print $4 }')
@@ -33,16 +33,16 @@ fi
 run_with_timeout() {
   "$@" &
   pid=$!
-  ((time_left = 10))
-  while ((time_left > 0)); do
+  local time_left=10
+  while [ $time_left -gt 0 ]; do
     (kill -0 $pid 2>/dev/null) || return `wait $pid`
     sleep 1
-    ((time_left -= 1))
+    time_left=$((time_left - 1))
   done
   (kill -0 $pid 2>/dev/null) || return `wait $pid`
 
   echo command \"$@\" has timed out >&2
-  kill  $pid
+  kill $pid
   return 1
 }
 
@@ -51,13 +51,13 @@ run_and_ignore_error() {
   shift
 
   su_command=su
-  if [ "$1" == "--login" ]; then
+  if [ "$1" = "--login" ]; then
     su_command="su --login"
     shift
   fi
 
   set +e
-  if [ "$(whoami)" == "$user" ]; then
+  if [ "$(whoami)" = "$user" ]; then
     $@
   else
     $su_command $user --command "$@"
