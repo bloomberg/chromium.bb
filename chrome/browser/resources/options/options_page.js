@@ -843,6 +843,7 @@ cr.define('options', function() {
             pages[i].hidden = true;
           // Show the new dialog.
           pageDiv.hidden = false;
+          pageDiv.page = this;
         }
         return;
       }
