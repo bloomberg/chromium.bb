@@ -12,6 +12,6 @@
 
         .text
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(DoFnstcw):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClDoFnstcw):
         fnstcw (%rcx)
         ret

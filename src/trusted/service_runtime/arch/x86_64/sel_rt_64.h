@@ -21,6 +21,10 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 
+void NaClDoFnstcw(uint16_t *fcw);
+void NaClDoFxsave(void *fxsave);
+void NaClDoFxrstor(void *fxsave);
+
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 
 #define NACL_PRIdNACL_REG NACL_PRId64

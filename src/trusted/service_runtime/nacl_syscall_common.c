@@ -3048,10 +3048,7 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
   __asm__("fxsave %0" : "=m" (u));
 # elif NACL_WINDOWS
 #  if NACL_BUILD_SUBARCH == 64
-  {
-    void DoFxsave(union fxsave *);
-    DoFxsave(&u);
-  }
+  NaClDoFxsave(&u);
 #  else
   __asm {
     fxsave u
@@ -3070,10 +3067,7 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
   __asm__ volatile("fxrstor %0" :: "m" (u));
 # elif NACL_WINDOWS
 #  if NACL_BUILD_SUBARCH == 64
-  {
-    void DoFxrstor(union fxsave *);
-    DoFxrstor(&u);
-  }
+  NaClDoFxrstor(&u);
 #  else
   __asm {
     fxrstor u
