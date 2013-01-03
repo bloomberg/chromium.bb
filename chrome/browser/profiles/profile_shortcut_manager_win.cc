@@ -208,6 +208,9 @@ void CreateOrUpdateDesktopShortcutsForProfile(
   }
 
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  // Ensure that the distribution supports creating shortcuts. If it doesn't,
+  // the following code may result in NOTREACHED() being hit.
+  DCHECK(distribution->CanCreateDesktopShortcuts());
   installer::Product product(distribution);
 
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
@@ -305,7 +308,7 @@ string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
-  return false;
+  return BrowserDistribution::GetDistribution()->CanCreateDesktopShortcuts();
 }
 
 // static
