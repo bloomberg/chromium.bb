@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
 
 #include <string>
 #include <vector>
@@ -106,4 +106,4 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_

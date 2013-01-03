@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"

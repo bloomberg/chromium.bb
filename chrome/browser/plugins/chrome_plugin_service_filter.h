@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_
-#define CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_
+#ifndef CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
+#define CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
 
 #include <map>
 #include <vector>
@@ -90,4 +90,4 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   std::vector<OverriddenPlugin> overridden_plugins_;
 };
 
-#endif  // CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_
+#endif  // CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
