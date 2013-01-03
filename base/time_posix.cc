@@ -66,10 +66,6 @@ void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {
 
 namespace base {
 
-#if defined(OS_ANDROID)
-#define _POSIX_MONOTONIC_CLOCK 1
-#endif
-
 struct timespec TimeDelta::ToTimeSpec() const {
   int64 microseconds = InMicroseconds();
   time_t seconds = 0;
