@@ -260,6 +260,8 @@ void OpenSLESOutputStream::FillBufferQueue() {
   uint32 hardware_delay = buffer_size_bytes_;
   int frames_filled = callback_->OnMoreData(
       audio_bus_.get(), AudioBuffersState(0, hardware_delay));
+  if (frames_filled <= 0)
+    return;  // Audio source is shutting down, or halted on error.
   int num_filled_bytes =
       frames_filled * audio_bus_->channels() * format_.bitsPerSample / 8;
   DCHECK_LE(static_cast<size_t>(num_filled_bytes), buffer_size_bytes_);
@@ -303,7 +305,7 @@ void OpenSLESOutputStream::ReleaseAudioBuffer() {
 }
 
 void OpenSLESOutputStream::HandleError(SLresult error) {
-  DLOG(FATAL) << "OpenSLES error " << error;
+  DLOG(ERROR) << "OpenSLES error " << error;
   if (callback_)
     callback_->OnError(this, error);
 }
