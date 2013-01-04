@@ -731,6 +731,7 @@
                     '<(libjingle_source)/talk/base/win32window.h',
                     '<(libjingle_source)/talk/base/win32windowpicker.cc',
                     '<(libjingle_source)/talk/base/win32windowpicker.h',
+                    '<(libjingle_source)/talk/media/devices/win32deviceinfo.cc',
                     '<(libjingle_source)/talk/media/devices/win32devicemanager.cc',
                     '<(libjingle_source)/talk/media/devices/win32devicemanager.h',
                   ],
@@ -760,6 +761,7 @@
                 }],
                 ['OS=="mac"', {
                   'sources': [
+                    '<(libjingle_source)/talk/media/devices/macdeviceinfo.cc',
                     '<(libjingle_source)/talk/media/devices/macdevicemanager.cc',
                     '<(libjingle_source)/talk/media/devices/macdevicemanager.h',
                     '<(libjingle_source)/talk/media/devices/macdevicemanagermm.mm',

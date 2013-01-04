@@ -37,7 +37,7 @@ class RtcVideoCapturer
   virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) OVERRIDE;
   virtual bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
                                     cricket::VideoFormat* best_format) OVERRIDE;
-  virtual bool IsScreencast() OVERRIDE;
+  virtual bool IsScreencast() const OVERRIDE;
 
  private:
   // Frame captured callback method.

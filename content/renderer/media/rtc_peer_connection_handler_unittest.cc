@@ -369,7 +369,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
   webrtc::PeerConnectionObserver::StateType state =
       webrtc::PeerConnectionObserver::kReadyState;
   mock_peer_connection_->SetReadyState(
-      webrtc::PeerConnectionInterface::kOpening);
+      webrtc::PeerConnectionInterface::kHaveRemoteOffer);
   pc_handler_->OnStateChange(state);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateOpening,
             mock_client_->ready_state());
@@ -377,11 +377,6 @@ TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
       webrtc::PeerConnectionInterface::kActive);
   pc_handler_->OnStateChange(state);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive,
-            mock_client_->ready_state());
-  mock_peer_connection_->SetReadyState(
-      webrtc::PeerConnectionInterface::kClosing);
-  pc_handler_->OnStateChange(state);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateClosing,
             mock_client_->ready_state());
   mock_peer_connection_->SetReadyState(
         webrtc::PeerConnectionInterface::kClosed);

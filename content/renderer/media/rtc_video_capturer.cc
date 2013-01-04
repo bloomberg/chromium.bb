@@ -66,7 +66,7 @@ bool RtcVideoCapturer::GetPreferredFourccs(std::vector<uint32>* fourccs) {
   return true;
 }
 
-bool RtcVideoCapturer::IsScreencast() {
+bool RtcVideoCapturer::IsScreencast() const {
   return is_screencast_;
 }
 

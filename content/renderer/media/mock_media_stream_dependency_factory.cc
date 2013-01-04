@@ -70,11 +70,6 @@ class MockLocalMediaStream : public webrtc::LocalMediaStreamInterface {
   virtual webrtc::VideoTracks* video_tracks() OVERRIDE {
     return video_tracks_;
   }
-  virtual ReadyState ready_state() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return kInitializing;
-  }
-  virtual void set_ready_state(ReadyState state) OVERRIDE { NOTIMPLEMENTED(); }
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE {
     NOTIMPLEMENTED();
   }
