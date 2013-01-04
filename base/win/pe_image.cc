@@ -11,11 +11,12 @@ namespace base {
 namespace win {
 
 #if defined(_WIN64) && !defined(NACL_WIN64)
-// TODO(rvargas): Bug 27218. Make sure this is ok.
-#error This code is not tested on x64. Please make sure all the base unit tests\
+// TODO(jschuh): crbug.com/167707 Make sure this is ok.
+#pragma message ("Warning: \
+ This code is not tested on x64. Please make sure all the base unit tests\
  pass before doing any real work. The current unit tests don't test the\
  differences between 32- and 64-bits implementations. Bugs may slip through.\
- You need to improve the coverage before continuing.
+ You need to improve the coverage before continuing.")
 #endif
 
 // Structure to perform imports enumerations.
