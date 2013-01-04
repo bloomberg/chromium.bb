@@ -51,14 +51,6 @@ gfx::Size PictureLayerTilingSet::LayerBounds() const {
   return layer_bounds_;
 }
 
-void PictureLayerTilingSet::Invalidate(const Region& invalidation) {
-  if (invalidation.IsEmpty())
-    return;
-
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->Invalidate(invalidation);
-}
-
 const PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     float contents_scale,
     gfx::Size tile_size) {

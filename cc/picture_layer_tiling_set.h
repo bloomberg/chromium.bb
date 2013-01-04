@@ -23,9 +23,6 @@ class CC_EXPORT PictureLayerTilingSet {
      const Region& invalidation);
   void Clone(const PictureLayerTiling* tiling, const Region& invalidation);
 
-  // TODO(enne): Remove this once syncing happens to the pending tree.
-  void Invalidate(const Region& invalidation);
-
   void SetLayerBounds(gfx::Size layer_bounds);
   gfx::Size LayerBounds() const;
 
