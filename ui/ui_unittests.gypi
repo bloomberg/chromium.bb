@@ -162,6 +162,10 @@
             'gfx/font_fallback_win_unittest.cc',
             'gfx/icon_util_unittest.cc',
             'gfx/platform_font_win_unittest.cc',
+            'surface/accelerated_surface_transformer_win_unittest.cc'
+          ],
+          'dependencies': [
+            '../ui/surface/surface.gyp:surface',
           ],
           'include_dirs': [
             '../..',
