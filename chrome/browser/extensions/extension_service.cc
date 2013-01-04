@@ -2996,8 +2996,10 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
 
   if (FeatureSwitch::prompt_for_external_extensions()->IsEnabled()) {
     // External extensions are initially disabled. We prompt the user before
-    // enabling them.
-    if (Extension::IsExternalLocation(extension->location()) &&
+    // enabling them. Hosted apps are excepted because they are not dangerous
+    // (they need to be launched by the user anyway).
+    if (extension->GetType() != Extension::TYPE_HOSTED_APP &&
+        Extension::IsExternalLocation(extension->location()) &&
         !extension_prefs_->IsExternalExtensionAcknowledged(extension->id())) {
       return false;
     }
