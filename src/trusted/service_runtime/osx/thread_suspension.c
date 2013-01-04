@@ -107,19 +107,23 @@ void NaClAppThreadGetSuspendedRegistersInternal(
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
    * We might have suspended the thread while it is returning to
-   * untrusted code via NaClSwitchRemainingRegsViaECX().  This is
-   * particularly likely for a faulted thread that has been resumed
-   * and suspended again without ever being unblocked by
-   * NaClAppThreadUnblockIfFaulted().
+   * untrusted code via NaClSwitchRemainingRegsViaECX() and
+   * NaCl_springboard_all_regs.  This is particularly likely for a
+   * faulted thread that has been resumed and suspended again without
+   * ever being unblocked by NaClAppThreadUnblockIfFaulted().
    *
    * In this situation, we must undo the register state modifications
    * made by NaClAppThreadSetSuspendedRegistersInternal().
    */
   struct NaClAppThreadSuspendedRegisters *state = natp->suspended_registers;
+  struct NaClApp *nap = natp->nap;
   uint32_t eip = state->context.uts.ts32.__eip;
-  if (state->context.uts.ts32.__cs == NaClGetGlobalCs() &&
-      eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
-      eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
+  if ((state->context.uts.ts32.__cs == NaClGetGlobalCs() &&
+       eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
+       eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) ||
+      (state->context.uts.ts32.__cs == natp->user.cs &&
+       eip >= nap->all_regs_springboard.start_addr &&
+       eip < nap->all_regs_springboard.end_addr)) {
     state->context.uts.ts32.__eip = natp->user.gs_segment.new_prog_ctr;
     state->context.uts.ts32.__ecx = natp->user.gs_segment.new_ecx;
     /*
