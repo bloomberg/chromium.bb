@@ -1,0 +1,11 @@
+# ./configure has an embedded CR (ac_cr='^M').  When treated as text, this gets
+# converted to a CRLF pair by the codereview site which then makes the patch
+# file invalid as such:
+#
+# +
+# +ac_cr='
+# '
+# +ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
+#
+# All attempts to apply this patch then fail.
+configure       binary
