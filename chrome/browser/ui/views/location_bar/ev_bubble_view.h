@@ -24,6 +24,7 @@ class EVBubbleView : public IconLabelBubbleView {
   virtual ~EVBubbleView();
 
   // Overridden from View.
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 

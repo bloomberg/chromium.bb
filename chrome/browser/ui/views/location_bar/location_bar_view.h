@@ -355,22 +355,6 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
-  // Returns the amount of horizontal space (in pixels) out of
-  // |location_bar_width| that is not taken up by the actual text in
-  // location_entry_.
-  int AvailableWidth(int location_bar_width);
-
-  // If |view| fits in |available_width|, it is made visible and positioned at
-  // the leading or trailing end of |bounds|, which are then shrunk
-  // appropriately.  Otherwise |view| is made invisible.
-  // Note: |view| is expected to have already been positioned and sized
-  // vertically.
-  void LayoutView(views::View* view,
-                  int padding,
-                  int available_width,
-                  bool leading,
-                  gfx::Rect* bounds);
-
   // Update the visibility state of the Content Blocked icons to reflect what is
   // actually blocked on the current page.
   void RefreshContentSettingViews();

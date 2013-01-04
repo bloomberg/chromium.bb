@@ -16,6 +16,16 @@ EVBubbleView::EVBubbleView(const int background_images[],
 EVBubbleView::~EVBubbleView() {
 }
 
+gfx::Size EVBubbleView::GetMinimumSize() {
+
+  // Set the minimum size for elided EV bubbles to 150 px.
+  static const int kMinBubbleWidth = 150;
+
+  gfx::Size minimum(GetPreferredSize());
+  minimum.set_width(std::min(kMinBubbleWidth, minimum.width()));
+  return minimum;
+}
+
 bool EVBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the dialog on mouse release; that is the standard behavior
   // for buttons.
