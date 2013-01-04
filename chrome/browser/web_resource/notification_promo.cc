@@ -12,10 +12,13 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/prefs/pref_service_simple.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
@@ -53,7 +56,6 @@ const char kPrefPromoMaxViews[] = "max_views";
 const char kPrefPromoGroup[] = "group";
 const char kPrefPromoViews[] = "views";
 const char kPrefPromoClosed[] = "closed";
-const char kPrefPromoGPlusRequired[] = "gplus_required";
 
 // Returns a string suitable for the Promo Server URL 'osname' value.
 std::string PlatformString() {
@@ -189,9 +191,8 @@ void AppendQueryParameter(GURL* url,
 
 }  // namespace
 
-NotificationPromo::NotificationPromo(Profile* profile)
-    : profile_(profile),
-      prefs_(profile_->GetPrefs()),
+NotificationPromo::NotificationPromo()
+    : prefs_(g_browser_process->local_state()),
       promo_type_(NO_PROMO),
       promo_payload_(new base::DictionaryValue()),
       start_(0.0),
@@ -205,9 +206,7 @@ NotificationPromo::NotificationPromo(Profile* profile)
       group_(0),
       views_(0),
       closed_(false),
-      gplus_required_(false),
       new_notification_(false) {
-  DCHECK(profile);
   DCHECK(prefs_);
 }
 
@@ -271,9 +270,6 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
   // Payload.
   const DictionaryValue* payload = NULL;
   if (promo->GetDictionary("payload", &payload)) {
-    payload->GetBoolean("gplus_required", &gplus_required_);
-    DVLOG(1) << "gplus_required_ = " << gplus_required_;
-
     base::Value* ppcopy = DeepCopyAndResolveStrings(payload, strings);
     DCHECK(ppcopy && ppcopy->IsType(base::Value::TYPE_DICTIONARY));
     promo_payload_.reset(static_cast<base::DictionaryValue*>(ppcopy));
@@ -296,7 +292,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
 }
 
 void NotificationPromo::CheckForNewNotification() {
-  NotificationPromo old_promo(profile_);
+  NotificationPromo old_promo;
   old_promo.InitFromPrefs(promo_type_);
   const double old_start = old_promo.start_;
   const double old_end = old_promo.end_;
@@ -316,10 +312,16 @@ void NotificationPromo::OnNewNotification() {
 }
 
 // static
+void NotificationPromo::RegisterPrefs(PrefServiceSimple* local_state) {
+  local_state->RegisterDictionaryPref(kPrefPromoObject);
+}
+
+// static
 void NotificationPromo::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+  // TODO(dbeam): Remove in M28 when we're reasonably sure all prefs are gone.
   prefs->RegisterDictionaryPref(kPrefPromoObject,
-                                new base::DictionaryValue,
                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->ClearPref(kPrefPromoObject);
 }
 
 void NotificationPromo::WritePrefs() {
@@ -340,8 +342,6 @@ void NotificationPromo::WritePrefs() {
   ntp_promo->SetInteger(kPrefPromoGroup, group_);
   ntp_promo->SetInteger(kPrefPromoViews, views_);
   ntp_promo->SetBoolean(kPrefPromoClosed, closed_);
-
-  ntp_promo->SetBoolean(kPrefPromoGPlusRequired, gplus_required_);
 
   base::ListValue* promo_list = new base::ListValue;
   promo_list->Set(0, ntp_promo);  // Only support 1 promo for now.
@@ -389,8 +389,6 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   ntp_promo->GetInteger(kPrefPromoGroup, &group_);
   ntp_promo->GetInteger(kPrefPromoViews, &views_);
   ntp_promo->GetBoolean(kPrefPromoClosed, &closed_);
-
-  ntp_promo->GetBoolean(kPrefPromoGPlusRequired, &gplus_required_);
 }
 
 bool NotificationPromo::CanShow() const {
@@ -399,14 +397,13 @@ bool NotificationPromo::CanShow() const {
          !ExceedsMaxGroup() &&
          !ExceedsMaxViews() &&
          base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
-         base::Time::FromDoubleT(EndTime()) > base::Time::Now() &&
-         IsGPlusRequired();
+         base::Time::FromDoubleT(EndTime()) > base::Time::Now();
 }
 
 // static
-void NotificationPromo::HandleClosed(Profile* profile, PromoType promo_type) {
+void NotificationPromo::HandleClosed(PromoType promo_type) {
   content::RecordAction(UserMetricsAction("NTPPromoClosed"));
-  NotificationPromo promo(profile);
+  NotificationPromo promo;
   promo.InitFromPrefs(promo_type);
   if (!promo.closed_) {
     promo.closed_ = true;
@@ -415,9 +412,9 @@ void NotificationPromo::HandleClosed(Profile* profile, PromoType promo_type) {
 }
 
 // static
-bool NotificationPromo::HandleViewed(Profile* profile, PromoType promo_type) {
+bool NotificationPromo::HandleViewed(PromoType promo_type) {
   content::RecordAction(UserMetricsAction("NTPPromoShown"));
-  NotificationPromo promo(profile);
+  NotificationPromo promo;
   promo.InitFromPrefs(promo_type);
   ++promo.views_;
   promo.WritePrefs();
@@ -430,10 +427,6 @@ bool NotificationPromo::ExceedsMaxGroup() const {
 
 bool NotificationPromo::ExceedsMaxViews() const {
   return (max_views_ == 0) ? false : views_ >= max_views_;
-}
-
-bool NotificationPromo::IsGPlusRequired() const {
-  return !gplus_required_ || prefs_->GetBoolean(prefs::kIsGooglePlusUser);
 }
 
 // static

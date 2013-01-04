@@ -429,10 +429,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Disable the promo if this is the first run, otherwise set the promo string
   // for display if there is a valid outstanding promo.
   if (first_run::IsChromeFirstRun()) {
-    NotificationPromo::HandleClosed(profile_,
-                                    NotificationPromo::NTP_NOTIFICATION_PROMO);
+    NotificationPromo::HandleClosed(NotificationPromo::NTP_NOTIFICATION_PROMO);
   } else {
-    NotificationPromo notification_promo(profile_);
+    NotificationPromo notification_promo;
     notification_promo.InitFromPrefs(NotificationPromo::NTP_NOTIFICATION_PROMO);
     if (notification_promo.CanShow()) {
       load_time_data.SetString("notificationPromoText",
@@ -440,7 +439,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       DVLOG(1) << "Notification promo:" << notification_promo.promo_text();
     }
 
-    NotificationPromo bubble_promo(profile_);
+    NotificationPromo bubble_promo;
     bubble_promo.InitFromPrefs(NotificationPromo::NTP_BUBBLE_PROMO);
     if (bubble_promo.CanShow()) {
       load_time_data.SetString("bubblePromoText",

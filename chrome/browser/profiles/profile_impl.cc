@@ -69,7 +69,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -560,13 +559,6 @@ void ProfileImpl::InitHostZoomMap() {
 
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                  content::Source<HostZoomMap>(host_zoom_map));
-}
-
-void ProfileImpl::InitPromoResources() {
-  if (promo_resource_service_)
-    return;
-  promo_resource_service_ = new PromoResourceService(this);
-  promo_resource_service_->StartAfterDelay();
 }
 
 FilePath ProfileImpl::last_selected_directory() {

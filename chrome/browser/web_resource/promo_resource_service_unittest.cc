@@ -17,9 +17,9 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -28,24 +28,23 @@
 class PromoResourceServiceTest : public testing::Test {
  public:
   PromoResourceServiceTest()
-      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
-        web_resource_service_(new PromoResourceService(&profile_)) {
+      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
+    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
+        local_state_.Get());
+    // |promo_resource_service_| must be created after local state is set.
+    promo_resource_service_ = new PromoResourceService;
   }
 
  protected:
-  TestingProfile profile_;
   ScopedTestingLocalState local_state_;
-  scoped_refptr<PromoResourceService> web_resource_service_;
+  scoped_refptr<PromoResourceService> promo_resource_service_;
   MessageLoop loop_;
 };
 
 class NotificationPromoTest {
  public:
-  explicit NotificationPromoTest(Profile* profile)
-      : profile_(profile),
-        prefs_(profile->GetPrefs()),
-        notification_promo_(profile),
-        received_notification_(false),
+  NotificationPromoTest()
+      : received_notification_(false),
         start_(0.0),
         end_(0.0),
         num_groups_(0),
@@ -54,16 +53,14 @@ class NotificationPromoTest {
         time_slice_(0),
         max_group_(0),
         max_views_(0),
-        closed_(false),
-        gplus_required_(false) {
+        closed_(false) {
   }
 
   void Init(const std::string& json,
             const std::string& promo_text,
             double start, double end,
             int num_groups, int initial_segment, int increment,
-            int time_slice, int max_group, int max_views,
-            bool gplus_required) {
+            int time_slice, int max_group, int max_views) {
     Value* value(base::JSONReader::Read(json));
     ASSERT_TRUE(value);
     DictionaryValue* dict = NULL;
@@ -84,8 +81,6 @@ class NotificationPromoTest {
     max_group_ = max_group;
 
     max_views_ = max_views;
-
-    gplus_required_ = gplus_required;
 
     closed_ = false;
     received_notification_ = false;
@@ -122,14 +117,12 @@ class NotificationPromoTest {
 
     // Views should be 0 for now.
     EXPECT_EQ(notification_promo_.views_, 0);
-
-    EXPECT_EQ(notification_promo_.gplus_required_, gplus_required_);
   }
 
   // Create a new NotificationPromo from prefs and compare to current
   // notification.
   void TestInitFromPrefs() {
-    NotificationPromo prefs_notification_promo(profile_);
+    NotificationPromo prefs_notification_promo;
     prefs_notification_promo.InitFromPrefs(promo_type_);
 
     EXPECT_EQ(notification_promo_.prefs_,
@@ -158,8 +151,6 @@ class NotificationPromoTest {
               prefs_notification_promo.views_);
     EXPECT_EQ(notification_promo_.closed_,
               prefs_notification_promo.closed_);
-    EXPECT_EQ(notification_promo_.gplus_required_,
-              prefs_notification_promo.gplus_required_);
   }
 
   void TestGroup() {
@@ -189,12 +180,12 @@ class NotificationPromoTest {
     notification_promo_.views_ = notification_promo_.max_views_ - 2;
     notification_promo_.WritePrefs();
 
-    NotificationPromo::HandleViewed(profile_, promo_type_);
-    NotificationPromo new_promo(profile_);
+    NotificationPromo::HandleViewed(promo_type_);
+    NotificationPromo new_promo;
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_EQ(new_promo.max_views_ - 1, new_promo.views_);
     EXPECT_TRUE(new_promo.CanShow());
-    NotificationPromo::HandleViewed(profile_, promo_type_);
+    NotificationPromo::HandleViewed(promo_type_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_EQ(new_promo.max_views_, new_promo.views_);
     EXPECT_FALSE(new_promo.CanShow());
@@ -214,12 +205,12 @@ class NotificationPromoTest {
   }
 
   void TestClosed() {
-    NotificationPromo new_promo(profile_);
+    NotificationPromo new_promo;
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_FALSE(new_promo.closed_);
     EXPECT_TRUE(new_promo.CanShow());
 
-    NotificationPromo::HandleClosed(profile_, promo_type_);
+    NotificationPromo::HandleClosed(promo_type_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_TRUE(new_promo.closed_);
     EXPECT_FALSE(new_promo.CanShow());
@@ -306,27 +297,7 @@ class NotificationPromoTest {
     EXPECT_TRUE(notification_promo_.CanShow());
   }
 
-  void TestGplus() {
-    notification_promo_.gplus_required_ = true;
-
-    // Test G+ required.
-    notification_promo_.prefs_->SetBoolean(prefs::kIsGooglePlusUser, true);
-    EXPECT_TRUE(notification_promo_.CanShow());
-    notification_promo_.prefs_->SetBoolean(prefs::kIsGooglePlusUser, false);
-    EXPECT_FALSE(notification_promo_.CanShow());
-
-    notification_promo_.gplus_required_ = false;
-
-    // Test G+ not required.
-    notification_promo_.prefs_->SetBoolean(prefs::kIsGooglePlusUser, true);
-    EXPECT_TRUE(notification_promo_.CanShow());
-    notification_promo_.prefs_->SetBoolean(prefs::kIsGooglePlusUser, false);
-    EXPECT_TRUE(notification_promo_.CanShow());
-  }
-
  private:
-  Profile* profile_;
-  PrefService* prefs_;
   NotificationPromo notification_promo_;
   bool received_notification_;
   scoped_ptr<DictionaryValue> test_json_;
@@ -346,8 +317,6 @@ class NotificationPromoTest {
   int max_views_;
 
   bool closed_;
-
-  bool gplus_required_;
 };
 
 // Test that everything gets parsed correctly, notifications are sent,
@@ -356,10 +325,7 @@ class NotificationPromoTest {
 // no payload.promo_short_message is specified in the JSON response.
 TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Check that prefs are set correctly.
-  PrefService* prefs = profile_.GetPrefs();
-  ASSERT_TRUE(prefs != NULL);
-
-  NotificationPromoTest promo_test(&profile_);
+  NotificationPromoTest promo_test;
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
@@ -389,8 +355,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                   "      \"payload\":"
                   "        {"
                   "          \"days_active\":7,"
-                  "          \"install_age_days\":21,"
-                  "          \"gplus_required\":false"
+                  "          \"install_age_days\":21"
                   "        },"
                   "      \"max_views\":30"
                   "    }"
@@ -401,7 +366,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                   // on Android devices with incorrect or unset date/time.
                   933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
                   1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
-                  1000, 200, 100, 3600, 400, 30, false);
+                  1000, 200, 100, 3600, 400, 30);
 
   promo_test.InitPromoFromJson(true);
 
@@ -418,16 +383,12 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   promo_test.TestPromoText();
   promo_test.TestTime();
   promo_test.TestIncrement();
-  promo_test.TestGplus();
 }
 
 // Test that payload.promo_message_short is used if present.
 TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
   // Check that prefs are set correctly.
-  PrefService* prefs = profile_.GetPrefs();
-  ASSERT_TRUE(prefs != NULL);
-
-  NotificationPromoTest promo_test(&profile_);
+  NotificationPromoTest promo_test;
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
@@ -454,8 +415,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
                   "          \"promo_message_short\":"
                   "              \"What do you think of Chrome?\","
                   "          \"days_active\":7,"
-                  "          \"install_age_days\":21,"
-                  "          \"gplus_required\":false"
+                  "          \"install_age_days\":21"
                   "        },"
                   "      \"max_views\":30"
                   "    }"
@@ -466,7 +426,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
                   // on Android devices with incorrect or unset date/time.
                   933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
                   1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
-                  1000, 200, 100, 3600, 400, 30, false);
+                  1000, 200, 100, 3600, 400, 30);
 
   promo_test.InitPromoFromJson(true);
   // Second time should not trigger a notification.
@@ -477,10 +437,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
 // Test that strings.|payload.promo_message_short| is used if present.
 TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
   // Check that prefs are set correctly.
-  PrefService* prefs = profile_.GetPrefs();
-  ASSERT_TRUE(prefs != NULL);
-
-  NotificationPromoTest promo_test(&profile_);
+  NotificationPromoTest promo_test;
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
@@ -513,8 +470,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
                   "          \"promo_message_short\":"
                   "              \"GOOD_STRING\","
                   "          \"days_active\":7,"
-                  "          \"install_age_days\":21,"
-                  "          \"gplus_required\":false"
+                  "          \"install_age_days\":21"
                   "        },"
                   "      \"max_views\":30"
                   "    }"
@@ -525,7 +481,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
                   // on Android devices with incorrect or unset date/time.
                   933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
                   1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
-                  1000, 200, 100, 3600, 400, 30, false);
+                  1000, 200, 100, 3600, 400, 30);
 
   promo_test.InitPromoFromJson(true);
   // Second time should not trigger a notification.
@@ -536,6 +492,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
 TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
   GURL promo_server_url = NotificationPromo::PromoServerURL();
   EXPECT_FALSE(promo_server_url.is_empty());
-  EXPECT_TRUE(promo_server_url.SchemeIs("https"));
+  EXPECT_TRUE(promo_server_url.is_valid());
+  EXPECT_TRUE(promo_server_url.SchemeIs(chrome::kHttpsScheme));
   // TODO(achuith): Test this better.
 }

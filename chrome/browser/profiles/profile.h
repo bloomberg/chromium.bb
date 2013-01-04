@@ -254,9 +254,6 @@ class Profile : public content::BrowserContext {
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
 
-  // Start up service that gathers data from a promo resource feed.
-  virtual void InitPromoResources() = 0;
-
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const FilePath& path) = 0;

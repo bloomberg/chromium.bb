@@ -50,8 +50,8 @@ void RecordImpressionOnHistogram(PromoImpressionBuckets type) {
 }
 
 // Helper to ask whether the promo is active.
-bool CanShowNotificationPromo(Profile* profile) {
-  NotificationPromo notification_promo(profile);
+bool CanShowNotificationPromo() {
+  NotificationPromo notification_promo;
   notification_promo.InitFromPrefs(NotificationPromo::MOBILE_NTP_SYNC_PROMO);
   return notification_promo.CanShow();
 }
@@ -175,11 +175,10 @@ void PromoHandler::HandlePromoSendEmail(const base::ListValue* args) {
 }
 
 void PromoHandler::HandlePromoActionTriggered(const base::ListValue* /*args*/) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile || !CanShowNotificationPromo(profile))
+  if (!CanShowNotificationPromo())
     return;
 
-  NotificationPromoMobileNtp promo(profile);
+  NotificationPromoMobileNtp promo;
   if (!promo.InitFromPrefs())
     return;
 
@@ -188,12 +187,10 @@ void PromoHandler::HandlePromoActionTriggered(const base::ListValue* /*args*/) {
 }
 
 void PromoHandler::HandlePromoDisabled(const base::ListValue* /*args*/) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile || !CanShowNotificationPromo(profile))
+  if (!CanShowNotificationPromo())
     return;
 
-  NotificationPromo::HandleClosed(
-      profile, NotificationPromo::MOBILE_NTP_SYNC_PROMO);
+  NotificationPromo::HandleClosed(NotificationPromo::MOBILE_NTP_SYNC_PROMO);
   RecordImpressionOnHistogram(PROMO_IMPRESSION_CLOSE_PROMO_CLICKED);
 
   content::NotificationService* service =
@@ -225,9 +222,7 @@ void PromoHandler::InjectPromoDecorations() {
 void PromoHandler::RecordPromotionImpression(const std::string& id) {
   // Update number of views a promotion has received and trigger refresh
   // if it exceeded max_views set for the promotion.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile &&
-      NotificationPromo::HandleViewed(profile,
+  if (NotificationPromo::HandleViewed(
           NotificationPromo::MOBILE_NTP_SYNC_PROMO)) {
     Notify(this, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
@@ -244,11 +239,10 @@ void PromoHandler::RecordPromotionImpression(const std::string& id) {
 
 bool PromoHandler::FetchPromotion(DictionaryValue* result) {
   DCHECK(result != NULL);
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile || !CanShowNotificationPromo(profile))
+  if (!CanShowNotificationPromo())
     return false;
 
-  NotificationPromoMobileNtp promo(profile);
+  NotificationPromoMobileNtp promo;
   if (!promo.InitFromPrefs())
     return false;
 

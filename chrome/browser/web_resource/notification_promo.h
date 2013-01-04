@@ -19,8 +19,8 @@ class ListValue;
 }
 
 class PrefService;
+class PrefServiceSimple;
 class PrefServiceSyncable;
-class Profile;
 
 // Helper class for PromoResourceService that parses promo notification info
 // from json or prefs.
@@ -35,7 +35,7 @@ class NotificationPromo {
     MOBILE_NTP_SYNC_PROMO,
   };
 
-  explicit NotificationPromo(Profile* profile);
+  NotificationPromo();
   ~NotificationPromo();
 
   // Initialize from json/prefs.
@@ -52,10 +52,10 @@ class NotificationPromo {
 
   // Helpers for NewTabPageHandler.
   // Mark the promo as closed when the user dismisses it.
-  static void HandleClosed(Profile* profile, PromoType promo_type);
+  static void HandleClosed(PromoType promo_type);
   // Mark the promo has having been viewed. This returns true if views
   // exceeds the maximum allowed.
-  static bool HandleViewed(Profile* profile, PromoType promo_type);
+  static bool HandleViewed(PromoType promo_type);
 
   bool new_notification() const { return new_notification_; }
 
@@ -66,6 +66,7 @@ class NotificationPromo {
   }
 
   // Register preferences.
+  static void RegisterPrefs(PrefServiceSimple* local_state);
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
  private:
@@ -90,10 +91,6 @@ class NotificationPromo {
   // When max_views_ is 0, we don't cap the number of views.
   bool ExceedsMaxViews() const;
 
-  // True if this promo is not targeted to G+ users, or if this is a G+ user.
-  bool IsGPlusRequired() const;
-
-  Profile* profile_;
   PrefService* prefs_;
 
   PromoType promo_type_;
@@ -117,8 +114,6 @@ class NotificationPromo {
   int group_;
   int views_;
   bool closed_;
-
-  bool gplus_required_;
 
   bool new_notification_;
 

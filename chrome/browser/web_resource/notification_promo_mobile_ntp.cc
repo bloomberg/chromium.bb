@@ -5,15 +5,12 @@
 #include "chrome/browser/web_resource/notification_promo_mobile_ntp.h"
 
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 
-
-NotificationPromoMobileNtp::NotificationPromoMobileNtp(Profile* profile)
+NotificationPromoMobileNtp::NotificationPromoMobileNtp()
     : valid_(false),
       action_args_(NULL),
-      payload_(NULL),
-      notification_promo_(profile) {
+      payload_(NULL) {
 }
 
 NotificationPromoMobileNtp::~NotificationPromoMobileNtp() {
@@ -55,7 +52,7 @@ bool NotificationPromoMobileNtp::InitFromNotificationPromo() {
     return false;
   }
 
-  // The rest of the fields is optional.
+  // The rest of the fields are optional.
   valid_ = true;
   payload_->GetBoolean("promo_requires_mobile_only_sync",
                        &requires_mobile_only_sync_);

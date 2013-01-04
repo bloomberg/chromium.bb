@@ -63,6 +63,7 @@
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -201,18 +202,17 @@ void BrowserProcessImpl::StartTearDown() {
                           base::Bind(&SdchDictionaryFetcher::Shutdown));
 
   // We need to destroy the MetricsService, VariationsService,
-  // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
-  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
-  // since their destructors can call the URLFetcher destructor, which does a
-  // PostDelayedTask operation on the IO thread. (The IO thread will handle that
-  // URLFetcher operation before going away.)
+  // IntranetRedirectDetector, PromoResourceService, and SafeBrowsing
+  // ClientSideDetectionService (owned by the SafeBrowsingService) before the
+  // io_thread_ gets destroyed, since their destructors can call the URLFetcher
+  // destructor, which does a PostDelayedTask operation on the IO thread. (The
+  // IO thread will handle that URLFetcher operation before going away.)
   metrics_service_.reset();
   variations_service_.reset();
   intranet_redirect_detector_.reset();
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
-  if (safe_browsing_service_.get()) {
+  if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
-  }
 #endif
 
   // Need to clear the desktop notification balloons before the io_thread_ and
@@ -351,8 +351,9 @@ void BrowserProcessImpl::EndSession() {
   // If all file writes haven't cleared in the timeout, leak the WaitableEvent
   // so that there's no race to reference it in Signal().
   if (!done_writing->TimedWait(
-      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds)))
+      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds))) {
     ignore_result(done_writing.release());
+  }
 
 #elif defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -683,9 +684,8 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
   // either.
   return NULL;
 #else
-  if (!crl_set_fetcher_.get()) {
+  if (!crl_set_fetcher_.get())
     crl_set_fetcher_ = new CRLSetFetcher();
-  }
   return crl_set_fetcher_.get();
 #endif
 }
@@ -800,26 +800,36 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // Also find plugins in a user-specific plugins dir,
   // e.g. ~/.config/chromium/Plugins.
   FilePath user_data_dir;
-  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
-  }
 #endif
+
+#endif  // defined(ENABLE_PLUGINS)
+
+  if (local_state()->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
+    ApplyDefaultBrowserPolicy();
 
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  if (!plugins_resource_service_) {
-    plugins_resource_service_ = new PluginsResourceService(local_state());
-    plugins_resource_service_->StartAfterDelay();
-  }
+  DCHECK(!plugins_resource_service_.get());
+  plugins_resource_service_ = new PluginsResourceService(local_state());
+  plugins_resource_service_->StartAfterDelay();
 #endif
-#endif  // defined(ENABLE_PLUGINS)
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kDisableWebResources)) {
+    DCHECK(!promo_resource_service_.get());
+    promo_resource_service_ = new PromoResourceService;
+    promo_resource_service_->StartAfterDelay();
+  }
 
 #if !defined(OS_ANDROID)
   if (browser_defaults::bookmarks_enabled &&
-      BookmarkPromptController::IsEnabled())
+      BookmarkPromptController::IsEnabled()) {
     bookmark_prompt_controller_.reset(new BookmarkPromptController());
+  }
 #endif
 }
 
@@ -888,7 +898,8 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
 
 void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
   std::set<std::string> schemes;
-  const ListValue* scheme_list = local_state_->GetList(prefs::kDisabledSchemes);
+  const ListValue* scheme_list =
+      local_state()->GetList(prefs::kDisabledSchemes);
   for (ListValue::const_iterator iter = scheme_list->begin();
        iter != scheme_list->end(); ++iter) {
     std::string scheme;
@@ -899,7 +910,7 @@ void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
-  if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled)) {
+  if (local_state()->GetBoolean(prefs::kDefaultBrowserSettingEnabled)) {
     scoped_refptr<ShellIntegration::DefaultWebClientWorker>
         set_browser_worker = new ShellIntegration::DefaultBrowserWorker(NULL);
     set_browser_worker->StartSetAsDefault();

@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"

@@ -702,8 +702,8 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 #if defined(ENABLE_EXTENSIONS)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!IsImportProcess(command_line)) {
     extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
         !go_off_the_record);
@@ -715,8 +715,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
     }
   }
 #endif
-  if (!command_line.HasSwitch(switches::kDisableWebResources))
-    profile->InitPromoResources();
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {

@@ -10,8 +10,6 @@
 #include "base/basictypes.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 
-class Profile;
-
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -20,7 +18,7 @@ class ListValue;
 // Helper class for NotificationPromo that deals with mobile_ntp promos.
 class NotificationPromoMobileNtp {
  public:
-  explicit NotificationPromoMobileNtp(Profile* profile_);
+  NotificationPromoMobileNtp();
   ~NotificationPromoMobileNtp();
 
   // Initialize from prefs/JSON.

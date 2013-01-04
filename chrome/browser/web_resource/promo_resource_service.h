@@ -17,7 +17,6 @@ class DictionaryValue;
 class NotificationPromo;
 class PrefServiceSimple;
 class PrefServiceSyncable;
-class Profile;
 
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
@@ -26,10 +25,9 @@ class Profile;
 class PromoResourceService : public WebResourceService {
  public:
   static void RegisterPrefs(PrefServiceSimple* local_state);
-
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
-  explicit PromoResourceService(Profile* profile);
+  PromoResourceService();
 
  private:
   virtual ~PromoResourceService();
@@ -54,9 +52,6 @@ class PromoResourceService : public WebResourceService {
 
   // WebResourceService override to process the parsed information.
   virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
-
-  // The profile this service belongs to.
-  Profile* profile_;
 
   // Allows the creation of tasks to send a notification.
   // This allows the PromoResourceService to notify the New Tab Page immediately

@@ -356,10 +356,6 @@ history::TopSites* OffTheRecordProfileImpl::GetTopSites() {
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
 }
 
-void OffTheRecordProfileImpl::InitPromoResources() {
-  NOTREACHED();
-}
-
 FilePath OffTheRecordProfileImpl::last_selected_directory() {
   const FilePath& directory = last_selected_directory_;
   if (directory.empty()) {

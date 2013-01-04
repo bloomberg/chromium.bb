@@ -23,7 +23,6 @@
 class NetPrefObserver;
 class PrefServiceSyncable;
 class PrefServiceBase;
-class PromoResourceService;
 class SSLConfigServiceManager;
 
 #if defined(OS_CHROMEOS)
@@ -110,7 +109,6 @@ class ProfileImpl : public Profile,
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
-  virtual void InitPromoResources() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
@@ -219,15 +217,14 @@ class ProfileImpl : public Profile,
   scoped_ptr<policy::PolicyService> policy_service_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
-  // |net_pref_observer_|, |promo_resource_service_|, |io_data_| an others store
-  // pointers to |prefs_| and shall be destructed first.
+  // |net_pref_observer_|, |io_data_| an others store pointers to |prefs_| and
+  // shall be destructed first.
   scoped_ptr<PrefServiceSyncable> prefs_;
   scoped_ptr<PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
-  scoped_refptr<PromoResourceService> promo_resource_service_;
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content::GeolocationPermissionContext>

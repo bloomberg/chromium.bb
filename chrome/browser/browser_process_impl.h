@@ -26,6 +26,7 @@ class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class RemoteDebuggingServer;
 class PrefServiceSimple;
+class PromoResourceService;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginsResourceService;
@@ -256,6 +257,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
+
+  scoped_refptr<PromoResourceService> promo_resource_service_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

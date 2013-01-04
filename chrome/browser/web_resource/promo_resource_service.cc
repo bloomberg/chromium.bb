@@ -10,8 +10,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/prefs/pref_service_simple.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,7 +33,7 @@ const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 // to versions with different types of promos).
 const int kPromoServiceVersion = 7;
 
-// The promotion type used for Unpack() and ScheduleNotificationOnInit.
+// The promotion type used for Unpack() and ScheduleNotificationOnInit().
 const NotificationPromo::PromoType kValidPromoTypes[] = {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     NotificationPromo::MOBILE_NTP_SYNC_PROMO,
@@ -62,32 +62,27 @@ int GetCacheUpdateDelay() {
 
 // static
 void PromoResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
-  // TODO(achuith): Delete this in M26. http://crbug.com/143773
-  // The promo service version number, and last locale.
-  const char kNtpPromoVersion[] = "ntp.promo_version";
-  const char kNtpPromoLocale[] = "ntp.promo_locale";
-  local_state->RegisterIntegerPref(kNtpPromoVersion, 0);
-  local_state->RegisterStringPref(kNtpPromoLocale, std::string());
-  local_state->ClearPref(kNtpPromoVersion);
-  local_state->ClearPref(kNtpPromoLocale);
+  local_state->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate, "0");
+  NotificationPromo::RegisterPrefs(local_state);
 }
 
 // static
 void PromoResourceService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+  // TODO(dbeam): remove in M28 when all prefs have been cleared.
   prefs->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate,
                             "0",
                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->ClearPref(prefs::kNtpPromoResourceCacheUpdate);
   NotificationPromo::RegisterUserPrefs(prefs);
 }
 
-PromoResourceService::PromoResourceService(Profile* profile)
-    : WebResourceService(profile->GetPrefs(),
+PromoResourceService::PromoResourceService()
+    : WebResourceService(g_browser_process->local_state(),
                          GetPromoResourceURL(),
                          true,  // append locale to URL
                          prefs::kNtpPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
                          GetCacheUpdateDelay()),
-                         profile_(profile),
                          ALLOW_THIS_IN_INITIALIZER_LIST(
                              weak_ptr_factory_(this)) {
   ScheduleNotificationOnInit();
@@ -132,7 +127,7 @@ void PromoResourceService::ScheduleNotificationOnInit() {
   // If the promo start is in the future, set a notification task to
   // invalidate the NTP cache at the time of the promo start.
   for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
-    NotificationPromo notification_promo(profile_);
+    NotificationPromo notification_promo;
     notification_promo.InitFromPrefs(kValidPromoTypes[i]);
     ScheduleNotification(notification_promo);
   }
@@ -166,7 +161,7 @@ void PromoResourceService::PromoResourceStateChange() {
 
 void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
-    NotificationPromo notification_promo(profile_);
+    NotificationPromo notification_promo;
     notification_promo.InitFromJson(parsed_json, kValidPromoTypes[i]);
     if (notification_promo.new_notification())
       ScheduleNotification(notification_promo);
