@@ -1422,7 +1422,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
 }
 
 // http://crbug.com/131179 http://crbug.com/165765
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_DeleteItem DISABLED_DeleteItem
 #else
 #define MAYBE_DeleteItem DeleteItem
