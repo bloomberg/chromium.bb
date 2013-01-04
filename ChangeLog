@@ -1,5 +1,8 @@
 2013-01-04  Christian Egli  <christian.egli@sbs.ch>
 
+	* tables/en-ueb-g2.ctb: excludes entries that are not needed,
+	thanks to Joseph Lee.
+
 	* tables/Makefile.am (table_files):
 	* tables/ko.ctb:
 	* tables/ko-g2.ctb:

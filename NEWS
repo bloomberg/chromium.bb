@@ -7,6 +7,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Korean grade 1 and grade 2 thanks to Joseph Lee
 
 ** Braille Table Improvements
+   - Remove unneeded entries from en-ueb-g2.ctb, thanks to Joseph Lee
 
 ** Bug Fixes
 
