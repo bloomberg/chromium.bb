@@ -136,12 +136,6 @@ main (int argc, char **argv)
     if (i == argc)
 	usage (argv[0], 1);
 
-    if (!FcInit ())
-    {
-	fprintf (stderr, "Can't init font config library\n");
-	return 1;
-    }
-
     for (; i < argc; i++)
     {
 	int index;
