@@ -17,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
 
 namespace {

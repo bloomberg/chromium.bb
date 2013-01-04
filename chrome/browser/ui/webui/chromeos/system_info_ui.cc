@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"

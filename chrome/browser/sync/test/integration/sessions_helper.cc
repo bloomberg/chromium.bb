@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 using sync_datatype_helper::test;

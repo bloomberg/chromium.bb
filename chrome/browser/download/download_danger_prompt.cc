@@ -8,7 +8,6 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "grit/generated_resources.h"
@@ -139,7 +138,7 @@ void DownloadDangerPromptImpl::PrepareToClose() {
   }
 }
 
-} // namespace
+}  // namespace
 
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(

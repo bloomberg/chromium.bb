@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
 
 class GURL;
 

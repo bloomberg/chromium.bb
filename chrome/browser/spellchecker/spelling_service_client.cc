@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"

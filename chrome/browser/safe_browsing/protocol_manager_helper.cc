@@ -14,7 +14,6 @@
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 

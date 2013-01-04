@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 

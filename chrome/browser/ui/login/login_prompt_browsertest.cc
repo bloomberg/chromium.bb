@@ -19,7 +19,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -448,7 +447,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
     WindowedLoadStopObserver load_stop_waiter(controller, 2);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(OpenURLParams(
-        auth_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+        auth_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
     auth_needed_waiter.Wait();
     WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
     browser()->OpenURL(OpenURLParams(

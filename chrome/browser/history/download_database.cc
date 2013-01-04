@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/download_row.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "sql/statement.h"
 

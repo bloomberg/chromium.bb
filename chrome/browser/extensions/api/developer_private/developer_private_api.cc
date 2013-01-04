@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -124,12 +123,11 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateAPI::CreateItemInfo(
 void DeveloperPrivateAPI::AddItemsInfo(const ExtensionSet& items,
                                        ExtensionSystem* system,
                                        ItemInfoList* item_list) {
-
   for (ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
     const Extension& item = **iter;
     if (item.location() == Extension::COMPONENT)
-      continue; // Skip built-in extensions / apps;
+      continue;  // Skip built-in extensions / apps;
     item_list->push_back(make_linked_ptr<developer::ItemInfo>(
         CreateItemInfo(item, system, false).release()));
   }

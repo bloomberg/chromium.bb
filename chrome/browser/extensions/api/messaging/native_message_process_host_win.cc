@@ -10,7 +10,6 @@
 #include "base/message_pump_win.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 

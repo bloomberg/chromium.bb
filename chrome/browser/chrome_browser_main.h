@@ -17,7 +17,6 @@
 #include "chrome/browser/task_profiler/auto_tracking.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/browser/browser_thread.h"
 
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
@@ -104,7 +103,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const PrefService* local_state() const { return local_state_; }
 
  private:
-
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including

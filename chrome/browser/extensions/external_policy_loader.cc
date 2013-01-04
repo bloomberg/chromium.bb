@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/external_policy_loader.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 

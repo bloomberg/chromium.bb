@@ -12,7 +12,6 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
@@ -182,4 +181,4 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
   ChromeURLDataManager::AddDataSource(profile, source);
 }
 
-} // namespace chromeos
+}  // namespace chromeos

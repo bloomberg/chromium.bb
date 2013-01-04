@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"

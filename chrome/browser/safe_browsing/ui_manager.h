@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 

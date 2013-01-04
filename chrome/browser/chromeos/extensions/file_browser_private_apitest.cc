@@ -11,7 +11,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -233,7 +232,6 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
                 kTestDisks[disk_info_index].is_hidden
             )
         ));
-
       }
     }
   }

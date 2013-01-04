@@ -14,7 +14,6 @@
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/tab_capture.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

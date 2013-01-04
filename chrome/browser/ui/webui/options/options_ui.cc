@@ -47,7 +47,6 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

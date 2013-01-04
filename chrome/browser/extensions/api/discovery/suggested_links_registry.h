@@ -7,9 +7,9 @@
 
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/discovery/suggested_link.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 

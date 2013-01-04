@@ -8,7 +8,6 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace predictors {
 

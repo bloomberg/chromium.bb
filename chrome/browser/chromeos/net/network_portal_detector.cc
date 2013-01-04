@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

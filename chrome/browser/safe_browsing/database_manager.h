@@ -21,7 +21,6 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 class SafeBrowsingService;

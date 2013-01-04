@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"

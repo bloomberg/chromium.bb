@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_thread.h"
 
 using content::PasswordForm;
 using sync_datatype_helper::test;

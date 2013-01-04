@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -50,8 +49,8 @@ const char kOperatorNameProperty[] = "operatorName";
 const char kStatusProperty[] = "status";
 const char kTechnologyProperty[] = "technology";
 
-ChromeWebUIDataSource *CreateChooseMobileNetworkUIHTMLSource() {
-  ChromeWebUIDataSource *source =
+ChromeWebUIDataSource* CreateChooseMobileNetworkUIHTMLSource() {
+  ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIChooseMobileNetworkHost);
 
   source->AddLocalizedString("chooseNetworkTitle",

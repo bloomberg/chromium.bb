@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 
 using std::max;
 using std::min;

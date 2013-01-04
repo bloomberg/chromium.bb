@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 
 namespace base {
@@ -69,7 +68,6 @@ class SandboxedUnpackerClient
 // NOTE: This class should only be used on the file thread.
 class SandboxedUnpacker : public content::UtilityProcessHostClient {
  public:
-
   // Unpacks the extension in |crx_path| into a temporary directory and calls
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.

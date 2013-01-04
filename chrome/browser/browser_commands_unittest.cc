@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/mock_user_manager.h"

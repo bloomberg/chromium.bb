@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"

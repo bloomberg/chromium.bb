@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
 
 #include "base/bind.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 

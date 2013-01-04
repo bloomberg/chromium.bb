@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -37,7 +36,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
 
   gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
 

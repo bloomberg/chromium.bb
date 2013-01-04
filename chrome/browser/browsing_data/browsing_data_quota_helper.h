@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_types.h"
 
 class BrowsingDataQuotaHelper;

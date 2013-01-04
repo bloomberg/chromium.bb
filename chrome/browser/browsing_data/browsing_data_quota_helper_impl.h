@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_types.h"
 
 namespace quota {

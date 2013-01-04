@@ -9,7 +9,6 @@
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
 class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
@@ -21,7 +20,6 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
 
   void StartTestScript(base::ProcessHandle* test_process,
                        std::string test_name, int debug_stub_port);
-
   void RunDebugStubTest(const std::string& nacl_module,
                         const std::string& test_name);
 };

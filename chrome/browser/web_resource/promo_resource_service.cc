@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 

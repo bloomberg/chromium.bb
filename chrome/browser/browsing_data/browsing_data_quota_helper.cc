@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 
+#include "base/location.h"
+
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo()
     : temporary_usage(0),
       persistent_usage(0) {}

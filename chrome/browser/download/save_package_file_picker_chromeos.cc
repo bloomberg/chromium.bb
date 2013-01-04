@@ -13,7 +13,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/dialogs/selected_file_info.h"
