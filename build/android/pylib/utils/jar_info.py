@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Gathers information about APKs."""
+"""Gathers information about JARs such as test methods and annotations."""
 
 import collections
 import logging
@@ -10,27 +10,17 @@ import os
 import pickle
 import re
 
-import cmd_helper
+# TODO(frankf): Move cmd_helper to utils.
+from pylib import cmd_helper
 
 # If you change the cached output of proguard, increment this number
 PICKLE_FORMAT_VERSION = 1
 
-def GetPackageNameForApk(apk_path):
-  """Returns the package name of the apk file."""
-  aapt_output = cmd_helper.GetCmdOutput(
-      ['aapt', 'dump', 'badging', apk_path]).split('\n')
-  package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
-  for line in aapt_output:
-    m = package_name_re.match(line)
-    if m:
-      return m.group(1)
-  raise Exception('Failed to determine package name of %s' % apk_path)
 
+class JarInfo(object):
+  """Helper class for inspecting Jars."""
 
-class ApkInfo(object):
-  """Helper class for inspecting APKs."""
-
-  def __init__(self, apk_path, jar_path):
+  def __init__(self, jar_path):
     self._PROGUARD_PATH = os.path.join(os.environ['ANDROID_SDK_ROOT'],
                                        'tools/proguard/bin/proguard.sh')
     if not os.path.exists(self._PROGUARD_PATH):
@@ -43,18 +33,12 @@ class ApkInfo(object):
         re.compile(r'\s*?- Constant element value.*$'))
     self._PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
 
-    if not os.path.exists(apk_path):
-      raise Exception('%s not found, please build it' % apk_path)
-    self._apk_path = apk_path
     if not os.path.exists(jar_path):
       raise Exception('%s not found, please build it' % jar_path)
     self._jar_path = jar_path
     self._annotation_map = collections.defaultdict(list)
     self._pickled_proguard_name = self._jar_path + '-proguard.pickle'
     self._test_methods = []
-    self._Initialize()
-
-  def _Initialize(self):
     if not self._GetCachedProguardData():
       self._GetProguardData()
 
@@ -142,13 +126,6 @@ class ApkInfo(object):
     class_name, method = test.split('#')
     return class_name.endswith('Test') and method.startswith('test')
 
-  def GetApkPath(self):
-    return self._apk_path
-
-  def GetPackageName(self):
-    """Returns the package name of this APK."""
-    return GetPackageNameForApk(self._apk_path)
-
   def GetTestAnnotations(self, test):
     """Returns a list of all annotations for the given |test|. May be empty."""
     if not self._IsTestMethod(test):
@@ -178,7 +155,7 @@ class ApkInfo(object):
                 annotation_filter_list, annotations)]
 
   def GetTestMethods(self):
-    """Returns a list of all test methods in this apk as Class#testMethod."""
+    """Returns a list of all test methods in this jar as Class#testMethod."""
     return self._test_methods
 
   @staticmethod
