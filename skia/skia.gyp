@@ -231,6 +231,8 @@
         # Temporarily keep old int-srcrect behavior, until we determine if
         # the few failures are a bug or not.
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
+        'SK_IGNORE_QUAD_STROKE_FIX',
+        'SK_IGNORE_TREAT_AS_SPRITE',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
