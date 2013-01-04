@@ -119,6 +119,8 @@ chrome/installer/mac/pkg-dmg
 chrome/installer/mini_installer/mini_installer_exe_version.rc.version
 # String 'copyright' used in resources.
 chrome/installer/setup/setup_exe_version.rc.version
+# Emits Chromium copyright.
+chrome/test/chromedriver/embed_js_in_cpp.py
 # String 'copyright' used in code.
 chrome/tools/convert_dict/aff_reader.h
 # String 'copyright' used in code.
