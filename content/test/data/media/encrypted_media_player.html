@@ -10,11 +10,12 @@
       var video = document.querySelector('video');
 
       function onTimeUpdate() {
-        // webkitkeyadded should have been fired before playback.
-        if (!video.receivedKeyAdded)
-          failTest('Key added event not received.');
         if (video.currentTime < 1)
           return;
+        // keyadded may be fired around the start of playback; check for it
+        // after a delay to avoid timing issues.
+        if (!video.receivedKeyAdded)
+          failTest('Key added event not received.');
         if (video.isHeartbeatExpected && !video.receivedHeartbeat)
           failTest('Heartbeat keymessage event not received.');
         video.removeEventListener('ended', failTest);

@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
                          "com.example.invalid", kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback_AudioOnly) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_AudioOnly) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
