@@ -569,8 +569,12 @@ bool InstallUtil::ProgramCompare::Evaluate(const string16& value) const {
     return false;
   }
 
+  return EvaluatePath(program);
+}
+
+bool InstallUtil::ProgramCompare::EvaluatePath(const FilePath& path) const {
   // Try the simple thing first: do the paths happen to match?
-  if (FilePath::CompareEqualIgnoreCase(path_to_match_.value(), program.value()))
+  if (FilePath::CompareEqualIgnoreCase(path_to_match_.value(), path.value()))
     return true;
 
   // If the paths don't match and we couldn't open the expected file, we've done
@@ -582,7 +586,7 @@ bool InstallUtil::ProgramCompare::Evaluate(const string16& value) const {
   base::win::ScopedHandle handle;
   BY_HANDLE_FILE_INFORMATION info = {};
 
-  return (OpenForInfo(program, &handle) &&
+  return (OpenForInfo(path, &handle) &&
           GetInfo(handle, &info) &&
           info.dwVolumeSerialNumber == file_info_.dwVolumeSerialNumber &&
           info.nFileIndexHigh == file_info_.nFileIndexHigh &&

@@ -184,6 +184,7 @@ class InstallUtil {
     explicit ProgramCompare(const FilePath& path_to_match);
     virtual ~ProgramCompare();
     virtual bool Evaluate(const string16& value) const OVERRIDE;
+    bool EvaluatePath(const FilePath& path) const;
 
    protected:
     static bool OpenForInfo(const FilePath& path,

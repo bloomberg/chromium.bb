@@ -325,10 +325,10 @@ void CloseChromeFrameHelperProcess() {
 
 // Deletes shortcuts at |install_level| from Start menu, Desktop,
 // Quick Launch, taskbar, and secondary tiles on the Start Screen (Win8+).
-// Only shortcuts pointing to |target| will be removed.
+// Only shortcuts pointing to |target_exe| will be removed.
 void DeleteShortcuts(const InstallerState& installer_state,
                      const Product& product,
-                     const string16& target_exe) {
+                     const FilePath& target_exe) {
   BrowserDistribution* dist = product.distribution();
 
   // The per-user shortcut for this user, if present on a system-level install,
@@ -367,10 +367,10 @@ void DeleteShortcuts(const InstallerState& installer_state,
   // it is possible for shortcuts to remain pinned while their parent shortcut
   // has been deleted or changed to point to another |target_exe|. Make sure all
   // pinned-to-taskbar shortcuts that point to |target_exe| are unpinned.
-  ShellUtil::RemoveTaskbarShortcuts(target_exe);
+  ShellUtil::RemoveTaskbarShortcuts(target_exe.value());
 
   ShellUtil::RemoveStartScreenShortcuts(product.distribution(),
-                                        target_exe);
+                                        target_exe.value());
 }
 
 bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
@@ -1139,14 +1139,13 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     auto_launch_util::DisableAllAutoStartFeatures(
         ASCIIToUTF16(chrome::kInitialProfile));
 
-    DeleteShortcuts(installer_state, product, chrome_exe);
+    DeleteShortcuts(installer_state, product, FilePath(chrome_exe));
 
   } else if (product.is_chrome_app_host()) {
     // TODO(huangs): Remove this check once we have system-level App Host.
     DCHECK(!installer_state.system_install());
-    const string16 app_host_exe(
-        installer_state.target_path().Append(installer::kChromeAppHostExe)
-            .value());
+    const FilePath app_host_exe(
+        installer_state.target_path().Append(installer::kChromeAppHostExe));
     DeleteShortcuts(installer_state, product, app_host_exe);
   }
 
