@@ -804,11 +804,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
 #endif
 
-#endif  // defined(ENABLE_PLUGINS)
-
-  if (local_state()->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
-    ApplyDefaultBrowserPolicy();
-
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
 
@@ -817,6 +812,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   plugins_resource_service_ = new PluginsResourceService(local_state());
   plugins_resource_service_->StartAfterDelay();
 #endif
+#endif  // defined(ENABLE_PLUGINS)
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
