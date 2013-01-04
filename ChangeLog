@@ -1,5 +1,12 @@
 2013-01-04  Christian Egli  <christian.egli@sbs.ch>
 
+	* gnulib/sys/*.h:
+	* gnulib/m4/*.m4
+	* gnulib/*.h:
+	* gnulib/*.c:
+	* gnulib/Makefile.am:
+	* build-aux/snippet/*.h: Upgrade to gnulib v0.0-7794-g964bbc2
+
 	* tables/en-ueb-g2.ctb: excludes entries that are not needed,
 	thanks to Joseph Lee.
 
