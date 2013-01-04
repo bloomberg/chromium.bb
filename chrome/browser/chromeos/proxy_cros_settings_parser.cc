@@ -82,10 +82,7 @@ net::ProxyServer CreateProxyServer(std::string host,
     host_port_pair = net::HostPortPair::FromString(host);
   if (host_port_pair.host().empty())  // Host is not URL or <server>::<port>.
     host_port_pair = net::HostPortPair(host, port);
-  // Formal parameter port overrides what may have been specified in host.
-  if (port != 0 && port != default_port)
-    host_port_pair.set_port(port);
-  else if (host_port_pair.port() == 0)  // No port in host, use default.
+  if (host_port_pair.port() == 0)  // No port in host, use default.
     host_port_pair.set_port(default_port);
   return net::ProxyServer(scheme, host_port_pair);
 }

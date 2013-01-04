@@ -522,6 +522,39 @@ cr.define('options.internet', function() {
     detailsPage.visible = true;
   };
 
+  DetailsInternetPage.updateProxySettings = function(type) {
+      var proxyHost = null,
+          proxyPort = null;
+
+      if (type == 'cros.session.proxy.singlehttp') {
+        proxyHost = 'proxy-host-signal-name';
+        proxyPort = 'proxy-host-single-port';
+      }else if (type == 'cros.session.proxy.httpurl') {
+        proxyHost = 'proxy-host-name';
+        proxyPort = 'proxy-host-port';
+      }else if (type == 'cros.session.proxy.httpsurl') {
+        proxyHost = 'secure-proxy-host-name';
+        proxyPort = 'secure-proxy-port';
+      }else if (type == 'cros.session.proxy.ftpurl') {
+        proxyHost = 'ftp-proxy';
+        proxyPort = 'ftp-proxy-port';
+      }else if (type == 'cros.session.proxy.socks') {
+        proxyHost = 'socks-host';
+        proxyPort = 'socks-port';
+      }else {
+        return;
+      }
+
+      var hostValue = $(proxyHost).value;
+      if (hostValue.indexOf(':') !== -1) {
+        if (hostValue.match(/:/g).length == 1) {
+          hostValue = hostValue.split(':');
+          $(proxyHost).value = hostValue[0];
+          $(proxyPort).value = hostValue[1];
+        }
+      }
+  };
+
   DetailsInternetPage.updateCarrier = function(carrier) {
     DetailsInternetPage.showCarrierChangeSpinner(false);
   };

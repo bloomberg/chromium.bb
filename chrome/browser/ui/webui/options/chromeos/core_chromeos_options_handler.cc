@@ -168,6 +168,10 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
     proxy_cros_settings_parser::SetProxyPrefValue(Profile::FromWebUI(web_ui()),
                                                   pref_name, value);
+    base::StringValue proxy_type(pref_name);
+    web_ui()->CallJavascriptFunction(
+        "options.internet.DetailsInternetPage.updateProxySettings",
+        proxy_type);
     ProcessUserMetric(value, metric);
     return;
   }
