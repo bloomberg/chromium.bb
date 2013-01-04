@@ -178,7 +178,7 @@ class DeployChrome(object):
     logging.info('Copying Chrome to device.')
     # Show the output (status) for this command.
     self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
-                    inplace=True, debug_level=logging.INFO)
+                    inplace=True, debug_level=logging.INFO, sudo=True)
     if self.start_ui_needed:
       self.host.RemoteSh('start ui')
 

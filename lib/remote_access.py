@@ -169,7 +169,7 @@ class RemoteAccess(object):
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (REBOOT_MAX_WAIT,))
 
-  def Rsync(self, src, dest, inplace=False, debug_level=None):
+  def Rsync(self, src, dest, inplace=False, debug_level=None, sudo=False):
     """Rsync a directory to the remote device.
 
     Arguments:
@@ -178,6 +178,7 @@ class RemoteAccess(object):
       inplace: If set, cause rsync to overwrite the dest files in place.  This
                conserves space, but has some side effects - see rsync man page.
       debug_level: See cros_build_lib.RunCommand documentation.
+      sudo: If set, invoke the command via sudo.
     """
     if not debug_level:
       debug_level = self.debug_level
@@ -188,5 +189,7 @@ class RemoteAccess(object):
       rsync_cmd.append('--inplace')
     rsync_cmd += ['--progress', '-e', ssh_cmd, src,
                   '%s:%s' % (self.target_ssh_url, dest)]
-    return cros_build_lib.RunCommand(rsync_cmd, debug_level=debug_level,
-                                     print_cmd=False)
+    rc_func = cros_build_lib.RunCommand
+    if sudo:
+      rc_func = cros_build_lib.SudoRunCommand
+    return rc_func(rsync_cmd, debug_level=debug_level, print_cmd=False)
