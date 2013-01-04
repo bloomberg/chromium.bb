@@ -79,7 +79,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
 
 void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
   LinkPrerender* prerender = FindByLauncherChildIdAndPrerenderId(child_id,
-                                                             prerender_id);
+                                                                 prerender_id);
   if (!prerender)
     return;
 
@@ -98,7 +98,7 @@ void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
 
 void PrerenderLinkManager::OnAbandonPrerender(int child_id, int prerender_id) {
   LinkPrerender* prerender = FindByLauncherChildIdAndPrerenderId(child_id,
-                                                             prerender_id);
+                                                                 prerender_id);
   if (!prerender)
     return;
 
