@@ -25,6 +25,8 @@
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/host_desktop.h"
+#include "ui/aura/root_window.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
@@ -173,20 +175,48 @@ content::WebContents* ChromeViewsDelegate::CreateWebContents(
   return NULL;
 }
 
-views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
-    views::Widget::InitParams::Type type,
-    views::internal::NativeWidgetDelegate* delegate,
-    gfx::NativeView parent,
-    gfx::NativeView context) {
+void ChromeViewsDelegate::OnBeforeWidgetInit(
+    views::Widget::InitParams* params,
+    views::internal::NativeWidgetDelegate* delegate) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  if (parent && type != views::Widget::InitParams::TYPE_MENU)
-    return new views::NativeWidgetAura(delegate);
-  // TODO(erg): Once we've threaded context to everywhere that needs it, we
-  // should remove this check here.
-  gfx::NativeView to_check = context ? context : parent;
-  if (chrome::GetHostDesktopTypeForNativeView(to_check) ==
-      chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return new views::DesktopNativeWidgetAura(delegate);
+  // If we already have a native_widget, we don't have to try to come
+  // up with one.
+  if (params->native_widget)
+    return;
+
+  // While the majority of the time, context wasn't plumbed through due to the
+  // existence of a global StackingClient, if this window is a toplevel, it's
+  // possible that there is no contextual state that we can use.
+  if (params->parent == NULL && params->context == NULL && params->top_level) {
+    // We need to make a decision about where to place this window based on the
+    // desktop type.
+    switch (chrome::GetActiveDesktop()) {
+      case chrome::HOST_DESKTOP_TYPE_NATIVE:
+        // If we're native, we should give this window its own toplevel desktop
+        // widget.
+        params->native_widget = new views::DesktopNativeWidgetAura(delegate);
+        break;
+#if defined(USE_ASH)
+      case chrome::HOST_DESKTOP_TYPE_ASH:
+        // If we're in ash, give this window the context of the main monitor.
+        params->context = ash::Shell::GetPrimaryRootWindow();
+        break;
 #endif
-  return NULL;
+      default:
+        NOTREACHED();
+    }
+  } else if (params->parent &&
+             params->type != views::Widget::InitParams::TYPE_MENU) {
+    params->native_widget = new views::NativeWidgetAura(delegate);
+  } else {
+    // TODO(erg): Once we've threaded context to everywhere that needs it, we
+    // should remove this check here.
+    gfx::NativeView to_check =
+        params->context ? params->context : params->parent;
+    if (chrome::GetHostDesktopTypeForNativeView(to_check) ==
+        chrome::HOST_DESKTOP_TYPE_NATIVE) {
+      params->native_widget = new views::DesktopNativeWidgetAura(delegate);
+    }
+  }
+#endif
 }

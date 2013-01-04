@@ -106,13 +106,9 @@ class VIEWS_EXPORT ViewsDelegate {
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) = 0;
 
-  // Creates a NativeWidget implementation. Returning NULL means Widget will
-  // create a default implementation for the platform.
-  virtual NativeWidget* CreateNativeWidget(
-      Widget::InitParams::Type type,
-      internal::NativeWidgetDelegate* delegate,
-      gfx::NativeView parent,
-      gfx::NativeView context) = 0;
+  // Gives the platform a chance to modify the properties of a Widget.
+  virtual void OnBeforeWidgetInit(Widget::InitParams* params,
+                            internal::NativeWidgetDelegate* delegate) = 0;
 };
 
 }  // namespace views
