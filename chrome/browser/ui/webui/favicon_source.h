@@ -48,7 +48,35 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  protected:
+  struct IconRequest {
+    IconRequest()
+      : request_id(0),
+        request_path(""),
+        size_in_dip(gfx::kFaviconSize),
+        scale_factor(ui::SCALE_FACTOR_NONE) {
+    }
+    IconRequest(int id,
+                const std::string& path,
+                int size,
+                ui::ScaleFactor scale)
+      : request_id(id),
+        request_path(path),
+        size_in_dip(size),
+        scale_factor(scale) {
+    }
+    int request_id;
+    std::string request_path;
+    int size_in_dip;
+    ui::ScaleFactor scale_factor;
+  };
+
   virtual ~FaviconSource();
+
+  // Called when the favicon data is missing to perform additional checks to
+  // locate the resource.
+  // |request| contains information for the failed request.
+  // Returns true if the missing resource is found.
+  virtual bool HandleMissingResource(const IconRequest& request);
 
   Profile* profile_;
 
@@ -59,22 +87,6 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
     SIZE_32,
     SIZE_64,
     NUM_SIZES
-  };
-
-  struct IconRequest {
-    IconRequest()
-      : request_id(0),
-        size_in_dip(gfx::kFaviconSize),
-        scale_factor(ui::SCALE_FACTOR_NONE) {
-    }
-    IconRequest(int id, int size, ui::ScaleFactor scale)
-      : request_id(id),
-        size_in_dip(size),
-        scale_factor(scale) {
-    }
-    int request_id;
-    int size_in_dip;
-    ui::ScaleFactor scale_factor;
   };
 
   void Init(Profile* profile, IconType type);

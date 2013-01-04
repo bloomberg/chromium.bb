@@ -19,15 +19,13 @@ class SessionFaviconSource : public FaviconSource {
   explicit SessionFaviconSource(Profile* profile);
 
   // FaviconSource implementation.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
   virtual bool AllowCaching() const OVERRIDE;
 
  protected:
   virtual ~SessionFaviconSource();
+  virtual bool HandleMissingResource(const IconRequest& request) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_

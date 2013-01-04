@@ -231,11 +231,14 @@ function appendParam(url, key, value) {
  * Creates a new URL for a favicon request.
  * @param {string} url The url for the favicon.
  * @param {number=} opt_size Optional preferred size of the favicon.
+ * @param {boolean=} opt_sessionFavicon Optional flag to indicate if
+ *     requesting a session favicon.
  * @return {string} Updated URL for the favicon.
  */
-function getFaviconUrl(url, opt_size) {
+function getFaviconUrl(url, opt_size, opt_sessionFavicon) {
   var size = opt_size || 16;
-  return 'chrome://favicon/size/' + size + '@' +
+  var type = opt_sessionFavicon ? 'session-favicon' : 'favicon';
+  return 'chrome://' + type + '/size/' + size + '@' +
       window.devicePixelRatio + 'x/' + url;
 }
 

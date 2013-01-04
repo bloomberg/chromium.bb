@@ -47,7 +47,10 @@ void FaviconSource::StartDataRequest(const std::string& path,
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty()) {
-    SendDefaultResponse(IconRequest(request_id, 16, ui::SCALE_FACTOR_100P));
+    SendDefaultResponse(IconRequest(request_id,
+                                    "",
+                                    16,
+                                    ui::SCALE_FACTOR_100P));
     return;
   }
 
@@ -73,7 +76,10 @@ void FaviconSource::StartDataRequest(const std::string& path,
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
-                   IconRequest(request_id, size_in_dip, scale_factor)),
+                   IconRequest(request_id,
+                               path.substr(prefix_length),
+                               size_in_dip,
+                               scale_factor)),
         &cancelable_task_tracker_);
   } else {
     GURL url;
@@ -131,7 +137,10 @@ void FaviconSource::StartDataRequest(const std::string& path,
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
-                   IconRequest(request_id, size_in_dip, scale_factor)),
+                   IconRequest(request_id,
+                               url.spec(),
+                               size_in_dip,
+                               scale_factor)),
         &cancelable_task_tracker_);
   }
 }
@@ -148,13 +157,19 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
+bool FaviconSource::HandleMissingResource(const IconRequest& request) {
+  // No additional checks to locate the favicon resource in the base
+  // implementation.
+  return false;
+}
+
 void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
     const history::FaviconBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
     SendResponse(request.request_id, bitmap_result.bitmap_data);
-  } else {
+  } else if (!HandleMissingResource(request)) {
     SendDefaultResponse(request);
   }
 }

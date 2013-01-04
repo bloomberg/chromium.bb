@@ -212,7 +212,8 @@ cr.define('ntp', function() {
           a.className = 'footer-menu-item';
           a.textContent = tab.title;
           a.href = tab.url;
-          a.style.backgroundImage = url('chrome://session-favicon/' + tab.url);
+          a.style.backgroundImage = url(
+              getFaviconUrl(tab.url, 16, /* session-favicon */ true));
 
           var clickHandler = this.makeClickHandler_(
               session.tag, String(window.sessionId), String(tab.sessionId));
