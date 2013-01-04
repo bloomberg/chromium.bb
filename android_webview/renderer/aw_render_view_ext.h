@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "cc/picture_pile_impl.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
@@ -40,6 +42,10 @@ class AwRenderViewExt : public content::RenderViewObserver,
   void OnDocumentHasImagesRequest(int id);
 
   void OnDoHitTest(int view_x, int view_y);
+
+  void OnEnableCapturePictureCallback(bool enable);
+
+  void OnPictureUpdate(scoped_refptr<cc::PicturePileImpl> picture);
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,

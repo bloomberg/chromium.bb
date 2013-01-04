@@ -103,6 +103,7 @@
         '../content/content.gyp:content',
         '../content/content.gyp:navigation_interception',
         '../content/content.gyp:web_contents_delegate_android',
+        '../skia/skia.gyp:skia',
         'android_webview_pak',
       ],
       'include_dirs': [
@@ -163,6 +164,8 @@
         'common/aw_resource.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
+        'common/renderer_picture_map.cc',
+        'common/renderer_picture_map.h',
         'common/url_constants.cc',
         'common/url_constants.h',
         'lib/aw_browser_dependency_factory_impl.cc',

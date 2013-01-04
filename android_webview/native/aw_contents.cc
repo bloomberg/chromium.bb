@@ -11,6 +11,7 @@
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
+#include "android_webview/common/renderer_picture_map.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
@@ -26,6 +27,8 @@
 #include "base/pickle.h"
 #include "base/supports_user_data.h"
 #include "cc/layer.h"
+#include "cc/picture_pile_impl.h"
+#include "cc/rendering_stats.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -159,6 +162,7 @@ AwContents::AwContents(JNIEnv* env,
       is_composite_pending_(false),
       last_scroll_x_(0), last_scroll_y_(0),
       last_frame_context_(NULL) {
+  RendererPictureMap::CreateInstance();
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 
@@ -185,7 +189,8 @@ void AwContents::SetWebContents(content::WebContents* web_contents) {
                              new AwContentsUserData(this));
 
   web_contents_->SetDelegate(web_contents_delegate_.get());
-  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get()));
+  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get(),
+                              this));
   ResetCompositor();
 }
 
@@ -417,6 +422,12 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 }
 
 bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
+  scoped_refptr<cc::PicturePileImpl> picture =
+      RendererPictureMap::GetInstance()->GetRendererPicture(
+          web_contents_->GetRoutingID());
+  if (!picture)
+    return false;
+
   AwPixelInfo* pixels;
   if (!g_draw_sw_functions ||
       (pixels = g_draw_sw_functions->access_pixels(env, java_canvas)) == NULL) {
@@ -438,15 +449,22 @@ bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
       matrix.set(i, pixels->matrix[i]);
     }
     canvas.setMatrix(matrix);
+
     SkRegion clip;
     if (pixels->clip_region_size) {
       size_t bytes_read = clip.readFromMemory(pixels->clip_region);
       DCHECK_EQ(pixels->clip_region_size, bytes_read);
       canvas.setClipRegion(clip);
+    } else {
+      clip.setRect(SkIRect::MakeWH(pixels->width, pixels->height));
     }
 
-    // TODO(joth): Implement real drawing. For now, fill the view in blue.
-    canvas.drawARGB(128, 1, 30, 250);
+    SkIRect sk_clip_rect = clip.getBounds();
+    gfx::Rect clip_rect(sk_clip_rect.x(), sk_clip_rect.y(),
+                        sk_clip_rect.width(), sk_clip_rect.height());
+
+    cc::RenderingStats stats;
+    picture->Raster(&canvas, clip_rect, 1.0, &stats);
   }
 
   g_draw_sw_functions->release_pixels(pixels);
@@ -699,15 +717,15 @@ void AwContents::OnFindResultReceived(int active_ordinal,
 
 void AwContents::ScheduleComposite() {
   TRACE_EVENT0("AwContents", "AwContents::ScheduleComposite");
-  Invalidate();
-}
 
-void AwContents::Invalidate() {
   if (is_composite_pending_)
     return;
 
   is_composite_pending_ = true;
+  Invalidate();
+}
 
+void AwContents::Invalidate() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -864,6 +882,14 @@ void AwContents::FocusFirstNode(JNIEnv* env, jobject obj) {
 
 jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(pending_contents_.release());
+}
+
+void AwContents::OnPictureUpdated(int process_id, int render_view_id) {
+  CHECK_EQ(web_contents_->GetRenderProcessHost()->GetID(), process_id);
+  if (render_view_id != web_contents_->GetRoutingID())
+    return;
+
+  Invalidate();
 }
 
 }  // namespace android_webview

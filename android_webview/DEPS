@@ -8,6 +8,7 @@ include_rules = [
   "-android_webview/lib",
 
   "!chrome/browser/component",
+  "+cc",
   "+content/components",
   "+content/public/common",
   "+jni",

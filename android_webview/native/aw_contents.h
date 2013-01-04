@@ -9,6 +9,7 @@
 #include <string>
 
 #include "android_webview/browser/find_helper.h"
+#include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
@@ -31,7 +32,6 @@ class WebContents;
 namespace android_webview {
 
 class AwContentsContainer;
-class AwRenderViewHostExt;
 class AwWebContentsDelegate;
 
 // Native side of java-class of same name.
@@ -39,7 +39,8 @@ class AwWebContentsDelegate;
 // WebView functionality; analogous to chrome's TabContents, but with a
 // level of indirection provided by the AwContentsContainer abstraction.
 class AwContents : public FindHelper::Listener,
-                   public content::Compositor::Client {
+                   public content::Compositor::Client,
+                   public AwRenderViewHostExt::Client {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -122,6 +123,9 @@ class AwContents : public FindHelper::Listener,
 
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupWebContents(JNIEnv* env, jobject obj);
+
+  // AwRenderViewHostExt::Client implementation.
+  virtual void OnPictureUpdated(int process_id, int render_view_id) OVERRIDE;
 
  private:
   void Invalidate();

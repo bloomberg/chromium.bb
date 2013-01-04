@@ -8,6 +8,8 @@
 
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
+#include "android_webview/common/renderer_picture_map.h"
+#include "base/bind.h"
 #include "base/string_piece.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
@@ -46,9 +48,17 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
     : content::RenderViewObserver(render_view) {
   render_view->GetWebView()->setPermissionClient(this);
+  // TODO(leandrogracia): enable once the feature is available in RenderView.
+  //render_view->SetCapturePictureCallback(
+  //    base::Bind(&AwRenderViewExt::OnPictureUpdate, AsWeakPtr()));
 }
 
-AwRenderViewExt::~AwRenderViewExt() {}
+AwRenderViewExt::~AwRenderViewExt() {
+  // TODO(leandrogracia): enable once the feature is available in RenderView.
+  //render_view()->SetCapturePictureCallback(
+  //    content::RenderView::CapturePictureCallback());
+  RendererPictureMap::GetInstance()->ClearRendererPicture(routing_id());
+}
 
 // static
 void AwRenderViewExt::RenderViewCreated(content::RenderView* render_view) {
@@ -60,6 +70,8 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewExt, message)
     IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
     IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
+    IPC_MESSAGE_HANDLER(AwViewMsg_EnableCapturePictureCallback,
+                        OnEnableCapturePictureCallback)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -179,6 +191,19 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
   }
 
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
+}
+
+void AwRenderViewExt::OnEnableCapturePictureCallback(bool enable) {
+  // TODO(leandrogracia): enable once the feature is available in RenderView.
+  //render_view()->SetCapturePictureCallback(enable ?
+  //    base::Bind(&AwRenderViewExt::OnPictureUpdate, AsWeakPtr()) :
+  //    content::RenderView::CapturePictureCallback());
+}
+
+void AwRenderViewExt::OnPictureUpdate(
+    scoped_refptr<cc::PicturePileImpl> picture) {
+  RendererPictureMap::GetInstance()->SetRendererPicture(routing_id(), picture);
+  Send(new AwViewHostMsg_PictureUpdated(routing_id()));
 }
 
 }  // namespace android_webview

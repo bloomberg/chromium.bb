@@ -8,14 +8,17 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
 namespace android_webview {
 
-AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents)
+AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents,
+                                         Client* client)
     : content::WebContentsObserver(contents),
-      has_new_hit_test_data_(false) {
+      has_new_hit_test_data_(false),
+      client_(client) {
 }
 
 AwRenderViewHostExt::~AwRenderViewHostExt() {}
@@ -75,6 +78,8 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
                         OnDocumentHasImagesResponse)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
                         OnUpdateHitTestData)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_PictureUpdated,
+                        OnPictureUpdated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -99,6 +104,12 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
   has_new_hit_test_data_ = true;
+}
+
+void AwRenderViewHostExt::OnPictureUpdated() {
+  if (client_)
+    client_->OnPictureUpdated(web_contents()->GetRenderProcessHost()->GetID(),
+                              routing_id());
 }
 
 }  // namespace android_webview

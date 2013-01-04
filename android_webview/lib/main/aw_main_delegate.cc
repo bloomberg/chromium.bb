@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 
@@ -28,6 +29,15 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Set the command line to enable synchronous API compatibility.
   command_line->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
+
+  // TODO(leandrogracia): enable with the CapturePicture API support.
+  if (false) {
+    // Enable impl-side painting in the compositor.
+    command_line->AppendSwitch(switches::kForceCompositingMode);
+    command_line->AppendSwitch(switches::kEnableThreadedCompositing);
+    command_line->AppendSwitch(switches::kEnableDeferredImageDecoding);
+    command_line->AppendSwitch(cc::switches::kEnableImplSidePainting);
+  }
 
   return false;
 }

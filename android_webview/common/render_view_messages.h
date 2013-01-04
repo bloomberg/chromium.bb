@@ -51,6 +51,10 @@ IPC_MESSAGE_ROUTED2(AwViewMsg_DoHitTest,
                     int /* view_x */,
                     int /* view_y */)
 
+// Enables receiving pictures from the renderer on every new frame.
+IPC_MESSAGE_ROUTED1(AwViewMsg_EnableCapturePictureCallback,
+                    bool /* enable */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.
@@ -63,3 +67,7 @@ IPC_MESSAGE_ROUTED2(AwViewHostMsg_DocumentHasImagesResponse,
 // Response to AwViewMsg_DoHitTest.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
                     android_webview::AwHitTestData)
+
+// Notification that a new picture becomes available. It is only sent if
+// AwViewMsg_EnableCapturePictureCallback was previously enabled.
+IPC_MESSAGE_ROUTED0(AwViewHostMsg_PictureUpdated)
