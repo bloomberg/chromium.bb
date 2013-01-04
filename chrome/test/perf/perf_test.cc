@@ -38,8 +38,10 @@ void PrintResultsImpl(const std::string& measurement,
                       const std::string& suffix,
                       const std::string& units,
                       bool important) {
+  fflush(stdout);
   printf("%s", ResultsToString(measurement, modifier, trace, values,
                                prefix, suffix, units, important).c_str());
+  fflush(stdout);
 }
 
 }  // namespace
