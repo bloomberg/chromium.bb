@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 
 import object_store
 import operator
@@ -51,8 +52,15 @@ class BranchUtility(object):
     if branch_number is not None:
       return branch_number
 
-    fetch_data = self._fetcher.Fetch(self._base_path).content
-    version_json = json.loads(fetch_data)
+    try:
+      version_json = json.loads(self._fetcher.Fetch(self._base_path).content)
+    except Exception as e:
+      # This can happen if omahaproxy is misbehaving, which we've seen before.
+      # Quick hack fix: just serve from trunk until it's fixed.
+      logging.error('Failed to fetch or parse branch from omahaproxy: %s! '
+                    'Falling back to "trunk".' % e)
+      return 'trunk'
+
     branch_numbers = {}
     for entry in version_json:
       if entry['os'] not in ['win', 'linux', 'mac', 'cros']:
