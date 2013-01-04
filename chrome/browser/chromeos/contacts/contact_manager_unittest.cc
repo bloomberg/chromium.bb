@@ -70,8 +70,7 @@ class ContactManagerTest : public testing::Test {
   // testing::Test implementation.
   virtual void SetUp() OVERRIDE {
     profile_manager_.reset(
-        new TestingProfileManager(
-            static_cast<TestingBrowserProcess*>(g_browser_process)));
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
     contact_manager_.reset(new ContactManager);

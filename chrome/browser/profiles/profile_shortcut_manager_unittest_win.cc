@@ -44,7 +44,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ASSERT_TRUE(distribution_ != NULL);
 
     TestingBrowserProcess* browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
+        TestingBrowserProcess::GetGlobal();
     profile_manager_.reset(new TestingProfileManager(browser_process));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_info_cache_ = profile_manager_->profile_info_cache();

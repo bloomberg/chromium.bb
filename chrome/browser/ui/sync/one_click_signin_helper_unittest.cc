@@ -290,7 +290,7 @@ class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
 
 OneClickSigninHelperIOTest::OneClickSigninHelperIOTest()
     : testing_profile_manager_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)),
+          TestingBrowserProcess::GetGlobal()),
       valid_gaia_url_("https://accounts.google.com/"),
       db_thread_(content::BrowserThread::DB, &message_loop_),
       fub_thread_(content::BrowserThread::FILE_USER_BLOCKING, &message_loop_),

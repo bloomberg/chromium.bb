@@ -31,7 +31,7 @@ class CrosSettingsTest : public testing::Test {
   CrosSettingsTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
-        local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
+        local_state_(TestingBrowserProcess::GetGlobal()),
         weak_factory_(this) {}
 
   virtual ~CrosSettingsTest() {}

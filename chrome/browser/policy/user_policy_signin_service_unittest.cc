@@ -77,7 +77,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     local_state_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(local_state_.get());
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
+    TestingBrowserProcess::GetGlobal()->SetLocalState(
         local_state_.get());
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
@@ -110,7 +110,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     // Free the profile before we clear out the browser prefs.
     profile_.reset();
     TestingBrowserProcess* testing_browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
+        TestingBrowserProcess::GetGlobal();
     testing_browser_process->SetLocalState(NULL);
     local_state_.reset();
     testing_browser_process->SetBrowserPolicyConnector(NULL);

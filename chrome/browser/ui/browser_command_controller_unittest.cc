@@ -155,7 +155,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuDisabledWhenOnlyOneProfile) {
     return;
 
   TestingProfileManager testing_profile_manager(
-      static_cast<TestingBrowserProcess*>(g_browser_process));
+      TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
   ProfileManager* profile_manager = testing_profile_manager.profile_manager();
 

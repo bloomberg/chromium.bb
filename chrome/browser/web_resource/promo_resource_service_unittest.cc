@@ -27,13 +27,10 @@
 
 class PromoResourceServiceTest : public testing::Test {
  public:
+  // |promo_resource_service_| must be created after |local_state_|.
   PromoResourceServiceTest()
-      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
-        local_state_.Get());
-    // |promo_resource_service_| must be created after local state is set.
-    promo_resource_service_ = new PromoResourceService;
-  }
+      : local_state_(TestingBrowserProcess::GetGlobal()),
+        promo_resource_service_(new PromoResourceService) {}
 
  protected:
   ScopedTestingLocalState local_state_;
@@ -53,8 +50,7 @@ class NotificationPromoTest {
         time_slice_(0),
         max_group_(0),
         max_views_(0),
-        closed_(false) {
-  }
+        closed_(false) {}
 
   void Init(const std::string& json,
             const std::string& promo_text,

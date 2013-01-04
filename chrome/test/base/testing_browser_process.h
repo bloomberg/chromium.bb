@@ -43,6 +43,9 @@ class TestingBrowserProcess : public BrowserProcess {
   TestingBrowserProcess();
   virtual ~TestingBrowserProcess();
 
+  // Convenience method to get g_browser_process as a TestingBrowserProcess*.
+  static TestingBrowserProcess* GetGlobal();
+
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;

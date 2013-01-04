@@ -231,8 +231,7 @@ class RemoveProfileCookieTester : public RemoveCookieTester {
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
-      : browser_process_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)) {
+      : browser_process_(TestingBrowserProcess::GetGlobal()) {
     scoped_refptr<SafeBrowsingService> sb_service =
         SafeBrowsingService::CreateSafeBrowsingService();
     browser_process_->SetSafeBrowsingService(sb_service);

@@ -109,7 +109,7 @@ class AndroidProviderBackendTest : public testing::Test {
  public:
   AndroidProviderBackendTest()
       : profile_manager_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)),
+          TestingBrowserProcess::GetGlobal()),
         bookmark_model_(NULL),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {

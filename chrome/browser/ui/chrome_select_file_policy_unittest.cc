@@ -93,7 +93,7 @@ TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   ScopedTestingLocalState local_state(
-      static_cast<TestingBrowserProcess*>(g_browser_process));
+      TestingBrowserProcess::GetGlobal());
 
   scoped_ptr<FileSelectionUser> file_selection_user(new FileSelectionUser());
 

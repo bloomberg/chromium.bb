@@ -463,7 +463,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
 
   TestingBrowserProcess* browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
+      TestingBrowserProcess::GetGlobal();
   TestingProfileManager profile_manager(browser_process);
   ASSERT_TRUE(profile_manager.SetUp());
 
@@ -503,7 +503,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
       Launch("CloudPrintMockService_StartEnabledExpectDisabled");
 
   TestingBrowserProcess* browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
+      TestingBrowserProcess::GetGlobal();
   TestingProfileManager profile_manager(browser_process);
   ASSERT_TRUE(profile_manager.SetUp());
 

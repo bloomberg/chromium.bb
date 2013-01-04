@@ -90,7 +90,7 @@ class ProfileManagerTest : public testing::Test {
   };
 
   ProfileManagerTest()
-      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
+      : local_state_(TestingBrowserProcess::GetGlobal()),
         extension_event_router_forwarder_(new extensions::EventRouterForwarder),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
@@ -101,14 +101,13 @@ class ProfileManagerTest : public testing::Test {
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif
     system_monitor_dummy_.reset(new base::SystemMonitor);
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetIOThread(
-        &io_thread_);
+    TestingBrowserProcess::GetGlobal()->SetIOThread(&io_thread_);
   }
 
   virtual void SetUp() {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(
         new testing::ProfileManager(temp_dir_.path()));
 
 #if defined(OS_CHROMEOS)
@@ -118,8 +117,7 @@ class ProfileManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
-        NULL);
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     message_loop_.RunUntilIdle();
   }
 
@@ -227,8 +225,7 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   // Make sure any pending tasks run before we destroy the profiles.
   message_loop_.RunUntilIdle();
 
-  static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
-      NULL);
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 
   // Make sure history cleans up correctly.
   message_loop_.RunUntilIdle();

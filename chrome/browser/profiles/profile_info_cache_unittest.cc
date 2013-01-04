@@ -78,7 +78,7 @@ ProfileInfoCache* ProfileNameVerifierObserver::GetCache() {
 
 ProfileInfoCacheTest::ProfileInfoCacheTest()
     : testing_profile_manager_(
-        static_cast<TestingBrowserProcess*>(g_browser_process)),
+        TestingBrowserProcess::GetGlobal()),
       ui_thread_(BrowserThread::UI, &ui_loop_),
       file_thread_(BrowserThread::FILE, &ui_loop_),
       name_observer_(&testing_profile_manager_) {

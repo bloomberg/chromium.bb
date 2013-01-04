@@ -20,7 +20,7 @@
 class AvatarMenuBubbleControllerTest : public CocoaTest {
  public:
   AvatarMenuBubbleControllerTest()
-      : manager_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
+      : manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
   virtual void SetUp() {

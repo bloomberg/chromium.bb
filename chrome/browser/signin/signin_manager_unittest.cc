@@ -47,7 +47,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(prefs_.get());
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
+    TestingBrowserProcess::GetGlobal()->SetLocalState(
         prefs_.get());
     TokenServiceTestHarness::SetUp();
     manager_.reset(new SigninManager());
@@ -62,7 +62,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     // Destroy the SigninManager here, because it relies on profile_ which is
     // freed in the base class.
     manager_.reset(NULL);
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     prefs_.reset(NULL);
     TokenServiceTestHarness::TearDown();
   }

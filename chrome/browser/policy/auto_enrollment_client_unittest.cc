@@ -36,7 +36,7 @@ class AutoEnrollmentClientTest : public testing::Test {
  protected:
   AutoEnrollmentClientTest()
       : scoped_testing_local_state_(
-            static_cast<TestingBrowserProcess*>(g_browser_process)),
+            TestingBrowserProcess::GetGlobal()),
         local_state_(scoped_testing_local_state_.Get()),
         service_(NULL),
         completion_callback_count_(0) {}

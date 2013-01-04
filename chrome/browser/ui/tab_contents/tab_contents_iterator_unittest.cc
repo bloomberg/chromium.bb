@@ -154,7 +154,7 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
                                            false);
 
   TestingBrowserProcess* testing_browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
+      TestingBrowserProcess::GetGlobal();
   testing_browser_process->SetLocalState(&testing_pref_service);
   ASSERT_TRUE(g_browser_process->local_state());
   ProfileManager* profile_manager = new ProfileManager(FilePath());

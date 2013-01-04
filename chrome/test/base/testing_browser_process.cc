@@ -30,6 +30,11 @@
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
+// static
+TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
+  return static_cast<TestingBrowserProcess*>(g_browser_process);
+}
+
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       module_ref_count_(0),

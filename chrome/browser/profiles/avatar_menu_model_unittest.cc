@@ -33,7 +33,7 @@ class MockObserver : public AvatarMenuModelObserver {
 class AvatarMenuModelTest : public testing::Test {
  public:
   AvatarMenuModelTest()
-      : manager_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
+      : manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
   virtual void SetUp() {

@@ -28,15 +28,11 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
     RegisterDisplayLocalStatePrefs(&local_state_);
-    TestingBrowserProcess* browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    browser_process->SetLocalState(&local_state_);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   }
 
   virtual void TearDown() OVERRIDE {
-    TestingBrowserProcess* browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    browser_process->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     ash::test::AshTestBase::TearDown();
   }
 

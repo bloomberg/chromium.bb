@@ -41,7 +41,7 @@ class SQLiteCursorTest : public testing::Test,
  public:
   SQLiteCursorTest()
       : profile_manager_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)),
+          TestingBrowserProcess::GetGlobal()),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }

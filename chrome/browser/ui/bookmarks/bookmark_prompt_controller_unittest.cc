@@ -62,7 +62,7 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
 
   virtual void SetUp() OVERRIDE {
     set_window(new MyTestBrowserWindow);
-    static_cast<TestingBrowserProcess*>(g_browser_process)->
+    TestingBrowserProcess::GetGlobal()->
         SetBookmarkPromptController(new BookmarkPromptController);
     BrowserWithTestWindowTest::SetUp();
     static_cast<TestingProfile*>(browser()->profile())->
@@ -74,7 +74,7 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
   }
 
   virtual void TearDown() OVERRIDE {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->
+    TestingBrowserProcess::GetGlobal()->
         SetBookmarkPromptController(NULL);
     static_cast<TestingProfile*>(browser()->profile())->
         DestroyHistoryService();

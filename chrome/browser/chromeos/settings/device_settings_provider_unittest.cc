@@ -38,7 +38,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
  protected:
   DeviceSettingsProviderTest()
-      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
+      : local_state_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   virtual void SetUp() OVERRIDE {

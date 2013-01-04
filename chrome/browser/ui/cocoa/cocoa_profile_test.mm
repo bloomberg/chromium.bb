@@ -17,7 +17,7 @@ using content::BrowserThread;
 
 CocoaProfileTest::CocoaProfileTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      profile_manager_(static_cast<TestingBrowserProcess*>(g_browser_process)),
+      profile_manager_(TestingBrowserProcess::GetGlobal()),
       profile_(NULL),
       file_user_blocking_thread_(new content::TestBrowserThread(
           BrowserThread::FILE_USER_BLOCKING, &message_loop_)),
@@ -37,7 +37,7 @@ CocoaProfileTest::~CocoaProfileTest() {
   // thread. If the scoper in TestingBrowserProcess, owned by ChromeTestSuite,
   // were to delete the ProfileManager, the UI thread would at that point no
   // longer exist.
-  static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(
       NULL);
 
   // Make sure any pending tasks run before we destroy other threads.

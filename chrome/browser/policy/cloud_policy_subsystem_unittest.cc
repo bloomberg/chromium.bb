@@ -140,7 +140,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
   }
 
   virtual void TearDown() {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     cloud_policy_subsystem_->Shutdown();
     cloud_policy_subsystem_.reset();
     data_store_.reset();

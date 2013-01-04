@@ -552,8 +552,7 @@ TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
   MessageLoop loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI, &loop);
   base::ShadowingAtExitManager at_exit_manager;
-  ScopedTestingLocalState local_state(
-      static_cast<TestingBrowserProcess*>(g_browser_process));
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   base::StringValue login_id_pattern("a ${LOGIN_ID} b");
   base::StringValue login_email_pattern("a ${LOGIN_EMAIL} b");

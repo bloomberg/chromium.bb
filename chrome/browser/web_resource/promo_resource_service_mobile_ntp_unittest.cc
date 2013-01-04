@@ -25,13 +25,10 @@
 
 class PromoResourceServiceMobileNtpTest : public testing::Test {
  public:
+  // |promo_resource_service_| must be created after |local_state_|.
   PromoResourceServiceMobileNtpTest()
-      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
-        local_state_.Get());
-    // |promo_resource_service_| must be created after local state is set.
-    promo_resource_service_ = new PromoResourceService;
-  }
+      : local_state_(TestingBrowserProcess::GetGlobal()),
+        promo_resource_service_(new PromoResourceService) {}
 
  protected:
   ScopedTestingLocalState local_state_;
@@ -41,8 +38,7 @@ class PromoResourceServiceMobileNtpTest : public testing::Test {
 
 class NotificationPromoMobileNtpTest {
  public:
-  NotificationPromoMobileNtpTest() : received_notification_(false) {
-  }
+  NotificationPromoMobileNtpTest() : received_notification_(false) {}
 
   void Init(const std::string& json,
             const std::string& promo_text,

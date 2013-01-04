@@ -39,7 +39,7 @@ SigninNamesOnIOThreadTest::SigninNamesOnIOThreadTest()
     : ui_thread_(content::BrowserThread::UI, &message_loop_),
       io_thread_(content::BrowserThread::IO, &message_loop_),
       testing_profile_manager_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)) {
+          TestingBrowserProcess::GetGlobal()) {
 }
 
 void SigninNamesOnIOThreadTest::SetUp() {

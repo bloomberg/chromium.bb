@@ -30,9 +30,7 @@ const char kProfileName[] = "input_method_test";
 class InputMethodPersistenceTest : public testing::Test {
  protected:
   InputMethodPersistenceTest()
-      : mock_profile_manager_(
-          static_cast<TestingBrowserProcess*>(g_browser_process)) {
-  }
+      : mock_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   virtual void SetUp() OVERRIDE {
     // Set up a profile that will be returned by

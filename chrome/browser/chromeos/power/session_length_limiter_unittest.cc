@@ -98,8 +98,7 @@ class SessionLengthLimiterTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->
-        SetLocalState(&local_state_);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     SessionLengthLimiter::RegisterPrefs(&local_state_);
 
     delegate_ = new NiceMock<MockSessionLengthLimiterDelegate>;
@@ -115,7 +114,7 @@ class SessionLengthLimiterTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
   void SetSessionStartTimePref(int64 session_start_time) {

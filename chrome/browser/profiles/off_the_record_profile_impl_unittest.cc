@@ -102,7 +102,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
 
  private:
   TestingBrowserProcess* browser_process() {
-    return static_cast<TestingBrowserProcess*>(g_browser_process);
+    return TestingBrowserProcess::GetGlobal();
   }
 
   scoped_ptr<PrefServiceSimple> prefs_;
