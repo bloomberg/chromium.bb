@@ -66,9 +66,13 @@
       'sources': [
         'accelerated_surface_mac.cc',
         'accelerated_surface_mac.h',
+        'accelerated_surface_transformer_win.cc',
+        'accelerated_surface_transformer_win.h',
+        'accelerated_surface_transformer_win.hlsl',
         'accelerated_surface_win.cc',
         'accelerated_surface_win.h',
-        'accelerated_surface_win.hlsl',
+        'd3d9_utils_win.cc',
+        'd3d9_utils_win.h',
         'io_surface_support_mac.cc',
         'io_surface_support_mac.h',
         'surface_export.h',
@@ -82,5 +86,25 @@
         'SURFACE_IMPLEMENTATION',
       ],
     },
+  ],
+  'conditions': [
+    ['OS == "win"', {
+      'targets': [
+        {
+          'target_name': 'surface_gpu_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/base/base.gyp:run_all_unittests',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(DEPTH)/ui/ui.gyp:ui',
+            'surface',
+          ],
+          'sources': [
+            'accelerated_surface_transformer_win_unittest.cc',
+          ],
+        },
+      ],
+    }],
   ],
 }
