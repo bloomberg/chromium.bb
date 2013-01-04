@@ -31,8 +31,7 @@ class HistoryQuickProvider : public HistoryProvider {
   HistoryQuickProvider(AutocompleteProviderListener* listener,
                        Profile* profile);
 
-  // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
-  // completion performed.
+  // AutocompleteProvider.
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 
