@@ -620,6 +620,11 @@ Event_Abs_MT(EvdevPtr device, struct input_event* ev)
                         || (ev->value > axis->maximum))) {
       LOG_WARNING(device, "ABS_MT[%02x] = %d : value out of range [%d .. %d]\n",
                   ev->code, ev->value, axis->minimum, axis->maximum);
+      /* Update the effective boundary as we already print out the warning */
+      if (ev->value < axis->minimum)
+          axis->minimum = ev->value;
+      else if (ev->value > axis->maximum)
+          axis->maximum = ev->value;
     }
 
     if (slot == NULL) {
