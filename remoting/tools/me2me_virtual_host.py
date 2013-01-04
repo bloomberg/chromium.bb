@@ -17,6 +17,7 @@ import json
 import logging
 import optparse
 import os
+import pipes
 import signal
 import socket
 import subprocess
@@ -349,7 +350,7 @@ class Desktop:
     devnull.close()
 
   def _launch_x_session(self):
-    # Start desktop session
+    # Start desktop session.
     # The /dev/null input redirection is necessary to prevent the X session
     # reading from stdin.  If this code runs as a shell background job in a
     # terminal, any reading from stdin causes the job to be suspended.
@@ -498,7 +499,10 @@ def choose_x_session():
       # (see /etc/X11/Xsession.d/50x11-common_determine-startup), to determine
       # exactly how to run this file.
       if os.access(startup_file, os.X_OK):
-        return startup_file
+        # "/bin/sh -c" is smart about how to execute the session script and
+        # works in cases where plain exec() fails (for example, if the file is
+        # marked executable, but is a plain script with no shebang line).
+        return ["/bin/sh", "-c", pipes.quote(startup_file)]
       else:
         shell = os.environ.get("SHELL", "sh")
         return [shell, startup_file]
