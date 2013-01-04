@@ -1009,7 +1009,10 @@ public:
         m_layer = FakeContentLayer::Create(&m_client);
         m_layer->setBounds(gfx::Size(10, 20));
 
-        m_scrollbar = FakeScrollbarLayer::Create(true, m_layer->id());
+        bool paint_scrollbar = true;
+        bool has_thumb = false;
+        m_scrollbar = FakeScrollbarLayer::Create(
+            paint_scrollbar, has_thumb, m_layer->id());
         m_scrollbar->setPosition(gfx::Point(0, 10));
         m_scrollbar->setBounds(gfx::Size(10, 10));
 
@@ -1130,13 +1133,16 @@ public:
         m_child->setPosition(gfx::Point(0, 10));
         m_child->setBounds(gfx::Size(3, 10));
 
-        m_scrollbarWithPaints =
-                FakeScrollbarLayer::Create(true, m_parent->id());
+        bool paint_scrollbar = true;
+        bool has_thumb = false;
+        m_scrollbarWithPaints = FakeScrollbarLayer::Create(
+            paint_scrollbar, has_thumb, m_parent->id());
         m_scrollbarWithPaints->setPosition(gfx::Point(3, 10));
         m_scrollbarWithPaints->setBounds(gfx::Size(3, 10));
 
-        m_scrollbarWithoutPaints =
-                FakeScrollbarLayer::Create(false, m_parent->id());
+        paint_scrollbar = false;
+        m_scrollbarWithoutPaints = FakeScrollbarLayer::Create(
+            paint_scrollbar, has_thumb, m_parent->id());
         m_scrollbarWithoutPaints->setPosition(gfx::Point(6, 10));
         m_scrollbarWithoutPaints->setBounds(gfx::Size(3, 10));
 
@@ -1302,74 +1308,6 @@ private:
 };
 
 TEST_F(LayerTreeHostTestAtomicCommitWithPartialUpdate, runMultiThread)
-{
-    runTest(true);
-}
-
-// A loseOutputSurface(1) should lead to a didRecreateOutputSurface(true)
-class LayerTreeHostTestSetSingleLostContext : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestSetSingleLostContext()
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void didCommitAndDrawFrame() OVERRIDE
-    {
-        m_layerTreeHost->loseOutputSurface(1);
-    }
-
-    virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
-    {
-        EXPECT_TRUE(succeeded);
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-};
-
-TEST_F(LayerTreeHostTestSetSingleLostContext, runMultiThread)
-{
-    runTest(true);
-}
-
-// A loseOutputSurface(10) should lead to a didRecreateOutputSurface(false), and
-// a finishAllRendering() should not hang.
-class LayerTreeHostTestSetRepeatedLostContext : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestSetRepeatedLostContext()
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void didCommitAndDrawFrame() OVERRIDE
-    {
-        m_layerTreeHost->loseOutputSurface(10);
-    }
-
-    virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
-    {
-        EXPECT_FALSE(succeeded);
-        m_layerTreeHost->finishAllRendering();
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-};
-
-TEST_F(LayerTreeHostTestSetRepeatedLostContext, runMultiThread)
 {
     runTest(true);
 }
@@ -1745,176 +1683,6 @@ private:
 };
 
 TEST_F(LayerTreeHostTestEvictTextures, runMultiThread)
-{
-    runTest(true);
-}
-
-class LayerTreeHostTestLostContextAfterEvictTextures : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestLostContextAfterEvictTextures()
-        : m_layer(EvictionTestLayer::create())
-        , m_implForEvictTextures(0)
-        , m_numCommits(0)
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        m_layerTreeHost->setRootLayer(m_layer);
-        m_layerTreeHost->setViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
-
-        gfx::Transform identityMatrix;
-        setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 20), true);
-
-        postSetNeedsCommitToMainThread();
-    }
-
-    void postEvictTextures()
-    {
-        if (implThread()) {
-            implThread()->postTask(base::Bind(&LayerTreeHostTestLostContextAfterEvictTextures::evictTexturesOnImplThread,
-                                              base::Unretained(this)));
-        } else {
-            DebugScopedSetImplThread impl(proxy());
-            evictTexturesOnImplThread();
-        }
-    }
-
-    void evictTexturesOnImplThread()
-    {
-        DCHECK(m_implForEvictTextures);
-        m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
-    }
-
-    // Commit 1: Just commit and draw normally, then at the end, set ourselves
-    // invisible (to prevent a commit that would recreate textures after
-    // eviction, before the context recovery), and post a task that will evict
-    // textures, then cause the context to be lost, and then set ourselves
-    // visible again (to allow commits, since that's what causes context
-    // recovery in single thread).
-    virtual void didCommitAndDrawFrame() OVERRIDE
-    {
-        ++m_numCommits;
-        switch (m_numCommits) {
-        case 1:
-            EXPECT_TRUE(m_layer->haveBackingTexture());
-            m_layerTreeHost->setVisible(false);
-            postEvictTextures();
-            m_layerTreeHost->loseOutputSurface(1);
-            m_layerTreeHost->setVisible(true);
-            break;
-        default:
-            break;
-        }
-    }
-
-    virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
-    {
-        m_implForEvictTextures = impl;
-    }
-
-    virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
-    {
-        EXPECT_TRUE(succeeded);
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-
-private:
-    FakeContentLayerClient m_client;
-    scoped_refptr<EvictionTestLayer> m_layer;
-    LayerTreeHostImpl* m_implForEvictTextures;
-    int m_numCommits;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLostContextAfterEvictTextures)
-
-class FakeWebGraphicsContext3DWithEndQueryCausingLostContext : public FakeWebGraphicsContext3D {
-public:
-    static scoped_ptr<FakeWebGraphicsContext3DWithEndQueryCausingLostContext> create(Attributes attrs)
-    {
-        return make_scoped_ptr(new FakeWebGraphicsContext3DWithEndQueryCausingLostContext(attrs));
-    }
-
-    virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { m_contextLostCallback = callback; }
-    virtual bool isContextLost() { return m_isContextLost; }
-
-    virtual void beginQueryEXT(WebKit::WGC3Denum, WebKit::WebGLId) { }
-    virtual void endQueryEXT(WebKit::WGC3Denum)
-    {
-        // Lose context.
-        if (!m_isContextLost) {
-            m_contextLostCallback->onContextLost();
-            m_isContextLost = true;
-        }
-    }
-    virtual void getQueryObjectuivEXT(WebKit::WebGLId, WebKit::WGC3Denum pname, WebKit::WGC3Duint* params)
-    {
-        // Context is lost. We need to behave as if result is available.
-        if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
-            *params = 1;
-    }
-
-private:
-    explicit FakeWebGraphicsContext3DWithEndQueryCausingLostContext(Attributes attrs)
-        : FakeWebGraphicsContext3D(attrs)
-        , m_contextLostCallback(0)
-        , m_isContextLost(false) { }
-
-    WebGraphicsContextLostCallback* m_contextLostCallback;
-    bool m_isContextLost;
-};
-
-class LayerTreeHostTestLostContextWhileUpdatingResources : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestLostContextWhileUpdatingResources()
-        : m_parent(ContentLayerWithUpdateTracking::create(&m_client))
-        , m_numChildren(50)
-    {
-        for (int i = 0; i < m_numChildren; i++)
-            m_children.push_back(ContentLayerWithUpdateTracking::create(&m_client));
-    }
-
-    virtual void beginTest()
-    {
-        m_layerTreeHost->setRootLayer(m_parent);
-        m_layerTreeHost->setViewportSize(gfx::Size(m_numChildren, 1), gfx::Size(m_numChildren, 1));
-
-        gfx::Transform identityMatrix;
-        setLayerPropertiesForTesting(m_parent.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(m_numChildren, 1), true);
-        for (int i = 0; i < m_numChildren; i++)
-            setLayerPropertiesForTesting(m_children[i].get(), m_parent.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(i, 0), gfx::Size(1, 1), false);
-
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void commitCompleteOnThread(LayerTreeHostImpl* impl)
-    {
-        endTest();
-    }
-
-    virtual void layout()
-    {
-        m_parent->setNeedsDisplay();
-        for (int i = 0; i < m_numChildren; i++)
-            m_children[i]->setNeedsDisplay();
-    }
-
-    virtual void afterTest()
-    {
-    }
-
-private:
-    FakeContentLayerClient m_client;
-    scoped_refptr<ContentLayerWithUpdateTracking> m_parent;
-    int m_numChildren;
-    std::vector<scoped_refptr<ContentLayerWithUpdateTracking> > m_children;
-};
-
-TEST_F(LayerTreeHostTestLostContextWhileUpdatingResources, runMultiThread)
 {
     runTest(true);
 }

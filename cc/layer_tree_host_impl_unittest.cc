@@ -27,6 +27,8 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_video_frame.h"
+#include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/geometry_test_utils.h"
@@ -38,15 +40,11 @@
 #include "cc/tiled_layer_impl.h"
 #include "cc/video_layer_impl.h"
 #include "media/base/media.h"
-#include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
-using media::VideoFrame;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::AnyNumber;
@@ -2225,8 +2223,7 @@ public:
             .WillOnce(Return())
             .RetiresOnSaturation();
 
-        // 1 is hardcoded return value of fake createProgram()
-        EXPECT_CALL(*m_context, useProgram(1))
+        EXPECT_CALL(*m_context, useProgram(_))
             .WillOnce(Return())
             .RetiresOnSaturation();
 
@@ -2454,509 +2451,6 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
     }
 }
 
-// Make sure that output surface lost notifications are propagated through the tree.
-class OutputSurfaceLostNotificationCheckLayer : public LayerImpl {
-public:
-    static scoped_ptr<LayerImpl> create(LayerTreeImpl* treeImpl, int id) { return scoped_ptr<LayerImpl>(new OutputSurfaceLostNotificationCheckLayer(treeImpl, id)); }
-
-    virtual void didLoseOutputSurface() OVERRIDE
-    {
-        m_didLoseOutputSurfaceCalled = true;
-    }
-
-    bool didLoseOutputSurfaceCalled() const { return m_didLoseOutputSurfaceCalled; }
-
-private:
-    OutputSurfaceLostNotificationCheckLayer(LayerTreeImpl* treeImpl, int id)
-        : LayerImpl(treeImpl, id)
-        , m_didLoseOutputSurfaceCalled(false)
-    {
-    }
-
-    bool m_didLoseOutputSurfaceCalled;
-};
-
-TEST_P(LayerTreeHostImplTest, outputSurfaceLostAndRestoredNotificationSentToAllLayers)
-{
-    m_hostImpl->setRootLayer(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 1));
-    OutputSurfaceLostNotificationCheckLayer* root = static_cast<OutputSurfaceLostNotificationCheckLayer*>(m_hostImpl->rootLayer());
-
-    root->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 2));
-    OutputSurfaceLostNotificationCheckLayer* layer1 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(root->children()[0]);
-
-    layer1->addChild(OutputSurfaceLostNotificationCheckLayer::create(m_hostImpl->activeTree(), 3));
-    OutputSurfaceLostNotificationCheckLayer* layer2 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(layer1->children()[0]);
-
-    EXPECT_FALSE(root->didLoseOutputSurfaceCalled());
-    EXPECT_FALSE(layer1->didLoseOutputSurfaceCalled());
-    EXPECT_FALSE(layer2->didLoseOutputSurfaceCalled());
-
-    m_hostImpl->initializeRenderer(createOutputSurface());
-
-    EXPECT_TRUE(root->didLoseOutputSurfaceCalled());
-    EXPECT_TRUE(layer1->didLoseOutputSurfaceCalled());
-    EXPECT_TRUE(layer2->didLoseOutputSurfaceCalled());
-}
-
-TEST_P(LayerTreeHostImplTest, finishAllRenderingAfterContextLost)
-{
-    LayerTreeSettings settings;
-    m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
-
-    // The context initialization will fail, but we should still be able to call finishAllRendering() without any ill effects.
-    m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<OutputSurface>());
-    m_hostImpl->finishAllRendering();
-}
-
-class FakeWebGraphicsContext3DMakeCurrentFailsEventually : public FakeWebGraphicsContext3D {
-public:
-    explicit FakeWebGraphicsContext3DMakeCurrentFailsEventually(unsigned succeedCount) : m_succeedCount(succeedCount) { }
-    virtual bool makeContextCurrent() {
-        if (!m_succeedCount)
-            return false;
-        --m_succeedCount;
-        return true;
-    }
-
-private:
-    unsigned m_succeedCount;
-};
-
-TEST_P(LayerTreeHostImplTest, context3DLostDuringInitialize)
-{
-    LayerTreeSettings settings;
-    m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
-
-    // Initialize into a known successful state.
-    EXPECT_TRUE(m_hostImpl->initializeRenderer(createOutputSurface()));
-    EXPECT_TRUE(m_hostImpl->outputSurface());
-    EXPECT_TRUE(m_hostImpl->renderer());
-    EXPECT_TRUE(m_hostImpl->resourceProvider());
-
-    // We will make the context get lost after a numer of makeContextCurrent
-    // calls. The exact number of calls to make it succeed is dependent on the
-    // implementation and doesn't really matter (i.e. can be changed to make the
-    // tests pass after some refactoring).
-    const unsigned kMakeCurrentSuccessesNeededForSuccessfulInitialization = 3;
-
-    for (unsigned i = 0; i < kMakeCurrentSuccessesNeededForSuccessfulInitialization; ++i) {
-        // The context will get lost during initialization, we shouldn't crash. We
-        // should also be in a consistent state.
-        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i))).PassAs<OutputSurface>()));
-        EXPECT_EQ(0, m_hostImpl->outputSurface());
-        EXPECT_EQ(0, m_hostImpl->renderer());
-        EXPECT_EQ(0, m_hostImpl->resourceProvider());
-        EXPECT_TRUE(m_hostImpl->initializeRenderer(createOutputSurface()));
-    }
-
-    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization))).PassAs<OutputSurface>()));
-    EXPECT_TRUE(m_hostImpl->outputSurface());
-    EXPECT_TRUE(m_hostImpl->renderer());
-    EXPECT_TRUE(m_hostImpl->resourceProvider());
-}
-
-// Fake WebKit::WebGraphicsContext3D that will cause a failure if trying to use a
-// resource that wasn't created by it (resources created by
-// FakeWebGraphicsContext3D have an id of 1).
-class StrictWebGraphicsContext3D : public FakeWebGraphicsContext3D {
-public:
-    StrictWebGraphicsContext3D()
-        : FakeWebGraphicsContext3D()
-    {
-        next_texture_id_ = 8; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
-    }
-
-    virtual WebKit::WebGLId createBuffer() { return 2; }
-    virtual WebKit::WebGLId createFramebuffer() { return 3; }
-    virtual WebKit::WebGLId createProgram() { return 4; }
-    virtual WebKit::WebGLId createRenderbuffer() { return 5; }
-    virtual WebKit::WebGLId createShader(WebKit::WGC3Denum) { return 6; }
-
-    static const WebKit::WebGLId kExternalTextureId = 7;
-
-    virtual void deleteBuffer(WebKit::WebGLId id)
-    {
-        if (id != 2)
-            ADD_FAILURE() << "Trying to delete buffer id " << id;
-    }
-
-    virtual void deleteFramebuffer(WebKit::WebGLId id)
-    {
-        if (id != 3)
-            ADD_FAILURE() << "Trying to delete framebuffer id " << id;
-    }
-
-    virtual void deleteProgram(WebKit::WebGLId id)
-    {
-        if (id != 4)
-            ADD_FAILURE() << "Trying to delete program id " << id;
-    }
-
-    virtual void deleteRenderbuffer(WebKit::WebGLId id)
-    {
-        if (id != 5)
-            ADD_FAILURE() << "Trying to delete renderbuffer id " << id;
-    }
-
-    virtual void deleteShader(WebKit::WebGLId id)
-    {
-        if (id != 6)
-            ADD_FAILURE() << "Trying to delete shader id " << id;
-    }
-
-    virtual WebKit::WebGLId createTexture()
-    {
-        unsigned textureId = FakeWebGraphicsContext3D::createTexture();
-        m_allocatedTextureIds.insert(textureId);
-        return textureId;
-    }
-    virtual void deleteTexture(WebKit::WebGLId id)
-    {
-        if (id == kExternalTextureId)
-            ADD_FAILURE() << "Trying to delete external texture";
-        if (!ContainsKey(m_allocatedTextureIds, id))
-            ADD_FAILURE() << "Trying to delete texture id " << id;
-        m_allocatedTextureIds.erase(id);
-    }
-
-    virtual void bindBuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
-    {
-        if (id != 2 && id)
-            ADD_FAILURE() << "Trying to bind buffer id " << id;
-    }
-
-    virtual void bindFramebuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
-    {
-        if (id != 3 && id)
-            ADD_FAILURE() << "Trying to bind framebuffer id " << id;
-    }
-
-    virtual void useProgram(WebKit::WebGLId id)
-    {
-        if (id != 4)
-            ADD_FAILURE() << "Trying to use program id " << id;
-    }
-
-    virtual void bindRenderbuffer(WebKit::WGC3Denum, WebKit::WebGLId id)
-    {
-        if (id != 5 && id)
-            ADD_FAILURE() << "Trying to bind renderbuffer id " << id;
-    }
-
-    virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader)
-    {
-        if ((program != 4) || (shader != 6))
-            ADD_FAILURE() << "Trying to attach shader id " << shader << " to program id " << program;
-    }
-
-    virtual void bindTexture(WebKit::WGC3Denum, WebKit::WebGLId id)
-    {
-        if (id && id != kExternalTextureId && !ContainsKey(m_allocatedTextureIds, id))
-            ADD_FAILURE() << "Trying to bind texture id " << id;
-    }
-
-private:
-    base::hash_set<unsigned> m_allocatedTextureIds;
-};
-
-// Fake WebKit::WebVideoFrame wrapper of media::VideoFrame.
-class FakeVideoFrame: public WebKit::WebVideoFrame {
-public:
-    explicit FakeVideoFrame(const scoped_refptr<VideoFrame>& frame) : m_frame(frame) { }
-    virtual ~FakeVideoFrame() { }
-
-    virtual Format format() const { NOTREACHED(); return FormatInvalid; }
-    virtual unsigned width() const { NOTREACHED(); return 0; }
-    virtual unsigned height() const { NOTREACHED(); return 0; }
-    virtual unsigned planes() const { NOTREACHED(); return 0; }
-    virtual int stride(unsigned plane) const { NOTREACHED(); return 0; }
-    virtual const void* data(unsigned plane) const { NOTREACHED(); return NULL; }
-    virtual unsigned textureId() const { NOTREACHED(); return 0; }
-    virtual unsigned textureTarget() const { NOTREACHED(); return 0; }
-    virtual WebKit::WebRect visibleRect() const { NOTREACHED(); return WebKit::WebRect(0, 0, 0, 0); }
-    virtual WebKit::WebSize textureSize() const { NOTREACHED(); return WebKit::WebSize(4, 4); }
-
-    static VideoFrame* toVideoFrame(WebKit::WebVideoFrame* web_video_frame) {
-        FakeVideoFrame* wrapped_frame =
-            static_cast<FakeVideoFrame*>(web_video_frame);
-        if (wrapped_frame)
-            return wrapped_frame->m_frame.get();
-        return NULL;
-    }
-
-private:
-    scoped_refptr<VideoFrame> m_frame;
-};
-
-// Fake video frame provider that always provides the same FakeVideoFrame.
-class FakeVideoFrameProvider: public WebKit::WebVideoFrameProvider {
-public:
-    FakeVideoFrameProvider() : m_frame(0), m_client(0) { }
-    virtual ~FakeVideoFrameProvider()
-    {
-        if (m_client)
-            m_client->stopUsingProvider();
-    }
-
-    virtual void setVideoFrameProviderClient(Client* client) { m_client = client; }
-    virtual WebKit::WebVideoFrame* getCurrentFrame() { return m_frame; }
-    virtual void putCurrentFrame(WebKit::WebVideoFrame*) { }
-
-    void setFrame(WebKit::WebVideoFrame* frame) { m_frame = frame; }
-
-private:
-    WebKit::WebVideoFrame* m_frame;
-    Client* m_client;
-};
-
-class StrictWebGraphicsContext3DWithIOSurface : public StrictWebGraphicsContext3D {
-public:
-    virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE
-    {
-        if (name == GL_EXTENSIONS)
-            return WebKit::WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
-
-        return WebKit::WebString();
-    }
-};
-
-class FakeWebGraphicsContext3DWithIOSurface : public FakeWebGraphicsContext3D {
-public:
-    virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE
-    {
-        if (name == GL_EXTENSIONS)
-            return WebKit::WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
-
-        return WebKit::WebString();
-    }
-};
-
-class FakeWebScrollbarThemeGeometryNonEmpty : public FakeWebScrollbarThemeGeometry {
-    virtual WebKit::WebRect trackRect(WebKit::WebScrollbar*) OVERRIDE { return WebKit::WebRect(0, 0, 10, 10); }
-    virtual WebKit::WebRect thumbRect(WebKit::WebScrollbar*) OVERRIDE { return WebKit::WebRect(0, 5, 5, 2); }
-    virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE
-    {
-        thumb = WebKit::WebRect(0, 5, 5, 2);
-        startTrack = WebKit::WebRect(0, 5, 0, 5);
-        endTrack = WebKit::WebRect(0, 0, 0, 5);
-    }
-};
-
-class FakeScrollbarLayerImpl : public ScrollbarLayerImpl {
-public:
-    static scoped_ptr<FakeScrollbarLayerImpl> create(LayerTreeImpl* treeImpl, int id)
-    {
-        return make_scoped_ptr(new FakeScrollbarLayerImpl(treeImpl, id));
-    }
-
-    void createResources(ResourceProvider* provider)
-    {
-        DCHECK(provider);
-        gfx::Size size(10, 10);
-        GLenum format = GL_RGBA;
-        ResourceProvider::TextureUsageHint hint = ResourceProvider::TextureUsageAny;
-        setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometryNonEmpty::create()));
-
-        setBackTrackResourceId(provider->createResource(size, format, hint));
-        setForeTrackResourceId(provider->createResource(size, format, hint));
-        setThumbResourceId(provider->createResource(size, format, hint));
-    }
-
-protected:
-    FakeScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
-        : ScrollbarLayerImpl(treeImpl, id)
-    {
-    }
-};
-
-static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvider* provider)
-{
-    ResourceProvider::ResourceId resourceId = provider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
-
-    scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-    pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Transform());
-    scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
-    sharedState->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), false, 1);
-    const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), vertex_opacity, false);
-
-    pass->AppendSharedQuadState(sharedState.Pass());
-    pass->AppendQuad(quad.PassAs<DrawQuad>());
-
-    return pass.PassAs<RenderPass>();
-}
-
-TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostOutputSurface)
-{
-    int layerId = 1;
-
-    scoped_ptr<LayerImpl> rootLayer(LayerImpl::create(m_hostImpl->activeTree(), layerId++));
-    rootLayer->setBounds(gfx::Size(10, 10));
-    rootLayer->setAnchorPoint(gfx::PointF(0, 0));
-
-    scoped_ptr<TiledLayerImpl> tileLayer = TiledLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    tileLayer->setBounds(gfx::Size(10, 10));
-    tileLayer->setAnchorPoint(gfx::PointF(0, 0));
-    tileLayer->setContentBounds(gfx::Size(10, 10));
-    tileLayer->setDrawsContent(true);
-    tileLayer->setSkipsDraw(false);
-    scoped_ptr<LayerTilingData> tilingData(LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::NoBorderTexels));
-    tilingData->setBounds(gfx::Size(10, 10));
-    tileLayer->setTilingData(*tilingData);
-    tileLayer->pushTileProperties(0, 0, 1, gfx::Rect(0, 0, 10, 10), false);
-    rootLayer->addChild(tileLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<TextureLayerImpl> textureLayer = TextureLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    textureLayer->setBounds(gfx::Size(10, 10));
-    textureLayer->setAnchorPoint(gfx::PointF(0, 0));
-    textureLayer->setContentBounds(gfx::Size(10, 10));
-    textureLayer->setDrawsContent(true);
-    textureLayer->setTextureId(StrictWebGraphicsContext3D::kExternalTextureId);
-    rootLayer->addChild(textureLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<TiledLayerImpl> maskLayer = TiledLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    maskLayer->setBounds(gfx::Size(10, 10));
-    maskLayer->setAnchorPoint(gfx::PointF(0, 0));
-    maskLayer->setContentBounds(gfx::Size(10, 10));
-    maskLayer->setDrawsContent(true);
-    maskLayer->setSkipsDraw(false);
-    maskLayer->setTilingData(*tilingData);
-    maskLayer->pushTileProperties(0, 0, 1, gfx::Rect(0, 0, 10, 10), false);
-
-    scoped_ptr<TextureLayerImpl> textureLayerWithMask = TextureLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    textureLayerWithMask->setBounds(gfx::Size(10, 10));
-    textureLayerWithMask->setAnchorPoint(gfx::PointF(0, 0));
-    textureLayerWithMask->setContentBounds(gfx::Size(10, 10));
-    textureLayerWithMask->setDrawsContent(true);
-    textureLayerWithMask->setTextureId(StrictWebGraphicsContext3D::kExternalTextureId);
-    textureLayerWithMask->setMaskLayer(maskLayer.PassAs<LayerImpl>());
-    rootLayer->addChild(textureLayerWithMask.PassAs<LayerImpl>());
-
-    FakeVideoFrame videoFrame(VideoFrame::CreateColorFrame(gfx::Size(4, 4),
-                                                           0x80, 0x80, 0x80,
-                                                           base::TimeDelta()));
-    VideoLayerImpl::FrameUnwrapper unwrapper =
-        base::Bind(FakeVideoFrame::toVideoFrame);
-    FakeVideoFrameProvider provider;
-    provider.setFrame(&videoFrame);
-    scoped_ptr<VideoLayerImpl> videoLayer = VideoLayerImpl::create(m_hostImpl->activeTree(), layerId++, &provider, unwrapper);
-    videoLayer->setBounds(gfx::Size(10, 10));
-    videoLayer->setAnchorPoint(gfx::PointF(0, 0));
-    videoLayer->setContentBounds(gfx::Size(10, 10));
-    videoLayer->setDrawsContent(true);
-    rootLayer->addChild(videoLayer.PassAs<LayerImpl>());
-
-    FakeVideoFrameProvider providerScaled;
-    scoped_ptr<VideoLayerImpl> videoLayerScaled = VideoLayerImpl::create(m_hostImpl->activeTree(), layerId++, &providerScaled, unwrapper);
-    videoLayerScaled->setBounds(gfx::Size(10, 10));
-    videoLayerScaled->setAnchorPoint(gfx::PointF(0, 0));
-    videoLayerScaled->setContentBounds(gfx::Size(10, 10));
-    videoLayerScaled->setDrawsContent(true);
-    rootLayer->addChild(videoLayerScaled.PassAs<LayerImpl>());
-
-    FakeVideoFrameProvider hwProvider;
-    scoped_ptr<VideoLayerImpl> hwVideoLayer = VideoLayerImpl::create(m_hostImpl->activeTree(), layerId++, &hwProvider, unwrapper);
-    hwVideoLayer->setBounds(gfx::Size(10, 10));
-    hwVideoLayer->setAnchorPoint(gfx::PointF(0, 0));
-    hwVideoLayer->setContentBounds(gfx::Size(10, 10));
-    hwVideoLayer->setDrawsContent(true);
-    rootLayer->addChild(hwVideoLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<IOSurfaceLayerImpl> ioSurfaceLayer = IOSurfaceLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    ioSurfaceLayer->setBounds(gfx::Size(10, 10));
-    ioSurfaceLayer->setAnchorPoint(gfx::PointF(0, 0));
-    ioSurfaceLayer->setContentBounds(gfx::Size(10, 10));
-    ioSurfaceLayer->setDrawsContent(true);
-    ioSurfaceLayer->setIOSurfaceProperties(1, gfx::Size(10, 10));
-    rootLayer->addChild(ioSurfaceLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<HeadsUpDisplayLayerImpl> hudLayer = HeadsUpDisplayLayerImpl::create(m_hostImpl->activeTree(), layerId++);
-    hudLayer->setBounds(gfx::Size(10, 10));
-    hudLayer->setAnchorPoint(gfx::PointF(0, 0));
-    hudLayer->setContentBounds(gfx::Size(10, 10));
-    hudLayer->setDrawsContent(true);
-    rootLayer->addChild(hudLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<FakeScrollbarLayerImpl> scrollbarLayer(FakeScrollbarLayerImpl::create(m_hostImpl->activeTree(), layerId++));
-    scrollbarLayer->setBounds(gfx::Size(10, 10));
-    scrollbarLayer->setContentBounds(gfx::Size(10, 10));
-    scrollbarLayer->setDrawsContent(true);
-    scrollbarLayer->createResources(m_hostImpl->resourceProvider());
-    rootLayer->addChild(scrollbarLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer(DelegatedRendererLayerImpl::create(m_hostImpl->activeTree(), layerId++));
-    delegatedRendererLayer->setBounds(gfx::Size(10, 10));
-    delegatedRendererLayer->setContentBounds(gfx::Size(10, 10));
-    delegatedRendererLayer->setDrawsContent(true);
-    ScopedPtrVector<RenderPass> passList;
-    passList.append(createRenderPassWithResource(m_hostImpl->resourceProvider()));
-    delegatedRendererLayer->setRenderPasses(passList);
-    EXPECT_TRUE(passList.isEmpty());
-    rootLayer->addChild(delegatedRendererLayer.PassAs<LayerImpl>());
-
-    // Use a context that supports IOSurfaces
-    m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DWithIOSurface)).PassAs<OutputSurface>());
-
-    FakeVideoFrame hwVideoFrame(
-        VideoFrame::WrapNativeTexture(
-            m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
-            GL_TEXTURE_2D,
-            gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(),
-            VideoFrame::ReadPixelsCB(), base::Closure()));
-    hwProvider.setFrame(&hwVideoFrame);
-
-    FakeVideoFrame videoFrameScaled(
-        VideoFrame::WrapNativeTexture(
-            m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
-            GL_TEXTURE_2D,
-            gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta(),
-            VideoFrame::ReadPixelsCB(), base::Closure()));
-    providerScaled.setFrame(&videoFrameScaled);
-
-    m_hostImpl->setRootLayer(rootLayer.Pass());
-
-    LayerTreeHostImpl::FrameData frame;
-    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
-    m_hostImpl->swapBuffers();
-
-    unsigned numResources = m_hostImpl->resourceProvider()->numResources();
-
-    // Lose the WebKit::WebGraphicsContext3D, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
-    // that will warn if any resource from the previous context gets used.
-    m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<OutputSurface>());
-
-    // Create dummy resources so that looking up an old resource will get an
-    // invalid texture id mapping.
-    for (unsigned i = 0; i < numResources; ++i)
-        m_hostImpl->resourceProvider()->createResourceFromExternalTexture(StrictWebGraphicsContext3D::kExternalTextureId);
-
-    // The WebKit::WebVideoFrameProvider is expected to recreate its textures after a
-    // lost output surface (or not serve a frame).
-    hwProvider.setFrame(0);
-    providerScaled.setFrame(0);
-
-    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
-    m_hostImpl->swapBuffers();
-
-    FakeVideoFrame hwVideoFrame2(
-        VideoFrame::WrapNativeTexture(
-            m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
-            GL_TEXTURE_2D,
-            gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(),
-            VideoFrame::ReadPixelsCB(), base::Closure()));
-    hwProvider.setFrame(&hwVideoFrame2);
-
-    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
-    m_hostImpl->swapBuffers();
-}
-
 // Fake WebKit::WebGraphicsContext3D that tracks the number of textures in use.
 class TrackingWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 public:
@@ -2998,35 +2492,39 @@ private:
     unsigned m_numTextures;
 };
 
+static unsigned createResourceId(ResourceProvider* resourceProvider)
+{
+    return resourceProvider->createResource(
+        gfx::Size(20, 12),
+        resourceProvider->bestTextureFormat(),
+        ResourceProvider::TextureUsageAny);
+}
+
+static unsigned createTextureId(ResourceProvider* resourceProvider)
+{
+    return ResourceProvider::ScopedReadLockGL(
+        resourceProvider, createResourceId(resourceProvider)).textureId();
+}
+
 TEST_P(LayerTreeHostImplTest, layersFreeTextures)
 {
+    scoped_ptr<FakeWebGraphicsContext3D> context =
+            FakeWebGraphicsContext3D::Create();
+    FakeWebGraphicsContext3D* context3d = context.get();
+    scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(
+        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    m_hostImpl->initializeRenderer(outputSurface.Pass());
+
     scoped_ptr<LayerImpl> rootLayer(LayerImpl::create(m_hostImpl->activeTree(), 1));
     rootLayer->setBounds(gfx::Size(10, 10));
     rootLayer->setAnchorPoint(gfx::PointF(0, 0));
 
-    scoped_ptr<TiledLayerImpl> tileLayer = TiledLayerImpl::create(m_hostImpl->activeTree(), 2);
-    tileLayer->setBounds(gfx::Size(10, 10));
-    tileLayer->setAnchorPoint(gfx::PointF(0, 0));
-    tileLayer->setContentBounds(gfx::Size(10, 10));
-    tileLayer->setDrawsContent(true);
-    tileLayer->setSkipsDraw(false);
-    scoped_ptr<LayerTilingData> tilingData(LayerTilingData::create(gfx::Size(10, 10), LayerTilingData::NoBorderTexels));
-    tilingData->setBounds(gfx::Size(10, 10));
-    tileLayer->setTilingData(*tilingData);
-    tileLayer->pushTileProperties(0, 0, 1, gfx::Rect(0, 0, 10, 10), false);
-    rootLayer->addChild(tileLayer.PassAs<LayerImpl>());
-
-    scoped_ptr<TextureLayerImpl> textureLayer = TextureLayerImpl::create(m_hostImpl->activeTree(), 3);
-    textureLayer->setBounds(gfx::Size(10, 10));
-    textureLayer->setAnchorPoint(gfx::PointF(0, 0));
-    textureLayer->setContentBounds(gfx::Size(10, 10));
-    textureLayer->setDrawsContent(true);
-    textureLayer->setTextureId(1);
-    rootLayer->addChild(textureLayer.PassAs<LayerImpl>());
-
+    FakeVideoFrame softwareFrame(media::VideoFrame::CreateColorFrame(
+        gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta()));
     VideoLayerImpl::FrameUnwrapper unwrapper =
-        base::Bind(FakeVideoFrame::toVideoFrame);
+        base::Bind(FakeVideoFrame::ToVideoFrame);
     FakeVideoFrameProvider provider;
+    provider.set_frame(&softwareFrame);
     scoped_ptr<VideoLayerImpl> videoLayer = VideoLayerImpl::create(m_hostImpl->activeTree(), 4, &provider, unwrapper);
     videoLayer->setBounds(gfx::Size(10, 10));
     videoLayer->setAnchorPoint(gfx::PointF(0, 0));
@@ -3042,12 +2540,9 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     ioSurfaceLayer->setIOSurfaceProperties(1, gfx::Size(10, 10));
     rootLayer->addChild(ioSurfaceLayer.PassAs<LayerImpl>());
 
-    // Lose the WebGraphicsContext3D, replacing it with a TrackingWebGraphicsContext3D (which the LayerTreeHostImpl takes ownership of).
-    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TrackingWebGraphicsContext3D)));
-    TrackingWebGraphicsContext3D* trackingWebGraphicsContext3D = static_cast<TrackingWebGraphicsContext3D*>(outputSurface->Context3D());
-    m_hostImpl->initializeRenderer(outputSurface.Pass());
-
     m_hostImpl->setRootLayer(rootLayer.Pass());
+
+    EXPECT_EQ(0u, context3d->NumTextures());
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -3055,12 +2550,12 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     m_hostImpl->didDrawAllLayers(frame);
     m_hostImpl->swapBuffers();
 
-    EXPECT_GT(trackingWebGraphicsContext3D->numTextures(), 0u);
+    EXPECT_GT(context3d->NumTextures(), 0u);
 
     // Kill the layer tree.
     m_hostImpl->setRootLayer(LayerImpl::create(m_hostImpl->activeTree(), 100));
     // There should be no textures left in use after.
-    EXPECT_EQ(0u, trackingWebGraphicsContext3D->numTextures());
+    EXPECT_EQ(0u, context3d->NumTextures());
 }
 
 class MockDrawQuadsToFillScreenContext : public FakeWebGraphicsContext3D {

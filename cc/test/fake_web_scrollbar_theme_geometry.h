@@ -12,7 +12,7 @@ namespace cc {
 
 class FakeWebScrollbarThemeGeometry : public WebKit::WebScrollbarThemeGeometry {
 public:
-    static scoped_ptr<WebKit::WebScrollbarThemeGeometry> create() { return scoped_ptr<WebKit::WebScrollbarThemeGeometry>(new FakeWebScrollbarThemeGeometry()); }
+    static scoped_ptr<WebKit::WebScrollbarThemeGeometry> create(bool hasThumb) { return scoped_ptr<WebKit::WebScrollbarThemeGeometry>(new FakeWebScrollbarThemeGeometry(hasThumb)); }
 
     virtual WebKit::WebScrollbarThemeGeometry* clone() const OVERRIDE;
 
@@ -32,6 +32,10 @@ public:
     virtual WebKit::WebRect forwardButtonEndRect(WebKit::WebScrollbar*) OVERRIDE;
     virtual WebKit::WebRect constrainTrackRectToTrackPieces(WebKit::WebScrollbar*, const WebKit::WebRect&) OVERRIDE;
     virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
+
+protected:
+    FakeWebScrollbarThemeGeometry(bool hasThumb) : m_hasThumb(hasThumb) { }
+    bool m_hasThumb;
 };
 
 }  // namespace cc

@@ -563,6 +563,9 @@ class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
 public:
     MOCK_METHOD2(bindTexture, void(WGC3Denum target, WebGLId texture));
     MOCK_METHOD3(texParameteri, void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
+
+    // Force all textures to be "1" so we can test for them.
+    virtual WebKit::WebGLId NextTextureId() { return 1; }
 };
 
 TEST_P(ResourceProviderTest, ScopedSampler)

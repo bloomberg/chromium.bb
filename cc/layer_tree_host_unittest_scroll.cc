@@ -241,11 +241,8 @@ class LayerTreeHostScrollTestCaseWithChild :
     public LayerTreeHostScrollTest,
     public WebKit::WebLayerScrollClient {
  public:
-  LayerTreeHostScrollTestCaseWithChild(
-      float device_scale_factor, bool scroll_child_layer)
-      : device_scale_factor_(device_scale_factor),
-        scroll_child_layer_(scroll_child_layer),
-        initial_offset_(10, 20),
+  LayerTreeHostScrollTestCaseWithChild()
+      : initial_offset_(10, 20),
         javascript_scroll_(40, 5),
         scroll_amount_(2, -1),
         num_scrolls_(0) {
@@ -436,9 +433,10 @@ class LayerTreeHostScrollTestCaseWithChild :
     }
   }
 
- private:
+ protected:
   float device_scale_factor_;
   bool scroll_child_layer_;
+
   gfx::Vector2d initial_offset_;
   gfx::Vector2d javascript_scroll_;
   gfx::Vector2d scroll_amount_;
@@ -453,24 +451,44 @@ class LayerTreeHostScrollTestCaseWithChild :
   scoped_refptr<Layer> expected_no_scroll_layer_;
 };
 
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor1, 1.0f,
-                     ScrollChild, true)
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor15, 1.5f,
-                     ScrollChild, true)
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor2, 2.0f,
-                     ScrollChild, true)
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor1, 1.0f,
-                     ScrollRootScrollLayer, false)
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor15, 1.5f,
-                     ScrollRootScrollLayer, false)
-MULTI_THREAD_TEST_P2(LayerTreeHostScrollTestCaseWithChild,
-                     DeviceScaleFactor2, 2.0f,
-                     ScrollRootScrollLayer, false)
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor1_ScrollChild) {
+  device_scale_factor_ = 1.f;
+  scroll_child_layer_ = true;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor15_ScrollChild) {
+  device_scale_factor_ = 1.5f;
+  scroll_child_layer_ = true;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor2_ScrollChild) {
+  device_scale_factor_ = 2.f;
+  scroll_child_layer_ = true;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor1_ScrollRootScrollLayer) {
+  device_scale_factor_ = 1.f;
+  scroll_child_layer_ = false;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor15_ScrollRootScrollLayer) {
+  device_scale_factor_ = 1.5f;
+  scroll_child_layer_ = false;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostScrollTestCaseWithChild,
+       DeviceScaleFactor2_ScrollRootScrollLayer) {
+  device_scale_factor_ = 2.f;
+  scroll_child_layer_ = false;
+  runTest(true);
+}
 
 class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
  public:

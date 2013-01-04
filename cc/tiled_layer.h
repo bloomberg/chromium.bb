@@ -65,6 +65,8 @@ protected:
 
     // Virtual for testing
     virtual PrioritizedResourceManager* resourceManager() const;
+    const LayerTilingData* tilerForTesting() const { return m_tiler.get(); }
+    const PrioritizedResource* resourceAtForTesting(int, int) const;
 
 private:
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;

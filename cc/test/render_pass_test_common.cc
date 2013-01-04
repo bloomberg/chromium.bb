@@ -29,6 +29,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
           gfx::Size(20, 12),
           resourceProvider->bestTextureFormat(),
           ResourceProvider::TextureUsageAny);
+  unsigned texture_id = ResourceProvider::ScopedReadLockGL(
+      resourceProvider, texture_resource).textureId();
+
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
   shared_state->SetAll(gfx::Transform(),
                        rect,
@@ -58,7 +61,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                           rect,
                           opaque_rect,
                           gfx::Size(50, 50),
-                          1,
+                          texture_id,
                           cc::IOSurfaceDrawQuad::FLIPPED);
   AppendQuad(io_surface_quad.PassAs<DrawQuad>());
 
@@ -88,7 +91,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   stream_video_quad->SetNew(shared_state.get(),
                             rect,
                             opaque_rect,
-                            1,
+                            texture_id,
                             gfx::Transform());
   AppendQuad(stream_video_quad.PassAs<DrawQuad>());
 
@@ -156,7 +159,10 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   cc::VideoLayerImpl::FramePlane planes[3];
   for (int i = 0; i < 3; ++i) {
     planes[i].resourceId =
-        resourceProvider->createResourceFromExternalTexture(1);
+        resourceProvider->createResource(
+            gfx::Size(20, 12),
+            resourceProvider->bestTextureFormat(),
+            ResourceProvider::TextureUsageAny);
     planes[i].size = gfx::Size(100, 100);
     planes[i].format = GL_LUMINANCE;
   }

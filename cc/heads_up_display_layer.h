@@ -6,12 +6,13 @@
 #define CC_HEADS_UP_DISPLAY_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/font_atlas.h"
 #include "cc/layer.h"
 
 namespace cc {
 
-class HeadsUpDisplayLayer : public Layer {
+class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 public:
     static scoped_refptr<HeadsUpDisplayLayer> create();
 

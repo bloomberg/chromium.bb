@@ -11,12 +11,12 @@
 namespace cc {
 
 FakeScrollbarLayer::FakeScrollbarLayer(
-    bool paint_during_update, int scrolling_layer_id)
+    bool paint_during_update, bool has_thumb, int scrolling_layer_id)
     : ScrollbarLayer(
         FakeWebScrollbar::create().PassAs<WebKit::WebScrollbar>(),
         FakeScrollbarThemePainter::Create(paint_during_update)
         .PassAs<ScrollbarThemePainter>(),
-        FakeWebScrollbarThemeGeometry::create()
+        FakeWebScrollbarThemeGeometry::create(has_thumb)
         .PassAs<WebKit::WebScrollbarThemeGeometry>(),
         scrolling_layer_id),
       update_count_(0) {

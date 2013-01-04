@@ -33,7 +33,7 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual int width();
   virtual int height();
 
-  virtual void reshape(int width, int height) {}
+  virtual void reshape(int width, int height);
 
   virtual bool isGLES2Compliant();
 
@@ -103,16 +103,16 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
       WebKit::WGC3Dsizei height) {}
 
   virtual void activeTexture(WebKit::WGC3Denum texture) {}
-  virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader) {}
+  virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader);
   virtual void bindAttribLocation(
       WebKit::WebGLId program,
       WebKit::WGC3Duint index,
       const WebKit::WGC3Dchar* name) {}
-  virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer) {}
+  virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer);
   virtual void bindFramebuffer(
-      WebKit::WGC3Denum target, WebKit::WebGLId framebuffer) {}
+      WebKit::WGC3Denum target, WebKit::WebGLId framebuffer);
   virtual void bindRenderbuffer(
-      WebKit::WGC3Denum target, WebKit::WebGLId renderbuffer) {}
+      WebKit::WGC3Denum target, WebKit::WebGLId renderbuffer);
   virtual void bindTexture(
       WebKit::WGC3Denum target,
       WebKit::WebGLId texture_id);
@@ -504,7 +504,7 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
       WebKit::WGC3Dboolean transpose,
       const WebKit::WGC3Dfloat* value) {}
 
-  virtual void useProgram(WebKit::WebGLId program) {}
+  virtual void useProgram(WebKit::WebGLId program);
   virtual void validateProgram(WebKit::WebGLId program) {}
 
   virtual void vertexAttrib1f(WebKit::WGC3Duint index, WebKit::WGC3Dfloat x) {}
@@ -556,11 +556,11 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
   virtual WebKit::WebGLId createTexture();
 
-  virtual void deleteBuffer(WebKit::WebGLId) {}
-  virtual void deleteFramebuffer(WebKit::WebGLId) {}
-  virtual void deleteProgram(WebKit::WebGLId) {}
-  virtual void deleteRenderbuffer(WebKit::WebGLId) {}
-  virtual void deleteShader(WebKit::WebGLId) {}
+  virtual void deleteBuffer(WebKit::WebGLId id);
+  virtual void deleteFramebuffer(WebKit::WebGLId id);
+  virtual void deleteProgram(WebKit::WebGLId id);
+  virtual void deleteRenderbuffer(WebKit::WebGLId id);
+  virtual void deleteShader(WebKit::WebGLId id);
   virtual void deleteTexture(WebKit::WebGLId texture_id);
 
   virtual void texStorage2DEXT(
@@ -576,20 +576,31 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void beginQueryEXT(
       WebKit::WGC3Denum target,
       WebKit::WebGLId query) {}
-  virtual void endQueryEXT(WebKit::WGC3Denum target) {}
+  virtual void endQueryEXT(WebKit::WGC3Denum target);
   virtual void getQueryivEXT(
       WebKit::WGC3Denum target,
       WebKit::WGC3Denum pname,
       WebKit::WGC3Dint* params) {}
   virtual void getQueryObjectuivEXT(
-      WebKit::WebGLId,
-      WebKit::WGC3Denum,
-      WebKit::WGC3Duint*) {}
+      WebKit::WebGLId query,
+      WebKit::WGC3Denum pname,
+      WebKit::WGC3Duint* params);
 
-  virtual void SetContextLostCallback(
+  virtual void setContextLostCallback(
       WebGraphicsContextLostCallback* callback);
 
   virtual void loseContextCHROMIUM();
+
+  // When set, MakeCurrent() will fail after this many times.
+  void set_times_make_current_succeeds(int times) {
+    times_make_current_succeeds_ = times;
+  }
+  void set_times_bind_texture_succeeds(int times) {
+    times_bind_texture_succeeds_ = times;
+  }
+  void set_times_end_query_succeeds(int times) {
+    times_end_query_succeeds_ = times;
+  }
 
   size_t NumTextures() const { return textures_.size(); }
   WebKit::WebGLId TextureAt(int i) const { return textures_[i]; }
@@ -600,17 +611,35 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   }
   void ResetUsedTextures() { used_textures_.clear(); }
 
+  void set_have_extension_io_surface(bool have) {
+    have_extension_io_surface_ = have;
+  }
+  void set_have_extension_egl_image(bool have) {
+    have_extension_egl_image_ = have;
+  }
+
+  static const WebKit::WebGLId kExternalTextureId;
+  virtual WebKit::WebGLId NextTextureId();
+
  protected:
   FakeWebGraphicsContext3D();
   FakeWebGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
+  unsigned context_id_;
   unsigned next_texture_id_;
   Attributes attributes_;
+  bool have_extension_io_surface_;
+  bool have_extension_egl_image_;
+  int times_make_current_succeeds_;
+  int times_bind_texture_succeeds_;
+  int times_end_query_succeeds_;
   bool context_lost_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;
+  int width_;
+  int height_;
 };
 
 }  // namespace cc

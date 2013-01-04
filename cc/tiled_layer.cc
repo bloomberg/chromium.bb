@@ -230,6 +230,14 @@ PrioritizedResourceManager* TiledLayer::resourceManager() const
     return layerTreeHost()->contentsTextureManager();
 }
 
+const PrioritizedResource* TiledLayer::resourceAtForTesting(int i, int j) const
+{
+    UpdatableTile* tile = tileAt(i, j);
+    if (!tile)
+        return 0;
+    return tile->managedResource();
+}
+
 void TiledLayer::setLayerTreeHost(LayerTreeHost* host)
 {
     if (host && host != layerTreeHost()) {

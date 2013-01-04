@@ -11,12 +11,15 @@
 namespace cc {
 
 class FakeContentLayer : public ContentLayer {
-public:
+ public:
   static scoped_refptr<FakeContentLayer> Create(ContentLayerClient* client) {
     return make_scoped_refptr(new FakeContentLayer(client)); 
   }
 
-  int update_count() { return update_count_; }
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+
+  size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
   virtual void update(
@@ -24,11 +27,13 @@ public:
       const OcclusionTracker* occlusion,
       RenderingStats& stats) OVERRIDE;
 
-private:
+  bool HaveBackingAt(int i, int j);
+
+ private:
   explicit FakeContentLayer(ContentLayerClient* client);
   virtual ~FakeContentLayer();
 
-  int update_count_;
+  size_t update_count_;
 };
 
 }  // namespace cc
