@@ -37,6 +37,9 @@ const InputStreamImpl* InputStreamImpl::FromInputStream(
     return static_cast<const InputStreamImpl*>(input_stream);
 }
 
+// TODO: Use unsafe version for all Java_InputStream methods in this file
+// once BUG 157880 is fixed and implement graceful exception handling.
+
 InputStreamImpl::InputStreamImpl() {
 }
 
@@ -48,13 +51,10 @@ InputStreamImpl::InputStreamImpl(const JavaRef<jobject>& stream)
 InputStreamImpl::~InputStreamImpl() {
   JNIEnv* env = AttachCurrentThread();
   Java_InputStream_close(env, jobject_.obj());
-  DCHECK(!ClearException(env));
 }
 
 bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
   JNIEnv* env = AttachCurrentThread();
-  // TODO: Use unsafe version for all Java_InputStream methods in this file
-  // once BUG 157880 is fixed.
   int bytes = Java_InputStream_available(env, jobject_.obj());
   if (ClearException(env))
     return false;
