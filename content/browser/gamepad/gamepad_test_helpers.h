@@ -69,7 +69,7 @@ class GamepadTestHelper {
 // global singleton for the gamepad service.
 class GamepadServiceTestConstructor : public GamepadTestHelper {
  public:
-  GamepadServiceTestConstructor(const WebKit::WebGamepads& test_data);
+  explicit GamepadServiceTestConstructor(const WebKit::WebGamepads& test_data);
   virtual ~GamepadServiceTestConstructor();
 
   GamepadService* gamepad_service() { return gamepad_service_; }

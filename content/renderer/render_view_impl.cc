@@ -1915,8 +1915,9 @@ WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
       // 3d context.
       return new CompositorOutputSurface(routing_id(), NULL,
           new CompositorSoftwareOutputDeviceGLAdapter(context));
-  } else
+  } else {
       return new CompositorOutputSurface(routing_id(), context, NULL);
+  }
 }
 
 void RenderViewImpl::didAddMessageToConsole(
@@ -4269,7 +4270,7 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
   params.target_process_id = target_process_id_;
   params.target_routing_id = target_routing_id_;
 
-  std::map<int,int>::iterator it = active_frame_id_map_.find(
+  std::map<int, int>::iterator it = active_frame_id_map_.find(
       targetFrame->identifier());
   if (it != active_frame_id_map_.end()) {
     params.target_frame_id = it->second;

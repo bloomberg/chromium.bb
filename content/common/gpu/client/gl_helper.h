@@ -74,6 +74,7 @@ class GLHelper {
                            WebKit::WebGLId previous_texture,
                            const SkRegion& new_damage,
                            const SkRegion& old_damage);
+
  private:
   class CopyTextureToImpl;
 

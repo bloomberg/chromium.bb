@@ -363,7 +363,6 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
           webkit_base::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
-
 }
 
 WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
@@ -378,7 +377,6 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
       FilePath(webkit_base::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
-
 }
 
 WebString
@@ -665,7 +663,7 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
 
 WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
     const WebKit::WebURL& url) {
- return WebKitPlatformSupportImpl::userAgent(url);
+  return WebKitPlatformSupportImpl::userAgent(url);
 }
 
 void RendererWebKitPlatformSupportImpl::GetPlugins(

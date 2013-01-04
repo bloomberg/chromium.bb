@@ -208,7 +208,7 @@ class ScopedTextureBinder : ScopedBinder<target> {
 
 class ScopedFlush {
  public:
-  ScopedFlush(WebGraphicsContext3D* context)
+  explicit ScopedFlush(WebGraphicsContext3D* context)
       : context_(context) {
   }
 
@@ -789,7 +789,6 @@ void GLHelper::InitCopyTextToImpl() {
     copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
                                                       context_for_thread_,
                                                       this));
-
 }
 
 void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,

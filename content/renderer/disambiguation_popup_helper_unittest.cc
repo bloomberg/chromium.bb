@@ -15,7 +15,7 @@
 namespace {
 const float kDisambiguationPopupMaxScale = 5.0;
 const float kDisambiguationPopupMinScale = 2.0;
-} // unnamed namespace
+}  // unnamed namespace
 
 namespace content {
 
@@ -78,4 +78,4 @@ TEST_F(DisambiguationPopupHelperUnittest, LongLinks) {
   EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(gfx::Rect(scaled_size)));
 }
 
-} // namespace content
+}  // namespace content

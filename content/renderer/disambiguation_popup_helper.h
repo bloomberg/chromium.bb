@@ -29,6 +29,6 @@ class DisambiguationPopupHelper {
       gfx::Rect* zoom_rect);
 };
 
-} // namespace content
+}  // namespace content
 
-#endif // CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_
+#endif  // CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_

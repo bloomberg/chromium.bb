@@ -32,7 +32,7 @@ const float kDisambiguationPopupMinScale = 2.0;
 float FindOptimalScaleFactor(const WebVector<WebRect>& target_rects) {
   using std::min;
   using std::max;
-  if (!target_rects.size()) // shall never reach
+  if (!target_rects.size())  // shall never reach
     return kDisambiguationPopupMinScale;
   int smallest_target = min(target_rects[0].width, target_rects[0].height);
   for (size_t i = 1; i < target_rects.size(); i++) {
@@ -81,7 +81,7 @@ gfx::Rect CropZoomArea(const gfx::Rect& zoom_rect,
                    top + bottom);
 }
 
-} // unnamed namespace
+}  // namespace
 
 namespace content {
 
@@ -103,4 +103,4 @@ float DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
   return scale;
 }
 
-} // namespace content
+}  // namespace content

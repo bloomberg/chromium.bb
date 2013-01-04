@@ -35,7 +35,7 @@ enum {
   // Reap a renderer child.
   kZygoteCommandReap = 1,
 
-  // Check what happend to a child process.
+  // Check what happened to a child process.
   kZygoteCommandGetTerminationStatus = 2,
 
   // Read a bitmask of kSandboxLinux*

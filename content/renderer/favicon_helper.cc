@@ -32,6 +32,7 @@ using webkit_glue::MultiResolutionImageResourceFetcher;
 namespace content {
 
 namespace {
+
 bool TouchEnabled() {
 // Based on the definition of chrome::kEnableTouchIcon.
 #if defined(OS_ANDROID)
@@ -41,7 +42,7 @@ bool TouchEnabled() {
 #endif
 }
 
-} // namespace
+}  // namespace
 
 
 static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
@@ -189,4 +190,4 @@ void FaviconHelper::DidStopLoading() {
   SendUpdateFaviconURL(routing_id(), render_view()->GetPageId(), urls);
 }
 
-} // namespace content
+}  // namespace content

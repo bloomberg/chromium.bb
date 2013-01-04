@@ -63,7 +63,7 @@ WebSerializedScriptValue GetReplyValue(
   }
 }
 
-} // namespace
+}  // namespace
 
 class DeliveredIntentClientImpl : public WebDeliveredIntentClient {
  public:

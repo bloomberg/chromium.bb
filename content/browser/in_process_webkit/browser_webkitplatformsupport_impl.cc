@@ -52,7 +52,8 @@ unsigned long long BrowserWebKitPlatformSupportImpl::visitedLinkHash(
   return 0;
 }
 
-bool BrowserWebKitPlatformSupportImpl::isLinkVisited(unsigned long long link_hash) {
+bool BrowserWebKitPlatformSupportImpl::isLinkVisited(
+    unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }

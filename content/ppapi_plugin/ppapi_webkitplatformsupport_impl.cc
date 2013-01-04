@@ -36,7 +36,8 @@ typedef struct CGFont* CGFontRef;
 
 namespace content {
 
-class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport {
+class PpapiWebKitPlatformSupportImpl::SandboxSupport
+    : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
@@ -179,7 +180,8 @@ unsigned long long PpapiWebKitPlatformSupportImpl::visitedLinkHash(
   return 0;
 }
 
-bool PpapiWebKitPlatformSupportImpl::isLinkVisited(unsigned long long link_hash) {
+bool PpapiWebKitPlatformSupportImpl::isLinkVisited(
+    unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }
@@ -204,7 +206,8 @@ WebKit::WebString PpapiWebKitPlatformSupportImpl::cookies(
   return WebKit::WebString();
 }
 
-void PpapiWebKitPlatformSupportImpl::prefetchHostName(const WebKit::WebString&) {
+void PpapiWebKitPlatformSupportImpl::prefetchHostName(
+    const WebKit::WebString&) {
   NOTREACHED();
 }
 

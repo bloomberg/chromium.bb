@@ -30,4 +30,4 @@ struct GamepadHardwareBuffer {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_
+#endif  // CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_

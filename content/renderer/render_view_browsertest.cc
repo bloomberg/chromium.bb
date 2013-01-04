@@ -59,6 +59,7 @@ using WebKit::WebURLError;
 namespace content  {
 
 namespace {
+
 #if defined(USE_AURA) && defined(USE_X11)
 // Converts MockKeyboard::Modifiers to ui::EventFlags.
 int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
@@ -131,7 +132,7 @@ class WebUITestBrowserClient : public ShellContentBrowserClient {
   WebUITestWebUIControllerFactory factory_;
 };
 
-}
+}  // namespace
 
 class RenderViewImplTest : public RenderViewTest {
  public:
@@ -153,7 +154,8 @@ class RenderViewImplTest : public RenderViewTest {
     // Retrieve the Unicode character for the given tuple (keyboard-layout,
     // key-code, and modifiers).
     // Exit when a keyboard-layout driver cannot assign a Unicode character to
-    // the tuple to prevent sending an invalid key code to the RenderView object.
+    // the tuple to prevent sending an invalid key code to the RenderView
+    // object.
     CHECK(mock_keyboard_.get());
     CHECK(output);
     int length = mock_keyboard_->GetCharacters(layout, key_code, modifiers,
@@ -1820,7 +1822,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   ExecuteJavaScript("document.getElementById('test1').focus();");
   view()->OnSetEditableSelectionOffsets(4, 8);
   const std::vector<WebKit::WebCompositionUnderline> empty_underline;
-  view()->OnSetCompositionFromExistingText(7,10, empty_underline);
+  view()->OnSetCompositionFromExistingText(7, 10, empty_underline);
   WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ(4, info.selectionStart);
   EXPECT_EQ(8, info.selectionEnd);

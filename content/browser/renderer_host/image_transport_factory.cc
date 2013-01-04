@@ -237,8 +237,8 @@ class CompositorSwapClient
 class BrowserCompositorOutputSurface;
 
 // Directs vsync updates to the appropriate BrowserCompositorOutputSurface.
-class BrowserCompositorOutputSurfaceProxy :
-    public base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy> {
+class BrowserCompositorOutputSurfaceProxy
+    : public base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy> {
  public:
   BrowserCompositorOutputSurfaceProxy()
     : message_handler_set_(false) {
@@ -287,9 +287,9 @@ class BrowserCompositorOutputSurfaceProxy :
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
-class BrowserCompositorOutputSurface :
-    public cc::OutputSurface,
-    public base::NonThreadSafe {
+class BrowserCompositorOutputSurface
+    : public cc::OutputSurface,
+      public base::NonThreadSafe {
  public:
   explicit BrowserCompositorOutputSurface(
       WebGraphicsContext3DCommandBufferImpl* context,
@@ -365,10 +365,10 @@ void BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParameters(
     surface->OnUpdateVSyncParameters(timebase, interval);
 }
 
-class GpuProcessTransportFactory :
-    public ui::ContextFactory,
-    public ImageTransportFactory,
-    public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+class GpuProcessTransportFactory
+    : public ui::ContextFactory,
+      public ImageTransportFactory,
+      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
   GpuProcessTransportFactory()
       : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {

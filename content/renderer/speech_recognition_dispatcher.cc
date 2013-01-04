@@ -149,9 +149,10 @@ void SpeechRecognitionDispatcher::OnErrorOccurred(
     recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
-    recognizer_client_->didReceiveError(GetHandleFromID(request_id),
-                                        WebString(), // TODO(primiano): message?
-                                        WebKitErrorCode(error.code));
+    recognizer_client_->didReceiveError(
+        GetHandleFromID(request_id),
+        WebString(),  // TODO(primiano): message?
+        WebKitErrorCode(error.code));
   }
 }
 

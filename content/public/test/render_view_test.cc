@@ -44,8 +44,8 @@ const int32 kSurfaceId = 42;
 
 namespace content {
 
-class RendererWebKitPlatformSupportImplNoSandboxImpl :
-    public RendererWebKitPlatformSupportImpl {
+class RendererWebKitPlatformSupportImplNoSandboxImpl
+    : public RendererWebKitPlatformSupportImpl {
  public:
   virtual WebKit::WebSandboxSupport* sandboxSupport() {
     return NULL;

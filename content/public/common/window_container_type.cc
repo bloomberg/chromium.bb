@@ -14,7 +14,7 @@ namespace {
 const char kBackground[] = "background";
 const char kPersistent[] = "persistent";
 
-}
+}  // namespace
 
 WindowContainerType WindowFeaturesToContainerType(
     const WebKit::WebWindowFeatures& window_features) {

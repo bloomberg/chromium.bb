@@ -827,8 +827,7 @@ void DevToolsHttpHandlerImpl::AcceptWebSocket(
 }
 
 DevToolsHttpHandlerImpl::PageInfo
-DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh)
-{
+DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh) {
   RenderViewHostDelegate* host_delegate = rvh->GetDelegate();
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
