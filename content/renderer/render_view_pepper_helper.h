@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "base/process.h"
 #include "ui/base/ime/text_input_type.h"
 
 class TransportDIB;
@@ -75,6 +76,7 @@ class RenderViewPepperHelper {
 
   // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
   virtual void OnPpapiBrokerChannelCreated(int request_id,
+                                           base::ProcessId broker_pid,
                                            const IPC::ChannelHandle& handle) {}
 
   // Called when we know whether permission to access the PPAPI broker was

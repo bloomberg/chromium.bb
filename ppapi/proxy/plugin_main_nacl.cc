@@ -66,7 +66,7 @@ class PpapiDispatcher : public ProxyChannel,
   virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
-      const IPC::SyncChannel& channel,
+      base::ProcessId peer_pid,
       bool should_close_source) OVERRIDE;
   virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
   virtual uint32 Register(PluginDispatcher* plugin_dispatcher) OVERRIDE;
@@ -104,7 +104,10 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
       shutdown_event_(true, false) {
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(NACL_IPC_FD, false));
-  InitWithChannel(this, channel_handle, false);  // Channel is server.
+  // We don't have/need a PID since handle sharing happens outside of the
+  // NaCl sandbox.
+  InitWithChannel(this, base::kNullProcessId, channel_handle,
+                  false);  // Channel is server.
   channel()->AddFilter(
       new components::ChildTraceMessageFilter(message_loop_));
 }
@@ -119,7 +122,7 @@ base::WaitableEvent* PpapiDispatcher::GetShutdownEvent() {
 
 IPC::PlatformFileForTransit PpapiDispatcher::ShareHandleWithRemote(
     base::PlatformFile handle,
-    const IPC::SyncChannel& channel,
+    base::ProcessId peer_pid,
     bool should_close_source) {
   return IPC::InvalidPlatformFileForTransit();
 }
@@ -190,7 +193,8 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
       new PluginDispatcher(::PPP_GetInterface, permissions, incognito);
   // The channel handle's true name is not revealed here.
   IPC::ChannelHandle channel_handle("nacl", handle.descriptor());
-  if (!dispatcher->InitPluginWithChannel(this, channel_handle, false)) {
+  if (!dispatcher->InitPluginWithChannel(this, base::kNullProcessId,
+                                         channel_handle, false)) {
     delete dispatcher;
     return;
   }

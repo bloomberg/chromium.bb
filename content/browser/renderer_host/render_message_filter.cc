@@ -136,19 +136,20 @@ class OpenChannelToPpapiPluginCallback
   }
 
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) {
+                                   int* renderer_id) OVERRIDE {
     *renderer_handle = filter()->peer_handle();
     *renderer_id = filter()->render_process_id();
   }
 
   virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                                    int plugin_child_id) {
+                                    base::ProcessId plugin_pid,
+                                    int plugin_child_id) OVERRIDE {
     ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
-        reply_msg(), channel_handle, plugin_child_id);
+        reply_msg(), channel_handle, plugin_pid, plugin_child_id);
     SendReplyAndDeleteThis();
   }
 
-  virtual bool OffTheRecord() {
+  virtual bool OffTheRecord() OVERRIDE {
     return filter()->OffTheRecord();
   }
 
@@ -174,20 +175,22 @@ class OpenChannelToPpapiBrokerCallback
   virtual ~OpenChannelToPpapiBrokerCallback() {}
 
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) {
+                                   int* renderer_id) OVERRIDE {
     *renderer_handle = filter_->peer_handle();
     *renderer_id = filter_->render_process_id();
   }
 
   virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                                    int /* plugin_child_id */) {
+                                    base::ProcessId plugin_pid,
+                                    int /* plugin_child_id */) OVERRIDE {
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
                                                         request_id_,
+                                                        plugin_pid,
                                                         channel_handle));
     delete this;
   }
 
-  virtual bool OffTheRecord() {
+  virtual bool OffTheRecord() OVERRIDE {
     return filter_->OffTheRecord();
   }
 

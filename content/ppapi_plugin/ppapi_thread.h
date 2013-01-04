@@ -73,7 +73,7 @@ class PpapiThread : public ChildThread,
   virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
-      const IPC::SyncChannel& channel,
+      base::ProcessId peer_pid,
       bool should_close_source) OVERRIDE;
   virtual uint32 Register(
       ppapi::proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
@@ -90,7 +90,9 @@ class PpapiThread : public ChildThread,
   // Message handlers.
   void OnLoadPlugin(const FilePath& path,
                     const ppapi::PpapiPermissions& permissions);
-  void OnCreateChannel(int renderer_id, bool incognito);
+  void OnCreateChannel(base::ProcessId renderer_pid,
+                       int renderer_child_id,
+                       bool incognito);
   void OnResourceReply(
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
@@ -98,7 +100,8 @@ class PpapiThread : public ChildThread,
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.
-  bool SetupRendererChannel(int renderer_id,
+  bool SetupRendererChannel(base::ProcessId renderer_pid,
+                            int renderer_child_id,
                             bool incognito,
                             IPC::ChannelHandle* handle);
 

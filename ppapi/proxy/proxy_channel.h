@@ -47,7 +47,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     // guarantees as ProxyChannel::ShareHandleWithRemote below.
     virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
-        const IPC::SyncChannel& channel,
+        base::ProcessId remote_pid,
         bool should_close_source) = 0;
   };
 
@@ -55,7 +55,8 @@ class PPAPI_PROXY_EXPORT ProxyChannel
 
   // Alternative to InitWithChannel() for unit tests that want to send all
   // messages sent via this channel to the given test sink. The test sink
-  // must outlive this class.
+  // must outlive this class. In this case, the peer PID will be the current
+  // process ID.
   void InitWithTestSink(IPC::TestSink* test_sink);
 
   // Shares a file handle (HANDLE / file descriptor) with the remote side. It
@@ -90,6 +91,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
   virtual bool InitWithChannel(Delegate* delegate,
+                               base::ProcessId peer_pid,
                                const IPC::ChannelHandle& channel_handle,
                                bool is_client);
 
@@ -100,6 +102,11 @@ class PPAPI_PROXY_EXPORT ProxyChannel
  private:
   // Non-owning pointer. Guaranteed non-NULL after init is called.
   ProxyChannel::Delegate* delegate_;
+
+  // PID of the remote process. Use this instead of the Channel::peer_pid since
+  // this is set synchronously on construction rather than waiting on the
+  // "hello" message from the peer (which introduces a race condition).
+  base::ProcessId peer_pid_;
 
   // When we're unit testing, this will indicate the sink for the messages to
   // be deposited so they can be inspected by the test. When non-NULL, this

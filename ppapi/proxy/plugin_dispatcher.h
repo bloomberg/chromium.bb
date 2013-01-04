@@ -126,6 +126,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
   bool InitPluginWithChannel(PluginDelegate* delegate,
+                             base::ProcessId peer_pid,
                              const IPC::ChannelHandle& channel_handle,
                              bool is_client);
 

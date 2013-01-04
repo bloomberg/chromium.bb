@@ -27,6 +27,7 @@ class CONTENT_EXPORT PepperFlashSettingsHelperImpl
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                                    int* renderer_id) OVERRIDE;
   virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
+                                    base::ProcessId plugin_pid,
                                     int plugin_child_id) OVERRIDE;
   virtual bool OffTheRecord() OVERRIDE;
 

@@ -55,6 +55,7 @@ PepperBrokerDispatcherWrapper::~PepperBrokerDispatcherWrapper() {
 }
 
 bool PepperBrokerDispatcherWrapper::Init(
+    base::ProcessId broker_pid,
     const IPC::ChannelHandle& channel_handle) {
   if (channel_handle.name.empty())
     return false;
@@ -70,6 +71,7 @@ bool PepperBrokerDispatcherWrapper::Init(
       new ppapi::proxy::BrokerHostDispatcher());
 
   if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
+                                          broker_pid,
                                           channel_handle,
                                           true)) {  // Client.
     dispatcher_.reset();
@@ -174,10 +176,11 @@ void PepperBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
 }
 
 void PepperBrokerImpl::OnBrokerChannelConnected(
+    base::ProcessId broker_pid,
     const IPC::ChannelHandle& channel_handle) {
   scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher(
       new PepperBrokerDispatcherWrapper);
-  if (!dispatcher->Init(channel_handle)) {
+  if (!dispatcher->Init(broker_pid, channel_handle)) {
     ReportFailureToClients(PP_ERROR_FAILED);
     return;
   }

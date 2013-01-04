@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -659,9 +660,10 @@ bool NaClProcessHost::ReplyToRenderer(
   }
 #endif
 
+  const ChildProcessData& data = process_->GetData();
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
       reply_msg_, handles_for_renderer,
-      channel_handle, process_->GetData().id);
+      channel_handle, base::GetProcId(data.handle), data.id);
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;

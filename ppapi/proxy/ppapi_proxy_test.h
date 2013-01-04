@@ -120,7 +120,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
     virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
-        const IPC::SyncChannel& /* channel */,
+        base::ProcessId remote_pid,
         bool should_close_source) OVERRIDE;
 
     // PluginDispatcher::PluginDelegate implementation.
@@ -202,7 +202,7 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
     virtual base::WaitableEvent* GetShutdownEvent();
     virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
-        const IPC::SyncChannel& /* channel */,
+        base::ProcessId remote_pid,
         bool should_close_source) OVERRIDE;
 
    private:

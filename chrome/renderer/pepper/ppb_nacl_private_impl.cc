@@ -42,9 +42,10 @@ base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
     g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
 
 struct InstanceInfo {
-  InstanceInfo() : plugin_child_id(0) {}
+  InstanceInfo() : plugin_pid(base::kNullProcessId), plugin_child_id(0) {}
   GURL url;
   ppapi::PpapiPermissions permissions;
+  base::ProcessId plugin_pid;
   int plugin_child_id;
   IPC::ChannelHandle channel_handle;
 };
@@ -105,6 +106,7 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
           perm_bits,
           socket_count, &sockets,
           &instance_info.channel_handle,
+          &instance_info.plugin_pid,
           &instance_info.plugin_child_id))) {
     return PP_NACL_FAILED;
   }
@@ -159,6 +161,7 @@ PP_NaClResult StartPpapiProxy(PP_Instance instance) {
           FilePath().AppendASCII(instance_info.url.spec()),
           instance_info.permissions,
           instance_info.channel_handle,
+          instance_info.plugin_pid,
           instance_info.plugin_child_id);
   if (!renderer_ppapi_host)
     return PP_NACL_ERROR_MODULE;

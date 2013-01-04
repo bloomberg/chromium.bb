@@ -299,8 +299,9 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_LoadPlugin,
 
 // Creates a channel to talk to a renderer. The plugin will respond with
 // PpapiHostMsg_ChannelCreated.
-IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
-                     int /* renderer_id */,
+IPC_MESSAGE_CONTROL3(PpapiMsg_CreateChannel,
+                     base::ProcessId /* renderer_pid */,
+                     int /* renderer_child_id */,
                      bool /* incognito */)
 
 // Creates a channel to talk to a renderer. This message is only used by the

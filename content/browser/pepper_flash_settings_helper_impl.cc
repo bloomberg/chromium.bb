@@ -50,6 +50,7 @@ void PepperFlashSettingsHelperImpl::GetPpapiChannelInfo(
 
 void PepperFlashSettingsHelperImpl::OnPpapiChannelOpened(
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessId /* plugin_pid */,
     int /* plugin_child_id */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback_.is_null());

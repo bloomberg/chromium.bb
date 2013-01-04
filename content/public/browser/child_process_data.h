@@ -30,8 +30,8 @@ struct ChildProcessData {
   base::ProcessHandle handle;
 
   ChildProcessData(content::ProcessType type)
-    : type(type), id(0), handle(base::kNullProcessHandle) {
-}
+      : type(type), id(0), handle(base::kNullProcessHandle) {
+  }
 };
 
 }  // namespace content

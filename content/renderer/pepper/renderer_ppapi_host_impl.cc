@@ -36,6 +36,7 @@ RendererPpapiHost::CreateExternalPluginModule(
     const FilePath& file_path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessId plugin_pid,
     int plugin_child_id) {
   RendererPpapiHost* renderer_ppapi_host = NULL;
   // Since we're the embedder, we can make assumptions about the delegate on
@@ -48,6 +49,7 @@ RendererPpapiHost::CreateExternalPluginModule(
         file_path,
         permissions,
         channel_handle,
+        plugin_pid,
         plugin_child_id);
   }
   return renderer_ppapi_host;

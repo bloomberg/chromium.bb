@@ -1214,8 +1214,9 @@ IPC_MESSAGE_CONTROL1(ViewMsg_NetworkStateChanged,
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
-IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
+IPC_MESSAGE_ROUTED3(ViewMsg_PpapiBrokerChannelCreated,
                     int /* request_id */,
+                    base::ProcessId /* broker_pid */,
                     IPC::ChannelHandle /* handle */)
 
 // Reply to ViewHostMsg_RequestPpapiBrokerPermission.
@@ -1858,9 +1859,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_GetWindowSnapshot,
 // plugin is hung.
 //
 // On error an empty string and null handles are returned.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_OpenChannelToPepperPlugin,
                             FilePath /* path */,
                             IPC::ChannelHandle /* handle to channel */,
+                            base::ProcessId /* plugin_pid */,
                             int /* plugin_child_id */)
 
 // Notification that a plugin has created a new plugin instance. The parameters

@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -46,6 +47,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
     //   0
     virtual void OnPpapiChannelOpened(
         const IPC::ChannelHandle& channel_handle,
+        base::ProcessId plugin_pid,
         int plugin_child_id) = 0;
 
     // Returns true if the current connection is off-the-record.

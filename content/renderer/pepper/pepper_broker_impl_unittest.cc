@@ -31,8 +31,8 @@ TEST_F(PepperBrokerImplTest, InitFailure) {
   // such as the one in CreatePipe().  Call it twice because without the invalid
   // handle check, the posix code would hit a one-time path due to a static
   // variable and go through the LOG(FATAL) path.
-  EXPECT_FALSE(dispatcher_wrapper.Init(invalid_channel));
-  EXPECT_FALSE(dispatcher_wrapper.Init(invalid_channel));
+  EXPECT_FALSE(dispatcher_wrapper.Init(base::kNullProcessId, invalid_channel));
+  EXPECT_FALSE(dispatcher_wrapper.Init(base::kNullProcessId, invalid_channel));
 }
 
 // On valid ChannelHandle, initialization should succeed.
@@ -50,7 +50,7 @@ TEST_F(PepperBrokerImplTest, InitSuccess) {
   IPC::ChannelHandle valid_channel(kChannelName);
 #endif  // defined(OS_POSIX));
 
-  EXPECT_TRUE(dispatcher_wrapper.Init(valid_channel));
+  EXPECT_TRUE(dispatcher_wrapper.Init(base::kNullProcessId, valid_channel));
 
 #if defined(OS_POSIX)
   EXPECT_EQ(0, ::close(fds[0]));

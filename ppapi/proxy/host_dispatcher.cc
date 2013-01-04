@@ -87,10 +87,12 @@ HostDispatcher::~HostDispatcher() {
 
 bool HostDispatcher::InitHostWithChannel(
     Delegate* delegate,
+    base::ProcessId peer_pid,
     const IPC::ChannelHandle& channel_handle,
     bool is_client,
     const ppapi::Preferences& preferences) {
-  if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
+  if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
+                                   is_client))
     return false;
   AddIOThreadMessageFilter(sync_status_.get());
 

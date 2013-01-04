@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/process.h"
 #include "content/common/content_export.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -37,7 +38,8 @@ class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
   PepperBrokerDispatcherWrapper();
   ~PepperBrokerDispatcherWrapper();
 
-  bool Init(const IPC::ChannelHandle& channel_handle);
+  bool Init(base::ProcessId broker_pid,
+            const IPC::ChannelHandle& channel_handle);
 
   int32_t SendHandleToBroker(PP_Instance instance,
                              base::SyncSocket::Handle handle);
@@ -60,7 +62,8 @@ class PepperBrokerImpl : public webkit::ppapi::PluginDelegate::Broker,
   void AddPendingConnect(webkit::ppapi::PPB_Broker_Impl* client);
 
   // Called when the channel to the broker has been established.
-  void OnBrokerChannelConnected(const IPC::ChannelHandle& channel_handle);
+  void OnBrokerChannelConnected(base::ProcessId broker_pid,
+                                const IPC::ChannelHandle& channel_handle);
 
   // Called when we know whether permission to access the PPAPI broker was
   // granted.

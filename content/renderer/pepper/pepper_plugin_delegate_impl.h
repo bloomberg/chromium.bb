@@ -77,6 +77,7 @@ class PepperPluginDelegateImpl
       const FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
       int plugin_child_id);
 
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
@@ -119,6 +120,7 @@ class PepperPluginDelegateImpl
                                  int message_id) OVERRIDE;
   virtual void OnPpapiBrokerChannelCreated(
       int request_id,
+      base::ProcessId broker_pid,
       const IPC::ChannelHandle& handle) OVERRIDE;
   virtual void OnPpapiBrokerPermissionResult(int request_id,
                                              bool result) OVERRIDE;
@@ -412,6 +414,7 @@ class PepperPluginDelegateImpl
       const FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
       int plugin_child_id,
       bool is_external);
 

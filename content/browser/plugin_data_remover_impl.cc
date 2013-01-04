@@ -165,6 +165,7 @@ class PluginDataRemoverImpl::Context
 
   virtual void OnPpapiChannelOpened(
       const IPC::ChannelHandle& channel_handle,
+      base::ProcessId  /* peer_pid */,
       int /* child_id */) OVERRIDE {
     if (!channel_handle.name.empty())
       ConnectToChannel(channel_handle, true);

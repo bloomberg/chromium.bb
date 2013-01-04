@@ -106,10 +106,12 @@ class HostDispatcherWrapper
     : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
  public:
   HostDispatcherWrapper(webkit::ppapi::PluginModule* module,
+                        base::ProcessId peer_pid,
                         int plugin_child_id,
                         const ppapi::PpapiPermissions& perms,
                         bool is_external)
       : module_(module),
+        peer_pid_(peer_pid),
         plugin_child_id_(plugin_child_id),
         permissions_(perms),
         is_external_(is_external) {
@@ -134,6 +136,7 @@ class HostDispatcherWrapper
         module_->pp_module(), local_get_interface, filter, permissions_));
 
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
+                                          peer_pid_,
                                           channel_handle,
                                           true,  // Client.
                                           preferences)) {
@@ -193,6 +196,8 @@ class HostDispatcherWrapper
 
  private:
   webkit::ppapi::PluginModule* module_;
+
+  base::ProcessId peer_pid_;
 
   // ID that the browser process uses to idetify the child process for the
   // plugin. This isn't directly useful from our process (the renderer) except
@@ -397,9 +402,10 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
 
   // Out of process: have the browser start the plugin process for us.
   IPC::ChannelHandle channel_handle;
+  base::ProcessId peer_pid;
   int plugin_child_id = 0;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
-      path, &channel_handle, &plugin_child_id));
+      path, &channel_handle, &peer_pid, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
     return scoped_refptr<webkit::ppapi::PluginModule>();
@@ -417,6 +423,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
                                 path,
                                 permissions,
                                 channel_handle,
+                                peer_pid,
                                 plugin_child_id,
                                 false))  // is_external = false
     return scoped_refptr<webkit::ppapi::PluginModule>();
@@ -429,6 +436,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
     const FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessId peer_pid,
     int plugin_child_id) {
   // We don't call PepperPluginRegistry::AddLiveModule, as this module is
   // managed externally.
@@ -436,6 +444,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
                                   path,
                                   permissions,
                                   channel_handle,
+                                  peer_pid,
                                   plugin_child_id,
                                   true);  // is_external = true
 }
@@ -472,6 +481,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
     const FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessId peer_pid,
     int plugin_child_id,
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(
@@ -480,6 +490,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
                                  plugin_child_id));
   scoped_ptr<HostDispatcherWrapper> dispatcher(
       new HostDispatcherWrapper(module,
+                                peer_pid,
                                 plugin_child_id,
                                 permissions,
                                 is_external));
@@ -501,20 +512,21 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
 
 void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
+    base::ProcessId broker_pid,
     const IPC::ChannelHandle& handle) {
   scoped_refptr<PepperBrokerImpl>* broker_ptr =
       pending_connect_broker_.Lookup(request_id);
   if (broker_ptr) {
     scoped_refptr<PepperBrokerImpl> broker = *broker_ptr;
     pending_connect_broker_.Remove(request_id);
-    broker->OnBrokerChannelConnected(handle);
+    broker->OnBrokerChannelConnected(broker_pid, handle);
   } else {
     // There is no broker waiting for this channel. Close it so the broker can
     // clean up and possibly exit.
     // The easiest way to clean it up is to just put it in an object
     // and then close them. This failure case is not performance critical.
     PepperBrokerDispatcherWrapper temp_dispatcher;
-    temp_dispatcher.Init(handle);
+    temp_dispatcher.Init(broker_pid, handle);
   }
 }
 

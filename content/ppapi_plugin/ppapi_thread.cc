@@ -167,7 +167,7 @@ base::WaitableEvent* PpapiThread::GetShutdownEvent() {
 
 IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
     base::PlatformFile handle,
-    const IPC::SyncChannel& channel,
+    base::ProcessId peer_pid,
     bool should_close_source) {
 #if defined(OS_WIN)
   if (peer_handle_.IsValid()) {
@@ -177,8 +177,8 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
   }
 #endif
 
-  return BrokerGetFileHandleForProcess(handle, channel.peer_pid(),
-                                       should_close_source);
+  DCHECK(peer_pid != base::kNullProcessId);
+  return BrokerGetFileHandleForProcess(handle, peer_pid, should_close_source);
 }
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
@@ -353,11 +353,14 @@ void PpapiThread::OnLoadPlugin(const FilePath& path,
   library_.Reset(library.Release());
 }
 
-void PpapiThread::OnCreateChannel(int renderer_id, bool incognito) {
+void PpapiThread::OnCreateChannel(base::ProcessId renderer_pid,
+                                  int renderer_child_id,
+                                  bool incognito) {
   IPC::ChannelHandle channel_handle;
 
   if (!plugin_entry_points_.get_interface ||  // Plugin couldn't be loaded.
-      !SetupRendererChannel(renderer_id, incognito, &channel_handle)) {
+      !SetupRendererChannel(renderer_pid, renderer_child_id, incognito,
+                            &channel_handle)) {
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
   }
@@ -384,13 +387,14 @@ void PpapiThread::OnSetNetworkState(bool online) {
     ns->SetOnLine(PP_FromBool(online));
 }
 
-bool PpapiThread::SetupRendererChannel(int renderer_id,
+bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
+                                       int renderer_child_id,
                                        bool incognito,
                                        IPC::ChannelHandle* handle) {
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
   IPC::ChannelHandle plugin_handle;
   plugin_handle.name = IPC::Channel::GenerateVerifiedChannelID(
-      StringPrintf("%d.r%d", base::GetCurrentProcId(), renderer_id));
+      StringPrintf("%d.r%d", base::GetCurrentProcId(), renderer_child_id));
 
   ppapi::proxy::ProxyChannel* dispatcher = NULL;
   bool init_result = false;
@@ -399,6 +403,7 @@ bool PpapiThread::SetupRendererChannel(int renderer_id,
         new BrokerProcessDispatcher(plugin_entry_points_.get_interface,
                                     connect_instance_func_);
     init_result = broker_dispatcher->InitBrokerWithChannel(this,
+                                                           renderer_pid,
                                                            plugin_handle,
                                                            false);
     dispatcher = broker_dispatcher;
@@ -408,6 +413,7 @@ bool PpapiThread::SetupRendererChannel(int renderer_id,
                                     permissions_,
                                     incognito);
     init_result = plugin_dispatcher->InitPluginWithChannel(this,
+                                                           renderer_pid,
                                                            plugin_handle,
                                                            false);
     dispatcher = plugin_dispatcher;

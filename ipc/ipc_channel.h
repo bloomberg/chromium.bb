@@ -129,7 +129,14 @@ class IPC_EXPORT Channel : public Sender {
   void set_listener(Listener* listener);
 
   // Get the process ID for the connected peer.
-  // Returns base::kNullProcessId if the peer is not connected yet.
+  //
+  // Returns base::kNullProcessId if the peer is not connected yet. Watch out
+  // for race conditions. You can easily get a channel to another process, but
+  // if your process has not yet processed the "hello" message from the remote
+  // side, this will fail. You should either make sure calling this is either
+  // in response to a message from the remote side (which guarantees that it's
+  // been connected), or you wait for the "connected" notification on the
+  // listener.
   base::ProcessId peer_pid() const;
 
   // Send a message over the Channel to the listener on the other end.

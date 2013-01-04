@@ -284,18 +284,19 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 
 void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
   base::ProcessHandle process_handle;
-  int renderer_id;
-  client->GetPpapiChannelInfo(&process_handle, &renderer_id);
+  int renderer_child_id;
+  client->GetPpapiChannelInfo(&process_handle, &renderer_child_id);
 
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.
   PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(
-      renderer_id, client->OffTheRecord());
+      base::GetProcId(process_handle), renderer_child_id,
+      client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
     sent_requests_.push(client);
   } else {
-    client->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
+    client->OnPpapiChannelOpened(IPC::ChannelHandle(), base::kNullProcessId, 0);
   }
 }
 
@@ -347,12 +348,14 @@ void PpapiPluginProcessHost::CancelRequests() {
   DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
            << "CancelRequests()";
   for (size_t i = 0; i < pending_requests_.size(); i++) {
-    pending_requests_[i]->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
+    pending_requests_[i]->OnPpapiChannelOpened(IPC::ChannelHandle(),
+                                               base::kNullProcessId, 0);
   }
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
-    sent_requests_.front()->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
+    sent_requests_.front()->OnPpapiChannelOpened(IPC::ChannelHandle(),
+                                                 base::kNullProcessId, 0);
     sent_requests_.pop();
   }
 }
@@ -368,7 +371,9 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   Client* client = sent_requests_.front();
   sent_requests_.pop();
 
-  client->OnPpapiChannelOpened(channel_handle, process_->GetData().id);
+  const ChildProcessData& data = process_->GetData();
+  client->OnPpapiChannelOpened(channel_handle, base::GetProcId(data.handle),
+                               data.id);
 }
 
 }  // namespace content

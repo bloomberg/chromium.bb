@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "base/process.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
@@ -67,6 +68,7 @@ class RendererPpapiHost {
       const FilePath& file_path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
       int plugin_child_id);
 
   // Returns the RendererPpapiHost associated with the given PP_Instance,

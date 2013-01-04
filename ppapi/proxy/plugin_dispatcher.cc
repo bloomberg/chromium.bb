@@ -155,9 +155,11 @@ const void* PluginDispatcher::GetPluginInterface(
 
 bool PluginDispatcher::InitPluginWithChannel(
     PluginDelegate* delegate,
+    base::ProcessId peer_pid,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
-  if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
+  if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
+                                   is_client))
     return false;
   plugin_delegate_ = delegate;
   plugin_dispatcher_id_ = plugin_delegate_->Register(this);
