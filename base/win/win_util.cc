@@ -5,21 +5,24 @@
 #include "base/win/win_util.h"
 
 #include <aclapi.h>
+#include <shellapi.h>
+#include <shlobj.h>
 #include <shobjidl.h>  // Must be before propkey.
 #include <initguid.h>
 #include <propkey.h>
 #include <propvarutil.h>
 #include <sddl.h>
-#include <shlobj.h>
 #include <signal.h>
 #include <stdlib.h>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 
@@ -44,6 +47,10 @@ bool SetPropVariantValueForPropertyStore(
 void __cdecl ForceCrashOnSigAbort(int) {
   *((int*)0) = 0x1337;
 }
+
+const wchar_t kWindows8OSKRegPath[] =
+    L"Software\\Classes\\CLSID\\{054AAE20-4BEA-4347-8A35-64A533254A9D}"
+    L"\\LocalServer32";
 
 }  // namespace
 
@@ -219,6 +226,101 @@ bool IsMachineATablet() {
     return cx > cy ?
         (cx <= kMaxTabletScreenWidth && cy <= kMaxTabletScreenHeight) :
         (cy <= kMaxTabletScreenWidth && cx <= kMaxTabletScreenHeight);
+  }
+  return false;
+}
+
+bool DisplayVirtualKeyboard() {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return false;
+
+  static base::LazyInstance<string16>::Leaky osk_path =
+      LAZY_INSTANCE_INITIALIZER;
+
+  if (osk_path.Get().empty()) {
+    // We need to launch TabTip.exe from the location specified under the
+    // LocalServer32 key for the {{054AAE20-4BEA-4347-8A35-64A533254A9D}}
+    // CLSID.
+    // TabTip.exe is typically found at
+    // c:\program files\common files\microsoft shared\ink on English Windows.
+    // We don't want to launch TabTip.exe from
+    // c:\program files (x86)\common files\microsoft shared\ink. This path is
+    // normally found on 64 bit Windows.
+    base::win::RegKey key(HKEY_LOCAL_MACHINE,
+                          kWindows8OSKRegPath,
+                          KEY_READ | KEY_WOW64_64KEY);
+    DWORD osk_path_length = 1024;
+    if (key.ReadValue(NULL,
+                      WriteInto(&osk_path.Get(), osk_path_length),
+                      &osk_path_length,
+                      NULL) != ERROR_SUCCESS) {
+      DLOG(WARNING) << "Failed to read on screen keyboard path from registry";
+      return false;
+    }
+    size_t common_program_files_offset =
+        osk_path.Get().find(L"%CommonProgramFiles%");
+    // Typically the path to TabTip.exe read from the registry will start with
+    // %CommonProgramFiles% which needs to be replaced with the corrsponding
+    // expanded string.
+    // If the path does not begin with %CommonProgramFiles% we use it as is.
+    if (common_program_files_offset != string16::npos) {
+      // Preserve the beginning quote in the path.
+      osk_path.Get().erase(common_program_files_offset,
+                           wcslen(L"%CommonProgramFiles%"));
+      // The path read from the registry contains the %CommonProgramFiles%
+      // environment variable prefix. On 64 bit Windows the SHGetKnownFolderPath
+      // function returns the common program files path with the X86 suffix for
+      // the FOLDERID_ProgramFilesCommon value.
+      // To get the correct path to TabTip.exe we first read the environment
+      // variable CommonProgramW6432 which points to the desired common
+      // files path. Failing that we fallback to the SHGetKnownFolderPath API.
+
+      // We then replace the %CommonProgramFiles% value with the actual common
+      // files path found in the process.
+      string16 common_program_files_path;
+      scoped_ptr<wchar_t[]> common_program_files_wow6432;
+      DWORD buffer_size =
+          GetEnvironmentVariable(L"CommonProgramW6432", NULL, 0);
+      if (buffer_size) {
+        common_program_files_wow6432.reset(new wchar_t[buffer_size]);
+        GetEnvironmentVariable(L"CommonProgramW6432",
+                               common_program_files_wow6432.get(),
+                               buffer_size);
+        common_program_files_path = common_program_files_wow6432.get();
+        DCHECK(!common_program_files_path.empty());
+      } else {
+        base::win::ScopedCoMem<wchar_t> common_program_files;
+        if (FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0, NULL,
+                                        &common_program_files))) {
+          return false;
+        }
+        common_program_files_path = common_program_files;
+      }
+
+      osk_path.Get().insert(1, common_program_files_path);
+    }
+  }
+
+  HINSTANCE ret = ::ShellExecuteW(NULL,
+                                  L"",
+                                  osk_path.Get().c_str(),
+                                  NULL,
+                                  NULL,
+                                  SW_SHOW);
+  return reinterpret_cast<int>(ret) > 32;
+}
+
+bool DismissVirtualKeyboard() {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return false;
+
+  // We dismiss the virtual keyboard by generating the ESC keystroke
+  // programmatically.
+  const wchar_t kOSKClassName[] = L"IPTip_Main_Window";
+  HWND osk = ::FindWindow(kOSKClassName, NULL);
+  if (::IsWindow(osk) && ::IsWindowEnabled(osk)) {
+    PostMessage(osk, WM_SYSCOMMAND, SC_CLOSE, 0);
+    return true;
   }
   return false;
 }

@@ -121,6 +121,14 @@ BASE_EXPORT bool IsMachineATablet();
     offsetof(struct_name, member) + \
     (sizeof static_cast<struct_name*>(NULL)->member)
 
+// Displays the on screen keyboard on Windows 8 and above. Returns true on
+// success.
+BASE_EXPORT bool DisplayVirtualKeyboard();
+
+// Dismisses the on screen keyboard if it is being displayed on Windows 8 and.
+// above. Returns true on success.
+BASE_EXPORT bool DismissVirtualKeyboard();
+
 }  // namespace win
 }  // namespace base
 
