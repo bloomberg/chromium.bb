@@ -459,11 +459,6 @@ class GpuMessageHandler
   Value* OnRequestLogMessages(const ListValue* list);
   Value* OnRequestCrashList(const ListValue* list);
 
-  // Executes the javascript function |function_name| in the renderer, passing
-  // it the argument |value|.
-  void CallJavascriptFunction(const std::wstring& function_name,
-                              const Value* value);
-
  private:
   scoped_refptr<CrashUploadList> crash_list_;
   bool crash_list_available_;
