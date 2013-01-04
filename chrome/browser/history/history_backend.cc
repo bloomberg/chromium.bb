@@ -1058,13 +1058,13 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
   db_->AddURL(url_info);
 }
 
-void HistoryBackend::IterateURLs(VisitedLinkDelegate::URLEnumerator* iterator) {
+void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
   if (db_.get()) {
     HistoryDatabase::URLEnumerator e;
     if (db_->InitURLEnumeratorForEverything(&e)) {
       URLRow info;
       while (e.GetNextURL(&info)) {
-        iterator->OnURL(info.url());
+        iterator->OnURL(info);
       }
       iterator->OnComplete(true);  // Success.
       return;

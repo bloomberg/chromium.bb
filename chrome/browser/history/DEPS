@@ -51,8 +51,6 @@ include_rules = [
   "!chrome/browser/ui/profile_error_dialog.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
-  # TODO(boliu): Allow visitedlink after they are componentized.
-  "!chrome/browser/visitedlink/visitedlink_delegate.h",
   "!chrome/browser/visitedlink/visitedlink_master.h",
 ]
 

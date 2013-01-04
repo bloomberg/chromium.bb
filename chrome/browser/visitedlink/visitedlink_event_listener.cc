@@ -5,7 +5,8 @@
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 
 #include "base/shared_memory.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/visitedlink/visitedlink_master_factory.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -107,11 +108,8 @@ class VisitedLinkUpdater {
   VisitedLinkCommon::Fingerprints pending_;
 };
 
-VisitedLinkEventListener::VisitedLinkEventListener(
-    VisitedLinkMaster* master,
-    content::BrowserContext* browser_context)
-    : master_(master),
-      browser_context_(browser_context) {
+VisitedLinkEventListener::VisitedLinkEventListener(Profile* profile)
+    : profile_(profile) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -136,8 +134,12 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
         content::RenderProcessHost::FromID(i->first);
     if (!process)
       continue;
-
-    i->second->SendVisitedLinkTable(table_memory);
+    Profile* profile = Profile::FromBrowserContext(
+        process->GetBrowserContext());
+    VisitedLinkMaster* master =
+        VisitedLinkMasterFactory::GetForProfile(profile);
+    if (master && master->shared_memory() == table_memory)
+      i->second->SendVisitedLinkTable(table_memory);
   }
 }
 
@@ -179,18 +181,22 @@ void VisitedLinkEventListener::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
-      if (!master_->GetDelegate()->AreEquivalentContexts(
-          browser_context_, process->GetBrowserContext()))
+      Profile* profile =
+          Profile::FromBrowserContext(process->GetBrowserContext());
+      if (!profile_->IsSameProfile(profile))
         return;
-
-      // Happens on browser start up.
-      if (!master_->shared_memory())
-        return;
-
       updaters_[process->GetID()] =
           make_linked_ptr(new VisitedLinkUpdater(process->GetID()));
+
+      // Initialize support for visited links. Send the renderer process its
+      // initial set of visited links.
+      VisitedLinkMaster* master =
+        VisitedLinkMasterFactory::GetForProfile(profile);
+      if (!master)
+        return;
+
       updaters_[process->GetID()]->SendVisitedLinkTable(
-          master_->shared_memory());
+          master->shared_memory());
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {

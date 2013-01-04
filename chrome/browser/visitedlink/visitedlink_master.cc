@@ -24,11 +24,11 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 using file_util::ScopedFILE;
@@ -138,7 +138,7 @@ void AsyncClose(FILE** file) {
 // which case it notifies the builder via DisownMaster(). The builder will
 // delete itself once rebuilding is complete, and not execute any callback.
 class VisitedLinkMaster::TableBuilder
-    : public VisitedLinkDelegate::URLEnumerator,
+    : public HistoryService::URLEnumerator,
       public base::RefCountedThreadSafe<TableBuilder> {
  public:
   TableBuilder(VisitedLinkMaster* master,
@@ -150,8 +150,8 @@ class VisitedLinkMaster::TableBuilder
   // table will be being rebuilt simultaneously on the other thread.
   void DisownMaster();
 
-  // VisitedLinkDelegate::URLEnumerator
-  virtual void OnURL(const GURL& url);
+  // HistoryService::URLEnumerator
+  virtual void OnURL(const history::URLRow& url_row);
   virtual void OnComplete(bool succeed);
 
  private:
@@ -174,34 +174,30 @@ class VisitedLinkMaster::TableBuilder
 
   // Stores the fingerprints we computed on the background thread.
   VisitedLinkCommon::Fingerprints fingerprints_;
-
-  DISALLOW_COPY_AND_ASSIGN(TableBuilder);
 };
 
 // VisitedLinkMaster ----------------------------------------------------------
 
-VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
-                                     VisitedLinkDelegate* delegate)
-    : browser_context_(browser_context),
-      delegate_(delegate),
-      listener_(new VisitedLinkEventListener(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this), browser_context)) {
+VisitedLinkMaster::VisitedLinkMaster(Profile* profile)
+    : profile_(profile) {
+  listener_.reset(new VisitedLinkEventListener(profile));
+  DCHECK(listener_.get());
   InitMembers();
 }
 
 VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
-                                     VisitedLinkDelegate* delegate,
+                                     HistoryService* history_service,
                                      bool suppress_rebuild,
                                      const FilePath& filename,
                                      int32 default_table_size)
-    : browser_context_(NULL),
-      delegate_(delegate) {
+    : profile_(NULL) {
   listener_.reset(listener);
   DCHECK(listener_.get());
   InitMembers();
 
   database_name_override_ = filename;
   table_size_override_ = default_table_size;
+  history_service_override_ = history_service;
   suppress_rebuild_ = suppress_rebuild;
 }
 
@@ -224,6 +220,7 @@ void VisitedLinkMaster::InitMembers() {
   shared_memory_serial_ = 0;
   used_items_ = 0;
   table_size_override_ = 0;
+  history_service_override_ = NULL;
   suppress_rebuild_ = false;
   sequence_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
 
@@ -244,9 +241,7 @@ bool VisitedLinkMaster::Init() {
 
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   // Extra check that we are not incognito. This should not happen.
-  // TODO(boliu): Move this check to HistoryService when IsOffTheRecord is
-  // removed from BrowserContext.
-  if (browser_context_ && browser_context_->IsOffTheRecord()) {
+  if (profile_ && profile_->IsOffTheRecord()) {
     NOTREACHED();
     return null_hash_;
   }
@@ -325,12 +320,10 @@ void VisitedLinkMaster::DeleteAllURLs() {
   listener_->Reset();
 }
 
-VisitedLinkDelegate* VisitedLinkMaster::GetDelegate() {
-  return delegate_;
-}
+void VisitedLinkMaster::DeleteURLs(const history::URLRows& rows) {
+  typedef std::set<GURL>::const_iterator SetIterator;
 
-void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
-  if (!urls->HasNextURL())
+  if (rows.empty())
     return;
 
   listener_->Reset();
@@ -338,8 +331,9 @@ void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
   if (table_builder_) {
     // A rebuild is in progress, save this deletion in the temporary list so
     // it can be added once rebuild is complete.
-    while (urls->HasNextURL()) {
-      const GURL& url(urls->NextURL());
+    for (history::URLRows::const_iterator i = rows.begin(); i != rows.end();
+         ++i) {
+      const GURL& url(i->url());
       if (!url.is_valid())
         continue;
 
@@ -363,8 +357,9 @@ void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
 
   // Compute the deleted URLs' fingerprints and delete them
   std::set<Fingerprint> deleted_fingerprints;
-  while (urls->HasNextURL()) {
-    const GURL& url(urls->NextURL());
+  for (history::URLRows::const_iterator i = rows.begin(); i != rows.end();
+       ++i) {
+    const GURL& url(i->url());
     if (!url.is_valid())
       continue;
     deleted_fingerprints.insert(
@@ -586,7 +581,7 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
   // to disk. We don't want to save explicitly here, since the rebuild may
   // not complete, leaving us with an empty but valid visited link database.
   // In the future, we won't know we need to try rebuilding again.
-  return RebuildTableFromDelegate();
+  return RebuildTableFromHistory();
 }
 
 bool VisitedLinkMaster::ReadFileHeader(FILE* file,
@@ -646,10 +641,10 @@ bool VisitedLinkMaster::GetDatabaseFileName(FilePath* filename) {
     return true;
   }
 
-  if (!browser_context_ || browser_context_->GetPath().empty())
+  if (!profile_ || profile_->GetPath().empty())
     return false;
 
-  FilePath profile_dir = browser_context_->GetPath();
+  FilePath profile_dir = profile_->GetPath();
   *filename = profile_dir.Append(FILE_PATH_LITERAL("Visited Links"));
   return true;
 }
@@ -815,8 +810,23 @@ uint32 VisitedLinkMaster::NewTableSizeForCount(int32 item_count) const {
 }
 
 // See the TableBuilder definition in the header file for how this works.
-bool VisitedLinkMaster::RebuildTableFromDelegate() {
+bool VisitedLinkMaster::RebuildTableFromHistory() {
   DCHECK(!table_builder_);
+  if (table_builder_)
+    return false;
+
+  HistoryService* history_service = history_service_override_;
+  if (!history_service && profile_) {
+    history_service =
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
+  }
+
+  if (!history_service) {
+    DLOG(WARNING) << "Attempted to rebuild visited link table, but couldn't "
+                     "obtain a HistoryService.";
+    return false;
+  }
 
   // TODO(brettw) make sure we have reasonable salt!
   table_builder_ = new TableBuilder(this, salt_);
@@ -824,7 +834,7 @@ bool VisitedLinkMaster::RebuildTableFromDelegate() {
   // Make sure the table builder stays live during the call, even if the
   // master is deleted. This is balanced in TableBuilder::OnCompleteMainThread.
   table_builder_->AddRef();
-  delegate_->RebuildTable(table_builder_);
+  history_service->IterateURLs(table_builder_);
   return true;
 }
 
@@ -948,7 +958,8 @@ void VisitedLinkMaster::TableBuilder::DisownMaster() {
   master_ = NULL;
 }
 
-void VisitedLinkMaster::TableBuilder::OnURL(const GURL& url) {
+void VisitedLinkMaster::TableBuilder::OnURL(const history::URLRow& url_row) {
+  const GURL& url(url_row.url());
   if (!url.is_empty()) {
     fingerprints_.push_back(VisitedLinkMaster::ComputeURLFingerprint(
         url.spec().data(), url.spec().length(), salt_));

@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
+#include "chrome/browser/visitedlink/visitedlink_master_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -324,6 +325,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
+  VisitedLinkMasterFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();

@@ -13,9 +13,9 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_master_factory.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
@@ -35,8 +34,6 @@ using content::RenderViewHostTester;
 
 namespace {
 
-typedef std::vector<GURL> URLs;
-
 // a nice long URL that we can append numbers to to get new URLs
 const char g_test_prefix[] =
   "http://www.google.com/products/foo/index.html?id=45028640526508376&seq=";
@@ -47,68 +44,13 @@ GURL TestURL(int i) {
   return GURL(StringPrintf("%s%d", g_test_prefix, i));
 }
 
+ProfileKeyedService* BuildVisitedLinkMaster(Profile* profile) {
+  VisitedLinkMaster* master = new VisitedLinkMaster(profile);
+  master->Init();
+  return master;
+}
+
 std::vector<VisitedLinkSlave*> g_slaves;
-
-// ========================== TestVisitedLinkDelegate ==========================
-class TestVisitedLinkDelegate : public VisitedLinkDelegate {
- public:
-  virtual bool AreEquivalentContexts(
-      content::BrowserContext* context1,
-      content::BrowserContext* context2) OVERRIDE;
-  virtual void RebuildTable(URLEnumerator* enumerator) OVERRIDE;
-
-  void AddURLForRebuild(const GURL& url);
-
- private:
-
-  URLs rebuild_urls_;
-};
-
-bool TestVisitedLinkDelegate::AreEquivalentContexts(
-    content::BrowserContext* context1, content::BrowserContext* context2) {
-  DCHECK_EQ(context1, context2);
-  return true;  // Test only has one profile.
-}
-
-void TestVisitedLinkDelegate::RebuildTable(URLEnumerator* enumerator) {
-  for (URLs::const_iterator itr = rebuild_urls_.begin();
-       itr != rebuild_urls_.end();
-       ++itr)
-    enumerator->OnURL(*itr);
-  enumerator->OnComplete(true);
-}
-
-void TestVisitedLinkDelegate::AddURLForRebuild(const GURL& url) {
-  rebuild_urls_.push_back(url);
-}
-// ======================== TestVisitedLinkDelegate End ========================
-
-// ============================== TestURLIterator ==============================
-class TestURLIterator : public VisitedLinkMaster::URLIterator {
- public:
-  explicit TestURLIterator(const URLs& urls);
-
-  virtual const GURL& NextURL() OVERRIDE;
-  virtual bool HasNextURL() const OVERRIDE;
-
- private:
-  URLs::const_iterator iterator_;
-  URLs::const_iterator end_;
-};
-
-TestURLIterator::TestURLIterator(const URLs& urls)
-    : iterator_(urls.begin()),
-      end_(urls.end()) {
-}
-
-const GURL& TestURLIterator::NextURL() {
-  return *(iterator_++);
-}
-
-bool TestURLIterator::HasNextURL() const {
-  return iterator_ != end_;
-}
-// ============================ TestURLIterator End ============================
 
 }  // namespace
 
@@ -149,6 +91,12 @@ class VisitedLinkTest : public testing::Test {
   VisitedLinkTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
+  // Initialize the history system. This should be called before InitVisited().
+  bool InitHistory() {
+    history_service_.reset(new HistoryService);
+    return history_service_->Init(history_dir_, NULL);
+  }
+
   // Initializes the visited link objects. Pass in the size that you want a
   // freshly created table to be. 0 means use the default.
   //
@@ -157,7 +105,7 @@ class VisitedLinkTest : public testing::Test {
   bool InitVisited(int initial_size, bool suppress_rebuild) {
     // Initialize the visited link system.
     master_.reset(new VisitedLinkMaster(new TrackingVisitedLinkEventListener(),
-                                        &delegate_,
+                                        history_service_.get(),
                                         suppress_rebuild, visited_file_,
                                         initial_size));
     return master_->Init();
@@ -168,6 +116,18 @@ class VisitedLinkTest : public testing::Test {
   void ClearDB() {
     if (master_.get())
       master_.reset(NULL);
+
+    if (history_service_.get()) {
+      history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
+      history_service_->Cleanup();
+      history_service_.reset();
+
+      // Wait for the backend class to terminate before deleting the files and
+      // moving to the next test. Note: if this never terminates, somebody is
+      // probably leaking a reference to the history backend, so it never calls
+      // our destroy task.
+      MessageLoop::current()->Run();
+    }
 
     // Wait for all pending file I/O to be completed.
     BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -180,6 +140,7 @@ class VisitedLinkTest : public testing::Test {
     // Clean up after our caller, who may have left the database open.
     ClearDB();
 
+    ASSERT_TRUE(InitHistory());
     ASSERT_TRUE(InitVisited(0, true));
     master_->DebugValidate();
 
@@ -241,12 +202,13 @@ class VisitedLinkTest : public testing::Test {
   FilePath visited_file_;
 
   scoped_ptr<VisitedLinkMaster> master_;
-  TestVisitedLinkDelegate delegate_;
+  scoped_ptr<HistoryService> history_service_;
 };
 
 // This test creates and reads some databases to make sure the data is
 // preserved throughout those operations.
 TEST_F(VisitedLinkTest, DatabaseIO) {
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, true));
 
   for (int i = 0; i < g_test_count; i++)
@@ -259,6 +221,7 @@ TEST_F(VisitedLinkTest, DatabaseIO) {
 // Checks that we can delete things properly when there are collisions.
 TEST_F(VisitedLinkTest, Delete) {
   static const int32 kInitialSize = 17;
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(kInitialSize, true));
 
   // Add a cluster from 14-17 wrapping around to 0. These will all hash to the
@@ -297,6 +260,7 @@ TEST_F(VisitedLinkTest, Delete) {
 // When we delete more than kBigDeleteThreshold we trigger different behavior
 // where the entire file is rewritten.
 TEST_F(VisitedLinkTest, BigDelete) {
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(16381, true));
 
   // Add the base set of URLs that won't be deleted.
@@ -306,21 +270,21 @@ TEST_F(VisitedLinkTest, BigDelete) {
 
   // Add more URLs than necessary to trigger this case.
   const int kTestDeleteCount = VisitedLinkMaster::kBigDeleteThreshold + 2;
-  URLs urls_to_delete;
+  history::URLRows urls_to_delete;
   for (int32 i = g_test_count; i < g_test_count + kTestDeleteCount; i++) {
     GURL url(TestURL(i));
     master_->AddURL(url);
-    urls_to_delete.push_back(url);
+    urls_to_delete.push_back(history::URLRow(url));
   }
 
-  TestURLIterator iterator(urls_to_delete);
-  master_->DeleteURLs(&iterator);
+  master_->DeleteURLs(urls_to_delete);
   master_->DebugValidate();
 
   Reload();
 }
 
 TEST_F(VisitedLinkTest, DeleteAll) {
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, true));
 
   {
@@ -356,6 +320,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
   }
 
   // Reopen and validate.
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, true));
   master_->DebugValidate();
   EXPECT_EQ(0, master_->GetUsedCount());
@@ -368,6 +333,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
 TEST_F(VisitedLinkTest, Resizing) {
   // Create a very small database.
   const int32 initial_size = 17;
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(initial_size, true));
 
   // ...and a slave
@@ -416,11 +382,14 @@ TEST_F(VisitedLinkTest, Resizing) {
 
 // Tests that if the database doesn't exist, it will be rebuilt from history.
 TEST_F(VisitedLinkTest, Rebuild) {
+  ASSERT_TRUE(InitHistory());
+
   // Add half of our URLs to history. This needs to be done before we
   // initialize the visited link DB.
   int history_count = g_test_count / 2;
   for (int i = 0; i < history_count; i++)
-    delegate_.AddURLForRebuild(TestURL(i));
+    history_service_->AddPage(
+        TestURL(i), base::Time::Now(), history::SOURCE_BROWSED);
 
   // Initialize the visited link DB. Since the visited links file doesn't exist
   // and we don't suppress history rebuilding, this will load from history.
@@ -438,10 +407,9 @@ TEST_F(VisitedLinkTest, Rebuild) {
 
   // Add one more and then delete it.
   master_->AddURL(TestURL(g_test_count));
-  URLs urls_to_delete;
-  urls_to_delete.push_back(TestURL(g_test_count));
-  TestURLIterator iterator(urls_to_delete);
-  master_->DeleteURLs(&iterator);
+  history::URLRows deleted_urls;
+  deleted_urls.push_back(history::URLRow(TestURL(g_test_count)));
+  master_->DeleteURLs(deleted_urls);
 
   // Wait for the rebuild to complete. The task will terminate the message
   // loop when the rebuild is done. There's no chance that the rebuild will
@@ -460,6 +428,7 @@ TEST_F(VisitedLinkTest, Rebuild) {
 
 // Test that importing a large number of URLs will work
 TEST_F(VisitedLinkTest, BigImport) {
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, false));
 
   // Before the table rebuilds, add a large number of URLs
@@ -477,6 +446,7 @@ TEST_F(VisitedLinkTest, BigImport) {
 }
 
 TEST_F(VisitedLinkTest, Listener) {
+  ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, true));
 
   // Add test URLs.
@@ -485,12 +455,10 @@ TEST_F(VisitedLinkTest, Listener) {
     ASSERT_EQ(i + 1, master_->GetUsedCount());
   }
 
+  history::URLRows deleted_urls;
+  deleted_urls.push_back(history::URLRow(TestURL(0)));
   // Delete an URL.
-  URLs urls_to_delete;
-  urls_to_delete.push_back(TestURL(0));
-  TestURLIterator iterator(urls_to_delete);
-  master_->DeleteURLs(&iterator);
-
+  master_->DeleteURLs(deleted_urls);
   // ... and all of the remaining ones.
   master_->DeleteAllURLs();
 
@@ -504,7 +472,6 @@ TEST_F(VisitedLinkTest, Listener) {
   EXPECT_EQ(2, listener->reset_count());
 }
 
-// TODO(boliu): Inherit content::TestBrowserContext when componentized.
 class VisitCountingProfile : public TestingProfile {
  public:
   VisitCountingProfile()
@@ -556,7 +523,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
   virtual bool Send(IPC::Message* msg) OVERRIDE {
     VisitCountingProfile* counting_profile =
         static_cast<VisitCountingProfile*>(
-            GetBrowserContext());
+            Profile::FromBrowserContext(GetBrowserContext()));
 
     if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
       PickleIterator iter(*msg);
@@ -592,7 +559,6 @@ class VisitedLinkRenderProcessHostFactory
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
 
-// TODO(boliu): Inherit content::RenderViewHostTestHarness when componentized.
 class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
  public:
   VisitedLinkEventsTest()
@@ -601,10 +567,12 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
     browser_context_.reset(new VisitCountingProfile());
-    master_.reset(new VisitedLinkMaster(profile(), &delegate_));
-    master_->Init();
+    profile()->CreateHistoryService(true, false);
+    master_ = static_cast<VisitedLinkMaster*>(
+        VisitedLinkMasterFactory::GetInstance()->
+            SetTestingFactoryAndUse(profile(), BuildVisitedLinkMaster));
     SetRenderProcessHostFactory(&vc_rph_factory_);
-    content::RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
   }
 
   VisitCountingProfile* profile() const {
@@ -612,7 +580,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   }
 
   VisitedLinkMaster* master() const {
-    return master_.get();
+    return master_;
   }
 
   void WaitForCoalescense() {
@@ -628,8 +596,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   VisitedLinkRenderProcessHostFactory vc_rph_factory_;
 
  private:
-  TestVisitedLinkDelegate delegate_;
-  scoped_ptr<VisitedLinkMaster> master_;
+  VisitedLinkMaster* master_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
@@ -689,7 +656,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 }
 
 TEST_F(VisitedLinkEventsTest, Basics) {
-  RenderViewHostTester::For(rvh())->CreateRenderView(string16(),
+  rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
                                  -1);
 
@@ -714,12 +681,12 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 }
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
-  RenderViewHostTester::For(rvh())->CreateRenderView(string16(),
+  rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
                                  -1);
 
   // Simulate tab becoming inactive.
-  RenderViewHostTester::For(rvh())->SimulateWasHidden();
+  rvh_tester()->SimulateWasHidden();
 
   // Add a few URLs.
   master()->AddURL(GURL("http://acidtests.org/"));
@@ -733,14 +700,14 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Simulate the tab becoming active.
-  RenderViewHostTester::For(rvh())->SimulateWasShown();
+  rvh_tester()->SimulateWasShown();
 
   // We should now have 3 add events, still no reset events.
   EXPECT_EQ(1, profile()->add_event_count());
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Deactivate the tab again.
-  RenderViewHostTester::For(rvh())->SimulateWasHidden();
+  rvh_tester()->SimulateWasHidden();
 
   // Add a bunch of URLs (over 50) to exhaust the link event buffer.
   for (int i = 0; i < 100; i++)
@@ -753,7 +720,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Activate the tab.
-  RenderViewHostTester::For(rvh())->SimulateWasShown();
+  rvh_tester()->SimulateWasShown();
 
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());
