@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
 
-#if defined(ENABLE_GPU)
-
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
@@ -54,7 +52,5 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
 };
 
 }  // namespace content
-
-#endif
 
 #endif // CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_

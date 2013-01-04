@@ -4,8 +4,6 @@
 
 #include "content/common/gpu/gpu_memory_manager.h"
 
-#if defined(ENABLE_GPU)
-
 #include <algorithm>
 
 #include "base/bind.h"
@@ -702,5 +700,3 @@ void GpuMemoryManager::RemoveClientFromList(
 }
 
 }  // namespace content
-
-#endif

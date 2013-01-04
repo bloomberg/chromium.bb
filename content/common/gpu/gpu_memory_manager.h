@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
 
-#if defined(ENABLE_GPU)
-
 #include <list>
 #include <map>
 
@@ -233,7 +231,5 @@ class CONTENT_EXPORT GpuMemoryManager :
 };
 
 }  // namespace content
-
-#endif
 
 #endif // CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_

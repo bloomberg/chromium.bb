@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_GPU)
-
 #include "content/common/gpu/image_transport_surface.h"
 
 #include "base/bind.h"
@@ -337,5 +335,3 @@ void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
 }
 
 }  // namespace content
-
-#endif  // defined(ENABLE_GPU)

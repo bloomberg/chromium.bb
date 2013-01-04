@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_GPU)
-
 #include "content/common/gpu/image_transport_surface.h"
 
 // Out of order because it has conflicts with other includes on Windows.
@@ -289,5 +287,3 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
 }
 
 }  // namespace content
-
-#endif  // ENABLE_GPU

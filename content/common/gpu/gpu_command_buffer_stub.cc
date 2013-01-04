@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_GPU)
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -874,5 +872,3 @@ void GpuCommandBufferStub::SetMemoryAllocation(
 }
 
 }  // namespace content
-
-#endif  // defined(ENABLE_GPU)

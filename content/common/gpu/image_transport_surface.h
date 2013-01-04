@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_H_
 #define CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_H_
 
-#if defined(ENABLE_GPU)
-
 #include <vector>
 
 #include "base/callback.h"
@@ -200,7 +198,5 @@ class PassThroughImageTransportSurface
 };
 
 }  // namespace content
-
-#endif  // defined(ENABLE_GPU)
 
 #endif  // CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_H_

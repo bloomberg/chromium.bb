@@ -4,8 +4,6 @@
 
 #include "content/common/gpu/gpu_memory_tracking.h"
 
-#if defined(ENABLE_GPU)
-
 #include "content/common/gpu/gpu_memory_manager.h"
 
 namespace content {
@@ -34,5 +32,3 @@ void GpuMemoryTrackingGroup::TrackMemoryAllocatedChange(
 }
 
 }  // namespace content
-
-#endif

@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
 #define CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
 
-#if defined(ENABLE_GPU)
-
 #include <map>
 #include <queue>
 #include <string>
@@ -196,7 +194,5 @@ class CommandBufferProxyImpl
 };
 
 }  // namespace content
-
-#endif  // ENABLE_GPU
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_

@@ -137,7 +137,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
                "surface_id",
                surface_id);
 
-#if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
@@ -159,9 +158,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
   AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
-#else
-  return NULL;
-#endif
 }
 
 CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
@@ -173,7 +169,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
     gfx::GpuPreference gpu_preference) {
   TRACE_EVENT0("gpu", "GpuChannelHost::CreateOffscreenCommandBuffer");
 
-#if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
@@ -201,9 +196,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
   AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
-#else
-  return NULL;
-#endif
 }
 
 GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
@@ -221,7 +213,6 @@ void GpuChannelHost::DestroyCommandBuffer(
     CommandBufferProxyImpl* command_buffer) {
   TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
 
-#if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   int route_id = command_buffer->GetRouteID();
   Send(new GpuChannelMsg_DestroyCommandBuffer(route_id));
@@ -230,7 +221,6 @@ void GpuChannelHost::DestroyCommandBuffer(
     proxies_.erase(route_id);
   RemoveRoute(route_id);
   delete command_buffer;
-#endif
 }
 
 bool GpuChannelHost::CollectRenderingStatsForSurface(
