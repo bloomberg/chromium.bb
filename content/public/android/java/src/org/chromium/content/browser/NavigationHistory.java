@@ -16,7 +16,7 @@ public class NavigationHistory {
     private ArrayList<NavigationEntry> entries = new ArrayList<NavigationEntry>();
     private int mCurrentEntryIndex;
 
-    /* package */ void addEntry(NavigationEntry entry) {
+    protected void addEntry(NavigationEntry entry) {
         entries.add(entry);
     }
 

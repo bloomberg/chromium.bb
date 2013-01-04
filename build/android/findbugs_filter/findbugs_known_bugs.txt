@@ -5,7 +5,6 @@ M D ST: Write to static field org.chromium.content.app.SandboxedProcessService.s
 H D ST: Write to static field org.chromium.net.test.util.TestWebServer.sInstance from instance method org.chromium.net.test.util.TestWebServer.shutdown()  At TestWebServer.java
 H V MS: org.chromium.android_webview.test.AndroidWebViewTestBase.WAIT_TIMEOUT_SECONDS isn't final but should be  At AndroidWebViewTestBase.java
 H V MS: org.chromium.android_webview.test.LoadDataWithBaseUrlTest.WAIT_TIMEOUT_SECONDS isn't final but should be  At LoadDataWithBaseUrlTest.java
-H V MS: org.chromium.content.browser.ContentViewTestBase.WAIT_TIMEOUT_SECONDS isn't final but should be  At ContentViewTestBase.java
 H V MS: org.chromium.content.browser.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS isn't final but should be  At CallbackHelper.java
 H V MS: org.chromium.content.browser.test.util.HistoryUtils.WAIT_TIMEOUT_SECONDS isn't final but should be  At HistoryUtils.java
 M B DE: org.chromium.net.X509Util.clearTestRootCertificates() might ignore java.io.IOException  At X509Util.java

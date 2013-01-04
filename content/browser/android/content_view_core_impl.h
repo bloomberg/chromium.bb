@@ -150,6 +150,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void GoBack(JNIEnv* env, jobject obj);
   void GoForward(JNIEnv* env, jobject obj);
   void GoToOffset(JNIEnv* env, jobject obj, jint offset);
+  void GoToNavigationIndex(JNIEnv* env, jobject obj, jint index);
   void StopLoading(JNIEnv* env, jobject obj);
   void Reload(JNIEnv* env, jobject obj);
   void CancelPendingReload(JNIEnv* env, jobject obj);
@@ -181,6 +182,11 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jclass safe_annotation_clazz);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject context);
+  void GetDirectedNavigationHistory(JNIEnv* env,
+                                    jobject obj,
+                                    jobject context,
+                                    jboolean is_forward,
+                                    jint max_entries);
   void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
                              jlong interval_micros);
   jboolean PopulateBitmapFromCompositor(JNIEnv* env,

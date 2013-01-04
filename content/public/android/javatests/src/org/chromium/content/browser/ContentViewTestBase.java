@@ -10,22 +10,9 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell.ContentShellActivity;
 import org.chromium.content_shell.ContentShellTestBase;
 
-import java.util.concurrent.TimeUnit;
-
 public class ContentViewTestBase extends ContentShellTestBase {
 
-    protected static int WAIT_TIMEOUT_SECONDS = 15;
-
     protected TestCallbackHelperContainer mTestCallbackHelperContainer;
-
-    /**
-     * Allows access to the {@link ContentView}.
-     *
-     * @return The first {@link ContentView}
-     */
-    public ContentView getContentView() {
-        return getActivity().getActiveContentView();
-    }
 
     /**
      * Sets up the ContentView and injects the supplied object. Intended to be called from setUp().
@@ -65,26 +52,7 @@ public class ContentViewTestBase extends ContentShellTestBase {
      */
     protected void loadDataSync(final ContentView contentView, final String data,
             final String mimeType, final boolean isBase64Encoded) throws Throwable {
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadDataAsync(contentView, data, mimeType, isBase64Encoded);
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
-    }
-
-    /**
-     * Loads data on the UI thread but does not block.
-     * TODO(cramya): Move method to a separate util file once UiUtils.java moves into base.
-     */
-    protected void loadDataAsync(final ContentView contentView, final String data,
-            final String mimeType, final boolean isBase64Encoded) throws Throwable {
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                contentView.loadUrl(LoadUrlParams.createLoadDataParams(
-                        data, mimeType, isBase64Encoded));
-            }
-        });
+        loadUrl(contentView, mTestCallbackHelperContainer, LoadUrlParams.createLoadDataParams(
+                data, mimeType, isBase64Encoded));
     }
 }

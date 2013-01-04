@@ -19,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.os.SystemClock;
 import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
@@ -27,9 +26,9 @@ import android.view.ActionMode;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -41,10 +40,10 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
+import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.common.TraceEvent;
-import org.chromium.content.R;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.lang.annotation.Annotation;
@@ -55,7 +54,7 @@ import java.lang.annotation.Annotation;
  * being tied to the view system.
  */
 @JNINamespace("content")
-public class ContentViewCore implements MotionEventDelegate {
+public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private static final String TAG = ContentViewCore.class.getName();
 
     // Used when ContentView implements a standalone View.
@@ -887,6 +886,11 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void goToOffset(int offset) {
         if (mNativeContentViewCore != 0) nativeGoToOffset(mNativeContentViewCore, offset);
+    }
+
+    @Override
+    public void goToNavigationIndex(int index) {
+        if (mNativeContentViewCore != 0) nativeGoToNavigationIndex(mNativeContentViewCore, index);
     }
 
     /**
@@ -2354,9 +2358,10 @@ public class ContentViewCore implements MotionEventDelegate {
      * Callback factory method for nativeGetNavigationHistory().
      */
     @CalledByNative
-    private void addToNavigationHistory(Object history, String url, String virtualUrl,
+    private void addToNavigationHistory(Object history, int index, String url, String virtualUrl,
             String originalUrl, String title, Bitmap favicon) {
-        NavigationEntry entry = new NavigationEntry(url, virtualUrl, originalUrl, title, favicon);
+        NavigationEntry entry = new NavigationEntry(
+                index, url, virtualUrl, originalUrl, title, favicon);
         ((NavigationHistory) history).addEntry(entry);
     }
 
@@ -2367,6 +2372,13 @@ public class ContentViewCore implements MotionEventDelegate {
         NavigationHistory history = new NavigationHistory();
         int currentIndex = nativeGetNavigationHistory(mNativeContentViewCore, history);
         history.setCurrentEntryIndex(currentIndex);
+        return history;
+    }
+
+    @Override
+    public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit) {
+        NavigationHistory history = new NavigationHistory();
+        nativeGetDirectedNavigationHistory(mNativeContentViewCore, history, isForward, itemLimit);
         return history;
     }
 
@@ -2467,16 +2479,12 @@ public class ContentViewCore implements MotionEventDelegate {
             int nativeContentViewCoreImpl, int x1, int y1, int x2, int y2);
 
     private native boolean nativeCanGoBack(int nativeContentViewCoreImpl);
-
     private native boolean nativeCanGoForward(int nativeContentViewCoreImpl);
-
     private native boolean nativeCanGoToOffset(int nativeContentViewCoreImpl, int offset);
-
-    private native void nativeGoToOffset(int nativeContentViewCoreImpl, int offset);
-
     private native void nativeGoBack(int nativeContentViewCoreImpl);
-
     private native void nativeGoForward(int nativeContentViewCoreImpl);
+    private native void nativeGoToOffset(int nativeContentViewCoreImpl, int offset);
+    private native void nativeGoToNavigationIndex(int nativeContentViewCoreImpl, int index);
 
     private native void nativeStopLoading(int nativeContentViewCoreImpl);
 
@@ -2519,6 +2527,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
 
     private native int nativeGetNavigationHistory(int nativeContentViewCoreImpl, Object context);
+    private native void nativeGetDirectedNavigationHistory(int nativeContentViewCoreImpl,
+            Object context, boolean isForward, int maxEntries);
 
     private native void nativeUpdateVSyncParameters(int nativeContentViewCoreImpl,
             long timebaseMicros, long intervalMicros);

@@ -10,14 +10,17 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base test class for all ContentShell based tests.
@@ -26,6 +29,8 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
 
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
     private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = 10000;
+
+    protected static final int WAIT_PAGE_LOADING_TIMEOUT_SECONDS = 15;
 
     public ContentShellTestBase() {
         super(ContentShellActivity.class);
@@ -143,5 +148,40 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
                 }
             }
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Loads a URL in the specified content view.
+     *
+     * @param contentView The content view to load the URL in.
+     * @param callbackHelperContainer The callback helper container used to monitor progress.
+     * @param params The URL params to use.
+     */
+    protected void loadUrl(
+            final ContentView contentView, TestCallbackHelperContainer callbackHelperContainer,
+            final LoadUrlParams params) throws Throwable {
+        handleBlockingCallbackAction(
+                callbackHelperContainer.getOnPageFinishedHelper(),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        contentView.loadUrl(params);
+                    }
+                });
+    }
+
+    /**
+     * Handles performing an action on the UI thread that will return when the specified callback
+     * is incremented.
+     *
+     * @param callbackHelper The callback helper that will be blocked on.
+     * @param action The action to be performed on the UI thread.
+     */
+    protected void handleBlockingCallbackAction(
+            CallbackHelper callbackHelper, Runnable action) throws Throwable {
+        int currentCallCount = callbackHelper.getCallCount();
+        runTestOnUiThread(action);
+        callbackHelper.waitForCallback(
+                currentCallCount, 1, WAIT_PAGE_LOADING_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 }

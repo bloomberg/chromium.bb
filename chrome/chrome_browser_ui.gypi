@@ -82,6 +82,8 @@
         'browser/ui/android/external_protocol_dialog_android.cc',
         'browser/ui/android/javascript_app_modal_dialog_android.cc',
         'browser/ui/android/login_prompt_android.cc',
+        'browser/ui/android/navigation_popup.cc',
+        'browser/ui/android/navigation_popup.h',
         'browser/ui/android/simple_message_box_android.cc',
         'browser/ui/android/ssl_client_certificate_selector.cc',
         'browser/ui/android/status_tray_android.cc',

@@ -1033,6 +1033,12 @@ void ContentViewCoreImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
   web_contents_->GetController().GoToOffset(offset);
 }
 
+void ContentViewCoreImpl::GoToNavigationIndex(JNIEnv* env,
+                                              jobject obj,
+                                              jint index) {
+  web_contents_->GetController().GoToIndex(index);
+}
+
 void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
@@ -1155,6 +1161,34 @@ void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
                                                            gfx::Rect()));
 }
 
+namespace {
+
+static void AddNavigationEntryToHistory(JNIEnv* env, jobject obj,
+                                        jobject history,
+                                        NavigationEntry* entry,
+                                        int index) {
+  // Get the details of the current entry
+  ScopedJavaLocalRef<jstring> j_url(
+      ConvertUTF8ToJavaString(env, entry->GetURL().spec()));
+  ScopedJavaLocalRef<jstring> j_virtual_url(
+      ConvertUTF8ToJavaString(env, entry->GetVirtualURL().spec()));
+  ScopedJavaLocalRef<jstring> j_original_url(
+      ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec()));
+  ScopedJavaLocalRef<jstring> j_title(
+      ConvertUTF16ToJavaString(env, entry->GetTitle()));
+  ScopedJavaLocalRef<jobject> j_bitmap;
+  const FaviconStatus& status = entry->GetFavicon();
+  if (status.valid && status.image.ToSkBitmap()->getSize() > 0)
+    j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
+
+  // Add the item to the list
+  Java_ContentViewCore_addToNavigationHistory(
+      env, obj, history, index, j_url.obj(), j_virtual_url.obj(),
+      j_original_url.obj(), j_title.obj(), j_bitmap.obj());
+}
+
+}  // namespace
+
 int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
                                               jobject obj,
                                               jobject context) {
@@ -1162,30 +1196,33 @@ int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
   const NavigationController& controller = web_contents_->GetController();
   int count = controller.GetEntryCount();
   for (int i = 0; i < count; ++i) {
-    NavigationEntry* entry = controller.GetEntryAtIndex(i);
-
-    // Get the details of the current entry
-    ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env,
-        entry->GetURL().spec());
-    ScopedJavaLocalRef<jstring> j_virtual_url = ConvertUTF8ToJavaString(env,
-        entry->GetVirtualURL().spec());
-    ScopedJavaLocalRef<jstring> j_original_url = ConvertUTF8ToJavaString(env,
-        entry->GetOriginalRequestURL().spec());
-    ScopedJavaLocalRef<jstring> j_title = ConvertUTF16ToJavaString(env,
-        entry->GetTitle());
-    ScopedJavaLocalRef<jobject> j_bitmap;
-    const FaviconStatus& status = entry->GetFavicon();
-    if (status.valid && status.image.ToSkBitmap()->getSize() > 0) {
-      j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
-    }
-
-    // Add the item to the list
-    Java_ContentViewCore_addToNavigationHistory(env, obj, context, j_url.obj(),
-        j_virtual_url.obj(), j_original_url.obj(), j_title.obj(),
-        j_bitmap.obj());
+    AddNavigationEntryToHistory(
+        env, obj, context, controller.GetEntryAtIndex(i), i);
   }
 
   return controller.GetCurrentEntryIndex();
+}
+
+void ContentViewCoreImpl::GetDirectedNavigationHistory(JNIEnv* env,
+                                                       jobject obj,
+                                                       jobject context,
+                                                       jboolean is_forward,
+                                                       jint max_entries) {
+  // Iterate through navigation entries to populate the list
+  const NavigationController& controller = web_contents_->GetController();
+  int count = controller.GetEntryCount();
+  int num_added = 0;
+  int increment_value = is_forward ? 1 : -1;
+  for (int i = controller.GetCurrentEntryIndex() + increment_value;
+       i >= 0 && i < count;
+       i += increment_value) {
+    if (num_added >= max_entries)
+      break;
+
+    AddNavigationEntryToHistory(
+        env, obj, context, controller.GetEntryAtIndex(i), i);
+    num_added++;
+  }
 }
 
 int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {

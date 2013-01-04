@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
+#include "chrome/browser/ui/android/navigation_popup.h"
 #include "content/components/navigation_interception/component_jni_registrar.h"
 #include "content/components/web_contents_delegate_android/color_chooser_android.h"
 #include "content/components/web_contents_delegate_android/component_jni_registrar.h"
@@ -37,7 +38,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "DevToolsServer", RegisterDevToolsServer },
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
-     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
+      JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
+  { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "ProcessUtils", RegisterProcessUtils },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "navigation_interception", content::RegisterNavigationInterceptionJni },

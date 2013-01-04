@@ -3104,6 +3104,7 @@
             'android/java/src/org/chromium/chrome/browser/DevToolsServer.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
+            'android/java/src/org/chromium/chrome/browser/NavigationPopup.java',
             'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
             'android/java/src/org/chromium/chrome/browser/TabBase.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',

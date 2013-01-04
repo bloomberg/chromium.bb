@@ -11,22 +11,31 @@ import android.graphics.Bitmap;
  */
 public class NavigationEntry {
 
-    private String mUrl;
-    private String mOriginalUrl;
-    private String mVirtualUrl;
-    private String mTitle;
+    private final int mIndex;
+    private final String mUrl;
+    private final String mOriginalUrl;
+    private final String mVirtualUrl;
+    private final String mTitle;
     private Bitmap mFavicon;
 
     /**
      * Default constructor.
      */
-    /* package */ NavigationEntry(String url, String virtualUrl, String originalUrl, String title,
-            Bitmap favicon) {
+    protected NavigationEntry(int index, String url, String virtualUrl, String originalUrl,
+            String title, Bitmap favicon) {
+        mIndex = index;
         mUrl = url;
         mVirtualUrl = virtualUrl;
         mOriginalUrl = originalUrl;
         mTitle = title;
         mFavicon = favicon;
+    }
+
+    /**
+     * @return The index into the navigation history that this entry represents.
+     */
+    public int getIndex() {
+        return mIndex;
     }
 
     /**
@@ -77,4 +86,10 @@ public class NavigationEntry {
         return mFavicon;
     }
 
+    /**
+     * @param favicon The updated favicon to replace the existing one with.
+     */
+    public void updateFavicon(Bitmap favicon) {
+        mFavicon = favicon;
+    }
 }

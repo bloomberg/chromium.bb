@@ -19,6 +19,9 @@
          action, i.e. they do not want to reload the current page [CHAR-LIMIT=20] -->
     <string name="dont_reload_this_page">Don\'t reload</string>
 
+    <!-- Label for the list item that opens the full navigation history.  [CHAR-LIMIT=32] -->
+    <string name="show_history_label">Show full history</string>
+
     <!-- JS modal dialogs -->
     <!-- Standard popup button for allowing user confirmation of some webpage
          event. [CHAR-LIMIT=12] -->
