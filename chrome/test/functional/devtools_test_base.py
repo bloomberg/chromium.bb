@@ -33,6 +33,10 @@ class DevToolsTestBase(pyauto.PyUITest):
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
                    'data', 'devtools_test_pages'))
 
+  WEBPAGEREPLAY_HOST = '127.0.0.1'
+  WEBPAGEREPLAY_HTTP_PORT = 8080
+  WEBPAGEREPLAY_HTTPS_PORT = 8413
+
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
 
@@ -41,7 +45,10 @@ class DevToolsTestBase(pyauto.PyUITest):
     """
     # Ensure Chrome enables remote debugging on port 9222.  This is required to
     # interact with Chrome's remote inspector.
-    extra_flags = ['--remote-debugging-port=9222'] + webpagereplay.CHROME_FLAGS
+    extra_flags = ['--remote-debugging-port=9222'] + \
+        webpagereplay.GetChromeFlags(self.WEBPAGEREPLAY_HOST,
+                                     self.WEBPAGEREPLAY_HTTP_PORT,
+                                     self.WEBPAGEREPLAY_HTTPS_PORT)
     return (pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags)
 
   def setUp(self):
@@ -63,7 +70,11 @@ class DevToolsTestBase(pyauto.PyUITest):
     replay_options = None
     hostname = urlparse(url).hostname
     archive_path = os.path.join(self.DATA_PATH, hostname + '.wpr')
-    with webpagereplay.ReplayServer(archive_path, replay_options):
+    with webpagereplay.ReplayServer(archive_path,
+                                    self.WEBPAGEREPLAY_HOST,
+                                    self.WEBPAGEREPLAY_HTTP_PORT,
+                                    self.WEBPAGEREPLAY_HTTPS_PORT,
+                                    replay_options):
       self.NavigateToURL(url)
     snapshot = self._remote_inspector_client.GetProcessMemoryDistribution()
     logging.info('Got snapshot for url: %s' % url)

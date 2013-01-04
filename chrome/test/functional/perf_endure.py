@@ -1287,7 +1287,15 @@ class ChromeEndureReplay(object):
       'scripts':
       'src/chrome/test/data/chrome_endure/webpagereplay/wpr_deterministic.js',
       }
-  CHROME_FLAGS = webpagereplay.CHROME_FLAGS
+
+  WEBPAGEREPLAY_HOST = '127.0.0.1'
+  WEBPAGEREPLAY_HTTP_PORT = 8080
+  WEBPAGEREPLAY_HTTPS_PORT = 8413
+
+  CHROME_FLAGS = webpagereplay.GetChromeFlags(
+      self.WEBPAGEREPLAY_HOST,
+      self.WEBPAGEREPLAY_HTTP_PORT,
+      self.WEBPAGEREPLAY_HTTPS_PORT)
 
   @classmethod
   def Path(cls, key, **kwargs):
@@ -1304,7 +1312,11 @@ class ChromeEndureReplay(object):
     replay_options = ['--inject_scripts', scripts]
     if 'WPR_RECORD' in os.environ:
       replay_options.append('--append')
-    return webpagereplay.ReplayServer(archive_path, replay_options)
+    return webpagereplay.ReplayServer(archive_path,
+                                      self.WEBPAGEREPLAY_HOST,
+                                      self.WEBPAGEREPLAY_HTTP_PORT,
+                                      self.WEBPAGEREPLAY_HTTPS_PORT,
+                                      replay_options)
 
 
 if __name__ == '__main__':

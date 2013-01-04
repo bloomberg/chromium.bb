@@ -5,8 +5,7 @@
 
 """Start and stop Web Page Replay.
 
-Of the public module names, the following ones are key:
-  CHROME_FLAGS: Chrome options to make it work with Web Page Replay.
+Of the public module names, the following one is key:
   ReplayServer: a class to start/stop Web Page Replay.
 """
 
@@ -19,16 +18,6 @@ import time
 import urllib
 
 
-HTTP_PORT = 8080
-HTTPS_PORT = 8413
-REPLAY_HOST='127.0.0.1'
-CHROME_FLAGS = [
-    '--host-resolver-rules=MAP * %s,EXCLUDE localhost' % REPLAY_HOST,
-    '--testing-fixed-http-port=%s' % HTTP_PORT,
-    '--testing-fixed-https-port=%s' % HTTPS_PORT,
-    '--ignore-certificate-errors',
-    ]
-
 _CHROME_BASE_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
 REPLAY_DIR = os.path.join(
@@ -36,6 +25,15 @@ REPLAY_DIR = os.path.join(
 LOG_PATH = os.path.join(
     _CHROME_BASE_DIR, 'src', 'webpagereplay_logs', 'logs.txt')
 
+
+# Chrome options to make it work with Web Page Replay.
+def GetChromeFlags(replay_host, http_port, https_port):
+  return [
+      '--host-resolver-rules=MAP * %s,EXCLUDE localhost' % replay_host,
+      '--testing-fixed-http-port=%s' % http_port,
+      '--testing-fixed-https-port=%s' % https_port,
+      '--ignore-certificate-errors',
+      ]
 
 class ReplayError(Exception):
   """Catch-all exception for the module."""
@@ -72,7 +70,8 @@ class ReplayServer(object):
     WPR_RECORD: if set, puts Web Page Replay in record mode instead of replay.
     WPR_REPLAY_DIR: path to alternate Web Page Replay source.
   """
-  def __init__(self, archive_path, replay_options=None, replay_dir=None,
+  def __init__(self, archive_path, replay_host, http_port, https_port,
+               replay_options=None, replay_dir=None,
                log_path=None):
     """Initialize ReplayServer.
 
@@ -86,6 +85,9 @@ class ReplayServer(object):
     self.replay_options = list(replay_options or ())
     self.replay_dir = os.environ.get('WPR_REPLAY_DIR', replay_dir or REPLAY_DIR)
     self.log_path = log_path or LOG_PATH
+    self._http_port = http_port
+    self._https_port = https_port
+    self._replay_host = replay_host
 
     if 'WPR_RECORD' in os.environ and '--record' not in self.replay_options:
       self.replay_options.append('--record')
@@ -106,8 +108,8 @@ class ReplayServer(object):
   def _AddDefaultReplayOptions(self):
     """Set WPR command-line options. Can be overridden if needed."""
     self.replay_options += [
-        '--port', str(HTTP_PORT),
-        '--ssl_port', str(HTTPS_PORT),
+        '--port', str(self._http_port),
+        '--ssl_port', str(self._https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
         ]
@@ -130,8 +132,8 @@ class ReplayServer(object):
         break
       try:
         up_url = '%s://localhost:%s/web-page-replay-generate-200'
-        http_up_url = up_url % ('http', HTTP_PORT)
-        https_up_url = up_url % ('https', HTTPS_PORT)
+        http_up_url = up_url % ('http', self._http_port)
+        https_up_url = up_url % ('https', self._https_port)
         if (200 == urllib.urlopen(http_up_url, None, {}).getcode() and
             200 == urllib.urlopen(https_up_url, None, {}).getcode()):
           return True
