@@ -17,7 +17,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,65 +94,58 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile asynchronously.
+// This test is flaky on Linux, Win and Mac.  See crbug.com/142787
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
-                       CreateNewProfileAsynchronous) {
+                       DISABLED_CreateNewProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
 
   scoped_ptr<Profile> profile(Profile::CreateProfile(
       temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
   observer.Wait();
   CheckChromeVersion(profile.get(), true);
 }
 
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile asynchronously with an existing prefs file.
+// Flaky: http://crbug.com/141517
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
-                       CreateOldProfileAsynchronous) {
+                       DISABLED_CreateOldProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
-
   scoped_ptr<Profile> profile(Profile::CreateProfile(
       temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
   observer.Wait();
   CheckChromeVersion(profile.get(), false);
 }
 
-// Vista bots were timing out often. http://crbug.com/140882
-#if defined(OS_WIN)
-#define MAYBE_ProfileReadmeCreated DISABLED_ProfileReadmeCreated
-#else
-#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
-#endif
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
+// Flaky: http://crbug.com/140882
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
 
   // No delay before README creation.
   ProfileImpl::create_readme_delay_ms = 0;
@@ -163,6 +155,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
   ASSERT_TRUE(profile.get());
 
   // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
   observer.Wait();
 
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
