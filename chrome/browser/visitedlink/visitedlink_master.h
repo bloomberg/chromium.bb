@@ -11,19 +11,26 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_types.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/visitedlink_common.h"
 
+#if defined(UNIT_TEST) || defined(PERF_TEST) || !defined(NDEBUG)
+#include "base/logging.h"
+#endif
+
 class GURL;
-class Profile;
+class VisitedLinkDelegate;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 
 // Controls the link coloring database. The master controls all writing to the
 // database as well as disk I/O. There should be only one master.
@@ -31,8 +38,7 @@ class Profile;
 // This class will defer writing operations to the file thread. This means that
 // class destruction, the file may still be open since operations are pending on
 // another thread.
-class VisitedLinkMaster : public VisitedLinkCommon,
-                          public ProfileKeyedService  {
+class VisitedLinkMaster : public VisitedLinkCommon {
  public:
   // Listens to the link coloring database events. The master is given this
   // event as a constructor argument and dispatches events using it.
@@ -53,7 +59,8 @@ class VisitedLinkMaster : public VisitedLinkCommon,
     virtual void Reset() = 0;
   };
 
-  explicit VisitedLinkMaster(Profile* profile);
+  VisitedLinkMaster(content::BrowserContext* browser_context,
+                    VisitedLinkDelegate* delegate);
 
   // In unit test mode, we allow the caller to optionally specify the database
   // filename so that it can be run from a unit test. The directory where this
@@ -71,14 +78,11 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   // history if the file can't be loaded. This should generally be set for
   // testing except when you want to test the rebuild process explicitly.
   VisitedLinkMaster(Listener* listener,
-                    HistoryService* history_service,
+                    VisitedLinkDelegate* delegate,
                     bool suppress_rebuild,
                     const FilePath& filename,
                     int32 default_table_size);
   virtual ~VisitedLinkMaster();
-
-  // Return the VisitedLinkMaster instance for a profile.
-  static VisitedLinkMaster* FromProfile(Profile* profile);
 
   // Must be called immediately after object creation. Nothing else will work
   // until this is called. Returns true on success, false means that this
@@ -93,12 +97,30 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   // Adds a set of URLs to the table.
   void AddURLs(const std::vector<GURL>& url);
 
+  // See DeleteURLs.
+  class URLIterator {
+   public:
+    // HasNextURL must return true when this is called. Returns the next URL
+    // then advances the iterator. Note that the returned reference is only
+    // valid until the next call of NextURL.
+    virtual const GURL& NextURL() = 0;
+
+    // Returns true if still has URLs to be iterated.
+    virtual bool HasNextURL() const = 0;
+
+   protected:
+    virtual ~URLIterator() {}
+  };
+
   // Deletes the specified URLs from |rows| from the table.
-  void DeleteURLs(const history::URLRows& rows);
+  void DeleteURLs(URLIterator* iterator);
 
   // Clears the visited links table by deleting the file from disk. Used as
   // part of history clearing.
   void DeleteAllURLs();
+
+  // Returns the Delegate of this Master.
+  VisitedLinkDelegate* GetDelegate();
 
 #if defined(UNIT_TEST) || !defined(NDEBUG) || defined(PERF_TEST)
   // This is a debugging function that can be called to double-check internal
@@ -289,7 +311,7 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   //
   // Returns true on success. Failure means we're not attempting to rebuild
   // the database because something failed.
-  bool RebuildTableFromHistory();
+  bool RebuildTableFromDelegate();
 
   // Callback that the table rebuilder uses when the rebuild is complete.
   // |success| is true if the fingerprint generation succeeded, in which case
@@ -320,9 +342,13 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   bool posted_asynchronous_operation_;
 #endif
 
-  // Reference to the user profile that this object belongs to
+  // Reference to the browser context that this object belongs to
   // (it knows the path to where the data is stored)
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
+
+  // Client owns the delegate and is responsible for it being valid through
+  // the life time this VisitedLinkMaster.
+  VisitedLinkDelegate* delegate_;
 
   // VisitedLinkEventListener to handle incoming events.
   scoped_ptr<Listener> listener_;
@@ -379,10 +405,6 @@ class VisitedLinkMaster : public VisitedLinkCommon,
 
   // When nonzero, overrides the table size for new databases for testing
   int32 table_size_override_;
-
-  // When non-NULL, overrides the history service to use rather than as the
-  // BrowserProcess. This is provided for unit tests.
-  HistoryService* history_service_override_;
 
   // When set, indicates the task that should be run after the next rebuild from
   // history is complete.

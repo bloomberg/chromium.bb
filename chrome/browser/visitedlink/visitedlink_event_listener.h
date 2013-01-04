@@ -17,17 +17,21 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Profile;
 class VisitedLinkUpdater;
 
 namespace base {
 class SharedMemory;
 }
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                                  public content::NotificationObserver {
  public:
-  explicit VisitedLinkEventListener(Profile* profile);
+  VisitedLinkEventListener(VisitedLinkMaster* master,
+                           content::BrowserContext* browser_context);
   virtual ~VisitedLinkEventListener();
 
   virtual void NewTable(base::SharedMemory* table_memory) OVERRIDE;
@@ -51,7 +55,11 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   typedef std::map<int, linked_ptr<VisitedLinkUpdater> > Updaters;
   Updaters updaters_;
 
-  Profile* profile_;
+  VisitedLinkMaster* master_;
+
+  // Used to filter RENDERER_PROCESS_CREATED notifications to renderers that
+  // belong to this BrowserContext.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };
