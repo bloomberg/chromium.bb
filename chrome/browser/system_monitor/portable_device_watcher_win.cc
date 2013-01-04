@@ -415,8 +415,7 @@ bool EnumerateAttachedDevicesOnBlockingThread(
   if (FAILED(hr))
     return false;
 
-  scoped_array<char16*> pnp_device_ids(new char16*[pnp_device_count]);
-  ZeroMemory(pnp_device_ids.get(), pnp_device_count);
+  scoped_ptr<char16*[]> pnp_device_ids(new char16*[pnp_device_count]);
   hr = portable_device_mgr->GetDevices(pnp_device_ids.get(), &pnp_device_count);
   if (FAILED(hr))
     return false;
@@ -426,6 +425,7 @@ bool EnumerateAttachedDevicesOnBlockingThread(
     if (GetDeviceInfoOnBlockingThread(
         portable_device_mgr, pnp_device_ids[index], &device_details))
       devices->push_back(device_details);
+    CoTaskMemFree(pnp_device_ids[index]);
   }
   return !devices->empty();
 }
