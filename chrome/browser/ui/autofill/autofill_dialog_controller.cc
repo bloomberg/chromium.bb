@@ -192,10 +192,7 @@ void AutofillDialogController::Show() {
                arraysize(kShippingInputs),
                &requested_shipping_fields_);
 
-  // TODO(estade): make this actually check if it's a first run.
-  bool first_run = true;
-  if (!first_run)
-    GenerateComboboxModels();
+  GenerateComboboxModels();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -442,6 +439,10 @@ void AutofillDialogController::GenerateComboboxModels() {
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < profiles.size(); ++i) {
+    // TODO(estade): deal with variants.
+    if (!IsCompleteProfile(*profiles[i]))
+      continue;
+
     string16 email = profiles[i]->GetInfo(EMAIL_ADDRESS, app_locale);
     if (!email.empty())
       suggested_email_.AddItem(profiles[i]->guid(), email);
@@ -451,6 +452,20 @@ void AutofillDialogController::GenerateComboboxModels() {
   suggested_billing_.AddItem("", ASCIIToUTF16("Enter new billing"));
   suggested_email_.AddItem("", ASCIIToUTF16("Enter new email"));
   suggested_shipping_.AddItem("", ASCIIToUTF16("Enter new shipping"));
+}
+
+
+bool AutofillDialogController::IsCompleteProfile(
+    const AutofillProfile& profile) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  for (size_t i = 0; i < requested_shipping_fields_.size(); ++i) {
+    if (profile.GetInfo(requested_shipping_fields_[i].type,
+                        app_locale).empty()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void AutofillDialogController::FillOutputForSectionWithComparator(

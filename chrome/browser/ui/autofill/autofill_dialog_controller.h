@@ -151,6 +151,11 @@ class AutofillDialogController : public AutofillPopupDelegate {
   // Initializes |suggested_email_| et al.
   void GenerateComboboxModels();
 
+  // Returns whether |profile| is complete, i.e. can fill out all the relevant
+  // address info. Incomplete profiles will not be displayed in the dropdown
+  // menu.
+  bool IsCompleteProfile(const AutofillProfile& profile);
+
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.
   void FillOutputForSection(DialogSection section);
