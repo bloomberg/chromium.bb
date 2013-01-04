@@ -138,8 +138,14 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   CheckChromeVersion(profile.get(), false);
 }
 
+// Vista bots were timing out often. http://crbug.com/140882
+#if defined(OS_WIN)
+#define MAYBE_ProfileReadmeCreated DISABLED_ProfileReadmeCreated
+#else
+#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
+#endif
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
