@@ -22,6 +22,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_constants.h"
 #include "webkit/glue/image_resource_fetcher.h"
 
 namespace {
@@ -160,14 +161,9 @@ BalloonHost* BalloonViewAsh::GetHost() const {
   return NULL;
 }
 
-void BalloonViewAsh::SetNotificationPrimaryIcon(const std::string& id,
-                                                const gfx::ImageSkia& image) {
+void BalloonViewAsh::SetNotificationIcon(const std::string& id,
+                                         const gfx::ImageSkia& image) {
   GetMessageCenter()->SetNotificationPrimaryIcon(id, image);
-}
-
-void BalloonViewAsh::SetNotificationSecondaryIcon(const std::string& id,
-                                                  const gfx::ImageSkia& image) {
-  GetMessageCenter()->SetNotificationSecondaryIcon(id, image);
 }
 
 void BalloonViewAsh::DownloadImages(const Notification& notification) {
@@ -176,25 +172,12 @@ void BalloonViewAsh::DownloadImages(const Notification& notification) {
 
   // Set the notification's primary icon, or start a download for it.
   if (!notification.icon().isNull()) {
-    SetNotificationPrimaryIcon(notification_id_, notification.icon());
+    SetNotificationIcon(notification_id_, notification.icon());
   } else if (!notification.icon_url().is_empty()) {
       downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
-          notification, notification.icon_url(), kPrimaryIconImageSize,
-          base::Bind(&BalloonViewAsh::SetNotificationPrimaryIcon,
+          notification, notification.icon_url(),
+          message_center::kNotificationIconWidth,
+          base::Bind(&BalloonViewAsh::SetNotificationIcon,
                      base::Unretained(this), notification.notification_id()))));
-  }
-
-  // Start a download for the notification's secondary icon if appropriate.
-  const base::DictionaryValue* optional_fields = notification.optional_fields();
-  if (optional_fields &&
-      optional_fields->HasKey(ui::notifications::kSecondIconUrlKey)) {
-    string16 url;
-    optional_fields->GetString(ui::notifications::kSecondIconUrlKey, &url);
-    if (!url.empty()) {
-      downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
-          notification, GURL(url), kSecondaryIconImageSize,
-          base::Bind(&BalloonViewAsh::SetNotificationSecondaryIcon,
-                     base::Unretained(this), notification.notification_id()))));
-    }
   }
 }
