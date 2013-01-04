@@ -14,9 +14,11 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/sequenced_worker_pool.h"
 
-namespace chrome {
-
+namespace device {
 class MediaTransferProtocolManager;
+}
+
+namespace chrome {
 
 // Helper struct to delete worker objects on |media_task_runner_| thread.
 template <typename WORKER> struct WorkerDeleter {
@@ -30,7 +32,7 @@ template <typename WORKER> struct WorkerDeleter {
 };
 
 // Returns MediaTransferProtocolManager instance on success or NULL on failure.
-MediaTransferProtocolManager* GetMediaTransferProtocolManager();
+device::MediaTransferProtocolManager* GetMediaTransferProtocolManager();
 
 }  // namespace chrome
 

@@ -10,7 +10,7 @@
 
 #include "base/string16.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 class FilePath;
 
@@ -26,7 +26,7 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
 // Helper class to send MTP storage attachment and detachment events to
 // SystemMonitor.
 class MediaTransferProtocolDeviceObserverLinux
-    : public MediaTransferProtocolManager::Observer {
+    : public device::MediaTransferProtocolManager::Observer {
  public:
   // Should only be called by browser start up code. Use GetInstance() instead.
   MediaTransferProtocolDeviceObserverLinux();
@@ -45,7 +45,7 @@ class MediaTransferProtocolDeviceObserverLinux
   explicit MediaTransferProtocolDeviceObserverLinux(
       GetStorageInfoFunc get_storage_info_func);
 
-  // MediaTransferProtocolManager::Observer implementation.
+  // device::MediaTransferProtocolManager::Observer implementation.
   // Exposed for unit tests.
   virtual void StorageChanged(bool is_attached,
                               const std::string& storage_name) OVERRIDE;

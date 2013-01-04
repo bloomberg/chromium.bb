@@ -6,8 +6,8 @@
 // responsible for communicating with PTP / MTP capable devices like cameras
 // and smartphones.
 
-#ifndef CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
-#define CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@ namespace dbus {
 class Bus;
 }
 
-namespace chrome {
+namespace device {
 
 // A class to make the actual DBus calls for mtpd service.
 // This class only makes calls, result/error handling should be done
@@ -175,6 +175,6 @@ class MediaTransferProtocolDaemonClient {
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDaemonClient);
 };
 
-}  // namespace chrome
+}  // namespace device
 
-#endif  // CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#endif  // DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_

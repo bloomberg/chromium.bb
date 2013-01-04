@@ -1,4 +1,0 @@
-include_rules = [
-  # The media transfer protocol daemon uses D-Bus.
-  "+dbus",
-]

@@ -16,8 +16,8 @@
 #include "chrome/browser/media_gallery/linux/mtp_read_directory_worker.h"
 #include "chrome/browser/media_gallery/linux/mtp_read_file_worker.h"
 #include "chrome/browser/media_gallery/linux/mtp_recursive_device_object_enumerator.h"
-#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 using base::Bind;
 using base::PlatformFileError;

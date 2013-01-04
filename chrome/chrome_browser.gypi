@@ -2458,15 +2458,10 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            'mtp_file_entry_proto',
-            'mtp_storage_info_proto',
             '../build/linux/system.gyp:udev',
-          ],
-          'sources': [
-            'browser/media_transfer_protocol/media_transfer_protocol_daemon_client.cc',
-            'browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h',
-            'browser/media_transfer_protocol/media_transfer_protocol_manager.cc',
-            'browser/media_transfer_protocol/media_transfer_protocol_manager.h',
+            '../device/device.gyp:mtp_file_entry_proto',
+            '../device/device.gyp:mtp_storage_info_proto',
+            '../device/device.gyp:device_media_transfer_protocol',
           ],
         }],
         ['OS=="linux" and chromeos==0', {
@@ -3120,39 +3115,6 @@
             'jni_gen_dir': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
-        },
-      ],
-     },
-    ],
-    ['OS=="linux"', {
-      'targets': [
-        {
-          # Protobuf compiler / generator for the MtpFileEntry and
-          # MtpFileEntries protocol buffers.
-          'target_name': 'mtp_file_entry_proto',
-          'type': 'static_library',
-          'sources': [
-            '../third_party/cros_system_api/dbus/mtp_file_entry.proto',
-          ],
-          'variables': {
-            'proto_in_dir': '../third_party/cros_system_api/dbus',
-            'proto_out_dir': 'chrome/browser/media_transfer_protocol',
-          },
-          'includes': ['../build/protoc.gypi'],
-        },
-        {
-          # Protobuf compiler / generator for the MtpStorageInfo protocol
-          # buffer.
-          'target_name': 'mtp_storage_info_proto',
-          'type': 'static_library',
-          'sources': [
-            '../third_party/cros_system_api/dbus/mtp_storage_info.proto',
-          ],
-          'variables': {
-            'proto_in_dir': '../third_party/cros_system_api/dbus',
-            'proto_out_dir': 'chrome/browser/media_transfer_protocol',
-          },
-          'includes': ['../build/protoc.gypi'],
         },
       ],
      },
