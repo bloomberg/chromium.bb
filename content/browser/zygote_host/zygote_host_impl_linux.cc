@@ -273,7 +273,7 @@ pid_t ZygoteHostImpl::ForkRequest(
     pickle.WriteUInt32(i->id);
     fds.push_back(i->fd.fd);
     if (i->fd.auto_close) {
-      // Auto-close means we need to close the FDs after they habe been passed
+      // Auto-close means we need to close the FDs after they have been passed
       // to the other process.
       linked_ptr<file_util::ScopedFD> ptr(
           new file_util::ScopedFD(&(fds.back())));
