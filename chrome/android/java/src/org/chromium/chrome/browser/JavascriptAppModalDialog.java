@@ -122,6 +122,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     @CalledByNative
     void dismiss() {
         mDialog.dismiss();
+        mNativeDialogPointer = 0;
     }
 
     /**
@@ -175,11 +176,15 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     public void confirm(String promptResult, boolean suppressDialogs) {
-        nativeDidAcceptAppModalDialog(mNativeDialogPointer, promptResult, suppressDialogs);
+        if (mNativeDialogPointer != 0) {
+            nativeDidAcceptAppModalDialog(mNativeDialogPointer, promptResult, suppressDialogs);
+        }
     }
 
     public void cancel(boolean suppressDialogs) {
-        nativeDidCancelAppModalDialog(mNativeDialogPointer, suppressDialogs);
+        if (mNativeDialogPointer != 0) {
+            nativeDidCancelAppModalDialog(mNativeDialogPointer, suppressDialogs);
+        }
     }
 
     private static class JavascriptAppAlertDialog extends JavascriptAppModalDialog {

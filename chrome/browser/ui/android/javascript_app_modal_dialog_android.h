@@ -17,7 +17,6 @@ class JavascriptAppModalDialogAndroid : public NativeAppModalDialog {
   JavascriptAppModalDialogAndroid(JNIEnv* env,
                                   JavaScriptAppModalDialog* dialog,
                                   gfx::NativeWindow parent);
-  virtual ~JavascriptAppModalDialogAndroid();
 
   // NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const OVERRIDE;
@@ -39,6 +38,9 @@ class JavascriptAppModalDialogAndroid : public NativeAppModalDialog {
   static bool RegisterJavascriptAppModalDialog(JNIEnv* env);
 
  private:
+  // The object deletes itself.
+  virtual ~JavascriptAppModalDialogAndroid();
+
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
   base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;
   JavaObjectWeakGlobalRef parent_jobject_weak_ref_;

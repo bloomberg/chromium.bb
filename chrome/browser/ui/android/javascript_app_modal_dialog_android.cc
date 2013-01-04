@@ -39,15 +39,6 @@ JavascriptAppModalDialogAndroid::JavascriptAppModalDialogAndroid(
       parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {
 }
 
-JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {
-  JNIEnv* env = AttachCurrentThread();
-  // In case the dialog is still displaying, tell it to close itself.
-  // This can happen if you trigger a dialog but close the Tab before it's
-  // shown, and then accept the dialog.
-  if (!dialog_jobject_.is_null())
-    Java_JavascriptAppModalDialog_dismiss(env, dialog_jobject_.obj());
-}
-
 int JavascriptAppModalDialogAndroid::GetAppModalDialogButtons() const {
   NOTIMPLEMENTED();
   return 0;
@@ -162,4 +153,13 @@ jobject GetCurrentModalDialog(JNIEnv* env, jclass clazz) {
 bool JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog(
     JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {
+  JNIEnv* env = AttachCurrentThread();
+  // In case the dialog is still displaying, tell it to close itself.
+  // This can happen if you trigger a dialog but close the Tab before it's
+  // shown, and then accept the dialog.
+  if (!dialog_jobject_.is_null())
+    Java_JavascriptAppModalDialog_dismiss(env, dialog_jobject_.obj());
 }
