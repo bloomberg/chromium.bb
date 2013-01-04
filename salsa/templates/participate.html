@@ -131,7 +131,7 @@
 
   {% if user|string in experiment.participants %}
     <div class="error">
-      Warning! Our records indicate that you have already completed this
+      Error! Our records indicate that you have already completed this
       experiment.  A submission has already been saved for your username
       and subsequent submissions will <b>overwrite</b> your previous ones.
     </div>
@@ -203,6 +203,13 @@
 
 {% block second_column %}
   <h1> Rate your experiences </h1>
+
+  <div class="warning">
+    This experiment is for <font class="giant">{{ experiment.device }}</font>
+    <u>only</u>!  If you are not currently on a <font class="giant">
+    {{ experiment.device }}</font> please do not participate.
+  </div>
+
   <p>
     Drag the following blocks around to sort the treatments you just
     experienced from best to worst.

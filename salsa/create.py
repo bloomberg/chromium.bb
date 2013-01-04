@@ -12,9 +12,11 @@ class CreateNewExperiment(webapp2.RequestHandler):
     def parse_experiment_details(self):
         exp = {
             'name': self.request.get('exp_name'),
+            'description': self.request.get('exp_description'),
+            'device': self.request.get('exp_device'),
             'owner': users.get_current_user()
         }
-        if not exp.get('name') or not exp.get('owner'):
+        if not exp.get('name') or not exp.get('owner') or not exp.get('device'):
             return None
         return exp
 
@@ -42,10 +44,10 @@ class CreateNewExperiment(webapp2.RequestHandler):
                 return None
 
             for property_number in property_numbers:
-                name = self.request.get('treat' + treatment_number + "_prop" +
-                                          property_number + "_name")
-                value = self.request.get('treat' + treatment_number + "_prop" +
-                                           property_number + "_value")
+                name = self.request.get('treat' + treatment_number + '_prop' +
+                                          property_number + '_name')
+                value = self.request.get('treat' + treatment_number + '_prop' +
+                                           property_number + '_value')
                 if not name or not value:
                     return None
                 t.get('properties').append({'name': name, 'value': value})
@@ -70,6 +72,8 @@ class CreateNewExperiment(webapp2.RequestHandler):
         """ Create a new Experiment (with Treatments and Properties) based on
         the POSTed form data.  The format is as follows:
             exp_name = main Experiment name
+            exp_description = main Experiment description
+            exp_device = Which device(s) are allowed for this experiment
             treat##_name = the name of treatment ##
             treat##_prop##_name = the name of a property to be changed for
                                   treatment ##
@@ -82,10 +86,12 @@ class CreateNewExperiment(webapp2.RequestHandler):
         experiment = self.parse();
 
         if not experiment:
-            self.redirect("error")
+            self.redirect('error')
         else:
             exp = Experiment()
             exp.name = experiment.get('name')
+            exp.description = experiment.get('description')
+            exp.device = experiment.get('device')
             exp.owner = experiment.get('owner')
             exp.put()
 
@@ -100,6 +106,6 @@ class CreateNewExperiment(webapp2.RequestHandler):
                     p.value = property.get('value')
                     p.put()
 
-            self.redirect("view?exp_key=%s" % exp.key())
+            self.redirect('view?exp_key=%s' % exp.key())
 
 app = webapp2.WSGIApplication([('/create', CreateNewExperiment)], debug=True)

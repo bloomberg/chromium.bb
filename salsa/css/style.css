@@ -220,3 +220,15 @@ h2 {
     border-color: #cfc;
     padding: 20px;
 }
+
+.warning {
+    background: #ff9;
+    border: solid;
+    border-width: 1px;
+    border-color: #fc6;
+    padding: 20px;
+}
+
+.giant {
+    font-size: 20px;
+}

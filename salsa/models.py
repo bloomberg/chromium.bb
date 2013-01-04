@@ -7,6 +7,8 @@ from google.appengine.ext import db
 class Experiment(db.Model):
     """ Models an individual experiment for storage in the database """
     name = db.StringProperty()
+    description = db.StringProperty()
+    device = db.StringProperty()
     owner = db.UserProperty()
     created = db.DateTimeProperty(auto_now_add=True)
     participants = db.ListProperty(str)
