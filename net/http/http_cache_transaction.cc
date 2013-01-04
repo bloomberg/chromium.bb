@@ -732,6 +732,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     if (effective_load_flags_ & LOAD_ONLY_FROM_CACHE) {
       mode_ = READ;
     } else if (effective_load_flags_ & LOAD_BYPASS_CACHE) {
+      UpdateTransactionPattern(PATTERN_NOT_COVERED);
       mode_ = WRITE;
     } else {
       mode_ = READ_WRITE;
