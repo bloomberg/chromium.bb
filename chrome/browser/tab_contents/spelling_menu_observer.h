@@ -12,11 +12,11 @@
 #include "base/prefs/public/pref_member.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
 struct SpellCheckResult;
-class SpellingServiceClient;
 
 // An observer that listens to events from the RenderViewContextMenu class and
 // shows suggestions from the Spelling ("do you mean") service to a context menu
@@ -52,7 +52,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // A callback function called when the Spelling service finishes checking a
   // misspelled word.
   void OnTextCheckComplete(
-      int tag,
+      SpellingServiceClient::ServiceType type,
       bool success,
       const string16& text,
       const std::vector<SpellCheckResult>& results);

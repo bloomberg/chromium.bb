@@ -90,9 +90,10 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // item now since Chrome will call IsCommandIdEnabled() and disable it.)
     loading_message_ =
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_CHECKING);
-    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION,
-                        loading_message_);
-
+    if (!useSpellingService) {
+      proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION,
+                          loading_message_);
+    }
     // Invoke a JSON-RPC call to the Spelling service in the background so we
     // can update the placeholder item when we receive its response. It also
     // starts the animation timer so we can show animation until we receive
@@ -102,9 +103,9 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
       type = SpellingServiceClient::SPELLCHECK;
     client_.reset(new SpellingServiceClient);
     bool result = client_->RequestTextCheck(
-        profile, 0, type, params.misspelled_word,
+        profile, type, params.misspelled_word,
         base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
-                   base::Unretained(this)));
+                   base::Unretained(this), type));
     if (result) {
       loading_frame_ = 0;
       animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
@@ -303,7 +304,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 }
 
 void SpellingMenuObserver::OnTextCheckComplete(
-    int tag,
+    SpellingServiceClient::ServiceType type,
     bool success,
     const string16& text,
     const std::vector<SpellCheckResult>& results) {
@@ -331,15 +332,17 @@ void SpellingMenuObserver::OnTextCheckComplete(
       }
     }
   }
-  if (!succeeded_) {
-    result_ = l10n_util::GetStringUTF16(
-        IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE);
-  }
+  if (type != SpellingServiceClient::SPELLCHECK) {
+    if (!succeeded_) {
+      result_ = l10n_util::GetStringUTF16(
+          IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE);
+    }
 
-  // Update the menu item with the result text. We disable this item and hide it
-  // when the spelling service does not provide valid suggestions.
-  proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, succeeded_,
-                         false, result_);
+    // Update the menu item with the result text. We disable this item and hide
+    // it when the spelling service does not provide valid suggestions.
+    proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, succeeded_,
+                           false, result_);
+  }
 }
 
 void SpellingMenuObserver::OnAnimationTimerExpired() {

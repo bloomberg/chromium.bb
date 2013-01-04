@@ -314,11 +314,10 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     pref->SetString(prefs::kSpellCheckDictionary, kTests[i].language);
     client_.RequestTextCheck(
         &profile_,
-        0,
         kTests[i].request_type,
         ASCIIToUTF16(kTests[i].request_text),
         base::Bind(&SpellingServiceClientTest::OnTextCheckComplete,
-                   base::Unretained(this)));
+                   base::Unretained(this), 0));
     client_.CallOnURLFetchComplete();
   }
 }

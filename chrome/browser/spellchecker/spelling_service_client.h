@@ -66,7 +66,6 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
     SPELLCHECK = 2,
   };
   typedef base::Callback<void(
-      int /* tag */,
       bool /* success */,
       const string16& /* text */,
       const std::vector<SpellCheckResult>& /* results */)>
@@ -83,7 +82,6 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // does not mean the service finishes checking text successfully.) We will
   // call |callback| when we receive a text-check response from the service.
   bool RequestTextCheck(Profile* profile,
-                        int tag,
                         ServiceType type,
                         const string16& text,
                         const TextCheckCompleteCallback& callback);
@@ -110,11 +108,6 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
 
   // The text checked by the Spelling service.
   string16 text_;
-
-  // The identifier provided by users so they can identify a text-check request.
-  // When a JSON-RPC call finishes successfully, this value is used as the
-  // first parameter to |callback_|.
-  int tag_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_

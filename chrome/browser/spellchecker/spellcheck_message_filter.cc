@@ -145,8 +145,8 @@ bool SpellCheckMessageFilter::CallSpellingService(
     return false;
   client_.reset(new SpellingServiceClient);
   return client_->RequestTextCheck(
-      profile, document_tag, SpellingServiceClient::SPELLCHECK, text,
-      base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
-                 base::Unretained(this)));
+    profile, SpellingServiceClient::SPELLCHECK, text,
+    base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
+               base::Unretained(this), document_tag));
 }
 #endif

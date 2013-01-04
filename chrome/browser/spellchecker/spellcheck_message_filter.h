@@ -7,10 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "content/public/browser/browser_message_filter.h"
 
 struct SpellCheckResult;
-class SpellingServiceClient;
 
 // A message filter implementation that receives spell checker requests from
 // SpellCheckProvider.
