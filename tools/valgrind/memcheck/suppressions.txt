@@ -6334,13 +6334,6 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
-   bug_166977
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN24ChromePrefServiceBuilder17ResetDefaultStateEv
-   fun:_ZN24ChromePrefServiceBuilder17CreateChromePrefsERK8FilePathPN4base19SequencedTaskRunnerEPN6policy13PolicyServiceEP9PrefStoreb
-}
-{
    bug_167165a
    Memcheck:Leak
    fun:_Znw*
