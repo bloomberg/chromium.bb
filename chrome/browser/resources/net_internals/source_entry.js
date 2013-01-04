@@ -202,10 +202,14 @@ var SourceEntry = (function() {
           return e;
       }
       if (this.entries_.length >= 2) {
-        if (this.entries_[0].type == EventType.SOCKET_POOL_CONNECT_JOB ||
-            this.entries_[1].type == EventType.UDP_CONNECT) {
+        // Needed for compatability with log dumps prior to M26.
+        // TODO(mmenke):  Remove this.
+        if (this.entries_[0].type == EventType.SOCKET_POOL_CONNECT_JOB &&
+            this.entries_[0].params == undefined) {
           return this.entries_[1];
         }
+        if (this.entries_[1].type == EventType.UDP_CONNECT)
+          return this.entries_[1];
         if (this.entries_[0].type == EventType.REQUEST_ALIVE &&
             this.entries_[0].params == undefined) {
           var start_index = 1;

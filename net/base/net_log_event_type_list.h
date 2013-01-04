@@ -600,15 +600,15 @@ EVENT_TYPE(UDP_SEND_ERROR)
 // ------------------------------------------------------------------------
 
 // The start/end of a ConnectJob.
-EVENT_TYPE(SOCKET_POOL_CONNECT_JOB)
-
-// The start/end of the ConnectJob::Connect().
 //
 // The BEGIN phase has these parameters:
 //
 //   {
 //     "group_name": <The group name for the socket request.>,
 //   }
+EVENT_TYPE(SOCKET_POOL_CONNECT_JOB)
+
+// The start/end of the ConnectJob::Connect().
 EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_CONNECT)
 
 // This event is logged whenever the ConnectJob gets a new socket

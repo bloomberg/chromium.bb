@@ -77,7 +77,8 @@ ConnectJob::ConnectJob(const std::string& group_name,
       idle_(true) {
   DCHECK(!group_name.empty());
   DCHECK(delegate);
-  net_log.BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB);
+  net_log.BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB,
+                     NetLog::StringCallback("group_name", &group_name_));
 }
 
 ConnectJob::~ConnectJob() {
@@ -125,8 +126,7 @@ void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
 }
 
 void ConnectJob::LogConnectStart() {
-  net_log().BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT,
-                       NetLog::StringCallback("group_name", &group_name_));
+  net_log().BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT);
 }
 
 void ConnectJob::LogConnectCompletion(int net_error) {
