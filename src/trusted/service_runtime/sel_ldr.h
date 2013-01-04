@@ -99,6 +99,12 @@ typedef int (*NaClAttachDebugExceptionHandlerFunc)(const void *info,
                                                    size_t size);
 #endif
 
+struct NaClSpringboardInfo {
+  /* These are addresses in untrusted address space (relative to mem_start). */
+  uint32_t start_addr;
+  uint32_t end_addr;
+};
+
 struct NaClApp {
   /*
    * public, user settable prior to app start.
@@ -188,12 +194,9 @@ struct NaClApp {
   /* common to both ELF executables and relocatable load images */
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  uintptr_t                 springboard_addr;
-  uintptr_t                 springboard_all_regs_addr;
-  /*
-   * springboard code addr for context switching into app sandbox, relative
-   * to mem_start
-   */
+  /* Addresses of trusted springboard code for switching to untrusted code. */
+  struct NaClSpringboardInfo syscall_return_springboard;
+  struct NaClSpringboardInfo all_regs_springboard;
 #endif
 
   /*

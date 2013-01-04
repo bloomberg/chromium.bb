@@ -159,9 +159,8 @@ static int HandleException(mach_port_t thread_port,
      */
     if (exception == EXC_BREAKPOINT &&
         (regs.uts.ts32.__eflags & NACL_X86_TRAP_FLAG) != 0) {
-      if (regs.uts.ts32.__eip >= nap->springboard_all_regs_addr &&
-          regs.uts.ts32.__eip < (nap->springboard_all_regs_addr
-                                 + nap->bundle_size)) {
+      if (regs.uts.ts32.__eip >= nap->all_regs_springboard.start_addr &&
+          regs.uts.ts32.__eip < nap->all_regs_springboard.end_addr) {
         return 1;
       }
       /*

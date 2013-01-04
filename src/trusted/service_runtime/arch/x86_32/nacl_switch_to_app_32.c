@@ -72,8 +72,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
   nap = natp->nap;
   context = &natp->user;
-  context->spring_addr = NaClSysToUser(nap,
-                                       nap->mem_start + nap->springboard_addr);
+  context->spring_addr = nap->syscall_return_springboard.start_addr;
   context->new_prog_ctr = new_prog_ctr;
   context->sysret = 0; /* %eax not used to return */
 

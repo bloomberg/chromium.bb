@@ -20,7 +20,7 @@ void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
 
   state->stack_ptr = regs->stack_ptr;
   state->ss = natp->user.ss;
-  state->spring_addr = natp->nap->springboard_all_regs_addr;
+  state->spring_addr = natp->nap->all_regs_springboard.start_addr;
   state->cs = natp->user.cs;
   state->ds = natp->user.ds;
   state->es = natp->user.es;
