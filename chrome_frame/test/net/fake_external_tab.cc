@@ -778,7 +778,7 @@ bool CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback(
       switches::kAutomationClientChannelID);
   EXPECT_FALSE(channel_id.empty());
 
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
+  Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile(
       fake_chrome_->user_data());
 
   AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
