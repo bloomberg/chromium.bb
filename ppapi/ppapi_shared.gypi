@@ -74,6 +74,8 @@
           'shared_impl/ppb_opengles2_shared.h',
           'shared_impl/ppb_resource_array_shared.cc',
           'shared_impl/ppb_resource_array_shared.h',
+          'shared_impl/ppb_trace_event_impl.cc',
+          'shared_impl/ppb_trace_event_impl.h',
           'shared_impl/ppb_url_util_shared.cc',
           'shared_impl/ppb_url_util_shared.h',
           'shared_impl/ppb_var_shared.cc',
