@@ -255,7 +255,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_VALIDATION_FAILED:
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(
-              IDS_ENTERPRISE_ENROLLMENT_STATUS_POLICY_FETCH_FAILED,
+              IDS_ENTERPRISE_ENROLLMENT_STATUS_VALIDATION_FAILED,
               policy::FormatValidationStatus(status.validation_status())),
           true);
       return;
