@@ -19,6 +19,15 @@ def CanRunHost():
     return False
   return True
 
+def _SetupLinuxHostDir(env, nacl_dir):
+  # Use the 32-bit path by default, but fall back to 64-bit if the 32-bit does
+  # not exist.
+  dir_template = os.path.join(nacl_dir, 'toolchain', 'pnacl_linux_x86',
+                              'host_%s')
+  dir_32 = dir_template % 'x86_32'
+  dir_64 = dir_template % 'x86_64'
+  env.set('BASE_HOST', dir_32 if os.path.exists(dir_32) else dir_64)
+
 def SetupHostDir(env):
   # Some of the tools require 'BASE_HOST' to be set, because they end up
   # running one of the host binaries.
@@ -28,10 +37,8 @@ def SetupHostDir(env):
     os_shortname = 'mac'
     host_arch = 'x86_64'
   elif sys.platform.startswith('linux'):
-    os_shortname = 'linux'
-    # x86-32 host is always available, but x86-64 host is not always available
-    # if built from scratch, without building the full fat toolchain.
-    host_arch = 'x86_32'
+    _SetupLinuxHostDir(env, nacl_dir)
+    return
   elif sys.platform in ('cygwin', 'win32'):
     os_shortname = 'win'
     host_arch= 'x86_32'
