@@ -21,6 +21,33 @@
 using cc::ActiveAnimation;
 using cc::Layer;
 
+namespace {
+gfx::Transform convertWebTransformationMatrixToTransform(const WebKit::WebTransformationMatrix& matrix)
+{
+    // TODO(jamesr): When gfx::Transform provides a constructor that does not
+    // initialize the matrix, use that.
+    gfx::Transform transform;
+    transform.matrix().setDouble(0, 0, matrix.m11());
+    transform.matrix().setDouble(0, 1, matrix.m21());
+    transform.matrix().setDouble(0, 2, matrix.m31());
+    transform.matrix().setDouble(0, 3, matrix.m41());
+    transform.matrix().setDouble(1, 0, matrix.m12());
+    transform.matrix().setDouble(1, 1, matrix.m22());
+    transform.matrix().setDouble(1, 2, matrix.m32());
+    transform.matrix().setDouble(1, 3, matrix.m42());
+    transform.matrix().setDouble(2, 0, matrix.m13());
+    transform.matrix().setDouble(2, 1, matrix.m23());
+    transform.matrix().setDouble(2, 2, matrix.m33());
+    transform.matrix().setDouble(2, 3, matrix.m43());
+    transform.matrix().setDouble(3, 0, matrix.m14());
+    transform.matrix().setDouble(3, 1, matrix.m24());
+    transform.matrix().setDouble(3, 2, matrix.m34());
+    transform.matrix().setDouble(3, 3, matrix.m44());
+    return transform;
+}
+}  // namespace
+
+
 namespace WebKit {
 
 WebLayerImpl::WebLayerImpl()
@@ -169,7 +196,7 @@ void WebLayerImpl::setSublayerTransform(const SkMatrix44& matrix)
 
 void WebLayerImpl::setSublayerTransform(const WebTransformationMatrix& matrix)
 {
-    m_layer->setSublayerTransform(matrix.toTransform());
+    m_layer->setSublayerTransform(convertWebTransformationMatrixToTransform(matrix));
 }
 
 SkMatrix44 WebLayerImpl::sublayerTransform() const
@@ -186,7 +213,7 @@ void WebLayerImpl::setTransform(const SkMatrix44& matrix)
 
 void WebLayerImpl::setTransform(const WebTransformationMatrix& matrix)
 {
-    m_layer->setTransform(matrix.toTransform());
+    m_layer->setTransform(convertWebTransformationMatrixToTransform(matrix));
 }
 
 SkMatrix44 WebLayerImpl::transform() const

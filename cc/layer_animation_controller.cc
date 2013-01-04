@@ -10,6 +10,30 @@
 #include "cc/layer_animation_value_observer.h"
 #include "ui/gfx/transform.h"
 
+namespace {
+gfx::Transform convertWebTransformationMatrixToTransform(const WebKit::WebTransformationMatrix& matrix)
+{
+    gfx::Transform transform;
+    transform.matrix().setDouble(0, 0, matrix.m11());
+    transform.matrix().setDouble(0, 1, matrix.m21());
+    transform.matrix().setDouble(0, 2, matrix.m31());
+    transform.matrix().setDouble(0, 3, matrix.m41());
+    transform.matrix().setDouble(1, 0, matrix.m12());
+    transform.matrix().setDouble(1, 1, matrix.m22());
+    transform.matrix().setDouble(1, 2, matrix.m32());
+    transform.matrix().setDouble(1, 3, matrix.m42());
+    transform.matrix().setDouble(2, 0, matrix.m13());
+    transform.matrix().setDouble(2, 1, matrix.m23());
+    transform.matrix().setDouble(2, 2, matrix.m33());
+    transform.matrix().setDouble(2, 3, matrix.m43());
+    transform.matrix().setDouble(3, 0, matrix.m14());
+    transform.matrix().setDouble(3, 1, matrix.m24());
+    transform.matrix().setDouble(3, 2, matrix.m34());
+    transform.matrix().setDouble(3, 3, matrix.m44());
+    return transform;
+}
+}  // namespace
+
 namespace cc {
 
 LayerAnimationController::LayerAnimationController(int id)
@@ -406,7 +430,7 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
 
             case ActiveAnimation::Transform: {
                 const TransformAnimationCurve* transformAnimationCurve = m_activeAnimations[i]->curve()->toTransformAnimationCurve();
-                const gfx::Transform transform = transformAnimationCurve->getValue(trimmed).toTransform();
+                const gfx::Transform transform = convertWebTransformationMatrixToTransform(transformAnimationCurve->getValue(trimmed));
                 if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
                     m_activeAnimations[i]->setRunState(ActiveAnimation::Finished, monotonicTime);
 
