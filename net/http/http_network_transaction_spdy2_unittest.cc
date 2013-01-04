@@ -450,7 +450,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SimpleGETNoHeaders) {
 }
 
 // Allow up to 4 bytes of junk to precede status line.
-TEST_F(HttpNetworkTransactionSpdy2Test, StatusLineJunk2Bytes) {
+TEST_F(HttpNetworkTransactionSpdy2Test, StatusLineJunk3Bytes) {
   MockRead data_reads[] = {
     MockRead("xxxHTTP/1.0 404 Not Found\nServer: blah\n\nDATA"),
     MockRead(SYNCHRONOUS, OK),
