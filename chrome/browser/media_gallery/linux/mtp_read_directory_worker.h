@@ -12,7 +12,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/media_gallery/linux/mtp_device_operations_utils.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
 
 namespace base {
 class SequencedTaskRunner;

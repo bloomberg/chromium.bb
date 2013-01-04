@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
-#define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#ifndef CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#define CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@
 class MtpFileEntry;
 class MtpStorageInfo;
 
-namespace device {
+namespace chrome {
 
 // This class handles the interaction with mtpd.
 // Other classes can add themselves as observers.
@@ -138,6 +138,6 @@ class MediaTransferProtocolManager {
   static MediaTransferProtocolManager* GetInstance();
 };
 
-}  // namespace device
+}  // namespace chrome
 
-#endif  // DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#endif  // CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_

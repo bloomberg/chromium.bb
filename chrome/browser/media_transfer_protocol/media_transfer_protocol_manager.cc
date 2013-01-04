@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #include <map>
 #include <queue>
@@ -14,11 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -28,7 +28,7 @@
 
 using content::BrowserThread;
 
-namespace device {
+namespace chrome {
 
 namespace {
 
@@ -391,7 +391,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // Mtpd DBus client.
-  scoped_ptr<MediaTransferProtocolDaemonClient> mtp_client_;
+  scoped_ptr<chrome::MediaTransferProtocolDaemonClient> mtp_client_;
 
 #if !defined(OS_CHROMEOS)
   // And a D-Bus session for talking to mtpd.
@@ -450,4 +450,4 @@ MediaTransferProtocolManager* MediaTransferProtocolManager::GetInstance() {
   return g_media_transfer_protocol_manager;
 }
 
-}  // namespace device
+}  // namespace chrome

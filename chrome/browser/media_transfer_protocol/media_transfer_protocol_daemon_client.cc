@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace device {
+namespace chrome {
 
 namespace {
 
@@ -486,4 +486,4 @@ MediaTransferProtocolDaemonClient::Create(dbus::Bus* bus, bool is_stub) {
   return new MediaTransferProtocolDaemonClientImpl(bus);
 }
 
-}  // namespace device
+}  // namespace chrome

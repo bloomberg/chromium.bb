@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace chrome {
 

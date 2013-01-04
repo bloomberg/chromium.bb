@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
@@ -82,7 +82,7 @@ ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
   if (did_pre_profile_init_)
-    device::MediaTransferProtocolManager::Shutdown();
+    chrome::MediaTransferProtocolManager::Shutdown();
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
@@ -106,7 +106,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   removable_device_notifications_linux_->Init();
 #endif
 
-  device::MediaTransferProtocolManager::Initialize();
+  chrome::MediaTransferProtocolManager::Initialize();
 
   did_pre_profile_init_ = true;
 

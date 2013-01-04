@@ -12,9 +12,9 @@
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;

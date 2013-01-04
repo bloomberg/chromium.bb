@@ -9,9 +9,9 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 namespace chrome {
 
@@ -101,8 +101,8 @@ void GetStorageInfo(const std::string& storage_name,
                     string16* label,
                     std::string* location) {
   DCHECK(!storage_name.empty());
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
+  MediaTransferProtocolManager* mtp_manager =
+      MediaTransferProtocolManager::GetInstance();
   const MtpStorageInfo* storage_info =
       mtp_manager->GetStorageInfo(storage_name);
 
@@ -128,8 +128,8 @@ MediaTransferProtocolDeviceObserverLinux()
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
+  MediaTransferProtocolManager* mtp_manager =
+      MediaTransferProtocolManager::GetInstance();
   mtp_manager->AddObserver(this);
   EnumerateStorages();
 }
@@ -140,7 +140,7 @@ MediaTransferProtocolDeviceObserverLinux(
     GetStorageInfoFunc get_storage_info_func)
     : get_storage_info_func_(get_storage_info_func) {
   // In unit tests, we don't have a media transfer protocol manager.
-  DCHECK(!device::MediaTransferProtocolManager::GetInstance());
+  DCHECK(!MediaTransferProtocolManager::GetInstance());
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 }
@@ -150,8 +150,8 @@ MediaTransferProtocolDeviceObserverLinux::
   DCHECK_EQ(this, g_mtp_device_observer);
   g_mtp_device_observer = NULL;
 
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
+  MediaTransferProtocolManager* mtp_manager =
+      MediaTransferProtocolManager::GetInstance();
   if (mtp_manager)
     mtp_manager->RemoveObserver(this);
 }
@@ -187,7 +187,7 @@ bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
   return true;
 }
 
-// device::MediaTransferProtocolManager::Observer override.
+// MediaTransferProtocolManager::Observer override.
 void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     bool is_attached,
     const std::string& storage_name) {
@@ -229,8 +229,8 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
 void MediaTransferProtocolDeviceObserverLinux::EnumerateStorages() {
   typedef std::vector<std::string> StorageList;
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
+  MediaTransferProtocolManager* mtp_manager =
+      MediaTransferProtocolManager::GetInstance();
   StorageList storages = mtp_manager->GetStorages();
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {

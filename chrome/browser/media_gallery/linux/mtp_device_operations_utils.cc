@@ -4,14 +4,14 @@
 
 #include "chrome/browser/media_gallery/linux/mtp_device_operations_utils.h"
 
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace chrome {
 
 // Returns MediaTransferProtocolManager instance on success or NULL on failure.
-device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
-  device::MediaTransferProtocolManager* mtp_device_mgr =
-      device::MediaTransferProtocolManager::GetInstance();
+MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
+  MediaTransferProtocolManager* mtp_device_mgr =
+      MediaTransferProtocolManager::GetInstance();
   DCHECK(mtp_device_mgr);
   return mtp_device_mgr;
 }

@@ -1,8 +1,0 @@
-include_rules = [
-  # The media transfer protocol daemon uses D-Bus.
-  "+dbus",
-  "+chrome/common/chrome_switches.h",
-  "+chromeos/dbus",
-  "+content/public/browser/browser_thread.h",
-  "+third_party/cros_system_api/dbus",
-]

@@ -1,7 +1,6 @@
 include_rules = [
   "+chrome/plugin",  # For checking whether we're a plugin process.
   "+device/bluetooth",  # For BluetoothDevicePermission
-  "+device/media_transfer_protocol",  # For MediaTransferProtocolManager
   "+device/usb",  # For UsbDevicePermission
   "+extensions/common",
   "+grit",  # For generated headers
