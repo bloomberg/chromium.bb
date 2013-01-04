@@ -1221,6 +1221,7 @@
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+        'browser/ui/views/avatar_menu_button_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/find_bar_controller_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',

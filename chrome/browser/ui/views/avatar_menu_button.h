@@ -51,8 +51,6 @@ class AvatarMenuButton : public views::MenuButton,
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  void ButtonClicked();
-
   Browser* browser_;
   bool incognito_;
   scoped_ptr<ui::MenuModel> menu_model_;

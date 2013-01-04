@@ -7,12 +7,14 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,6 +29,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -387,6 +390,38 @@ bool ProfileItemView::IsHighlighted() {
 
 // AvatarMenuBubbleView -------------------------------------------------------
 
+// static
+AvatarMenuBubbleView* AvatarMenuBubbleView::avatar_bubble_ = NULL;
+
+// static
+void AvatarMenuBubbleView::ShowBubble(
+    views::View* anchor_view,
+    views::BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::BubbleAlignment border_alignment,
+    const gfx::Rect& anchor_rect,
+    Browser* browser) {
+  if (IsShowing())
+    return;
+
+  DCHECK(chrome::IsCommandEnabled(browser, IDC_SHOW_AVATAR_MENU));
+  avatar_bubble_ = new AvatarMenuBubbleView(
+      anchor_view, arrow_location, anchor_rect, browser);
+  views::BubbleDelegateView::CreateBubble(avatar_bubble_);
+  avatar_bubble_->SetAlignment(border_alignment);
+  avatar_bubble_->Show();
+}
+
+// static
+bool AvatarMenuBubbleView::IsShowing() {
+  return avatar_bubble_ != NULL;
+}
+
+// static
+void AvatarMenuBubbleView::Hide() {
+  if (IsShowing())
+    avatar_bubble_->GetWidget()->Close();
+}
+
 AvatarMenuBubbleView::AvatarMenuBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location,
@@ -518,6 +553,11 @@ void AvatarMenuBubbleView::Init() {
   OnAvatarMenuModelChanged(avatar_menu_model_.get());
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+}
+
+void AvatarMenuBubbleView::WindowClosing() {
+  DCHECK_EQ(avatar_bubble_, this);
+  avatar_bubble_ = NULL;
 }
 
 void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
