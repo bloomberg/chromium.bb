@@ -215,12 +215,15 @@ void CheckShouldRemoveSetupAndArchive(
   if (!installer_state.is_multi_install()) {
     VLOG(1) << "Removing all installer files for a non-multi installation.";
   } else {
+    // Loop through all known products...
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type dist_type =
           static_cast<BrowserDistribution::Type>(i);
       const installer::ProductState* product_state =
           original_state.GetProductState(
               installer_state.system_install(), dist_type);
+      // If the product is installed, in multi mode, and is not part of the
+      // active uninstallation...
       if (product_state && product_state->is_multi_install() &&
           !installer_state.FindProduct(dist_type)) {
         // setup.exe will not be removed as there is a remaining multi-install
@@ -247,11 +250,11 @@ void CheckShouldRemoveSetupAndArchive(
 // Removes all files from the installer directory, leaving setup.exe iff
 // |remove_setup| is false.
 // Returns false in case of an error.
-bool RemoveInstallerFiles(const FilePath& install_directory,
+bool RemoveInstallerFiles(const FilePath& installer_directory,
                           bool remove_setup) {
   using file_util::FileEnumerator;
   FileEnumerator file_enumerator(
-      install_directory,
+      installer_directory,
       false,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   bool success = true;
@@ -265,7 +268,7 @@ bool RemoveInstallerFiles(const FilePath& install_directory,
     if (!remove_setup && to_delete.BaseName() == setup_exe_base_name)
       continue;
 
-    VLOG(1) << "Deleting install path " << to_delete.value();
+    VLOG(1) << "Deleting installer path " << to_delete.value();
     if (!file_util::Delete(to_delete, true)) {
       LOG(ERROR) << "Failed to delete path: " << to_delete.value();
       success = false;
@@ -552,7 +555,7 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
 }
 
 DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
-                                         const FilePath& installer_path) {
+                                         const FilePath& setup_exe) {
   const FilePath& target_path = installer_state.target_path();
   if (target_path.empty()) {
     LOG(ERROR) << "DeleteChromeFilesAndFolders: no installation destination "
@@ -565,8 +568,8 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   DeleteResult result = DELETE_SUCCEEDED;
 
   FilePath installer_directory;
-  if (target_path.IsParent(installer_path))
-    installer_directory = installer_path.DirName();
+  if (target_path.IsParent(setup_exe))
+    installer_directory = setup_exe.DirName();
 
   // Enumerate all the files in target_path recursively (breadth-first).
   // We delete a file or folder unless it is a parent/child of the installer
@@ -1314,8 +1317,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
   } else if (!installer_state.is_multi_install() ||
              product.is_chrome_binaries()) {
+    FilePath setup_exe(cmd_line.GetProgram());
+    file_util::AbsolutePath(&setup_exe);
     DeleteResult delete_result = DeleteChromeFilesAndFolders(
-        installer_state, cmd_line.GetProgram());
+        installer_state, setup_exe);
     if (delete_result == DELETE_FAILED) {
       ret = installer::UNINSTALL_FAILED;
     } else if (delete_result == DELETE_REQUIRES_REBOOT) {
