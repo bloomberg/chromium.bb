@@ -63,8 +63,8 @@ cr.define('diag', function() {
    */
   DiagPage.FailIconElement = document.createElement('img');
   DiagPage.TickIconElement = document.createElement('img');
-  DiagPage.FailIconElement.setAttribute('src', 'fail.png');
-  DiagPage.TickIconElement.setAttribute('src', 'tick.png');
+  DiagPage.FailIconElement.setAttribute('src', 'chrome://diagnostics/fail.png');
+  DiagPage.TickIconElement.setAttribute('src', 'chrome://diagnostics/tick.png');
 
   DiagPage.prototype = {
     /**
