@@ -92,8 +92,7 @@ static const char* kRegressionTests[] = {
 const char* kIntVersionTests[] = {
   "intversion-abort-in-initial-upgradeneeded.html",
   "intversion-blocked.html",
-  // Flaky, http://crbug.com/163694
-  // "intversion-close-between-events.html",
+  "intversion-close-between-events.html",
   "intversion-close-in-oncomplete.html",
   "intversion-close-in-upgradeneeded.html",
   "delete-in-upgradeneeded-close-in-open-success.html",
