@@ -40,6 +40,48 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       const WebKit::WebVector<long long>& scope,
       unsigned short mode);
   virtual void close();
+  virtual void get(long long transactionId,
+                   long long objectStoreId,
+                   long long indexId,
+                   const WebKit::WebIDBKeyRange&,
+                   bool keyOnly,
+                   WebKit::WebIDBCallbacks*);
+  virtual void put(long long transactionId,
+                   long long objectStoreId,
+                   WebKit::WebVector<unsigned char>* value,
+                   const WebKit::WebIDBKey&,
+                   PutMode,
+                   WebKit::WebIDBCallbacks*,
+                   const WebKit::WebVector<long long>& indexIds,
+                   const WebKit::WebVector<WebIndexKeys>&);
+  virtual void setIndexKeys(long long transactionId,
+                            long long objectStoreId,
+                            const WebKit::WebIDBKey&,
+                            const WebKit::WebVector<long long>& indexIds,
+                            const WebKit::WebVector<WebIndexKeys>&);
+  virtual void setIndexesReady(long long transactionId,
+                               long long objectStoreId,
+                               const WebKit::WebVector<long long>& indexIds);
+  virtual void openCursor(long long transactionId,
+                          long long objectStoreId,
+                          long long indexId,
+                          const WebKit::WebIDBKeyRange&,
+                          unsigned short direction,
+                          bool keyOnly,
+                          TaskType,
+                          WebKit::WebIDBCallbacks*);
+  virtual void count(long long transactionId,
+                     long long objectStoreId,
+                     long long indexId,
+                     const WebKit::WebIDBKeyRange&,
+                     WebKit::WebIDBCallbacks*);
+  virtual void deleteRange(long long transactionId,
+                           long long objectStoreId,
+                           const WebKit::WebIDBKeyRange&,
+                           WebKit::WebIDBCallbacks*);
+  virtual void clear(long long transactionId,
+                     long long objectStoreId,
+                     WebKit::WebIDBCallbacks*);
 
  private:
   int32 ipc_database_id_;

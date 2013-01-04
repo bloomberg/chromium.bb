@@ -305,6 +305,136 @@ void IndexedDBDispatcher::RequestIDBDatabaseClose(int32 ipc_database_id) {
     pending_database_callbacks_.Remove(ipc_database_id);
 }
 
+void IndexedDBDispatcher::RequestIDBDatabaseGet(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    int64 index_id,
+    const IndexedDBKeyRange& key_range,
+    bool key_only,
+    WebIDBCallbacks* callbacks) {
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabaseGet_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.index_id = index_id;
+  params.key_range = key_range;
+  params.key_only = key_only;
+  Send(new IndexedDBHostMsg_DatabaseGet(params));
+}
+
+
+void IndexedDBDispatcher::RequestIDBDatabasePut(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    WebKit::WebVector<unsigned char>* value,
+    const IndexedDBKey& key,
+    WebKit::WebIDBDatabase::PutMode put_mode,
+    WebKit::WebIDBCallbacks* callbacks,
+    const WebKit::WebVector<long long>& index_ids,
+    const WebKit::WebVector<WebKit::WebVector<
+      WebKit::WebIDBKey> >& index_keys) {
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabasePut_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+
+  COMPILE_ASSERT(sizeof(params.value[0]) == sizeof((*value)[0]), Cant_copy);
+  params.value.assign(value->data(), value->data() + value->size());
+  params.key = key;
+  params.put_mode = put_mode;
+
+  COMPILE_ASSERT(sizeof(params.index_ids[0]) ==
+                 sizeof(index_ids[0]), Cant_copy);
+  params.index_ids.assign(index_ids.data(),
+                          index_ids.data() + index_ids.size());
+
+  params.index_keys.resize(index_keys.size());
+  for (size_t i = 0; i < index_keys.size(); ++i) {
+      params.index_keys[i].resize(index_keys[i].size());
+      for (size_t j = 0; j < index_keys[i].size(); ++j) {
+          params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
+      }
+  }
+  Send(new IndexedDBHostMsg_DatabasePut(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabaseOpenCursor(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    int64 index_id,
+    const IndexedDBKeyRange& key_range,
+    unsigned short direction,
+    bool key_only,
+    WebKit::WebIDBDatabase::TaskType task_type,
+    WebIDBCallbacks* callbacks) {
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabaseOpenCursor_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.index_id = index_id;
+  params.key_range = IndexedDBKeyRange(key_range);
+  params.direction = direction;
+  params.key_only = key_only;
+  params.task_type = task_type;
+  Send(new IndexedDBHostMsg_DatabaseOpenCursor(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabaseCount(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    int64 index_id,
+    const IndexedDBKeyRange& key_range,
+    WebKit::WebIDBCallbacks* callbacks) {
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabaseCount_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.index_id = index_id;
+  params.key_range = IndexedDBKeyRange(key_range);
+  Send(new IndexedDBHostMsg_DatabaseCount(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabaseDeleteRange(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    const IndexedDBKeyRange& key_range,
+    WebKit::WebIDBCallbacks* callbacks)
+{
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabaseDeleteRange_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.key_range = key_range;
+  Send(new IndexedDBHostMsg_DatabaseDeleteRange(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabaseClear(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    WebKit::WebIDBCallbacks* callbacks_ptr) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  int32 ipc_response_id = pending_callbacks_.Add(callbacks.release());
+  Send(new IndexedDBHostMsg_DatabaseClear(
+      CurrentWorkerId(), ipc_response_id, ipc_database_id,
+      transaction_id, object_store_id));
+}
+
 void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
     const WebIDBKeyRange& idb_key_range,
     unsigned short direction,

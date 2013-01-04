@@ -117,6 +117,59 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBDatabaseClose(
       int32 ipc_database_id);
 
+  void RequestIDBDatabaseGet(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKeyRange& key_range,
+      bool key_only,
+      WebKit::WebIDBCallbacks* callbacks);
+
+  void RequestIDBDatabasePut(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      WebKit::WebVector<unsigned char>* value,
+      const IndexedDBKey& key,
+      WebKit::WebIDBDatabase::PutMode put_mode,
+      WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebVector<long long>& index_ids,
+      const WebKit::WebVector<WebKit::WebVector<
+          WebKit::WebIDBKey> >& index_keys);
+
+  void RequestIDBDatabaseOpenCursor(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKeyRange& key_range,
+      unsigned short direction,
+      bool key_only,
+      WebKit::WebIDBDatabase::TaskType task_type,
+      WebKit::WebIDBCallbacks* callbacks);
+
+  void RequestIDBDatabaseCount(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKeyRange& key_range,
+      WebKit::WebIDBCallbacks* callbacks);
+
+  void RequestIDBDatabaseDeleteRange(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      const IndexedDBKeyRange& key_range,
+      WebKit::WebIDBCallbacks* callbacks);
+
+  void RequestIDBDatabaseClear(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      WebKit::WebIDBCallbacks* callbacks);
+
   void RequestIDBIndexOpenObjectCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,
@@ -212,6 +265,17 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
+
+  static int32 CurrentWorkerId() {
+    return webkit_glue::WorkerTaskRunner::Instance()->CurrentWorkerId();
+  }
+
+  template<typename T>
+  void init_params(T& params, WebKit::WebIDBCallbacks* callbacks_ptr) {
+    scoped_ptr<WebKit::WebIDBCallbacks> callbacks(callbacks_ptr);
+    params.ipc_thread_id = CurrentWorkerId();
+    params.ipc_response_id = pending_callbacks_.Add(callbacks.release());
+  }
 
   // IDBCallback message handlers.
   void OnSuccessIDBDatabase(int32 ipc_thread_id,

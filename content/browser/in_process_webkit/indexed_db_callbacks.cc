@@ -206,4 +206,11 @@ void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess() {
                                                    ipc_response_id()));
 }
 
+void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
+    const WebKit::WebIDBKey& value) {
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
+          ipc_thread_id(), ipc_response_id(), IndexedDBKey(value)));
+}
+
 }  // namespace content

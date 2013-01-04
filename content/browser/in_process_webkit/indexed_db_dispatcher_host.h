@@ -15,7 +15,13 @@
 
 class GURL;
 struct IndexedDBDatabaseMetadata;
+struct IndexedDBHostMsg_DatabaseCount_Params;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
+struct IndexedDBHostMsg_DatabaseDeleteRange_Params;
+struct IndexedDBHostMsg_DatabaseGet_Params;
+struct IndexedDBHostMsg_DatabaseOpenCursor_Params;
+struct IndexedDBHostMsg_DatabasePut_Params;
+struct IndexedDBHostMsg_DatabaseSetIndexKeys_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
@@ -105,7 +111,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // Used in nested classes.
   typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
-  typedef std::map<int32, int64> WebIDBTransactionIDToSizeMap;
+  typedef std::map<int32, uint64> WebIDBTransactionIPCIDToSizeMap;
+  typedef std::map<int64, uint64> WebIDBTransactionIDToSizeMap;
 
   class DatabaseDispatcherHost {
    public:
@@ -135,9 +142,29 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnClose(int32 ipc_database_id);
     void OnDestroyed(int32 ipc_database_id);
 
+    void OnGet(const IndexedDBHostMsg_DatabaseGet_Params& params);
+    void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params);
+    void OnSetIndexKeys(
+        const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
+    void OnSetIndexesReady(
+        int32 ipc_database_id,
+        int64 transaction_id,
+        int64 object_store_id,
+        const std::vector<int64>& ids);
+    void OnOpenCursor(
+        const IndexedDBHostMsg_DatabaseOpenCursor_Params& params);
+    void OnCount(const IndexedDBHostMsg_DatabaseCount_Params& params);
+    void OnDeleteRange(
+        const IndexedDBHostMsg_DatabaseDeleteRange_Params& params);
+    void OnClear(int32 ipc_thread_id,
+                 int32 ipc_response_id,
+                 int32 ipc_database_id,
+                 int64 transaction_id,
+                 int64 object_store_id);
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
+    WebIDBTransactionIDToSizeMap transaction_size_map_;
   };
 
   class IndexDispatcherHost {
@@ -276,7 +303,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     typedef IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> MapType;
     MapType map_;
     WebIDBObjectIDToURLMap transaction_url_map_;
-    WebIDBTransactionIDToSizeMap transaction_size_map_;
+    WebIDBTransactionIPCIDToSizeMap transaction_ipc_size_map_;
   };
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

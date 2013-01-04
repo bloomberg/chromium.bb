@@ -15,6 +15,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
@@ -26,6 +27,8 @@
 IPC_ENUM_TRAITS(WebKit::WebIDBObjectStore::PutMode)
 IPC_ENUM_TRAITS(WebKit::WebIDBCursor::Direction)
 IPC_ENUM_TRAITS(WebKit::WebIDBTransaction::TaskType)
+IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::PutMode)
+IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::TaskType)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
@@ -81,6 +84,105 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  // The id any response should contain.
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction its associated with.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store's id.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The index's id.
+  IPC_STRUCT_MEMBER(int64, index_id)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+  // If this is just retrieving the key
+  IPC_STRUCT_MEMBER(bool, key_only)
+IPC_STRUCT_END()
+
+// Used to set a value in an object store.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
+  // The id any response should contain.
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction it's associated with.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store's id.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The index's id.
+  IPC_STRUCT_MEMBER(int64, index_id)
+  // The value to set.
+  IPC_STRUCT_MEMBER(std::vector<uint8>, value)
+  // The key to set it on (may not be "valid"/set in some cases).
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
+  // Whether this is an add or a put.
+  IPC_STRUCT_MEMBER(WebKit::WebIDBDatabase::PutMode, put_mode)
+  // The names of the indexes used below.
+  IPC_STRUCT_MEMBER(std::vector<int64>, index_ids)
+  // The keys for each index, such that each inner vector corresponds
+  // to each index named in index_names, respectively.
+  IPC_STRUCT_MEMBER(std::vector<std::vector<content::IndexedDBKey> >,
+                    index_keys)
+IPC_STRUCT_END()
+
+// Used to open both cursors and object cursors in IndexedDB.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseOpenCursor_Params)
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The index if any.
+  IPC_STRUCT_MEMBER(int64, index_id)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+  // The direction of this cursor.
+  IPC_STRUCT_MEMBER(int32, direction)
+  // If this is just retrieving the key
+  IPC_STRUCT_MEMBER(bool, key_only)
+  // The priority of this cursor.
+  IPC_STRUCT_MEMBER(WebKit::WebIDBDatabase::TaskType, task_type)
+IPC_STRUCT_END()
+
+// Used to open both cursors and object cursors in IndexedDB.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCount_Params)
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The IPC id of the database.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The object store.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The index if any.
+  IPC_STRUCT_MEMBER(int64, index_id)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseDeleteRange_Params)
+  // The response should have these ids.
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  // The IPC id of the database.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+IPC_STRUCT_END()
+
 // Used to open both cursors and object cursors in IndexedDB.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexOpenCursor_Params)
   // The response should have these ids.
@@ -130,6 +232,22 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStorePut_Params)
                     index_keys)
   // The transaction it's associated with.
   IPC_STRUCT_MEMBER(int, ipc_transaction_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseSetIndexKeys_Params)
+  // The IPC id of the database.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction this request belongs to.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store's id.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The object store key that we're setting index keys for.
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
+  // The indexes that we're setting keys on.
+  IPC_STRUCT_MEMBER(std::vector<int64>, index_ids)
+  // A list of index keys for each index.
+  IPC_STRUCT_MEMBER(std::vector<std::vector<content::IndexedDBKey> >,
+                    index_keys)
 IPC_STRUCT_END()
 
 // Used to create an index.
@@ -412,6 +530,45 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
 // WebIDBDatabase::~WebIDBDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,
                      int32 /* ipc_database_id */)
+
+// WebIDBDatabase::get() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGet,
+                     IndexedDBHostMsg_DatabaseGet_Params)
+
+// WebIDBDatabase::put() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabasePut,
+                     IndexedDBHostMsg_DatabasePut_Params)
+
+// WebIDBDatabase::setIndexKeys() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseSetIndexKeys,
+                     IndexedDBHostMsg_DatabaseSetIndexKeys_Params)
+
+// WebIDBDatabase::setIndexesReady() message.
+IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_DatabaseSetIndexesReady,
+                     int32, /* ipc_database_id */
+                     int64, /* transaction_id */
+                     int64, /* object_store_id */
+                     std::vector<int64>) /* index_ids */
+
+// WebIDBDatabase::openCursor() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseOpenCursor,
+                     IndexedDBHostMsg_DatabaseOpenCursor_Params)
+
+// WebIDBDatabase::count() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCount,
+                     IndexedDBHostMsg_DatabaseCount_Params)
+
+// WebIDBDatabase::deleteRange() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDeleteRange,
+                     IndexedDBHostMsg_DatabaseDeleteRange_Params)
+
+// WebIDBDatabase::clear() message.
+IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_DatabaseClear,
+                     int32, /* ipc_thread_id */
+                     int32, /* ipc_response_id */
+                     int32, /* ipc_database_id */
+                     int64, /* transaction_id */
+                     int64) /* object_store_id */
 
 // WebIDBIndex::openObjectCursor() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_IndexOpenObjectCursor,
