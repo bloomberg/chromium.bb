@@ -65,7 +65,6 @@
 #include "chrome/browser/chromeos/extensions/power/power_api.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #endif
 
@@ -281,17 +280,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  // IME
-  RegisterFunction<extensions::SetCompositionFunction>();
-  RegisterFunction<extensions::ClearCompositionFunction>();
-  RegisterFunction<extensions::CommitTextFunction>();
-  RegisterFunction<extensions::SetCandidateWindowPropertiesFunction>();
-  RegisterFunction<extensions::SetCandidatesFunction>();
-  RegisterFunction<extensions::SetCursorPositionFunction>();
-  RegisterFunction<extensions::SetMenuItemsFunction>();
-  RegisterFunction<extensions::UpdateMenuItemsFunction>();
-  RegisterFunction<extensions::KeyEventHandled>();
-
   // Power
   RegisterFunction<extensions::power::RequestKeepAwakeFunction>();
   RegisterFunction<extensions::power::ReleaseKeepAwakeFunction>();

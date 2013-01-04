@@ -86,7 +86,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api_factory.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
 #endif
@@ -253,13 +253,15 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::HistoryAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
 #if defined(OS_CHROMEOS)
-  extensions::InputImeAPIFactory::GetInstance();
   extensions::InputMethodAPIFactory::GetInstance();
 #endif
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
   extensions::OmniboxAPIFactory::GetInstance();
   extensions::PreferenceAPIFactory::GetInstance();
   extensions::ProfileKeyedAPIFactory<extensions::CookiesAPI>::GetInstance();
+#if defined(OS_CHROMEOS)
+  extensions::ProfileKeyedAPIFactory<extensions::InputImeAPI>::GetInstance();
+#endif
   extensions::ProfileKeyedAPIFactory<extensions::ManagedModeAPI>::GetInstance();
   extensions::ProfileKeyedAPIFactory<extensions::ProcessesAPI>::GetInstance();
   extensions::ProfileKeyedAPIFactory<extensions::TabsWindowsAPI>::GetInstance();

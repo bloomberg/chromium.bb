@@ -5,14 +5,17 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_input_module_constants.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 
 namespace keys = extension_input_module_constants;
 
@@ -319,7 +322,7 @@ InputImeEventRouter::GetInstance() {
 bool InputImeEventRouter::RegisterIme(
     Profile* profile,
     const std::string& extension_id,
-    const extensions::Extension::InputComponentInfo& component) {
+    const extensions::InputComponentInfo& component) {
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
   std::map<std::string, chromeos::InputMethodEngine*>& engine_map =
@@ -837,10 +840,25 @@ bool KeyEventHandled::RunImpl() {
 
 InputImeAPI::InputImeAPI(Profile* profile)
     : profile_(profile) {
+  ManifestHandler::Register(extension_manifest_keys::kInputComponents,
+                            new InputComponentsHandler);
+
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
+
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<SetCompositionFunction>();
+  registry->RegisterFunction<ClearCompositionFunction>();
+  registry->RegisterFunction<CommitTextFunction>();
+  registry->RegisterFunction<SetCandidateWindowPropertiesFunction>();
+  registry->RegisterFunction<SetCandidatesFunction>();
+  registry->RegisterFunction<SetCursorPositionFunction>();
+  registry->RegisterFunction<SetMenuItemsFunction>();
+  registry->RegisterFunction<UpdateMenuItemsFunction>();
+  registry->RegisterFunction<KeyEventHandled>();
 }
 
 InputImeAPI::~InputImeAPI() {
@@ -852,11 +870,14 @@ void InputImeAPI::Observe(int type,
   if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     const Extension* extension =
         content::Details<const Extension>(details).ptr();
-    for (std::vector<Extension::InputComponentInfo>::const_iterator component =
-             extension->input_components().begin();
-         component != extension->input_components().end();
-         ++component) {
-      if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
+    const std::vector<InputComponentInfo>* input_components =
+        extensions::InputComponents::GetInputComponents(extension);
+    if (!input_components)
+      return;
+    for (std::vector<extensions::InputComponentInfo>::const_iterator component =
+        input_components->begin(); component != input_components->end();
+        ++component) {
+      if (component->type == extensions::INPUT_COMPONENT_TYPE_IME) {
         input_ime_event_router()->RegisterIme(
             profile_, extension->id(), *component);
       }
@@ -864,7 +885,11 @@ void InputImeAPI::Observe(int type,
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
         content::Details<const UnloadedExtensionInfo>(details)->extension;
-    if (extension->input_components().size() > 0) {
+    const std::vector<InputComponentInfo>* input_components =
+        extensions::InputComponents::GetInputComponents(extension);
+    if (!input_components)
+      return;
+    if (input_components->size() > 0) {
       input_ime_event_router()->UnregisterAllImes(profile_, extension->id());
     }
   }
@@ -872,6 +897,15 @@ void InputImeAPI::Observe(int type,
 
 InputImeEventRouter* InputImeAPI::input_ime_event_router() {
   return InputImeEventRouter::GetInstance();
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<InputImeAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+template <>
+ProfileKeyedAPIFactory<InputImeAPI>*
+ProfileKeyedAPIFactory<InputImeAPI>::GetInstance() {
+  return &g_factory.Get();
 }
 
 }  // namespace extensions

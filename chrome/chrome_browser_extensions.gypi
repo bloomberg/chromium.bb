@@ -230,8 +230,6 @@
         'browser/extensions/api/input/input.h',
         'browser/extensions/api/input_ime/input_ime_api.cc',
         'browser/extensions/api/input_ime/input_ime_api.h',
-        'browser/extensions/api/input_ime/input_ime_api_factory.cc',
-        'browser/extensions/api/input_ime/input_ime_api_factory.h',
         'browser/extensions/api/managed_mode/managed_mode_api.cc',
         'browser/extensions/api/managed_mode/managed_mode_api.h',
         'browser/extensions/api/management/management_api.cc',
@@ -732,8 +730,6 @@
           'sources/': [
             ['exclude', '^browser/extensions/api/input_ime/input_ime_api.cc'],
             ['exclude', '^browser/extensions/api/input_ime/input_ime_api.h'],
-            ['exclude', '^browser/extensions/api/input_ime/input_ime_api_factory.cc'],
-            ['exclude', '^browser/extensions/api/input_ime/input_ime_api_factory.h'],
             ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.cc'],
             ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.h'],
             ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.cc'],

@@ -2472,8 +2472,6 @@
           'sources!': [
             'browser/extensions/api/input_ime/input_ime_api.cc',
             'browser/extensions/api/input_ime/input_ime_api.h',
-            'browser/extensions/api/input_ime/input_ime_api_factory.cc',
-            'browser/extensions/api/input_ime/input_ime_api_factory.h',
             'browser/extensions/api/terminal/terminal_extension_helper.cc',
             'browser/extensions/api/terminal/terminal_extension_helper.h',
             'browser/extensions/api/terminal/terminal_private_api.cc',

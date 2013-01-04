@@ -343,15 +343,6 @@ Extension::Requirements::Requirements()
 
 Extension::Requirements::~Requirements() {}
 
-Extension::InputComponentInfo::InputComponentInfo()
-    : type(INPUT_COMPONENT_TYPE_NONE),
-      shortcut_alt(false),
-      shortcut_ctrl(false),
-      shortcut_shift(false) {
-}
-
-Extension::InputComponentInfo::~InputComponentInfo() {}
-
 Extension::TtsVoice::TtsVoice() {}
 Extension::TtsVoice::~TtsVoice() {}
 
@@ -2791,7 +2782,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
 
   if (!LoadManifestHandlerFeatures(error) ||
       !LoadDevToolsPage(error) ||
-      !LoadInputComponents(*api_permissions, error) ||
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
       !LoadBrowserAction(error) ||
@@ -2828,139 +2818,6 @@ bool Extension::LoadDevToolsPage(string16* error) {
     return false;
   }
   devtools_url_ = GetResourceURL(devtools_str);
-  return true;
-}
-
-bool Extension::LoadInputComponents(const APIPermissionSet& api_permissions,
-                                    string16* error) {
-  if (!manifest_->HasKey(keys::kInputComponents))
-    return true;
-  ListValue* list_value = NULL;
-  if (!manifest_->GetList(keys::kInputComponents, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidInputComponents);
-    return false;
-  }
-
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    DictionaryValue* module_value = NULL;
-    std::string name_str;
-    InputComponentType type;
-    std::string id_str;
-    std::string description_str;
-    std::string language_str;
-    std::set<std::string> layouts;
-    std::string shortcut_keycode_str;
-    bool shortcut_alt = false;
-    bool shortcut_ctrl = false;
-    bool shortcut_shift = false;
-
-    if (!list_value->GetDictionary(i, &module_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidInputComponents);
-      return false;
-    }
-
-    // Get input_components[i].name.
-    if (!module_value->GetString(keys::kName, &name_str)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentName, base::IntToString(i));
-      return false;
-    }
-
-    // Get input_components[i].type.
-    std::string type_str;
-    if (module_value->GetString(keys::kType, &type_str)) {
-      if (type_str == "ime") {
-        type = INPUT_COMPONENT_TYPE_IME;
-      } else {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentType, base::IntToString(i));
-        return false;
-      }
-    } else {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentType, base::IntToString(i));
-      return false;
-    }
-
-    // Get input_components[i].id.
-    if (!module_value->GetString(keys::kId, &id_str)) {
-      id_str = "";
-    }
-
-    // Get input_components[i].description.
-    if (!module_value->GetString(keys::kDescription, &description_str)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentDescription, base::IntToString(i));
-      return false;
-    }
-    // Get input_components[i].language.
-    if (!module_value->GetString(keys::kLanguage, &language_str)) {
-      language_str = "";
-    }
-
-    // Get input_components[i].layouts.
-    ListValue* layouts_value = NULL;
-    if (!module_value->GetList(keys::kLayouts, &layouts_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidInputComponentLayouts);
-      return false;
-    }
-
-    for (size_t j = 0; j < layouts_value->GetSize(); ++j) {
-      std::string layout_name_str;
-      if (!layouts_value->GetString(j, &layout_name_str)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentLayoutName, base::IntToString(i),
-            base::IntToString(j));
-        return false;
-      }
-      layouts.insert(layout_name_str);
-    }
-
-    if (module_value->HasKey(keys::kShortcutKey)) {
-      DictionaryValue* shortcut_value = NULL;
-      if (!module_value->GetDictionary(keys::kShortcutKey, &shortcut_value)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentShortcutKey, base::IntToString(i));
-        return false;
-      }
-
-      // Get input_components[i].shortcut_keycode.
-      if (!shortcut_value->GetString(keys::kKeycode, &shortcut_keycode_str)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentShortcutKeycode,
-            base::IntToString(i));
-        return false;
-      }
-
-      // Get input_components[i].shortcut_alt.
-      if (!shortcut_value->GetBoolean(keys::kAltKey, &shortcut_alt)) {
-        shortcut_alt = false;
-      }
-
-      // Get input_components[i].shortcut_ctrl.
-      if (!shortcut_value->GetBoolean(keys::kCtrlKey, &shortcut_ctrl)) {
-        shortcut_ctrl = false;
-      }
-
-      // Get input_components[i].shortcut_shift.
-      if (!shortcut_value->GetBoolean(keys::kShiftKey, &shortcut_shift)) {
-        shortcut_shift = false;
-      }
-    }
-
-    input_components_.push_back(InputComponentInfo());
-    input_components_.back().name = name_str;
-    input_components_.back().type = type;
-    input_components_.back().id = id_str;
-    input_components_.back().description = description_str;
-    input_components_.back().language = language_str;
-    input_components_.back().layouts.insert(layouts.begin(), layouts.end());
-    input_components_.back().shortcut_keycode = shortcut_keycode_str;
-    input_components_.back().shortcut_alt = shortcut_alt;
-    input_components_.back().shortcut_ctrl = shortcut_ctrl;
-    input_components_.back().shortcut_shift = shortcut_shift;
-  }
-
   return true;
 }
 

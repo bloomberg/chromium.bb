@@ -175,29 +175,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string mime_type;
   };
 
-  enum InputComponentType {
-    INPUT_COMPONENT_TYPE_NONE = -1,
-    INPUT_COMPONENT_TYPE_IME,
-    INPUT_COMPONENT_TYPE_COUNT
-  };
-
-  struct InputComponentInfo {
-    // Define out of line constructor/destructor to please Clang.
-    InputComponentInfo();
-    ~InputComponentInfo();
-
-    std::string name;
-    InputComponentType type;
-    std::string id;
-    std::string description;
-    std::string language;
-    std::set<std::string> layouts;
-    std::string shortcut_keycode;
-    bool shortcut_alt;
-    bool shortcut_ctrl;
-    bool shortcut_shift;
-  };
-
   struct TtsVoice {
     // Define out of line constructor/destructor to please Clang.
     TtsVoice();
@@ -701,9 +678,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
   }
-  const std::vector<InputComponentInfo>& input_components() const {
-    return input_components_;
-  }
   // The browser action command that the extension wants to use, which is not
   // necessarily the one it can use, as it might be inactive (see also
   // GetBrowserActionCommand in CommandService).
@@ -945,8 +919,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                              string16* error);
   bool LoadManifestHandlerFeatures(string16* error);
   bool LoadDevToolsPage(string16* error);
-  bool LoadInputComponents(const APIPermissionSet& api_permissions,
-                           string16* error);
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
@@ -1114,9 +1086,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of NaCl modules and associated properties.
   std::vector<NaClModuleInfo> nacl_modules_;
-
-  // Optional list of input components and associated properties.
-  std::vector<InputComponentInfo> input_components_;
 
   // Optional list of commands (keyboard shortcuts).
   scoped_ptr<extensions::Command> browser_action_command_;

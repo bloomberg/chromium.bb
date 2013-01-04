@@ -12,8 +12,10 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,7 +35,7 @@ class InputImeEventRouter {
 
   bool RegisterIme(Profile* profile,
                    const std::string& extension_id,
-                   const extensions::Extension::InputComponentInfo& component);
+                   const extensions::InputComponentInfo& component);
   void UnregisterAllImes(Profile* profile, const std::string& extension_id);
   chromeos::InputMethodEngine* GetEngine(const std::string& extension_id,
                                          const std::string& engine_id);
@@ -171,7 +173,7 @@ class KeyEventHandled : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class InputImeAPI : public ProfileKeyedService,
+class InputImeAPI : public ProfileKeyedAPI,
                     public content::NotificationObserver {
  public:
   explicit InputImeAPI(Profile* profile);
@@ -183,11 +185,22 @@ class InputImeAPI : public ProfileKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<InputImeAPI>;
   InputImeEventRouter* input_ime_event_router();
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "InputImeAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
 };
+
+template <>
+ProfileKeyedAPIFactory<InputImeAPI>*
+ProfileKeyedAPIFactory<InputImeAPI>::GetInstance();
 
 }  // namespace extensions
 

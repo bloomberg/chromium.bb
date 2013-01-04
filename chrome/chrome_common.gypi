@@ -128,6 +128,8 @@
         'common/extensions/api/extension_api.cc',
         'common/extensions/api/extension_api.h',
         'common/extensions/api/extension_api_stub.cc',
+        'common/extensions/api/input_ime/input_components_handler.cc',
+        'common/extensions/api/input_ime/input_components_handler.h',
         'common/extensions/api/omnibox/omnibox_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.h',
         'common/extensions/command.cc',
