@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_IP_CONFIG_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_IP_CONFIG_H_
+#ifndef CHROMEOS_NETWORK_NETWORK_IP_CONFIG_H_
+#define CHROMEOS_NETWORK_NETWORK_IP_CONFIG_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
@@ -26,7 +27,7 @@ enum IPConfigType {
 };
 
 // IP Configuration.
-struct NetworkIPConfig {
+struct CHROMEOS_EXPORT NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,
                   const std::string& gateway, const std::string& name_servers);
@@ -54,4 +55,4 @@ typedef base::Callback<void(const NetworkIPConfigVector& ip_configs,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_NETWORK_IP_CONFIG_H_
+#endif  // CHROMEOS_NETWORK_NETWORK_IP_CONFIG_H_

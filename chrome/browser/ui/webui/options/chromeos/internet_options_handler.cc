@@ -28,7 +28,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -49,6 +48,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
+#include "chromeos/network/network_ip_config.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -442,11 +443,11 @@ DictionaryValue* BuildIPInfoDictionary(const DictionaryValue& shill_properties,
   if (shill_properties.GetIntegerWithoutPathExpansion(
       prefix_len_key, &prefix_len)) {
     ip_info_dict->SetInteger(kIpConfigPrefixLength, prefix_len);
-    ip_info_dict->SetString(kIpConfigNetmask,
-                              chromeos::CrosPrefixLengthToNetmask(prefix_len));
+    std::string netmask =
+        chromeos::network_util::PrefixLengthToNetmask(prefix_len);
+    ip_info_dict->SetString(kIpConfigNetmask, netmask);
     VLOG(2) << "Found " << prefix_len_key << ": "
-        <<  prefix_len
-        << " (" << chromeos::CrosPrefixLengthToNetmask(prefix_len) << ")";
+            <<  prefix_len << " (" << netmask << ")";
     routing_parameters++;
   }
   std::string gateway;

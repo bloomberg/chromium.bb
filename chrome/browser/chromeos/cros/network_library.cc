@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/network/cros_network_functions.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -795,11 +796,6 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
 // CellTower
 
 CellTower::CellTower() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// WifiAccessPoint
-
-WifiAccessPoint::WifiAccessPoint() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularApn

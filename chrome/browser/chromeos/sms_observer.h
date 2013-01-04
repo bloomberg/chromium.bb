@@ -16,6 +16,9 @@ class Profile;
 
 namespace chromeos {
 
+class CrosNetworkWatcher;
+struct SMS;
+
 // Performs monitoring of incoming SMS and shows system notifications.
 class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
  public:

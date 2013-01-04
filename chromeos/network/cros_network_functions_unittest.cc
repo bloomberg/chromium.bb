@@ -5,16 +5,16 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_network_functions.h"
-#include "chrome/browser/chromeos/cros/sms_watcher.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "chromeos/dbus/mock_shill_device_client.h"
 #include "chromeos/dbus/mock_shill_ipconfig_client.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_network_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
-#include "chromeos/dbus/mock_gsm_sms_client.h"
+#include "chromeos/network/cros_network_functions.h"
+#include "chromeos/network/sms_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -940,95 +940,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {
   EXPECT_CALL(*mock_manager_client_, ConfigureService(IsEqualTo(&value), _, _))
       .Times(1);
   CrosConfigureService(value);
-}
-
-TEST_F(CrosNetworkFunctionsTest, NetmaskToPrefixLength) {
-  // Valid netmasks
-  EXPECT_EQ(32, CrosNetmaskToPrefixLength("255.255.255.255"));
-  EXPECT_EQ(31, CrosNetmaskToPrefixLength("255.255.255.254"));
-  EXPECT_EQ(30, CrosNetmaskToPrefixLength("255.255.255.252"));
-  EXPECT_EQ(29, CrosNetmaskToPrefixLength("255.255.255.248"));
-  EXPECT_EQ(28, CrosNetmaskToPrefixLength("255.255.255.240"));
-  EXPECT_EQ(27, CrosNetmaskToPrefixLength("255.255.255.224"));
-  EXPECT_EQ(26, CrosNetmaskToPrefixLength("255.255.255.192"));
-  EXPECT_EQ(25, CrosNetmaskToPrefixLength("255.255.255.128"));
-  EXPECT_EQ(24, CrosNetmaskToPrefixLength("255.255.255.0"));
-  EXPECT_EQ(23, CrosNetmaskToPrefixLength("255.255.254.0"));
-  EXPECT_EQ(22, CrosNetmaskToPrefixLength("255.255.252.0"));
-  EXPECT_EQ(21, CrosNetmaskToPrefixLength("255.255.248.0"));
-  EXPECT_EQ(20, CrosNetmaskToPrefixLength("255.255.240.0"));
-  EXPECT_EQ(19, CrosNetmaskToPrefixLength("255.255.224.0"));
-  EXPECT_EQ(18, CrosNetmaskToPrefixLength("255.255.192.0"));
-  EXPECT_EQ(17, CrosNetmaskToPrefixLength("255.255.128.0"));
-  EXPECT_EQ(16, CrosNetmaskToPrefixLength("255.255.0.0"));
-  EXPECT_EQ(15, CrosNetmaskToPrefixLength("255.254.0.0"));
-  EXPECT_EQ(14, CrosNetmaskToPrefixLength("255.252.0.0"));
-  EXPECT_EQ(13, CrosNetmaskToPrefixLength("255.248.0.0"));
-  EXPECT_EQ(12, CrosNetmaskToPrefixLength("255.240.0.0"));
-  EXPECT_EQ(11, CrosNetmaskToPrefixLength("255.224.0.0"));
-  EXPECT_EQ(10, CrosNetmaskToPrefixLength("255.192.0.0"));
-  EXPECT_EQ(9, CrosNetmaskToPrefixLength("255.128.0.0"));
-  EXPECT_EQ(8, CrosNetmaskToPrefixLength("255.0.0.0"));
-  EXPECT_EQ(7, CrosNetmaskToPrefixLength("254.0.0.0"));
-  EXPECT_EQ(6, CrosNetmaskToPrefixLength("252.0.0.0"));
-  EXPECT_EQ(5, CrosNetmaskToPrefixLength("248.0.0.0"));
-  EXPECT_EQ(4, CrosNetmaskToPrefixLength("240.0.0.0"));
-  EXPECT_EQ(3, CrosNetmaskToPrefixLength("224.0.0.0"));
-  EXPECT_EQ(2, CrosNetmaskToPrefixLength("192.0.0.0"));
-  EXPECT_EQ(1, CrosNetmaskToPrefixLength("128.0.0.0"));
-  EXPECT_EQ(0, CrosNetmaskToPrefixLength("0.0.0.0"));
-  // Invalid netmasks
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255.255.255"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255.255.0"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255.256"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255.1"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.240.255"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.0.0.255"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255.255.255.FF"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255,255,255,255"));
-  EXPECT_EQ(-1, CrosNetmaskToPrefixLength("255 255 255 255"));
-}
-
-TEST_F(CrosNetworkFunctionsTest, PrefixLengthToNetmask) {
-  // Valid Prefix Lengths
-  EXPECT_EQ("255.255.255.255", CrosPrefixLengthToNetmask(32));
-  EXPECT_EQ("255.255.255.254", CrosPrefixLengthToNetmask(31));
-  EXPECT_EQ("255.255.255.252", CrosPrefixLengthToNetmask(30));
-  EXPECT_EQ("255.255.255.248", CrosPrefixLengthToNetmask(29));
-  EXPECT_EQ("255.255.255.240", CrosPrefixLengthToNetmask(28));
-  EXPECT_EQ("255.255.255.224", CrosPrefixLengthToNetmask(27));
-  EXPECT_EQ("255.255.255.192", CrosPrefixLengthToNetmask(26));
-  EXPECT_EQ("255.255.255.128", CrosPrefixLengthToNetmask(25));
-  EXPECT_EQ("255.255.255.0", CrosPrefixLengthToNetmask(24));
-  EXPECT_EQ("255.255.254.0", CrosPrefixLengthToNetmask(23));
-  EXPECT_EQ("255.255.252.0", CrosPrefixLengthToNetmask(22));
-  EXPECT_EQ("255.255.248.0", CrosPrefixLengthToNetmask(21));
-  EXPECT_EQ("255.255.240.0", CrosPrefixLengthToNetmask(20));
-  EXPECT_EQ("255.255.224.0", CrosPrefixLengthToNetmask(19));
-  EXPECT_EQ("255.255.192.0", CrosPrefixLengthToNetmask(18));
-  EXPECT_EQ("255.255.128.0", CrosPrefixLengthToNetmask(17));
-  EXPECT_EQ("255.255.0.0", CrosPrefixLengthToNetmask(16));
-  EXPECT_EQ("255.254.0.0", CrosPrefixLengthToNetmask(15));
-  EXPECT_EQ("255.252.0.0", CrosPrefixLengthToNetmask(14));
-  EXPECT_EQ("255.248.0.0", CrosPrefixLengthToNetmask(13));
-  EXPECT_EQ("255.240.0.0", CrosPrefixLengthToNetmask(12));
-  EXPECT_EQ("255.224.0.0", CrosPrefixLengthToNetmask(11));
-  EXPECT_EQ("255.192.0.0", CrosPrefixLengthToNetmask(10));
-  EXPECT_EQ("255.128.0.0", CrosPrefixLengthToNetmask(9));
-  EXPECT_EQ("255.0.0.0", CrosPrefixLengthToNetmask(8));
-  EXPECT_EQ("254.0.0.0", CrosPrefixLengthToNetmask(7));
-  EXPECT_EQ("252.0.0.0", CrosPrefixLengthToNetmask(6));
-  EXPECT_EQ("248.0.0.0", CrosPrefixLengthToNetmask(5));
-  EXPECT_EQ("240.0.0.0", CrosPrefixLengthToNetmask(4));
-  EXPECT_EQ("224.0.0.0", CrosPrefixLengthToNetmask(3));
-  EXPECT_EQ("192.0.0.0", CrosPrefixLengthToNetmask(2));
-  EXPECT_EQ("128.0.0.0", CrosPrefixLengthToNetmask(1));
-  EXPECT_EQ("0.0.0.0", CrosPrefixLengthToNetmask(0));
-  // Invalid Prefix Lengths
-  EXPECT_EQ("", CrosPrefixLengthToNetmask(-1));
-  EXPECT_EQ("", CrosPrefixLengthToNetmask(33));
-  EXPECT_EQ("", CrosPrefixLengthToNetmask(255));
 }
 
 }  // namespace chromeos

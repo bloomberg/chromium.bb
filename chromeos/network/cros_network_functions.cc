@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/cros_network_functions.h"
+#include "chromeos/network/cros_network_functions.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_tokenizer.h"
-#include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/sms_watcher.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -19,6 +16,8 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_util.h"
+#include "chromeos/network/sms_watcher.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -273,7 +272,7 @@ bool ParseIPConfig(const std::string& device_path,
       NetworkIPConfig(device_path,
                       ParseIPConfigType(type_string),
                       address,
-                      CrosPrefixLengthToNetmask(prefix_len),
+                      network_util::PrefixLengthToNetmask(prefix_len),
                       gateway,
                       name_servers_string));
   return true;
@@ -309,13 +308,6 @@ void ListIPConfigsCallback(const NetworkGetIPConfigsCallback& callback,
 }
 
 }  // namespace
-
-SMS::SMS()
-    : validity(0),
-      msgclass(0) {
-}
-
-SMS::~SMS() {}
 
 bool CrosActivateCellularModem(const std::string& service_path,
                                const std::string& carrier) {
@@ -748,72 +740,6 @@ void CrosConfigureService(const base::DictionaryValue& properties) {
   DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
       properties, base::Bind(&DoNothing),
       base::Bind(&IgnoreErrors));
-}
-
-std::string CrosPrefixLengthToNetmask(int32 prefix_length) {
-  std::string netmask;
-  // Return the empty string for invalid inputs.
-  if (prefix_length < 0 || prefix_length > 32)
-    return netmask;
-  for (int i = 0; i < 4; i++) {
-    int remainder = 8;
-    if (prefix_length >= 8) {
-      prefix_length -= 8;
-    } else {
-      remainder = prefix_length;
-      prefix_length = 0;
-    }
-    if (i > 0)
-      netmask += ".";
-    int value = remainder == 0 ? 0 :
-        ((2L << (remainder - 1)) - 1) << (8 - remainder);
-    netmask += StringPrintf("%d", value);
-  }
-  return netmask;
-}
-
-int32 CrosNetmaskToPrefixLength(const std::string& netmask) {
-  int count = 0;
-  int prefix_length = 0;
-  StringTokenizer t(netmask, ".");
-  while (t.GetNext()) {
-    // If there are more than 4 numbers, then it's invalid.
-    if (count == 4)
-      return -1;
-
-    std::string token = t.token();
-    // If we already found the last mask and the current one is not
-    // "0" then the netmask is invalid. For example, 255.224.255.0
-    if (prefix_length / 8 != count) {
-      if (token != "0")
-        return -1;
-    } else if (token == "255") {
-      prefix_length += 8;
-    } else if (token == "254") {
-      prefix_length += 7;
-    } else if (token == "252") {
-      prefix_length += 6;
-    } else if (token == "248") {
-      prefix_length += 5;
-    } else if (token == "240") {
-      prefix_length += 4;
-    } else if (token == "224") {
-      prefix_length += 3;
-    } else if (token == "192") {
-      prefix_length += 2;
-    } else if (token == "128") {
-      prefix_length += 1;
-    } else if (token == "0") {
-      prefix_length += 0;
-    } else {
-      // mask is not a valid number.
-      return -1;
-    }
-    count++;
-  }
-  if (count < 4)
-    return -1;
-  return prefix_length;
 }
 
 // Changes the active cellular carrier.

@@ -524,7 +524,6 @@
         'browser/chromeos/contacts/gdata_contacts_service_stub.h',
         'browser/chromeos/contacts/gdata_contacts_service_unittest.cc',
         'browser/chromeos/contacts/google_contact_store_unittest.cc',
-        'browser/chromeos/cros/cros_network_functions_unittest.cc',
         'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',

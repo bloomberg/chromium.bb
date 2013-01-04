@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_SMS_WATCHER_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_SMS_WATCHER_H_
+#ifndef CHROMEOS_NETWORK_SMS_WATCHER_H_
+#define CHROMEOS_NETWORK_SMS_WATCHER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/cros/cros_network_functions.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/network/cros_network_functions.h"
 #include "dbus/object_path.h"
 
 namespace base {
@@ -22,7 +23,7 @@ class DictionaryValue;
 namespace chromeos {
 
 // Class to watch sms without Libcros.
-class SMSWatcher : public CrosNetworkWatcher {
+class CHROMEOS_EXPORT SMSWatcher : public CrosNetworkWatcher {
  public:
   // Dictionary key constants.
   static const char kNumberKey[];
@@ -64,4 +65,4 @@ class SMSWatcher : public CrosNetworkWatcher {
 
 }  // namespace
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_SMS_WATCHER_H_
+#endif  // CHROMEOS_NETWORK_SMS_WATCHER_H_

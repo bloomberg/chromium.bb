@@ -16,9 +16,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
+#include "chromeos/network/network_ip_config.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "googleurl/src/gurl.h"
 

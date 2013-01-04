@@ -10,6 +10,8 @@
 
 namespace chromeos {
 
+class CrosNetworkWatcher;
+
 class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
  public:
   NetworkLibraryImplCros();

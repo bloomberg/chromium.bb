@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/sms_watcher.h"
+#include "chromeos/network/sms_watcher.h"
 
 #include <algorithm>
 #include <deque>
@@ -12,9 +12,9 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
