@@ -7,5 +7,6 @@
 namespace message_center {
 
 const int kNotificationIconWidth = 80;
+const size_t kNotificationMaxItems = 8;
 
 }  // namespace message_center

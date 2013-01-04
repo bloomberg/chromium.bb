@@ -139,7 +139,9 @@ void NotificationView::SetUpView() {
   icon->SetVerticalAlignment(views::ImageView::LEADING);
   icon->set_border(MakePadding(kIconTopPadding, kIconLeftPadding,
                                kIconBottomPadding, kIconToTextPadding));
-  layout->AddView(icon, 1, 2 + notification_.items.size());
+  int displayed_item_count =
+      std::min(notification_.items.size(), kNotificationMaxItems);
+  layout->AddView(icon, 1, 2 + displayed_item_count);
 
   // First row: Title. This vertically spans the close button padding row and
   // the close button row.
@@ -168,8 +170,9 @@ void NotificationView::SetUpView() {
   layout->AddView(close_button_);
 
   // One row for each notification item, including appropriate padding.
-  for (int i = 0, n = notification_.items.size(); i < n; ++i) {
-    int bottom_padding = (i < n - 1) ? 4 : (kTextBottomPadding - 2);
+  for (int i = 0; i < displayed_item_count; ++i) {
+    int bottom_padding =
+        (i < displayed_item_count - 1) ? 4 : (kTextBottomPadding - 2);
     layout->StartRow(0, 0);
     layout->SkipColumns(1);
     ItemView* item = new ItemView(notification_.items[i]);
