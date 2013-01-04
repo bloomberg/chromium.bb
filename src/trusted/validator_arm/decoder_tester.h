@@ -39,10 +39,7 @@ namespace nacl_arm_test {
 //         (4) For each 4-bit subsequence, try all combinations,
 //             setting remaining bits to 0.
 //
-//  In addition, for Thumb 2 word instructions, the '|' is used
-//  to separate word 1 from word 2.
-//  Also, bits are specified from the largest bit downto the smallest
-//  bit.
+//  Bits are specified from the largest bit downto the smallest bit.
 class DecoderTester {
  public:
   DecoderTester();
@@ -201,134 +198,6 @@ class Arm32DecoderTester : public DecoderTester {
   nacl_arm_dec::Instruction inst_;
 };
 
-class ThumbDecoderTester;
-
-// Defines a decoder tester that enumerates the first word of
-// a thumb instruction pattern, and tests that all of the decoded patterns
-// match the expected class decoder, and that any additional sanity checks,
-// specific to the instruction apply.
-//
-// Note: This class is used by a ThumbDecoderTester to enumerate the
-// first word of the thumb instruction pattern.
-class ThumbWord1DecoderTester : public DecoderTester {
- public:
-  explicit ThumbWord1DecoderTester(ThumbDecoderTester* thumb_tester);
-
-  // Defines the pattern to use for word 1.
-  void SetPattern(const char* pattern);
-
-  // Test all possible patterns for word 1.
-  void Test();
-
-  virtual const NamedClassDecoder& ExpectedDecoder() const;
-  virtual void ProcessMatch();
-  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
-  virtual const NamedClassDecoder& GetInstDecoder() const;
-
- protected:
-  virtual const char* InstContents() const;
-  virtual char Pattern(int index) const;
-  virtual void SetBit(int index, bool value);
-  virtual void SetBitRange(int index, int length, uint32_t value);
-
-  // The thumb tester that uses this decoder.
-  ThumbDecoderTester* thumb_tester_;
-
-  // The pattern for the first word of the thumb instruction.
-  const char* pattern_;
-
-  friend class ThumbDecoderTester;
-};
-
-// Defines a decoder tester that enumerates the second word of
-// a thumb instruction pattern, and tests that all of the decoded patterns
-// match the expected class decoder, and that any additional sanity checks,
-// specific to the instruction apply.
-//
-// Note: This class is used by a ThumbDecoderTester to enumerate the
-// second word of the thumb instruction pattern, or all possible patterns
-// if the thumb instruction is a single word.
-class ThumbWord2DecoderTester : public DecoderTester {
- public:
-  explicit ThumbWord2DecoderTester(ThumbDecoderTester* thumb_tester);
-
-  // Defines the pattern to use for word 2.
-  void SetPattern(const char* pattern);
-
-  // Tests all patterns for word 2.
-  void Test();
-
-  virtual const NamedClassDecoder& ExpectedDecoder() const;
-  virtual void ProcessMatch();
-  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
-  virtual const NamedClassDecoder& GetInstDecoder() const;
-
- protected:
-  virtual const char* InstContents() const;
-  virtual char Pattern(int index) const;
-  virtual void SetBit(int index, bool value);
-  virtual void SetBitRange(int index, int length, uint32_t value);
-
-  // The thumb tester that uses this decoder.
-  ThumbDecoderTester* thumb_tester_;
-
-  // The pattern for the second word of the thumb instruction.
-  const char* pattern_;
-
- private:
-  friend class ThumbDecoderTester;
-  NACL_DISALLOW_COPY_AND_ASSIGN(ThumbWord2DecoderTester);
-};
-
-// Defines a decoder tester that enumerates a thumb instruction pattern,
-// and tests that all of the decoded patterns match the expected class
-// decoder, and that any additional sanity checks, specific to the
-// instruction apply.
-//
-// Note: One word thumb instructions must be of length 16.
-// Two word thumb instructions must be of length 32 (with a '|'
-// separating each 16 character word pattern).
-class ThumbDecoderTester : public DecoderTester {
- public:
-  explicit ThumbDecoderTester(
-      const NamedClassDecoder& expected_decoder);
-  void Test(const char* pattern);
-  virtual const NamedClassDecoder& ExpectedDecoder() const;
-  virtual void ProcessMatch();
-  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
-  virtual const NamedClassDecoder& GetInstDecoder() const;
-
- protected:
-  virtual const char* InstContents() const;
-  virtual char Pattern(int index) const;
-  virtual void SetBit(int index, bool value);
-  virtual void SetBitRange(int index, int length, uint32_t value);
-
-  // The expected decoder class name.
-  const NamedClassDecoder& expected_decoder_;
-
-  // The pattern being enumerated.
-  const char* pattern_;
-
-  // TODO(karl): replace with thumb decoder state once defined.
-  // The decoder to use.
-  NamedArm32DecoderState state_;
-
-  // The instruction currently being enumerated.
-  nacl_arm_dec::Instruction inst_;
-
-  // Decoder tester for the first word of the thumb instruction.
-  ThumbWord1DecoderTester word1_tester_;
-
-  // Decoeder tester for the second word of the thumb instruction.
-  ThumbWord2DecoderTester word2_tester_;
-
- private:
-  friend class ThumbWord1DecoderTester;
-  friend class ThumbWord2DecoderTester;
-  NACL_DISALLOW_COPY_AND_ASSIGN(ThumbDecoderTester);
-};
-
-}  // namespace
+}  // namespace nacl_arm_test
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_DECODER_TESTER_H_

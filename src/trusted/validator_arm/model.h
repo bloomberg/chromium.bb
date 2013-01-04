@@ -276,9 +276,6 @@ class RegisterList {
 // The number of bits in an ARM instruction.
 static const int kArm32InstSize = 32;
 
-// The number of bits in a word of a THUMB instruction.
-static const int kThumbWordSize = 16;
-
 // Special ARM instructions for sandboxing.
 static const uint32_t kLiteralPoolHead = NACL_INSTR_ARM_LITERAL_POOL_HEAD;
 static const uint32_t kBreakpoint = NACL_INSTR_ARM_BREAKPOINT;
@@ -289,21 +286,14 @@ static const uint32_t kFailValidation = NACL_INSTR_ARM_FAIL_VALIDATION;
 // Not-so-special instructions.
 static const uint32_t kNop = NACL_INSTR_ARM_NOP;
 
-// Models an instruction, either a 32-bit ARM instruction of unspecified type,
-// or one word (16-bit) and two word (32-bit) THUMB instructions.
+// Models a 32-bit ARM instruction.
 //
 // This class is designed for efficiency:
 //  - Its public methods for bitfield extraction are short and inline.
 //  - It has no vtable, so on 32-bit platforms it's exactly the size of the
 //    instruction it models.
-//  - API's exist for accessing both ARM (32-bit) instructions and
-//    THUMB instructions (which are 1 or two (16-bit) words).
 class Instruction {
  public:
-  // ****************************
-  // Arm 32-bit instruction API *
-  // ****************************
-
   Instruction() : bits_(0) {}
 
   Instruction(const Instruction& inst) : bits_(inst.bits_) {}
@@ -421,91 +411,6 @@ class Instruction {
       return Instruction::AL;
     }
     return cc;
-  }
-
-  // **********************************
-  // Arm 16-bit instruction words API *
-  // **********************************
-  //
-  // TODO(jfb) This Thumb API isn't currently used, and should be fixed up
-  //           before it does get used.
-
-  // Creates a 1 word THUMB instruction.
-  explicit Instruction(uint16_t word)
-      : bits_(static_cast<uint32_t>(word)) {}
-
-  // Creates a 2 word THUMB instruction.
-  explicit Instruction(uint16_t word1, uint16_t word2)
-      : bits_(((static_cast<uint32_t>(word2) << kThumbWordSize)
-               | static_cast<uint32_t>(word1)))
-  {}
-
-  // Extracts a range of contiguous bits from the first word of a
-  // THUMB instruction , right-justifies it, and returns it.  Note
-  // that the range follows hardware convention, with the high bit
-  // first.
-  uint16_t Word1Bits(int hi, int lo) const {
-    return static_cast<uint16_t>(Bits(hi, lo));
-  }
-
-  // Extracts a range of contiguous bits from the second word of a
-  // THUMB instruction , right-justifies it, and returns it.  Note
-  // that the range follows hardware convention, with the high bit
-  // first.
-  uint16_t Word2Bits(int hi, int lo) const {
-    return
-        static_cast<uint16_t>(Bits(hi + kThumbWordSize, lo + kThumbWordSize));
-  }
-
-  // Changes the range of contiguous bits of the first word of a THUMB
-  // instruction, with the given value.  Note: Assumes the value fits,
-  // if not, it is truncated.
-  void Word1SetBits(int hi, int lo, uint16_t value)  {
-    SetBits(hi, lo, (uint32_t) value);
-  }
-
-  // Changes the range of contiguous bits of the second word of a THUMB
-  // instruction, with the given value.  Note: Assumes the value fits,
-  // if not, it is truncated.
-  void Word2SetBits(int hi, int lo, uint16_t value) {
-    SetBits(hi + kThumbWordSize, lo + kThumbWordSize,
-             static_cast<uint32_t>(value));
-  }
-
-  // A convenience method that extracts the register specified by
-  // the corresponding bits of the first word of a THUMB instruction.
-  const Register Word1Reg(int hi, int lo) const {
-    return Register(static_cast<Register::Number>(Word1Bits(hi, lo)));
-  }
-
-  // A convenience method that extracts the register specified by
-  // the corresponding bits of the second word of a THUMB instruction.
-  const Register Word2Reg(int hi, int lo) const {
-    return Register(static_cast<Register::Number>(Word2Bits(hi, lo)));
-  }
-
-  // Extracts a single bit (0 - 15) from the first word of a
-  // THUMB instruction.
-  bool Word1Bit(int index) const {
-    return Bit(index);
-  }
-
-  // Extracts a single bit (0 - 15) from the second word of
-  // a THUMB instruction.
-  bool Word2Bit(int index) const {
-    return Bit(index + kThumbWordSize);
-  }
-
-  // Sets the specified bit of the first word in a THUMB instruction
-  // to the corresponding value.
-  void Word1SetBit(int index, bool value) {
-    SetBit(index, value);
-  }
-
-  // Sets the specified bit of the second word in a THUMB instruction
-  // to the corresponding value.
-  void Word2SetBit(int index, bool value) {
-    SetBit(index + kThumbWordSize, value);
   }
 
   // Returns true if this and the given instruction are equal.
