@@ -93,6 +93,9 @@ const char kDangerKey[] = "danger";
 const char kDangerSafe[] = "safe";
 const char kDangerUncommon[] = "uncommon";
 const char kDangerUrl[] = "url";
+const char kEndTimeKey[] = "endTime";
+const char kEndedAfterKey[] = "endedAfter";
+const char kEndedBeforeKey[] = "endedBefore";
 const char kErrorKey[] = "error";
 const char kFileSizeKey[] = "fileSize";
 const char kFilenameKey[] = "filename";
@@ -109,8 +112,8 @@ const char kStateComplete[] = "complete";
 const char kStateInProgress[] = "in_progress";
 const char kStateInterrupted[] = "interrupted";
 const char kStateKey[] = "state";
-const char kTotalBytesKey[] = "totalBytes";
 const char kTotalBytesGreaterKey[] = "totalBytesGreater";
+const char kTotalBytesKey[] = "totalBytes";
 const char kTotalBytesLessKey[] = "totalBytesLess";
 const char kUrlKey[] = "url";
 const char kUrlRegexKey[] = "urlRegex";
@@ -185,6 +188,15 @@ bool ValidateFilename(const string16& filename) {
   return true;
 }
 
+std::string TimeToISO8601(const base::Time& t) {
+  base::Time::Exploded exploded;
+  t.UTCExplode(&exploded);
+  return base::StringPrintf(
+      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", exploded.year, exploded.month,
+      exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
+      exploded.millisecond);
+}
+
 scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
     DownloadItem* download_item,
     bool incognito) {
@@ -202,9 +214,7 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetString(kStateKey, StateString(download_item->GetState()));
   json->SetBoolean(kPausedKey, download_item->IsPaused());
   json->SetString(kMimeKey, download_item->GetMimeType());
-  json->SetInteger(kStartTimeKey,
-      (download_item->GetStartTime() -
-       base::Time::UnixEpoch()).InMilliseconds());
+  json->SetString(kStartTimeKey, TimeToISO8601(download_item->GetStartTime()));
   json->SetInteger(kBytesReceivedKey, download_item->GetReceivedBytes());
   json->SetInteger(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kIncognito, incognito);
@@ -215,8 +225,9 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
     json->SetInteger(kErrorKey, static_cast<int>(
         content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
   }
-  // TODO(benjhayden): Implement endTime and fileSize.
-  // json->SetInteger(kEndTimeKey, -1);
+  if (!download_item->GetEndTime().is_null())
+    json->SetString(kEndTimeKey, TimeToISO8601(download_item->GetEndTime()));
+  // TODO(benjhayden): Implement fileSize.
   json->SetInteger(kFileSizeKey, download_item->GetTotalBytes());
   return scoped_ptr<base::DictionaryValue>(json);
 }
@@ -276,25 +287,23 @@ IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
 typedef base::hash_map<std::string, DownloadQuery::FilterType> FilterTypeMap;
 
 void InitFilterTypeMap(FilterTypeMap& filter_types) {
-  filter_types[kBytesReceivedKey] =
-    DownloadQuery::FILTER_BYTES_RECEIVED;
-  filter_types[kDangerAcceptedKey] =
-    DownloadQuery::FILTER_DANGER_ACCEPTED;
+  filter_types[kBytesReceivedKey] = DownloadQuery::FILTER_BYTES_RECEIVED;
+  filter_types[kDangerAcceptedKey] = DownloadQuery::FILTER_DANGER_ACCEPTED;
   filter_types[kFilenameKey] = DownloadQuery::FILTER_FILENAME;
-  filter_types[kFilenameRegexKey] =
-    DownloadQuery::FILTER_FILENAME_REGEX;
+  filter_types[kFilenameRegexKey] = DownloadQuery::FILTER_FILENAME_REGEX;
   filter_types[kMimeKey] = DownloadQuery::FILTER_MIME;
   filter_types[kPausedKey] = DownloadQuery::FILTER_PAUSED;
   filter_types[kQueryKey] = DownloadQuery::FILTER_QUERY;
+  filter_types[kEndedAfterKey] = DownloadQuery::FILTER_ENDED_AFTER;
+  filter_types[kEndedBeforeKey] = DownloadQuery::FILTER_ENDED_BEFORE;
+  filter_types[kEndTimeKey] = DownloadQuery::FILTER_END_TIME;
   filter_types[kStartedAfterKey] = DownloadQuery::FILTER_STARTED_AFTER;
-  filter_types[kStartedBeforeKey] =
-    DownloadQuery::FILTER_STARTED_BEFORE;
+  filter_types[kStartedBeforeKey] = DownloadQuery::FILTER_STARTED_BEFORE;
   filter_types[kStartTimeKey] = DownloadQuery::FILTER_START_TIME;
   filter_types[kTotalBytesKey] = DownloadQuery::FILTER_TOTAL_BYTES;
   filter_types[kTotalBytesGreaterKey] =
-      DownloadQuery::FILTER_TOTAL_BYTES_GREATER;
-  filter_types[kTotalBytesLessKey] =
-    DownloadQuery::FILTER_TOTAL_BYTES_LESS;
+    DownloadQuery::FILTER_TOTAL_BYTES_GREATER;
+  filter_types[kTotalBytesLessKey] = DownloadQuery::FILTER_TOTAL_BYTES_LESS;
   filter_types[kUrlKey] = DownloadQuery::FILTER_URL;
   filter_types[kUrlRegexKey] = DownloadQuery::FILTER_URL_REGEX;
 }
@@ -304,8 +313,8 @@ typedef base::hash_map<std::string, DownloadQuery::SortType> SortTypeMap;
 void InitSortTypeMap(SortTypeMap& sorter_types) {
   sorter_types[kBytesReceivedKey] = DownloadQuery::SORT_BYTES_RECEIVED;
   sorter_types[kDangerKey] = DownloadQuery::SORT_DANGER;
-  sorter_types[kDangerAcceptedKey] =
-    DownloadQuery::SORT_DANGER_ACCEPTED;
+  sorter_types[kDangerAcceptedKey] = DownloadQuery::SORT_DANGER_ACCEPTED;
+  sorter_types[kEndTimeKey] = DownloadQuery::SORT_END_TIME;
   sorter_types[kFilenameKey] = DownloadQuery::SORT_FILENAME;
   sorter_types[kMimeKey] = DownloadQuery::SORT_MIME;
   sorter_types[kPausedKey] = DownloadQuery::SORT_PAUSED;

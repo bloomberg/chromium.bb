@@ -46,18 +46,21 @@ class DownloadQuery {
   // query.AddFilter(base::Bind(&YourFilterFunction));
   typedef base::Callback<bool(const content::DownloadItem&)> FilterCallback;
 
-  // All times are the number of milliseconds since the Unix epoch.
+  // All times are ISO 8601 strings.
   enum FilterType {
     FILTER_BYTES_RECEIVED,       // int
     FILTER_DANGER_ACCEPTED,      // bool
+    FILTER_ENDED_AFTER,          // string
+    FILTER_ENDED_BEFORE,         // string
+    FILTER_END_TIME,             // string
     FILTER_FILENAME,             // string
     FILTER_FILENAME_REGEX,       // string
     FILTER_MIME,                 // string
     FILTER_PAUSED,               // bool
     FILTER_QUERY,                // string
-    FILTER_STARTED_AFTER,        // int
-    FILTER_STARTED_BEFORE,       // int
-    FILTER_START_TIME,           // int
+    FILTER_STARTED_AFTER,        // string
+    FILTER_STARTED_BEFORE,       // string
+    FILTER_START_TIME,           // string
     FILTER_TOTAL_BYTES,          // int
     FILTER_TOTAL_BYTES_GREATER,  // int
     FILTER_TOTAL_BYTES_LESS,     // int
@@ -69,6 +72,7 @@ class DownloadQuery {
     SORT_BYTES_RECEIVED,
     SORT_DANGER,
     SORT_DANGER_ACCEPTED,
+    SORT_END_TIME,
     SORT_FILENAME,
     SORT_MIME,
     SORT_PAUSED,

@@ -637,6 +637,7 @@
         'browser/download/download_item_model_unittest.cc',
         'browser/download/all_download_item_notifier_unittest.cc',
         'browser/download/download_history_unittest.cc',
+        'browser/download/download_query_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
         'browser/download/download_path_reservation_tracker_unittest.cc',

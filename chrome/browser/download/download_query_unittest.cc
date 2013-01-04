@@ -93,6 +93,12 @@ template<> void DownloadQueryTest::AddFilter(
 }
 
 template<> void DownloadQueryTest::AddFilter(
+    DownloadQuery::FilterType name, std::string cpp_value) {
+  scoped_ptr<base::Value> value(Value::CreateStringValue(cpp_value));
+  CHECK(query_.AddFilter(name, *value.get()));
+}
+
+template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, const char16* cpp_value) {
   scoped_ptr<base::Value> value(Value::CreateStringValue(string16(cpp_value)));
   CHECK(query_.AddFilter(name, *value.get()));
@@ -168,6 +174,9 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
   // Set up mocks such that only mock(0) matches all filters, and every other
   // mock fails a different filter (or two for GREATER/LESS filters).
   static const size_t kNumItems = 18;
+  static const int kSomeKnownTime = 1355864196;
+  std::string kSomeKnownTime8601 = "2012-12-18T20:56:";
+  std::string k8601Suffix = ".000Z";
   CreateMocks(kNumItems);
   FilePath refail_filename(FILE_PATH_LITERAL("z"));
   FilePath fail_filename(FILE_PATH_LITERAL("fail"));
@@ -205,25 +214,30 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
         6, false,
            true)));
     EXPECT_CALL(mock(i), GetStartTime()).WillRepeatedly(Return(SWITCH4(i,
-        7, base::Time::FromTimeT(1),
-        8, base::Time::FromTimeT(4),
-        9, base::Time::FromTimeT(3),
-           base::Time::FromTimeT(2))));
+        7, base::Time::FromTimeT(kSomeKnownTime + 1),
+        8, base::Time::FromTimeT(kSomeKnownTime + 4),
+        9, base::Time::FromTimeT(kSomeKnownTime + 3),
+           base::Time::FromTimeT(kSomeKnownTime + 2))));
+    EXPECT_CALL(mock(i), GetEndTime()).WillRepeatedly(Return(SWITCH4(i,
+        10, base::Time::FromTimeT(kSomeKnownTime + 1),
+        11, base::Time::FromTimeT(kSomeKnownTime + 4),
+        12, base::Time::FromTimeT(kSomeKnownTime + 3),
+            base::Time::FromTimeT(kSomeKnownTime + 2))));
     EXPECT_CALL(mock(i), GetTotalBytes()).WillRepeatedly(Return(SWITCH4(i,
-        10, 1,
-        11, 4,
-        12, 3,
+        13, 1,
+        14, 4,
+        15, 3,
             2)));
     EXPECT_CALL(mock(i), GetOriginalUrl()).WillRepeatedly(ReturnRef(SWITCH3(i,
-        13, refail_url,
-        14, fail_url,
+        16, refail_url,
+        17, fail_url,
             match_url)));
     // 15 is AddFilter(Bind(IdNotEqual, 15))
     EXPECT_CALL(mock(i), GetState()).WillRepeatedly(Return(SWITCH2(i,
-        16, DownloadItem::CANCELLED,
+        18, DownloadItem::CANCELLED,
             DownloadItem::IN_PROGRESS)));
     EXPECT_CALL(mock(i), GetDangerType()).WillRepeatedly(Return(SWITCH2(i,
-        17, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+        19, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)));
   }
   for (size_t i = 0; i < kNumItems; ++i) {
@@ -237,22 +251,36 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
                         match_filename.value().c_str()); break;
       case 5: AddFilter(DownloadQuery::FILTER_MIME, "text"); break;
       case 6: AddFilter(DownloadQuery::FILTER_PAUSED, true); break;
-      case 7: AddFilter(DownloadQuery::FILTER_STARTED_AFTER, 1000); break;
-      case 8: AddFilter(DownloadQuery::FILTER_STARTED_BEFORE, 4000);
+      case 7: AddFilter(DownloadQuery::FILTER_STARTED_AFTER,
+                        kSomeKnownTime8601 + "37" + k8601Suffix);
               break;
-      case 9: AddFilter(DownloadQuery::FILTER_START_TIME, 2000); break;
-      case 10: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1);
+      case 8: AddFilter(DownloadQuery::FILTER_STARTED_BEFORE,
+                        kSomeKnownTime8601 + "40" + k8601Suffix);
+              break;
+      case 9: AddFilter(DownloadQuery::FILTER_START_TIME,
+                        kSomeKnownTime8601 + "38" + k8601Suffix);
+              break;
+      case 10: AddFilter(DownloadQuery::FILTER_ENDED_AFTER,
+                         kSomeKnownTime8601 + "37" + k8601Suffix);
                break;
-      case 11: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4);
+      case 11: AddFilter(DownloadQuery::FILTER_ENDED_BEFORE,
+                         kSomeKnownTime8601 + "40" + k8601Suffix);
                break;
-      case 12: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2); break;
-      case 13: AddFilter(DownloadQuery::FILTER_URL_REGEX, "example");
+      case 12: AddFilter(DownloadQuery::FILTER_END_TIME,
+                         kSomeKnownTime8601 + "38" + k8601Suffix);
                break;
-      case 14: AddFilter(DownloadQuery::FILTER_URL,
+      case 13: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1);
+               break;
+      case 14: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4);
+               break;
+      case 15: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2); break;
+      case 16: AddFilter(DownloadQuery::FILTER_URL_REGEX, "example");
+               break;
+      case 17: AddFilter(DownloadQuery::FILTER_URL,
                          match_url.spec().c_str()); break;
-      case 15: CHECK(query()->AddFilter(base::Bind(&IdNotEqual, 15))); break;
-      case 16: query()->AddFilter(DownloadItem::IN_PROGRESS); break;
-      case 17: query()->AddFilter(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      case 18: CHECK(query()->AddFilter(base::Bind(&IdNotEqual, 15))); break;
+      case 19: query()->AddFilter(DownloadItem::IN_PROGRESS); break;
+      case 20: query()->AddFilter(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
         break;
       default: NOTREACHED(); break;
     }
@@ -343,6 +371,19 @@ TEST_F(DownloadQueryTest, DownloadQuerySortPaused) {
   Search();
   EXPECT_FALSE(results()->at(0)->IsPaused());
   EXPECT_TRUE(results()->at(1)->IsPaused());
+}
+
+TEST_F(DownloadQueryTest, DownloadQuerySortEndTime) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetEndTime()).WillRepeatedly(Return(
+        base::Time::FromTimeT(0)));
+  EXPECT_CALL(mock(1), GetEndTime()).WillRepeatedly(Return(
+        base::Time::FromTimeT(1)));
+  query()->AddSorter(
+      DownloadQuery::SORT_END_TIME, DownloadQuery::DESCENDING);
+  Search();
+  EXPECT_EQ(base::Time::FromTimeT(1), results()->at(0)->GetEndTime());
+  EXPECT_EQ(base::Time::FromTimeT(0), results()->at(1)->GetEndTime());
 }
 
 TEST_F(DownloadQueryTest, DownloadQuerySortStartTime) {

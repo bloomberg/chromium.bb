@@ -90,13 +90,17 @@ namespace downloads {
     // The file's MIME type.
     DOMString mime;
 
-    // Number of milliseconds between the unix epoch and when this download
-    // began.
-    long startTime;
+    // The time when the download began in ISO 8601 format. May be passed
+    // directly to the Date constructor: <code>chrome.downloads.search({},
+    // function(items){items.forEach(function(item){console.log(new
+    // Date(item.startTime))})})</code>
+    DOMString startTime;
 
-    // Number of milliseconds between the unix epoch and when this download
-    // ended.
-    long? endTime;
+    // The time when the download ended in ISO 8601 format. May be passed
+    // directly to the Date constructor: <code>chrome.downloads.search({},
+    // function(items){items.forEach(function(item){if (item.endTime)
+    // console.log(new Date(item.endTime))})})</code>
+    DOMString? endTime;
 
     // Indicates whether the download is progressing, interrupted, or complete.
     State state;
@@ -130,19 +134,19 @@ namespace downloads {
 
     // Limits results to $ref:DownloadItem that
     // started before the given ms since the epoch.
-    long? startedBefore;
+    DOMString? startedBefore;
 
     // Limits results to $ref:DownloadItem that
     // started after the given ms since the epoch.
-    long? startedAfter;
+    DOMString? startedAfter;
 
     // Limits results to $ref:DownloadItem that ended before the given ms since the
     // epoch.
-    long? endedBefore;
+    DOMString? endedBefore;
 
     // Limits results to $ref:DownloadItem that ended after the given ms since the
     // epoch.
-    long? endedAfter;
+    DOMString? endedAfter;
 
     // Limits results to $ref:DownloadItem whose
     // <code>totalBytes</code> is greater than the given integer.
@@ -193,13 +197,11 @@ namespace downloads {
     // The file's MIME type.
     DOMString? mime;
 
-    // Number of milliseconds between the unix epoch and when this download
-    // began.
-    long? startTime;
+    // The time when the download began in ISO 8601 format.
+    DOMString? startTime;
 
-    // Number of milliseconds between the unix epoch and when this download
-    // ended.
-    long? endTime;
+    // The time when the download ended in ISO 8601 format.
+    DOMString? endTime;
 
     // Indicates whether the download is progressing, interrupted, or complete.
     State? state;
@@ -259,10 +261,10 @@ namespace downloads {
     DownloadStringDiff? mime;
 
     // The change in <code>startTime</code>, if any.
-    DownloadLongDiff? startTime;
+    DownloadStringDiff? startTime;
 
     // The change in <code>endTime</code>, if any.
-    DownloadLongDiff? endTime;
+    DownloadStringDiff? endTime;
 
     // The change in <code>state</code>, if any.
     DownloadStringDiff? state;
