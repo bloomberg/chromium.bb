@@ -2050,7 +2050,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
         ii->tap_timeout_.val_ = 0.11;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
-      same_fingers = ii->prev_state_.SameFingersAs(hwsgs_full[i].hws);
+      same_fingers = ii->PrevState(0)->SameFingersAs(hwsgs_full[i].hws);
     }
 
     ii->UpdateTapState(
@@ -2347,7 +2347,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
         EXPECT_TRUE(ii->tap_enable_.val_);
       } else {
-        same_fingers = ii->prev_state_.SameFingersAs(hwsgs.hws);
+        same_fingers = ii->PrevState(0)->SameFingersAs(hwsgs.hws);
       }
 
       // Disable tap in the middle of the gesture

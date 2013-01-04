@@ -288,12 +288,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
   int EvaluateButtonType(const HardwareState& hwstate);
 
-  // Looking at this finger and the previous, returns true iff the pressure
-  // is changing so quickly that we expect it's arriving on the pad or
-  // departing.
-  bool PressureChangingSignificantly(const HardwareState& hwstate,
-                                     const FingerState& current,
-                                     const FingerState& prev) const;
+  // Looking at this finger and the previous ones within a small window
+  // and returns true iff the pressure is changing so quickly that we
+  // expect it's arriving on the pad or departing.
+  bool PressureChangingSignificantly(stime_t now,
+                                     const FingerState& current) const;
 
   // Returns the number of most recent event events in the scroll_buffer_ that
   // should be considered for fling. If it returns 0, there should be no fling.
@@ -313,7 +312,19 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   virtual void IntWasWritten(IntProperty* prop);
 
-  HardwareState prev_state_;
+  // Circular buffer for storing a rolling backlog of events for analysis
+  // as well as accessor functions for using the buffer's contents.
+  HardwareState prev_states_[3];
+  size_t newest_prev_state_idx_;
+  const HardwareState* PrevState(size_t idx) const {
+    return &prev_states_[(idx + newest_prev_state_idx_) %
+                         arraysize(prev_states_)];
+  }
+  HardwareState* PrevState(size_t idx) {
+    return const_cast<HardwareState*>(
+        const_cast<const ImmediateInterpreter*>(this)->PrevState(idx));
+  }
+
   set<short, kMaxGesturingFingers> prev_gs_fingers_;
   set<short, kMaxGesturingFingers> prev_tap_gs_fingers_;
   HardwareProperties hw_props_;
@@ -483,6 +494,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // until the pressure change per second goes below
   // max_pressure_change_hysteresis_.
   DoubleProperty max_pressure_change_hysteresis_;
+  // Try to look over a period up to this length of time when looking for large
+  // pressure change.
+  DoubleProperty max_pressure_change_duration_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
   DoubleProperty scroll_stationary_finger_max_distance_;

@@ -296,6 +296,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                            FingerMetrics* finger_metrics,
                                            Tracer* tracer)
     : Interpreter(NULL, tracer, false),
+      newest_prev_state_idx_(0),
       button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),
@@ -361,6 +362,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       max_pressure_change_hysteresis_(prop_reg,
                                       "Max Hysteresis Pressure Per Sec",
                                       600.0),
+      max_pressure_change_duration_(prop_reg,
+                                    "Max Pressure Change Duration",
+                                    0.016),
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
       bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
@@ -399,7 +403,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                      "Right Click Second Finger Age Thresh",
                                      1.0) {
   InitName();
-  memset(&prev_state_, 0, sizeof(prev_state_));
+  memset(prev_states_, 0, sizeof(prev_states_));
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));
     finger_metrics_ = test_finger_metrics_.get();
@@ -407,23 +411,25 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
 }
 
 ImmediateInterpreter::~ImmediateInterpreter() {
-  if (prev_state_.fingers) {
-    free(prev_state_.fingers);
-    prev_state_.fingers = NULL;
+  for (size_t i = 0; i < arraysize(prev_states_); i++) {
+    if (PrevState(i)->fingers) {
+      free(PrevState(i)->fingers);
+      PrevState(i)->fingers = NULL;
+    }
   }
 }
 
 Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                  stime_t* timeout) {
-  if (!prev_state_.fingers) {
+  if (!PrevState(0)->fingers) {
     Err("Must call SetHardwareProperties() before Push().");
     return 0;
   }
 
   FillOriginInfo(*hwstate);
   result_.type = kGestureTypeNull;
-  const bool same_fingers = prev_state_.SameFingersAs(*hwstate) &&
-      (hwstate->buttons_down == prev_state_.buttons_down);
+  const bool same_fingers = PrevState(0)->SameFingersAs(*hwstate) &&
+      (hwstate->buttons_down == PrevState(0)->buttons_down);
   if (!same_fingers) {
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
@@ -431,7 +437,7 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     UpdatePinchState(*hwstate, true);
   }
 
-  if (hwstate->finger_cnt < prev_state_.finger_cnt)
+  if (hwstate->finger_cnt < PrevState(0)->finger_cnt)
     finger_leave_time_ = hwstate->timestamp;
 
   UpdatePointingFingers(*hwstate);
@@ -1105,7 +1111,7 @@ void ImmediateInterpreter::UpdateTapGesture(
   }
   Log("Yes tap gesture");
   result_ = Gesture(kGestureButtonsChange,
-                    prev_state_.timestamp,
+                    PrevState(0)->timestamp,
                     now,
                     down,
                     up);
@@ -1165,7 +1171,7 @@ void ImmediateInterpreter::UpdateTapState(
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
-            FingerTooCloseToTap(prev_state_, *fs))
+            FingerTooCloseToTap(*PrevState(0), *fs))
           continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
@@ -1249,7 +1255,7 @@ void ImmediateInterpreter::UpdateTapState(
           hwstate->timestamp - last_movement_timestamp_ >=
           motion_tap_prevent_timeout_.val_) {
         tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
+            *hwstate, *PrevState(0), added_fingers, removed_fingers,
             dead_fingers);
         if (tap_record_.TapBegan())
           SetTapToClickState(kTtcFirstTapBegan, now);
@@ -1265,7 +1271,8 @@ void ImmediateInterpreter::UpdateTapState(
         break;
       }
       tap_record_.Update(
-          *hwstate, prev_state_, added_fingers, removed_fingers, dead_fingers);
+          *hwstate, *PrevState(0), added_fingers,
+          removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
           tap_record_.Moving(*hwstate, tap_move_dist_.val_));
@@ -1289,7 +1296,7 @@ void ImmediateInterpreter::UpdateTapState(
 
         tap_record_.Clear();
         tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
+            *hwstate, *PrevState(0), added_fingers, removed_fingers,
             dead_fingers);
 
         // If more than one finger is touching: Send click
@@ -1314,10 +1321,10 @@ void ImmediateInterpreter::UpdateTapState(
         break;
       }
       if (hwstate)
-        tap_record_.Update(*hwstate, prev_state_, added_fingers,
+        tap_record_.Update(*hwstate, *PrevState(0), added_fingers,
                            removed_fingers, dead_fingers);
 
-      if (!tap_record_.Motionless(*hwstate, prev_state_,
+      if (!tap_record_.Motionless(*hwstate, *PrevState(0),
                                   tap_max_movement_.val_)) {
         tap_drag_last_motion_time_ = now;
       }
@@ -1366,7 +1373,7 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDrag:
       if (hwstate)
         tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
+            *hwstate, *PrevState(0), added_fingers, removed_fingers,
             dead_fingers);
       if (tap_record_.TapComplete()) {
         tap_record_.Clear();
@@ -1388,7 +1395,7 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDragRelease:
       if (!added_fingers.empty()) {
         tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
+            *hwstate, *PrevState(0), added_fingers, removed_fingers,
             dead_fingers);
         SetTapToClickState(kTtcDragRetouch, now);
       } else if (is_timeout) {
@@ -1399,7 +1406,7 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDragRetouch:
       if (hwstate)
         tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
+            *hwstate, *PrevState(0), added_fingers, removed_fingers,
             dead_fingers);
       if (tap_record_.TapComplete()) {
         *buttons_up = GESTURES_BUTTON_LEFT;
@@ -1451,7 +1458,10 @@ bool ImmediateInterpreter::FingerTooCloseToTap(const HardwareState& hwstate,
 }
 
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
-  prev_state_.DeepCopy(hwstate, hw_props_.max_finger_cnt);
+  newest_prev_state_idx_ =
+      (newest_prev_state_idx_ + arraysize(prev_states_) - 1) %
+      arraysize(prev_states_);
+  PrevState(0)->DeepCopy(hwstate, hw_props_.max_finger_cnt);
 }
 
 bool ImmediateInterpreter::FingerInDampenedZone(
@@ -1522,15 +1532,51 @@ int ImmediateInterpreter::EvaluateButtonType(
 }
 
 bool ImmediateInterpreter::PressureChangingSignificantly(
-    const HardwareState& hwstate,
-    const FingerState& current,
-    const FingerState& prev) const {
-  float dt = hwstate.timestamp - prev_state_.timestamp;
-  float dp_thresh = dt *
+    stime_t now, const FingerState& current) const {
+  bool pressure_is_increasing = false;
+  bool pressure_direction_established = false;
+  const FingerState* prev = &current;
+  stime_t duration = 0.0;
+
+  if (max_pressure_change_duration_.val_ > 0.0) {
+    for (size_t i = 0; i < arraysize(prev_states_); i++) {
+      stime_t local_duration = now - PrevState(i)->timestamp;
+      if (local_duration > max_pressure_change_duration_.val_)
+        break;
+
+      duration = local_duration;
+      const FingerState* fs = PrevState(i)->GetFingerState(current.tracking_id);
+      // If the finger just appeared, there's no history to look at.
+      if (!fs)
+        return false;
+
+      float pressure_difference = prev->pressure - fs->pressure;
+      if (pressure_difference) {
+        bool is_currently_increasing = pressure_difference > 0.0;
+        if (!pressure_direction_established) {
+          pressure_is_increasing = is_currently_increasing;
+          pressure_direction_established = true;
+        }
+
+        // If pressure changes are unstable, it's likely just noise.
+        if (is_currently_increasing != pressure_is_increasing)
+          return false;
+      }
+      prev = fs;
+    }
+  } else {
+    // To disable this feature, max_pressure_change_duration_ can be set to a
+    // negative number.  When this occurs it reverts to just checking the last
+    // event, not looking through the backlog as well.
+    prev = PrevState(0)->GetFingerState(current.tracking_id);
+    duration = now - PrevState(0)->timestamp;
+  }
+
+  float dp_thresh = duration *
       (prev_result_high_pressure_change_ ?
        max_pressure_change_hysteresis_.val_ :
        max_pressure_change_.val_);
-  float dp = fabsf(current.pressure - prev.pressure);
+  float dp = fabsf(current.pressure - prev->pressure);
   return dp > dp_thresh;
 }
 
@@ -1569,7 +1615,7 @@ void ImmediateInterpreter::UpdateStartedMovingTime(
 void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
                                          stime_t* timeout) {
   // TODO(miletus): To distinguish between left/right buttons down
-  bool prev_button_down = prev_state_.buttons_down;
+  bool prev_button_down = PrevState(0)->buttons_down;
   bool button_down = hwstate.buttons_down;
   if (!prev_button_down && !button_down)
     return;
@@ -1595,7 +1641,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
       if (result_.type == kGestureTypeButtonsChange)
         Err("Gesture type already button?!");
       result_ = Gesture(kGestureButtonsChange,
-                        prev_state_.timestamp,
+                        PrevState(0)->timestamp,
                         hwstate.timestamp,
                         button_type_,
                         0);
@@ -1609,7 +1655,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
     // Send button up
     if (result_.type != kGestureTypeButtonsChange)
       result_ = Gesture(kGestureButtonsChange,
-                        prev_state_.timestamp,
+                        PrevState(0)->timestamp,
                         hwstate.timestamp,
                         0,
                         button_type_);
@@ -1633,7 +1679,7 @@ void ImmediateInterpreter::UpdateButtonsTimeout(stime_t now) {
   }
   sent_button_down_ = true;
   result_ = Gesture(kGestureButtonsChange,
-                    prev_state_.timestamp,
+                    PrevState(0)->timestamp,
                     now,
                     GESTURES_BUTTON_LEFT,
                     0);
@@ -1780,10 +1826,10 @@ void ImmediateInterpreter::FillResultGesture(
       }
       // Find corresponding finger id in previous state
       const FingerState* prev =
-          prev_state_.GetFingerState(current->tracking_id);
+          PrevState(0)->GetFingerState(current->tracking_id);
       if (!prev || !current)
         return;
-      if (PressureChangingSignificantly(hwstate, *current, *prev)) {
+      if (PressureChangingSignificantly(hwstate.timestamp, *current)) {
         prev_result_high_pressure_change_ = true;
         return;
       }
@@ -1795,7 +1841,7 @@ void ImmediateInterpreter::FillResultGesture(
       if (current->flags & GESTURES_FINGER_WARP_Y_MOVE)
         dy = 0.0;
       result_ = Gesture(kGestureMove,
-                        prev_state_.timestamp,
+                        PrevState(0)->timestamp,
                         hwstate.timestamp,
                         dx,
                         dy);
@@ -1810,11 +1856,11 @@ void ImmediateInterpreter::FillResultGesture(
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
-        const FingerState* prev = prev_state_.GetFingerState(*it);
+        const FingerState* prev = PrevState(0)->GetFingerState(*it);
         if (!prev)
           return;
         high_pressure_change = high_pressure_change ||
-            PressureChangingSignificantly(hwstate, *fs, *prev);
+            (PressureChangingSignificantly(hwstate.timestamp, *fs));
         float local_dx = fs->position_x - prev->position_x;
         if (fs->flags & GESTURES_FINGER_WARP_X_NON_MOVE)
           local_dx = 0.0;
@@ -1861,10 +1907,10 @@ void ImmediateInterpreter::FillResultGesture(
       if (!fling_buffer_suppress_zero_length_scrolls_.val_ ||
           !FloatEq(dx, 0.0) || !FloatEq(dy, 0.0))
         scroll_buffer_.Insert(dx, dy,
-                              hwstate.timestamp - prev_state_.timestamp);
+                              hwstate.timestamp - PrevState(0)->timestamp);
       if (max_mag_sq > 0) {
         result_ = Gesture(kGestureScroll,
-                          prev_state_.timestamp,
+                          PrevState(0)->timestamp,
                           hwstate.timestamp,
                           dx,
                           dy);
@@ -1880,7 +1926,7 @@ void ImmediateInterpreter::FillResultGesture(
       float vy = out.dt ? (out.dy / out.dt) : 0.0;
 
       result_ = Gesture(kGestureFling,
-                        prev_state_.timestamp,
+                        PrevState(0)->timestamp,
                         hwstate.timestamp,
                         vx,
                         vy,
@@ -1897,7 +1943,7 @@ void ImmediateInterpreter::FillResultGesture(
                                        &FingerState::position_y };
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
-        if (!prev_state_.GetFingerState(*it)) {
+        if (!PrevState(0)->GetFingerState(*it)) {
           Err("missing prev state?");
           continue;
         }
@@ -1909,7 +1955,7 @@ void ImmediateInterpreter::FillResultGesture(
             continue;
           float FingerState::*field = fields[i];
           float delta = hwstate.GetFingerState(*it)->*field -
-              prev_state_.GetFingerState(*it)->*field;
+              PrevState(0)->GetFingerState(*it)->*field;
           // The multiply is to see if they have the same sign:
           if (sum_delta[i] == 0.0 || sum_delta[i] * delta > 0) {
             sum_delta[i] += delta;
@@ -1921,7 +1967,7 @@ void ImmediateInterpreter::FillResultGesture(
         }
       }
       result_ = Gesture(
-          kGestureSwipe, prev_state_.timestamp,
+          kGestureSwipe, PrevState(0)->timestamp,
           hwstate.timestamp,
           (!swipe_is_vertical_ && finger_cnt[0]) ?
           sum_delta[0] / finger_cnt[0] : 0.0,
@@ -1931,7 +1977,7 @@ void ImmediateInterpreter::FillResultGesture(
     }
     case kGestureTypeSwipeLift: {
       result_ = Gesture(kGestureSwipeLift,
-                        prev_state_.timestamp,
+                        PrevState(0)->timestamp,
                         hwstate.timestamp);
       break;
     }
@@ -1963,13 +2009,15 @@ void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
 void ImmediateInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hw_props) {
   hw_props_ = hw_props;
-  if (prev_state_.fingers) {
-    free(prev_state_.fingers);
-    prev_state_.fingers = NULL;
+  for (size_t i = 0; i < arraysize(prev_states_); i++) {
+    if (prev_states_[i].fingers) {
+      free(prev_states_[i].fingers);
+      prev_states_[i].fingers = NULL;
+    }
+    prev_states_[i].fingers =
+        reinterpret_cast<FingerState*>(calloc(hw_props_.max_finger_cnt,
+                                              sizeof(FingerState)));
   }
-  prev_state_.fingers =
-      reinterpret_cast<FingerState*>(calloc(hw_props_.max_finger_cnt,
-                                            sizeof(FingerState)));
 }
 
 }  // namespace gestures
