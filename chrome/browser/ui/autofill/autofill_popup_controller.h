@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
