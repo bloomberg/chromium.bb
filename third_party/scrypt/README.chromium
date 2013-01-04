@@ -3,7 +3,7 @@ Name: Secure Encryption
 Version: 1.1.6
 URL: http://www.tarsnap.com/scrypt.html
 Date: 2012-12-13
-License: 2-clause BSD license
+License: BSD 2-Clause License
 License File: LICENSE
 Security Critical: yes
 
