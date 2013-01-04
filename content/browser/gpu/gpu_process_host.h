@@ -123,7 +123,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void ForceShutdown();
 
  private:
-  static bool HostIsValid(GpuProcessHost* host);
+  static bool ValidateHost(GpuProcessHost* host);
 
   GpuProcessHost(int host_id, GpuProcessKind kind);
   virtual ~GpuProcessHost();
@@ -169,15 +169,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool LaunchGpuProcess(const std::string& channel_id);
 
   void SendOutstandingReplies();
-  void EstablishChannelError(
-      const EstablishChannelCallback& callback,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessHandle client_process_for_gpu,
-      const GPUInfo& gpu_info);
-  void CreateCommandBufferError(const CreateCommandBufferCallback& callback,
-                                int32 route_id);
-  void CreateImageError(const CreateImageCallback& callback,
-                        const gfx::Size size);
 
   void BlockLiveOffscreenContexts();
 

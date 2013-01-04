@@ -220,8 +220,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 }
 
 void GpuProcessHostUIShim::OnUpdateVSyncParameters(int surface_id,
-                                             base::TimeTicks timebase,
-                                             base::TimeDelta interval) {
+                                                   base::TimeTicks timebase,
+                                                   base::TimeDelta interval) {
 
   int render_process_id = 0;
   int render_widget_id = 0;
