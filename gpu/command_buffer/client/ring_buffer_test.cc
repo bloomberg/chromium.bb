@@ -35,25 +35,6 @@ class BaseRingBufferTest : public testing::Test {
   static const unsigned int kBaseOffset = 128;
   static const unsigned int kBufferSize = 1024;
 
-  class DoJumpCommand {
-   public:
-    explicit DoJumpCommand(GpuScheduler* gpu_scheduler)
-        : gpu_scheduler_(gpu_scheduler) {
-    }
-
-    error::Error DoCommand(
-        unsigned int command,
-        unsigned int arg_count,
-        const void* cmd_data) {
-      const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
-      gpu_scheduler_->parser()->set_get(jump_cmd->offset);
-      return error::kNoError;
-    };
-
-   private:
-    GpuScheduler* gpu_scheduler_;
-  };
-
   virtual void SetUp() {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
@@ -82,10 +63,6 @@ class BaseRingBufferTest : public testing::Test {
         &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
 
     api_mock_->set_engine(gpu_scheduler_.get());
-    do_jump_command_.reset(new DoJumpCommand(gpu_scheduler_.get()));
-    EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
-        .WillRepeatedly(
-            Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
@@ -104,7 +81,6 @@ class BaseRingBufferTest : public testing::Test {
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
-  scoped_ptr<DoJumpCommand> do_jump_command_;
 };
 
 #ifndef _MSC_VER

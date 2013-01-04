@@ -150,16 +150,11 @@ namespace cmd {
 #define COMMON_COMMAND_BUFFER_CMDS(OP) \
   OP(Noop)                          /*  0 */ \
   OP(SetToken)                      /*  1 */ \
-  OP(Jump)                          /*  2 */ \
-  OP(JumpRelative)                  /*  3 */ \
-  OP(Call)                          /*  4 */ \
-  OP(CallRelative)                  /*  5 */ \
-  OP(Return)                        /*  6 */ \
-  OP(SetBucketSize)                 /*  7 */ \
-  OP(SetBucketData)                 /*  8 */ \
-  OP(SetBucketDataImmediate)        /*  9 */ \
-  OP(GetBucketStart)                /* 10 */ \
-  OP(GetBucketData)                 /* 11 */ \
+  OP(SetBucketSize)                 /*  2 */ \
+  OP(SetBucketData)                 /*  3 */ \
+  OP(SetBucketDataImmediate)        /*  4 */ \
+  OP(GetBucketStart)                /*  5 */ \
+  OP(GetBucketData)                 /*  6 */ \
 
 // Common commands.
 enum CommandId {
@@ -233,152 +228,6 @@ COMPILE_ASSERT(offsetof(SetToken, header) == 0,
                Offsetof_SetToken_header_not_0);
 COMPILE_ASSERT(offsetof(SetToken, token) == 4,
                Offsetof_SetToken_token_not_4);
-
-// The Jump command jumps to another place in the command buffer.
-struct Jump {
-  typedef Jump ValueType;
-  static const CommandId kCmdId = kJump;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(uint32 _offset) {
-    SetHeader();
-    offset = _offset;
-  }
-  static void* Set(
-      void* cmd, uint32 _offset) {
-    static_cast<ValueType*>(cmd)->Init(_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  uint32 offset;
-};
-
-COMPILE_ASSERT(sizeof(Jump) == 8, Sizeof_Jump_is_not_8);
-COMPILE_ASSERT(offsetof(Jump, header) == 0,
-               Offsetof_Jump_header_not_0);
-COMPILE_ASSERT(offsetof(Jump, offset) == 4,
-               Offsetof_Jump_offset_not_4);
-
-// The JumpRelative command jumps to another place in the command buffer
-// relative to the end of this command. In other words. JumpRelative with an
-// offset of zero is effectively a noop.
-struct JumpRelative {
-  typedef JumpRelative ValueType;
-  static const CommandId kCmdId = kJumpRelative;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(int32 _offset) {
-    SetHeader();
-    offset = _offset;
-  }
-  static void* Set(void* cmd, int32 _offset) {
-    static_cast<ValueType*>(cmd)->Init(_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  int32 offset;
-};
-
-COMPILE_ASSERT(sizeof(JumpRelative) == 8, Sizeof_JumpRelative_is_not_8);
-COMPILE_ASSERT(offsetof(JumpRelative, header) == 0,
-               Offsetof_JumpRelative_header_not_0);
-COMPILE_ASSERT(offsetof(JumpRelative, offset) == 4,
-               Offsetof_JumpRelative_offset_4);
-
-// The Call command jumps to a subroutine which can be returned from with the
-// Return command.
-struct Call {
-  typedef Call ValueType;
-  static const CommandId kCmdId = kCall;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(uint32 _offset) {
-    SetHeader();
-    offset = _offset;
-  }
-  static void* Set(void* cmd, uint32 _offset) {
-    static_cast<ValueType*>(cmd)->Init(_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  uint32 offset;
-};
-
-COMPILE_ASSERT(sizeof(Call) == 8, Sizeof_Call_is_not_8);
-COMPILE_ASSERT(offsetof(Call, header) == 0,
-               Offsetof_Call_header_not_0);
-COMPILE_ASSERT(offsetof(Call, offset) == 4,
-               Offsetof_Call_offset_not_4);
-
-// The CallRelative command jumps to a subroutine using a relative offset. The
-// offset is relative to the end of this command..
-struct CallRelative {
-  typedef CallRelative ValueType;
-  static const CommandId kCmdId = kCallRelative;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(int32 _offset) {
-    SetHeader();
-    offset = _offset;
-  }
-  static void* Set(void* cmd, int32 _offset) {
-    static_cast<ValueType*>(cmd)->Init(_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  int32 offset;
-};
-
-COMPILE_ASSERT(sizeof(CallRelative) == 8, Sizeof_CallRelative_is_not_8);
-COMPILE_ASSERT(offsetof(CallRelative, header) == 0,
-               Offsetof_CallRelative_header_not_0);
-COMPILE_ASSERT(offsetof(CallRelative, offset) == 4,
-               Offsetof_CallRelative_offset_4);
-
-// Returns from a subroutine called by the Call or CallRelative commands.
-struct Return {
-  typedef Return ValueType;
-  static const CommandId kCmdId = kReturn;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init() {
-    SetHeader();
-  }
-  static void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(Return) == 4, Sizeof_Return_is_not_4);
-COMPILE_ASSERT(offsetof(Return, header) == 0,
-               Offsetof_Return_header_not_0);
 
 // Sets the size of a bucket for collecting data on the service side.
 // This is a utility for gathering data on the service side so it can be used

@@ -21,7 +21,6 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       ring_buffer_size_(0),
       entries_(NULL),
       total_entry_count_(0),
-      usable_entry_count_(0),
       token_(0),
       put_(0),
       last_put_sent_(0),
@@ -74,11 +73,7 @@ bool CommandBufferHelper::AllocateRingBuffer() {
     return false;
   }
 
-  const int32 kJumpEntries =
-      sizeof(cmd::Jump) / sizeof(*entries_);  // NOLINT
-
   total_entry_count_ = num_ring_buffer_entries;
-  usable_entry_count_ = total_entry_count_ - kJumpEntries;
   put_ = state.put_offset;
   return true;
 }
@@ -195,7 +190,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 
 // Waits for available entries, basically waiting until get >= put + count + 1.
 // It actually waits for contiguous entries, so it may need to wrap the buffer
-// around, adding a jump. Thus this function may change the value of put_. The
+// around, adding a noops. Thus this function may change the value of put_. The
 // function will return early if an error occurs, in which case the available
 // space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
@@ -204,12 +199,12 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     return;
   }
   GPU_DCHECK(HaveRingBuffer());
-  GPU_DCHECK(count < usable_entry_count_);
-  if (put_ + count > usable_entry_count_) {
+  GPU_DCHECK(count < total_entry_count_);
+  if (put_ + count > total_entry_count_) {
     // There's not enough room between the current put and the end of the
-    // buffer, so we need to wrap. We will add a jump back to the start, but we
-    // need to make sure get wraps first, actually that get is 1 or more (since
-    // put will wrap to 0 after we add the jump).
+    // buffer, so we need to wrap. We will add noops all the way to the end,
+    // but we need to make sure get wraps first, actually that get is 1 or
+    // more (since put will wrap to 0 after we add the noops).
     GPU_DCHECK_LE(1, put_);
     if (get_offset() > put_ || get_offset() == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
@@ -220,8 +215,14 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
           return;
       }
     }
-    // Insert a jump back to the beginning.
-    cmd::Jump::Set(&entries_[put_], 0);
+    // Insert Noops to fill out the buffer.
+    int32 num_entries = total_entry_count_ - put_;
+    while (num_entries > 0) {
+      int32 num_to_skip = std::min(CommandHeader::kMaxSize, num_entries);
+      cmd::Noop::Set(&entries_[put_], num_to_skip);
+      put_ += num_to_skip;
+      num_entries -= num_to_skip;
+    }
     put_ = 0;
   }
   if (AvailableEntries() < count) {
@@ -236,8 +237,8 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   // Force a flush if the buffer is getting half full, or even earlier if the
   // reader is known to be idle.
   int32 pending =
-      (put_ + usable_entry_count_ - last_put_sent_) % usable_entry_count_;
-  int32 limit = usable_entry_count_ /
+      (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
+  int32 limit = total_entry_count_ /
       ((get_offset() == last_put_sent_) ? 16 : 2);
   if (pending > limit) {
     Flush();
@@ -265,9 +266,8 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
-  GPU_DCHECK_LE(put_, usable_entry_count_);
-  if (put_ == usable_entry_count_) {
-    cmd::Jump::Set(&entries_[put_], 0);
+  GPU_DCHECK_LE(put_, total_entry_count_);
+  if (put_ == total_entry_count_) {
     put_ = 0;
   }
   return space;

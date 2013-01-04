@@ -186,56 +186,6 @@ error::Error CommonDecoder::HandleSetToken(
   return error::kNoError;
 }
 
-error::Error CommonDecoder::HandleJump(
-    uint32 immediate_data_size,
-    const cmd::Jump& args) {
-  if (!engine_->SetGetOffset(args.offset)) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
-error::Error CommonDecoder::HandleJumpRelative(
-    uint32 immediate_data_size,
-    const cmd::JumpRelative& args) {
-  if (!engine_->SetGetOffset(engine_->GetGetOffset() + args.offset)) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
-error::Error CommonDecoder::HandleCall(
-    uint32 immediate_data_size,
-    const cmd::Call& args) {
-  if (!PushAddress(args.offset)) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
-error::Error CommonDecoder::HandleCallRelative(
-    uint32 immediate_data_size,
-    const cmd::CallRelative& args) {
-  if (!PushAddress(engine_->GetGetOffset() + args.offset)) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
-error::Error CommonDecoder::HandleReturn(
-    uint32 immediate_data_size,
-    const cmd::Return& args) {
-  if (call_stack_.empty()) {
-    return error::kInvalidArguments;
-  }
-  CommandAddress return_address = call_stack_.top();
-  call_stack_.pop();
-  if (!engine_->SetGetOffset(return_address.offset)) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
 error::Error CommonDecoder::HandleSetBucketSize(
     uint32 immediate_data_size,
     const cmd::SetBucketSize& args) {

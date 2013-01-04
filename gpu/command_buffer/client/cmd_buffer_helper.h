@@ -149,41 +149,6 @@ class GPU_EXPORT CommandBufferHelper {
     }
   }
 
-  void Jump(uint32 offset) {
-    cmd::Jump* cmd = GetCmdSpace<cmd::Jump>();
-    if (cmd) {
-      cmd->Init(offset);
-    }
-  }
-
-  void JumpRelative(int32 offset) {
-    cmd::JumpRelative* cmd = GetCmdSpace<cmd::JumpRelative>();
-    if (cmd) {
-      cmd->Init(offset);
-    }
-  }
-
-  void Call(uint32 offset) {
-    cmd::Call* cmd = GetCmdSpace<cmd::Call>();
-    if (cmd) {
-      cmd->Init(offset);
-    }
-  }
-
-  void CallRelative(int32 offset) {
-    cmd::CallRelative* cmd = GetCmdSpace<cmd::CallRelative>();
-    if (cmd) {
-      cmd->Init(offset);
-    }
-  }
-
-  void Return() {
-    cmd::Return* cmd = GetCmdSpace<cmd::Return>();
-    if (cmd) {
-      cmd->Init();
-    }
-  }
-
   void SetBucketSize(uint32 bucket_id, uint32 size) {
     cmd::SetBucketSize* cmd = GetCmdSpace<cmd::SetBucketSize>();
     if (cmd) {
@@ -276,8 +241,7 @@ class GPU_EXPORT CommandBufferHelper {
 
   // Returns the number of available entries (they may not be contiguous).
   int32 AvailableEntries() {
-    return (get_offset() - put_ - 1 + usable_entry_count_) %
-        usable_entry_count_;
+    return (get_offset() - put_ - 1 + total_entry_count_) % total_entry_count_;
   }
 
   bool AllocateRingBuffer();
@@ -289,7 +253,6 @@ class GPU_EXPORT CommandBufferHelper {
   Buffer ring_buffer_;
   CommandBufferEntry* entries_;
   int32 total_entry_count_;  // the total number of entries
-  int32 usable_entry_count_;  // the usable number (ie, minus space for jump)
   int32 token_;
   int32 put_;
   int32 last_put_sent_;

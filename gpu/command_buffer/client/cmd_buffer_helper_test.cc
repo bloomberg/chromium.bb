@@ -28,8 +28,7 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::_;
 
-const int32 kTotalNumCommandEntries = 12;
-const int32 kUsableNumCommandEntries = 10;
+const int32 kTotalNumCommandEntries = 10;
 const int32 kCommandBufferSizeBytes =
     kTotalNumCommandEntries * sizeof(CommandBufferEntry);
 const int32 kUnusedCommandId = 5;  // we use 0 and 2 currently.
@@ -39,26 +38,6 @@ const int32 kUnusedCommandId = 5;  // we use 0 and 2 currently.
 // (calling it directly, not through the RPC mechanism).
 class CommandBufferHelperTest : public testing::Test {
  protected:
-  // Helper so mock can handle the Jump command.
-  class DoJumpCommand {
-   public:
-    explicit DoJumpCommand(GpuScheduler* gpu_scheduler)
-        : gpu_scheduler_(gpu_scheduler) {
-    }
-
-    error::Error DoCommand(
-        unsigned int command,
-        unsigned int arg_count,
-        const void* cmd_data) {
-      const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
-      gpu_scheduler_->parser()->set_get(jump_cmd->offset);
-      return error::kNoError;
-    };
-
-   private:
-    GpuScheduler* gpu_scheduler_;
-  };
-
   virtual void SetUp() {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
@@ -81,12 +60,6 @@ class CommandBufferHelperTest : public testing::Test {
         &GpuScheduler::PutChanged, base::Unretained(gpu_scheduler_.get())));
     command_buffer_->SetGetBufferChangeCallback(base::Bind(
         &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
-
-    do_jump_command_.reset(new DoJumpCommand(gpu_scheduler_.get()));
-    EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
-        .WillRepeatedly(
-            Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
-
 
     api_mock_->set_engine(gpu_scheduler_.get());
 
@@ -172,7 +145,6 @@ class CommandBufferHelperTest : public testing::Test {
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
-  scoped_ptr<DoJumpCommand> do_jump_command_;
 };
 
 // Checks that commands in the buffer are properly executed, and that the
@@ -234,7 +206,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
 TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   const int32 kCommandSize = 5;
   const size_t kNumArgs = kCommandSize - 1;
-  COMPILE_ASSERT(kUsableNumCommandEntries % kCommandSize == 0,
+  COMPILE_ASSERT(kTotalNumCommandEntries % kCommandSize == 0,
                  Not_multiple_of_num_command_entries);
   CommandBufferEntry args1[kNumArgs];
   for (size_t ii = 0; ii < kNumArgs; ++ii) {
