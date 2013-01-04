@@ -2291,9 +2291,9 @@ class PageCyclerReplay(object):
   WEBPAGEREPLAY_HTTPS_PORT = 8413
 
   CHROME_FLAGS = webpagereplay.GetChromeFlags(
-      self.WEBPAGEREPLAY_HOST,
-      self.WEBPAGEREPLAY_HTTP_PORT,
-      self.WEBPAGEREPLAY_HTTPS_PORT) + [
+      WEBPAGEREPLAY_HOST,
+      WEBPAGEREPLAY_HTTP_PORT,
+      WEBPAGEREPLAY_HTTPS_PORT) + [
           '--log-level=0',
           '--disable-background-networking',
           '--enable-experimental-extension-apis',
@@ -2313,9 +2313,9 @@ class PageCyclerReplay(object):
   def ReplayServer(cls, test_name, replay_options=None):
     archive_path = cls.Path('archive', test_name=test_name)
     return webpagereplay.ReplayServer(archive_path,
-                                      self.WEBPAGEREPLAY_HOST,
-                                      self.WEBPAGEREPLAY_HTTP_PORT,
-                                      self.WEBPAGEREPLAY_HTTPS_PORT,
+                                      cls.WEBPAGEREPLAY_HOST,
+                                      cls.WEBPAGEREPLAY_HTTP_PORT,
+                                      cls.WEBPAGEREPLAY_HTTPS_PORT,
                                       replay_options)
 
 
