@@ -302,11 +302,10 @@ const CGFloat kRapidCloseDist = 2.5;
     },
   };
 
-  bool usingDefaultTheme = themeProvider->UsingDefaultTheme();
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
   bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
-                !usingDefaultTheme;
+                !themeProvider->UsingDefaultTheme();
   return themeProvider->GetNSImageColorNamed(
       bitmapResources[active][selected], true);
 }
@@ -325,8 +324,6 @@ const CGFloat kRapidCloseDist = 2.5;
   CGImageRef mask([self tabClippingMask]);
   CGRect maskBounds = CGRectMake(0, 0, maskCacheWidth_, kMaskHeight);
   CGContextClipToMask(cgContext, maskBounds, mask);
-
-  NSRect rect = [self bounds];
 
   bool selected = [self state];
 
@@ -391,7 +388,7 @@ const CGFloat kRapidCloseDist = 2.5;
                                         alpha:1.0 * hoverAlpha]
                         endingColor:[NSColor colorWithCalibratedWhite:1.0
                                                                 alpha:0.0]];
-
+        NSRect rect = [self bounds];
         NSPoint point = hoverPoint_;
         point.y = NSHeight(rect);
         [glow drawFromCenter:point

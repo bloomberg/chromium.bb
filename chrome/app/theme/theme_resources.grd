@@ -825,6 +825,9 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="common/toolbar_shade_right.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="common/toolbar_shade_top.png" />
       </if>
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="mac/toolbar_shade_top.png" />
+      </if>
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TOOLS" file="tools.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="tools_hover.png" />
