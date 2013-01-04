@@ -70,8 +70,12 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
 
     int rv = HANDLE_EINTR(poll(poll_fds, 1,
                                remaining_time->InMilliseconds()));
-    if (rv != 1) {
-      PLOG(ERROR) << "poll() failed for child file descriptor";
+    if (rv == 0) {
+      LOG(ERROR) << "poll() timed out; bytes_read=" << bytes_read;
+      return false;
+    } else if (rv < 0) {
+      PLOG(ERROR) << "poll() failed for child file descriptor; bytes_read="
+                  << bytes_read;
       return false;
     }
 
