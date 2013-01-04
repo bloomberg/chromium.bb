@@ -64,7 +64,7 @@ bool GetAccountCreationPasswordFields(
   return false;
 }
 
-} // namespace
+}  // namespace
 
 PasswordGenerationManager::PasswordGenerationManager(
     content::RenderView* render_view)

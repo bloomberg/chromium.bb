@@ -48,7 +48,7 @@ namespace {
        document.securityOrigin().canRequest(event_url);
 }
 
-}
+}  // namespace
 
 ChromeV8ContextSet::ChromeV8ContextSet() {
 }

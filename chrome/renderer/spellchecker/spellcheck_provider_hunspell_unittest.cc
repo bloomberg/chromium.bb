@@ -85,7 +85,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
 
 // Tests that the SpellCheckProvider class cancels incoming spellcheck requests
 // when it does not need to handle them.
-TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
+TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello."),
                                 &completion);

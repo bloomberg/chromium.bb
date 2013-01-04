@@ -67,4 +67,4 @@ void PrerenderWebMediaPlayer::OnSetIsPrerendering(bool is_prerendering) {
   }
 }
 
-} // namespace prerender
+}  // namespace prerender

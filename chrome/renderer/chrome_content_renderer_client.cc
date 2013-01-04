@@ -853,7 +853,6 @@ bool ChromeContentRendererClient::WillSendRequest(
           extension_dispatcher_->extensions())) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;
-
   }
 
   if (url.SchemeIs(chrome::kExtensionResourceScheme) &&

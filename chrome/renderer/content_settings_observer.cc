@@ -127,7 +127,7 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
 void ContentSettingsObserver::DidCommitProvisionalLoad(
     WebFrame* frame, bool is_new_navigation) {
   if (frame->parent())
-    return; // Not a top-level navigation.
+    return;  // Not a top-level navigation.
 
   DocumentState* document_state = DocumentState::FromDataSource(
       frame->dataSource());

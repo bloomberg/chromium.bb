@@ -38,7 +38,7 @@ using content::NavigationEntry;
 class SessionServiceTest : public BrowserWithTestWindowTest,
                            public content::NotificationObserver {
  public:
-  SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0){}
+  SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0) {}
 
  protected:
   virtual void SetUp() {
@@ -152,7 +152,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
                                ui::SHOW_STATE_MAXIMIZED);
     helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
     UpdateNavigation(window2_id, tab2_id, *nav2, true);
-
   }
 
   SessionService* service() { return helper_.service(); }

@@ -72,7 +72,6 @@ base::LazyInstance<extensions::EventFilter> g_event_filter =
 // TODO(koz): Merge this into EventBindings.
 class ExtensionImpl : public ChromeV8Extension {
  public:
-
   explicit ExtensionImpl(Dispatcher* dispatcher)
       : ChromeV8Extension(dispatcher) {
     RouteStaticFunction("AttachEvent", &AttachEvent);

@@ -50,7 +50,7 @@ SpellCheckProvider::SpellCheckProvider(
       spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
   DCHECK(spellcheck_);
-  if (render_view) { // NULL in unit tests.
+  if (render_view) {  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
     EnableSpellcheck(spellcheck_->is_spellcheck_enabled());
   }

@@ -53,7 +53,7 @@ class XKeyboardTest : public testing::Test {
 
 // Returns true if X display is available.
 bool DisplayAvailable() {
-  return ui::GetXDisplay() ? true : false;
+  return (ui::GetXDisplay() != NULL);
 }
 
 }  // namespace

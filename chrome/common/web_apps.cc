@@ -85,7 +85,7 @@ void AddInstallIcon(const WebElement& link,
   icons->push_back(icon_info);
 }
 
-}
+}  // namespace
 
 const char WebApplicationInfo::kInvalidDefinitionURL[] =
     "Invalid application definition URL. Must be a valid relative URL or "
@@ -327,7 +327,6 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
   web_app->icons = icons;
 
   return true;
-
 }
 
 }  // namespace web_apps
