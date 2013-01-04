@@ -102,18 +102,12 @@ void StorageInfoProvider::CheckWatchedStorages() {
 
 void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  StorageIDToSizeMap::iterator it = storage_id_to_size_map_.begin();
-  for (; it != storage_id_to_size_map_.end(); ++it) {
+  for (StorageIDToSizeMap::iterator it = storage_id_to_size_map_.begin();
+       it != storage_id_to_size_map_.end(); ) {
     StorageUnitInfo info;
     if (!QueryUnitInfo(it->first, &info)) {
-      storage_id_to_size_map_.erase(it);
-      if (storage_id_to_size_map_.size() == 0) {
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            base::Bind(&StorageInfoProvider::StopWatchingTimerOnUIThread,
-                       this));
-        return;
-      }
+      storage_id_to_size_map_.erase(it++);
+      continue;
     }
     if (it->second != info.available_capacity) {
       observers_->Notify(&Observer::OnStorageFreeSpaceChanged,
@@ -122,8 +116,16 @@ void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
                          info.available_capacity /* new value */);
       it->second = info.available_capacity;
     }
+    ++it;
   }
 
+  if (storage_id_to_size_map_.size() == 0) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&StorageInfoProvider::StopWatchingTimerOnUIThread,
+                   this));
+    return;
+  }
   OnCheckWatchedStoragesFinishedForTesting();
 }
 
