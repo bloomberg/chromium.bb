@@ -51,7 +51,7 @@ class WebNotificationBubbleWrapper;
 class ASH_EXPORT WebNotificationTray
     : public internal::TrayBackgroundView,
       public views::TrayBubbleView::Delegate,
-      public message_center::MessageCenter::Host,
+      public message_center::MessageCenter::Observer,
       public views::ButtonListener,
       public views::WidgetObserver {
  public:
@@ -71,7 +71,7 @@ class ASH_EXPORT WebNotificationTray
   bool IsMouseInNotificationBubble() const;
 
   message_center::MessageCenter* message_center() {
-    return message_center_.get();
+    return message_center_;
   }
 
   // Overridden from TrayBackgroundView.
@@ -95,8 +95,8 @@ class ASH_EXPORT WebNotificationTray
                                   AnchorAlignment anchor_alignment) OVERRIDE;
   virtual void HideBubble(const views::TrayBubbleView* bubble_view) OVERRIDE;
 
-  // Overridden from message_center::MessageCenter::Host.
-  virtual void MessageCenterChanged(bool new_notification) OVERRIDE;
+  // Overridden from message_center::MessageCenter::Observer.
+  virtual void OnMessageCenterChanged(bool new_notification) OVERRIDE;
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -152,7 +152,7 @@ class ASH_EXPORT WebNotificationTray
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
   message_center::MessagePopupBubble* GetPopupBubbleForTest();
 
-  scoped_ptr<message_center::MessageCenter> message_center_;
+  message_center::MessageCenter* message_center_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
   scoped_ptr<message_center::QuietModeBubble> quiet_mode_bubble_;

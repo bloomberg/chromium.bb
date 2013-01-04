@@ -32,8 +32,14 @@ WebNotificationTray* GetWebNotificationTray() {
 
 class TestDelegate : public message_center::MessageCenter::Delegate {
  public:
-  TestDelegate() {}
-  virtual ~TestDelegate() {}
+  TestDelegate(message_center::MessageCenter* message_center)
+    : message_center_(message_center) {
+    message_center_->SetDelegate(this);
+  }
+  virtual ~TestDelegate() {
+    message_center_->SetDelegate(NULL);
+    message_center_->notification_list()->RemoveAllNotifications();
+  }
 
   // WebNotificationTray::Delegate overrides.
   virtual void NotificationRemoved(const std::string& notifcation_id) {
@@ -88,6 +94,7 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
 
  private:
   std::set<std::string> notification_ids_;
+  message_center::MessageCenter* message_center_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -98,9 +105,8 @@ typedef test::AshTestBase WebNotificationTrayTest;
 
 TEST_F(WebNotificationTrayTest, WebNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
-  scoped_ptr<TestDelegate> delegate(new TestDelegate);
   message_center::MessageCenter* message_center = tray->message_center();
-  message_center->SetDelegate(delegate.get());
+  scoped_ptr<TestDelegate> delegate(new TestDelegate(message_center));
   ASSERT_TRUE(tray->GetWidget());
 
   // Add a notification.
@@ -137,8 +143,7 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
 
 TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
   WebNotificationTray* tray = GetWebNotificationTray();
-  scoped_ptr<TestDelegate> delegate(new TestDelegate);
-  tray->message_center()->SetDelegate(delegate.get());
+  scoped_ptr<TestDelegate> delegate(new TestDelegate(tray->message_center()));
 
   ASSERT_TRUE(tray->GetWidget());
 
@@ -164,8 +169,7 @@ using message_center::NotificationList;
 
 TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
-  scoped_ptr<TestDelegate> delegate(new TestDelegate);
-  tray->message_center()->SetDelegate(delegate.get());
+  scoped_ptr<TestDelegate> delegate(new TestDelegate(tray->message_center()));
 
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add =
@@ -185,8 +189,7 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
 
 TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
-  scoped_ptr<TestDelegate> delegate(new TestDelegate);
-  tray->message_center()->SetDelegate(delegate.get());
+  scoped_ptr<TestDelegate> delegate(new TestDelegate(tray->message_center()));
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =

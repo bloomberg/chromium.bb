@@ -2340,6 +2340,11 @@
             '../ui/message_center/message_center.gyp:message_center',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../ui/message_center/message_center.gyp:message_center'
+          ],
+        }],
         ['use_aura==1 and use_ash==0 and OS=="linux"', {
           'dependencies': [
             # gtk2 is the only component that can interact with gtk2 in our new

@@ -83,7 +83,8 @@ WebNotificationTray::WebNotificationTray(
     : internal::TrayBackgroundView(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false) {
-  message_center_.reset(new message_center::MessageCenter(this));
+  message_center_ = message_center::MessageCenter::GetInstance();
+  message_center_->AddObserver(this);
   button_ = new views::ImageButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
@@ -92,8 +93,8 @@ WebNotificationTray::WebNotificationTray(
 }
 
 WebNotificationTray::~WebNotificationTray() {
-  // message_center_ has a weak pointer to this; destroy it early.
-  message_center_.reset();
+  // Ensure the message center doesn't notify a destroyed object.
+  message_center_->RemoveObserver(this);
   // Release any child views that might have back pointers before ~View().
   message_center_bubble_.reset();
   popup_bubble_.reset();
@@ -116,7 +117,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   UpdateTray();
   HidePopupBubble();
   message_center::MessageCenterBubble* bubble =
-      new message_center::MessageCenterBubble(message_center_.get());
+      new message_center::MessageCenterBubble(message_center_);
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, bubble));
 
@@ -156,7 +157,7 @@ void WebNotificationTray::ShowPopupBubble() {
     popup_bubble_.reset(
         new internal::WebNotificationBubbleWrapper(
             this, new message_center::MessagePopupBubble(
-                message_center_.get())));
+                message_center_)));
   }
 }
 
@@ -294,7 +295,7 @@ void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-void WebNotificationTray::MessageCenterChanged(bool new_notification) {
+void WebNotificationTray::OnMessageCenterChanged(bool new_notification) {
   if (message_center_bubble()) {
     if (message_center_->NotificationCount() == 0)
       HideMessageCenterBubble();

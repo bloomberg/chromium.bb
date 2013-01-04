@@ -490,8 +490,6 @@
             ['exclude', 'widget/desktop_aura'],
           ],
           'sources!': [
-            'bubble/tray_bubble_view.cc',
-            'bubble/tray_bubble_view.h',
             'widget/native_widget_aura_window_observer.cc',
             'widget/native_widget_aura_window_observer.h',
             'widget/widget_aura_utils.cc',

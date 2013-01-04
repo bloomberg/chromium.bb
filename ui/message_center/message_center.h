@@ -5,10 +5,15 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/notifications/notification_types.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 namespace base {
 class DictionaryValue;
@@ -18,7 +23,7 @@ class DictionaryValue;
 // [Add|Remove|Update]Notification to create and update notifications in the
 // list. It can also implement Delegate to receive callbacks when a
 // notification is removed (closed), or clicked on.
-// If a Host is provided, it will be informed when the notification list
+// If an Observer is provided, it will be informed when the notification list
 // changes, and is expected to handle creating, showing, and hiding of any
 // bubbles.
 
@@ -27,14 +32,13 @@ namespace message_center {
 class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
  public:
   // Class that hosts the message center.
-  class MESSAGE_CENTER_EXPORT Host {
+  class MESSAGE_CENTER_EXPORT Observer {
    public:
     // Called when the notification list has changed. |new_notification| will
     // be true if a notification was added or updated.
-    virtual void MessageCenterChanged(bool new_notification) = 0;
-
+    virtual void OnMessageCenterChanged(bool new_notification) = 0;
    protected:
-    virtual ~Host() {}
+    virtual ~Observer() {}
   };
 
   class MESSAGE_CENTER_EXPORT Delegate {
@@ -70,13 +74,18 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
     virtual ~Delegate() {}
   };
 
-  // |host| is expected to manage any notification bubbles. It may be NULL.
-  explicit MessageCenter(Host* host);
+  static MessageCenter* GetInstance();
 
   virtual ~MessageCenter();
 
-  // Called once to set the delegate.
+  // Called to set the delegate.  Generally called only once, except in tests.
+  // Changing the delegate does not affect notifications in its
+  // NotificationList.
   void SetDelegate(Delegate* delegate);
+
+  // Management of the observer list.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Informs the notification list whether the message center is visible.
   // This affects whether or not a message has been "read".
@@ -135,8 +144,14 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual NotificationList* GetNotificationList() OVERRIDE;
 
  private:
+  friend struct DefaultSingletonTraits<MessageCenter>;
+  MessageCenter();
+
+  // Calls OnMessageCenterChanged on each observer.
+  void NotifyMessageCenterChanged(bool new_notification);
+
   scoped_ptr<NotificationList> notification_list_;
-  Host* host_;
+  ObserverList<Observer> observer_list_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenter);
