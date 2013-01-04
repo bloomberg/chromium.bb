@@ -146,6 +146,7 @@ void NotificationView::SetUpView() {
   // TODO(dharcourt): Skip the title Label when there's no title text.
   views::Label* title = new views::Label(notification_.title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title->SetElideBehavior(views::Label::ELIDE_AT_END);
   title->SetFont(title->font().DeriveFont(4));
   title->SetEnabledColor(kTitleColor);
   title->SetBackgroundColor(kTitleBackgroundColor);
