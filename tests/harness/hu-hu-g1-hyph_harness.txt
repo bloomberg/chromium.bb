@@ -952,6 +952,10 @@
           "output": "hi-vat-ko-zás-sze-rű"
         }, 
         {
+          "input": "hívásszűrés", 
+          "output": "hí-vás-szű-rés"
+        }, 
+        {
           "input": "hízelkedésszámba", 
           "output": "hí-zel-ke-dés-szám-ba"
         }, 
@@ -1814,6 +1818,10 @@
         {
           "input": "meggyvörös", 
           "output": "meggy-vö-rös"
+        }, 
+        {
+          "input": "meglepetésszoftver", 
+          "output": "meg-le-pe-tés-szoft-ver"
         }, 
         {
           "input": "méhesszín", 

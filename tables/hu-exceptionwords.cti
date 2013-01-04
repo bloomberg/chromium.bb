@@ -314,6 +314,7 @@ always városzt 1236-4-1235-135-156-2345	Városztályába word is an exception t
 always részárás 1235-16-234-126-4-1235-4-234	For example részárás beginning words need this exception
 always légzés 123-16-1245-126-16-234	For example légzésszám, légzésszerű, légzészavar words
 partword szavar 234-126-1-1236-1-1235	General exception with handles more szavar style words
+always meglepetés =	For example meglepetésszoftver word need this exception
 
 #szs related exceptions
 #This exception list containing some words with need using single s and zs braille dots
@@ -335,7 +336,7 @@ partword papirossz 1234-1-1234-24-1235-135-234-156	For example papirosszeletre w
 partword portássz 1234-135-1235-2345-4-234-156	For example portásszoba word
 partword vitorlássz 1236-24-2345-135-1235-123-4-234-156	For example vitorlásszezon word
 partword kaparásszer 13-1-1234-1-1235-4-234-156-15-1235	For example kaparásszerű, macskakaparásszerű words
-partword kihívássz 13-24-125-34-1236-4-234-156	For example kihívásszerű word
+partword hívássz 125-34-1236-4-234-156	For example kihívásszerű, hívásszűrés words need this universal exception
 always hússzaft 125-346-234-156-1-124-2345	For example hússzaft, hússzaftba words
 partword kegéssz 13-15-1245-16-234-156	For example brekegésszerű word
 partword kapussz 13-1-1234-136-234-156	For example kapusszoba word

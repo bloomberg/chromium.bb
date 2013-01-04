@@ -1155,6 +1155,11 @@ hivatkozásszerű
 testmode: backtranslate
 hivatkozásszerű
 
+hívásszűrés
+
+testmode: backtranslate
+hívásszűrés
+
 hízelkedésszámba
 
 testmode: backtranslate
@@ -2244,6 +2249,11 @@ meggyvörös
 
 testmode: backtranslate
 meggyvörös
+
+meglepetésszoftver
+
+testmode: backtranslate
+meglepetésszoftver
 
 méhesszín
 

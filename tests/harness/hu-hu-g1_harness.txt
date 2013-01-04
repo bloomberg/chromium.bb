@@ -931,6 +931,10 @@
           "output": "hivatkozásszerű"
         }, 
         {
+          "input": "⠓⠌⠧⠈⠎⠱⠾⠗⠡⠎", 
+          "output": "hívásszűrés"
+        }, 
+        {
           "input": "⠓⠌⠣⠑⠇⠅⠑⠙⠡⠎⠱⠈⠍⠃⠁", 
           "output": "hízelkedésszámba"
         }, 
@@ -1801,6 +1805,10 @@
         {
           "input": "⠍⠑⠹⠹⠧⠟⠗⠟⠎", 
           "output": "meggyvörös"
+        }, 
+        {
+          "input": "⠍⠑⠛⠇⠑⠏⠑⠞⠡⠎⠱⠕⠋⠞⠧⠑⠗", 
+          "output": "meglepetésszoftver"
         }, 
         {
           "input": "⠍⠡⠓⠑⠎⠱⠌⠝", 
@@ -4163,6 +4171,10 @@
           "output": "⠓⠊⠧⠁⠞⠅⠕⠣⠈⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "hívásszűrés", 
+          "output": "⠓⠌⠧⠈⠎⠱⠾⠗⠡⠎"
+        }, 
+        {
           "input": "hízelkedésszámba", 
           "output": "⠓⠌⠣⠑⠇⠅⠑⠙⠡⠎⠱⠈⠍⠃⠁"
         }, 
@@ -5033,6 +5045,10 @@
         {
           "input": "meggyvörös", 
           "output": "⠍⠑⠹⠹⠧⠟⠗⠟⠎"
+        }, 
+        {
+          "input": "meglepetésszoftver", 
+          "output": "⠍⠑⠛⠇⠑⠏⠑⠞⠡⠎⠱⠕⠋⠞⠧⠑⠗"
         }, 
         {
           "input": "méhesszín", 

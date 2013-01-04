@@ -709,6 +709,9 @@ testmode: hyphenate
 hivatkozásszerű
 
 testmode: hyphenate
+hívásszűrés
+
+testmode: hyphenate
 hízelkedésszámba
 
 testmode: hyphenate
@@ -1355,6 +1358,9 @@ meggytől
 
 testmode: hyphenate
 meggyvörös
+
+testmode: hyphenate
+meglepetésszoftver
 
 testmode: hyphenate
 méhesszín
