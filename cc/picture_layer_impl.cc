@@ -170,12 +170,6 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_content_scale_y_ = contentsScaleY();
 }
 
-void PictureLayerImpl::didUpdateBounds() {
-  if (is_mask_)
-    tilings_.Reset();
-  tilings_.SetLayerBounds(bounds());
-}
-
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect rect) {
   TileManager* tile_manager = layerTreeImpl()->tile_manager();

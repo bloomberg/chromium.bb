@@ -31,8 +31,6 @@ public:
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
   virtual void didUpdateTransforms() OVERRIDE;
 
-  void didUpdateBounds();
-
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,
                                          gfx::Rect) OVERRIDE;
