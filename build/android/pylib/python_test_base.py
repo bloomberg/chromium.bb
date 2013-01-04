@@ -24,9 +24,9 @@ import os
 import time
 
 import android_commands
+import apk_info
 from run_java_tests import TestRunner
 from test_result import SingleTestResult, TestResults
-from utils import apk_and_jar_info
 
 
 # aka the parent of com.google.android
@@ -75,8 +75,8 @@ class PythonTestBase(object):
       TestResults object with a single test result.
     """
     test = self._ComposeFullTestName(fname, suite, test)
-    apks = [apk_and_jar_info.ApkAndJarInfo(self.options.test_apk_path,
-                                           self.options.test_apk_jar_path)]
+    apks = [apk_info.ApkInfo(self.options.test_apk_path,
+            self.options.test_apk_jar_path)]
     java_test_runner = TestRunner(self.options, self.device_id, [test], False,
                                   self.shard_index,
                                   apks,

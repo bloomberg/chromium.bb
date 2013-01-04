@@ -11,6 +11,7 @@ import os
 import sys
 import time
 
+from pylib import apk_info
 from pylib import buildbot_report
 from pylib import constants
 from pylib import ports
@@ -19,7 +20,6 @@ from pylib import run_python_tests
 from pylib import run_tests_helper
 from pylib import test_options_parser
 from pylib.test_result import TestResults
-from pylib.utils import apk_and_jar_info
 
 
 def DispatchInstrumentationTests(options):
@@ -49,8 +49,7 @@ def DispatchInstrumentationTests(options):
   if options.run_java_tests:
     java_results = run_java_tests.DispatchJavaTests(
         options,
-        [apk_and_jar_info.ApkAndJarInfo(options.test_apk_path,
-                                        options.test_apk_jar_path)])
+        [apk_info.ApkInfo(options.test_apk_path, options.test_apk_jar_path)])
   if options.run_python_tests:
     python_results = run_python_tests.DispatchPythonTests(options)
 

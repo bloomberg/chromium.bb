@@ -13,6 +13,7 @@ import sys
 import time
 
 import android_commands
+import apk_info
 from base_test_runner import BaseTestRunner
 from base_test_sharder import BaseTestSharder, SetTestsContainer
 import cmd_helper
@@ -23,8 +24,6 @@ from json_perf_parser import GetAverageRunInfoFromJSONString
 from perf_tests_helper import PrintPerfResult
 import sharded_tests_queue
 from test_result import SingleTestResult, TestResults
-from utils import apk_and_jar_info
-from utils import jar_info
 import valgrind_tools
 
 _PERF_TEST_ANNOTATION = 'PerfTest'
@@ -114,8 +113,8 @@ class TestRunner(BaseTestRunner):
         self, device, options.tool, shard_index, options.build_type)
 
     if not apks:
-      apks = [apk_and_jar_info.ApkAndJarInfo(options.test_apk_path,
-                                             options.test_apk_jar_path)]
+      apks = [apk_info.ApkInfo(options.test_apk_path,
+                               options.test_apk_jar_path)]
 
     self.build_type = options.build_type
     self.install_apk = options.install_apk
@@ -541,7 +540,7 @@ def DispatchJavaTests(options, apks):
     for test_method in test_apk.GetTestMethods():
       annotations = frozenset(test_apk.GetTestAnnotations(test_method))
       if (annotations.isdisjoint(test_size_annotations) and
-          not jar_info.JarInfo.IsPythonDrivenTest(test_method)):
+          not apk_info.ApkInfo.IsPythonDrivenTest(test_method)):
         tests_missing_annotations.append(test_method)
     return sorted(tests_missing_annotations)
 
@@ -557,7 +556,7 @@ def DispatchJavaTests(options, apks):
         available_tests += tests_missing_annotations
   else:
     available_tests = [m for m in test_apk.GetTestMethods()
-                       if not jar_info.JarInfo.IsPythonDrivenTest(m)]
+                       if not apk_info.ApkInfo.IsPythonDrivenTest(m)]
   coverage = os.environ.get('EMMA_INSTRUMENT') == 'true'
 
   tests = []

@@ -10,6 +10,7 @@ import sys
 import types
 
 import android_commands
+import apk_info
 import constants
 import python_test_base
 from python_test_caller import CallPythonTest
@@ -18,7 +19,6 @@ import run_java_tests
 from run_java_tests import FatalTestException
 from test_info_collection import TestInfoCollection
 from test_result import TestResults
-from utils import apk_and_jar_info
 
 
 def _GetPythonFiles(root, files):
@@ -84,8 +84,7 @@ def DispatchPythonTests(options):
   # Copy files to each device before running any tests.
   for device_id in attached_devices:
     logging.debug('Pushing files to device %s', device_id)
-    apks = [apk_and_jar_info.ApkAndJarInfo(options.test_apk_path,
-                                           options.test_apk_jar_path)]
+    apks = [apk_info.ApkInfo(options.test_apk_path, options.test_apk_jar_path)]
     test_files_copier = run_java_tests.TestRunner(options, device_id,
                                                   None, False, 0, apks, [])
     test_files_copier.CopyTestFilesOnce()
