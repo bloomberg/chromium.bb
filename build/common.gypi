@@ -3053,20 +3053,15 @@
                   # for third party code. This works because cflags are added
                   # before defines.
                   '-U_FORTIFY_SOURCE',
-                  # Chromium builds its own (non-third-party) code with
-                  # -Werror to make all warnings into errors. However, Android
-                  # enables warnings that Chromium doesn't, so some of these
-                  # extra warnings trip and break things.
-                  # For now, we leave these warnings enabled but prevent them
-                  # from being treated as errors.
-                  #
+                  # Disable any additional warnings enabled by the Android build system but which
+                  # chromium does not build cleanly with (when treating warning as errors).
                   # Things that are part of -Wextra:
-                  '-Wno-error=extra', # Enabled by -Wextra, but no specific flag
-                  '-Wno-error=ignored-qualifiers',
-                  '-Wno-error=type-limits',
+                  '-Wno-extra', # Enabled by -Wextra, but no specific flag
+                  '-Wno-ignored-qualifiers',
+                  '-Wno-type-limits',
                   # Other things unrelated to -Wextra:
-                  '-Wno-error=non-virtual-dtor',
-                  '-Wno-error=sign-promo',
+                  '-Wno-non-virtual-dtor',
+                  '-Wno-sign-promo',
                 ],
                 'cflags_cc': [
                   # Disabling c++0x-compat should be handled in WebKit, but
@@ -3083,11 +3078,11 @@
                   #  2) Chromium ignores in third party code
                   # For now, I am leaving these warnings enabled but preventing
                   # them from being treated as errors here.
-                  '-Wno-error=address',
-                  '-Wno-error=format-security',
-                  '-Wno-error=non-virtual-dtor',
-                  '-Wno-error=return-type',
-                  '-Wno-error=sequence-point',
+                  '-Wno-address',
+                  '-Wno-format-security',
+                  '-Wno-non-virtual-dtor',
+                  '-Wno-return-type',
+                  '-Wno-sequence-point',
                 ],
               }],
               ['target_arch == "arm"', {
