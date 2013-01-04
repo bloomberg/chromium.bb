@@ -17,7 +17,7 @@ def CheckBacktrace(backtrace, functions):
 
 def test(gdb):
   gdb.Command('break inside_f3')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   # Check we stopped in inside_spin
   backtrace = gdb.Command('-stack-list-frames')
   CheckBacktrace(backtrace['stack'], ['inside_f3', 'f3'])

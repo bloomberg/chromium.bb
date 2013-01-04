@@ -11,10 +11,10 @@ def test(gdb):
   gdb.Command('break foo')
   gdb.Command('break bar')
   # Program runs 2 threads, each calls foo and bar - expect 4 breakpoint hits.
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   gdb.Quit()
 
 

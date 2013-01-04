@@ -9,10 +9,10 @@ import gdb_test
 
 def test(gdb):
   gdb.Command('break set_global_var')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   AssertEquals(gdb.Eval('global_var'), '2')
   AssertEquals(gdb.Eval('arg'), '1')
-  AssertEquals(gdb.ResumeCommand('finish')['reason'], 'function-finished')
+  gdb.ResumeAndExpectStop('finish', 'function-finished')
   AssertEquals(gdb.Eval('global_var'), '1')
   AssertEquals(gdb.Eval('local_var'), '3')
   gdb.Quit()

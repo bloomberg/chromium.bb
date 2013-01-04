@@ -9,7 +9,7 @@ import gdb_test
 
 def test(gdb):
   gdb.Command('break test_step_from_function_start')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   gdb.ResumeCommand('step')
   gdb.ResumeCommand('step')
   gdb.ResumeCommand('step')

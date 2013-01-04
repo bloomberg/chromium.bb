@@ -9,7 +9,7 @@ import gdb_test
 
 def test(gdb):
   gdb.Command('break leaf_call')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   result = gdb.Command('-stack-list-frames 0 2')
   AssertEquals(result['stack'][0]['frame']['func'], 'leaf_call')
   AssertEquals(result['stack'][1]['frame']['func'], 'nested_calls')
@@ -19,7 +19,7 @@ def test(gdb):
   AssertEquals(result['stack-args'][0]['frame']['args'][0]['value'], '2')
   AssertEquals(result['stack-args'][1]['frame']['args'][0]['value'], '1')
   gdb.Command('return')
-  AssertEquals(gdb.ResumeCommand('finish')['reason'], 'function-finished')
+  gdb.ResumeAndExpectStop('finish', 'function-finished')
   AssertEquals(gdb.Eval('global_var'), '1')
 
 

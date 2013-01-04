@@ -233,6 +233,13 @@ class Gdb(object):
     AssertEquals(status, '*stopped')
     return items
 
+  def ResumeAndExpectStop(self, resume_command, expected_stop_reason):
+    stop_info = self.ResumeCommand(resume_command)
+    if 'reason' not in stop_info or stop_info['reason'] != expected_stop_reason:
+      raise AssertionError(
+          'GDB reported stop reason %r but we expected %r (full info is %r)'
+          % (stop_info.get('reason'), expected_stop_reason, stop_info))
+
   def Quit(self):
     status, items = self._GetResultRecord(self._SendRequest('-gdb-exit'))
     AssertEquals(status, '^exit')

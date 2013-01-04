@@ -9,9 +9,9 @@ import gdb_test
 
 def test(gdb):
   gdb.Command('break test_stepi_after_break')
-  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
   # From GDB/MI documentation, 'stepi' statement should be
-  #   AssertEquals(gdb.ResumeCommand('stepi')['reason'], 'end-stepping-range')
+  #   gdb.ResumeAndExpectStop('stepi', 'end-stepping-range')
   # but in reality 'stepi' stop reason is simply omitted.
   gdb.ResumeCommand('stepi')
   gdb.Quit()
