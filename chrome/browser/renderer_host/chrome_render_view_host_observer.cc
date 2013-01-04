@@ -21,6 +21,10 @@
 #include "content/public/browser/site_instance.h"
 #include "extensions/common/constants.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif  // OS_WIN
+
 using content::ChildProcessSecurityPolicy;
 using content::RenderViewHost;
 using content::SiteInstance;
@@ -154,9 +158,16 @@ void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
 
 void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
   if (editable) {
+#if defined(OS_WIN)
+    base::win::DisplayVirtualKeyboard();
+#endif
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_FOCUSED_NODE_TOUCHED,
         content::Source<RenderViewHost>(render_view_host()),
         content::Details<bool>(&editable));
+  } else {
+#if defined(OS_WIN)
+    base::win::DismissVirtualKeyboard();
+#endif
   }
 }
