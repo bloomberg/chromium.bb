@@ -266,6 +266,10 @@ void ExternalTabContainerWin::Uninitialize() {
   if (web_contents_.get()) {
     UnregisterRenderViewHost(web_contents_->GetRenderViewHost());
 
+    // Explicitly tell the RPH to shutdown, as doing so is the only thing that
+    // cleans up certain resources like infobars (crbug.com/148398).
+    web_contents_->GetRenderProcessHost()->FastShutdownIfPossible();
+
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
