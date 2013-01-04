@@ -142,8 +142,6 @@ main (int argc, char **argv)
 	return 1;
     }
 
-    blanks = FcConfigGetBlanks (NULL);
-
     for (; i < argc; i++)
     {
 	int index;
@@ -154,7 +152,7 @@ main (int argc, char **argv)
 	do {
 	    FcPattern *pat;
 
-	    pat = FcFreeTypeQuery ((FcChar8 *) argv[i], index, blanks, &count);
+	    pat = FcFreeTypeQuery ((FcChar8 *) argv[i], index, NULL, &count);
 	    if (pat)
 	    {
 		if (format)
