@@ -193,7 +193,7 @@ static volatile int *sig_pids, sig_num_threads, sig_proc, sig_marker;
 /* Signal handler to help us recover from dying while we are attached to
  * other threads.
  */
-static void SignalHandler(int signum, struct siginfo *si, void *data) {
+static void SignalHandler(int signum, siginfo_t *si, void *data) {
   if (sig_pids != NULL) {
     if (signum == SIGABRT) {
       while (sig_num_threads-- > 0) {
