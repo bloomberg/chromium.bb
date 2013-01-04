@@ -196,13 +196,25 @@ NSImage* ApplyMask(NSImage* image, NSImage* mask) {
       const int kYOffset = 10;
       CGFloat width = size.width;
       CGFloat height = size.height;
+
       // In some themes, the tab background image is narrower than the
       // new tab button, so tile the background image.
-      NSDrawThreePartImage(
-          NSMakeRect(0, -([image size].height - height - kYOffset),
-                     width, [image size].height),
-          nil, image, nil, /*vertical=*/NO, NSCompositeCopy,
-          1.0, /*flipped=*/NO);
+      CGFloat x = 0;
+      // The floor() is to make sure images with odd widths don't draw to the
+      // same pixel twice on retina displays. (Using NSDrawThreePartImage()
+      // caused a startup perf regression, so that cannot be used.)
+      CGFloat tileWidth = floor(std::min(width, [image size].width));
+      while (x < width) {
+        [image drawAtPoint:NSMakePoint(x, 0)
+                  fromRect:NSMakeRect(0,
+                                      [image size].height - height - kYOffset,
+                                      tileWidth,
+                                      height)
+                 operation:NSCompositeCopy
+                  fraction:1.0];
+        x += tileWidth;
+      }
+
       [mask drawAtPoint:NSZeroPoint
                fromRect:NSMakeRect(0, 0, width, height)
               operation:NSCompositeDestinationIn
