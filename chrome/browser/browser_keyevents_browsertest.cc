@@ -146,9 +146,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void SuppressEventByType(int tab_index, const wchar_t* type, bool suppress) {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetWebContentsAt(browser(), tab_index),
         base::StringPrintf(kSuppressEventJS, type, GetBoolString(!suppress)),
         &actual));
     ASSERT_EQ(!suppress, actual);
@@ -172,9 +171,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
   void GetResultLength(int tab_index, int* length) {
     ASSERT_LT(tab_index, browser()->tab_count());
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        chrome::GetWebContentsAt(browser(), tab_index),
         kGetResultLengthJS,
         length));
   }
@@ -186,9 +184,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_GE(actual_length, length);
     for (int i = 0; i < actual_length; ++i) {
       std::string actual;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-          chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-          "",
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+          chrome::GetWebContentsAt(browser(), tab_index),
           base::StringPrintf(kGetResultJS, i),
           &actual));
 
@@ -204,9 +201,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void CheckFocusedElement(int tab_index, const wchar_t* focused) {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetWebContentsAt(browser(), tab_index),
         kGetFocusedElementJS,
         &actual));
     ASSERT_EQ(WideToUTF8(focused), actual);
@@ -215,9 +211,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void SetFocusedElement(int tab_index, const wchar_t* focused) {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetWebContentsAt(browser(), tab_index),
         base::StringPrintf(kSetFocusedElementJS, focused),
         &actual));
     ASSERT_TRUE(actual);
@@ -227,9 +222,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
                          const wchar_t* value) {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetWebContentsAt(browser(), tab_index),
         base::StringPrintf(kGetTextBoxValueJS, id),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
@@ -239,9 +233,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
                        const wchar_t* value) {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetWebContentsAt(browser(), tab_index),
         base::StringPrintf(kSetTextBoxValueJS, id, value),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
@@ -250,9 +243,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void StartTest(int tab_index, int result_length) {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetWebContentsAt(browser(), tab_index)->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetWebContentsAt(browser(), tab_index),
         base::StringPrintf(kStartTestJS, result_length),
         &actual));
     ASSERT_TRUE(actual);

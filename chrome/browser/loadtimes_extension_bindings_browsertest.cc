@@ -18,11 +18,9 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
     // TODO(simonjam): There's a race on whether or not first paint is populated
     // before we read them. We ought to test that too. Until the race is fixed,
     // zero it out so the test is stable.
-    content::RenderViewHost* rvh =
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-    ASSERT_TRUE(content::ExecuteJavaScript(
-        rvh,
-        "",
+    content::WebContents* contents = chrome::GetActiveWebContents(browser());
+    ASSERT_TRUE(content::ExecuteScript(
+        contents,
         "window.before.firstPaintAfterLoadTime = 0;"
         "window.before.firstPaintTime = 0;"
         "window.after.firstPaintAfterLoadTime = 0;"
@@ -30,15 +28,13 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
 
     std::string before;
     std::string after;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        rvh,
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        contents,
         "window.domAutomationController.send("
         "    JSON.stringify(before))",
         &before));
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        rvh,
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        contents,
         "window.domAutomationController.send("
         "    JSON.stringify(after))",
         &after));
@@ -51,14 +47,13 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   ASSERT_TRUE(test_server()->Start());
   GURL plain_url = test_server()->GetURL("blank");
   ui_test_utils::NavigateToURL(browser(), plain_url);
-  content::RenderViewHost* rvh =
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      rvh, "", "window.before = window.chrome.loadTimes()"));
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      rvh, "", "window.location.href = window.location + \"#\""));
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      rvh, "", "window.after = window.chrome.loadTimes()"));
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.before = window.chrome.loadTimes()"));
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.location.href = window.location + \"#\""));
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.after = window.chrome.loadTimes()"));
   CompareBeforeAndAfter();
 }
 
@@ -68,12 +63,11 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   GURL plain_url = test_server()->GetURL("blank");
   GURL hash_url(plain_url.spec() + "#");
   ui_test_utils::NavigateToURL(browser(), plain_url);
-  content::RenderViewHost* rvh =
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      rvh, "", "window.before = window.chrome.loadTimes()"));
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.before = window.chrome.loadTimes()"));
   ui_test_utils::NavigateToURL(browser(), hash_url);
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      rvh, "", "window.after = window.chrome.loadTimes()"));
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.after = window.chrome.loadTimes()"));
   CompareBeforeAndAfter();
 }

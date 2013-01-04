@@ -552,10 +552,8 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      contents->GetRenderViewHost(),
-      "",
-      "window.open('" + url.spec() + "');"));
+  ASSERT_TRUE(content::ExecuteScript(contents,
+                                     "window.open('" + url.spec() + "');"));
 
   // The above window.open call is not user-initiated, so it will create
   // a popup window instead of a new tab in current window.
@@ -581,9 +579,8 @@ void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
       "window.addEventListener('unload', function() {"
       "    window.domAutomationController.send(true);"
       "}, false);"

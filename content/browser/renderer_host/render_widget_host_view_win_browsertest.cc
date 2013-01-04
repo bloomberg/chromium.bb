@@ -40,9 +40,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to the text field, the IME should be enabled.
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(text01_focus());",
       &success));
   EXPECT_TRUE(success);
@@ -52,9 +51,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to the password field, the IME should be disabled.
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(password02_focus());",
       &success));
   EXPECT_TRUE(success);
@@ -80,9 +78,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to the text field, the IME should be enabled.
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(text01_focus());",
       &success));
   EXPECT_TRUE(success);
@@ -92,9 +89,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to another text field, the IME should be enabled.
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(text02_focus());",
       &success));
   EXPECT_TRUE(success);
@@ -120,9 +116,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to the password field, the IME should be disabled.
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(password01_focus());",
       &success));
   EXPECT_TRUE(success);
@@ -132,9 +127,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
 
   // Focus to the another password field, the IME should be disabled.
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(password02_focus());",
       &success));
   EXPECT_TRUE(success);

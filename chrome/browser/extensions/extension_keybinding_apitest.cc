@@ -89,9 +89,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
 
   // Verify the command worked.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'red'){"
       "    window.domAutomationController.send(true)}}, 100)",
@@ -103,9 +102,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
       browser(), ui::VKEY_Y, true, true, false, false));
 
   result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'blue'){"
       "    window.domAutomationController.send(true)}}, 100)",
@@ -151,9 +149,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   // Verify the command worked (the page action turns the page red).
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'red'){"
       "    window.domAutomationController.send(true)}}, 100)",

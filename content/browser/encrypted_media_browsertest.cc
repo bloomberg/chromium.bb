@@ -76,9 +76,8 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
 
     if (final_title == kFailed) {
       std::string fail_message;
-      EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
-          shell()->web_contents()->GetRenderViewHost(),
-          std::string(),
+      EXPECT_TRUE(ExecuteScriptAndExtractString(
+          shell()->web_contents(),
           "window.domAutomationController.send(failMessage);",
           &fail_message));
       LOG(INFO) << "Test failed: " << fail_message;

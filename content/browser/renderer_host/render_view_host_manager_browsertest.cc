@@ -131,9 +131,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   // Open a same-site link in a new window.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -151,9 +150,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
 
   // We should have access to the opened window's location.
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -166,9 +164,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
 
   // We should no longer have script access to the opened window's location.
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_FALSE(success);
@@ -202,9 +199,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -256,9 +252,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a same-site rel=noreferrer + target=foo link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -310,9 +305,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a target=blank link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -358,9 +352,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
@@ -406,9 +399,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -435,9 +427,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(
           &new_shell->web_contents()->GetController()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -456,9 +447,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   WindowedNotificationObserver close_observer(
         NOTIFICATION_WEB_CONTENTS_DESTROYED,
         Source<WebContents>(new_shell->web_contents()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(testCloseWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -492,9 +482,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   // Test clicking a target=_blank link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -517,10 +506,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // Now disown the opener.
-  EXPECT_TRUE(ExecuteJavaScript(
-      new_shell->web_contents()->GetRenderViewHost(),
-      "",
-      "window.opener = null;"));
+  EXPECT_TRUE(ExecuteScript(new_shell->web_contents(),
+                            "window.opener = null;"));
 
   // Go back and ensure the opener is still null.
   {
@@ -532,9 +519,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
     back_nav_load_observer.Wait();
   }
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      new_shell->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell->web_contents(),
       "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
@@ -542,9 +528,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   // Now navigate forward again (creating a new process) and check opener.
   NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
   success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      new_shell->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell->web_contents(),
       "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
@@ -592,9 +577,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // First, a named target=foo window.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -612,9 +596,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Second, a target=_blank window.
   ShellAddedObserver new_shell_observer2;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -639,11 +622,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // 2) Fail to post a message from the foo window to the opener if the target
   // origin is wrong.  We won't see an error, but we can check for the right
   // number of received messages below.
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      foo_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      foo_contents,
       "window.domAutomationController.send(postToOpener('msg',"
-          "'http://google.com'));",
+      "    'http://google.com'));",
       &success));
   EXPECT_TRUE(success);
   ASSERT_FALSE(opener_manager->GetSwappedOutRenderViewHost(orig_site_instance));
@@ -653,9 +635,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   WindowedNotificationObserver title_observer(
       NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       Source<WebContents>(foo_contents));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      foo_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      foo_contents,
       "window.domAutomationController.send(postToOpener('msg','*'));",
       &success));
   EXPECT_TRUE(success);
@@ -665,15 +646,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // We should have received only 1 message in the opener and "foo" tabs,
   // and updated the title.
   int opener_received_messages = 0;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractInt(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      opener_contents,
       "window.domAutomationController.send(window.receivedMessages);",
       &opener_received_messages));
   int foo_received_messages = 0;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractInt(
-      foo_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      foo_contents,
       "window.domAutomationController.send(window.receivedMessages);",
       &foo_received_messages));
   EXPECT_EQ(1, foo_received_messages);
@@ -685,9 +664,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   WindowedNotificationObserver title_observer2(
       NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       Source<WebContents>(foo_contents));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      new_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_contents,
       "window.domAutomationController.send(postToFoo('msg2'));",
       &success));
   EXPECT_TRUE(success);
@@ -731,9 +709,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      orig_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      orig_contents,
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -760,9 +737,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(
           &orig_contents->GetController()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      new_shell->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell->web_contents(),
       "window.domAutomationController.send(navigateOpener());",
       &success));
   EXPECT_TRUE(success);
@@ -803,9 +779,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -885,9 +860,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // Renderer-initiated navigations should work.
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
@@ -1045,9 +1019,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Open a same-site link in a new widnow.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -1059,11 +1032,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
             new_shell->web_contents()->GetURL().path());
 
   RenderViewHost* rvh = new_shell->web_contents()->GetRenderViewHost();
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
-      "",
       "window.domAutomationController.send("
-          "document.webkitVisibilityState == 'visible');",
+      "    document.webkitVisibilityState == 'visible');",
       &success));
   EXPECT_TRUE(success);
 
@@ -1071,11 +1044,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // tab's existing RenderView, causing it become hidden.
   NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
 
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
-      "",
       "window.domAutomationController.send("
-          "document.webkitVisibilityState == 'hidden');",
+      "    document.webkitVisibilityState == 'hidden');",
       &success));
   EXPECT_TRUE(success);
 
@@ -1090,17 +1062,15 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
     back_nav_load_observer.Wait();
   }
 
-
   EXPECT_EQ("/files/navigate_opener.html",
             new_shell->web_contents()->GetURL().path());
 
   EXPECT_EQ(rvh, new_shell->web_contents()->GetRenderViewHost());
 
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
-      "",
       "window.domAutomationController.send("
-          "document.webkitVisibilityState == 'visible');",
+      "    document.webkitVisibilityState == 'visible');",
       &success));
   EXPECT_TRUE(success);
 }
@@ -1268,9 +1238,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
   EXPECT_TRUE(orig_site_instance != NULL);
 
   ShellAddedObserver shell_observer1;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
       "window.domAutomationController.send(openWindow('1-3.html'));",
       &success));
   EXPECT_TRUE(success);
@@ -1290,9 +1259,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
   EXPECT_NE(orig_site_instance, site_instance1);
 
   ShellAddedObserver shell_observer2;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
       "window.domAutomationController.send(openWindow('../title2.html'));",
       &success));
   EXPECT_TRUE(success);
@@ -1351,9 +1319,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
 
   // Now let's ensure that using JS to add/remove frames results in proper
   // updates.
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
       "window.domAutomationController.send(removeFrame());",
       &success));
   EXPECT_TRUE(success);
@@ -1367,9 +1334,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
       NOTIFICATION_LOAD_STOP,
       Source<NavigationController>(
               &opener_contents->GetController()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      opener_contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
       "window.domAutomationController.send(addFrame());",
       &success));
   EXPECT_TRUE(success);
@@ -1419,9 +1385,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Open a same-site page in a new window.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
       "window.domAutomationController.send(openWindow());",
       &success));
   EXPECT_TRUE(success);

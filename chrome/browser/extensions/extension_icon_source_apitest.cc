@@ -34,9 +34,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -46,9 +45,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Not Loaded");
@@ -67,9 +65,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(otr_browser)->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(otr_browser),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -79,9 +76,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(otr_browser)->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(otr_browser),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Not Loaded");

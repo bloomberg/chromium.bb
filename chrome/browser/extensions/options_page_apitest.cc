@@ -40,10 +40,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   // Go to the Extension Settings page and click the Options button.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      tab_strip->GetActiveWebContents()->GetRenderViewHost(),
-      "",
-      kScriptClickOptionButton));
+  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
+                                     kScriptClickOptionButton));
 
   // If the options page hasn't already come up, wait for it.
   if (tab_strip->count() == 1) {

@@ -469,9 +469,8 @@ bool FocusedOnPage(WebContents* web_contents, std::string* result)
     WARN_UNUSED_RESULT;
 
 bool FocusedOnPage(WebContents* web_contents, std::string* result) {
-  return content::ExecuteJavaScriptAndExtractString(
-      web_contents->GetRenderViewHost(),
-      "",
+  return content::ExecuteScriptAndExtractString(
+      web_contents,
       "window.domAutomationController.send(getFocusedElement());",
       result);
 }
@@ -514,9 +513,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   EXPECT_EQ(1, ordinal);
 
   // Move the selection to link 1, after searching.
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      web_contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
       "window.domAutomationController.send(selectLink1());",
       &result));
 
@@ -588,9 +586,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Move the selection to link 1, after searching.
   std::string result;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      web_contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
       "window.domAutomationController.send(selectLink1());",
       &result));
 
@@ -618,9 +615,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Move the selection to the text span.
   std::string result;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      web_contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
       "window.domAutomationController.send(selectSpan());",
       &result));
 

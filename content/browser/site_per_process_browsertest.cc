@@ -152,8 +152,7 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
         NOTIFICATION_LOAD_STOP,
         Source<NavigationController>(
             &shell()->web_contents()->GetController()));
-    bool result = ExecuteJavaScript(window->web_contents()->GetRenderViewHost(),
-                                    "", script);
+    bool result = ExecuteScript(window->web_contents(), script);
     load_observer.Wait();
     return result;
   }

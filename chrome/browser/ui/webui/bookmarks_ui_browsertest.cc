@@ -32,15 +32,13 @@ class BookmarksTest : public InProcessBrowserTest {
   void AssertIsBookmarksPage(content::WebContents* tab) {
     GURL url;
     std::string out;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        tab->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        tab,
         "domAutomationController.send(location.protocol)",
         &out));
     ASSERT_EQ("chrome-extension:", out);
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        tab->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        tab,
         "domAutomationController.send(location.pathname)",
         &out));
     ASSERT_EQ("/main.html", out);

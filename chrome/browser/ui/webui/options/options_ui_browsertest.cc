@@ -27,9 +27,8 @@ void OptionsBrowserTest::NavigateToSettings() {
 
 void OptionsBrowserTest::VerifyNavbar() {
   bool navbar_exist = false;
-  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      chrome::GetActiveWebContents(browser()),
       "domAutomationController.send("
       "    !!document.getElementById('navigation'))",
       &navbar_exist));

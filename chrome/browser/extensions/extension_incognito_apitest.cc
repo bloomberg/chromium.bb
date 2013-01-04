@@ -36,9 +36,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
 
   // Verify the script didn't run.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
       "window.domAutomationController.send(document.title == 'Unmodified')",
       &result));
   EXPECT_TRUE(result);
@@ -72,9 +71,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
 
   // Verify the script ran.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
       "window.domAutomationController.send(document.title == 'modified')",
       &result));
   EXPECT_TRUE(result);

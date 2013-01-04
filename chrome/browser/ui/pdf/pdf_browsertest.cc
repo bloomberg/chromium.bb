@@ -249,9 +249,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   int y_offset = 0;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send(plugin.pageYOffset())",
       &y_offset));
   ASSERT_GT(y_offset, 0);
@@ -338,9 +337,8 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
       // doing async loading.  This happens when the first loader is cancelled
       // and before creating a byte-range request loader.
       bool complete = false;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          std::string(),
+      ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+          chrome::GetActiveWebContents(browser()),
           "window.domAutomationController.send(plugin.documentLoadComplete())",
           &complete));
       if (complete)
@@ -362,27 +360,23 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Action) {
   ASSERT_NO_FATAL_FAILURE(Load());
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(browser()),
       "document.getElementsByName('plugin')[0].fitToHeight();"));
 
   std::string zoom1, zoom2;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send("
       "    document.getElementsByName('plugin')[0].getZoomLevel().toString())",
       &zoom1));
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(browser()),
       "document.getElementsByName('plugin')[0].fitToWidth();"));
 
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send("
       "    document.getElementsByName('plugin')[0].getZoomLevel().toString())",
       &zoom2));
@@ -400,9 +394,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      std::string(),
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(browser()),
       "reloadPDF();"));
   observer.Wait();
 

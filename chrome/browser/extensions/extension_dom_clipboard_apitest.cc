@@ -67,9 +67,8 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
 
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::string& script,
                                                   bool* result) {
-  if (!content::ExecuteJavaScriptAndExtractBool(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+  if (!content::ExecuteScriptAndExtractBool(
+          chrome::GetActiveWebContents(browser()),
           script,
           result)) {
     message_ = "Failed to execute script in selected tab.";

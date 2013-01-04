@@ -235,9 +235,8 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   // Verify that the expected error page is being displayed.
   // (error 138 == NETWORK_ACCESS_DENIED)
   bool result = false;
-  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
       "var hasError = false;"
       "var error = document.getElementById('errorDetails');"
       "if (error)"
@@ -289,9 +288,8 @@ int CountScreenshots() {
 // Checks if WebGL is enabled in the given WebContents.
 bool IsWebGLEnabled(content::WebContents* contents) {
   bool result = false;
-  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      contents->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
       "var canvas = document.createElement('canvas');"
       "var context = canvas.getContext('experimental-webgl');"
       "domAutomationController.send(context != null);",
@@ -460,9 +458,8 @@ class PolicyTest : public InProcessBrowserTest {
     // (setupCurrentScreenshot is replaced with our hook) or after it has
     // completed (in that case send result immediately).
     bool result = false;
-    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        web_contents->GetRenderViewHost(),
-        "",
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
         "function btest_initCompleted(url) {"
         "  var img = new Image();"
         "  img.src = url;"
@@ -1723,9 +1720,8 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   std::string text;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
       "var nodes = document.querySelectorAll('body > pre');"
       "var result = '';"
       "for (var i = 0; i < nodes.length; ++i) {"

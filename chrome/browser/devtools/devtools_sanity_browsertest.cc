@@ -98,18 +98,16 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   // checking that global variable uiTests exists(it's created after all js
   // files have been loaded) and has runTest method.
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
+      content::ExecuteScriptAndExtractString(
           window->GetRenderViewHost(),
-          "",
           "window.domAutomationController.send("
           "    '' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));
 
   if (result == "function") {
     ASSERT_TRUE(
-        content::ExecuteJavaScriptAndExtractString(
+        content::ExecuteScriptAndExtractString(
             window->GetRenderViewHost(),
-            "",
             base::StringPrintf("uiTests.runTest('%s')", test_name),
             &result));
     EXPECT_EQ("[OK]", result);
@@ -530,9 +528,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   OpenDevToolsWindow("about:blank");
   std::string result;
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
+      content::ExecuteScriptAndExtractString(
           window_->GetRenderViewHost(),
-          "",
           "window.domAutomationController.send("
           "    '' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));

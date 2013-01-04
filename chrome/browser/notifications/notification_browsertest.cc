@@ -272,9 +272,8 @@ std::string NotificationsTest::CreateNotification(
 
   NotificationBalloonChangeObserver observer;
   std::string result;
-  bool success = content::ExecuteJavaScriptAndExtractString(
-      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      "",
+  bool success = content::ExecuteScriptAndExtractString(
+      browser->tab_strip_model()->GetActiveWebContents(),
       script,
       &result);
   if (success && result != "-1" && wait_for_new_balloon)
@@ -299,9 +298,8 @@ bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarService>(infobar_service));
   std::string result;
-  bool success = content::ExecuteJavaScriptAndExtractString(
-      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      "",
+  bool success = content::ExecuteScriptAndExtractString(
+      browser->tab_strip_model()->GetActiveWebContents(),
       "requestPermission();",
       &result);
   if (!success || result != "1")
@@ -319,9 +317,8 @@ bool NotificationsTest::CancelNotification(
 
   NotificationBalloonChangeObserver observer;
   std::string result;
-  bool success = content::ExecuteJavaScriptAndExtractString(
-      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      "",
+  bool success = content::ExecuteScriptAndExtractString(
+      browser->tab_strip_model()->GetActiveWebContents(),
       script,
       &result);
   if (!success || result != "1")
@@ -412,9 +409,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
   // Request permission by calling request() while eval'ing an inline script;
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(request());",
       &result));
   EXPECT_TRUE(result);

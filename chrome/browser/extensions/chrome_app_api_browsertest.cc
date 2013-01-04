@@ -33,9 +33,11 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
         "window.domAutomationController.send(window.chrome.app.isInstalled);";
     bool result;
     CHECK(
-        content::ExecuteJavaScriptAndExtractBool(
-            chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-            frame_xpath, kGetAppIsInstalled, &result));
+        content::ExecuteScriptInFrameAndExtractBool(
+            chrome::GetActiveWebContents(browser()),
+            frame_xpath,
+            kGetAppIsInstalled,
+            &result));
     return result;
   }
 
@@ -46,9 +48,11 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
         "    function(s) { window.domAutomationController.send(s); });";
     std::string result;
     CHECK(
-        content::ExecuteJavaScriptAndExtractString(
-            chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-            frame_xpath, kGetAppInstallState, &result));
+        content::ExecuteScriptInFrameAndExtractString(
+            chrome::GetActiveWebContents(browser()),
+            frame_xpath,
+            kGetAppInstallState,
+            &result));
     return result;
   }
 
@@ -59,9 +63,11 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
         "    window.chrome.app.runningState());";
     std::string result;
     CHECK(
-        content::ExecuteJavaScriptAndExtractString(
-            chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-            frame_xpath, kGetAppRunningState, &result));
+        content::ExecuteScriptInFrameAndExtractString(
+            chrome::GetActiveWebContents(browser()),
+            frame_xpath,
+            kGetAppRunningState,
+            &result));
     return result;
   }
 
@@ -113,9 +119,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
       "    JSON.stringify(window.chrome.app.getDetails()));";
   std::string result;
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           kGetAppDetails,
           &result));
   EXPECT_EQ("null", result);
@@ -128,9 +133,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   // chrome.app.getDetails().
   ui_test_utils::NavigateToURL(browser(), app_url);
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           kGetAppDetails,
           &result));
   scoped_ptr<DictionaryValue> app_details(
@@ -143,9 +147,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   // Try to change app.isInstalled.  Should silently fail, so
   // that isInstalled should have the initial value.
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           "window.domAutomationController.send("
           "    function() {"
           "        var value = window.chrome.app.isInstalled;"
@@ -194,9 +197,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
       "window.domAutomationController.send(window.testUnsuccessfulAccess())";
   bool result = false;
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractBool(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractBool(
+          chrome::GetActiveWebContents(browser()),
           kTestUnsuccessfulAccess,
           &result));
   EXPECT_TRUE(result);
@@ -209,9 +211,8 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
       "    JSON.stringify(chrome.app.getDetailsForFrame(frames[0])))";
   std::string json;
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           kGetDetailsForFrame,
           &json));
 

@@ -26,9 +26,8 @@ IN_PROC_BROWSER_TEST_F(CalculatorBrowserTest, Model) {
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
   bool success;
-  bool executed = content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  bool executed = content::ExecuteScriptAndExtractBool(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send(window.runTests().success)",
       &success);
 

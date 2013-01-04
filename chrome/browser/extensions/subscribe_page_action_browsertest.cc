@@ -77,17 +77,15 @@ GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
 }
 
 bool ValidatePageElement(WebContents* tab,
-                         const std::string& frame,
+                         const std::string& frame_xpath,
                          const std::string& javascript,
                          const std::string& expected_value) {
   std::string returned_value;
   std::string error;
 
-  if (!content::ExecuteJavaScriptAndExtractString(
-          tab->GetRenderViewHost(),
-          frame,
-          javascript,
-          &returned_value))
+  if (!content::ExecuteScriptInFrameAndExtractString(tab, frame_xpath,
+                                                     javascript,
+                                                     &returned_value))
     return false;
 
   EXPECT_STREQ(expected_value.c_str(), returned_value.c_str());

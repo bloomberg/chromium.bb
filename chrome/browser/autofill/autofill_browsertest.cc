@@ -217,8 +217,7 @@ class AutofillTest : public InProcessBrowserTest {
     js += "document.getElementById('testform').submit();";
 
     WindowedPersonalDataManagerObserver observer(browser());
-    ASSERT_TRUE(
-        content::ExecuteJavaScript(render_view_host(), "", js));
+    ASSERT_TRUE(content::ExecuteScript(render_view_host(), js));
     observer.Wait();
   }
 
@@ -239,8 +238,7 @@ class AutofillTest : public InProcessBrowserTest {
   // sends keypress events to the tab to cause the form to be populated.
   void PopulateForm(const std::string& field_id) {
     std::string js("document.getElementById('" + field_id + "').focus();");
-    ASSERT_TRUE(
-        content::ExecuteJavaScript(render_view_host(), "", js));
+    ASSERT_TRUE(content::ExecuteScript(render_view_host(), js));
 
     SendKeyAndWait(ui::VKEY_DOWN,
                    chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
@@ -292,9 +290,8 @@ class AutofillTest : public InProcessBrowserTest {
   void ExpectFieldValue(const std::string& field_name,
                         const std::string& expected_value) {
     std::string value;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetActiveWebContents(browser()),
         "window.domAutomationController.send("
         "    document.getElementById('" + field_name + "').value);",
         &value));
@@ -352,9 +349,8 @@ class AutofillTest : public InProcessBrowserTest {
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
         render_view_host(),
-        "",
         "if (document.readyState === 'complete')"
         "  document.getElementById('firstname').focus();"
         "else"
@@ -539,24 +535,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
   bool unfocused_fired = false;
   bool changed_select_fired = false;
   bool unchanged_select_fired = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "domAutomationController.send(focused_fired);",
       &focused_fired));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "domAutomationController.send(unfocused_fired);",
       &unfocused_fired));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "domAutomationController.send(changed_select_fired);",
       &changed_select_fired));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "domAutomationController.send(unchanged_select_fired);",
       &unchanged_select_fired));
   EXPECT_FALSE(focused_fired);
@@ -565,9 +557,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
   EXPECT_FALSE(unchanged_select_fired);
 
   // Unfocus the first name field. Its change event should fire.
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "document.getElementById('firstname').blur();"
       "domAutomationController.send(focused_fired);", &focused_fired));
   EXPECT_TRUE(focused_fired);
@@ -780,8 +771,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_DynamicFormFill) {
            "</script>")));
 
   // Dynamically construct the form.
-  ASSERT_TRUE(content::ExecuteJavaScript(render_view_host(), "",
-                                         "BuildForm();"));
+  ASSERT_TRUE(content::ExecuteScript(render_view_host(), "BuildForm();"));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -879,10 +869,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
   // Simulate translation to kick onTranslateElementLoad.
   // But right now, the call stucks here.
   // Once click the text field, it starts again.
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      render_view_host(),
-      "",
-      "cr.googleTranslate.onTranslateElementLoad();"));
+  ASSERT_TRUE(content::ExecuteScript(
+      render_view_host(), "cr.googleTranslate.onTranslateElementLoad();"));
 
   // Simulate the render notifying the translation has been done.
   translation_observer.Wait();
@@ -1370,9 +1358,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillableOnReset) {
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(browser()),
       "document.getElementById('testform').reset()"));
 
   PopulateForm("NAME_FIRST");
@@ -1522,9 +1509,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillLatencyAfterSubmit) {
       content::Source<content::NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteScript(
       render_view_host(),
-      "",
       "document.getElementById('testform').submit();"));
   // This will ensure the test didn't hang.
   load_stop_observer.Wait();
@@ -1555,9 +1541,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
 
   // Now that the popup with suggestions is showing, disable autocomplete for
   // the active field.
-  ASSERT_TRUE(content::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteScript(
       render_view_host(),
-      "",
       "document.querySelector('input').autocomplete = 'off';"));
 
   // Press the down arrow to select the suggestion and attempt to preview the
@@ -1568,9 +1553,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
   // Wait for any IPCs to complete by performing an action that generates an
   // IPC that's easy to wait for.  Chrome shouldn't crash.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       render_view_host(),
-      "",
       "var city = document.getElementById('city');"
       "city.onfocus = function() { domAutomationController.send(true); };"
       "city.focus()",

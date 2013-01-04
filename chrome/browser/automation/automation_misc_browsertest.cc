@@ -73,9 +73,8 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
 
   content::RenderViewHost* view =
       chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(content::ExecuteJavaScript(
+  ASSERT_TRUE(content::ExecuteScript(
       view,
-      "",
       "window.didClick = false;"
       "document.body.innerHTML ="
       "    '<a style=\\'position:absolute; left:0; top:0\\'>link</a>';"
@@ -98,9 +97,8 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
       mock.error_callback());
 
   bool did_click = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       view,
-      "",
       "window.domAutomationController.send(window.didClick);",
       &did_click));
   EXPECT_TRUE(did_click);

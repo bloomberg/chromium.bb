@@ -464,9 +464,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   // Activate the first browser.
   focused_browser->window()->Activate();
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(unfocused_browser)->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(unfocused_browser),
       "stealFocus();"));
 
   // Make sure the first browser is still active.
@@ -484,9 +483,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 
   chrome::FocusLocationBar(browser());
 
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScript(
+      chrome::GetActiveWebContents(browser()),
       "stealFocus();"));
 
   // Make sure the location bar is still focused.
@@ -531,9 +529,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       SCOPED_TRACE(base::StringPrintf("inner loop %" PRIuS, j));
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           "window.domAutomationController.send(getFocusedElement());",
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
@@ -604,9 +601,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+          chrome::GetActiveWebContents(browser()),
           "window.domAutomationController.send(getFocusedElement());",
           &actual));
       ASSERT_STREQ(next_element, actual.c_str());
@@ -663,9 +659,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     for (size_t j = 0; j < 7; ++j) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
           interstitial_page->render_view_host(),
-          "",
           "window.domAutomationController.send(getFocusedElement());",
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
@@ -724,9 +719,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
           interstitial_page->render_view_host(),
-          "",
           "window.domAutomationController.send(getFocusedElement());",
           &actual));
       ASSERT_STREQ(kExpElementIDs[6 - j], actual.c_str());

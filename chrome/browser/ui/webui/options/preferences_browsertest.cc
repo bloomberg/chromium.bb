@@ -81,8 +81,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   pref_change_registrar_.Init(
       PrefServiceBase::FromBrowserContext(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
-  ASSERT_TRUE(content::ExecuteJavaScript(render_view_host_,
-      "",
+  ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"
       "  this.sentinelName_ = 'download.prompt_for_download';"
       "  this.prefs_ = [];"
@@ -313,8 +312,8 @@ void PreferencesBrowserTest::SetupJavaScriptTestEnvironment(
   std::string temp_observed_json;
   if (!observed_json)
     observed_json = &temp_observed_json;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      render_view_host_, "", javascript.str(), observed_json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), observed_json));
 }
 
 void PreferencesBrowserTest::VerifySetPref(const std::string& name,
@@ -337,8 +336,8 @@ void PreferencesBrowserTest::VerifySetPref(const std::string& name,
              << "      " << value_json.c_str() << ","
              << "      " << commit_json.c_str() << ");});";
   std::string observed_json;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      render_view_host_, "", javascript.str(), &observed_json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), &observed_json));
   VerifyObservedPref(observed_json, name, value, "", false, !commit);
   VerifyAndClearExpectations();
 }
@@ -359,8 +358,8 @@ void PreferencesBrowserTest::VerifyClearPref(const std::string& name,
              << "      '" << name.c_str() << "',"
              << "      " << commit_json.c_str() << ");});";
   std::string observed_json;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      render_view_host_, "", javascript.str(), &observed_json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), &observed_json));
   VerifyObservedPref(observed_json, name, value, "recommended", false, !commit);
   VerifyAndClearExpectations();
 }
@@ -373,8 +372,8 @@ void PreferencesBrowserTest::VerifyCommit(const std::string& name,
              << "    Preferences.getInstance().commitPref("
              << "        '" << name.c_str() << "');});";
   std::string observed_json;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      render_view_host_, "", javascript.str(), &observed_json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), &observed_json));
   VerifyObservedPref(observed_json, name, value, controlledBy, false, false);
 }
 
@@ -401,21 +400,20 @@ void PreferencesBrowserTest::VerifyRollback(const std::string& name,
              << "    Preferences.getInstance().rollbackPref("
              << "        '" << name.c_str() << "');});";
   std::string observed_json;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      render_view_host_, "", javascript.str(), &observed_json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), &observed_json));
   VerifyObservedPref(observed_json, name, value, controlledBy, false, true);
   VerifyAndClearExpectations();
 }
 
 void PreferencesBrowserTest::StartObserving() {
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      render_view_host_, "", "testEnv.startObserving();"));
+  ASSERT_TRUE(content::ExecuteScript(
+      render_view_host_, "testEnv.startObserving();"));
 }
 
 void PreferencesBrowserTest::FinishObserving(std::string* observed_json) {
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       render_view_host_,
-      "",
       "testEnv.finishObservingAndReply();",
       observed_json));
 }

@@ -183,10 +183,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     js_call << new_bounds.width() << ", " << new_bounds.height();
     js_call << ");";
 
-    ASSERT_TRUE(content::ExecuteJavaScript(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        "",
-        js_call.str()));
+    ASSERT_TRUE(content::ExecuteScript(
+        chrome::GetActiveWebContents(browser()), js_call.str()));
 
     std::string message;
     ASSERT_TRUE(message_queue.WaitForMessage(&message));

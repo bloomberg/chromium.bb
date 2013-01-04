@@ -92,8 +92,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
     content::RenderViewHost* host =
         chrome::GetActiveWebContents(browser())->GetRenderViewHost();
     if (wait_for_response) {
-      ASSERT_TRUE(content::ExecuteJavaScript(
-          host, "", script));
+      ASSERT_TRUE(content::ExecuteScript(host, script));
     } else {
       script += "window.domAutomationController.setAutomationId(0);"
                 "window.domAutomationController.send(0);";

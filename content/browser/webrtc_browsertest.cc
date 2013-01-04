@@ -30,10 +30,7 @@ class WebrtcBrowserTest: public ContentBrowserTest {
   }
  protected:
   bool ExecuteJavascript(const std::string& javascript) {
-    RenderViewHost* render_view_host =
-        shell()->web_contents()->GetRenderViewHost();
-
-    return ExecuteJavaScript(render_view_host, "", javascript);
+    return ExecuteScript(shell()->web_contents(), javascript);
   }
 
   void ExpectTitle(const std::string& expected_title) const {

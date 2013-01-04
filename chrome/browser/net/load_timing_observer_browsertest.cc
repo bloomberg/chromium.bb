@@ -26,18 +26,15 @@ IN_PROC_BROWSER_TEST_F(LoadTimingObserverTest, DISABLED_CacheHitAfterRedirect) {
 
   int response_start = 0;
   int response_end = 0;
-  content::RenderViewHost* render_view_host =
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      render_view_host,
-      "",
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      contents,
       "window.domAutomationController.send("
       "    window.performance.timing.responseStart - "
       "    window.performance.timing.navigationStart)",
       &response_start));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractInt(
-      render_view_host,
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      contents,
       "window.domAutomationController.send("
       "    window.performance.timing.responseEnd - "
       "    window.performance.timing.navigationStart)",

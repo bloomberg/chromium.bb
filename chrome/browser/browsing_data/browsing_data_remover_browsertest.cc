@@ -46,11 +46,8 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   void RunScriptAndCheckResult(const std::string& script,
                                const std::string& result) {
     std::string data;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        "",
-        script,
-        &data));
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetActiveWebContents(browser()), script, &data));
     ASSERT_EQ(data, result);
   }
 

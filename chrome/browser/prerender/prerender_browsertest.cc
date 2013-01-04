@@ -782,9 +782,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     chrome::GoBack(current_browser(), CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser()),
         "window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
@@ -803,9 +802,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     chrome::GoBack(current_browser(), CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        tab->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        tab,
         "window.domAutomationController.send(DidBackToOriginalPagePass())",
         &js_result));
     EXPECT_TRUE(js_result);
@@ -856,9 +854,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         "window.domAutomationController.send(Boolean("
             "receivedPrerenderStartEvents[%d]))", index);
 
-    CHECK(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        "",
+    CHECK(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser()),
         expression,
         &received_prerender_started));
     return received_prerender_started;
@@ -870,9 +867,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         "window.domAutomationController.send(Boolean("
             "receivedPrerenderLoadEvents[%d]))", index);
 
-    CHECK(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        "", expression,
+    CHECK(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser()),
+        expression,
         &received_prerender_loaded));
     return received_prerender_loaded;
   }
@@ -883,9 +880,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         "window.domAutomationController.send(Boolean("
             "receivedPrerenderStopEvents[%d]))", index);
 
-    CHECK(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        "",
+    CHECK(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser()),
         expression,
         &received_prerender_stopped));
     return received_prerender_stopped;
@@ -893,10 +889,11 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   bool HadPrerenderEventErrors() const {
     bool had_prerender_event_errors;
-    CHECK(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
-        "", "window.domAutomationController.send(Boolean("
-            "hadPrerenderEventErrors))", &had_prerender_event_errors));
+    CHECK(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(current_browser()),
+        "window.domAutomationController.send(Boolean("
+        "    hadPrerenderEventErrors))",
+        &had_prerender_event_errors));
     return had_prerender_event_errors;
   }
 
@@ -1059,9 +1056,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
-        ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+        ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
             prerender_contents->GetRenderViewHostMutable(),
-            "",
             "window.domAutomationController.send(DidPrerenderPass())",
             &prerender_test_result));
         EXPECT_TRUE(prerender_test_result);
@@ -1118,9 +1114,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         page_load_observer->Wait();
 
       bool display_test_result = false;
-      ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-          web_contents->GetRenderViewHost(),
-          "",
+      ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+          web_contents,
           "window.domAutomationController.send(DidDisplayPass())",
           &display_test_result));
       EXPECT_TRUE(display_test_result);
@@ -1432,9 +1427,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   //                loading.  It would be great if we could avoid that.
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      web_contents->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
       "window.domAutomationController.send(DidDisplayPass())",
       &display_test_result));
   EXPECT_TRUE(display_test_result);
@@ -2615,11 +2609,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   // asynchronously.
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      web_contents->GetRenderViewHost(),
-      "",
-      "DidDisplayReallyPass()",
-      &display_test_result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents,
+                                                   "DidDisplayReallyPass()",
+                                                   &display_test_result));
   ASSERT_TRUE(display_test_result);
 }
 

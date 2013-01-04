@@ -78,33 +78,66 @@ void SimulateKeyPress(WebContents* web_contents,
                       bool alt,
                       bool command);
 
+// Allow ExecuteScript* methods to target either a WebContents or a
+// RenderViewHost.  Targetting a WebContents means executing script in the
+// RenderViewHost returned by WebContents::GetRenderViewHost(), which is the
+// "current" RenderViewHost.  Pass a specific RenderViewHost to target, for
+// example, a "swapped-out" RenderViewHost.
+namespace internal {
+class ToRenderViewHost {
+ public:
+  ToRenderViewHost(WebContents* web_contents);
+  ToRenderViewHost(RenderViewHost* render_view_host);
+
+  RenderViewHost* render_view_host() const { return render_view_host_; }
+
+ private:
+  RenderViewHost* render_view_host_;
+};
+}  // namespace internal
+
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
 // empty string for main frame).  The |script| should not invoke
 // domAutomationController.send(); otherwise, your test will hang or be flaky.
 // If you want to extract a result, use one of the below functions.
 // Returns true on success.
-bool ExecuteJavaScript(RenderViewHost* render_view_host,
-                       const std::string& frame_xpath,
-                       const std::string& script) WARN_UNUSED_RESULT;
+bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
+                          const std::string& frame_xpath,
+                          const std::string& script) WARN_UNUSED_RESULT;
 
 // The following methods executes the passed |script| in the frame pointed to by
 // |frame_xpath| (use empty string for main frame) and sets |result| to the
-// value returned by the script evaluation.
-// They return true on success, false if the script evaluation failed or did not
+// value passed to "window.domAutomationController.send" by the executed script.
+// They return true on success, false if the script execution failed or did not
 // evaluate to the expected type.
-bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
-                                    const std::string& frame_xpath,
-                                    const std::string& script,
-                                    int* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
-                                     const std::string& frame_xpath,
-                                     const std::string& script,
-                                     bool* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractString(
-    RenderViewHost* render_view_host,
+bool ExecuteScriptInFrameAndExtractInt(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    int* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptInFrameAndExtractBool(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    bool* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptInFrameAndExtractString(
+    const internal::ToRenderViewHost& adapter,
     const std::string& frame_xpath,
     const std::string& script,
     std::string* result) WARN_UNUSED_RESULT;
+
+// Top-frame script execution helpers (a.k.a., the common case):
+bool ExecuteScript(const internal::ToRenderViewHost& adapter,
+                   const std::string& script) WARN_UNUSED_RESULT;
+bool ExecuteScriptAndExtractInt(const internal::ToRenderViewHost& adapter,
+                                const std::string& script,
+                                int* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptAndExtractBool(const internal::ToRenderViewHost& adapter,
+                                 const std::string& script,
+                                 bool* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
+                                   const std::string& script,
+                                   std::string* result) WARN_UNUSED_RESULT;
 
 // Returns the cookies for the given url.
 std::string GetCookies(BrowserContext* browser_context, const GURL& url);

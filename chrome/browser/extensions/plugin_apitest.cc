@@ -47,8 +47,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   // With no extensions, the plugin should not be loaded.
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   EXPECT_FALSE(result);
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   ASSERT_TRUE(extension);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   // Now the plugin should be in the cache.
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
@@ -74,8 +74,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   // Now the plugin should be unloaded, and the page should be broken.
 
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   EXPECT_FALSE(result);
 
   // If we reload the extension and page, it should work again.
@@ -90,8 +90,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     chrome::Reload(browser(), CURRENT_TAB);
     observer.Wait();
   }
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
@@ -124,8 +124,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
       extension->GetResourceURL("test.html"));
   WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
@@ -141,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
   // loaded even if content settings are set to block plug-ins.
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
   // Now load it through a file URL. The plugin should not load.
   ui_test_utils::NavigateToURL(browser(),
       net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), "", "testPluginWorks()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "testPluginWorks()", &result));
   EXPECT_FALSE(result);
 }

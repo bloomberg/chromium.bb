@@ -55,8 +55,8 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
       return false;
 
     std::string version_from_bg;
-    bool exec = content::ExecuteJavaScriptAndExtractString(
-        ext_host->render_view_host(), "", "version()", &version_from_bg);
+    bool exec = content::ExecuteScriptAndExtractString(
+        ext_host->render_view_host(), "version()", &version_from_bg);
     EXPECT_TRUE(exec);
     if (!exec)
       return false;

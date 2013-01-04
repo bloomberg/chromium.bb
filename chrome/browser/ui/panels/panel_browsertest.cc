@@ -423,10 +423,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
 
   // Expand the test page. The resize will update the docked panel collection.
   WaitForAutoResizeWider enlarge(panel);
-  EXPECT_TRUE(content::ExecuteJavaScript(
-      panel->GetWebContents()->GetRenderViewHost(),
-      "",
-      "changeSize(50);"));
+  EXPECT_TRUE(content::ExecuteScript(
+      panel->GetWebContents(), "changeSize(50);"));
   enlarge.Wait();
   gfx::Rect bounds_on_grow = panel->GetBounds();
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
@@ -434,10 +432,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
 
   // Shrink the test page. The resize will update the docked panel collection.
   WaitForAutoResizeNarrower shrink(panel);
-  EXPECT_TRUE(content::ExecuteJavaScript(
-      panel->GetWebContents()->GetRenderViewHost(),
-      "",
-      "changeSize(-30);"));
+  EXPECT_TRUE(content::ExecuteScript(
+      panel->GetWebContents(), "changeSize(-30);"));
   shrink.Wait();
   gfx::Rect bounds_on_shrink = panel->GetBounds();
   EXPECT_LT(bounds_on_shrink.width(), bounds_on_grow.width());
@@ -1564,9 +1560,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   // Inject some HTML content into the panel.
   WaitForAutoResizeWider enlarge(panel);
-  EXPECT_TRUE(content::ExecuteJavaScript(
-      panel->GetWebContents()->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScript(
+      panel->GetWebContents(),
       "document.body.innerHTML ="
       "    '<nobr>line of text and a <button>Button</button>';"));
   enlarge.Wait();

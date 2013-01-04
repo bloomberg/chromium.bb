@@ -566,9 +566,9 @@ class SnapshotTaker {
                               SkBitmap* bitmap) WARN_UNUSED_RESULT {
     const char* script =
         "window.domAutomationController.send("
-            "JSON.stringify([document.width, document.height]))";
+        "    JSON.stringify([document.width, document.height]))";
     std::string json;
-    if (!content::ExecuteJavaScriptAndExtractString(rvh, "", script, &json))
+    if (!content::ExecuteScriptAndExtractString(rvh, script, &json))
       return false;
 
     // Parse the JSON.

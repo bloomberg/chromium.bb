@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), "", "testLastError()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      host->render_view_host(), "testLastError()", &result));
   EXPECT_TRUE(result);
 }

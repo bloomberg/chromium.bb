@@ -39,9 +39,8 @@ IN_PROC_BROWSER_TEST_F(HostRulesTest, TestMap) {
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   std::string html;
-  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(browser()),
       "window.domAutomationController.send(document.body.outerHTML);",
       &html));
 

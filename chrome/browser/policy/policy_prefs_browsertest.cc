@@ -331,8 +331,8 @@ void VerifyControlledSettingIndicators(Browser* browser,
   std::string json;
   // Retrieve the state of all controlled setting indicators matching the
   // |selector| as JSON.
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      contents->GetRenderViewHost(), "", javascript.str(), &json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript.str(),
+                                                     &json));
   scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
   const base::ListValue* indicators = NULL;
   ASSERT_TRUE(value_ptr.get());
@@ -491,9 +491,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
 
     ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
     if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
-      ASSERT_TRUE(content::ExecuteJavaScript(
-          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-          "",
+      ASSERT_TRUE(content::ExecuteScript(
+          chrome::GetActiveWebContents(browser()),
           (*pref_mapping)->indicator_test_setup_js()));
     }
 

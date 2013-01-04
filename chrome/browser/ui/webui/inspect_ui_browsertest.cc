@@ -46,9 +46,8 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorkersList) {
 
   std::string result;
   ASSERT_TRUE(
-      content::ExecuteJavaScriptAndExtractString(
-          web_contents->GetRenderViewHost(),
-          "",
+      content::ExecuteScriptAndExtractString(
+          web_contents,
           "window.domAutomationController.send("
           "    '' + document.body.textContent);",
           &result));

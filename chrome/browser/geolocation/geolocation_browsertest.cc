@@ -69,9 +69,8 @@ class IFrameLoader : public content::NotificationObserver {
     script = base::StringPrintf(
         "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
     std::string iframe_src;
-    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
-        "",
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        chrome::GetActiveWebContents(browser),
         script,
         &iframe_src));
     iframe_url_ = GURL(iframe_src);
@@ -329,8 +328,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     std::string script = base::StringPrintf(
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-        web_contents->GetRenderViewHost(),
+    ASSERT_TRUE(content::ExecuteScriptInFrameAndExtractString(
+        web_contents,
         iframe_xpath_,
         script,
         &result));
@@ -612,9 +611,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
       "window.domAutomationController.send(geoSetFinalPosition(%f, %f))",
       final_position_latitude, final_position_longitude);
   std::string js_result;
-  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(current_browser_)->GetRenderViewHost(),
-      "",
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      chrome::GetActiveWebContents(current_browser_),
       script,
       &js_result));
   EXPECT_EQ(js_result, "ok");
@@ -652,9 +650,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   std::string script =
       "window.domAutomationController.send(window.close());";
   bool result =
-      content::ExecuteJavaScript(
-          chrome::GetActiveWebContents(current_browser_)->GetRenderViewHost(),
-          "",
+      content::ExecuteScript(
+          chrome::GetActiveWebContents(current_browser_),
           script);
   EXPECT_EQ(result, true);
 }

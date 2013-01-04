@@ -458,10 +458,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
   string16 expected_title(ASCIIToUTF16("Target Page"));
   content::TitleWatcher title_watcher(
       chrome::GetActiveWebContents(browser()), expected_title);
-  ASSERT_TRUE(content::ExecuteJavaScript(
-      web_contents->GetRenderViewHost(),
-      "",
-      "document.getElementById('form').submit()"));
+  ASSERT_TRUE(content::ExecuteScript(
+      web_contents, "document.getElementById('form').submit()"));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   std::vector<GURL> urls(GetHistoryContents());

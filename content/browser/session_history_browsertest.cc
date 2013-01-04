@@ -429,18 +429,16 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 // http://code.google.com/p/chromium/issues/detail?id=56267
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   int length;
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
       "domAutomationController.send(history.length)",
       &length));
   EXPECT_EQ(1, length);
 
   NavigateToURL(shell(), GetURL("title1.html"));
 
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
       "domAutomationController.send(history.length)",
       &length));
   EXPECT_EQ(2, length);
@@ -448,9 +446,8 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   // Now test that history.length is updated when the navigation is committed.
   NavigateToURL(shell(), GetURL("record_length.html"));
 
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
       "domAutomationController.send(history.length)",
       &length));
   EXPECT_EQ(3, length);
@@ -461,9 +458,8 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   // Ensure history.length is properly truncated.
   NavigateToURL(shell(), GetURL("title2.html"));
 
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractInt(
-      shell()->web_contents()->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
       "domAutomationController.send(history.length)",
       &length));
   EXPECT_EQ(2, length);

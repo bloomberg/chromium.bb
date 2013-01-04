@@ -137,23 +137,21 @@ class InstantTest : public InProcessBrowserTest {
   bool GetBoolFromJS(content::RenderViewHost* rvh,
                      const std::string& script,
                      bool* result) WARN_UNUSED_RESULT {
-    return content::ExecuteJavaScriptAndExtractBool(rvh, "", WrapScript(script),
-                                                    result);
+    return content::ExecuteScriptAndExtractBool(rvh, WrapScript(script),
+                                                result);
   }
 
   bool GetIntFromJS(content::RenderViewHost* rvh,
                     const std::string& script,
                     int* result) WARN_UNUSED_RESULT {
-    return content::ExecuteJavaScriptAndExtractInt(rvh, "", WrapScript(script),
-                                                   result);
+    return content::ExecuteScriptAndExtractInt(rvh, WrapScript(script), result);
   }
 
   bool GetStringFromJS(content::RenderViewHost* rvh,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT {
-    return content::ExecuteJavaScriptAndExtractString(rvh, "",
-                                                      WrapScript(script),
-                                                      result);
+    return content::ExecuteScriptAndExtractString(rvh, WrapScript(script),
+                                                  result);
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
@@ -169,10 +167,8 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT {
-    return content::ExecuteJavaScript(
-        instant()->GetPreviewContents()->GetRenderViewHost(),
-        "",
-        script);
+    return content::ExecuteScript(
+        instant()->GetPreviewContents()->GetRenderViewHost(), script);
   }
 
   bool CheckVisibilityIs(content::WebContents* contents,

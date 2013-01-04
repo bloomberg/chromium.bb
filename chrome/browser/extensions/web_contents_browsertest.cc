@@ -21,9 +21,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
 
   bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      chrome::GetActiveWebContents(browser()),
       "testTabsAPI()",
       &result));
   EXPECT_TRUE(result);
@@ -35,9 +34,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       browser(),
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      "",
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      chrome::GetActiveWebContents(browser()),
       "testTabsAPI()",
       &result));
   EXPECT_TRUE(result);

@@ -39,11 +39,11 @@ namespace {
 class DOMOperationObserver : public NotificationObserver,
                              public WebContentsObserver {
  public:
-  explicit DOMOperationObserver(RenderViewHost* render_view_host)
-      : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
+  explicit DOMOperationObserver(RenderViewHost* rvh)
+      : WebContentsObserver(WebContents::FromRenderViewHost(rvh)),
         did_respond_(false) {
     registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   Source<RenderViewHost>(render_view_host));
+                   Source<RenderViewHost>(rvh));
     message_loop_runner_ = new MessageLoopRunner;
   }
 
@@ -78,18 +78,18 @@ class DOMOperationObserver : public NotificationObserver,
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::string& frame_xpath,
-                             const std::string& original_script,
-                             scoped_ptr<Value>* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptHelper(RenderViewHost* render_view_host,
+                         const std::string& frame_xpath,
+                         const std::string& original_script,
+                         scoped_ptr<Value>* result) WARN_UNUSED_RESULT;
 
 // Executes the passed |original_script| in the frame pointed to by
 // |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
 // of the script in |result|.  Returns true on success.
-bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
-                             const std::string& frame_xpath,
-                             const std::string& original_script,
-                             scoped_ptr<Value>* result) {
+bool ExecuteScriptHelper(RenderViewHost* render_view_host,
+                         const std::string& frame_xpath,
+                         const std::string& original_script,
+                         scoped_ptr<Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
   std::string script =
@@ -280,51 +280,91 @@ void SimulateKeyPress(WebContents* web_contents,
   web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }
 
-bool ExecuteJavaScript(RenderViewHost* render_view_host,
-                       const std::string& frame_xpath,
-                       const std::string& original_script) {
-  std::string script =
-      original_script + ";window.domAutomationController.send(0);";
-  return ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, NULL);
+namespace internal {
+
+ToRenderViewHost::ToRenderViewHost(WebContents* web_contents)
+    : render_view_host_(web_contents->GetRenderViewHost()) {
 }
 
-bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
-                                    const std::string& frame_xpath,
-                                    const std::string& script,
-                                    int* result) {
+ToRenderViewHost::ToRenderViewHost(RenderViewHost* render_view_host)
+    : render_view_host_(render_view_host) {
+}
+
+}  // namespace internal
+
+bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
+                          const std::string& frame_xpath,
+                          const std::string& original_script) {
+  std::string script =
+      original_script + ";window.domAutomationController.send(0);";
+  return ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
+                             NULL);
+}
+
+bool ExecuteScriptInFrameAndExtractInt(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    int* result) {
   DCHECK(result);
   scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
+  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
+                           &value) || !value.get())
     return false;
 
   return value->GetAsInteger(result);
 }
 
-bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
-                                     const std::string& frame_xpath,
-                                     const std::string& script,
-                                     bool* result) {
+bool ExecuteScriptInFrameAndExtractBool(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    bool* result) {
   DCHECK(result);
   scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
+  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
+                           &value) || !value.get())
     return false;
 
   return value->GetAsBoolean(result);
 }
 
-bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
-                                       const std::string& frame_xpath,
-                                       const std::string& script,
-                                       std::string* result) {
+bool ExecuteScriptInFrameAndExtractString(
+    const internal::ToRenderViewHost& adapter,
+    const std::string& frame_xpath,
+    const std::string& script,
+    std::string* result) {
   DCHECK(result);
   scoped_ptr<Value> value;
-  if (!ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, &value) ||
-      !value.get())
+  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
+                           &value) || !value.get())
     return false;
 
   return value->GetAsString(result);
+}
+
+bool ExecuteScript(const internal::ToRenderViewHost& adapter,
+                   const std::string& script) {
+  return ExecuteScriptInFrame(adapter, std::string(), script);
+}
+
+bool ExecuteScriptAndExtractInt(const internal::ToRenderViewHost& adapter,
+                                const std::string& script, int* result) {
+  return ExecuteScriptInFrameAndExtractInt(adapter, std::string(), script,
+                                           result);
+}
+
+bool ExecuteScriptAndExtractBool(const internal::ToRenderViewHost& adapter,
+                                 const std::string& script, bool* result) {
+  return ExecuteScriptInFrameAndExtractBool(adapter, std::string(), script,
+                                            result);
+}
+
+bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
+                                   const std::string& script,
+                                   std::string* result) {
+  return ExecuteScriptInFrameAndExtractString(adapter, std::string(), script,
+                                              result);
 }
 
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {

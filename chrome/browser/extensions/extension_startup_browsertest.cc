@@ -126,19 +126,17 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
     bool result = false;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(browser()),
         "window.domAutomationController.send("
-        "document.defaultView.getComputedStyle(document.body, null)."
-        "getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
+        "    document.defaultView.getComputedStyle(document.body, null)."
+        "    getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
         &result));
     EXPECT_EQ(expect_css, result);
 
     result = false;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-        "",
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        chrome::GetActiveWebContents(browser()),
         "window.domAutomationController.send(document.title == 'Modified')",
         &result));
     EXPECT_EQ(expect_script, result);
