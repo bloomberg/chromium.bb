@@ -485,30 +485,29 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   }
 
 #if defined(USE_TCMALLOC)
-static bool GetAllocatorWasteSizeThunk(size_t* size) {
-  size_t heap_size, allocated_bytes, unmapped_bytes;
-  MallocExtension* ext = MallocExtension::instance();
-  if (ext->GetNumericProperty("generic.heap_size", &heap_size) &&
-      ext->GetNumericProperty("generic.current_allocated_bytes",
-                              &allocated_bytes) &&
-      ext->GetNumericProperty("tcmalloc.pageheap_unmapped_bytes",
-                              &unmapped_bytes)) {
-    *size = heap_size - allocated_bytes - unmapped_bytes;
-    return true;
+  static bool GetAllocatorWasteSizeThunk(size_t* size) {
+    size_t heap_size, allocated_bytes, unmapped_bytes;
+    MallocExtension* ext = MallocExtension::instance();
+    if (ext->GetNumericProperty("generic.heap_size", &heap_size) &&
+        ext->GetNumericProperty("generic.current_allocated_bytes",
+                                &allocated_bytes) &&
+        ext->GetNumericProperty("tcmalloc.pageheap_unmapped_bytes",
+                                &unmapped_bytes)) {
+      *size = heap_size - allocated_bytes - unmapped_bytes;
+      return true;
+    }
+    DCHECK(false);
+    return false;
   }
-  DCHECK(false);
-  return false;
-}
 
-static void GetStatsThunk(char* buffer, int buffer_length) {
-  MallocExtension::instance()->GetStats(buffer, buffer_length);
-}
+  static void GetStatsThunk(char* buffer, int buffer_length) {
+    MallocExtension::instance()->GetStats(buffer, buffer_length);
+  }
 
-static void ReleaseFreeMemoryThunk() {
-  MallocExtension::instance()->ReleaseFreeMemory();
-}
+  static void ReleaseFreeMemoryThunk() {
+    MallocExtension::instance()->ReleaseFreeMemory();
+  }
 #endif
-
 
 #if defined(OS_WIN)
   virtual int Initialize(HINSTANCE instance,
