@@ -3,55 +3,55 @@
   "pages": [
     {
       "url": "file:///tough_scrolling_cases/background_fixed.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/cust_scrollbar.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/div_scrolls.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/fixed_nonstacking.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/fixed_stacking.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/iframe_scrolls.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/simple.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/wheel_body_prevdefault.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     },
     {
       "url": "file:///tough_scrolling_cases/wheel_div_prevdefault.html",
-      "scrolling": {
+      "smoothness": {
           "action": "scrolling_interaction"
       }
     }

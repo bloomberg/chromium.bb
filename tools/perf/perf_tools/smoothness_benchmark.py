@@ -144,7 +144,7 @@ def CalcImageDecodingResults(rendering_stats_deltas, results):
 
 class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def __init__(self):
-    super(SmoothnessBenchmark, self).__init__('scrolling')
+    super(SmoothnessBenchmark, self).__init__('smoothness')
     self.force_enable_threaded_compositing = False
     self.use_gpu_benchmarking_extension = True
 
@@ -160,7 +160,7 @@ class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
       options.extra_browser_args.append('--enable-threaded-compositing')
 
   def CanRunForPage(self, page):
-    return hasattr(page, 'scrolling')
+    return hasattr(page, 'smoothness')
 
   def MeasurePage(self, page, tab, results):
     rendering_stats_deltas = tab.runtime.Evaluate(
