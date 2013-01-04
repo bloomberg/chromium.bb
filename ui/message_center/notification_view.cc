@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/message_view_multiple.h"
+#include "ui/message_center/notification_view.h"
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
@@ -49,8 +49,8 @@ views::Border* MakePadding(int top, int left, int bottom, int right) {
   return views::Border::CreateEmptyBorder(top, left, bottom, right);
 }
 
-// ItemViews are responsible for drawing each MessageViewMultiple item's title
-// and message next to each other within a single column.
+// ItemViews are responsible for drawing each NotificationView item's title and
+// message next to each other within a single column.
 class ItemView : public views::View {
  public:
   ItemView(const message_center::NotificationList::NotificationItem& item);
@@ -92,18 +92,16 @@ ItemView::~ItemView() {
 
 namespace message_center {
 
-MessageViewMultiple::MessageViewMultiple(
+NotificationView::NotificationView(
     NotificationList::Delegate* list_delegate,
     const NotificationList::Notification& notification)
     : MessageView(list_delegate, notification) {
 }
 
-MessageViewMultiple::~MessageViewMultiple() {
+NotificationView::~NotificationView() {
 }
 
-// TODO(dharcourt): Make this a subclass of BaseFormatView or of a
-// BaseFormatView superclass and leverage that class' SetUpView().
-void MessageViewMultiple::SetUpView() {
+void NotificationView::SetUpView() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
   views::GridLayout* layout = new views::GridLayout(this);
