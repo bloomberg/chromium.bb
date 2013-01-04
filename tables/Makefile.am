@@ -137,6 +137,8 @@ table_files = \
 	kha.ctb \
 	kn.ctb \
 	ko.ctb \
+	ko-g1.ctb \
+	ko-g2.ctb \
 	kok.ctb \
 	kru.ctb \
 	lang2table \
