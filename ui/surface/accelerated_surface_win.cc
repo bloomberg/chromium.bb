@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <algorithm>
 
+#include "accelerated_surface_win_hlsl_compiled.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -29,14 +30,32 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/surface/accelerated_surface_transformer_win.h"
-#include "ui/surface/d3d9_utils_win.h"
 
-namespace d3d_utils = ui_surface_d3d9_utils;
+
+using ui_surface::AcceleratedSurfaceWinHLSL::kVsOneTexture;
+using ui_surface::AcceleratedSurfaceWinHLSL::kPsOneTexture;
+
 
 namespace {
 
+typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
+                                                IDirect3D9Ex **d3d);
+
+const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
+const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
+
 const char kUseOcclusionQuery[] = "use-occlusion-query";
+
+struct Vertex {
+  float x, y, z, w;
+  float u, v;
+};
+
+const static D3DVERTEXELEMENT9 g_vertexElements[] = {
+  { 0, 0, D3DDECLTYPE_FLOAT4, 0, D3DDECLUSAGE_POSITION, 0 },
+  { 0, 16, D3DDECLTYPE_FLOAT2, 0, D3DDECLUSAGE_TEXCOORD, 0 },
+  D3DDECL_END()
+};
 
 UINT GetPresentationInterval() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
@@ -47,6 +66,53 @@ UINT GetPresentationInterval() {
 
 bool UsingOcclusionQuery() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kUseOcclusionQuery);
+}
+
+// Calculate the number necessary to transform |src_subrect| into |dst_size|
+// by repeating downsampling of the image of |src_subrect| by a factor no more
+// than 2.
+int GetResampleCount(const gfx::Rect& src_subrect,
+                     const gfx::Size& dst_size,
+                     const gfx::Size& back_buffer_size) {
+  // At least one copy is required, since the back buffer itself is not
+  // lockable.
+  int min_resample_count = 1;
+  int width_count = 0;
+  int width = src_subrect.width();
+  while (width > dst_size.width()) {
+    ++width_count;
+    width >>= 1;
+  }
+  int height_count = 0;
+  int height = src_subrect.height();
+  while (height > dst_size.height()) {
+    ++height_count;
+    height >>= 1;
+  }
+  return std::max(std::max(width_count, height_count),
+                  min_resample_count);
+}
+
+// Returns half the size of |size| no smaller than |min_size|.
+gfx::Size GetHalfSizeNoLessThan(const gfx::Size& size,
+                                const gfx::Size& min_size) {
+  return gfx::Size(std::max(min_size.width(), size.width() / 2),
+                   std::max(min_size.height(), size.height() / 2));
+}
+
+bool CreateTemporarySurface(IDirect3DDevice9* device,
+                            const gfx::Size& size,
+                            IDirect3DSurface9** surface) {
+  HRESULT hr = device->CreateRenderTarget(
+        size.width(),
+        size.height(),
+        D3DFMT_A8R8G8B8,
+        D3DMULTISAMPLE_NONE,
+        0,
+        TRUE,
+        surface,
+        NULL);
+  return SUCCEEDED(hr);
 }
 
 }  // namespace
@@ -60,9 +126,6 @@ class PresentThread : public base::Thread,
 
   IDirect3DDevice9Ex* device() { return device_.get(); }
   IDirect3DQuery9* query() { return query_.get(); }
-  AcceleratedSurfaceTransformer* surface_transformer() {
-    return &surface_transformer_;
-  }
 
   void InitDevice();
   void ResetDevice();
@@ -78,11 +141,11 @@ class PresentThread : public base::Thread,
 
   base::ScopedNativeLibrary d3d_module_;
   base::win::ScopedComPtr<IDirect3DDevice9Ex> device_;
+
   // This query is used to wait until a certain amount of progress has been
   // made by the GPU and it is safe for the producer to modify its shared
   // texture again.
   base::win::ScopedComPtr<IDirect3DQuery9> query_;
-  AcceleratedSurfaceTransformer surface_transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentThread);
 };
@@ -135,7 +198,7 @@ void PresentThread::InitDevice() {
     return;
 
   TRACE_EVENT0("gpu", "PresentThread::Init");
-  d3d_utils::LoadD3D9(&d3d_module_);
+  d3d_module_.Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
   ResetDevice();
 }
 
@@ -147,32 +210,92 @@ void PresentThread::ResetDevice() {
   query_ = NULL;
   device_ = NULL;
 
-  if (!d3d_utils::CreateDevice(d3d_module_,
-                               D3DDEVTYPE_HAL,
-                               GetPresentationInterval(),
-                               device_.Receive())) {
+  Direct3DCreate9ExFunc create_func = reinterpret_cast<Direct3DCreate9ExFunc>(
+      d3d_module_.GetFunctionPointer(kCreate3D9DeviceExName));
+  if (!create_func)
     return;
-  }
+
+  base::win::ScopedComPtr<IDirect3D9Ex> d3d;
+  HRESULT hr = create_func(D3D_SDK_VERSION, d3d.Receive());
+  if (FAILED(hr))
+    return;
+
+  // Any old window will do to create the device. In practice the window to
+  // present to is an argument to IDirect3DDevice9::Present.
+  HWND window = GetShellWindow();
+
+  D3DPRESENT_PARAMETERS parameters = { 0 };
+  parameters.BackBufferWidth = 1;
+  parameters.BackBufferHeight = 1;
+  parameters.BackBufferCount = 1;
+  parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
+  parameters.hDeviceWindow = window;
+  parameters.Windowed = TRUE;
+  parameters.Flags = 0;
+  parameters.PresentationInterval = GetPresentationInterval();
+  parameters.SwapEffect = D3DSWAPEFFECT_COPY;
+
+  hr = d3d->CreateDeviceEx(
+      D3DADAPTER_DEFAULT,
+      D3DDEVTYPE_HAL,
+      window,
+      D3DCREATE_FPU_PRESERVE | D3DCREATE_SOFTWARE_VERTEXPROCESSING |
+          D3DCREATE_DISABLE_PSGP_THREADING | D3DCREATE_MULTITHREADED,
+      &parameters,
+      NULL,
+      device_.Receive());
+  if (FAILED(hr))
+    return;
 
   if (UsingOcclusionQuery()) {
-    HRESULT hr = device_->CreateQuery(D3DQUERYTYPE_OCCLUSION, query_.Receive());
+    hr = device_->CreateQuery(D3DQUERYTYPE_OCCLUSION, query_.Receive());
     if (FAILED(hr)) {
       device_ = NULL;
       return;
     }
   } else {
-    HRESULT hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
+    hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
     if (FAILED(hr)) {
       device_ = NULL;
       return;
     }
   }
 
-  if (!surface_transformer_.Init(device_)) {
-    query_ = NULL;
+  base::win::ScopedComPtr<IDirect3DVertexShader9> vertex_shader;
+  hr = device_->CreateVertexShader(
+      reinterpret_cast<const DWORD*>(kVsOneTexture),
+      vertex_shader.Receive());
+  if (FAILED(hr)) {
     device_ = NULL;
+    query_ = NULL;
     return;
   }
+
+  device_->SetVertexShader(vertex_shader);
+
+  base::win::ScopedComPtr<IDirect3DPixelShader9> pixel_shader;
+  hr = device_->CreatePixelShader(
+      reinterpret_cast<const DWORD*>(kPsOneTexture),
+      pixel_shader.Receive());
+
+  if (FAILED(hr)) {
+    device_ = NULL;
+    query_ = NULL;
+    return;
+  }
+
+  device_->SetPixelShader(pixel_shader);
+
+  base::win::ScopedComPtr<IDirect3DVertexDeclaration9> vertex_declaration;
+  hr = device_->CreateVertexDeclaration(g_vertexElements,
+                                        vertex_declaration.Receive());
+  if (FAILED(hr)) {
+    device_ = NULL;
+    query_ = NULL;
+    return;
+  }
+
+  device_->SetVertexDeclaration(vertex_declaration);
 }
 
 void PresentThread::Init() {
@@ -182,7 +305,6 @@ void PresentThread::Init() {
 void PresentThread::CleanUp() {
   // The D3D device and query are leaked because destroying the associated D3D
   // query crashes some Intel drivers.
-  surface_transformer_.DetachAll();
   device_.Detach();
   query_.Detach();
 }
@@ -260,7 +382,6 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::PluginWindowHandle window)
       hidden_(true) {
 }
 
-// static
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
     gfx::PluginWindowHandle window) {
   return g_accelerated_presenter_map.Pointer()->GetPresenter(window);
@@ -349,9 +470,6 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
   if (!swap_chain_)
     return false;
 
-  AcceleratedSurfaceTransformer* gpu_ops =
-      present_thread_->surface_transformer();
-
   base::win::ScopedComPtr<IDirect3DSurface9> back_buffer;
   HRESULT hr = swap_chain_->GetBackBuffer(0,
                                           D3DBACKBUFFER_TYPE_MONO,
@@ -372,23 +490,65 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
   // the requested src subset. Clip to the actual back buffer.
   gfx::Rect src_subrect = requested_src_subrect;
   src_subrect.Intersect(gfx::Rect(back_buffer_size));
+
+  // Set up intermediate buffers needed for downsampling.
+  const int resample_count =
+      GetResampleCount(src_subrect, dst_size, back_buffer_size);
   base::win::ScopedComPtr<IDirect3DSurface9> final_surface;
-  {
-    TRACE_EVENT0("gpu", "CreateTemporaryLockableSurface");
-    if (!d3d_utils::CreateTemporaryLockableSurface(present_thread_->device(),
-                                                   dst_size,
-                                                   final_surface.Receive())) {
-      return false;
-    }
-  }
-
-  {
-    // Let the surface transformer start the resize into |final_surface|.
-    TRACE_EVENT0("gpu", "ResizeBilinear");
-    if (!gpu_ops->ResizeBilinear(back_buffer, src_subrect, final_surface))
+  base::win::ScopedComPtr<IDirect3DSurface9> temp_buffer[2];
+  if (resample_count == 0)
+    final_surface = back_buffer;
+  if (resample_count > 0) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                dst_size,
+                                final_surface.Receive()))
       return false;
   }
+  const gfx::Size half_size =
+      GetHalfSizeNoLessThan(src_subrect.size(), dst_size);
+  if (resample_count > 1) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                half_size,
+                                temp_buffer[0].Receive()))
+      return false;
+  }
+  if (resample_count > 2) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
+    const gfx::Size quarter_size = GetHalfSizeNoLessThan(half_size, dst_size);
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                quarter_size,
+                                temp_buffer[1].Receive()))
+      return false;
+  }
 
+  // Repeat downsampling the surface until its size becomes identical to
+  // |dst_size|. We keep the factor of each downsampling no more than two
+  // because using a factor more than two can introduce aliasing.
+  RECT read_rect = src_subrect.ToRECT();
+  gfx::Size write_size = half_size;
+  int read_buffer_index = 1;
+  int write_buffer_index = 0;
+  for (int i = 0; i < resample_count; ++i) {
+    TRACE_EVENT0("gpu", "StretchRect");
+    base::win::ScopedComPtr<IDirect3DSurface9> read_buffer =
+        (i == 0) ? back_buffer : temp_buffer[read_buffer_index];
+    base::win::ScopedComPtr<IDirect3DSurface9> write_buffer =
+        (i == resample_count - 1) ? final_surface :
+                                    temp_buffer[write_buffer_index];
+    RECT write_rect = gfx::Rect(write_size).ToRECT();
+    hr = present_thread_->device()->StretchRect(read_buffer,
+                                                &read_rect,
+                                                write_buffer,
+                                                &write_rect,
+                                                D3DTEXF_LINEAR);
+    if (FAILED(hr))
+      return false;
+    read_rect = write_rect;
+    write_size = GetHalfSizeNoLessThan(write_size, dst_size);
+    std::swap(read_buffer_index, write_buffer_index);
+  }
   D3DLOCKED_RECT locked_rect;
 
   // Empirical evidence seems to suggest that LockRect and memcpy are faster
@@ -556,13 +716,18 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   }
 
   if (!source_texture_.get()) {
-    TRACE_EVENT0("gpu", "OpenSharedTexture");
-    if (!d3d_utils::OpenSharedTexture(present_thread_->device(),
-                                      surface_handle,
-                                      size,
-                                      source_texture_.Receive())) {
+    TRACE_EVENT0("gpu", "CreateTexture");
+    HANDLE handle = reinterpret_cast<HANDLE>(surface_handle);
+    hr = present_thread_->device()->CreateTexture(size.width(),
+                                                  size.height(),
+                                                  1,
+                                                  D3DUSAGE_RENDERTARGET,
+                                                  D3DFMT_A8R8G8B8,
+                                                  D3DPOOL_DEFAULT,
+                                                  source_texture_.Receive(),
+                                                  &handle);
+    if (FAILED(hr))
       return;
-    }
   }
 
   base::win::ScopedComPtr<IDirect3DSurface9> source_surface;
@@ -589,15 +754,44 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("gpu", "Copy");
 
+    // Use a simple pixel / vertex shader pair to render a quad that flips the
+    // source texture on the vertical axis.
+    IDirect3DSurface9 *default_render_target = NULL;
+    present_thread_->device()->GetRenderTarget(0, &default_render_target);
+
+    present_thread_->device()->SetRenderTarget(0, dest_surface);
+    present_thread_->device()->SetTexture(0, source_texture_);
+
+    D3DVIEWPORT9 viewport = {
+      0, 0,
+      size.width(), size.height(),
+      0, 1
+    };
+    present_thread_->device()->SetViewport(&viewport);
+
+    float halfPixelX = -1.0f / size.width();
+    float halfPixelY = 1.0f / size.height();
+    Vertex vertices[] = {
+      { halfPixelX - 1, halfPixelY + 1, 0.5f, 1, 0, 1 },
+      { halfPixelX + 1, halfPixelY + 1, 0.5f, 1, 1, 1 },
+      { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
+      { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
+    };
+
     if (UsingOcclusionQuery()) {
       present_thread_->query()->Issue(D3DISSUE_BEGIN);
     }
 
-    // Copy while flipping the source texture on the vertical axis.
-    bool result = present_thread_->surface_transformer()->CopyInverted(
-        source_texture_, dest_surface, size);
-    if (!result)
-      return;
+    present_thread_->device()->BeginScene();
+    present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
+                                               2,
+                                               vertices,
+                                               sizeof(vertices[0]));
+    present_thread_->device()->EndScene();
+
+    present_thread_->device()->SetTexture(0, NULL);
+    present_thread_->device()->SetRenderTarget(0, default_render_target);
+    default_render_target->Release();
   }
 
   hr = present_thread_->query()->Issue(D3DISSUE_END);
