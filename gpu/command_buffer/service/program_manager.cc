@@ -472,7 +472,7 @@ void ProgramManager::ForceCompileShader(const std::string* source,
         info->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len == 0 || temp[len] == '\0');
-    info->UpdateTranslatedSource(temp.get());
+    info->UpdateTranslatedSource(max_len ? temp.get() : NULL);
   }
 
   GLint status = GL_FALSE;
