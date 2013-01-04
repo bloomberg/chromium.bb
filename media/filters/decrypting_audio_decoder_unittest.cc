@@ -108,13 +108,13 @@ class DecryptingAudioDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    AudioDecoderConfig config(kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100,
-                              NULL, 0, true);
+    AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
+                              CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
     InitializeAndExpectStatus(config, PIPELINE_OK);
 
-    EXPECT_EQ(16, decoder_->bits_per_channel());
-    EXPECT_EQ(CHANNEL_LAYOUT_STEREO, decoder_->channel_layout());
-    EXPECT_EQ(44100, decoder_->samples_per_second());
+    EXPECT_EQ(config.bits_per_channel(), decoder_->bits_per_channel());
+    EXPECT_EQ(config.channel_layout(), decoder_->channel_layout());
+    EXPECT_EQ(config.samples_per_second(), decoder_->samples_per_second());
   }
 
   void ReadAndExpectFrameReadyWith(
@@ -243,16 +243,16 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_Normal) {
 
 // Ensure that DecryptingAudioDecoder only accepts encrypted audio.
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
-  AudioDecoderConfig config(kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100,
-                            NULL, 0, false);
+  AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false);
 
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
 // Ensure decoder handles invalid audio configs without crashing.
 TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
-  AudioDecoderConfig config(kUnknownAudioCodec, 0, CHANNEL_LAYOUT_STEREO, 0,
-                            NULL, 0, true);
+  AudioDecoderConfig config(kUnknownAudioCodec, kUnknownSampleFormat,
+                            CHANNEL_LAYOUT_STEREO, 0, NULL, 0, true);
 
   InitializeAndExpectStatus(config, PIPELINE_ERROR_DECODE);
 }
@@ -264,8 +264,8 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
 
-  AudioDecoderConfig config(kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100,
-                            NULL, 0, true);
+  AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
 }
 

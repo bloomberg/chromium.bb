@@ -39,8 +39,8 @@ class AudioRendererImplTest : public ::testing::Test {
                                         SetDecryptorReadyCB())),
         demuxer_stream_(new MockDemuxerStream()),
         decoder_(new MockAudioDecoder()),
-        audio_config_(kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO,
-                      44100, NULL, 0, false) {
+        audio_config_(kCodecVorbis, kSampleFormatPlanarF32,
+                      CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false) {
     EXPECT_CALL(*demuxer_stream_, type())
         .WillRepeatedly(Return(DemuxerStream::AUDIO));
     EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
@@ -69,11 +69,11 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void SetSupportedAudioDecoderProperties() {
     ON_CALL(*decoder_, bits_per_channel())
-        .WillByDefault(Return(16));
+        .WillByDefault(Return(audio_config_.bits_per_channel()));
     ON_CALL(*decoder_, channel_layout())
         .WillByDefault(Return(CHANNEL_LAYOUT_MONO));
     ON_CALL(*decoder_, samples_per_second())
-        .WillByDefault(Return(44100));
+        .WillByDefault(Return(audio_config_.samples_per_second()));
   }
 
   void SetUnsupportedAudioDecoderProperties() {

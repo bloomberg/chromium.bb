@@ -31,9 +31,11 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   AudioDecoderSelectorTest()
       : clear_audio_config_(
-            kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false),
+            kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+            NULL, 0, false),
         encrypted_audio_config_(
-            kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true),
+            kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+            NULL, 0, true),
         demuxer_stream_(new StrictMock<MockDemuxerStream>()),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_1_(new StrictMock<MockAudioDecoder>()),

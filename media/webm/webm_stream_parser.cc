@@ -352,12 +352,13 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
         config_helper.audio_config();
 
     audio_config.Initialize(original_audio_config.codec(),
-                            original_audio_config.bits_per_channel(),
+                            original_audio_config.sample_format(),
                             original_audio_config.channel_layout(),
                             original_audio_config.samples_per_second(),
                             original_audio_config.extra_data(),
                             original_audio_config.extra_data_size(),
-                            is_audio_encrypted, false);
+                            is_audio_encrypted,
+                            false);
 
     FireNeedKey(tracks_parser.audio_encryption_key_id());
   } else {

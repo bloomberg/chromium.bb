@@ -15,7 +15,7 @@ namespace media {
 enum AudioCodec {
   // These values are histogrammed over time; do not change their ordinal
   // values.  When deleting a codec replace it with a dummy value; when adding a
-  // codec, do so at the bottom (and update kAudioCodecMax).
+  // codec, do so at the bottom before kAudioCodecMax.
   kUnknownAudioCodec = 0,
   kCodecAAC,
   kCodecMP3,
@@ -34,7 +34,24 @@ enum AudioCodec {
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
-  kAudioCodecMax = kCodecOpus  // Must equal the last "real" codec above.
+  // Must always be last!
+  kAudioCodecMax
+};
+
+enum SampleFormat {
+  // These values are histogrammed over time; do not change their ordinal
+  // values.  When deleting a sample format replace it with a dummy value; when
+  // adding a sample format, do so at the bottom before kSampleFormatMax.
+  kUnknownSampleFormat = 0,
+  kSampleFormatU8,         // Unsigned 8-bit w/ bias of 128.
+  kSampleFormatS16,        // Signed 16-bit.
+  kSampleFormatS32,        // Signed 32-bit.
+  kSampleFormatF32,        // Float 32-bit.
+  kSampleFormatPlanarS16,  // Signed 16-bit planar.
+  kSampleFormatPlanarF32,  // Float 32-bit planar.
+
+  // Must always be last!
+  kSampleFormatMax
 };
 
 // TODO(dalecurtis): FFmpeg API uses |bytes_per_channel| instead of
@@ -48,7 +65,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
 
   // Constructs an initialized object. It is acceptable to pass in NULL for
   // |extra_data|, otherwise the memory is copied.
-  AudioDecoderConfig(AudioCodec codec, int bits_per_channel,
+  AudioDecoderConfig(AudioCodec codec, SampleFormat sample_format,
                      ChannelLayout channel_layout, int samples_per_second,
                      const uint8* extra_data, size_t extra_data_size,
                      bool is_encrypted);
@@ -56,11 +73,10 @@ class MEDIA_EXPORT AudioDecoderConfig {
   ~AudioDecoderConfig();
 
   // Resets the internal state of this object.
-  void Initialize(AudioCodec codec, int bits_per_channel,
+  void Initialize(AudioCodec codec, SampleFormat sample_format,
                   ChannelLayout channel_layout, int samples_per_second,
                   const uint8* extra_data, size_t extra_data_size,
-                  bool is_encrypted,
-                  bool record_stats);
+                  bool is_encrypted, bool record_stats);
 
   // Deep copies |audio_config|.
   void CopyFrom(const AudioDecoderConfig& audio_config);
@@ -73,24 +89,26 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // Note: The contents of |extra_data_| are compared not the raw pointers.
   bool Matches(const AudioDecoderConfig& config) const;
 
-  AudioCodec codec() const;
-  int bits_per_channel() const;
-  ChannelLayout channel_layout() const;
-  int samples_per_second() const;
-  int bytes_per_frame() const;
+  AudioCodec codec() const { return codec_; }
+  int bits_per_channel() const { return bits_per_channel_; }
+  ChannelLayout channel_layout() const { return channel_layout_; }
+  int samples_per_second() const { return samples_per_second_; }
+  SampleFormat sample_format() const { return sample_format_; }
+  int bytes_per_frame() const { return bytes_per_frame_; }
 
   // Optional byte data required to initialize audio decoders such as Vorbis
   // codebooks.
-  uint8* extra_data() const;
-  size_t extra_data_size() const;
+  uint8* extra_data() const { return extra_data_.get(); }
+  size_t extra_data_size() const { return extra_data_size_; }
 
   // Whether the audio stream is potentially encrypted.
   // Note that in a potentially encrypted audio stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const;
+  bool is_encrypted() const { return is_encrypted_; }
 
  private:
   AudioCodec codec_;
+  SampleFormat sample_format_;
   int bits_per_channel_;
   ChannelLayout channel_layout_;
   int samples_per_second_;

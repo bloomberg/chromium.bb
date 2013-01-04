@@ -79,14 +79,26 @@ bool AudioFileReader::Open() {
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (codec) {
+    // MP3 decodes to S16P which we don't support, tell it to use S16 instead.
+    if (codec_context_->sample_fmt == AV_SAMPLE_FMT_S16P)
+      codec_context_->request_sample_fmt = AV_SAMPLE_FMT_S16;
+
     if ((result = avcodec_open2(codec_context_, codec, NULL)) < 0) {
       DLOG(WARNING) << "AudioFileReader::Open() : could not open codec -"
-          << " result: " << result;
+                    << " result: " << result;
+      return false;
+    }
+
+    // Ensure avcodec_open2() respected our format request.
+    if (codec_context_->sample_fmt == AV_SAMPLE_FMT_S16P) {
+      DLOG(ERROR) << "AudioFileReader::Open() : unable to configure a"
+                  << " supported sample format - "
+                  << codec_context_->sample_fmt;
       return false;
     }
   } else {
     DLOG(WARNING) << "AudioFileReader::Open() : could not find codec -"
-        << " result: " << result;
+                  << " result: " << result;
     return false;
   }
 
@@ -163,10 +175,28 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
       if (current_frame + frames_read > audio_bus->frames())
         frames_read = audio_bus->frames() - current_frame;
 
-      // Deinterleave each channel and convert to 32bit floating-point
-      // with nominal range -1.0 -> +1.0.
-      audio_bus->FromInterleavedPartial(
-          av_frame->data[0], current_frame, frames_read, bytes_per_sample);
+      // Deinterleave each channel and convert to 32bit floating-point with
+      // nominal range -1.0 -> +1.0.  If the output is already in float planar
+      // format, just copy it into the AudioBus.
+      if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT) {
+        float* decoded_audio_data = reinterpret_cast<float*>(av_frame->data[0]);
+        int channels = audio_bus->channels();
+        for (int ch = 0; ch < channels; ++ch) {
+          float* bus_data = audio_bus->channel(ch) + current_frame;
+          for (int i = 0, offset = ch; i < frames_read;
+               ++i, offset += channels) {
+            bus_data[i] = decoded_audio_data[offset];
+          }
+        }
+      } else if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLTP) {
+        for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+          memcpy(audio_bus->channel(ch) + current_frame,
+                 av_frame->extended_data[ch], sizeof(float) * frames_read);
+        }
+      } else {
+        audio_bus->FromInterleavedPartial(
+            av_frame->data[0], current_frame, frames_read, bytes_per_sample);
+      }
 
       current_frame += frames_read;
     } while (packet_temp.size > 0);

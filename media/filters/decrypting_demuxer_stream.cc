@@ -327,7 +327,7 @@ void DecryptingDemuxerStream::SetDecoderConfig(
           stream->audio_decoder_config();
       audio_config_.reset(new AudioDecoderConfig());
       audio_config_->Initialize(input_audio_config.codec(),
-                                input_audio_config.bits_per_channel(),
+                                input_audio_config.sample_format(),
                                 input_audio_config.channel_layout(),
                                 input_audio_config.samples_per_second(),
                                 input_audio_config.extra_data(),

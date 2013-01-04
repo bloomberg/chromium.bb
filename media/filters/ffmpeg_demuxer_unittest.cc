@@ -243,9 +243,10 @@ TEST_F(FFmpegDemuxerTest, Initialize_Successful) {
 
   const AudioDecoderConfig& audio_config = stream->audio_decoder_config();
   EXPECT_EQ(kCodecVorbis, audio_config.codec());
-  EXPECT_EQ(16, audio_config.bits_per_channel());
+  EXPECT_EQ(32, audio_config.bits_per_channel());
   EXPECT_EQ(CHANNEL_LAYOUT_STEREO, audio_config.channel_layout());
   EXPECT_EQ(44100, audio_config.samples_per_second());
+  EXPECT_EQ(kSampleFormatPlanarF32, audio_config.sample_format());
   EXPECT_TRUE(audio_config.extra_data());
   EXPECT_GT(audio_config.extra_data_size(), 0u);
 

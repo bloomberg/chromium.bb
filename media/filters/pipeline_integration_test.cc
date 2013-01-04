@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/crypto/aes_decryptor.h"
@@ -298,7 +299,10 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   ASSERT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(GetVideoHash(), "f0be120a90a811506777c99a2cdf7cc1");
-  EXPECT_EQ(GetAudioHash(), "5699a4415b620e45b9d0aae531c9df76");
+
+  // TODO(dalecurtis): Audio decoded in float does not have a consistent hash
+  // across platforms.  Fix this: http://crbug.com/168204
+  // EXPECT_EQ(GetAudioHash(), "");
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {

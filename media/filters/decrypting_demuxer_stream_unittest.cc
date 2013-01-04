@@ -119,16 +119,20 @@ class DecryptingDemuxerStreamTest : public testing::Test {
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     AudioDecoderConfig input_config(
-        kCodecVorbis, 16, CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
+        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+        NULL, 0, true);
     InitializeAudioAndExpectStatus(input_config, PIPELINE_OK);
 
     const AudioDecoderConfig& output_config =
         demuxer_stream_->audio_decoder_config();
     EXPECT_EQ(DemuxerStream::AUDIO, demuxer_stream_->type());
     EXPECT_FALSE(output_config.is_encrypted());
-    EXPECT_EQ(16, output_config.bits_per_channel());
-    EXPECT_EQ(CHANNEL_LAYOUT_STEREO, output_config.channel_layout());
-    EXPECT_EQ(44100, output_config.samples_per_second());
+    EXPECT_EQ(input_config.bits_per_channel(),
+              output_config.bits_per_channel());
+    EXPECT_EQ(input_config.channel_layout(), output_config.channel_layout());
+    EXPECT_EQ(input_config.sample_format(), output_config.sample_format());
+    EXPECT_EQ(input_config.samples_per_second(),
+              output_config.samples_per_second());
   }
 
   void ReadAndExpectBufferReadyWith(
@@ -410,7 +414,8 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
   Initialize();
 
   AudioDecoderConfig new_config(
-      kCodecVorbis, 32, CHANNEL_LAYOUT_STEREO, 88200, NULL, 0, true);
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 88200, NULL,
+      0, true);
 
   EXPECT_CALL(*input_audio_stream_, audio_decoder_config())
       .WillRepeatedly(ReturnRef(new_config));

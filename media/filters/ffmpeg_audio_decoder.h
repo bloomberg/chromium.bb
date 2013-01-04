@@ -20,6 +20,7 @@ class MessageLoopProxy;
 
 namespace media {
 
+class AudioBus;
 class AudioTimestampHelper;
 class DataBuffer;
 class DecoderBuffer;
@@ -90,6 +91,10 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // Since multiple frames may be decoded from the same packet we need to queue
   // them up and hand them out as we receive Read() calls.
   std::list<QueuedAudioBuffer> queued_audio_;
+
+  // We may need to convert the audio data coming out of FFmpeg from planar
+  // float to integer.
+  scoped_ptr<AudioBus> converter_bus_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegAudioDecoder);
 };

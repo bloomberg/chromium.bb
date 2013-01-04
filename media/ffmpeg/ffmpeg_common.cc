@@ -68,6 +68,7 @@ AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
     case CODEC_ID_PCM_U8:
     case CODEC_ID_PCM_S16LE:
     case CODEC_ID_PCM_S24LE:
+    case CODEC_ID_PCM_F32LE:
       return kCodecPCM;
     case CODEC_ID_PCM_S16BE:
       return kCodecPCM_S16BE;
@@ -92,22 +93,24 @@ AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
 }
 
 static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
-                                   int bits_per_channel) {
+                                   SampleFormat sample_format) {
   switch (audio_codec) {
     case kCodecAAC:
       return CODEC_ID_AAC;
     case kCodecMP3:
       return CODEC_ID_MP3;
     case kCodecPCM:
-      switch (bits_per_channel) {
-        case 8:
+      switch (sample_format) {
+        case kSampleFormatU8:
           return CODEC_ID_PCM_U8;
-        case 16:
+        case kSampleFormatS16:
           return CODEC_ID_PCM_S16LE;
-        case 32:
+        case kSampleFormatS32:
           return CODEC_ID_PCM_S24LE;
+        case kSampleFormatF32:
+          return CODEC_ID_PCM_F32LE;
         default:
-          DVLOG(1) << "Unsupported bits per channel: " << bits_per_channel;
+          DVLOG(1) << "Unsupported sample format: " << sample_format;
       }
       break;
     case kCodecPCM_S16BE:
@@ -136,14 +139,10 @@ static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
 
 VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
   switch (codec_id) {
-    case CODEC_ID_VC1:
-      return kCodecVC1;
     case CODEC_ID_H264:
       return kCodecH264;
     case CODEC_ID_THEORA:
       return kCodecTheora;
-    case CODEC_ID_MPEG2VIDEO:
-      return kCodecMPEG2;
     case CODEC_ID_MPEG4:
       return kCodecMPEG4;
     case CODEC_ID_VP8:
@@ -156,14 +155,10 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
 
 static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
   switch (video_codec) {
-    case kCodecVC1:
-      return CODEC_ID_VC1;
     case kCodecH264:
       return CODEC_ID_H264;
     case kCodecTheora:
       return CODEC_ID_THEORA;
-    case kCodecMPEG2:
-      return CODEC_ID_MPEG2VIDEO;
     case kCodecMPEG4:
       return CODEC_ID_MPEG4;
     case kCodecVP8:
@@ -222,6 +217,46 @@ static int VideoCodecProfileToProfileID(VideoCodecProfile profile) {
   return FF_PROFILE_UNKNOWN;
 }
 
+static SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format) {
+  switch (sample_format) {
+    case AV_SAMPLE_FMT_U8:
+      return kSampleFormatU8;
+    case AV_SAMPLE_FMT_S16:
+      return kSampleFormatS16;
+    case AV_SAMPLE_FMT_S32:
+      return kSampleFormatS32;
+    case AV_SAMPLE_FMT_FLT:
+      return kSampleFormatF32;
+    case AV_SAMPLE_FMT_S16P:
+      return kSampleFormatPlanarS16;
+    case AV_SAMPLE_FMT_FLTP:
+      return kSampleFormatPlanarF32;
+    default:
+      DVLOG(1) << "Unknown AVSampleFormat: " << sample_format;
+  }
+  return kUnknownSampleFormat;
+}
+
+static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
+  switch (sample_format) {
+    case kSampleFormatU8:
+      return AV_SAMPLE_FMT_U8;
+    case kSampleFormatS16:
+      return AV_SAMPLE_FMT_S16;
+    case kSampleFormatS32:
+      return AV_SAMPLE_FMT_S32;
+    case kSampleFormatF32:
+      return AV_SAMPLE_FMT_FLT;
+    case kSampleFormatPlanarS16:
+      return AV_SAMPLE_FMT_S16P;
+    case kSampleFormatPlanarF32:
+      return AV_SAMPLE_FMT_FLTP;
+    default:
+      DVLOG(1) << "Unknown SampleFormat: " << sample_format;
+  }
+  return AV_SAMPLE_FMT_NONE;
+}
+
 void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     AudioDecoderConfig* config) {
@@ -229,51 +264,38 @@ void AVCodecContextToAudioDecoderConfig(
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);
 
-  AVSampleFormat sample_format = codec_context->sample_fmt;
+  SampleFormat sample_format =
+      AVSampleFormatToSampleFormat(codec_context->sample_fmt);
+
   if (codec == kCodecOpus) {
     // TODO(tomfinegan): |sample_fmt| in |codec_context| is -1... because
     // libopusdec.c isn't built into ffmpegsumo...? Maybe it's not *that* big
     // a deal since libopus will produce either float or S16 samples, and
     // OpusAudioDecoder is the only provider of Opus support.
-    sample_format = AV_SAMPLE_FMT_S16;
+    sample_format = kSampleFormatS16;
   }
 
-  int bytes_per_channel = av_get_bytes_per_sample(sample_format);
-  ChannelLayout channel_layout =
-      ChannelLayoutToChromeChannelLayout(codec_context->channel_layout,
-                                         codec_context->channels);
-  int samples_per_second = codec_context->sample_rate;
-
+  ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
+      codec_context->channel_layout, codec_context->channels);
   config->Initialize(codec,
-                     bytes_per_channel << 3,
+                     sample_format,
                      channel_layout,
-                     samples_per_second,
+                     codec_context->sample_rate,
                      codec_context->extradata,
                      codec_context->extradata_size,
                      false,  // Not encrypted.
                      true);
+  DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
+            config->bits_per_channel());
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
                                         AVCodecContext* codec_context) {
   codec_context->codec_type = AVMEDIA_TYPE_AUDIO;
   codec_context->codec_id = AudioCodecToCodecID(config.codec(),
-                                                config.bits_per_channel());
-
-  switch (config.bits_per_channel()) {
-    case 8:
-      codec_context->sample_fmt = AV_SAMPLE_FMT_U8;
-      break;
-    case 16:
-      codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
-      break;
-    case 32:
-      codec_context->sample_fmt = AV_SAMPLE_FMT_S32;
-      break;
-    default:
-      DVLOG(1) << "Unsupported bits per channel: " << config.bits_per_channel();
-      codec_context->sample_fmt = AV_SAMPLE_FMT_NONE;
-  }
+                                                config.sample_format());
+  codec_context->sample_fmt = SampleFormatToAVSampleFormat(
+      config.sample_format());
 
   // TODO(scherkus): should we set |channel_layout|? I'm not sure if FFmpeg uses
   // said information to decode.

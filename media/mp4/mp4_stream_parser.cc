@@ -205,8 +205,20 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
 
+      SampleFormat sample_format;
+      if (entry.samplesize == 8) {
+        sample_format = kSampleFormatU8;
+      } else if (entry.samplesize == 16) {
+        sample_format = kSampleFormatS16;
+      } else if (entry.samplesize == 32) {
+        sample_format = kSampleFormatS32;
+      } else {
+        LOG(ERROR) << "Unsupported sample size.";
+        return false;
+      }
+
       bool is_encrypted = entry.sinf.info.track_encryption.is_encrypted;
-      audio_config.Initialize(kCodecAAC, entry.samplesize,
+      audio_config.Initialize(kCodecAAC, sample_format,
                               aac.channel_layout(),
                               aac.GetOutputSamplesPerSecond(has_sbr_),
                               NULL, 0, is_encrypted, false);

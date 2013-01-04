@@ -805,11 +805,12 @@ TEST_F(ChunkDemuxerTest, TestInit) {
 
       const AudioDecoderConfig& config = audio_stream->audio_decoder_config();
       EXPECT_EQ(kCodecVorbis, config.codec());
-      EXPECT_EQ(16, config.bits_per_channel());
+      EXPECT_EQ(32, config.bits_per_channel());
       EXPECT_EQ(CHANNEL_LAYOUT_STEREO, config.channel_layout());
       EXPECT_EQ(44100, config.samples_per_second());
       EXPECT_TRUE(config.extra_data());
       EXPECT_GT(config.extra_data_size(), 0u);
+      EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
     } else {
