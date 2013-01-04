@@ -40,13 +40,14 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         private int mNetworkType;
         private int mNetworkSubtype;
 
-        MockConnectivityManagerDelegate() {
-            super(null);
-        }
-
         @Override
         boolean activeNetworkExists() {
             return mActiveNetworkExists;
+        }
+
+        @Override
+        boolean isConnected() {
+            return getNetworkType() != NetworkChangeNotifier.CONNECTION_NONE;
         }
 
         void setActiveNetworkExists(boolean networkExists) {
@@ -82,7 +83,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     public void testNetworkChangeNotifierJavaObservers() throws InterruptedException {
         // Create a new notifier that doesn't have a native-side counterpart.
         Context context = getInstrumentation().getTargetContext();
-        NetworkChangeNotifier.createInstance(context, 0);
+        NetworkChangeNotifier.resetInstanceForTests(context);
 
         NetworkChangeNotifier.setAutoDetectConnectivityState(true);
         NetworkChangeNotifierAutoDetect receiver = NetworkChangeNotifier.getAutoDetectorForTest();
@@ -109,7 +110,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         connectivityDelegate.setActiveNetworkExists(false);
         connectivityDelegate.setNetworkType(NetworkChangeNotifier.CONNECTION_NONE);
         Intent noConnectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
-        noConnectivityIntent.putExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, true);
         receiver.onReceive(getInstrumentation().getTargetContext(), noConnectivityIntent);
         assertTrue(observer.hasReceivedNotification());
     }
