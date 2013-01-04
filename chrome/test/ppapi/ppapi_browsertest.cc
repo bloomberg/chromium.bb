@@ -597,13 +597,6 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
 #define MAYBE_FileIO_ParallelReads FileIO_ParallelReads
 #endif
 
-// PPAPINaclTest.FileIO_TouchQuery is flaky on Windows. http://crbug.com/130349
-#if defined(OS_WIN)
-#define MAYBE_NACL_FileIO_TouchQuery DISABLED_FileIO_TouchQuery
-#else
-#define MAYBE_NACL_FileIO_TouchQuery FileIO_TouchQuery
-#endif
-
 // PPAPINaclTest.FileIO_AbortCalls is often flaky on Windows.
 // http://crbug.com/160034
 #if defined(OS_WIN)
@@ -618,7 +611,7 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
 // http://crbug.com/167150
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_ParallelWrites)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NACL_FileIO_TouchQuery)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_TouchQuery)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ReadWriteSetLength)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ReadToArrayWriteSetLength)
 // The following test requires PPB_FileIO_Trusted, not available in NaCl.
