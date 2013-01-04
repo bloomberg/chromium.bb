@@ -44,11 +44,18 @@ class EnforcedCleanupSection(object):
     if self._forked:
       raise RuntimeError("MarkCleanup was invoked twice for %s" % (self,))
     self._lock.write_lock()
+
+    pid = os.fork()
     self._forked = True
-    child_pid = os.fork()
-    if child_pid:
-      # Parent.
+
+    if pid:
+      # Parent; nothing further to do here.
       return
+
+    # Get ourselves a new process group; note that we do not reparent
+    # to init.
+    os.setsid()
+
     # Since we share stdin/stdout/whatever, suppress sigint should we somehow
     # become the foreground process in the session group.
     # pylint: disable=W0212
@@ -67,6 +74,11 @@ class EnforcedCleanupSection(object):
     # Check if the parent exited cleanly; if so, we don't need to do anything.
 
     if os.read(self._lock.fd, 1):
+      for handle in (sys.__stdin__, sys.__stdout__, sys.__stderr__):
+        try:
+          handle.flush()
+        except EnvironmentError:
+          pass
       os._exit(0)
 
     # Allow masterpid context managers to run in this case, since we're
