@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/debug/trace_event.h"
-#include "base/threading/platform_thread.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
