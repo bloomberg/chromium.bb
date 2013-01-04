@@ -34,7 +34,9 @@ struct NaClChromeMainArgs {
   /*
    * File descriptor for the NaCl integrated runtime (IRT) library.
    * Note that this is a file descriptor even on Windows (where file
-   * descriptors are emulated by the C runtime library).  Required.
+   * descriptors are emulated by the C runtime library).
+   * Optional; may be -1.  Optional when loading nexes that don't follow
+   * NaCl's stable ABI, such as the PNaCl translator.
    */
   int irt_fd;
 
