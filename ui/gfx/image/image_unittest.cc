@@ -447,7 +447,7 @@ TEST_F(ImageTest, CheckSkiaColor) {
 
   const SkBitmap* bitmap = image.ToSkBitmap();
   SkAutoLockPixels auto_lock(*bitmap);
-  gt::CheckColor(bitmap->getColor(10, 10), false);
+  gt::CheckColors(bitmap->getColor(10, 10), SK_ColorGREEN);
 }
 
 TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
@@ -465,8 +465,8 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   canvas.drawRect(SkRect::MakeWH(width, height / 2), red);
   {
     SCOPED_TRACE("Checking color of the initial SkBitmap");
-    gt::CheckColor(bitmap.getColor(10, 10), true);
-    gt::CheckColor(bitmap.getColor(10, 40), false);
+    gt::CheckColors(bitmap.getColor(10, 10), SK_ColorRED);
+    gt::CheckColors(bitmap.getColor(10, 40), SK_ColorGREEN);
   }
 
   // Convert from SkBitmap to a platform representation, then check the upper
@@ -474,12 +474,12 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   gfx::Image from_skbitmap(bitmap);
   {
     SCOPED_TRACE("Checking color of the platform image");
-    gt::CheckColor(
+    gt::CheckColors(
         gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 10),
-        true);
-    gt::CheckColor(
+        SK_ColorRED);
+    gt::CheckColors(
         gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 40),
-        false);
+        SK_ColorGREEN);
   }
 
   // Force a conversion back to SkBitmap and check that the upper half is red.
@@ -488,8 +488,8 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   SkAutoLockPixels auto_lock(*bitmap2);
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
-    gt::CheckColor(bitmap2->getColor(10, 10), true);
-    gt::CheckColor(bitmap2->getColor(10, 40), false);
+    gt::CheckColors(bitmap2->getColor(10, 10), SK_ColorRED);
+    gt::CheckColors(bitmap2->getColor(10, 40), SK_ColorGREEN);
   }
 }
 
@@ -509,7 +509,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   canvas.drawRect(SkRect::MakeWH(width, height / 2), red);
   {
     SCOPED_TRACE("Checking color of the initial SkBitmap");
-    gt::CheckColor(bitmap.getColor(10, 10), true);
+    gt::CheckColors(bitmap.getColor(10, 10), SK_ColorRED);
     gt::CheckIsTransparent(bitmap.getColor(10, 40));
   }
 
@@ -518,9 +518,9 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   gfx::Image from_skbitmap(bitmap);
   {
     SCOPED_TRACE("Checking color of the platform image");
-    gt::CheckColor(
+    gt::CheckColors(
         gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 10),
-        true);
+        SK_ColorRED);
     gt::CheckIsTransparent(
         gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 40));
   }
@@ -531,7 +531,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   SkAutoLockPixels auto_lock(*bitmap2);
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
-    gt::CheckColor(bitmap2->getColor(10, 10), true);
+    gt::CheckColors(bitmap2->getColor(10, 10), SK_ColorRED);
     gt::CheckIsTransparent(bitmap.getColor(10, 40));
   }
 }

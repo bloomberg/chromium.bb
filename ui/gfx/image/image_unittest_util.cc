@@ -7,6 +7,8 @@
 
 #include "ui/gfx/image/image_unittest_util.h"
 
+#include <cmath>
+
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,6 +29,24 @@
 
 namespace gfx {
 namespace test {
+
+namespace {
+
+bool ColorComponentsClose(SkColor component1, SkColor component2) {
+  int c1 = static_cast<int>(component1);
+  int c2 = static_cast<int>(component2);
+  return std::abs(c1 - c2) <= 40;
+}
+
+bool ColorsClose(SkColor color1, SkColor color2) {
+  // Be tolerant of floating point rounding and lossy color space conversions.
+  return ColorComponentsClose(SkColorGetR(color1), SkColorGetR(color2)) &&
+         ColorComponentsClose(SkColorGetG(color1), SkColorGetG(color2)) &&
+         ColorComponentsClose(SkColorGetB(color1), SkColorGetB(color2)) &&
+         ColorComponentsClose(SkColorGetA(color1), SkColorGetA(color2));
+}
+
+}  // namespace
 
 void SetSupportedScaleFactorsTo1xAnd2x() {
   std::vector<ui::ScaleFactor> supported_scale_factors;
@@ -94,7 +114,7 @@ bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
 
   for (int y = 0; y < bmp1.height(); ++y) {
     for (int x = 0; x < bmp1.width(); ++x) {
-      if (*bmp1.getAddr32(x,y) != *bmp2.getAddr32(x,y))
+      if (!ColorsClose(bmp1.getColor(x,y), bmp2.getColor(x,y)))
         return false;
     }
   }
@@ -119,7 +139,7 @@ void CheckImageIndicatesPNGDecodeFailure(const gfx::Image& image) {
   EXPECT_LE(16, bitmap.width());
   EXPECT_LE(16, bitmap.height());
   SkAutoLockPixels auto_lock(bitmap);
-  CheckColor(bitmap.getColor(10, 10), true);
+  CheckColors(bitmap.getColor(10, 10), SK_ColorRED);
 }
 
 bool ImageSkiaStructureMatches(
@@ -234,17 +254,8 @@ SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
 }
 #endif
 
-void CheckColor(SkColor color, bool is_red) {
-  // Be tolerant of floating point rounding and lossy color space conversions.
-  if (is_red) {
-    EXPECT_GT(SkColorGetR(color) / 255.0, 0.95);
-    EXPECT_LT(SkColorGetG(color) / 255.0, 0.05);
-  } else {
-    EXPECT_GT(SkColorGetG(color) / 255.0, 0.95);
-    EXPECT_LT(SkColorGetR(color) / 255.0, 0.05);
-  }
-  EXPECT_LT(SkColorGetB(color) / 255.0, 0.05);
-  EXPECT_GT(SkColorGetA(color) / 255.0, 0.95);
+void CheckColors(SkColor color1, SkColor color2) {
+  EXPECT_TRUE(ColorsClose(color1, color2));
 }
 
 void CheckIsTransparent(SkColor color) {
