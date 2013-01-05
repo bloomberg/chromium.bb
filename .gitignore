@@ -230,7 +230,6 @@ v8.log
 /third_party/pywebsocket/src
 /third_party/safe_browsing/testing
 /third_party/scons-2.0.1
-/third_party/scrypt
 /third_party/sfntly
 /third_party/skia
 /third_party/smhasher
