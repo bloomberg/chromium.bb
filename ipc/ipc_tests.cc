@@ -25,6 +25,7 @@
 #include "base/test/perf_test_suite.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -43,8 +44,6 @@ const char kFuzzerChannel[] = "F3";
 const char kSyncSocketChannel[] = "S4";
 
 const size_t kLongMessageStringNumBytes = 50000;
-
-#ifndef PERFORMANCE_TEST
 
 void IPCChannelTest::SetUp() {
   MultiProcessTest::SetUp();
@@ -133,6 +132,7 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
 }
 #endif  // defined(OS_POSIX)
 
+#ifndef PERFORMANCE_TEST
 TEST_F(IPCChannelTest, BasicMessageTest) {
   int v1 = 10;
   std::string v2("foobar");
@@ -426,7 +426,6 @@ MULTIPROCESS_IPC_TEST_MAIN(RunTestClient) {
   Send(&chan, "hello from child");
   // run message loop
   MessageLoop::current()->Run();
-  // return true;
   return 0;
 }
 
@@ -454,25 +453,28 @@ class ChannelReflectorListener : public IPC::Listener {
  public:
   explicit ChannelReflectorListener(IPC::Channel *channel) :
     channel_(channel),
-    count_messages_(0),
-    latency_messages_(0) {
+    count_messages_(0) {
     std::cout << "Reflector up" << std::endl;
   }
 
   ~ChannelReflectorListener() {
     std::cout << "Client Messages: " << count_messages_ << std::endl;
-    std::cout << "Client Latency: " << latency_messages_ << std::endl;
+    std::cout << "Client Latency: " << latency_messages_.InMilliseconds()
+              << std::endl;
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
     PickleIterator iter(message);
-    int time;
-    EXPECT_TRUE(iter.ReadInt(&time));
+    int64 time_internal;
+    EXPECT_TRUE(iter.ReadInt64(&time_internal));
     int msgid;
     EXPECT_TRUE(iter.ReadInt(&msgid));
-    std::string payload = iter.NextString();
-    latency_messages_ += GetTickCount() - time;
+    std::string payload;
+    EXPECT_TRUE(iter.ReadString(&payload));
+    // TODO(vtl): Should we use |HighResNow()| instead of |Now()|?
+    latency_messages_ += base::TimeTicks::Now() -
+                         base::TimeTicks::FromInternalValue(time_internal);
 
     // cout << "reflector msg received: " << msgid << endl;
     if (payload == "quit")
@@ -481,7 +483,7 @@ class ChannelReflectorListener : public IPC::Listener {
     IPC::Message* msg = new IPC::Message(0,
                                          2,
                                          IPC::Message::PRIORITY_NORMAL);
-    msg->WriteInt(GetTickCount());
+    msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     msg->WriteInt(msgid);
     msg->WriteString(payload);
     channel_->Send(msg);
@@ -491,7 +493,7 @@ class ChannelReflectorListener : public IPC::Listener {
  private:
   IPC::Channel *channel_;
   int count_messages_;
-  int latency_messages_;
+  base::TimeDelta latency_messages_;
 };
 
 class ChannelPerfListener : public IPC::Listener {
@@ -499,8 +501,7 @@ class ChannelPerfListener : public IPC::Listener {
   ChannelPerfListener(IPC::Channel* channel, int msg_count, int msg_size) :
        count_down_(msg_count),
        channel_(channel),
-       count_messages_(0),
-       latency_messages_(0) {
+       count_messages_(0) {
     payload_.resize(msg_size);
     for (int i = 0; i < static_cast<int>(payload_.size()); i++)
       payload_[i] = 'a';
@@ -509,37 +510,41 @@ class ChannelPerfListener : public IPC::Listener {
 
   ~ChannelPerfListener() {
     std::cout << "Server Messages: " << count_messages_ << std::endl;
-    std::cout << "Server Latency: " << latency_messages_ << std::endl;
+    std::cout << "Server Latency: " << latency_messages_.InMilliseconds()
+              << std::endl;
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
     // Decode the string so this gets counted in the total time.
     PickleIterator iter(message);
-    int time;
-    EXPECT_TRUE(iter.ReadInt(&time));
+    int64 time_internal;
+    EXPECT_TRUE(iter.ReadInt64(&time_internal));
     int msgid;
     EXPECT_TRUE(iter.ReadInt(&msgid));
-    std::string cur = iter.NextString();
-    latency_messages_ += GetTickCount() - time;
+    std::string cur;
+    EXPECT_TRUE(iter.ReadString(&cur));
+    latency_messages_ += base::TimeTicks::Now() -
+                         base::TimeTicks::FromInternalValue(time_internal);
 
     count_down_--;
     if (count_down_ == 0) {
       IPC::Message* msg = new IPC::Message(0,
                                            2,
                                            IPC::Message::PRIORITY_NORMAL);
-      msg->WriteInt(GetTickCount());
+      msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
       msg->WriteInt(count_down_);
       msg->WriteString("quit");
       channel_->Send(msg);
-      SetTimer(NULL, 1, 250, (TIMERPROC) PostQuitMessage);
+
+      MessageLoop::current()->QuitWhenIdle();
       return true;
     }
 
     IPC::Message* msg = new IPC::Message(0,
                                          2,
                                          IPC::Message::PRIORITY_NORMAL);
-    msg->WriteInt(GetTickCount());
+    msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     msg->WriteInt(count_down_);
     msg->WriteString(payload_);
     channel_->Send(msg);
@@ -551,7 +556,7 @@ class ChannelPerfListener : public IPC::Listener {
   std::string payload_;
   IPC::Channel *channel_;
   int count_messages_;
-  int latency_messages_;
+  base::TimeDelta latency_messages_;
 };
 
 TEST_F(IPCChannelTest, Performance) {
@@ -561,10 +566,10 @@ TEST_F(IPCChannelTest, Performance) {
   chan.set_listener(&perf_listener);
   ASSERT_TRUE(chan.Connect());
 
-  HANDLE process = SpawnChild(TEST_REFLECTOR, &chan);
-  ASSERT_TRUE(process);
+  base::ProcessHandle process_handle = SpawnChild(TEST_REFLECTOR, &chan);
+  ASSERT_TRUE(process_handle);
 
-  PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
 
   PerfTimeLogger logger("IPC_Perf");
 
@@ -572,7 +577,7 @@ TEST_F(IPCChannelTest, Performance) {
   IPC::Message* message = new IPC::Message(0,
                                            2,
                                            IPC::Message::PRIORITY_NORMAL);
-  message->WriteInt(GetTickCount());
+  message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
   message->WriteInt(-1);
   message->WriteString("Hello");
   chan.Send(message);
@@ -580,9 +585,10 @@ TEST_F(IPCChannelTest, Performance) {
   // run message loop
   MessageLoop::current()->Run();
 
-  // cleanup child process
-  WaitForSingleObject(process, 5000);
-  CloseHandle(process);
+  // Clean up child process.
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      process_handle, base::TimeDelta::FromSeconds(5)));
+  base::CloseProcessHandle(process_handle);
 }
 
 // This message loop bounces all messages back to the sender
@@ -591,10 +597,10 @@ MULTIPROCESS_IPC_TEST_MAIN(RunReflector) {
   IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT, NULL);
   ChannelReflectorListener channel_reflector_listener(&chan);
   chan.set_listener(&channel_reflector_listener);
-  ASSERT_TRUE(chan.Connect());
+  CHECK(chan.Connect());
 
   MessageLoop::current()->Run();
-  return true;
+  return 0;
 }
 
 #endif  // PERFORMANCE_TEST
