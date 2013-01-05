@@ -26,14 +26,6 @@ import tempfile
 import time
 import uuid
 
-# By default this script will try to determine the most appropriate X session
-# command for the system.  To use a specific session instead, set this variable
-# to the executable filename, or a list containing the executable and any
-# arguments, for example:
-# XSESSION_COMMAND = "/usr/bin/gnome-session-fallback"
-# XSESSION_COMMAND = ["/usr/bin/gnome-session", "--session=ubuntu-2d"]
-XSESSION_COMMAND = None
-
 LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 
 # This script has a sensible default for the initial and maximum desktop size,
@@ -356,8 +348,12 @@ class Desktop:
     # terminal, any reading from stdin causes the job to be suspended.
     # Daemonization would solve this problem by separating the process from the
     # controlling terminal.
-    logging.info("Launching X session: %s" % XSESSION_COMMAND)
-    self.session_proc = subprocess.Popen(XSESSION_COMMAND,
+    xsession_command = choose_x_session()
+    if xsession_command is None:
+      raise Exception("Unable to choose suitable X session command.")
+
+    logging.info("Launching X session: %s" % xsession_command)
+    self.session_proc = subprocess.Popen(xsession_command,
                                          stdin=open(os.devnull, "r"),
                                          cwd=HOME_DIR,
                                          env=self.child_env)
@@ -472,18 +468,12 @@ class PidFile:
 def choose_x_session():
   """Chooses the most appropriate X session command for this system.
 
-  If XSESSION_COMMAND is already set, its value is returned directly.
-  Otherwise, a session is chosen for this system.
-
   Returns:
     A string containing the command to run, or a list of strings containing
     the executable program and its arguments, which is suitable for passing as
     the first parameter of subprocess.Popen().  If a suitable session cannot
     be found, returns None.
   """
-  if XSESSION_COMMAND is not None:
-    return XSESSION_COMMAND
-
   # If the session wrapper script (see below) is given a specific session as an
   # argument (such as ubuntu-2d on Ubuntu 12.04), the wrapper will run that
   # session instead of looking for custom .xsession files in the home directory.
@@ -871,19 +861,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
       parser.error("Width and height should be 100 pixels or greater")
 
     sizes.append((width, height))
-
-  # Determine the command-line to run the user's preferred X environment.
-  global XSESSION_COMMAND
-  XSESSION_COMMAND = choose_x_session()
-  if XSESSION_COMMAND is None:
-    print >> sys.stderr, "Unable to choose suitable X session command."
-    return 1
-
-  if "--session=ubuntu-2d" in XSESSION_COMMAND:
-    print >> sys.stderr, (
-      "The Unity 2D desktop session will be used.\n"
-      "If you encounter problems with this choice of desktop, please install\n"
-      "the gnome-session-fallback package, and restart this script.\n")
 
   # Register an exit handler to clean up session process and the PID file.
   atexit.register(cleanup)
