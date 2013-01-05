@@ -29,12 +29,14 @@
 
 namespace extensions {
 
-class AppNotifyChannelUIImpl::InfoBar : public ConfirmInfoBarDelegate {
+namespace {
+
+class AppNotifyChannelUIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  InfoBar(AppNotifyChannelUIImpl* creator,
-          InfoBarService* infobar_service,
-          const std::string& app_name);
-  virtual ~InfoBar();
+  AppNotifyChannelUIInfoBarDelegate(AppNotifyChannelUIImpl* creator,
+                                    InfoBarService* infobar_service,
+                                    const std::string& app_name);
+  virtual ~AppNotifyChannelUIInfoBarDelegate();
 
   // ConfirmInfoBarDelegate.
   virtual string16 GetMessageText() const OVERRIDE;
@@ -47,10 +49,10 @@ class AppNotifyChannelUIImpl::InfoBar : public ConfirmInfoBarDelegate {
   AppNotifyChannelUIImpl* creator_;
   std::string app_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(InfoBar);
+  DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelUIInfoBarDelegate);
 };
 
-AppNotifyChannelUIImpl::InfoBar::InfoBar(
+AppNotifyChannelUIInfoBarDelegate::AppNotifyChannelUIInfoBarDelegate(
     AppNotifyChannelUIImpl* creator,
     InfoBarService* infobar_service,
     const std::string& app_name)
@@ -59,14 +61,15 @@ AppNotifyChannelUIImpl::InfoBar::InfoBar(
       app_name_(app_name) {
 }
 
-AppNotifyChannelUIImpl::InfoBar::~InfoBar() {}
+AppNotifyChannelUIInfoBarDelegate::~AppNotifyChannelUIInfoBarDelegate() {
+}
 
-string16 AppNotifyChannelUIImpl::InfoBar::GetMessageText() const {
+string16 AppNotifyChannelUIInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_APP_NOTIFICATION_NEED_SIGNIN,
                                     UTF8ToUTF16(app_name_));
 }
 
-string16 AppNotifyChannelUIImpl::InfoBar::GetButtonLabel(
+string16 AppNotifyChannelUIInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK) {
     return l10n_util::GetStringUTF16(IDS_APP_NOTIFICATION_NEED_SIGNIN_ACCEPT);
@@ -78,19 +81,21 @@ string16 AppNotifyChannelUIImpl::InfoBar::GetButtonLabel(
   return string16();
 }
 
-bool AppNotifyChannelUIImpl::InfoBar::Accept() {
+bool AppNotifyChannelUIInfoBarDelegate::Accept() {
   creator_->OnInfoBarResult(true);
   return true;
 }
 
-bool AppNotifyChannelUIImpl::InfoBar::Cancel() {
+bool AppNotifyChannelUIInfoBarDelegate::Cancel() {
   creator_->OnInfoBarResult(false);
   return true;
 }
 
-void AppNotifyChannelUIImpl::InfoBar::InfoBarDismissed() {
+void AppNotifyChannelUIInfoBarDelegate::InfoBarDismissed() {
   Cancel();
 }
+
+}  // namespace
 
 
 AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(
@@ -139,7 +144,7 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
-  infobar_service->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
+  infobar_service->AddInfoBar(new AppNotifyChannelUIInfoBarDelegate(
       this, infobar_service, app_name_));
 }
 

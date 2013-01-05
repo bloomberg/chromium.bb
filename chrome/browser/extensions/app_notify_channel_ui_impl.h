@@ -32,19 +32,13 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
   // AppNotifyChannelUI.
   virtual void PromptSyncSetup(AppNotifyChannelUI::Delegate* delegate) OVERRIDE;
 
- protected:
-  // A private class we use to put up an infobar - its lifetime is managed by
-  // |web_contents_|, so we don't have one as an instance variable.
-  class InfoBar;
-  friend class AppNotifyChannelUIImpl::InfoBar;
-
   // Called by our InfoBar when it's accepted or cancelled/closed.
   void OnInfoBarResult(bool accepted);
 
+ private:
   // ProfileSyncServiceObserver.
   virtual void OnStateChanged() OVERRIDE;
 
- private:
   void StartObservingSync();
   void StopObservingSync();
 
