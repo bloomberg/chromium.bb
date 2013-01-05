@@ -90,7 +90,7 @@ class IPC_EXPORT Channel : public Sender {
   // size or bigger results in a channel error.
   static const size_t kMaximumMessageSize = 128 * 1024 * 1024;
 
-  // Ammount of data to read at once from the pipe.
+  // Amount of data to read at once from the pipe.
   static const size_t kReadBufferSize = 4 * 1024;
 
   // Initialize a Channel.
