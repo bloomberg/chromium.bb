@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/logging.h"
-#import "third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -54,25 +53,25 @@ BOOL AreOptionsFullScreen(NSApplicationPresentationOptions options) {
 
 - (id)init {
   if ((self = [super init])) {
-    [NSApp gtm_addObserver:self
-                forKeyPath:@"currentSystemPresentationOptions"
-                  selector:@selector(observeNotification:)
-                  userInfo:nil
-                   options:NSKeyValueObservingOptionNew |
-                           NSKeyValueObservingOptionInitial];
+    [NSApp addObserver:self
+            forKeyPath:@"currentSystemPresentationOptions"
+               options:NSKeyValueObservingOptionNew |
+                       NSKeyValueObservingOptionInitial
+               context:nil];
   }
   return self;
 }
 
 - (void)dealloc {
-  [NSApp gtm_removeObserver:self
-                 forKeyPath:@"currentSystemPresentationOptions"
-                   selector:@selector(observeNotification:)];
+  [NSApp removeObserver:self
+             forKeyPath:@"currentSystemPresentationOptions"];
   [super dealloc];
 }
 
-- (void)observeNotification:(GTMKeyValueChangeNotification*)notification {
-  NSDictionary* change = [notification change];
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
   NSApplicationPresentationOptions options =
       [[change objectForKey:NSKeyValueChangeNewKey] integerValue];
   [self setFullScreen:AreOptionsFullScreen(options)];
