@@ -172,8 +172,7 @@ NSImage* CreateImageWithSize(NSSize size,
                  samplesPerPixel:4
                         hasAlpha:YES
                         isPlanar:NO
-                  colorSpaceName:NSCalibratedRGBColorSpace
-                    bitmapFormat:NSAlphaFirstBitmapFormat
+                  colorSpaceName:NSDeviceRGBColorSpace
                      bytesPerRow:0
                     bitsPerPixel:0];
     [bmpImageRep setSize:size];
