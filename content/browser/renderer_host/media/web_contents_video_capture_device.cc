@@ -50,6 +50,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -172,6 +173,9 @@ class BackingStoreCopier : public WebContentsObserver {
   const int render_process_id_;
   const int render_view_id_;
 
+  // Last known RenderView size.
+  gfx::Size last_view_size_;
+
   // If the following is NULL (normal behavior), the implementation should
   // access RenderWidgetHost via web_contents().
   RenderWidgetHost* rwh_for_testing_;
@@ -260,6 +264,7 @@ class VideoFrameDeliverer {
   // deliver stage) whenever verbose logging is turned on.
   base::Time last_frame_rate_log_time_;
   int count_frames_rendered_;
+  int last_frame_number_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameDeliverer);
 };
@@ -333,6 +338,14 @@ void BackingStoreCopier::StartCopy(int frame_number,
       CalculateFittedSize(view_size.width(), view_size.height(),
                           desired_width, desired_height,
                           &fitted_size);
+    }
+    if (view_size != last_view_size_) {
+      last_view_size_ = view_size;
+
+      // Measure the number of kilopixels.
+      UMA_HISTOGRAM_COUNTS_10000(
+          "TabCapture.ViewChangeKiloPixels",
+          view_size.width() * view_size.height() / 1024);
     }
   }
 
@@ -540,7 +553,9 @@ void SynchronizedConsumer::OnIncomingCapturedFrame(
 }
 
 VideoFrameDeliverer::VideoFrameDeliverer(SynchronizedConsumer* consumer)
-    : deliver_thread_("WebContentsVideo_DeliverThread"), consumer_(consumer) {
+    : deliver_thread_("WebContentsVideo_DeliverThread"),
+      consumer_(consumer),
+      last_frame_number_(0) {
   DCHECK(consumer_);
   deliver_thread_.Start();
 }
@@ -575,24 +590,33 @@ void VideoFrameDeliverer::DeliverOnDeliverThread(
       frame_timestamp);
 
   // Log frame rate, if verbose logging is turned on.
-  if (VLOG_IS_ON(1)) {
-    static const base::TimeDelta kFrameRateLogInterval =
-        base::TimeDelta::FromSeconds(5);
-    const base::Time& now = base::Time::Now();
-    if (last_frame_rate_log_time_.is_null()) {
+  static const base::TimeDelta kFrameRateLogInterval =
+      base::TimeDelta::FromSeconds(10);
+  const base::Time& now = base::Time::Now();
+  if (last_frame_rate_log_time_.is_null()) {
+    last_frame_rate_log_time_ = now;
+    count_frames_rendered_ = 0;
+    last_frame_number_ = frame_number;
+  } else {
+    ++count_frames_rendered_;
+    const base::TimeDelta elapsed = now - last_frame_rate_log_time_;
+    if (elapsed >= kFrameRateLogInterval) {
+      const double measured_fps =
+          count_frames_rendered_ / elapsed.InSecondsF();
+      const int frames_elapsed = frame_number - last_frame_number_;
+      const int count_frames_dropped = frames_elapsed - count_frames_rendered_;
+      DCHECK_LE(0, count_frames_dropped);
+      UMA_HISTOGRAM_PERCENTAGE(
+          "TabCapture.FrameDropPercentage",
+          (count_frames_dropped * 100 + frames_elapsed / 2) / frames_elapsed);
+      UMA_HISTOGRAM_COUNTS(
+          "TabCapture.FrameRate",
+          static_cast<int>(measured_fps));
+      VLOG(1) << "Current measured frame rate for CaptureMachine@" << this
+              << " is " << measured_fps << " FPS.";
       last_frame_rate_log_time_ = now;
       count_frames_rendered_ = 0;
-    } else {
-      ++count_frames_rendered_;
-      const base::TimeDelta elapsed = now - last_frame_rate_log_time_;
-      if (elapsed >= kFrameRateLogInterval) {
-        const double measured_fps =
-            count_frames_rendered_ / elapsed.InSecondsF();
-        VLOG(1) << "Current measured frame rate for CaptureMachine@" << this
-                << " is " << measured_fps << " FPS.";
-        last_frame_rate_log_time_ = now;
-        count_frames_rendered_ = 0;
-      }
+      last_frame_number_ = frame_number;
     }
   }
 
@@ -659,6 +683,7 @@ class CaptureMachine
   // The glue between the pipeline stages.
   void StartSnapshot();
   void SnapshotComplete(int frame_number,
+                        const base::Time& start_time,
                         BackingStoreCopier::Result result,
                         scoped_ptr<skia::PlatformBitmap> capture,
                         const base::Time& capture_time);
@@ -896,7 +921,7 @@ void CaptureMachine::StartSnapshot() {
     const BackingStoreCopier::DoneCB& done_cb =
         media::BindToLoop(manager_thread_.message_loop_proxy(),
                           base::Bind(&CaptureMachine::SnapshotComplete, this,
-                                     frame_number_));
+                                     frame_number_, base::Time::Now()));
     const base::Closure& start_cb =
         base::Bind(&BackingStoreCopier::StartCopy,
                    base::Unretained(&copier_),
@@ -908,6 +933,7 @@ void CaptureMachine::StartSnapshot() {
 }
 
 void CaptureMachine::SnapshotComplete(int frame_number,
+                                      const base::Time& start_time,
                                       BackingStoreCopier::Result result,
                                       scoped_ptr<skia::PlatformBitmap> capture,
                                       const base::Time& capture_time) {
@@ -922,6 +948,8 @@ void CaptureMachine::SnapshotComplete(int frame_number,
 
   switch (result) {
     case BackingStoreCopier::OK:
+      UMA_HISTOGRAM_TIMES("TabCapture.SnapshotTime",
+                          base::Time::Now() - start_time);
       if (num_renders_pending_ <= 1) {
         ++num_renders_pending_;
         DCHECK(capture);
