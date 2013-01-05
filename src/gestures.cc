@@ -82,8 +82,50 @@ std::string HardwareProperties::String() const {
                       is_button_pad);
 }
 
+namespace {
+string NameForFingerStateFlag(unsigned flag) {
+#define CASERET(name)                           \
+  case name: return #name
+  switch (flag) {
+    CASERET(GESTURES_FINGER_WARP_X_NON_MOVE);
+    CASERET(GESTURES_FINGER_WARP_Y_NON_MOVE);
+    CASERET(GESTURES_FINGER_NO_TAP);
+    CASERET(GESTURES_FINGER_POSSIBLE_PALM);
+    CASERET(GESTURES_FINGER_PALM);
+    CASERET(GESTURES_FINGER_WARP_X_MOVE);
+    CASERET(GESTURES_FINGER_WARP_Y_MOVE);
+  }
+#undef CASERET
+  return "";
+}
+}  // namespace {}
+
+string FingerState::FlagsString(unsigned flags) {
+  string ret;
+  const char kPipeSeparator[] = " | ";
+  for (unsigned i = 0; i < 8 * sizeof(flags); i++) {
+    const unsigned flag = 1 << i;
+    const string name = NameForFingerStateFlag(flag);
+    if ((flags & flag) && !name.empty()) {
+      ret += kPipeSeparator;
+      ret += name;
+      flags &= ~flag;
+    }
+  }
+  if (flags) {
+    // prepend remaining number
+    ret = StringPrintf("%u%s", flags, ret.c_str());
+  } else if (StartsWithASCII(ret, kPipeSeparator, false)) {
+    // strip extra pipe
+    ret = string(ret.c_str() + strlen(kPipeSeparator));
+  } else {
+    ret = "0";
+  }
+  return ret;
+}
+
 string FingerState::String() const {
-  return StringPrintf("{ %f, %f, %f, %f, %f, %f, %f, %f, %d, %d }",
+  return StringPrintf("{ %f, %f, %f, %f, %f, %f, %f, %f, %d, %s }",
                       touch_major, touch_minor,
                       width_major, width_minor,
                       pressure,
@@ -91,7 +133,7 @@ string FingerState::String() const {
                       position_x,
                       position_y,
                       tracking_id,
-                      flags);
+                      FlagsString(flags).c_str());
 }
 
 FingerState* HardwareState::GetFingerState(short tracking_id) {

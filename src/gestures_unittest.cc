@@ -282,8 +282,10 @@ TEST(GesturesTest, HardwarePropertiesToStringTest) {
 
 TEST(GesturesTest, HardwareStateToStringTest) {
   FingerState fs[] = {
-    { 1.0, 2.0, 3.0, 4.5, 30.0, 11.0, 20.0, 30.0, 14, 12 },
-    { 1.5, 2.5, 3.5, 5.0, 30.5, 11.5, 20.5, 30.5, 15, 22 }
+    { 1.0, 2.0, 3.0, 4.5, 30.0, 11.0, 20.0, 30.0, 14,
+      GESTURES_FINGER_WARP_Y_NON_MOVE | GESTURES_FINGER_PALM },
+    { 1.5, 2.5, 3.5, 5.0, 30.5, 11.5, 20.5, 30.5, 15,
+      GESTURES_FINGER_WARP_X_NON_MOVE }
   };
 
   HardwareState hs[] = {
@@ -301,7 +303,8 @@ TEST(GesturesTest, HardwareStateToStringTest) {
     "20.0",
     "30.0",
     "14",
-    "12",
+    "GESTURES_FINGER_WARP_Y_NON_MOVE",
+    "GESTURES_FINGER_PALM",
     "1.5",
     "2.5",
     "3.5",
@@ -311,7 +314,7 @@ TEST(GesturesTest, HardwareStateToStringTest) {
     "20.5",
     "30.5",
     "15",
-    "22",
+    "GESTURES_FINGER_WARP_X_NON_MOVE",
     "1.123",
     "1, 2, 2"
   };

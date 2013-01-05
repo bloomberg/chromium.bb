@@ -109,6 +109,7 @@ struct FingerState {
         flags == that.flags;
   }
   bool operator!=(const FingerState& that) const { return !(*this == that); }
+  static std::string FlagsString(unsigned flags);
   std::string String() const;
 #endif
 };
