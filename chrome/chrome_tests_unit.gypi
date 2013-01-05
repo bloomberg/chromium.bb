@@ -1175,6 +1175,7 @@
         'browser/ui/cocoa/accelerators_cocoa_unittest.mm',
         'browser/ui/cocoa/animatable_image_unittest.mm',
         'browser/ui/cocoa/animatable_view_unittest.mm',
+        'browser/ui/cocoa/applescript/apple_event_util_unittest.mm',
         'browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h',
         'browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.mm',
         'browser/ui/cocoa/applescript/bookmark_folder_applescript_unittest.mm',
