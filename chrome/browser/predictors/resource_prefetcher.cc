@@ -170,18 +170,25 @@ void ResourcePrefetcher::ReadFullResponse(net::URLRequest* request) {
     status = request->Read(buffer, kResourceBufferSizeBytes, &bytes_read);
 
     if (status) {
-      if (request->status().error()) {
-        FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
-        return;
-      } else if (bytes_read == 0) {
-        if (request->was_cached())
-          FinishRequest(request, Request::PREFETCH_STATUS_FROM_CACHE);
-        else
-          FinishRequest(request, Request::PREFETCH_STATUS_FROM_NETWORK);
-        return;
-      }
+      status = ShouldContinueReadingRequest(request, bytes_read);
+    } else if (request->status().error()) {
+      FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
+      return;
     }
   }
+}
+
+bool ResourcePrefetcher::ShouldContinueReadingRequest(net::URLRequest* request,
+                                                      int bytes_read) {
+  if (bytes_read == 0) {  // When bytes_read == 0, no more data.
+    if (request->was_cached())
+      FinishRequest(request, Request::PREFETCH_STATUS_FROM_CACHE);
+    else
+      FinishRequest(request, Request::PREFETCH_STATUS_FROM_NETWORK);
+    return false;
+  }
+
+  return true;
 }
 
 void ResourcePrefetcher::OnReceivedRedirect(net::URLRequest* request,
@@ -213,6 +220,7 @@ void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request) {
     return;
   }
 
+  // TODO(shishir): Do not read cached entries, or ones that are not cacheable.
   ReadFullResponse(request);
 }
 
@@ -223,7 +231,8 @@ void ResourcePrefetcher::OnReadCompleted(net::URLRequest* request,
     return;
   }
 
-  ReadFullResponse(request);
+  if (ShouldContinueReadingRequest(request, bytes_read))
+    ReadFullResponse(request);
 }
 
 }  // namespace predictors

@@ -118,6 +118,10 @@ class ResourcePrefetcher : public base::NonThreadSafe,
   // be cached correctly. Stubbed out during testing.
   virtual void ReadFullResponse(net::URLRequest* request);
 
+  // Returns true if the request has more data that needs to be read. If it
+  // returns false, the request should not be referenced again.
+  bool ShouldContinueReadingRequest(net::URLRequest* request, int bytes_read);
+
   // net::URLRequest::Delegate methods.
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
