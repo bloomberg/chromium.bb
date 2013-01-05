@@ -32,7 +32,6 @@ static const char* const kExtensionUrl_3 =
     "chrome-extension://some_id3/popup.css";
 
 void MessageDeleter(IPC::Message* message) {
-  delete static_cast<IPC::SyncMessage*>(message)->GetReplyDeserializer();
   delete message;
 }
 
