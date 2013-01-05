@@ -907,7 +907,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
                                   L"\u898f\u7ba1\u5c0e\u904a"));
   profile1.SetRawInfo(ADDRESS_HOME_ZIP, WideToUTF16(L"YOHO_54676"));
   profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, WideToUTF16(L"861088828000"));
-  profile1.SetRawInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"India"));
+  profile1.SetInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"India"), "en-US");
   profiles.push_back(profile1);
 
   AutofillProfile profile2;
@@ -974,7 +974,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   profile7.SetRawInfo(ADDRESS_HOME_STATE, WideToUTF16(L"CA"));
   profile7.SetRawInfo(ADDRESS_HOME_ZIP, WideToUTF16(L"94086"));
   profile7.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, WideToUTF16(L"15466784565"));
-  profile7.SetRawInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"United States"));
+  profile7.SetInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"United States"),
+                   "en-US");
   profiles.push_back(profile7);
 
   SetProfiles(&profiles);
@@ -1045,8 +1046,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, Invalid) {
   without_invalid.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Sunnyvale"));
   without_invalid.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   without_invalid.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("my_zip"));
-  without_invalid.SetRawInfo(ADDRESS_HOME_COUNTRY,
-                             ASCIIToUTF16("United States"));
+  without_invalid.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"),
+                          "en-US");
 
   AutofillProfile with_invalid = without_invalid;
   with_invalid.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -1490,7 +1491,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillLatencyAfterSubmit) {
     profile.SetRawInfo(ADDRESS_HOME_CITY, city);
     profile.SetRawInfo(ADDRESS_HOME_STATE, WideToUTF16(L"CA"));
     profile.SetRawInfo(ADDRESS_HOME_ZIP, zip);
-    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"United States"));
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"US"));
     profiles.push_back(profile);
   }
   SetProfiles(&profiles);

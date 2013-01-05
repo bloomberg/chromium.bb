@@ -758,7 +758,7 @@ TEST(AutofillProfileTest, AddressCountryAbbrev) {
   field.option_contents = options;
 
   AutofillProfile profile;
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Canada"));
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Canada"), "en-US");
   profile.FillSelectControl(ADDRESS_HOME_COUNTRY, &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }

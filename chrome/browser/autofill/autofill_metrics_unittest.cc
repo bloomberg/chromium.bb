@@ -125,7 +125,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
-                                  "Memphis", "Tennessee", "38116", "USA",
+                                  "Memphis", "Tennessee", "38116", "US",
                                   "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
@@ -133,7 +133,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "USA", "2345678901");
+                                  "Texas", "79401", "US", "2345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
   }

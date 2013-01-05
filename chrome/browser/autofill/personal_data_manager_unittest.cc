@@ -111,7 +111,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   autofill_test::SetProfileInfo(&profile0,
       "John", "Mitchell", "Smith",
       "j@s.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
-      "94102", "USA", "4158889999");
+      "94102", "US", "4158889999");
 
   // Add profile0 to the database.
   personal_data_->AddProfile(profile0);
@@ -981,7 +981,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   expected.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
   values.push_back(ASCIIToUTF16("(650) 223-1234"));
   expected.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
-  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
@@ -1208,7 +1208,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
   autofill_test::SetProfileInfo(auxiliary_profile,
       "Tester", "Frederick", "McAddressBookTesterson",
       "tester@example.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco",
-      "CA", "94102", "USA", "1.415.888.9999");
+      "CA", "94102", "US", "1.415.888.9999");
   ScopedVector<AutofillProfile>& auxiliary_profiles =
       personal_data_->auxiliary_profiles_;
   auxiliary_profiles.push_back(auxiliary_profile);

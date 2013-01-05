@@ -160,7 +160,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
-                                  "Memphis", "Tennessee", "38116", "USA",
+                                  "Memphis", "Tennessee", "38116", "US",
                                   "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
@@ -168,7 +168,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "USA", "23456789012");
+                                  "Texas", "79401", "US", "23456789012");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutofillProfile;
@@ -2421,8 +2421,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
 
   // We should not be able to fill prefix and suffix fields for international
   // numbers.
-  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY,
-                           ASCIIToUTF16("United Kingdom"));
+  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("GB"));
   work_profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                            ASCIIToUTF16("447700954321"));
   page_id = 3;
@@ -2461,7 +2460,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   std::vector<string16> phone_variants;
   phone_variants.push_back(ASCIIToUTF16("16505554567"));
   phone_variants.push_back(ASCIIToUTF16("18887771234"));
-  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
+  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   work_profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, phone_variants);
 
   page_id = 5;
