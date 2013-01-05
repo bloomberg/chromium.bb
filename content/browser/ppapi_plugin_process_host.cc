@@ -241,7 +241,6 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     static const char* kPluginForwardSwitches[] = {
       switches::kDisablePepperThreading,
       switches::kDisableSeccompFilterSandbox,
-      switches::kEnablePepperThreading,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif

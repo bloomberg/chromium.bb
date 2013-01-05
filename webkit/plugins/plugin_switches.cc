@@ -15,9 +15,6 @@ const char kDisablePepper3d[] = "disable-pepper-3d";
 // "Command-line" arguments for the PPAPI Flash; used for debugging options.
 const char kPpapiFlashArgs[] = "ppapi-flash-args";
 
-// Set to true to allow threadsafety support in native Pepper plugins.
-const char kEnablePepperThreading[] = "enable-pepper-threading";
-
 // Set to true to not allow threadsafety support in native Pepper plugins.
 const char kDisablePepperThreading[] = "disable-pepper-threading";
 

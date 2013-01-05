@@ -89,13 +89,8 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
   globals->set_plugin_proxy_delegate(this);
   globals->set_command_line(
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
-  if (command_line.HasSwitch(switches::kDisablePepperThreading)) {
-    globals->set_enable_threading(false);
-  } else if (command_line.HasSwitch(switches::kEnablePepperThreading)) {
-    globals->set_enable_threading(true);
-  } else {
-    globals->set_enable_threading(false);
-  }
+  globals->set_enable_threading(
+      !command_line.HasSwitch(switches::kDisablePepperThreading));
 
   webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());

@@ -313,15 +313,9 @@ void AddPepperFlashFromCommandLine(
 }
 
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisablePepperThreading) &&
-      !command_line->HasSwitch(switches::kEnablePepperThreading)) {
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-      command_line->AppendSwitch(switches::kEnablePepperThreading);
-  }
-
 #if defined(FLAPPER_AVAILABLE)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
   // command-line.
   if (command_line->HasSwitch(switches::kPpapiFlashPath))

@@ -13,7 +13,6 @@ namespace switches {
 WEBKIT_PLUGINS_EXPORT extern const char kDebugPluginLoading[];
 WEBKIT_PLUGINS_EXPORT extern const char kDisablePepper3d[];
 WEBKIT_PLUGINS_EXPORT extern const char kPpapiFlashArgs[];
-WEBKIT_PLUGINS_EXPORT extern const char kEnablePepperThreading[];
 WEBKIT_PLUGINS_EXPORT extern const char kDisablePepperThreading[];
 
 #if defined(OS_WIN)
