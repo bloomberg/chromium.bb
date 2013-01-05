@@ -10,14 +10,6 @@
 #include "cc/time_source.h"
 #include "cc/thread.h"
 
-namespace {
-
-// This will be the maximum number of pending frames unless
-// FrameRateController::setMaxFramesPending is called.
-const int defaultMaxFramesPending = 2;
-
-}  // namespace
-
 namespace cc {
 
 class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
@@ -41,7 +33,7 @@ private:
 FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     : m_client(0)
     , m_numFramesPending(0)
-    , m_maxFramesPending(defaultMaxFramesPending)
+    , m_maxFramesPending(0)
     , m_timeSource(timer)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
@@ -56,7 +48,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
 FrameRateController::FrameRateController(Thread* thread)
     : m_client(0)
     , m_numFramesPending(0)
-    , m_maxFramesPending(defaultMaxFramesPending)
+    , m_maxFramesPending(0)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(false)
@@ -90,7 +82,7 @@ void FrameRateController::setActive(bool active)
 
 void FrameRateController::setMaxFramesPending(int maxFramesPending)
 {
-    DCHECK(maxFramesPending > 0);
+    DCHECK(maxFramesPending >= 0);
     m_maxFramesPending = maxFramesPending;
 }
 
@@ -110,13 +102,13 @@ void FrameRateController::onTimerTick()
     DCHECK(m_active);
 
     // Check if we have too many frames in flight.
-    bool throttled = m_numFramesPending >= m_maxFramesPending;
+    bool throttled = m_maxFramesPending && m_numFramesPending >= m_maxFramesPending;
     TRACE_COUNTER_ID1("cc", "ThrottledVSyncInterval", m_thread, throttled);
 
     if (m_client)
         m_client->vsyncTick(throttled);
 
-    if (m_swapBuffersCompleteSupported && !m_isTimeSourceThrottling && m_numFramesPending < m_maxFramesPending)
+    if (m_swapBuffersCompleteSupported && !m_isTimeSourceThrottling && !throttled)
         postManualTick();
 }
 

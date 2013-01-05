@@ -945,6 +945,11 @@ void ThreadProxy::initializeRendererOnImplThread(CompletionEvent* completion, bo
                 capabilities->usingSwapCompleteCallback);
     }
 
+    int maxFramesPending = FrameRateController::kDefaultMaxFramesPending;
+    if (m_layerTreeHostImpl->outputSurface()->Capabilities().has_parent_compositor)
+        maxFramesPending = 1;
+    m_schedulerOnImplThread->setMaxFramesPending(maxFramesPending);
+
     completion->signal();
 }
 

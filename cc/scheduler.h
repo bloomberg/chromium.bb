@@ -77,6 +77,8 @@ public:
     void beginFrameAborted();
 
     void setMaxFramesPending(int);
+    int maxFramesPending() const;
+
     void setSwapBuffersCompleteSupported(bool);
     void didSwapBuffersComplete();
 

@@ -129,6 +129,7 @@ void DelegatingRenderer::drawFrame(
     RenderPassList& render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
   NOTIMPLEMENTED();
+  render_passes_in_draw_order.clear();
 }
 
 bool DelegatingRenderer::swapBuffers() {

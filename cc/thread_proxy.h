@@ -81,6 +81,8 @@ public:
     // ResourceUpdateControllerClient implementation
     virtual void readyToFinalizeTextureUpdates() OVERRIDE;
 
+    int maxFramesPendingForTesting() const { return m_schedulerOnImplThread->maxFramesPending(); }
+
 private:
     ThreadProxy(LayerTreeHost*, scoped_ptr<Thread> implThread);
 
