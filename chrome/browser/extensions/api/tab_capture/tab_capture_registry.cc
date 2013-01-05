@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 
+#include <utility>
+
 #include "content/public/browser/browser_thread.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -20,6 +22,14 @@ namespace events = extensions::event_names;
 using content::BrowserThread;
 
 namespace extensions {
+
+TabCaptureRegistry::TabCaptureRequest::TabCaptureRequest(
+    std::string extension_id, int tab_id, tab_capture::TabCaptureState status)
+    : extension_id(extension_id), tab_id(tab_id), status(status) {
+}
+
+TabCaptureRegistry::TabCaptureRequest::~TabCaptureRequest() {
+}
 
 TabCaptureRegistry::TabCaptureRegistry(Profile* profile)
     : proxy_(new MediaObserverProxy()), profile_(profile) {
@@ -44,7 +54,8 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
 
   std::pair<int, int> key = std::make_pair(render_process_id, render_view_id);
 
-  if (requests_.find(key) == requests_.end()) {
+  DeviceCaptureRequestMap::iterator request_it = requests_.find(key);
+  if (request_it == requests_.end()) {
     LOG(ERROR) << "Receiving updates for invalid tab capture request.";
     return;
   }
@@ -77,19 +88,19 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
     return;
   }
 
-  TabCaptureRegistry::TabCaptureRequest& request_info = requests_[key];
-  request_info.status = state;
+  TabCaptureRegistry::TabCaptureRequest* request_info = &request_it->second;
+  request_info->status = state;
 
   scoped_ptr<tab_capture::CaptureInfo> info(new tab_capture::CaptureInfo());
-  info->tab_id = request_info.tab_id;
-  info->status = request_info.status;
+  info->tab_id = request_info->tab_id;
+  info->status = request_info->status;
 
   scoped_ptr<base::ListValue> args(new ListValue());
   args->Append(info->ToValue().release());
   scoped_ptr<Event> event(new Event(
       events::kOnTabCaptureStatusChanged, args.Pass()));
   event->restrict_to_profile = profile_;
-  router->DispatchEventToExtension(request_info.extension_id, event.Pass());
+  router->DispatchEventToExtension(request_info->extension_id, event.Pass());
 }
 
 const TabCaptureRegistry::CaptureRequestList
@@ -130,13 +141,14 @@ void TabCaptureRegistry::Observe(int type,
 bool TabCaptureRegistry::AddRequest(const std::pair<int, int> key,
                                     const TabCaptureRequest& request) {
   // Currently, we do not allow multiple active captures for same tab.
-  if (requests_.find(key) != requests_.end())
-    if (requests_[key].status !=
-        tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_STOPPED &&
-        requests_[key].status !=
-        tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_ERROR)
+  DeviceCaptureRequestMap::iterator it = requests_.find(key);
+  if (it != requests_.end()) {
+    const tab_capture::TabCaptureState state = it->second.status;
+    if (state != tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_STOPPED &&
+        state != tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_ERROR)
       return false;
-  requests_[key] = request;
+  }
+  requests_.insert(std::make_pair(key, request));
   return true;
 }
 

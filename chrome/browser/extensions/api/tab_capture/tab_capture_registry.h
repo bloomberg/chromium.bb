@@ -29,14 +29,14 @@ class TabCaptureRegistry : public ProfileKeyedService,
                            public content::NotificationObserver {
  public:
   struct TabCaptureRequest {
+    TabCaptureRequest(std::string extension_id,
+                      int tab_id,
+                      tab_capture::TabCaptureState status);
+    ~TabCaptureRequest();
+
     std::string extension_id;
     int tab_id;
     tab_capture::TabCaptureState status;
-
-    TabCaptureRequest() : tab_id(-1) {}
-    TabCaptureRequest(std::string extension_id, int tab_id,
-                      tab_capture::TabCaptureState status)
-        : extension_id(extension_id), tab_id(tab_id), status(status) {}
   };
   typedef std::vector<TabCaptureRequest> CaptureRequestList;
 
