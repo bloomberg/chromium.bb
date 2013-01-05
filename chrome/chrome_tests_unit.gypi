@@ -1035,7 +1035,6 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/session_types_unittest.cc',
         'browser/shell_integration_unittest.cc',
-        'browser/shell_integration_win_unittest.cc',
         'browser/signin/oauth2_token_service_request_unittest.cc',
         'browser/signin/oauth2_token_service_unittest.cc',
         'browser/signin/signin_manager_fake.cc',
