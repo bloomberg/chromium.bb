@@ -2,7 +2,7 @@
 # Copyright 2012 Gentoo Foundation
 # Copyright 2012 Mike Frysinger <vapier@gentoo.org>
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-projects/pax-utils/lddtree.py,v 1.16 2012/11/26 20:06:54 vapier Exp $
+# $Header: /var/cvsroot/gentoo-projects/pax-utils/lddtree.py,v 1.18 2013/01/05 20:39:56 vapier Exp $
 
 """Read the ELF dependency tree and show it
 
@@ -224,10 +224,13 @@ def ParseELF(path, root='/', ldpaths={'conf':[], 'env':[], 'interp':[]},
 	"""
 	if _first:
 		_all_libs = {}
+		ldpaths = ldpaths.copy()
 	ret = {
 		'interp': None,
 		'path': path,
 		'needed': [],
+		'rpath': [],
+		'runpath': [],
 		'libs': _all_libs,
 	}
 
@@ -270,9 +273,18 @@ def ParseELF(path, root='/', ldpaths={'conf':[], 'env':[], 'interp':[]},
 					libs.append(t.needed)
 			if runpaths:
 				# If both RPATH and RUNPATH are set, only the latter is used.
-				rpath = []
+				rpaths = []
 
+			# XXX: We assume there is only one PT_DYNAMIC.  This is
+			# probably fine since the runtime ldso does the same.
 			break
+		if _first:
+			# Propagate the rpaths used by the main ELF since those will be
+			# used at runtime to locate things.
+			ldpaths['rpath'] = rpaths
+			ldpaths['runpath'] = runpaths
+		ret['rpath'] = rpaths
+		ret['runpath'] = runpaths
 		ret['needed'] = libs
 
 		# Search for the libs this ELF uses.
@@ -281,7 +293,7 @@ def ParseELF(path, root='/', ldpaths={'conf':[], 'env':[], 'interp':[]},
 			if lib in _all_libs:
 				continue
 			if all_ldpaths is None:
-				all_ldpaths = rpaths + ldpaths['env'] + runpaths + ldpaths['conf'] + ldpaths['interp']
+				all_ldpaths = rpaths + ldpaths['rpath'] + ldpaths['env'] + runpaths + ldpaths['runpath'] + ldpaths['conf'] + ldpaths['interp']
 			fullpath = FindLib(elf, lib, all_ldpaths)
 			_all_libs[lib] = {
 				'path': fullpath,
@@ -301,7 +313,7 @@ def _NormalizePath(option, _opt, value, parser):
 
 
 def _ShowVersion(_option, _opt, _value, _parser):
-	id = '$Id: lddtree.py,v 1.16 2012/11/26 20:06:54 vapier Exp $'.split()
+	id = '$Id: lddtree.py,v 1.18 2013/01/05 20:39:56 vapier Exp $'.split()
 	print('%s-%s %s %s' % (id[1].split('.')[0], id[2], id[3], id[4]))
 	sys.exit(0)
 
