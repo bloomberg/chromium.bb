@@ -16,6 +16,7 @@ GURL GetAcceptLegalDocumentsUrl();
 GURL GetSecureUrl();
 GURL GetSendStatusUrl();
 GURL GetSaveToWalletUrl();
+GURL GetPassiveAuthUrl();
 
 }  // namespace wallet
 

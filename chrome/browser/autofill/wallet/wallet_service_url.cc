@@ -12,8 +12,7 @@
 
 namespace {
 
-const char kDefaultWalletServiceUrl[] =
-    "https://wallet.google.com/online/v2/wallet/autocheckout/";
+const char kDefaultWalletServiceUrl[] = "https://wallet.google.com/online/v2/";
 
 const char kDefaultWalletSecureServiceUrl[] =
     "https://wallet.google.com/online-secure/temporarydata/cvv?s7e=cvv";
@@ -26,33 +25,44 @@ GURL GetBaseWalletUrl() {
                                             GURL(kDefaultWalletServiceUrl);
 }
 
+GURL GetBaseAutocheckoutUrl() {
+  return GetBaseWalletUrl().Resolve("wallet/autocheckout/");
+}
+
 }  // anonymous namespace
+
+namespace wallet {
 
 // TODO(ahutter): This shouldn't live in this class. See
 // http://crbug.com/164281.
-const char wallet::kApiKey[] = "abcdefg";
+const char kApiKey[] = "abcdefg";
 
-GURL wallet::GetGetWalletItemsUrl() {
-  return GetBaseWalletUrl().Resolve("getWalletItemsJwtless");
+GURL GetGetWalletItemsUrl() {
+  return GetBaseWalletUrl().Resolve(
+      "wallet/autocheckout/getWalletItemsJwtless");
 }
 
-GURL wallet::GetGetFullWalletUrl() {
-  return GetBaseWalletUrl().Resolve("getFullWalletJwtless");
+GURL GetGetFullWalletUrl() {
+  return GetBaseAutocheckoutUrl().Resolve("getFullWalletJwtless");
 }
 
-GURL wallet::GetAcceptLegalDocumentsUrl() {
-  return GetBaseWalletUrl().Resolve("acceptLegalDocuments");
+GURL GetAcceptLegalDocumentsUrl() {
+  return GetBaseAutocheckoutUrl().Resolve("acceptLegalDocuments");
 }
 
-GURL wallet::GetSendStatusUrl() {
-  return GetBaseWalletUrl().Resolve("reportStatus");
+GURL GetSendStatusUrl() {
+  return GetBaseAutocheckoutUrl().Resolve("reportStatus");
 }
 
-GURL wallet::GetSaveToWalletUrl() {
-  return GetBaseWalletUrl().Resolve("saveToWallet");
+GURL GetSaveToWalletUrl() {
+  return GetBaseAutocheckoutUrl().Resolve("saveToWallet");
 }
 
-GURL wallet::GetSecureUrl() {
+GURL GetPassiveAuthUrl() {
+  return GetBaseWalletUrl().Resolve("passiveauth");
+}
+
+GURL GetSecureUrl() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string wallet_secure_url =
       command_line.GetSwitchValueASCII(switches::kWalletSecureServiceUrl);
@@ -60,3 +70,4 @@ GURL wallet::GetSecureUrl() {
                                       GURL(kDefaultWalletSecureServiceUrl);
 }
 
+}  // namespace wallet
