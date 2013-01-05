@@ -1,6 +1,0 @@
-This is the chromium compositor implementation.
-
-Notes about the component=shared_library build:
-Because the compositor currently depends on non-exported symbols from inside
-WebKit, in the shared library build the cc library links into WebKit.dll.
-The unit tests don't currently work at all in the component build.
