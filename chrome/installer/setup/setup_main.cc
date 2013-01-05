@@ -28,6 +28,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/chrome_frame_quick_enable.h"
 #include "chrome/installer/setup/chrome_frame_ready_mode.h"
@@ -1004,12 +1005,43 @@ installer::InstallStatus UninstallProducts(
     const CommandLine& cmd_line) {
   const Products& products = installer_state.products();
 
-  if (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER)) {
+  // Decide whether Active Setup should be triggered and/or system-level Chrome
+  // should be launched post-uninstall. This needs to be done outside the
+  // UninstallProduct calls as some of them might terminate the processes
+  // launched by a previous one otherwise...
+  bool trigger_active_setup = false;
+  // System-level Chrome will be launched via this command if its program gets
+  // set below.
+  CommandLine system_level_cmd(CommandLine::NO_PROGRAM);
+
+  const Product* chrome =
+      installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+  if (chrome) {
     // InstallerState::Initialize always puts Chrome first, and we rely on that
     // here for this reason: if Chrome is in-use, the user will be prompted to
     // confirm uninstallation.  Upon cancel, we should not continue with the
     // other products.
     DCHECK(products[0]->is_chrome());
+
+    if (cmd_line.HasSwitch(installer::switches::kSelfDestruct) &&
+        !installer_state.system_install()) {
+      BrowserDistribution* dist = chrome->distribution();
+      const FilePath system_exe_path(
+          installer::GetChromeInstallPath(true, dist)
+              .Append(installer::kChromeExe));
+      system_level_cmd.SetProgram(system_exe_path);
+
+      FilePath first_run_sentinel;
+      InstallUtil::GetSentinelFilePath(
+          chrome::kFirstRunSentinel, dist, &first_run_sentinel);
+      if (file_util::PathExists(first_run_sentinel)) {
+        // If the Chrome being self-destructed has already undergone First Run,
+        // trigger Active Setup and make sure the system-level Chrome doesn't go
+        // through first run.
+        trigger_active_setup = true;
+        system_level_cmd.AppendSwitch(::switches::kNoFirstRun);
+      }
+    }
   }
   if (installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES)) {
     // Chrome Binaries should be last; if something else is cancelled, they
@@ -1034,6 +1066,12 @@ installer::InstallStatus UninstallProducts(
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
       original_state, installer_state, cmd_line, &install_status);
+
+  if (trigger_active_setup)
+    InstallUtil::TriggerActiveSetupCommand();
+
+  if (!system_level_cmd.GetProgram().empty())
+    base::LaunchProcess(system_level_cmd, base::LaunchOptions(), NULL);
 
   // Tell Google Update that an uninstall has taken place.
   // Ignore the return value: success or failure of Google Update

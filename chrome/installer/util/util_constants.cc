@@ -154,6 +154,10 @@ const char kRemoveChromeRegistration[] = "remove-chrome-registration";
 // line flag so that we try the launch only once.
 const char kRunAsAdmin[] = "run-as-admin";
 
+// Combined with --uninstall, signals to setup.exe that this uninstall was
+// triggered by a self-destructing Chrome.
+const char kSelfDestruct[] = "self-destruct";
+
 // Install Chrome to system wise location. The default is per user install.
 const char kSystemLevel[] = "system-level";
 

@@ -384,7 +384,22 @@ bool InstallUtil::GetSentinelFilePath(const FilePath::CharType* file,
     return false;
 
   if (IsPerUserInstall(exe_path.value().c_str())) {
-    *path = exe_path;
+    const FilePath maybe_product_dir(exe_path.DirName().DirName());
+    if (file_util::PathExists(exe_path.Append(installer::kChromeExe))) {
+      // DIR_EXE is most likely Chrome's directory in which case |exe_path| is
+      // the user-level sentinel path.
+      *path = exe_path;
+    } else if (file_util::PathExists(
+                   maybe_product_dir.Append(installer::kChromeExe))) {
+      // DIR_EXE can also be the Installer directory if this is called from a
+      // setup.exe running from Application\<version>\Installer (see
+      // InstallerState::GetInstallerDirectory) in which case Chrome's directory
+      // is two levels up.
+      *path = maybe_product_dir;
+    } else {
+      NOTREACHED();
+      return false;
+    }
   } else {
     std::vector<FilePath> user_data_dir_paths;
     installer::GetChromeUserDataPaths(dist, &user_data_dir_paths);

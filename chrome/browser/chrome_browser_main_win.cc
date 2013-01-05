@@ -355,13 +355,26 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
       CommandLine uninstall_cmd(
           InstallUtil::GetChromeUninstallCmd(false, dist->GetType()));
       if (!uninstall_cmd.GetProgram().empty()) {
+        uninstall_cmd.AppendSwitch(installer::switches::kSelfDestruct);
         uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
         uninstall_cmd.AppendSwitch(
             installer::switches::kDoNotRemoveSharedItems);
-        base::LaunchOptions launch_options;
+
+        const FilePath setup_exe(uninstall_cmd.GetProgram());
+        const string16 params(uninstall_cmd.GetArgumentsString());
+
+        SHELLEXECUTEINFO sei = { sizeof(sei) };
+        sei.fMask = SEE_MASK_NOASYNC;
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpFile = setup_exe.value().c_str();
+        sei.lpParameters = params.c_str();
+        // On Windows 8 SEE_MASK_FLAG_LOG_USAGE is necessary to guarantee we
+        // flip to the Desktop when launching.
         if (is_metro)
-          launch_options.force_breakaway_from_job_ = true;
-        base::LaunchProcess(uninstall_cmd, launch_options, NULL);
+          sei.fMask |= SEE_MASK_FLAG_LOG_USAGE;
+
+        if (!::ShellExecuteEx(&sei))
+          DPCHECK(false);
       }
       return true;
     }

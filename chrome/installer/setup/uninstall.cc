@@ -1342,14 +1342,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (!backup_state_file.empty())
     file_util::Delete(backup_state_file, false);
 
-  // If user-level Chrome is being uninstalled and system-level Chrome is
-  // present, launch the system-level Active Setup command to do post-install
-  // tasks for this user (i.e., create shortcuts).
-  if (product.is_chrome() && !installer_state.system_install() &&
-      original_state.GetProductState(true, browser_dist->GetType())) {
-    InstallUtil::TriggerActiveSetupCommand();
-  }
-
   return ret;
 }
 
