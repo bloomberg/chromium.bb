@@ -782,7 +782,6 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
     m_client->sendManagedMemoryStats();
 
     if (m_tileManager) {
-      LOG(INFO) << "Setting up initial tile manager policy";
       GlobalStateThatImpactsTilePriority new_state(m_tileManager->GlobalState());
       new_state.memory_limit_in_bytes = m_visible ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible;
       new_state.memory_limit_policy = ManagedMemoryPolicy::priorityCutoffToTileMemoryLimitPolicy(
