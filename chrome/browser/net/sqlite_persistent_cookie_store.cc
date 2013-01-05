@@ -1082,38 +1082,28 @@ void SQLitePersistentCookieStore::LoadCookiesForKey(
 }
 
 void SQLitePersistentCookieStore::AddCookie(const net::CanonicalCookie& cc) {
-  if (backend_.get())
-    backend_->AddCookie(cc);
+  backend_->AddCookie(cc);
 }
 
 void SQLitePersistentCookieStore::UpdateCookieAccessTime(
     const net::CanonicalCookie& cc) {
-  if (backend_.get())
-    backend_->UpdateCookieAccessTime(cc);
+  backend_->UpdateCookieAccessTime(cc);
 }
 
 void SQLitePersistentCookieStore::DeleteCookie(const net::CanonicalCookie& cc) {
-  if (backend_.get())
-    backend_->DeleteCookie(cc);
+  backend_->DeleteCookie(cc);
 }
 
 void SQLitePersistentCookieStore::SetForceKeepSessionState() {
-  if (backend_.get())
-    backend_->SetForceKeepSessionState();
+  backend_->SetForceKeepSessionState();
 }
 
 void SQLitePersistentCookieStore::Flush(const base::Closure& callback) {
-  if (backend_.get())
-    backend_->Flush(callback);
-  else if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  backend_->Flush(callback);
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
-  if (backend_.get()) {
-    backend_->Close();
-    // Release our reference, it will probably still have a reference if the
-    // background thread has not run Close() yet.
-    backend_ = NULL;
-  }
+  backend_->Close();
+  // We release our reference to the Backend, though it will probably still have
+  // a reference if the background thread has not run Close() yet.
 }

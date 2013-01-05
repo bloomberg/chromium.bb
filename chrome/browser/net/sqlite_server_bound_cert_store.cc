@@ -551,33 +551,24 @@ bool SQLiteServerBoundCertStore::Load(
 
 void SQLiteServerBoundCertStore::AddServerBoundCert(
     const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  if (backend_.get())
-    backend_->AddServerBoundCert(cert);
+  backend_->AddServerBoundCert(cert);
 }
 
 void SQLiteServerBoundCertStore::DeleteServerBoundCert(
     const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  if (backend_.get())
-    backend_->DeleteServerBoundCert(cert);
+  backend_->DeleteServerBoundCert(cert);
 }
 
 void SQLiteServerBoundCertStore::SetForceKeepSessionState() {
-  if (backend_.get())
-    backend_->SetForceKeepSessionState();
+  backend_->SetForceKeepSessionState();
 }
 
 void SQLiteServerBoundCertStore::Flush(const base::Closure& completion_task) {
-  if (backend_.get())
-    backend_->Flush(completion_task);
-  else if (!completion_task.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
+  backend_->Flush(completion_task);
 }
 
 SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
-  if (backend_.get()) {
-    backend_->Close();
-    // Release our reference, it will probably still have a reference if the
-    // background thread has not run Close() yet.
-    backend_ = NULL;
-  }
+  backend_->Close();
+  // We release our reference to the Backend, though it will probably still have
+  // a reference if the background thread has not run Close() yet.
 }
