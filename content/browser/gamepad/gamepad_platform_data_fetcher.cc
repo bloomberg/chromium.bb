@@ -4,7 +4,7 @@
 
 #include "content/browser/gamepad/gamepad_platform_data_fetcher.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 
 namespace content {
 

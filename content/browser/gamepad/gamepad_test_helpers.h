@@ -10,7 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 
 namespace base {
 class SystemMonitor;

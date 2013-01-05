@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 
 extern "C" {
 struct udev_device;
