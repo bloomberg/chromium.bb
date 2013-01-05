@@ -12,14 +12,9 @@ Import('env')
 # Disable this on Valgrind because TestThreadWakeup is very slow under
 # Valgrind, and because we don't particularly need to measure
 # performance under Valgrind.
-#
-# Disable this under qemu because qemu has bugs that make TestCatchingFault
-# flaky (see http://code.google.com/p/nativeclient/issues/detail?id=3239),
-# and because we don't particularly need to measure performance under qemu.
 is_broken = ((env.Bit('bitcode') and env.Bit('nacl_glibc') and
               env.Bit('build_x86_64')) or
-             env.Bit('running_on_valgrind') or
-             env.UsingEmulator())
+             env.Bit('running_on_valgrind'))
 
 libs = []
 if env.Bit('nacl_glibc'):

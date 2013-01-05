@@ -745,6 +745,10 @@ tests_to_disable_qemu = set([
     'run_thread_suspension_test',
     'run_thread_test',
     'run_dynamic_modify_test',
+    # qemu has bugs that make TestCatchingFault flaky (see
+    # http://code.google.com/p/nativeclient/issues/detail?id=3239), and
+    # we don't particularly need to measure performance under qemu.
+    'run_performance_test',
 ])
 
 tests_to_disable = set()
