@@ -46,10 +46,6 @@ NET_EXPORT bool IsUnsupportedTextMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedJavascriptMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedCertificateMimeType(const std::string& mime_type);
 
-// Get whether this mime type should be displayed in view-source mode.
-// (For example, XML.)
-NET_EXPORT bool IsViewSourceMimeType(const std::string& mime_type);
-
 // Convenience function.
 NET_EXPORT bool IsSupportedMimeType(const std::string& mime_type);
 

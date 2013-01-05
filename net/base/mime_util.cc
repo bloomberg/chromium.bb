@@ -60,8 +60,6 @@ class MimeUtil : public PlatformMimeUtil {
   bool IsUnsupportedTextMimeType(const std::string& mime_type) const;
   bool IsSupportedJavascriptMimeType(const std::string& mime_type) const;
 
-  bool IsViewSourceMimeType(const std::string& mime_type) const;
-
   bool IsSupportedMimeType(const std::string& mime_type) const;
 
   bool MatchesMimeType(const std::string &mime_type_pattern,
@@ -105,7 +103,6 @@ class MimeUtil : public PlatformMimeUtil {
   MimeMappings non_image_map_;
   MimeMappings unsupported_text_map_;
   MimeMappings javascript_map_;
-  MimeMappings view_source_map_;
   MimeMappings codecs_map_;
 
   StrictMappings strict_format_map_;
@@ -406,15 +403,6 @@ static const char* const supported_javascript_types[] = {
   "text/livescript"
 };
 
-static const char* const view_source_types[] = {
-  "text/xml",
-  "text/xsl",
-  "application/xml",
-  "application/rss+xml",
-  "application/atom+xml",
-  "image/svg+xml"
-};
-
 struct MediaFormatStrict {
   const char* mime_type;
   const char* codecs_list;
@@ -471,9 +459,6 @@ void MimeUtil::InitializeMimeTypeMaps() {
   for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
     javascript_map_.insert(supported_javascript_types[i]);
 
-  for (size_t i = 0; i < arraysize(view_source_types); ++i)
-    view_source_map_.insert(view_source_types[i]);
-
   for (size_t i = 0; i < arraysize(common_media_codecs); ++i)
     codecs_map_.insert(common_media_codecs[i]);
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
@@ -516,10 +501,6 @@ bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {
 bool MimeUtil::IsSupportedJavascriptMimeType(
     const std::string& mime_type) const {
   return javascript_map_.find(mime_type) != javascript_map_.end();
-}
-
-bool MimeUtil::IsViewSourceMimeType(const std::string& mime_type) const {
-  return view_source_map_.find(mime_type) != view_source_map_.end();
 }
 
 // Mirrors WebViewImpl::CanShowMIMEType()
@@ -734,10 +715,6 @@ bool IsUnsupportedTextMimeType(const std::string& mime_type) {
 
 bool IsSupportedJavascriptMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedJavascriptMimeType(mime_type);
-}
-
-bool IsViewSourceMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsViewSourceMimeType(mime_type);
 }
 
 bool IsSupportedMimeType(const std::string& mime_type) {
