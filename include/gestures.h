@@ -80,6 +80,9 @@ struct HardwareProperties {
 #define GESTURES_FINGER_PALM          (1 << 4)
 #define GESTURES_FINGER_WARP_X_MOVE   (1 << 5)
 #define GESTURES_FINGER_WARP_Y_MOVE   (1 << 6)
+// If tap to click movement detection should warp:
+#define GESTURES_FINGER_WARP_X_TAP_MOVE   (1 << 7)
+#define GESTURES_FINGER_WARP_Y_TAP_MOVE   (1 << 8)
 
 #define GESTURES_FINGER_WARP_X    (GESTURES_FINGER_WARP_X_NON_MOVE | \
                                    GESTURES_FINGER_WARP_X_MOVE)

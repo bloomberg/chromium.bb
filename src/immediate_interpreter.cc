@@ -168,9 +168,9 @@ bool TapRecord::Moving(const HardwareState& hwstate,
     float dist_x = fs->position_x - (*it).second.position_x;
     float dist_y = fs->position_y - (*it).second.position_y;
     // Respect WARP flags
-    if (fs->flags & GESTURES_FINGER_WARP_X)
+    if (fs->flags & GESTURES_FINGER_WARP_X_TAP_MOVE)
       dist_x = 0.0;
-    if (fs->flags & GESTURES_FINGER_WARP_Y)
+    if (fs->flags & GESTURES_FINGER_WARP_X_TAP_MOVE)
       dist_y = 0.0;
 
     bool moving =

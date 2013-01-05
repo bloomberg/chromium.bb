@@ -110,8 +110,14 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       } else {
         should_store_flag = should_warp = true;
       }
-      if (should_warp)
+      if (should_warp) {
         fs[0]->flags |= warp[f_idx];
+        // Warping moves here get tap warped, too
+        if (warp_move) {
+          fs[0]->flags |= warp[f_idx] == GESTURES_FINGER_WARP_X_MOVE ?
+              GESTURES_FINGER_WARP_X_TAP_MOVE : GESTURES_FINGER_WARP_Y_TAP_MOVE;
+        }
+      }
       if (should_store_flag)
         first_flag_[f_idx].insert(tracking_id);
       else

@@ -2040,7 +2040,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->tap_drag_timeout_.val_ = 0.05;
       ii->tap_enable_.val_ = 1;
       ii->tap_drag_enable_.val_ =
-        !(hwsgs_full[i].line_number_and_flags & HWStateFlagStartNoDrag);
+          !(hwsgs_full[i].line_number_and_flags & HWStateFlagStartNoDrag);
       ii->tap_move_dist_.val_ = 1.0;
       ii->tap_timeout_.val_ = ii->inter_tap_timeout_.val_ = 0.05;
       ii->three_finger_click_enable_.val_ = 1;
@@ -3199,17 +3199,22 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
     true  // is button pad
   };
 
+  unsigned flags = GESTURES_FINGER_WARP_X_NON_MOVE |
+      GESTURES_FINGER_WARP_Y_NON_MOVE |
+      GESTURES_FINGER_WARP_X_TAP_MOVE |
+      GESTURES_FINGER_WARP_Y_TAP_MOVE;
+
   FingerState finger_state[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
-    { 0, 0, 0, 0, 42.139996, 0, 46.106384, 39.800003, 0, 3 },  // index 0
-    { 0, 0, 0, 0, 42.139996, 0, 69.106384, 28.461538, 1, 3 },
+    { 0, 0, 0, 0, 42.139996, 0, 46.106384, 39.800003, 0, flags },  // index 0
+    { 0, 0, 0, 0, 42.139996, 0, 69.106384, 28.461538, 1, flags },
 
     // The finger 0 moves more than default threshold 2.0 in Y, but it should
     // still generate final right-click gesture as the WARP flag is set.
-    { 0, 0, 0, 0, 43.350002, 0, 45.425529, 36.353844, 0, 3 },  // index 2
-    { 0, 0, 0, 0, 43.350002, 0, 69.063828, 28.507692, 1, 3 },
+    { 0, 0, 0, 0, 43.350002, 0, 45.425529, 36.353844, 0, flags },  // index 2
+    { 0, 0, 0, 0, 43.350002, 0, 69.063828, 28.507692, 1, flags },
 
-    { 0, 0, 0, 0, 43.350002, 0, 69.085106, 28.307692, 1, 3 },  // index 4
+    { 0, 0, 0, 0, 43.350002, 0, 69.085106, 28.307692, 1, flags },  // index 4
   };
 
   HardwareState hardware_states[] = {
@@ -3227,6 +3232,7 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
     gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
 
+  ASSERT_NE(gesture, static_cast<Gesture*>(NULL));
   EXPECT_EQ(gesture->type, kGestureTypeButtonsChange);
 }
 
@@ -3278,7 +3284,7 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
 
     {0, 0, 0, 0, 20, 0, 40, 55, 1, 0}, // 14
     {0, 0, 0, 0, 20, 0, 60, 55, 2, 0},
-};
+  };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
     { 1.00, 0, 2, 2, &finger_states[0], 0, 0, 0, 0 },
@@ -3298,7 +3304,7 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
 
   // The unittest is only meaningful if there are enough hwstates
   ASSERT_GT(arraysize(hardware_states) - 1, fling_buffer_depth)
-    << "Hardware state list must be > fling buffer depth + 1";
+      << "Hardware state list must be > fling buffer depth + 1";
 
   // Fill scroll buffer with a set of scrolls
   ii.scroll_buffer_.Clear();
@@ -3419,11 +3425,11 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
     // time, buttons down, finger count, touch count, finger states pointer
     { 0.1, 0, 0, 0, NULL, 0, 0, 0, 0 },
     { 0.3, GESTURES_BUTTON_LEFT, 0, 0, NULL, 0, 0, 0, 0 },   // delay left
-                                                             // button down
+    // button down
     { 0.5, GESTURES_BUTTON_LEFT, 0, 0, NULL, 0, 0, 0, 0 },
     { 0.9, 0, 0, 0, NULL, 0, 0, 0, 0 },                      // left button up
     { 1.1, GESTURES_BUTTON_RIGHT, 0, 0, NULL, 0, 0, 0, 0 },  // not delay right
-                                                             // button down
+    // button down
     { 1.3, GESTURES_BUTTON_RIGHT, 0, 0, NULL, 0, 0, 0, 0 },
     { 1.5, 0, 0, 0, NULL, 0, 0, 0, 0 },                      // right button up
     { 1.6, GESTURES_BUTTON_LEFT, 0, 0, NULL, 0, 0, 0, 0 },   // left button down
