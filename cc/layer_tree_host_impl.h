@@ -214,17 +214,9 @@ public:
     void createPendingTree();
     virtual void activatePendingTreeIfNeeded();
 
-    // TODO(nduca): Remove these in favor of LayerTreeImpl.
-    void setRootLayer(scoped_ptr<LayerImpl>);
+    // Shortcuts to layers on the active tree.
     LayerImpl* rootLayer() const;
-
-    // Release ownership of the current layer tree and replace it with an empty
-    // tree. Returns the root layer of the detached tree.
-    scoped_ptr<LayerImpl> detachLayerTree();
-
     LayerImpl* rootScrollLayer() const;
-
-    // TOOD(nduca): This goes away when scrolling moves to LayerTreeImpl.
     LayerImpl* currentlyScrollingLayer() const;
 
     bool visible() const { return m_visible; }
@@ -249,11 +241,6 @@ public:
 
     void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 
-    SkColor backgroundColor() const { return m_backgroundColor; }
-    void setBackgroundColor(SkColor color) { m_backgroundColor = color; }
-
-    bool hasTransparentBackground() const { return m_hasTransparentBackground; }
-    void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
     bool needsAnimateLayers() const { return !m_animationRegistrar->active_animation_controllers().empty(); }
 
     bool needsUpdateDrawProperties() const { return m_needsUpdateDrawProperties; }
@@ -376,9 +363,6 @@ private:
     bool m_visible;
     bool m_contentsTexturesPurged;
     ManagedMemoryPolicy m_managedMemoryPolicy;
-
-    SkColor m_backgroundColor;
-    bool m_hasTransparentBackground;
 
     bool m_needsUpdateDrawProperties;
     bool m_pinchGestureActive;

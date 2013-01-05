@@ -641,7 +641,7 @@ public:
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
         EXPECT_EQ(gfx::Size(20, 20), impl->layoutViewportSize());
-        EXPECT_EQ(SK_ColorGRAY, impl->backgroundColor());
+        EXPECT_EQ(SK_ColorGRAY, impl->activeTree()->background_color());
         EXPECT_EQ(5, impl->pageScaleFactor());
 
         endTest();

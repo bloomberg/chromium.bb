@@ -219,8 +219,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
                             ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
                             0,
                             ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING)
-    , m_backgroundColor(0)
-    , m_hasTransparentBackground(false)
     , m_needsUpdateDrawProperties(false)
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
@@ -614,9 +612,9 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     }
 #endif
 
-    if (!m_hasTransparentBackground) {
+    if (!activeTree()->has_transparent_background()) {
         frame.renderPasses.last()->has_transparent_background = false;
-        appendQuadsToFillScreen(frame.renderPasses.last(), rootLayer(), m_backgroundColor, occlusionTracker);
+        appendQuadsToFillScreen(frame.renderPasses.last(), rootLayer(), activeTree()->background_color(), occlusionTracker);
     }
 
     if (drawFrame)
@@ -1000,12 +998,6 @@ static LayerImpl* findScrollLayerForContentLayer(LayerImpl* layerImpl)
     return 0;
 }
 
-void LayerTreeHostImpl::setRootLayer(scoped_ptr<LayerImpl> layer)
-{
-    m_activeTree->SetRootLayer(layer.Pass());
-    setNeedsUpdateDrawProperties();
-}
-
 void LayerTreeHostImpl::createPendingTree()
 {
     CHECK(!m_pendingTree);
@@ -1044,12 +1036,6 @@ void LayerTreeHostImpl::activatePendingTree()
     m_pendingTree.reset();
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
-}
-
-scoped_ptr<LayerImpl> LayerTreeHostImpl::detachLayerTree()
-{
-    scoped_ptr<LayerImpl> layer = m_activeTree->DetachLayerTree();
-    return layer.Pass();
 }
 
 void LayerTreeHostImpl::setVisible(bool visible)

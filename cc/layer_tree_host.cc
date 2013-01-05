@@ -332,13 +332,13 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     else
         syncTree->set_hud_layer(0);
 
-    // TODO(enne): Do these need to be moved to layer tree as well?
     syncTree->set_source_frame_number(commitNumber());
+    syncTree->set_background_color(m_backgroundColor);
+    syncTree->set_has_transparent_background(m_hasTransparentBackground);
+
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
-    hostImpl->setBackgroundColor(m_backgroundColor);
-    hostImpl->setHasTransparentBackground(m_hasTransparentBackground);
     hostImpl->setDebugState(m_debugState);
 
     m_commitNumber++;

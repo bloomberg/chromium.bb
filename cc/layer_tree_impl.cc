@@ -17,6 +17,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
     , hud_layer_(0)
     , root_scroll_layer_(0)
     , currently_scrolling_layer_(0)
+    , background_color_(0)
+    , has_transparent_background_(false)
     , scrolling_layer_id_from_previous_tree_(0) {
 }
 

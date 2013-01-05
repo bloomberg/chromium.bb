@@ -78,21 +78,39 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<LayerImpl> DetachLayerTree();
 
   int source_frame_number() const { return source_frame_number_; }
-  void set_source_frame_number(int frame_number) { source_frame_number_ = frame_number; }
+  void set_source_frame_number(int frame_number) {
+    source_frame_number_ = frame_number;
+  }
 
   HeadsUpDisplayLayerImpl* hud_layer() { return hud_layer_; }
-  void set_hud_layer(HeadsUpDisplayLayerImpl* layer_impl) { hud_layer_ = layer_impl; }
+  void set_hud_layer(HeadsUpDisplayLayerImpl* layer_impl) {
+    hud_layer_ = layer_impl;
+  }
 
   LayerImpl* root_scroll_layer() { return root_scroll_layer_; }
   const LayerImpl* root_scroll_layer() const { return root_scroll_layer_; }
-  void set_root_scroll_layer(LayerImpl* layer_impl) { root_scroll_layer_ = layer_impl; }
+  void set_root_scroll_layer(LayerImpl* layer_impl) {
+    root_scroll_layer_ = layer_impl;
+  }
 
   LayerImpl* currently_scrolling_layer() { return currently_scrolling_layer_; }
-  void set_currently_scrolling_layer(LayerImpl* layer_impl) { currently_scrolling_layer_ = layer_impl; }
+  void set_currently_scrolling_layer(LayerImpl* layer_impl) {
+    currently_scrolling_layer_ = layer_impl;
+  }
 
   void ClearCurrentlyScrollingLayer();
 
   void UpdateMaxScrollOffset();
+
+  SkColor background_color() const { return background_color_; }
+  void set_background_color(SkColor color) { background_color_ = color; }
+
+  bool has_transparent_background() const {
+    return has_transparent_background_;
+  }
+  void set_has_transparent_background(bool transparent) {
+    has_transparent_background_ = transparent;
+  }
 
   // Updates draw properties and render surface layer list
   void UpdateDrawProperties();
@@ -120,6 +138,8 @@ protected:
   HeadsUpDisplayLayerImpl* hud_layer_;
   LayerImpl* root_scroll_layer_;
   LayerImpl* currently_scrolling_layer_;
+  SkColor background_color_;
+  bool has_transparent_background_;
 
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;
