@@ -330,22 +330,22 @@ class Desktop:
       label = "%dx%d" % (width, height)
       args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
               str(height), "0", "0", "0"]
-      proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
-                              stderr=devnull)
-      proc.wait()
+      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
       args = ["xrandr", "--addmode", "screen", label]
-      proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
-                              stderr=devnull)
-      proc.wait()
+      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
     # Set the initial mode to the first size specified, otherwise the X server
     # would default to (max_width, max_height), which might not even be in the
     # list.
     label = "%dx%d" % self.sizes[0]
     args = ["xrandr", "-s", label]
-    proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
-                            stderr=devnull)
-    proc.wait()
+    subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+
+    # Set the physical size of the display so that the initial mode is running
+    # at approximately 96 DPI, since some desktops require the DPI to be set to
+    # something realistic.
+    args = ["xrandr", "--dpi", "96"]
+    subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
     devnull.close()
 
