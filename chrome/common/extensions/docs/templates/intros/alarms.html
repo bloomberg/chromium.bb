@@ -22,3 +22,18 @@
     <td><a href="event_pages.html">Event Pages</a></td>
   </tr>
 </table>
+
+<h2 id="frequency-limits">Alarm frequency limits</h2>
+<p>In order to reduce the load on the user's machine, Chrome limits
+alarms to at most once every 5 minutes but may delay them an arbitrary
+amount more.  That is, setting
+<code>$ref:[alarms.AlarmCreateInfo.delayInMinutes
+delayInMinutes]</code> or
+<code>$ref:[alarms.AlarmCreateInfo.periodInMinutes
+periodInMinutes]</code> to less than <code>5</code> will cause an
+error.  <code>$ref:[alarms.AlarmCreateInfo.when when]</code> can be
+set to less than 5 minutes after "now" but won't actually cause the
+alarm to run for at least 5 minutes.</p>
+
+<p>To help you debug your app or extension, when you've loaded it
+unpacked, there's no limit to how often the alarm can fire.</p>
