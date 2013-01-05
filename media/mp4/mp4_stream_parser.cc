@@ -196,12 +196,15 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       if (!(entry.format == FOURCC_MP4A ||
             (entry.format == FOURCC_ENCA &&
              entry.sinf.format.format == FOURCC_MP4A))) {
-        LOG(ERROR) << "Unsupported audio format.";
+        MEDIA_LOG(log_cb_) << "Unsupported audio format 0x"
+                           << std::hex << entry.format << " in stsd box.";
         return false;
       }
       // Check if it is MPEG4 AAC defined in ISO 14496 Part 3.
       if (entry.esds.object_type != kISO_14496_3) {
-        LOG(ERROR) << "Unsupported audio object type.";
+        MEDIA_LOG(log_cb_) << "Unsupported audio object type 0x" << std::hex
+                           << static_cast<int>(entry.esds.object_type)
+                           << " in esds.";
         return false;
       }
 
@@ -234,7 +237,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       if (!(entry.format == FOURCC_AVC1 ||
             (entry.format == FOURCC_ENCV &&
              entry.sinf.format.format == FOURCC_AVC1))) {
-        LOG(ERROR) << "Unsupported video format.";
+        MEDIA_LOG(log_cb_) << "Unsupported video format 0x"
+                           << std::hex << entry.format << " in stsd box.";
         return false;
       }
 
