@@ -12,7 +12,7 @@
 // Stores information about a field in a form.
 struct FormFieldData {
   FormFieldData();
-  virtual ~FormFieldData();
+  ~FormFieldData();
 
   // Equality tests for identity which does not include |value| or
   // |is_autofilled|.
@@ -20,7 +20,7 @@ struct FormFieldData {
   // ids.
   bool operator==(const FormFieldData& field) const;
   bool operator!=(const FormFieldData& field) const;
-  // Comparsion operator exposed for STL map. Uses label, then name to sort.
+  // Comparison operator exposed for STL map. Uses label, then name to sort.
   bool operator<(const FormFieldData& field) const;
 
   string16 label;
