@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_ENTRY_KERNEL_H_
 #define SYNC_SYNCABLE_ENTRY_KERNEL_H_
 
+#include <set>
+
 #include "base/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -322,6 +324,17 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;
 };
+
+class EntryKernelLessByMetaHandle {
+ public:
+  inline bool operator()(const EntryKernel* a,
+                         const EntryKernel* b) const {
+    return a->ref(META_HANDLE) < b->ref(META_HANDLE);
+  }
+};
+
+typedef std::set<const EntryKernel*, EntryKernelLessByMetaHandle>
+    EntryKernelSet;
 
 struct EntryKernelMutation {
   EntryKernel original, mutated;

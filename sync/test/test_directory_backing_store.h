@@ -27,6 +27,7 @@ class TestDirectoryBackingStore : public DirectoryBackingStore {
   virtual ~TestDirectoryBackingStore();
   virtual DirOpenResult Load(
       MetahandlesIndex* entry_bucket,
+      JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
 
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion67To68);

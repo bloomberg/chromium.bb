@@ -171,12 +171,24 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
 DirectoryBackingStore::~DirectoryBackingStore() {
 }
 
-bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
+bool DirectoryBackingStore::DeleteEntries(EntryTable from,
+                                          const MetahandleSet& handles) {
   if (handles.empty())
     return true;
 
-  sql::Statement statement(db_->GetCachedStatement(
+  sql::Statement statement;
+  // Call GetCachedStatement() separately to get different statements for
+  // different tables.
+  switch (from) {
+    case METAS_TABLE:
+      statement.Assign(db_->GetCachedStatement(
           SQL_FROM_HERE, "DELETE FROM metas WHERE metahandle = ?"));
+      break;
+    case DELETE_JOURNAL_TABLE:
+      statement.Assign(db_->GetCachedStatement(
+          SQL_FROM_HERE, "DELETE FROM deleted_metas WHERE metahandle = ?"));
+      break;
+  }
 
   for (MetahandleSet::const_iterator i = handles.begin(); i != handles.end();
        ++i) {
@@ -196,9 +208,9 @@ bool DirectoryBackingStore::SaveChanges(
   // Back out early if there is nothing to write.
   bool save_info =
     (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status);
-  if (snapshot.dirty_metas.empty()
-      && snapshot.metahandles_to_purge.empty()
-      && !save_info) {
+  if (snapshot.dirty_metas.empty() && snapshot.metahandles_to_purge.empty() &&
+      snapshot.delete_journals.empty() &&
+      snapshot.delete_journals_to_purge.empty() && !save_info) {
     return true;
   }
 
@@ -206,14 +218,26 @@ bool DirectoryBackingStore::SaveChanges(
   if (!transaction.Begin())
     return false;
 
+  PrepareSaveEntryStatement(METAS_TABLE, &save_meta_statment_);
   for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
-    DCHECK(i->is_dirty());
-    if (!SaveEntryToDB(*i))
+    DCHECK((*i)->is_dirty());
+    if (!SaveEntryToDB(&save_meta_statment_, **i))
       return false;
   }
 
-  if (!DeleteEntries(snapshot.metahandles_to_purge))
+  if (!DeleteEntries(METAS_TABLE, snapshot.metahandles_to_purge))
+    return false;
+
+  PrepareSaveEntryStatement(DELETE_JOURNAL_TABLE,
+                            &save_delete_journal_statment_);
+  for (EntryKernelSet::const_iterator i = snapshot.delete_journals.begin();
+       i != snapshot.delete_journals.end(); ++i) {
+    if (!SaveEntryToDB(&save_delete_journal_statment_, **i))
+      return false;
+  }
+
+  if (!DeleteEntries(DELETE_JOURNAL_TABLE, snapshot.delete_journals_to_purge))
     return false;
 
   if (save_info) {
@@ -465,22 +489,12 @@ bool DirectoryBackingStore::RefreshColumns() {
 }
 
 bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
-  string select;
-  select.reserve(kUpdateStatementBufferSize);
-  select.append("SELECT ");
-  AppendColumnList(&select);
-  select.append(" FROM metas ");
+  return LoadEntriesInternal("metas", entry_bucket);
+}
 
-  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
-
-  while (s.Step()) {
-    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
-    // A null kernel is evidence of external data corruption.
-    if (!kernel.get())
-      return false;
-    entry_bucket->insert(kernel.release());
-  }
-  return s.Succeeded();
+bool DirectoryBackingStore::LoadDeleteJournals(
+    JournalIndex* delete_journals) {
+  return LoadEntriesInternal("deleted_metas", delete_journals);
 }
 
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
@@ -538,38 +552,12 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   return true;
 }
 
-bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
-  // This statement is constructed at runtime, so we can't use
-  // GetCachedStatement() to let the Connection cache it.   We will construct
-  // and cache it ourselves the first time this function is called.
-  if (!save_entry_statement_.is_valid()) {
-    string query;
-    query.reserve(kUpdateStatementBufferSize);
-    query.append("INSERT OR REPLACE INTO metas ");
-    string values;
-    values.reserve(kUpdateStatementBufferSize);
-    values.append("VALUES ");
-    const char* separator = "( ";
-    int i = 0;
-    for (i = BEGIN_FIELDS; i < FIELD_COUNT; ++i) {
-      query.append(separator);
-      values.append(separator);
-      separator = ", ";
-      query.append(ColumnName(i));
-      values.append("?");
-    }
-    query.append(" ) ");
-    values.append(" )");
-    query.append(values);
-
-    save_entry_statement_.Assign(
-        db_->GetUniqueStatement(query.c_str()));
-  } else {
-    save_entry_statement_.Reset(true);
-  }
-
-  BindFields(entry, &save_entry_statement_);
-  return save_entry_statement_.Run();
+/* static */
+bool DirectoryBackingStore::SaveEntryToDB(sql::Statement* save_statement,
+                                          const EntryKernel& entry) {
+  save_statement->Reset(true);
+  BindFields(entry, save_statement);
+  return save_statement->Run();
 }
 
 bool DirectoryBackingStore::DropDeletedEntries() {
@@ -1093,7 +1081,6 @@ bool DirectoryBackingStore::MigrateVersion83To84() {
   query.append(ComposeCreateTableColumnSpecs());
   if (!db_->Execute(query.c_str()))
     return false;
-
   SetVersion(84);
   return true;
 }
@@ -1312,6 +1299,62 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
     is_ok = is_ok && prev_exists && parent_exists && next_exists;
   }
   return is_ok;
+}
+
+template<class T>
+bool DirectoryBackingStore::LoadEntriesInternal(const std::string& table,
+                                                T* bucket) {
+  string select;
+  select.reserve(kUpdateStatementBufferSize);
+  select.append("SELECT ");
+  AppendColumnList(&select);
+  select.append(" FROM " + table);
+
+  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
+
+  while (s.Step()) {
+    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
+    // A null kernel is evidence of external data corruption.
+    if (!kernel.get())
+      return false;
+    bucket->insert(kernel.release());
+  }
+  return s.Succeeded();
+}
+
+void DirectoryBackingStore::PrepareSaveEntryStatement(
+    EntryTable table, sql::Statement* save_statement) {
+  if (save_statement->is_valid())
+    return;
+
+  string query;
+  query.reserve(kUpdateStatementBufferSize);
+  switch (table) {
+    case METAS_TABLE:
+      query.append("INSERT OR REPLACE INTO metas ");
+      break;
+    case DELETE_JOURNAL_TABLE:
+      query.append("INSERT OR REPLACE INTO deleted_metas ");
+      break;
+  }
+
+  string values;
+  values.reserve(kUpdateStatementBufferSize);
+  values.append(" VALUES ");
+  const char* separator = "( ";
+  int i = 0;
+  for (i = BEGIN_FIELDS; i < FIELD_COUNT; ++i) {
+    query.append(separator);
+    values.append(separator);
+    separator = ", ";
+    query.append(ColumnName(i));
+    values.append("?");
+  }
+  query.append(" ) ");
+  values.append(" )");
+  query.append(values);
+  save_statement->Assign(db_->GetUniqueStatement(
+      base::StringPrintf(query.c_str(), "metas").c_str()));
 }
 
 }  // namespace syncable

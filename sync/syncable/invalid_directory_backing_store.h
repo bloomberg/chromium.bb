@@ -19,6 +19,7 @@ class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
   virtual ~InvalidDirectoryBackingStore();
   virtual DirOpenResult Load(
       MetahandlesIndex* entry_bucket,
+      JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(InvalidDirectoryBackingStore);

@@ -36,6 +36,7 @@ OnDiskDirectoryBackingStore::~OnDiskDirectoryBackingStore() { }
 
 DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
     MetahandlesIndex* entry_bucket,
+    JournalIndex* delete_journals,
     Directory::KernelLoadInfo* kernel_load_info) {
   DCHECK(CalledOnValidThread());
   if (!db_->is_open()) {
@@ -50,6 +51,8 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
     return FAILED_DATABASE_CORRUPT;
   if (!LoadEntries(entry_bucket))
     return FAILED_DATABASE_CORRUPT;
+  if (!LoadDeleteJournals(delete_journals))
+    return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;
   if (!VerifyReferenceIntegrity(*entry_bucket))
@@ -61,8 +64,10 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
 
 DirOpenResult OnDiskDirectoryBackingStore::Load(
     MetahandlesIndex* entry_bucket,
+    JournalIndex* delete_journals,
     Directory::KernelLoadInfo* kernel_load_info) {
-  DirOpenResult result = TryLoad(entry_bucket, kernel_load_info);
+  DirOpenResult result = TryLoad(entry_bucket, delete_journals,
+                                 kernel_load_info);
   if (result == OPENED) {
     UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", FIRST_TRY_SUCCESS, RESULT_COUNT);
@@ -72,12 +77,13 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   ReportFirstTryOpenFailure();
 
   // The fallback: delete the current database and return a fresh one.  We can
-  // fetch the user's data from the could.
+  // fetch the user's data from the cloud.
   STLDeleteElements(entry_bucket);
+  STLDeleteElements(delete_journals);
   db_.reset(new sql::Connection);
   file_util::Delete(backing_filepath_, false);
 
-  result = TryLoad(entry_bucket, kernel_load_info);
+  result = TryLoad(entry_bucket, delete_journals, kernel_load_info);
   if (result == OPENED) {
     UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", SECOND_TRY_SUCCESS, RESULT_COUNT);

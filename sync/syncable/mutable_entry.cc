@@ -273,9 +273,20 @@ bool MutableEntry::Put(ProtoField field,
 bool MutableEntry::Put(BitField field, bool value) {
   DCHECK(kernel_);
   write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
+  bool old_value = kernel_->ref(field);
+  if (old_value != value) {
     kernel_->put(field, value);
     kernel_->mark_dirty(GetDirtyIndexHelper());
+
+    // Update delete journal for existence status change on server side here
+    // instead of in PutIsDel() because IS_DEL may not be updated due to
+    // early returns when processing updates. And because
+    // UpdateDeleteJournalForServerDelete() checks for SERVER_IS_DEL, it has
+    // to be called on sync thread.
+    if (field == SERVER_IS_DEL) {
+      dir()->delete_journal()->UpdateDeleteJournalForServerDelete(
+          write_transaction(), old_value, *kernel_);
+    }
   }
   return true;
 }

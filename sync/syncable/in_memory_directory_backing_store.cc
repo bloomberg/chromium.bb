@@ -13,6 +13,7 @@ InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
 
 DirOpenResult InMemoryDirectoryBackingStore::Load(
     MetahandlesIndex* entry_bucket,
+    JournalIndex* delete_journals,
     Directory::KernelLoadInfo* kernel_load_info) {
   if (!db_->is_open()) {
     if (!db_->OpenInMemory())
@@ -25,6 +26,8 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
   if (!DropDeletedEntries())
     return FAILED_DATABASE_CORRUPT;
   if (!LoadEntries(entry_bucket))
+    return FAILED_DATABASE_CORRUPT;
+  if (!LoadDeleteJournals(delete_journals))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;

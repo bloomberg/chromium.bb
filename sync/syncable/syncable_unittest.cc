@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/test/values_test_util.h"
@@ -599,7 +600,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
     ASSERT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
     for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
-      ASSERT_TRUE(i->is_dirty());
+      ASSERT_TRUE((*i)->is_dirty());
     }
     dir_->VacuumAfterSaveChanges(snapshot);
   }
@@ -632,7 +633,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
     EXPECT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
     for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
-      EXPECT_TRUE(i->is_dirty());
+      EXPECT_TRUE((*i)->is_dirty());
     }
     dir_->VacuumAfterSaveChanges(snapshot);
   }
@@ -721,9 +722,132 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
     EXPECT_EQ(number_changed, snapshot.dirty_metas.size());
     for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
-      EXPECT_TRUE(i->is_dirty());
+      EXPECT_TRUE((*i)->is_dirty());
     }
     dir_->VacuumAfterSaveChanges(snapshot);
+  }
+}
+
+// Test delete journals management.
+TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
+  sync_pb::EntitySpecifics bookmark_specifics;
+  AddDefaultFieldValue(BOOKMARKS, &bookmark_specifics);
+  bookmark_specifics.mutable_bookmark()->set_url("url");
+
+  Id id1 = TestIdFactory::FromNumber(-1);
+  Id id2 = TestIdFactory::FromNumber(-2);
+  int64 handle1 = 0;
+  int64 handle2 = 0;
+  {
+    // Create two bookmark entries and save in database.
+    CreateEntry("item1", id1);
+    CreateEntry("item2", id2);
+    {
+      WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+      MutableEntry item1(&trans, GET_BY_ID, id1);
+      ASSERT_TRUE(item1.good());
+      handle1 = item1.Get(META_HANDLE);
+      item1.Put(SPECIFICS, bookmark_specifics);
+      item1.Put(SERVER_SPECIFICS, bookmark_specifics);
+      MutableEntry item2(&trans, GET_BY_ID, id2);
+      ASSERT_TRUE(item2.good());
+      handle2 = item2.Get(META_HANDLE);
+      item2.Put(SPECIFICS, bookmark_specifics);
+      item2.Put(SERVER_SPECIFICS, bookmark_specifics);
+    }
+    ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+  }
+
+  { // Test adding and saving delete journals.
+    DeleteJournal* delete_journal = dir_->delete_journal();
+    {
+      WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+      EntryKernelSet journal_entries;
+      delete_journal->GetDeleteJournals(&trans, BOOKMARKS, &journal_entries);
+      ASSERT_EQ(0u, journal_entries.size());
+
+      // Set SERVER_IS_DEL of the entries to true and they should be added to
+      // delete journals.
+      MutableEntry item1(&trans, GET_BY_ID, id1);
+      ASSERT_TRUE(item1.good());
+      item1.Put(SERVER_IS_DEL, true);
+      MutableEntry item2(&trans, GET_BY_ID, id2);
+      ASSERT_TRUE(item2.good());
+      item2.Put(SERVER_IS_DEL, true);
+      EntryKernel tmp;
+      tmp.put(ID, id1);
+      EXPECT_TRUE(delete_journal->delete_journals_.count(&tmp));
+      tmp.put(ID, id2);
+      EXPECT_TRUE(delete_journal->delete_journals_.count(&tmp));
+    }
+
+    // Save delete journals in database and verify memory clearing.
+    ASSERT_TRUE(dir_->SaveChanges());
+    {
+      ReadTransaction trans(FROM_HERE, dir_.get());
+      EXPECT_EQ(0u, delete_journal->GetDeleteJournalSize(&trans));
+    }
+    ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+  }
+
+  {
+    {
+      // Test reading delete journals from database.
+      WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+      DeleteJournal* delete_journal = dir_->delete_journal();
+      EntryKernelSet journal_entries;
+      delete_journal->GetDeleteJournals(&trans, BOOKMARKS, &journal_entries);
+      ASSERT_EQ(2u, journal_entries.size());
+      EntryKernel tmp;
+      tmp.put(META_HANDLE, handle1);
+      EXPECT_TRUE(journal_entries.count(&tmp));
+      tmp.put(META_HANDLE, handle2);
+      EXPECT_TRUE(journal_entries.count(&tmp));
+
+      // Purge item2.
+      MetahandleSet to_purge;
+      to_purge.insert(handle2);
+      delete_journal->PurgeDeleteJournals(&trans, to_purge);
+
+      // Verify that item2 is purged from journals in memory and will be
+      // purged from database.
+      tmp.put(ID, id2);
+      EXPECT_FALSE(delete_journal->delete_journals_.count(&tmp));
+      EXPECT_EQ(1u, delete_journal->delete_journals_to_purge_.size());
+      EXPECT_TRUE(delete_journal->delete_journals_to_purge_.count(handle2));
+    }
+    ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+  }
+
+  {
+    {
+      // Verify purged entry is gone in database.
+      WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+      DeleteJournal* delete_journal = dir_->delete_journal();
+      EntryKernelSet journal_entries;
+      delete_journal->GetDeleteJournals(&trans, BOOKMARKS, &journal_entries);
+      ASSERT_EQ(1u, journal_entries.size());
+      EntryKernel tmp;
+      tmp.put(ID, id1);
+      tmp.put(META_HANDLE, handle1);
+      EXPECT_TRUE(journal_entries.count(&tmp));
+
+      // Undelete item1.
+      MutableEntry item1(&trans, GET_BY_ID, id1);
+      ASSERT_TRUE(item1.good());
+      item1.Put(SERVER_IS_DEL, false);
+      EXPECT_TRUE(delete_journal->delete_journals_.empty());
+      EXPECT_EQ(1u, delete_journal->delete_journals_to_purge_.size());
+      EXPECT_TRUE(delete_journal->delete_journals_to_purge_.count(handle1));
+    }
+    ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+  }
+
+  {
+    // Verify undeleted entry is gone from database.
+    ReadTransaction trans(FROM_HERE, dir_.get());
+    DeleteJournal* delete_journal = dir_->delete_journal();
+    ASSERT_EQ(0u, delete_journal->GetDeleteJournalSize(&trans));
   }
 }
 

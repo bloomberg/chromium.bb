@@ -14,6 +14,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/syncable/delete_journal.h"
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/metahandle_set.h"
@@ -113,16 +114,6 @@ enum UnlinkReason {
   DATA_TYPE_PURGE    // To be used when purging a dataype.
 };
 
-class EntryKernelLessByMetaHandle {
- public:
-  inline bool operator()(const EntryKernel& a,
-                         const EntryKernel& b) const {
-    return a.ref(META_HANDLE) < b.ref(META_HANDLE);
-  }
-};
-
-typedef std::set<EntryKernel, EntryKernelLessByMetaHandle> EntryKernelSet;
-
 enum InvariantCheckLevel {
   OFF = 0,            // No checking.
   VERIFY_CHANGES = 1, // Checks only mutated entries.  Does not check hierarchy.
@@ -139,6 +130,7 @@ class SYNC_EXPORT Directory {
   friend class ScopedKernelUnlock;
   friend class WriteTransaction;
   friend class SyncableDirectoryTest;
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsAllDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
@@ -211,6 +203,8 @@ class SYNC_EXPORT Directory {
     PersistedKernelInfo kernel_info;
     EntryKernelSet dirty_metas;
     MetahandleSet metahandles_to_purge;
+    EntryKernelSet delete_journals;
+    MetahandleSet delete_journals_to_purge;
   };
 
   // Does not take ownership of |encryptor|.
@@ -338,6 +332,8 @@ class SYNC_EXPORT Directory {
       const std::string& name,
       DirectoryChangeDelegate* delegate,
       const WeakHandle<TransactionObserver>& transaction_observer);
+
+  DeleteJournal* delete_journal();
 
  private:
   // These private versions expect the kernel lock to already be held
@@ -634,6 +630,10 @@ class SYNC_EXPORT Directory {
   Cryptographer* const cryptographer_;
 
   InvariantCheckLevel invariant_check_level_;
+
+  // Maintain deleted entries not in |kernel_| until it's verified that they
+  // are deleted in native models as well.
+  scoped_ptr<DeleteJournal> delete_journal_;
 };
 
 }  // namespace syncable

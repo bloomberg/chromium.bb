@@ -23,8 +23,9 @@ enum WriterTag {
   AUTHWATCHER,
   UNITTEST,
   VACUUM_AFTER_SAVE,
+  HANDLE_SAVE_FAILURE,
   PURGE_ENTRIES,
-  SYNCAPI
+  SYNCAPI,
 };
 
 // Make sure to update this if you update WriterTag.

@@ -59,6 +59,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
   virtual DirOpenResult Load(MetahandlesIndex* entry_bucket,
+                             JournalIndex* delete_journals,
                              Directory::KernelLoadInfo* kernel_load_info) = 0;
 
   // Updates the on-disk store with the input |snapshot| as a database
@@ -97,10 +98,12 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
 
   // Load helpers for entries and attributes.
   bool LoadEntries(MetahandlesIndex* entry_bucket);
+  bool LoadDeleteJournals(JournalIndex* delete_journals);
   bool LoadInfo(Directory::KernelLoadInfo* info);
 
   // Save/update helpers for entries.  Return false if sqlite commit fails.
-  bool SaveEntryToDB(const EntryKernel& entry);
+  static bool SaveEntryToDB(sql::Statement* save_statement,
+                            const EntryKernel& entry);
   bool SaveNewEntryToDB(const EntryKernel& entry);
   bool UpdateEntryToDB(const EntryKernel& entry);
 
@@ -110,9 +113,13 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // Close save_dbhandle_.  Broken out for testing.
   void EndSave();
 
-  // Removes each entry whose metahandle is in |handles| from the database.
-  // Does synchronous I/O.  Returns false on error.
-  bool DeleteEntries(const MetahandleSet& handles);
+  enum EntryTable {
+    METAS_TABLE,
+    DELETE_JOURNAL_TABLE,
+  };
+  // Removes each entry whose metahandle is in |handles| from the table
+  // specified by |from| table. Does synchronous I/O.  Returns false on error.
+  bool DeleteEntries(EntryTable from, const MetahandleSet& handles);
 
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
@@ -167,12 +174,22 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion84To85();
 
   scoped_ptr<sql::Connection> db_;
-  sql::Statement save_entry_statement_;
+  sql::Statement save_meta_statment_;
+  sql::Statement save_delete_journal_statment_;
   std::string dir_name_;
 
   // Set to true if migration left some old columns around that need to be
   // discarded.
   bool needs_column_refresh_;
+
+ private:
+  // Helper function for loading entries from specified table.
+  template<class T>
+  bool LoadEntriesInternal(const std::string& table, T* bucket);
+
+  // Prepares |save_statement| for saving entries in |table|.
+  void PrepareSaveEntryStatement(EntryTable table,
+                                 sql::Statement* save_statement);
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };

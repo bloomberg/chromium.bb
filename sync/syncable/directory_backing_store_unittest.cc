@@ -47,9 +47,10 @@ class MigrationTest : public testing::TestWithParam<int> {
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
     MetahandlesIndex metas;
+    JournalIndex  delete_journals;;
     STLElementDeleter<MetahandlesIndex> index_deleter(&metas);
     Directory::KernelLoadInfo kernel_load_info;
-    return dbs->Load(&metas, &kernel_load_info) == OPENED;
+    return dbs->Load(&metas, &delete_journals, &kernel_load_info) == OPENED;
   }
 
   void SetUpVersion67Database(sql::Connection* connection);
@@ -2217,8 +2218,8 @@ void MigrationTest::SetUpVersion84Database(sql::Connection* connection) {
           "server_is_del bit default 0,non_unique_name varchar,server_non_uniqu"
           "e_name varchar(255),unique_server_tag varchar,unique_client_tag varc"
           "har,specifics blob,server_specifics blob, base_server_specifics BLOB"
-          ", server_ordinal_in_parent blob, transaction_verion bigint default 0"
-          ");"
+          ", server_ordinal_in_parent blob, transaction_version bigint default "
+          "0);"
       "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birthda"
           "y TEXT, db_create_version TEXT, db_create_time INT, next_id INT defa"
           "ult -2, cache_guid TEXT , notification_state BLOB, bag_of_chips "
@@ -2339,8 +2340,8 @@ void MigrationTest::SetUpVersion85Database(sql::Connection* connection) {
           "server_is_del bit default 0,non_unique_name varchar,server_non_uniqu"
           "e_name varchar(255),unique_server_tag varchar,unique_client_tag varc"
           "har,specifics blob,server_specifics blob, base_server_specifics BLOB"
-          ", server_ordinal_in_parent blob, transaction_verion bigint default 0"
-          ");"
+          ", server_ordinal_in_parent blob, transaction_version bigint default "
+          "0);"
       "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birthda"
           "y TEXT, db_create_version TEXT, db_create_time INT, next_id INT defa"
           "ult -2, cache_guid TEXT , notification_state BLOB, bag_of_chips "
@@ -2747,11 +2748,12 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
 
   // Ensure the next_id has been incremented.
   MetahandlesIndex entry_bucket;
+  JournalIndex  delete_journals;;
   STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
   Directory::KernelLoadInfo load_info;
 
   s.Clear();
-  ASSERT_TRUE(dbs->Load(&entry_bucket, &load_info));
+  ASSERT_TRUE(dbs->Load(&entry_bucket, &delete_journals, &load_info));
   EXPECT_LE(load_info.kernel_info.next_id, kInitialNextId - 65536);
 }
 
@@ -2769,10 +2771,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
 
   // Ensure the bag_of_chips has been set.
   MetahandlesIndex entry_bucket;
+  JournalIndex  delete_journals;;
   STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
   Directory::KernelLoadInfo load_info;
 
-  ASSERT_TRUE(dbs->Load(&entry_bucket, &load_info));
+  ASSERT_TRUE(dbs->Load(&entry_bucket, &delete_journals, &load_info));
   // Check that the initial value is the serialization of an empty ChipBag.
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
@@ -2830,10 +2833,11 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidOrdinal) {
 
   // Trying to unpack this entry should signal that the DB is corrupted.
   MetahandlesIndex entry_bucket;
+  JournalIndex  delete_journals;;
   STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
   Directory::KernelLoadInfo kernel_load_info;
   ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&entry_bucket, &kernel_load_info));
+            dbs->Load(&entry_bucket, &delete_journals, &kernel_load_info));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
@@ -2973,12 +2977,13 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   syncable::Directory::KernelLoadInfo dir_info;
   MetahandlesIndex index;
+  JournalIndex  delete_journals;;
   STLElementDeleter<MetahandlesIndex> index_deleter(&index);
 
   {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_EQ(OPENED, dbs->Load(&index, &dir_info));
+    ASSERT_EQ(OPENED, dbs->Load(&index, &delete_journals, &dir_info));
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
@@ -3250,16 +3255,18 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
   MetahandlesIndex index;
+  JournalIndex  delete_journals;
   Directory::KernelLoadInfo kernel_load_info;
   STLElementDeleter<MetahandlesIndex> index_deleter(&index);
 
-  dbs->Load(&index, &kernel_load_info);
+  dbs->Load(&index, &delete_journals, &kernel_load_info);
   size_t initial_size = index.size();
   ASSERT_LT(0U, initial_size) << "Test requires entries to delete.";
   int64 first_to_die = (*index.begin())->ref(META_HANDLE);
   MetahandleSet to_delete;
   to_delete.insert(first_to_die);
-  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+  EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
+                                 to_delete));
 
   STLDeleteElements(&index);
   dbs->LoadEntries(&index);
@@ -3281,7 +3288,8 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
     to_delete.insert((*it)->ref(META_HANDLE));
   }
 
-  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+  EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
+                                 to_delete));
 
   STLDeleteElements(&index);
   dbs->LoadEntries(&index);

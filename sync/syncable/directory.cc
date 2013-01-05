@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/syncable/delete_journal.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
@@ -101,7 +102,10 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
     : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
 }
 
-Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
+Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {
+  STLDeleteElements(&dirty_metas);
+  STLDeleteElements(&delete_journals);
+}
 
 Directory::Kernel::Kernel(
     const std::string& name,
@@ -196,17 +200,19 @@ DirOpenResult Directory::OpenImpl(
     DirectoryChangeDelegate* delegate,
     const WeakHandle<TransactionObserver>&
         transaction_observer) {
-
   KernelLoadInfo info;
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
   // swap these later.
   MetahandlesIndex metas_bucket;
-  DirOpenResult result = store_->Load(&metas_bucket, &info);
+  JournalIndex delete_journals;
+
+  DirOpenResult result = store_->Load(&metas_bucket, &delete_journals, &info);
   if (OPENED != result)
     return result;
 
   kernel_ = new Kernel(name, info, delegate, transaction_observer);
   kernel_->metahandles_index->swap(metas_bucket);
+  delete_journal_.reset(new DeleteJournal(&delete_journals));
   InitializeIndices();
 
   // Write back the share info to reserve some space in 'next_id'.  This will
@@ -217,6 +223,11 @@ DirOpenResult Directory::OpenImpl(
     return FAILED_INITIAL_WRITE;
 
   return OPENED;
+}
+
+DeleteJournal* Directory::delete_journal() {
+  DCHECK(delete_journal_.get());
+  return delete_journal_.get();
 }
 
 void Directory::Close() {
@@ -235,7 +246,6 @@ void Directory::OnUnrecoverableError(const BaseTransaction* trans,
   unrecoverable_error_handler_->OnUnrecoverableError(location,
                                                      message);
 }
-
 
 EntryKernel* Directory::GetEntryById(const Id& id) {
   ScopedKernelLock lock(this);
@@ -466,7 +476,8 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
     // Skip over false positives; it happens relatively infrequently.
     if (!entry->is_dirty())
       continue;
-    snapshot->dirty_metas.insert(snapshot->dirty_metas.end(), *entry);
+    snapshot->dirty_metas.insert(snapshot->dirty_metas.end(),
+                                 new EntryKernel(*entry));
     DCHECK_EQ(1U, kernel_->dirty_metahandles->count(*i));
     // We don't bother removing from the index here as we blow the entire thing
     // in a moment, and it unnecessarily complicates iteration.
@@ -488,6 +499,9 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   snapshot->kernel_info_status = kernel_->info_status;
   // This one we reset on failure.
   kernel_->info_status = KERNEL_SHARE_INFO_VALID;
+
+  delete_journal_->TakeSnapshotAndClear(
+      &trans, &snapshot->delete_journals, &snapshot->delete_journals_to_purge);
 }
 
 bool Directory::SaveChanges() {
@@ -518,7 +532,7 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   // Now drop everything we can out of memory.
   for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
-    kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
+    kernel_->needle.put(META_HANDLE, (*i)->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     EntryKernel* entry = (found == kernel_->metahandles_index->end() ?
@@ -605,6 +619,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
 }
 
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
+  WriteTransaction trans(FROM_HERE, HANDLE_SAVE_FAILURE, this);
   ScopedKernelLock lock(this);
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 
@@ -615,7 +630,7 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   // that SaveChanges will at least try again later.
   for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
-    kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
+    kernel_->needle.put(META_HANDLE, (*i)->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     if (found != kernel_->metahandles_index->end()) {
@@ -625,6 +640,11 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
 
   kernel_->metahandles_to_purge->insert(snapshot.metahandles_to_purge.begin(),
                                         snapshot.metahandles_to_purge.end());
+
+  // Restore delete journals.
+  delete_journal_->AddJournalBatch(&trans, snapshot.delete_journals);
+  delete_journal_->PurgeDeleteJournals(&trans,
+                                       snapshot.delete_journals_to_purge);
 }
 
 void Directory::GetDownloadProgress(

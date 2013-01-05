@@ -127,6 +127,8 @@
         'sessions/sync_session_context.cc',
         'sessions/sync_session_context.h',
         'syncable/blob.h',
+        'syncable/delete_journal.cc',
+        'syncable/delete_journal.h',
         'syncable/dir_open_result.h',
         'syncable/directory.cc',
         'syncable/directory.h',
