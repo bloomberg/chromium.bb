@@ -471,8 +471,8 @@ void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
   if (chrome::CanOpenTaskManager()) {
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);
+    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddFrameToggleItems();
