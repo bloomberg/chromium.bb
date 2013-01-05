@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 
 namespace webkit_glue {
 class AltErrorPageResourceFetcher;
