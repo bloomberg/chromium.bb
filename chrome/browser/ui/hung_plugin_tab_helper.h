@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class FilePath;
+class InfoBarDelegate;
 
 // Manages per-tab state with regard to hung plugins. This only handles
 // Pepper plugins which we know are windowless. Hung NPAPI plugins (which
@@ -49,12 +50,12 @@ class HungPluginTabHelper
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Called by an infobar when the user selects to kill the plugin.
+  void KillPlugin(int child_id);
+
  private:
   explicit HungPluginTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<HungPluginTabHelper>;
-
-  class InfoBarDelegate;
-  friend class InfoBarDelegate;
 
   // Per-plugin state (since there could be more than one plugin hung). The
   // integer key is the child process ID of the plugin process. This maintains
@@ -84,9 +85,6 @@ class HungPluginTabHelper
     DISALLOW_COPY_AND_ASSIGN(PluginState);
   };
   typedef std::map<int, linked_ptr<PluginState> > PluginStateMap;
-
-  // Called by an infobar when the user selects to kill the plugin.
-  void KillPlugin(int child_id);
 
   // Called on a timer for a hung plugin to re-show the bar.
   void OnReshowTimer(int child_id);
