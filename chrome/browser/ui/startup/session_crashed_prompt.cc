@@ -30,7 +30,8 @@ namespace {
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  explicit SessionCrashedInfoBarDelegate(InfoBarService* infobar_service);
+  SessionCrashedInfoBarDelegate(InfoBarService* infobar_service,
+                                Browser* browser);
 
  private:
   virtual ~SessionCrashedInfoBarDelegate();
@@ -56,11 +57,12 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
 };
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
-    InfoBarService* infobar_service)
+    InfoBarService* infobar_service,
+    Browser* browser)
     : ConfirmInfoBarDelegate(infobar_service),
       accepted_(false),
       removed_notification_received_(false),
-      browser_(chrome::FindBrowserWithWebContents(owner()->GetWebContents())) {
+      browser_(browser) {
   // TODO(pkasting,marja): Once InfoBars own they delegates, this is not needed
   // any more. Then we can rely on delegates getting destroyed, and we can
   // initiate the session storage scavenging only in the destructor. (Currently,
@@ -150,7 +152,7 @@ void ShowSessionCrashedPrompt(Browser* browser) {
     return;
 
   infobar_service->AddInfoBar(
-      new SessionCrashedInfoBarDelegate(infobar_service));
+      new SessionCrashedInfoBarDelegate(infobar_service, browser));
 }
 
 }  // namespace chrome
