@@ -6,6 +6,7 @@
   'target_defaults': {
     'variables': {
       'sandbox_windows_target': 0,
+      'target_arch%': 'ia32',
     },
     'target_conditions': [
       ['sandbox_windows_target==1', {
@@ -133,6 +134,34 @@
             'src/window.cc',
             'src/window.h',
         ],
+        'target_conditions': [
+          ['target_arch=="x64"', {
+            'sources': [
+              'src/interceptors_64.cc',
+              'src/interceptors_64.h',
+              'src/resolver_64.cc',
+              'src/service_resolver_64.cc',
+              'src/Wow64_64.cc',
+            ],
+          }],
+          ['target_arch=="ia32"', {
+            'sources': [
+              'src/resolver_32.cc',
+              'src/service_resolver_32.cc',
+              'src/sidestep_resolver.cc',
+              'src/sidestep_resolver.h',
+              'src/sidestep\ia32_modrm_map.cpp',
+              'src/sidestep\ia32_opcode_map.cpp',
+              'src/sidestep\mini_disassembler_types.h',
+              'src/sidestep\mini_disassembler.cpp',
+              'src/sidestep\mini_disassembler.h',
+              'src/sidestep\preamble_patcher_with_stub.cpp',
+              'src/sidestep\preamble_patcher.h',
+              'src/Wow64.cc',
+              'src/Wow64.h',
+            ],
+          }],
+        ],
       }],
     ],
   },
@@ -150,22 +179,6 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-      ],
-      'sources': [
-        # Files that are used by the 32-bit version of Windows sandbox only.
-        'src/resolver_32.cc',
-        'src/service_resolver_32.cc',
-        'src/sidestep_resolver.cc',
-        'src/sidestep_resolver.h',
-        'src/sidestep\ia32_modrm_map.cpp',
-        'src/sidestep\ia32_opcode_map.cpp',
-        'src/sidestep\mini_disassembler_types.h',
-        'src/sidestep\mini_disassembler.cpp',
-        'src/sidestep\mini_disassembler.h',
-        'src/sidestep\preamble_patcher_with_stub.cpp',
-        'src/sidestep\preamble_patcher.h',
-        'src/Wow64.cc',
-        'src/Wow64.h',
       ],
       'include_dirs': [
         '../..',
@@ -191,6 +204,7 @@
       'type': 'static_library',
       'variables': {
         'sandbox_windows_target': 1,
+        'target_arch': 'x64',
       },
       'dependencies': [
         '../testing/gtest.gyp:gtest',
@@ -202,14 +216,6 @@
           'msvs_target_platform': 'x64',
         },
       },
-      'sources': [
-        # Files that are used by the 64-bit version of Windows sandbox only.
-        'src/interceptors_64.cc',
-        'src/interceptors_64.h',
-        'src/resolver_64.cc',
-        'src/service_resolver_64.cc',
-        'src/Wow64_64.cc',
-      ],
       'include_dirs': [
         '../..',
       ],

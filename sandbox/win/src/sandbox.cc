@@ -11,8 +11,8 @@
 
 #if defined(_WIN64) && !defined(NACL_WIN64)
 // We allow building this code for Win64 as part of NaCl to enable development
-#error Sandbox code was not tested on 64-bit Windows. See \
- http://crbug.com/27218 for details and progress log.
+#pragma message("Sandbox code was not fully tested on 64-bit Windows.\
+ crbug.com/168414 ")
 #endif
 
 
