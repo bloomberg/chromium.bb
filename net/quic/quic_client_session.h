@@ -48,6 +48,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // Close the session because of |error|.
   void CloseSessionOnError(int error);
 
+  base::Value* GetInfoAsValue(const HostPortPair& pair) const;
+
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(

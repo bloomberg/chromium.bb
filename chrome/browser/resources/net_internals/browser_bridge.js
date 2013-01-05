@@ -54,6 +54,9 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.historicNetworkStats =
       new PollableDataHelper('onHistoricNetworkStatsChanged',
                              this.sendGetHistoricNetworkStats.bind(this));
+    this.pollableDataHelpers_.quicInfo =
+        new PollableDataHelper('onQuicInfoChanged',
+                               this.sendGetQuicInfo.bind(this));
     this.pollableDataHelpers_.spdySessionInfo =
         new PollableDataHelper('onSpdySessionInfoChanged',
                                this.sendGetSpdySessionInfo.bind(this));
@@ -212,6 +215,10 @@ var BrowserBridge = (function() {
       this.send('flushSocketPools');
     },
 
+    sendGetQuicInfo: function() {
+      this.send('getQuicInfo');
+    },
+
     sendGetSpdySessionInfo: function() {
       this.send('getSpdySessionInfo');
     },
@@ -325,6 +332,10 @@ var BrowserBridge = (function() {
     receivedHistoricNetworkStats: function(historicNetworkStats) {
       this.pollableDataHelpers_.historicNetworkStats.update(
           historicNetworkStats);
+    },
+
+    receivedQuicInfo: function(quicInfo) {
+      this.pollableDataHelpers_.quicInfo.update(quicInfo);
     },
 
     receivedSpdySessionInfo: function(spdySessionInfo) {
@@ -501,6 +512,17 @@ var BrowserBridge = (function() {
      */
     addHistoricNetworkStatsObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.historicNetworkStats.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of the QUIC info. |observer| will be called back
+     * when data is received, through:
+     *
+     *   observer.onQuicInfoChanged(quicInfo)
+     */
+    addQuicInfoObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.quicInfo.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

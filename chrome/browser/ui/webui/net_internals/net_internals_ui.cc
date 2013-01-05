@@ -514,6 +514,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetSpdySessionInfo(const ListValue* list);
   void OnGetSpdyStatus(const ListValue* list);
   void OnGetSpdyAlternateProtocolMappings(const ListValue* list);
+  void OnGetQuicInfo(const ListValue* list);
 #if defined(OS_WIN)
   void OnGetServiceProviders(const ListValue* list);
 #endif
@@ -722,6 +723,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getSpdyAlternateProtocolMappings",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSpdyAlternateProtocolMappings, proxy_));
+  web_ui()->RegisterMessageCallback(
+      "getQuicInfo",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnGetQuicInfo, proxy_));
 #if defined(OS_WIN)
   web_ui()->RegisterMessageCallback(
       "getServiceProviders",
@@ -1423,6 +1428,17 @@ NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
   }
 
   SendJavascriptCommand("receivedSpdyAlternateProtocolMappings", dict_list);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetQuicInfo(
+    const ListValue* list) {
+  DCHECK(!list);
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(GetMainContext());
+
+  Value* quic_info = http_network_session ?
+      http_network_session->QuicInfoToValue() : NULL;
+  SendJavascriptCommand("receivedQuicInfo", quic_info);
 }
 
 #if defined(OS_WIN)

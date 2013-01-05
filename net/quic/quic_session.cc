@@ -267,7 +267,7 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
       implicitly_created_streams_.count(id) == 0;
 }
 
-size_t QuicSession::GetNumOpenStreams() {
+size_t QuicSession::GetNumOpenStreams() const {
   return stream_map_.size() + implicitly_created_streams_.size();
 }
 

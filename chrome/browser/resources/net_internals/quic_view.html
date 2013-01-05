@@ -1,0 +1,24 @@
+<div id=quic-view-tab-content class=content-box>
+  <h4>QUIC Status</h4>
+  <ul>
+    <li>QUIC Enabled: <span id=quic-view-enabled-span>????</span></li>
+    <li>Origin Port To Force QUIC On: <span id=quic-view-force-port-span>????</span></li>
+  </ul>
+
+  <h4>QUIC sessions</h4>
+    <!-- Only one of these two are shown -->
+    <span id=quic-view-session-none-span>None</span>
+    <span id=quic-view-session-link-span style="display: none;">
+      <a href="#events&q=type:QUIC_SESSION%20is:active">View live QUIC sessions</a>
+    </span>
+  <p>
+    <div id=quic-view-session-div>
+    </div>
+  </p>
+
+  <h4>Alternate Protocol Mappings</h4>
+  <p>
+    <div id=quic-view-alternate-protocol-mappings-div>
+    </div>
+  </p>
+</div>

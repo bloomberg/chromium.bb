@@ -76,12 +76,13 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   const IPEndPoint& peer_address() const {
     return connection_->peer_address();
   }
+  QuicGuid guid() const { return connection_->guid(); }
 
   QuicPacketCreator::Options* options() { return connection()->options(); }
 
   // Returns the number of currently open streams, including those which have
   // been implicitly created.
-  virtual size_t GetNumOpenStreams();
+  virtual size_t GetNumOpenStreams() const;
 
   void MarkWriteBlocked(QuicStreamId id);
 

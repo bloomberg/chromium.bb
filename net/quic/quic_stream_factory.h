@@ -93,6 +93,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory {
   // Closes all current sessions.
   void CloseAllSessions(int error);
 
+  base::Value* QuicStreamFactoryInfoToValue() const;
+
  private:
   class Job;
 

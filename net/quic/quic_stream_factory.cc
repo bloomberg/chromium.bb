@@ -10,6 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
@@ -331,6 +332,19 @@ void QuicStreamFactory::CloseAllSessions(int error) {
     active_sessions_.begin()->second->CloseSessionOnError(error);
   }
   DCHECK(all_sessions_.empty());
+}
+
+base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
+  base::ListValue* list = new base::ListValue();
+
+  for (SessionMap::const_iterator it = active_sessions_.begin();
+       it != active_sessions_.end(); ++it) {
+    const HostPortProxyPair& pair = it->first;
+    const QuicClientSession* session = it->second;
+
+    list->Append(session->GetInfoAsValue(pair.first));
+  }
+  return list;
 }
 
 bool QuicStreamFactory::HasActiveSession(

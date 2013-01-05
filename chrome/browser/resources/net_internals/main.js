@@ -90,6 +90,7 @@ var MainView = (function() {
     tabs.addTab(SocketsView.TAB_HANDLE_ID, SocketsView.getInstance(),
                 false, true);
     tabs.addTab(SpdyView.TAB_HANDLE_ID, SpdyView.getInstance(), false, true);
+    tabs.addTab(QuicView.TAB_HANDLE_ID, QuicView.getInstance(), false, true);
     tabs.addTab(HttpPipelineView.TAB_HANDLE_ID, HttpPipelineView.getInstance(),
                 false, true);
     tabs.addTab(HttpCacheView.TAB_HANDLE_ID, HttpCacheView.getInstance(),

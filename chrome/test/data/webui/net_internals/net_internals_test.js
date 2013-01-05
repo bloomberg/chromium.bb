@@ -247,6 +247,7 @@ var NetInternalsTest = (function() {
       dns: DnsView.TAB_HANDLE_ID,
       sockets: SocketsView.TAB_HANDLE_ID,
       spdy: SpdyView.TAB_HANDLE_ID,
+      quic: QuicView.TAB_HANDLE_ID,
       httpPipeline: HttpPipelineView.TAB_HANDLE_ID,
       httpCache: HttpCacheView.TAB_HANDLE_ID,
       serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,

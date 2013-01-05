@@ -37,6 +37,7 @@
 <include src="log_view_painter.js"/>
 <include src="log_grouper.js"/>
 <include src="proxy_view.js"/>
+<include src="quic_view.js"/>
 <include src="socket_pool_wrapper.js"/>
 <include src="sockets_view.js"/>
 <include src="spdy_view.js"/>

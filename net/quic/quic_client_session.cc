@@ -6,6 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_connection_helper.h"
@@ -111,6 +113,15 @@ void QuicClientSession::CloseSessionOnError(int error) {
     CloseStream(id);
   }
   stream_factory_->OnSessionClose(this);
+}
+
+Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("host_port_pair", pair.ToString());
+  dict->SetInteger("open_streams", GetNumOpenStreams());
+  dict->SetString("peer_address", peer_address().ToString());
+  dict->SetString("guid", base::Uint64ToString(guid()));
+  return dict;
 }
 
 void QuicClientSession::OnReadComplete(int result) {

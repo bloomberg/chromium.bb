@@ -30,6 +30,7 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     dns: true,
     sockets: true,
     spdy: true,
+    quic: true,
     httpPipeline: true,
     httpCache: true,
     serviceProviders: cr.isWindows,

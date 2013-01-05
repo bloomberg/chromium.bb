@@ -179,6 +179,16 @@ Value* HttpNetworkSession::SpdySessionPoolInfoToValue() const {
   return spdy_session_pool_.SpdySessionPoolInfoToValue();
 }
 
+Value* HttpNetworkSession::QuicInfoToValue() const {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
+  dict->SetBoolean("quic_enabled", params_.origin_port_to_force_quic_on != 0);
+  dict->SetInteger("origin_port_to_force_quic_on",
+                   params_.origin_port_to_force_quic_on);
+
+  return dict;
+}
+
 void HttpNetworkSession::CloseAllConnections() {
   normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
