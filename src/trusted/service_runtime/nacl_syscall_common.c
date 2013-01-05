@@ -3063,6 +3063,16 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
 
   memcpy(u.fxsave.xmm_space, manybytes, sizeof(u.fxsave.xmm_space));
 
+  /*
+   * Set the MXCSR to an unlikely (but valid) value: all valid bits set.
+   * The mask is provided by the hardware to say which bits can be set
+   * (all others are reserved).  The untrusted test code (in
+   * tests/infoleak/test_infoleak.c) sets MXCSR to zero before
+   * making this system call so this value ensures that the test
+   * actually verifies the behavior of the syscall return path.
+   */
+  u.fxsave.mxcsr = u.fxsave.mxcsr_mask;
+
 # ifdef __GNUC__
   __asm__ volatile("fxrstor %0" :: "m" (u));
 # elif NACL_WINDOWS

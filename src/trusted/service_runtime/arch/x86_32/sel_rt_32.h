@@ -46,6 +46,9 @@ void    NaClSetGs(uint16_t v);
 
 uint16_t NaClGetSs(void);
 
+void    NaClSyscallSegSSE(void);
+void    NaClSyscallSegNoSSE(void);
+
 /*
  * On a context switch through the syscall interface, not all
  * registers are saved.  We assume that C calling convention is used,
@@ -92,65 +95,6 @@ struct NaClGsSegment {
 __declspec(align(64))
 #endif
 struct NaClThreadContext {
-  /* ecx, edx, eax, eflags not saved */
-  nacl_reg_t  ebx, esi, edi, prog_ctr; /* return addr */
-  /*          0    4    8    c */
-  /*
-   * TODO(mseaborn): We would like to remove the unused_padding
-   * fields, but the incremental Windows Gyp build does not know to
-   * rebuild the .S files when this header file changes.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=2969
-   */
-  uint32_t    unused_padding1;
-  /*          10 */
-  nacl_reg_t  frame_ptr;
-  /*          14 */
-  uint32_t    unused_padding2;
-  /*          18 */
-  nacl_reg_t  stack_ptr;
-  /*          1c */
-  uint16_t    ss; /* stack_ptr and ss must be adjacent */
-  /*          20 */
-  uint16_t    fcw;
-  /*          22 */
-  uint16_t    sys_fcw;
-  /*          24 */
-  uint16_t    align_padding1;
-  /*          26 */
-  /*
-   * gs is our TLS base in the app; on the host side it's either fs or gs.
-   */
-  uint16_t    ds, es, fs, gs;
-  /*          28  2a  2c  2e */
-  /*
-   * spring_addr, sys_ret and new_prog_ctr are not a part of the
-   * thread's register set, but are needed by NaClSwitch.  By
-   * including them here, the two use the same interface.
-   */
-  nacl_reg_t  new_prog_ctr;
-  /*          30 */
-  nacl_reg_t  sysret;
-  /*          34 */
-  nacl_reg_t  spring_addr;
-  /*          38 */
-  uint16_t    cs; /* spring_addr and cs must be adjacent */
-  /*          3c */
-  uint16_t    align_padding2;
-  /*          3e */
-
-  /* These two are adjacent because they are restored using 'lss'. */
-  uint32_t    trusted_stack_ptr;
-  /*          40 */
-  uint16_t    trusted_ss;
-  /*          44 */
-
-  uint16_t    trusted_es;
-  /*          46 */
-  uint16_t    trusted_fs;
-  /*          48 */
-  uint16_t    trusted_gs;
-  /*          4a */
-
   /*
    * We align gs_segment to a multiple of 64 bytes because otherwise
    * memory accesses through the %gs segment are slow on Intel Atom
@@ -162,16 +106,63 @@ struct NaClThreadContext {
    * not put __attribute__((aligned(X))) on struct NaClGsSegment
    * because that would increase sizeof(struct NaClGsSegment) to 64.
    *
-   * TODO(mseaborn): We could reduce the padding here by putting
-   * gs_segment at the start of NaClThreadContext, but that involves
-   * fixing the Windows incremental build problem noted above.
+   * By putting this field first in the struct, we avoid the need
+   * for alignment padding before it.
    */
-  uint8_t     align_padding3[0x34];
-  /*          4c */
   struct NaClGsSegment gs_segment;
-  /*          80 */
-  uint8_t     align_padding4[0x30];
-  /*          90 */
+
+  /*
+   * We need some padding somewhere to make the whole struct a multiple
+   * of its 64-byte alignment size.  Putting it here rather than at the
+   * end leaves space to extend struct NaClGsSegment without affecting
+   * all the other offsets.
+   *
+   * As well as requiring the tedious updating of NACL_THREAD_CONTEXT_OFFSET_*
+   * macros below, changing offsets when not also touching every .S file that
+   * uses those macros runs afoul of a Gyp bug wherein incremental builds fail
+   * to rebuild .S files whose included files have changed.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=2969
+   */
+  uint8_t     future_padding[0x24];
+
+  /* ecx, edx, eax, eflags not saved */
+  nacl_reg_t  ebx;
+  nacl_reg_t  esi;
+  nacl_reg_t  edi;
+  nacl_reg_t  prog_ctr;  /* return addr */
+  nacl_reg_t  frame_ptr;
+  nacl_reg_t  stack_ptr;
+  uint16_t    ss; /* stack_ptr and ss must be adjacent */
+  uint16_t    fcw;
+  uint16_t    sys_fcw;
+  uint16_t    align_padding1;
+  uint32_t    mxcsr;
+  uint32_t    sys_mxcsr;
+  /*
+   * gs is our TLS base in the app; on the host side it's either fs or gs.
+   */
+  uint16_t    ds;
+  uint16_t    es;
+  uint16_t    fs;
+  uint16_t    gs;
+  /*
+   * spring_addr, sys_ret and new_prog_ctr are not a part of the
+   * thread's register set, but are needed by NaClSwitch.  By
+   * including them here, the two use the same interface.
+   */
+  nacl_reg_t  new_prog_ctr;
+  nacl_reg_t  sysret;
+  nacl_reg_t  spring_addr;
+  uint16_t    cs; /* spring_addr and cs must be adjacent */
+  uint16_t    align_padding2;
+
+  /* These two are adjacent because they are restored using 'lss'. */
+  uint32_t    trusted_stack_ptr;
+  uint16_t    trusted_ss;
+
+  uint16_t    trusted_es;
+  uint16_t    trusted_fs;
+  uint16_t    trusted_gs;
 }
 #if defined(__GNUC__)
     /* Align gs_segment for better performance on Intel Atom */
@@ -181,35 +172,34 @@ struct NaClThreadContext {
 
 #endif /* !defined(__ASSEMBLER__) */
 
-#define NACL_THREAD_CONTEXT_OFFSET_EBX                0x00
-#define NACL_THREAD_CONTEXT_OFFSET_ESI                0x04
-#define NACL_THREAD_CONTEXT_OFFSET_EDI                0x08
-#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR           0x0c
-#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING1    0x10
-#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR          0x14
-#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING2    0x18
-#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR          0x1c
-#define NACL_THREAD_CONTEXT_OFFSET_SS                 0x20
-#define NACL_THREAD_CONTEXT_OFFSET_FCW                0x22
-#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW            0x24
-#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING1     0x26
-#define NACL_THREAD_CONTEXT_OFFSET_DS                 0x28
-#define NACL_THREAD_CONTEXT_OFFSET_ES                 0x2a
-#define NACL_THREAD_CONTEXT_OFFSET_FS                 0x2c
-#define NACL_THREAD_CONTEXT_OFFSET_GS                 0x2e
-#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR       0x30
-#define NACL_THREAD_CONTEXT_OFFSET_SYSRET             0x34
-#define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR        0x38
-#define NACL_THREAD_CONTEXT_OFFSET_CS                 0x3c
-#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING2     0x3e
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR  0x40
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS         0x44
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES         0x46
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS         0x48
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS         0x4a
-#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING3     0x4c
-#define NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT         0x80
-#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING4     0x90
+#define NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT         0x00
+#define NACL_THREAD_CONTEXT_OFFSET_FUTURE_PADDING     0x10
+#define NACL_THREAD_CONTEXT_OFFSET_EBX                0x34
+#define NACL_THREAD_CONTEXT_OFFSET_ESI                0x38
+#define NACL_THREAD_CONTEXT_OFFSET_EDI                0x3c
+#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR           0x40
+#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR          0x44
+#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR          0x48
+#define NACL_THREAD_CONTEXT_OFFSET_SS                 0x4c
+#define NACL_THREAD_CONTEXT_OFFSET_FCW                0x4e
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW            0x50
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING1     0x52
+#define NACL_THREAD_CONTEXT_OFFSET_MXCSR              0x54
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR          0x58
+#define NACL_THREAD_CONTEXT_OFFSET_DS                 0x5c
+#define NACL_THREAD_CONTEXT_OFFSET_ES                 0x5e
+#define NACL_THREAD_CONTEXT_OFFSET_FS                 0x60
+#define NACL_THREAD_CONTEXT_OFFSET_GS                 0x62
+#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR       0x64
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET             0x68
+#define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR        0x6c
+#define NACL_THREAD_CONTEXT_OFFSET_CS                 0x70
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING2     0x72
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR  0x74
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS         0x78
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES         0x7a
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS         0x7c
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS         0x7e
 
 #if !defined(__ASSEMBLER__)
 
@@ -226,18 +216,20 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
     CHECK(offset == offset_name); \
     offset += sizeof(((struct NaClThreadContext *) NULL)->field);
 
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT, gs_segment);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FUTURE_PADDING, future_padding);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EBX, ebx);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ESI, esi);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EDI, edi);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING1, unused_padding1);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR, frame_ptr);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING2, unused_padding2);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SS, ss);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING1, align_padding1);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_MXCSR, mxcsr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR, sys_mxcsr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
@@ -253,13 +245,35 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES, trusted_es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS, trusted_fs);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS, trusted_gs);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING3, align_padding3);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT, gs_segment);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING4, align_padding4);
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD
 }
+
+#endif
+
+#if defined(__ASSEMBLER__)
+/*
+ * The MacOS assembler has a macro facility that is pretty close
+ * to GNU as macros, but not quite the same.
+ */
+#if NACL_OSX || defined(__clang__)
+# define MACRO(name)    .macro name
+# define ENDMACRO       .endmacro
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
+# define MACROARG1      $0
+# define MACROARG2      $1
+# define MACROARG3      $2
+# define MACROIMMED(x)  $$##x
+#else
+# define MACRO(name)    .macro name arg1, arg2=0, arg3=
+# define ENDMACRO       .endm
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
+# define MACROARG1      \arg1
+# define MACROARG2      \arg2
+# define MACROARG3      \arg3
+# define MACROIMMED(x)  $##x
+#endif
 
 #endif
 

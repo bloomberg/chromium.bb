@@ -7,6 +7,15 @@
 #include <float.h>
 #include <string.h>
 
+/*
+ * This header declares the _mm_getcsr function.
+ */
+#if NACL_WINDOWS
+#include <mmintrin.h>
+#else
+#include <xmmintrin.h>
+#endif
+
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -65,6 +74,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->tls_idx = tls_idx;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;
+  ntcp->mxcsr = NACL_MXCSR_DEFAULT;
 
   /*
    * Save the system's state of the x87 FPU control word so we can restore
@@ -75,6 +85,11 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 #else
   __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
 #endif
+
+  /*
+   * Likewise for the SSE control word.
+   */
+  ntcp->sys_mxcsr = _mm_getcsr();
 
   return 1;
 }

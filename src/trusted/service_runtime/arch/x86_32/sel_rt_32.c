@@ -6,12 +6,20 @@
 
 #include <float.h>
 
+#if NACL_WINDOWS
+/*
+ * This header declares the _mm_getcsr function.
+ */
+#include <mmintrin.h>
+#endif
+
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 
 uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
@@ -46,6 +54,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
+  /* TODO(mcgrathr): Use a safe cast here. */
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+
   NaClThreadContextOffsetCheck();
 
   NaClLog(4, "&nap->code_seg_sel = 0x%08"NACL_PRIxPTR"\n",
@@ -78,6 +89,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ss = nap->data_seg_sel;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;
+  ntcp->mxcsr = NACL_MXCSR_DEFAULT;
 
   /*
    * Save the system's state of the x87 FPU control word so we can restore
@@ -94,6 +106,24 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 #else
   __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
 #endif
+
+  /*
+   * Likewise for the SSE control word, if SSE is supported.
+   */
+  if (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_SSE)) {
+#if NACL_WINDOWS
+    ntcp->sys_mxcsr = _mm_getcsr();
+#else
+    /*
+     * GCC actually defines _mm_getcsr too, in its <xmmintrin.h>.
+     * But that (and the __builtin_ia32_stmxcsr it uses) are only
+     * available when compiling with -msse, which also makes the
+     * compiler generate SSE instructions itself, which would be
+     * incompatible with systems that don't support SSE.
+     */
+    __asm__("stmxcsr %0" : "=m" (ntcp->sys_mxcsr));
+#endif
+  }
 
   NaClLog(4, "user.cs: 0x%02x\n", ntcp->cs);
   NaClLog(4, "user.fs: 0x%02x\n", ntcp->fs);

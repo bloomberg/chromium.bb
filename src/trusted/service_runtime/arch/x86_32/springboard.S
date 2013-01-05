@@ -29,7 +29,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
         mov     NACL_THREAD_CONTEXT_OFFSET_SYSRET(%ecx), %eax
         lss     NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%ecx), %esp
         movw    NACL_THREAD_CONTEXT_OFFSET_DS(%ecx), %ds
-        /* Set %ecx to zero to avoid leaking the NaClThreadContext address */
+        /* Set %ecx to zero to avoid leaking the NaClThreadContext address. */
         xorl    %ecx, %ecx
         jmp     *%edx
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):

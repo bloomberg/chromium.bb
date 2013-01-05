@@ -9,12 +9,13 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/tramp_32.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 struct NaClPcrelThunkGlobals {
   struct NaClThreadContext **user;
@@ -30,8 +31,10 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   int                   error;
   void                  *thunk_addr = NULL;
   struct NaClPatchInfo  patch_info;
-  uintptr_t             patch_rel32[1];  /* NaClSyscallSeg */
-  struct NaClPatch      patch_abs32[2];  /* ds, nacl_user */
+  struct NaClPatch      patch_abs32[3];  /* ds, nacl_user, NaClSyscallSeg */
+  /* TODO(mcgrathr): Use a safe cast here. */
+  NaClCPUFeaturesX86    *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+  uintptr_t             naclsyscallseg;
 
   /* idempotent */
   nacl_pcrel_globals.user = nacl_user;
@@ -57,17 +60,21 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
     goto cleanup;
   }
 
-  patch_rel32[0] = ((uintptr_t) &NaClPcrelThunk_end) - 4;
+  if (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_SSE))
+    naclsyscallseg = (uintptr_t) &NaClSyscallSegSSE;
+  else
+    naclsyscallseg = (uintptr_t) &NaClSyscallSegNoSSE;
 
   patch_abs32[0].target = ((uintptr_t) &NaClPcrelThunk_dseg_patch) - 4;
   patch_abs32[0].value = NaClGetGlobalDs();
   patch_abs32[1].target = ((uintptr_t) &NaClPcrelThunk_globals_patch) - 4;
   patch_abs32[1].value = (uintptr_t) &nacl_pcrel_globals;
+  patch_abs32[2].target = ((uintptr_t) &NaClPcrelThunk_end) - 4;
+  patch_abs32[2].value = naclsyscallseg - ((uintptr_t) thunk_addr +
+                                           ((uintptr_t) &NaClPcrelThunk_end
+                                            - (uintptr_t) &NaClPcrelThunk));
 
   NaClPatchInfoCtor(&patch_info);
-
-  patch_info.rel32 = patch_rel32;
-  patch_info.num_rel32 = NACL_ARRAY_SIZE(patch_rel32);
 
   patch_info.abs32 = patch_abs32;
   patch_info.num_abs32 = NACL_ARRAY_SIZE(patch_abs32);

@@ -25,6 +25,8 @@ void NaClDoFnstcw(uint16_t *fcw);
 void NaClDoFxsave(void *fxsave);
 void NaClDoFxrstor(void *fxsave);
 
+void NaClSyscallSeg(void);
+
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 
 #define NACL_PRIdNACL_REG NACL_PRId64
@@ -55,14 +57,10 @@ struct NaClThreadContext {
   /*          0x88 */
   nacl_reg_t  sysret;
   /*          0x90 */
-  /*
-   * TODO(mseaborn): We would like to remove the following unused
-   * field, but the incremental Window Gyp build does not know to
-   * rebuild the .S files when this header file changes.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=2969
-   */
-  void        *unused_padding;
+  uint32_t    mxcsr;
   /*          0x98 */
+  uint32_t    sys_mxcsr;
+  /*          0x9c */
   uint32_t    tls_idx;
   /*          0xa0 */
   uint16_t    fcw;
@@ -98,7 +96,8 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR      0x80
 #define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x88
 #define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x90
-#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING 0x98
+#define NACL_THREAD_CONTEXT_OFFSET_MXCSR         0x98
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR     0x9c
 #define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX       0xa0
 #define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
 #define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
@@ -140,7 +139,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR, new_prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING, unused_padding);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_MXCSR, mxcsr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR, sys_mxcsr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);

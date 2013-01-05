@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_TESTS_THREAD_CAPTURE_THREAD_CAPTURE_TEST_INJECTION_H_
 #define NATIVE_CLIENT_TESTS_THREAD_CAPTURE_THREAD_CAPTURE_TEST_INJECTION_H_
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 struct NaClApp;
@@ -19,5 +20,9 @@ void NaClInjectThreadCaptureSyscall(struct NaClApp *nap);
  * address.  Do not call!
  */
 void NaClSyscallThreadCaptureFault(void);
+void NaClSyscallThreadCaptureFaultSSE(void);
+void NaClSyscallThreadCaptureFaultNoSSE(void);
+
+extern uintptr_t g_nacl_syscall_thread_capture_fault_addr;
 
 #endif

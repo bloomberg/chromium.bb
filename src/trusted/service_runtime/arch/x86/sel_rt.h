@@ -29,4 +29,10 @@ nacl_reg_t NaClGetStackPtr(void);
  */
 #define NACL_X87_FCW_DEFAULT    (0x37f)
 
+/*
+ * This is the default state of the SSE control word,
+ * as set by the hardware on power-up.
+ */
+#define NACL_MXCSR_DEFAULT      (0x1f80)
+
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ */

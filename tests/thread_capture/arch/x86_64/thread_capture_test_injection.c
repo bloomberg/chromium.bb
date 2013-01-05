@@ -14,6 +14,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
 static int32_t TestSyscall(struct NaClAppThread *natp) {
+  g_nacl_syscall_thread_capture_fault_addr =
+      (uintptr_t) &NaClSyscallThreadCaptureFault;
+
   NaClCopyInDropLock(natp->nap);
 
   NaClTlsSetIdx(0);

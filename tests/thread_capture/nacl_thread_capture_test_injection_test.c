@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/fault_injection/test_injection.h"
 #include "native_client/tests/thread_capture/thread_capture_test_injection.h"
 
+uintptr_t g_nacl_syscall_thread_capture_fault_addr;
 
 void NaClSegVHandler(int signum, siginfo_t *info, void *other) {
   uintptr_t faulting_pc;
@@ -63,10 +64,10 @@ void NaClSegVHandler(int signum, siginfo_t *info, void *other) {
   printf("signal %d\n", signum);
   printf("faulting_pc 0x%"NACL_PRIxPTR"\n", faulting_pc);
   printf("NaClSyscallThreadCaptureFault 0x%"NACL_PRIxPTR"\n",
-         (uintptr_t) NaClSyscallThreadCaptureFault);
+         g_nacl_syscall_thread_capture_fault_addr);
 
   CHECK(signum == SIGSEGV);
-  CHECK((uintptr_t) NaClSyscallThreadCaptureFault == faulting_pc);
+  CHECK(g_nacl_syscall_thread_capture_fault_addr == faulting_pc);
   exit(0);
 }
 

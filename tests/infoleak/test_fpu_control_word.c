@@ -32,6 +32,25 @@ static fpcw_t modify_fpcw_bits(fpcw_t orig_fpcw) {
   return (orig_fpcw & ~X86_FPCW_PREC_MASK) | X86_FPCW_PREC_DOUBLE;
 }
 
+typedef uint32_t mxcsr_t;
+
+#define X86_MXCSR_FLUSH_ZERO    0x8000
+
+static mxcsr_t get_mxcsr(void) {
+  uint32_t mxcsr;
+  __asm__ __volatile__("stmxcsr %0" : "=m" (mxcsr));
+  return mxcsr;
+}
+
+static void set_mxcsr(mxcsr_t mxcsr) {
+  __asm__ __volatile__("ldmxcsr %0" :: "m" (mxcsr));
+}
+
+static mxcsr_t modify_mxcsr_bits(mxcsr_t orig_mxcsr) {
+  assert((orig_mxcsr & X86_MXCSR_FLUSH_ZERO) == 0);
+  return orig_mxcsr | X86_MXCSR_FLUSH_ZERO;
+}
+
 #elif defined(__arm__)
 
 typedef uint32_t fpcw_t;
@@ -54,13 +73,29 @@ static fpcw_t modify_fpcw_bits(fpcw_t orig_fpcw) {
   return (orig_fpcw & ~ARM_FPSCR_ROUND_MASK) | ARM_FPSCR_ROUND_TOWARDZERO;
 }
 
+typedef int mxcsr_t;
+
+static mxcsr_t get_mxcsr(void) {
+  return 0;
+}
+
+static void set_mxcsr(mxcsr_t mxcsr __attribute__((unused))) {
+}
+
+static mxcsr_t modify_mxcsr_bits(mxcsr_t orig_mxcsr) {
+  return orig_mxcsr;
+}
+
 #else
 #error unsupported architecture
 #endif
 
 int main(void) {
+  int result = 0;
   fpcw_t fpcw1;
   fpcw_t fpcw2;
+  mxcsr_t mxcsr1;
+  mxcsr_t mxcsr2;
 
   /*
    * Change the FPU control word to a non-default setting.
@@ -68,6 +103,10 @@ int main(void) {
   fpcw1 = get_fpcw();
   fpcw1 = modify_fpcw_bits(fpcw1);
   set_fpcw(fpcw1);
+
+  mxcsr1 = get_mxcsr();
+  mxcsr1 = modify_mxcsr_bits(mxcsr1);
+  set_mxcsr(mxcsr1);
 
   /*
    * Now do a system call.  It's supposed to clear the rest of the FPU
@@ -82,8 +121,15 @@ int main(void) {
   if (fpcw2 != fpcw1) {
     fprintf(stderr, "Set FPCW to %#x and got back %#x\n",
             (unsigned int) fpcw1, (unsigned int) fpcw2);
-    return 1;
+    result = 1;
   }
 
-  return 0;
+  mxcsr2 = get_mxcsr();
+  if (mxcsr2 != mxcsr1) {
+    fprintf(stderr, "Set MXCSR to %#x and got back %#x\n",
+            (unsigned int) mxcsr1, (unsigned int) mxcsr2);
+    result = 1;
+  }
+
+  return result;
 }

@@ -169,6 +169,13 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
         fnstcw  NACL_THREAD_CONTEXT_OFFSET_FCW(%rdx)
         fldcw   NACL_THREAD_CONTEXT_OFFSET_SYS_FCW(%rdx)
 
+        /*
+         * Save the SSE control word.  Then reload the system default
+         * state to use while running trusted code.
+         */
+        stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rdx)
+        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%rdx)
+
         movq    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX
         movq    %rax, %rdi

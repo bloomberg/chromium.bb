@@ -34,5 +34,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_dseg_patch):
         mov     %ax, %ds  /* disable data sandbox for this thread */
         movl    $0xdeadbeef, %ecx  /* nacl_user */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_globals_patch):
-        jmp     IDENTIFIER(NaClSyscallSeg) /* PCREL patch */
+        /*
+         * This is a regular PC-relative jump.  The displacement will be
+         * patched in.  Using an explicit opcode with the largest possible
+         * displacement here rather than "jmp" ensures that no too-clever
+         * assembler or linker could ever produce a different opcode with a
+         * smaller displacement.
+         */
+        .byte 0xe9, 0xff, 0xff, 0xff, 0x7f
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_end):

@@ -19,24 +19,6 @@
 
         .text
 
-/*
- * The MacOS assembler has a macro facility that is pretty close
- * to GNU as macros, but not quite the same.
- */
-#if NACL_OSX || defined(__clang__)
-# define MACRO(name)    .macro name
-# define ENDMACRO       .endmacro
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
-# define MACROARG1      $0
-# define MACROARG2      $1
-#else
-# define MACRO(name)    .macro name arg1, arg2=0
-# define ENDMACRO       .endm
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
-# define MACROARG1      \arg1
-# define MACROARG2      \arg2
-#endif
-
 #define DO_NONE 0
 #define DO_SSE 1
 #define DO_AVX 2
@@ -94,6 +76,13 @@ MACROENTRY
          */
         fninit
         fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%ecx)
+
+.if MACROARG2 == DO_AVX || MACROARG2 == DO_SSE
+        /*
+         * Restore the untrusted code's SSE control word.
+         */
+        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%ecx)
+.endif
 
         ljmp    *NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR(%ecx)
 ENDMACRO

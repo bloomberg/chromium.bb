@@ -24,22 +24,30 @@ typedef struct { uint64_t b[2]; } xmm_reg __attribute__((aligned(16)));
 static const xmm_reg xmm_zero;
 
 static void infoleak_clear_state(void) {
+  const uint32_t zero = 0;
   __asm__ volatile("fninit; fstpt %0" : "=m" (st_zero));
   __asm__ volatile("movaps %0, %%xmm7" :: "m" (xmm_zero));
+  __asm__ volatile("ldmxcsr %0" :: "m" (zero));
 }
 
 __attribute__((noinline)) static int infoleak_check_state(void) {
   int ok = 1;
   st_reg st0;
   xmm_reg xmm7;
+  uint32_t mxcsr;
   __asm__("fstpt %0" : "=m" (st0));
   __asm__("movaps %%xmm7, %0" : "=m" (xmm7));
+  __asm__("stmxcsr %0" : "=m" (mxcsr));
   if (memcmp(&st0, &st_zero, sizeof(st0)) != 0) {
     printf("x87 state leaked information!\n");
     ok = 0;
   }
   if (memcmp(&xmm7, &xmm_zero, sizeof(xmm7)) != 0) {
     printf("SSE state leaked information!\n");
+    ok = 0;
+  }
+  if (mxcsr != 0) {
+    printf("MXCSR state leaked information!\n");
     ok = 0;
   }
   return ok;

@@ -19,7 +19,12 @@ nexe = env.ComponentProgram('test_infoleak', infoleak_sources,
 node = env.CommandSelLdrTestNacl('test_infoleak.out', nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_infoleak_test')
+                       'run_infoleak_test',
+                       # Valgrind apparently doesn't implement
+                       # stmxcsr/ldmxcsr correctly.  stmxcsr seems to do
+                       # nothing, and ldmxcsr always reads back the
+                       # hardware's power-up default value of 0x1f80.
+                       is_broken=env.IsRunningUnderValgrind())
 
 if not env.Bit('pnacl_generate_pexe'):
   fpu_cw_sources = ['test_fpu_control_word.c']

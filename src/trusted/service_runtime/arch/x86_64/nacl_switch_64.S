@@ -124,6 +124,11 @@ MACROENTRY
 .endif
 
         /*
+         * Restore the untrusted code's SSE control word.
+         */
+        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rcx)
+
+        /*
          * Load the return address into %rcx rather than doing
          * "jmp *0x88(%rcx)" so that we do not leak the address of the
          * struct NaClThreadContext to untrusted code.  Knowing this
