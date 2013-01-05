@@ -118,8 +118,6 @@ class PushMessagingAPI : public ProfileKeyedService {
   PushMessagingEventRouter* GetEventRouterForTest();
 
  private:
-  void InitializeEventRouter();
-
   // Created at ExtensionService startup.
   scoped_ptr<PushMessagingEventRouter> push_messaging_event_router_;
 
