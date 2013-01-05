@@ -62,6 +62,7 @@ ChromeWebUIDataSource* CreateFlashUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIFlashHost);
 
+  source->set_use_json_js_format_v2();
   source->AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
   source->AddLocalizedString("flashLongTitle", IDS_FLASH_TITLE_MESSAGE);
   source->set_json_path("strings.js");

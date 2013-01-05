@@ -248,7 +248,6 @@ cr.define('policies', function() {
    * status data.
    */
   Policy.initialize = function() {
-    i18nTemplate.process(document, templateData);
     Policy.requestData();
 
     // Set HTML event handlers.

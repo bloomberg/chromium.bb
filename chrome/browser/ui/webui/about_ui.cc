@@ -865,9 +865,9 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
 
 void AboutMemoryHandler::OnDetailsAvailable() {
   // the root of the JSON hierarchy for about:memory jstemplate
-  DictionaryValue root;
+  scoped_ptr<DictionaryValue> root(new DictionaryValue);
   ListValue* browsers = new ListValue();
-  root.Set("browsers", browsers);
+  root->Set("browsers", browsers);
 
   const std::vector<ProcessData>& browser_processes = processes();
 
@@ -917,12 +917,12 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
   // Set the browser & renderer detailed process data.
   DictionaryValue* browser_data = new DictionaryValue();
-  root.Set("browzr_data", browser_data);
+  root->Set("browzr_data", browser_data);
   ListValue* child_data = new ListValue();
-  root.Set("child_data", child_data);
+  root->Set("child_data", child_data);
 
   ProcessData process = browser_processes[0];  // Chrome is the first browser.
-  root.SetString("current_browser_name", process.name);
+  root->SetString("current_browser_name", process.name);
 
   for (size_t index = 0; index < process.processes.size(); index++) {
     if (process.processes[index].type == content::PROCESS_TYPE_BROWSER)
@@ -931,15 +931,19 @@ void AboutMemoryHandler::OnDetailsAvailable() {
       AppendProcess(child_data, &process.processes[index]);
   }
 
-  root.SetBoolean("show_other_browsers",
+  root->SetBoolean("show_other_browsers",
       browser_defaults::kShowOtherBrowsersInAboutMemory);
-  root.SetString("summary_desc",
-                 l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
 
-  ChromeWebUIDataSource::SetFontAndTextDirection(&root);
+  DictionaryValue load_time_data;
+  load_time_data.SetString(
+      "summary_desc",
+      l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
+  ChromeWebUIDataSource::SetFontAndTextDirection(&load_time_data);
+  load_time_data.Set("jstemplateData", root.release());
 
+  jstemplate_builder::UseVersion2 version2;
   std::string data;
-  jstemplate_builder::AppendJsonJS(&root, &data);
+  jstemplate_builder::AppendJsonJS(&load_time_data, &data);
   source_->FinishDataRequest(data, request_id_);
 }
 
@@ -950,11 +954,9 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 AboutUIHTMLSource::AboutUIHTMLSource(const std::string& source_name,
                                      Profile* profile)
     : DataSource(source_name, MessageLoop::current()),
-      profile_(profile) {
-}
+      profile_(profile) {}
 
-AboutUIHTMLSource::~AboutUIHTMLSource() {
-}
+AboutUIHTMLSource::~AboutUIHTMLSource() {}
 
 void AboutUIHTMLSource::StartDataRequest(const std::string& path,
                                          bool is_incognito,

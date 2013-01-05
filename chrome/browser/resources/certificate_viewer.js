@@ -12,8 +12,6 @@ cr.define('cert_viewer', function() {
   function initialize() {
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 
-    i18nTemplate.process(document, templateData);
-
     var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
     getCertificateInfo(args);
 

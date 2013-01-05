@@ -74,7 +74,7 @@ function enableHelpTooltips() {
 
 document.addEventListener('DOMContentLoaded', function () {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(templateData);
+  var input = new JsEvalContext(loadTimeData.getValue('jstemplateData'));
   var output = document.getElementById('t');
   jstProcess(input, output);
 

@@ -66,6 +66,7 @@ ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
       new ChromeWebUIDataSource(chrome::kChromeUIPolicyHost);
 
   // Localized strings.
+  source->set_use_json_js_format_v2();
   source->AddLocalizedString("policyTitle", IDS_POLICY_TITLE);
   source->AddLocalizedString("statusPaneTitle", IDS_POLICY_STATUS_TITLE);
   source->AddLocalizedString("fetchPoliciesText", IDS_POLICY_FETCH);

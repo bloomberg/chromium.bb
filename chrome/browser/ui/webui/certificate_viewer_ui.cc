@@ -20,6 +20,7 @@ CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
       new ChromeWebUIDataSource(chrome::kChromeUICertificateViewerHost);
 
   // Localized strings.
+  html_source->set_use_json_js_format_v2();
   html_source->AddLocalizedString("general", IDS_CERT_INFO_GENERAL_TAB_LABEL);
   html_source->AddLocalizedString("details", IDS_CERT_INFO_DETAILS_TAB_LABEL);
   html_source->AddLocalizedString("close", IDS_CLOSE);

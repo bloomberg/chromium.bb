@@ -50,6 +50,7 @@ ChromeWebUIDataSource* CreateNaClUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUINaClHost);
 
+  source->set_use_json_js_format_v2();
   source->AddLocalizedString("loadingMessage", IDS_NACL_LOADING_MESSAGE);
   source->AddLocalizedString("naclLongTitle", IDS_NACL_TITLE_MESSAGE);
   source->set_json_path("strings.js");
