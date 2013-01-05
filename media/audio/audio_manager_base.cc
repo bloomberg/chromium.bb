@@ -47,6 +47,8 @@ AudioManagerBase::AudioManagerBase()
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       num_input_streams_(0),
+      output_listeners_(
+          ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
       audio_thread_(new base::Thread("AudioThread")),
       virtual_audio_input_stream_(NULL) {
 #if defined(OS_WIN)
