@@ -201,6 +201,15 @@ bool NotificationList::SetNotificationSecondaryIcon(
   return true;
 }
 
+bool NotificationList::SetNotificationImage(const std::string& id,
+                                            const gfx::ImageSkia& image) {
+  Notifications::iterator iter;
+  if (!GetNotification(id, &iter))
+    return false;
+  iter->image = image;
+  return true;
+}
+
 bool NotificationList::HasNotification(const std::string& id) {
   Notifications::iterator dummy;
   return GetNotification(id, &dummy);

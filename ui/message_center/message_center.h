@@ -129,6 +129,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   void SetNotificationSecondaryIcon(const std::string& id,
                                     const gfx::ImageSkia& image);
 
+  void SetNotificationImage(const std::string& id, const gfx::ImageSkia& image);
+
   NotificationList* notification_list() { return notification_list_.get(); }
 
   // Overridden from NotificationList::Delegate.

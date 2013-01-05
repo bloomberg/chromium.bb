@@ -20,6 +20,8 @@ MessageView* MessageViewFactory::ViewForNotification(
   switch (notification.type) {
     case ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT:
       return new BaseFormatView(list_delegate, notification);
+    case ui::notifications::NOTIFICATION_TYPE_IMAGE:
+      return new NotificationView(list_delegate, notification);
     case ui::notifications::NOTIFICATION_TYPE_MULTIPLE:
       return new NotificationView(list_delegate, notification);
     case ui::notifications::NOTIFICATION_TYPE_SIMPLE:

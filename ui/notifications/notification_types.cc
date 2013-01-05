@@ -25,18 +25,16 @@ const char kItemMessageKey[] = "message";
 
 const char kSimpleType[] = "simple";
 const char kBaseFormatType[] = "base";
+const char kImageType[] = "image";
 const char kMultipleType[] = "multiple";
 
 NotificationType StringToNotificationType(std::string& string_type) {
-  if (string_type == kSimpleType)
-    return NOTIFICATION_TYPE_SIMPLE;
-  if (string_type == kBaseFormatType)
-    return NOTIFICATION_TYPE_BASE_FORMAT;
-  if (string_type == kMultipleType)
-    return NOTIFICATION_TYPE_MULTIPLE;
-
   // In case of unrecognized string, fall back to most common type.
-  return NOTIFICATION_TYPE_SIMPLE;
+  return (string_type == kSimpleType) ? NOTIFICATION_TYPE_SIMPLE :
+         (string_type == kBaseFormatType) ? NOTIFICATION_TYPE_BASE_FORMAT :
+         (string_type == kImageType) ? NOTIFICATION_TYPE_IMAGE :
+         (string_type == kMultipleType) ? NOTIFICATION_TYPE_MULTIPLE :
+         NOTIFICATION_TYPE_SIMPLE;
 }
 
 }  // namespace notifications

@@ -94,6 +94,12 @@ void MessageCenter::SetNotificationSecondaryIcon(const std::string& id,
     NotifyMessageCenterChanged(true);
 }
 
+void MessageCenter::SetNotificationImage(const std::string& id,
+                                         const gfx::ImageSkia& image) {
+  if (notification_list_->SetNotificationImage(id, image))
+    NotifyMessageCenterChanged(true);
+}
+
 //------------------------------------------------------------------------------
 // Overridden from NotificationList::Delegate.
 
