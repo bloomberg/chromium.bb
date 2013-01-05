@@ -293,6 +293,17 @@ bool LaunchProcess(const string16& cmdline,
   startup_info.dwFlags = STARTF_USESHOWWINDOW;
   startup_info.wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOW;
 
+  if (options.stdin_handle || options.stdout_handle || options.stderr_handle) {
+    DCHECK(options.inherit_handles);
+    DCHECK(options.stdin_handle);
+    DCHECK(options.stdout_handle);
+    DCHECK(options.stderr_handle);
+    startup_info.dwFlags |= STARTF_USESTDHANDLES;
+    startup_info.hStdInput = options.stdin_handle;
+    startup_info.hStdOutput = options.stdout_handle;
+    startup_info.hStdError = options.stderr_handle;
+  }
+
   DWORD flags = 0;
 
   if (options.job_handle) {
