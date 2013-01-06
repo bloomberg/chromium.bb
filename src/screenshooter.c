@@ -103,7 +103,7 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 
 	output->disable_planes--;
 	wl_list_remove(&listener->link);
-	stride = l->buffer->width * 4;
+	stride = l->buffer->width * (PIXMAN_FORMAT_BPP(output->compositor->read_format) / 8);
 	pixels = malloc(stride * l->buffer->height);
 
 	if (pixels == NULL) {
