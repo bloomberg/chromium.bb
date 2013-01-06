@@ -48,6 +48,26 @@
     ['OS=="win" and directxsdk_exists=="True"', {
       'actions': [
         {
+          'action_name': 'extract_d3dx9',
+          'variables': {
+            'input': 'Jun2010_d3dx9_43_x86.cab',
+            'output': 'd3dx9_43.dll',
+          },
+          'inputs': [
+            '../third_party/directxsdk/files/Redist/<(input)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/<(output)',
+          ],
+          'action': [
+            'python',
+            '../build/extract_from_cab.py',
+            '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
+            '<(output)',
+            '<(PRODUCT_DIR)',
+          ],
+        },
+        {
           'action_name': 'extract_d3dcompiler',
           'variables': {
             'input': 'Jun2010_D3DCompiler_43_x86.cab',
