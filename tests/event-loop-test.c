@@ -43,14 +43,19 @@ TEST(event_loop_post_dispatch_check)
 	struct wl_event_loop *loop = wl_event_loop_create();
 	struct wl_event_source *source;
 	int dispatch_ran = 0;
+	int p[2];
 
-	source = wl_event_loop_add_fd(loop, 1, WL_EVENT_READABLE,
+	assert(pipe(p) == 0);
+
+	source = wl_event_loop_add_fd(loop, p[0], WL_EVENT_READABLE,
 				      fd_dispatch, &dispatch_ran);
 	wl_event_source_check(source);
 
 	wl_event_loop_dispatch(loop, 0);
 	assert(dispatch_ran);
 
+	assert(close(p[0]) == 0);
+	assert(close(p[1]) == 0);
 	wl_event_source_remove(source);
 	wl_event_loop_destroy(loop);
 }
