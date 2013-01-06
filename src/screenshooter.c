@@ -124,8 +124,10 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 
 	switch (output->compositor->read_format) {
 	case PIXMAN_a8r8g8b8:
+	case PIXMAN_x8r8g8b8:
 		copy_bgra_yflip(d, s, output->current->height, stride);
 		break;
+	case PIXMAN_x8b8g8r8:
 	case PIXMAN_a8b8g8r8:
 		copy_rgba_yflip(d, s, output->current->height, stride);
 		break;
