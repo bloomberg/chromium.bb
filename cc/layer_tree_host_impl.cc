@@ -1011,19 +1011,14 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
         return;
 
     int total_pending = m_tileManager->GetTilesInBinCount(NOW_BIN, PENDING_TREE);
-    int total_active = m_tileManager->GetTilesInBinCount(NOW_BIN, ACTIVE_TREE);
     int drawable_pending = m_tileManager->GetDrawableTilesInBinCount(NOW_BIN, PENDING_TREE);
-    int drawable_active = m_tileManager->GetDrawableTilesInBinCount(NOW_BIN, ACTIVE_TREE);
+    int total_active = m_tileManager->GetTilesInBinCount(NOW_BIN, ACTIVE_TREE);
 
-    if (total_pending && total_active) {
-        float percent_pending = drawable_pending / static_cast<float>(total_pending);
-        float percent_active = drawable_active / static_cast<float>(total_active);
-        if (percent_pending < percent_active)
-            return;
-    }
+    // It's always fine to activate to or from an empty tree.  Otherwise, only
+    // activate once all high res visible tiles are ready on the pending tree.
+    if (total_pending && total_active && total_pending != drawable_pending)
+        return;
 
-    // If there are no pending total tiles (i.e. an empty tree), we should
-    // commit immediately.  Similarly, if there are no active tree tiles.
     activatePendingTree();
 }
 
