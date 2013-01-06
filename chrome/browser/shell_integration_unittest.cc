@@ -15,14 +15,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
 #include "chrome/browser/shell_integration_linux.h"
 #endif
@@ -363,33 +360,5 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             test_cases[i].icon_name,
             FilePath()));
   }
-}
-#elif defined(OS_WIN)
-TEST(ShellIntegrationTest, GetAppModelIdForProfileTest) {
-  const string16 base_app_id(
-      BrowserDistribution::GetDistribution()->GetBaseAppId());
-
-  // Empty profile path should get chrome::kBrowserAppID
-  FilePath empty_path;
-  EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppModelIdForProfile(base_app_id, empty_path));
-
-  // Default profile path should get chrome::kBrowserAppID
-  FilePath default_user_data_dir;
-  chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
-  FilePath default_profile_path =
-      default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-  EXPECT_EQ(base_app_id,
-            ShellIntegration::GetAppModelIdForProfile(base_app_id,
-                                                      default_profile_path));
-
-  // Non-default profile path should get chrome::kBrowserAppID joined with
-  // profile info.
-  FilePath profile_path(FILE_PATH_LITERAL("root"));
-  profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
-  profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
-  EXPECT_EQ(base_app_id + L".udd.UserDataTest",
-            ShellIntegration::GetAppModelIdForProfile(base_app_id,
-                                                      profile_path));
 }
 #endif
