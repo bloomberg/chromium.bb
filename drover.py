@@ -368,7 +368,7 @@ def getAllFilesInRevision(files_info):
 def getBranchForMilestone(milestone):
   """Queries omahaproxy.appspot.com for the branch number given |milestone|.
   """
-  OMAHA_PROXY_URL = "http://omahaproxy.appspot.com"
+  OMAHA_PROXY_URL = "http://omahaproxy.appspot.com/all?csv=1"
   request = urllib2.Request(OMAHA_PROXY_URL)
   try:
     response = urllib2.urlopen(request)
