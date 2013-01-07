@@ -233,8 +233,6 @@
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
         'SK_IGNORE_QUAD_STROKE_FIX',
         'SK_IGNORE_TREAT_AS_SPRITE',
-        'SK_IGNORE_TRANS_CLAMP_FIX',
-        'SK_IGNORE_FAST_SCALEMATRIX_INVERT',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
