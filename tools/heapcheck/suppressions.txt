@@ -1629,9 +1629,3 @@
    fun:ash::CursorManager::SetDeviceScaleFactor
    fun:ash::Shell::Init
 }
-{
-   bug_167165
-   Heapcheck:Leak
-   ...
-   fun:ash::KeyboardOverlayViewTest_OpenAcceleratorsClose_Test::TestBody
-}

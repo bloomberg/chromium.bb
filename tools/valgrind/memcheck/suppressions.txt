@@ -6403,21 +6403,6 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
-   bug_167165a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN5views13WebDialogViewC2EPN7content14BrowserContextEPN2ui17WebDialogDelegateEPNS4_28WebDialogWebContentsDelegate18WebContentsHandlerE
-   fun:_ZN3ash19KeyboardOverlayViewC1EPN7content14BrowserContextEPN2ui17WebDialogDelegateEPNS4_28WebDialogWebContentsDelegate18WebContentsHandlerE
-   fun:_ZN3ash50KeyboardOverlayViewTest_OpenAcceleratorsClose_Test8TestBodyEv
-}
-{
-   bug_167165b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash50KeyboardOverlayViewTest_OpenAcceleratorsClose_Test8TestBodyEv
-}
-{
    bug_167175a
    Memcheck:Leak
    ...

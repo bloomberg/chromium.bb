@@ -24,9 +24,10 @@ bool operator==(const KeyboardOverlayView::KeyEventData& lhs,
 
 // Verifies that the accelerators that open the keyboard overlay close it.
 TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
-  KeyboardOverlayView* view = new KeyboardOverlayView(
+  ui::test::TestWebDialogDelegate delegate(GURL("chrome://keyboardoverlay"));
+  KeyboardOverlayView view(
       Shell::GetInstance()->browser_context(),
-      new ui::test::TestWebDialogDelegate(GURL("chrome://keyboardoverlay")),
+      &delegate,
       new ui::test::TestWebContentsHandler);
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     if (kAcceleratorData[i].action != SHOW_KEYBOARD_OVERLAY)
@@ -37,7 +38,7 @@ TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
                           open_key_data.keycode,
                           open_key_data.modifiers,
                           false);
-    EXPECT_TRUE(view->IsCancelingKeyEvent(&open_key));
+    EXPECT_TRUE(view.IsCancelingKeyEvent(&open_key));
   }
 }
 
