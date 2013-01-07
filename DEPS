@@ -20,7 +20,7 @@ vars = {
 
   "libjingle_revision": "257",
   "libphonenumber_revision": "456",
-  "libvpx_revision": "173187",
+  "libvpx_revision": "175207",
   "lss_revision": "17",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
@@ -259,7 +259,7 @@ deps = {
     "/trunk/deps/third_party/libsrtp@174628",
 
   "src/third_party/speex":
-    "/trunk/deps/third_party/speex@160092",
+    "/trunk/deps/third_party/speex@175205",
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@167605",
@@ -268,7 +268,7 @@ deps = {
     "/trunk/deps/third_party/libjpeg_turbo@149334",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@174038",
+    "/trunk/deps/third_party/flac@175206",
 
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
