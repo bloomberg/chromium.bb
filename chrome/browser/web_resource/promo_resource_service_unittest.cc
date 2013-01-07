@@ -319,7 +319,9 @@ class NotificationPromoTest {
 // and CanShow() is handled correctly under variety of conditions.
 // Additionally, test that the first string in |strings| is used if
 // no payload.promo_short_message is specified in the JSON response.
-TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
+
+// hardcoded a date in Jan 2013. Srzly?? http://crbug.com/168561
+TEST_F(PromoResourceServiceTest, DISABLED_NotificationPromoTest) {
   // Check that prefs are set correctly.
   NotificationPromoTest promo_test;
 
