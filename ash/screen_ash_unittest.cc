@@ -25,11 +25,11 @@ TEST_F(ScreenAshTest, Bounds) {
   Shell::GetPrimaryRootWindowController()->SetShelfAutoHideBehavior(
       ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  views::Widget* primary =
-      views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(10, 10, 100, 100));
+  views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
-  views::Widget* secondary =
-      views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(610, 10, 100, 100));
+  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   // Maximized bounds
@@ -60,11 +60,11 @@ TEST_F(ScreenAshTest, Bounds) {
 TEST_F(ScreenAshTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
 
-  views::Widget* primary =
-      views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(10, 10, 100, 100));
+  views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
-  views::Widget* secondary =
-      views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(610, 10, 100, 100));
+  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   EXPECT_EQ(

@@ -45,9 +45,10 @@ const SkColor kChildColor = SK_ColorWHITE;
 
 }  // namespace
 
-void CreateChildModalParent() {
-  Widget::CreateWindowWithBounds(
-      new ChildModalParent,
+void CreateChildModalParent(gfx::NativeView context) {
+  Widget::CreateWindowWithContextAndBounds(
+      new ChildModalParent(context),
+      context,
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))->Show();
 }
 
@@ -106,7 +107,7 @@ ui::ModalType ChildModalWindow::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-ChildModalParent::ChildModalParent()
+ChildModalParent::ChildModalParent(gfx::NativeView context)
     : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new NativeTextButton(
           this, ASCIIToUTF16("Show/Hide Child Modal Window")))),
       textfield_(new Textfield),
@@ -114,7 +115,9 @@ ChildModalParent::ChildModalParent()
       modal_parent_(NULL),
       child_(NULL) {
   Widget* widget = new Widget;
-  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_CONTROL));
+  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
+  params.context = context;
+  widget->Init(params);
   widget->GetRootView()->set_background(
       Background::CreateSolidBackground(kModalParentColor));
   modal_parent_ = widget->GetNativeView();

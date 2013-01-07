@@ -43,7 +43,16 @@ void FirstRunBubbleTest::SetUp() {
 }
 
 TEST_F(FirstRunBubbleTest, CreateAndClose) {
-  FirstRunBubble* delegate = FirstRunBubble::ShowBubble(NULL, NULL);
+  // Create the anchor and parent widgets.
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  scoped_ptr<views::Widget> anchor_widget(new views::Widget);
+  anchor_widget->Init(params);
+  anchor_widget->Show();
+
+  FirstRunBubble* delegate =
+      FirstRunBubble::ShowBubble(NULL, anchor_widget->GetContentsView());
   EXPECT_TRUE(delegate != NULL);
   delegate->GetWidget()->CloseNow();
 }

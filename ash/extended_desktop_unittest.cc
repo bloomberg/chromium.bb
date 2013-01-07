@@ -33,24 +33,6 @@
 namespace ash {
 namespace {
 
-views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
-                                          const gfx::Rect& bounds,
-                                          bool child) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  if (parent)
-    params.parent = parent->GetNativeView();
-  params.bounds = bounds;
-  params.child = child;
-  views::Widget* widget = new views::Widget;
-  widget->Init(params);
-  widget->Show();
-  return widget;
-}
-
-views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
-  return CreateTestWidgetWithParent(NULL, bounds, false);
-}
-
 void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
@@ -104,7 +86,36 @@ class MoveWindowByClickEventFilter : public ui::EventHandler {
 
 }  // namespace
 
-typedef test::AshTestBase ExtendedDesktopTest;
+class ExtendedDesktopTest : public test::AshTestBase {
+ public:
+  views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
+    return CreateTestWidgetWithParentAndContext(
+        NULL, CurrentContext(), bounds, false);
+  }
+
+  views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
+                                            const gfx::Rect& bounds,
+                                            bool child) {
+    CHECK(parent);
+    return CreateTestWidgetWithParentAndContext(parent, NULL, bounds, child);
+  }
+
+  views::Widget* CreateTestWidgetWithParentAndContext(views::Widget* parent,
+                                                      gfx::NativeView context,
+                                                      const gfx::Rect& bounds,
+                                                      bool child) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    if (parent)
+      params.parent = parent->GetNativeView();
+    params.context = context;
+    params.bounds = bounds;
+    params.child = child;
+    views::Widget* widget = new views::Widget;
+    widget->Init(params);
+    widget->Show();
+    return widget;
+  }
+};
 
 // Test conditions that root windows in extended desktop mode
 // must satisfy.
@@ -170,8 +181,10 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[0], Shell::GetActiveRootWindow());
 
   // Open system modal. Make sure it's on 2nd root window and active.
-  views::Widget* modal_widget = views::Widget::CreateWindowWithBounds(
-      new ModalWidgetDelegate(), gfx::Rect(1200, 100, 100, 100));
+  views::Widget* modal_widget = views::Widget::CreateWindowWithContextAndBounds(
+      new ModalWidgetDelegate(),
+      CurrentContext(),
+      gfx::Rect(1200, 100, 100, 100));
   modal_widget->Show();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());
@@ -608,8 +621,7 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
 TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   UpdateDisplay("100x100,200x200");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  views::Widget* w1 = CreateTestWidgetWithParent(
-      NULL, gfx::Rect(10, 10, 50, 50), false);
+  views::Widget* w1 = CreateTestWidget(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
   w1->SetBounds(gfx::Rect(150, 10, 50, 50));
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());

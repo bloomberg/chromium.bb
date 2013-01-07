@@ -612,7 +612,7 @@ TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
   OwnershipTestState state;
 
   Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
   widget->Init(params);
@@ -631,7 +631,7 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
   params.parent = toplevel->GetNativeView();
@@ -655,7 +655,7 @@ TEST_F(WidgetOwnershipTest,
   OwnershipTestState state;
 
   Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
   widget->Init(params);
@@ -680,7 +680,7 @@ TEST_F(WidgetOwnershipTest,
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
   params.parent = toplevel->GetNativeView();
@@ -706,7 +706,7 @@ TEST_F(WidgetOwnershipTest,
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
   params.parent = toplevel->GetNativeView();

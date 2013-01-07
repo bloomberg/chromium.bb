@@ -78,40 +78,44 @@ class WindowRepaintChecker : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowRepaintChecker);
 };
 
-// Creates a test widget that owns its native widget.
-Widget* CreateTestWidget() {
-  Widget* widget = new Widget;
-  Widget::InitParams params;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
-  return widget;
-}
-
-Widget* CreateAlwaysOnTopWidget() {
-  Widget* widget = new Widget;
-  Widget::InitParams params;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.keep_on_top = true;
-  widget->Init(params);
-  return widget;
-}
-
-Widget* CreateResizableWidget() {
-  Widget* widget = new Widget;
-  Widget::InitParams params;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.keep_on_top = true;
-  params.delegate = new ResizableWidgetDelegate(widget);
-  params.type = Widget::InitParams::TYPE_WINDOW;
-  widget->Init(params);
-  return widget;
-}
-
 }  // namespace
 
 namespace ash {
 
-typedef ash::test::AshTestBase FramePainterTest;
+class FramePainterTest : public ash::test::AshTestBase {
+ public:
+  // Creates a test widget that owns its native widget.
+  Widget* CreateTestWidget() {
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
+    widget->Init(params);
+    return widget;
+  }
+
+  Widget* CreateAlwaysOnTopWidget() {
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
+    params.keep_on_top = true;
+    widget->Init(params);
+    return widget;
+  }
+
+  Widget* CreateResizableWidget() {
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
+    params.keep_on_top = true;
+    params.delegate = new ResizableWidgetDelegate(widget);
+    params.type = Widget::InitParams::TYPE_WINDOW;
+    widget->Init(params);
+    return widget;
+  }
+};
 
 TEST_F(FramePainterTest, Basics) {
   // Other tests might have created a FramePainter, so we cannot assert that

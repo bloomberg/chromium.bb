@@ -299,6 +299,7 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->SetFullscreen(true);
@@ -315,6 +316,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Maximize();
@@ -381,6 +383,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Maximize();
@@ -403,6 +406,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   views::Widget::InitParams lock_params(
       views::Widget::InitParams::TYPE_WINDOW);
   lock_params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   lock_params.parent = lock_container;
   // Widget is now owned by the parent window.
   lock_widget->Init(lock_params);
@@ -432,6 +436,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Show();
@@ -476,6 +481,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Show();
@@ -676,6 +682,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   widget->Init(params);
   widget->Show();
   widget->Maximize();
@@ -850,6 +857,7 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
   views::Widget* widget_one = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   widget_one->Init(params);
   widget_one->Show();
   widget_one->Maximize();

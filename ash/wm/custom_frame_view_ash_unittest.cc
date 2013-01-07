@@ -79,6 +79,7 @@ class CustomFrameViewAshTest : public ash::test::AshTestBase {
   views::Widget* CreateWidget() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget;
+    params.context = CurrentContext();
     params.delegate = new TestWidgetDelegate;
     widget->Init(params);
     widget->Show();

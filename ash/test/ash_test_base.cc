@@ -98,6 +98,14 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display_manager_test_api.UpdateDisplay(display_specs);
 }
 
+aura::RootWindow* AshTestBase::CurrentContext() {
+  aura::RootWindow* root_window = Shell::GetActiveRootWindow();
+  if (!root_window)
+    root_window = Shell::GetPrimaryRootWindow();
+  DCHECK(root_window);
+  return root_window;
+}
+
 aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
   return CreateTestWindowInShellWithDelegate(NULL, id, gfx::Rect());
 }

@@ -591,8 +591,8 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
 
 TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
-      new ResizableWidgetDelegate, gfx::Rect(0, 0, 100, 100));
+  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 100, 100));
   toplevel->Show();
 
   const int kSteps = 15;
@@ -647,8 +647,8 @@ TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
 TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect bounds(0, 0, 100, 100);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
-      new ResizableWidgetDelegate, bounds);
+  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+      new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
   const int kSteps = 15;
@@ -703,8 +703,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
 TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
   gfx::Rect bounds(150, 150, 100, 100);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
-      new MaxSizeWidgetDelegate, bounds);
+  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+      new MaxSizeWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
   const int kSteps = 15;
@@ -760,8 +760,8 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
 TEST_F(SystemGestureEventFilterTest, TwoFingerDragEdge) {
   gfx::Rect bounds(0, 0, 100, 100);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
-      new ResizableWidgetDelegate, bounds);
+  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+      new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
   const int kSteps = 15;

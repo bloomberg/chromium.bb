@@ -322,7 +322,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
                                  ui::MODAL_TYPE_WINDOW);
   } else if (sender == child_modal_button_) {
-    views::test::CreateChildModalParent();
+    views::test::CreateChildModalParent(
+        GetWidget()->GetNativeView()->GetRootWindow());
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_hide_window_button_) {

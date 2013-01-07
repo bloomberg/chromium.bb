@@ -65,6 +65,7 @@ views::Widget* CreateAffordanceWidget(aura::RootWindow* root_window) {
   params.keep_on_top = true;
   params.accept_events = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = root_window;
   params.transparent = true;
   widget->Init(params);
   widget->SetOpacity(0xFF);

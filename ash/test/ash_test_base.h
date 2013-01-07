@@ -56,6 +56,11 @@ class AshTestBase : public testing::Test {
   // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
 
+  // Returns a RootWindow. Usually this is the active RootWindow, but that
+  // method can return NULL sometimes, and in those cases, we fall back on the
+  // primary RootWindow.
+  aura::RootWindow* CurrentContext();
+
   // Versions of the functions in aura::test:: that go through our shell
   // StackingController instead of taking a parent.
   aura::Window* CreateTestWindowInShellWithId(int id);

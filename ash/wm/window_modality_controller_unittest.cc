@@ -362,9 +362,10 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   |child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  views::test::ChildModalParent* delegate = new views::test::ChildModalParent;
-  views::Widget* widget = views::Widget::CreateWindowWithBounds(
-      delegate, gfx::Rect(0, 0, 400, 400));
+  views::test::ChildModalParent* delegate =
+      new views::test::ChildModalParent(CurrentContext());
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();
 
   aura::Window* parent = widget->GetNativeView();
@@ -421,9 +422,10 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  views::test::ChildModalParent* delegate = new views::test::ChildModalParent;
-  views::Widget* widget = views::Widget::CreateWindowWithBounds(
-      delegate, gfx::Rect(0, 0, 400, 400));
+  views::test::ChildModalParent* delegate =
+      new views::test::ChildModalParent(CurrentContext());
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();
 
   aura::Window* parent = widget->GetNativeView();

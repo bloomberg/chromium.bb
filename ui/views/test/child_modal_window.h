@@ -17,13 +17,13 @@ class View;
 class Widget;
 namespace test {
 
-void CreateChildModalParent();
+void CreateChildModalParent(gfx::NativeView context);
 
 class ChildModalParent : public WidgetDelegateView,
                          public ButtonListener,
                          public WidgetObserver {
  public:
-  ChildModalParent();
+  ChildModalParent(gfx::NativeView context);
   virtual ~ChildModalParent();
 
   void ShowChild();

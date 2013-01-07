@@ -31,12 +31,6 @@ namespace ash {
 
 namespace {
 
-views::Widget* CreateTestWindow(const views::Widget::InitParams& params) {
-  views::Widget* widget = new views::Widget;
-  widget->Init(params);
-  return widget;
-}
-
 aura::Window* GetDefaultContainer() {
   return Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),
@@ -82,22 +76,6 @@ void ExpectAllContainers() {
       root_window, internal::kShellWindowId_OverlayContainer));
 }
 
-void TestCreateWindow(views::Widget::InitParams::Type type,
-                      bool always_on_top,
-                      aura::Window* expected_container) {
-  views::Widget::InitParams widget_params(type);
-  widget_params.keep_on_top = always_on_top;
-
-  views::Widget* widget = CreateTestWindow(widget_params);
-  widget->Show();
-
-  EXPECT_TRUE(expected_container->Contains(
-                  widget->GetNativeWindow()->parent())) <<
-      "TestCreateWindow: type=" << type << ", always_on_top=" << always_on_top;
-
-  widget->Close();
-}
-
 class ModalWindow : public views::WidgetDelegateView {
  public:
   ModalWindow() {}
@@ -123,7 +101,33 @@ class ModalWindow : public views::WidgetDelegateView {
 
 }  // namespace
 
-typedef test::AshTestBase ShellTest;
+class ShellTest : public test::AshTestBase {
+ public:
+  views::Widget* CreateTestWindow(views::Widget::InitParams params) {
+    views::Widget* widget = new views::Widget;
+    params.context = CurrentContext();
+    widget->Init(params);
+    return widget;
+  }
+
+  void TestCreateWindow(views::Widget::InitParams::Type type,
+                        bool always_on_top,
+                        aura::Window* expected_container) {
+    views::Widget::InitParams widget_params(type);
+    widget_params.keep_on_top = always_on_top;
+
+    views::Widget* widget = CreateTestWindow(widget_params);
+    widget->Show();
+
+    EXPECT_TRUE(
+        expected_container->Contains(widget->GetNativeWindow()->parent())) <<
+        "TestCreateWindow: type=" << type << ", always_on_top=" <<
+        always_on_top;
+
+    widget->Close();
+}
+
+};
 
 TEST_F(ShellTest, CreateWindow) {
   // Normal window should be created in default container.

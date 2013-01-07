@@ -4,8 +4,12 @@
 
 #include "ash/shell/toplevel_window.h"
 
+#include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
+#include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "base/utf_string_conversions.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
@@ -24,9 +28,14 @@ void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
   static int count = 0;
   int x = count == 0 ? 150 : 750;
   count = (count + 1) % 2;
-  views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),
-                                            gfx::Rect(x, 150, 300, 300));
+
+  gfx::Rect bounds(x, 150, 300, 300);
+  gfx::Display display =
+      ash::Shell::GetInstance()->display_manager()->GetDisplayMatching(bounds);
+  aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
+      GetRootWindowForDisplayId(display.id());
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      new ToplevelWindow(params), root, bounds);
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
   if (params.persist_across_all_workspaces) {
     SetPersistsAcrossAllWorkspaces(

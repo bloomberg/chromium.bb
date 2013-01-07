@@ -9,6 +9,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
@@ -51,6 +52,9 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   params.transparent = true;
   params.can_activate = false;
   params.keep_on_top = true;
+  // We set the context to the primary root window; this is OK because the ash
+  // stacking controller will still place us in the correct RootWindow.
+  params.context = Shell::GetPrimaryRootWindow();
   widget->set_focus_on_creation(false);
   widget->Init(params);
   widget->SetVisibilityChangedAnimationsEnabled(false);

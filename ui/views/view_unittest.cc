@@ -840,7 +840,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
 TEST_F(ViewTest, RemoveNotification) {
   ViewStorage* vs = ViewStorage::GetInstance();
   Widget* widget = new Widget;
-  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
+  widget->Init(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
 
   View* v1 = new View;

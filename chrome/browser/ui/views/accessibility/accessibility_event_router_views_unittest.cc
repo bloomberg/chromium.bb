@@ -29,6 +29,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
@@ -121,8 +122,14 @@ class AccessibilityEventRouterViewsTest
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {
-    return views::Widget::CreateWindowWithBounds(
+    gfx::NativeView context = NULL;
+#if defined(USE_AURA)
+    context = aura_test_helper_->root_window();
+#endif
+
+    return views::Widget::CreateWindowWithContextAndBounds(
         new AccessibilityWindowDelegate(contents),
+        context,
         gfx::Rect(0, 0, 500, 500));
   }
 

@@ -76,41 +76,42 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
   DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);
 };
 
-views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
-  views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(NULL, bounds);
-  widget->Show();
-  return widget;
-}
-
-views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
-  views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new TestDelegate(true), bounds);
-  widget->Show();
-  return widget;
-}
-
-views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
-                                           gfx::NativeWindow parent) {
-  views::Widget* widget =
-      views::Widget::CreateWindowWithParentAndBounds(new TestDelegate(true),
-                                                     parent,
-                                                     bounds);
-  widget->Show();
-  return widget;
-}
-
-aura::Window* GetModalContainer(aura::RootWindow* root_window) {
-  return Shell::GetContainer(
-      root_window,
-      ash::internal::kShellWindowId_SystemModalContainer);
-}
-
 }  // namespace
 
 namespace test {
 
-typedef test::AshTestBase RootWindowControllerTest;
+class RootWindowControllerTest : public test::AshTestBase {
+ public:
+  views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
+    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+        NULL, CurrentContext(), bounds);
+    widget->Show();
+    return widget;
+  }
+
+  views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
+    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+        new TestDelegate(true), CurrentContext(), bounds);
+    widget->Show();
+    return widget;
+  }
+
+  views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
+                                             gfx::NativeWindow parent) {
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParentAndBounds(new TestDelegate(true),
+                                                       parent,
+                                                       bounds);
+    widget->Show();
+    return widget;
+  }
+
+  aura::Window* GetModalContainer(aura::RootWindow* root_window) {
+    return Shell::GetContainer(
+        root_window,
+        ash::internal::kShellWindowId_SystemModalContainer);
+  }
+};
 
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,500x500");
