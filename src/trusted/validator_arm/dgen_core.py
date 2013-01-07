@@ -1055,6 +1055,7 @@ class SafetyAction(BitExpr):
     return '%s => %s' % (neutral_repr(self._test), self._action)
 
 _INHERITS_SYMBOL = '$inherits$'
+_INHERITS_EXCLUDES_SYMBOL = '$inherits-excludes$'
 
 class SymbolTable(object):
   """Holds mapping from names to corresponding value."""
@@ -1075,6 +1076,9 @@ class SymbolTable(object):
     if value: return value
     inherits = self._dict.get(_INHERITS_SYMBOL)
     if not inherits: return None
+    excludes = self._dict.get(_INHERITS_EXCLUDES_SYMBOL)
+    if excludes and name in excludes:
+      return None
     value = inherits.find(name)
     if value == None: return value
     if self._frozen:
@@ -1107,15 +1111,17 @@ class SymbolTable(object):
   def remove(self, name):
     self._dict.pop(name)
 
-  def inherits(self, context):
+  def inherits(self, context, excludes):
     """Adds inheriting symbol table."""
     self.define(_INHERITS_SYMBOL, context)
+    self.define(_INHERITS_EXCLUDES_SYMBOL, excludes)
 
   def disinherit(self):
     """Removes inheriting symbol tables."""
     # Install inheriting values not explicitly overridden.
     inherits_st = self._dict.get(_INHERITS_SYMBOL)
     while inherits_st:
+      self.remove(_INHERITS_EXCLUDES_SYMBOL)
       self.remove(_INHERITS_SYMBOL)
       # Copy definitions in inherits to this.
       for key in inherits_st.keys():
@@ -1712,8 +1718,8 @@ class DecoderAction:
   def remove(self, name):
     self._st.remove(name)
 
-  def inherits(self, context):
-    self._st.inherits(context)
+  def inherits(self, context, excludes):
+    self._st.inherits(context, excludes)
 
   def disinherit(self):
     self._st.disinherit()

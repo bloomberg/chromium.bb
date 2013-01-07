@@ -328,12 +328,6 @@ SafetyLevel Unary2RegisterOpNotRmIsPc::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-// Unary2RegisterOpNotRmIsPcNoCondUpdates
-RegisterList Unary2RegisterOpNotRmIsPcNoCondUpdates
-::defs(Instruction i) const {
-  return RegisterList(d.reg(i));
-}
-
 // Unary2RegisterShiftedOpImmNotZero
 SafetyLevel Unary2RegisterShiftedOpImmNotZero::
 safety(Instruction i) const {
@@ -1216,20 +1210,17 @@ RegisterList Store3RegisterImm5Op::uses(Instruction i) const {
 
 // Unary2RegisterImmedShiftedOp
 SafetyLevel Unary2RegisterImmedShiftedOp::safety(Instruction i) const {
-  // NaCl Constraint.
-  if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Contains(Register::Pc()))
+    return UNPREDICTABLE;
   return MAY_BE_SAFE;
 }
 
 RegisterList Unary2RegisterImmedShiftedOp::defs(Instruction i) const {
-  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+  return RegisterList(d.reg(i));
 }
 
-// Unary2RegisterImmediateShiftedOpRegsNotPc
-SafetyLevel Unary2RegisterImmedShiftedOpRegsNotPc::safety(Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(m.reg(i)).Contains(Register::Pc()))
-      return FORBIDDEN_OPERANDS;
-  return MAY_BE_SAFE;
+RegisterList Unary2RegisterImmedShiftedOp::uses(Instruction i) const {
+  return RegisterList(m.reg(i));
 }
 
 // Unary2RegisterSatImmedShiftedOp
@@ -1244,6 +1235,10 @@ SafetyLevel Unary2RegisterSatImmedShiftedOp::safety(Instruction i) const {
 
 RegisterList Unary2RegisterSatImmedShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i));
+}
+
+RegisterList Unary2RegisterSatImmedShiftedOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 // Unary3RegisterShiftedOp
@@ -1264,27 +1259,6 @@ RegisterList Unary3RegisterShiftedOp::defs(Instruction i) const {
 
 RegisterList Unary3RegisterShiftedOp::uses(const Instruction i) const {
   return RegisterList(m.reg(i)).Add(s.reg(i));
-}
-
-// Binary3RegisterImmedShiftedOp
-SafetyLevel Binary3RegisterImmedShiftedOp::safety(Instruction i) const {
-  // NaCl Constraint.
-  if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
-  return MAY_BE_SAFE;
-}
-
-RegisterList Binary3RegisterImmedShiftedOp::defs(Instruction i) const {
-  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
-}
-
-// Binary3RegisterImmedShiftedOpRegsNotPc
-SafetyLevel Binary3RegisterImmedShiftedOpRegsNotPc::
-safety(Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(m.reg(i))
-      .Contains(Register::Pc())) {
-    return UNPREDICTABLE;
-  }
-  return MAY_BE_SAFE;
 }
 
 // Binary4RegisterShiftedOp

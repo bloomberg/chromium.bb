@@ -38,8 +38,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
   , DataBarrier_instance_()
-  , Defs12To15CondsDontCareRdRnNotPc_instance_()
-  , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
@@ -85,8 +83,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterImmediateOpPc_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
+  , Unary2RegisterImmedShiftedOp_instance_()
   , Unary2RegisterOp_instance_()
   , Unary2RegisterOpNotRmIsPc_instance_()
+  , Unary2RegisterSatImmedShiftedOp_instance_()
   , Unary2RegisterShiftedOp_instance_()
   , Unary2RegisterShiftedOpImmNotZero_instance_()
   , Unary3RegisterShiftedOp_instance_()
@@ -2021,14 +2021,14 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x000000A0 /* op2(7:5)=101 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00000000 /* op1(22:20)=000 */ &&
       (inst.Bits() & 0x00000020)  ==
           0x00000000 /* op2(7:5)=xx0 */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2037,7 +2037,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Unary2RegisterSatImmedShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2048,7 +2048,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x000F0000 /* A(19:16)=~1111 */ &&
       (inst.Bits() & 0x00000300)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2059,7 +2059,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x000F0000 /* A(19:16)=1111 */ &&
       (inst.Bits() & 0x00000300)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Unary2RegisterImmedShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2068,7 +2068,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x00000020 /* op2(7:5)=x01 */ &&
       (inst.Bits() & 0x000F0F00)  ==
           0x000F0F00 /* $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Unary2RegisterImmedShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -2079,7 +2079,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x000F0000 /* A(19:16)=~1111 */ &&
       (inst.Bits() & 0x00000300)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -2090,14 +2090,14 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
           0x000F0000 /* A(19:16)=1111 */ &&
       (inst.Bits() & 0x00000300)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Unary2RegisterImmedShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
           0x00200000 /* op1(22:20)=x1x */ &&
       (inst.Bits() & 0x00000020)  ==
           0x00000000 /* op2(7:5)=xx0 */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Unary2RegisterSatImmedShiftedOp_instance_;
   }
 
   if (true) {

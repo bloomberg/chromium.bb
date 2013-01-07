@@ -170,8 +170,6 @@ class Arm32DecoderState : DecoderState {
   const BranchToRegister BranchToRegister_instance_;
   const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
   const DataBarrier DataBarrier_instance_;
-  const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
-  const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
@@ -217,8 +215,10 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterImmediateOpPc Unary1RegisterImmediateOpPc_instance_;
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
+  const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
   const Unary2RegisterOp Unary2RegisterOp_instance_;
   const Unary2RegisterOpNotRmIsPc Unary2RegisterOpNotRmIsPc_instance_;
+  const Unary2RegisterSatImmedShiftedOp Unary2RegisterSatImmedShiftedOp_instance_;
   const Unary2RegisterShiftedOp Unary2RegisterShiftedOp_instance_;
   const Unary2RegisterShiftedOpImmNotZero Unary2RegisterShiftedOpImmNotZero_instance_;
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;

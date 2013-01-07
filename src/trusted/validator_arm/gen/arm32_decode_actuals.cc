@@ -2659,7 +2659,7 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
-// Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1
+// Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //
 // Actual:
 //   {defs: {inst(15:12)},
@@ -2671,7 +2671,7 @@ uses(Instruction inst) const {
 //            inst(3:0) => UNPREDICTABLE],
 //    uses: {inst(19:16), inst(3:0)}}
 
-RegisterList Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1::
+RegisterList Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{inst(15:12)}'
@@ -2679,7 +2679,7 @@ defs(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
-SafetyLevel Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1::
+SafetyLevel Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -2698,7 +2698,7 @@ safety(Instruction inst) const {
 }
 
 
-RegisterList Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1::
+RegisterList Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{inst(19:16), inst(3:0)}'
@@ -4120,6 +4120,55 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
+//
+// Actual:
+//   {defs: {inst(15:12)},
+//    safety: [15  ==
+//            inst(15:12) ||
+//         15  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      inst(19:16)=1111 => DECODER_ERROR],
+//    uses: {inst(19:16), inst(3:0)}}
+
+RegisterList Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
 }
 
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1

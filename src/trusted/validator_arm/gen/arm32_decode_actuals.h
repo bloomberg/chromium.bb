@@ -1484,6 +1484,252 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    rule: CLZ,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6T2,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011011111111dddd11110011mmmm,
+//    rule: RBIT,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011010111111dddd11111011mmmm,
+//    rule: REV16,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011011111111dddd11111011mmmm,
+//    rule: REVSH,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011010111111dddd11110011mmmm,
+//    rule: REV,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterSatImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
+//    pattern: cccc01101010iiiidddd11110011nnnn,
+//    rule: SSAT16,
+//    safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
+//    sat_imm: sat_imm(19:16),
+//    saturate_to: sat_imm + 1,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterSatImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      sat_imm(20:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      sh(6),
+//      Rn(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0110101iiiiiddddiiiiis01nnnn,
+//    rule: SSAT,
+//    safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
+//    sat_imm: sat_imm(20:16),
+//    saturate_to: sat_imm + 1,
+//    sh: sh(6),
+//    shift: DecodeImmShift(sh:0(0), imm5),
+//    uses: {Rn}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011010001111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTB16,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011010101111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTB,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011010111111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTH,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterSatImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0)],
+//    pattern: cccc01101110iiiidddd11110011nnnn,
+//    rule: USAT16,
+//    safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
+//    sat_imm: sat_imm(19:16),
+//    saturate_to: sat_imm,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterSatImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      sat_imm(20:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      sh(6),
+//      Rn(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0110111iiiiiddddiiiiis01nnnn,
+//    rule: USAT,
+//    safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
+//    sat_imm: sat_imm(20:16),
+//    saturate_to: sat_imm,
+//    sh: sh(6),
+//    shift: DecodeImmShift(sh:0(0), imm5),
+//    uses: {Rn}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011011001111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTB16,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011011101111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTB,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc011011111111ddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTH,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
 class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
      : public ClassDecoder {
  public:
@@ -3791,7 +4037,7 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
       Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1);
 };
 
-// Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1
+// Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //
 // Actual:
 //   {defs: {inst(15:12)},
@@ -3802,6 +4048,31 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //         15  ==
 //            inst(3:0) => UNPREDICTABLE],
 //    uses: {inst(19:16), inst(3:0)}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      tb(6),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc01101000nnnnddddiiiiit01mmmm,
+//    rule: PKH,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    shift: DecodeImmShift(tb:0(0), imm5),
+//    tb: tb(6),
+//    tbform: tb(6)=1,
+//    uses: {Rn, Rm}}
 //
 // Baseline:
 //   {Pc: 15,
@@ -4008,6 +4279,22 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
 //    pattern: cccc01100001nnnndddd11110011mmmm,
 //    rule: SASX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01101000nnnndddd11111011mmmm,
+//    rule: SEL,
 //    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //    uses: {Rn, Rm}}
 //
@@ -4442,17 +4729,17 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    rule: USUB8,
 //    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //    uses: {Rn, Rm}}
-class Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1
+class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
      : public ClassDecoder {
  public:
-  Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1()
+  Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      Actual_QADD16_cccc01100010nnnndddd11110001mmmm_case_1);
+      Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1);
 };
 
 // Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1
@@ -5998,6 +6285,143 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1);
+};
+
+// Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
+//
+// Actual:
+//   {defs: {inst(15:12)},
+//    safety: [15  ==
+//            inst(15:12) ||
+//         15  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      inst(19:16)=1111 => DECODER_ERROR],
+//    uses: {inst(19:16), inst(3:0)}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101000nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTAB16,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101010nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTAB,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101011nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: SXTAH,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101100nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTAB16,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101110nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTAB,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+//
+// Baseline:
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
+//    pattern: cccc01101111nnnnddddrr000111mmmm,
+//    rotate: rotate(11:10),
+//    rotation: rotate:0(2:0),
+//    rule: UXTAH,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+class Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1);
 };
 
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1

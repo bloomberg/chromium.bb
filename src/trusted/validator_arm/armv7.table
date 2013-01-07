@@ -79,13 +79,6 @@
 # make sure we don't test these cases.
 #
 # Parse preconditions:
-#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
-#    NeitherRdIsPcAndSNorRnIsPcAndNotS - Neither
-#        (1) Rd is Pc and S=1; nor
-#        (2) Rn is Pc ans S=0;
-#    NeitherImm5NotZeroNorNotRdIsPcAndS - Neither combination of the above two
-#        (1) The immediate (5-bit) value must not be zero; nor
-#        (2) Not (Rd is Pc (R15) and S=1 (updates register bit)).
 #    NotRnIsPc - Rn!=Pc.
 #    NotRnIsSp - Rn!=Sp.
 #
@@ -158,7 +151,6 @@
 class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary2RegisterImmediateOpDynCodeReplace : Binary2RegisterImmediateOp
 class Binary2RegisterImmediateOpAddSub : Binary2RegisterImmediateOp
-class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class Binary3RegisterOpAltANoCondsUpdate : Binary3RegisterOpAltA
 class Binary4RegisterDualOpLtV6RdNotRn : Binary4RegisterDualOp
 class Binary4RegisterDualOpNoCondsUpdate : Binary4RegisterDualOp
@@ -191,7 +183,6 @@ class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
 class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary1RegisterImmediateOp12DynCodeReplace : Unary1RegisterImmediateOp12
-class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 class Unary2RegisterShiftedOpImmNotZero : Unary2RegisterShiftedOp
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
@@ -1543,101 +1534,126 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:               = Undefined  # Note on table description.
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 # None of the instructions in the following table set NZCV flags.
 # Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
 # but we don't model them.
 +-- packing_unpacking_saturation_and_reversal (See Section A5.4.3)
+*RdRm
+  { cond(31:28), Rd(15:12), Rm(3:0) }
+  baseline := Unary2RegisterImmedShiftedOp;
+  defs := {Rd};
+  uses := {Rm};
+  safety := Pc in {Rd, Rm} => UNPREDICTABLE;
+  arch := v6;
+*RdRmRbit *RdRm
+  arch := v6T2;
+*RdRnRm *RdRm
+  { cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0) }
+  baseline := Binary3RegisterOpAltBNoCondUpdates;
+  uses := {Rn, Rm};
+  safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+*RdRnRmGE *RdRnRm
+  # Note: This instruction uses APSR.GE.
+*RdRnRmImm *RdRnRm
+  { cond(31:28), Rn(19:16), Rd(15:12), imm5(11:7), tb(6), Rm(3:0) }
+  tbform := tb=1;
+  shift := DecodeImmShift(tb:'0', imm5);
+*RdRmRot *RdRm
+  { cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0) }
+  rotation := rotate:'000';
+*RdRnRmRot *RdRnRm
+  { cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0) }
+  rotation := rotate:'000';
+  safety := Rn=1111 => DECODER_ERROR &
+            Pc in {Rd, Rm} => UNPREDICTABLE;
+*RdRn
+  { cond(31:28), Rd(15:12), Rn(3:0) }
+  baseline := Unary2RegisterSatImmedShiftedOp;
+  # Note: Sets APSR.Q
+  defs := {Rd};
+  uses := {Rn};
+  safety := Pc in {Rd, Rn} => UNPREDICTABLE;
+  arch := v6;
+*RdImmRn *RdRn
+  { cond(31:28), sat_imm(19:16), Rd(15:12), Rn(3:0) }
+  saturate_to := sat_imm + 1;
+*URdImmRn *RdImmRn
+  saturate_to := sat_imm;
+*RdImmRnSh *RdRn
+  { cond(31:28), sat_imm(20:16), Rd(15:12), imm5(11:7), sh(6), Rn(3:0) }
+  saturate_to := sat_imm + 1;
+  shift := DecodeImmShift(sh:'0', imm5);
+*URdImmRnSh *RdImmRnSh
+  saturate_to := sat_imm;
++--
 | op1(22:20) op2(7:5) A(19:16)
-| 000        xx0      -        = Binary3RegisterImmedShiftedOpRegsNotPc
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Pkh_Rule_116_A1_P234
-                                 cccc01101000nnnnddddiiiiit01mmmm RegsNotPc (v6)
-| "          011      ~1111    = Binary3RegisterImmedShiftedOpRegsNotPc
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Sxtab16_Rule_221_A1_P436
-                                 cccc01101000nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Sxtb16_Rule_224_A1_P442
-                                 cccc011010001111ddddrr000111mmmm RegsNotPc (v6)
-| "          101      -        = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Sel_Rule_156_A1_P312
-                                 cccc01101000nnnndddd11111011mmmm RegsNotPc (v6)
-| 01x        xx0      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Ssat_Rule_183_A1_P362
-                                 cccc0110101iiiiiddddiiiiis01nnnn RegsNotPc (v6)
-| 010        001      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Ssat16_Rule_184_A1_P364
-                                 cccc01101010iiiidddd11110011nnnn RegsNotPc (v6)
-| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Sxtab_Rule_220_A1_P434
-                                 cccc01101010nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Sxtb_Rule_223_A1_P440
-                                 cccc011010101111ddddrr000111mmmm RegsNotPc (v6)
-| 011        001      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Rev_Rule_135_A1_P272
-                                 cccc011010111111dddd11110011mmmm RegsNotPc (v6)
-| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Sxtah_Rule_222_A1_P438
-                                 cccc01101011nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Sxth_Rule_225_A1_P444
-                                 cccc011010111111ddddrr000111mmmm RegsNotPc (v6)
-| "          101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Rev16_Rule_136_A1_P274
-                                 cccc011010111111dddd11111011mmmm RegsNotPc (v6)
-| 100        011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Uxtab16_Rule_262_A1_P516
-                                 cccc01101100nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Uxtb16_Rule_264_A1_P522
-                                 cccc011011001111ddddrr000111mmmm RegsNotPc (v6)
-| 11x        xx0      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Usat_Rule_255_A1_P504
-                                 cccc0110111iiiiiddddiiiiis01nnnn RegsNotPc (v6)
-| 110        001      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Usat16_Rule_256_A1_P506
-                                 cccc01101110iiiidddd11110011nnnn RegsNotPc (v6)
-| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Uxtab_Rule_260_A1_P514
-                                 cccc01101110nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Uxtb_Rule_263_A1_P520
-                                 cccc011011101111ddddrr000111mmmm RegsNotPc (v6)
-| 111        001      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Rbit_Rule_134_A1_P270
-                                 cccc011011111111dddd11110011mmmm RegsNotPc (v6T2)
-| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRnRdRmNotPc
-                                 Uxtah_Rule_262_A1_P518
-                                 cccc01101111nnnnddddrr000111mmmm RegsNotPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Uxth_Rule_265_A1_P524
-                                 cccc011011111111ddddrr000111mmmm RegsNotPc (v6)
-| "          101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Revsh_Rule_137_A1_P276
-                                 cccc011011111111dddd11111011mmmm RegsNotPc (v6)
-| else:                        = Undefined  # Note on page A5-24
+| 000        xx0      -        = *RdRnRmImm
+                                  pattern := cccc01101000nnnnddddiiiiit01mmmm;
+                                  rule := PKH;
+| "          011      ~1111    = *RdRnRmRot
+                                  pattern := cccc01101000nnnnddddrr000111mmmm;
+                                  rule := SXTAB16;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011010001111ddddrr000111mmmm;
+                                  rule := SXTB16;
+| "          101      -        = *RdRnRmGE
+                                  pattern := cccc01101000nnnndddd11111011mmmm;
+                                  rule := SEL;
+| 01x        xx0      -        = *RdImmRnSh
+                                 pattern := cccc0110101iiiiiddddiiiiis01nnnn;
+                                 rule := SSAT;
+| 010        001      -        = *RdImmRn
+                                 pattern := cccc01101010iiiidddd11110011nnnn;
+                                 rule := SSAT16;
+| "          011      ~1111    = *RdRnRmRot
+                                 pattern := cccc01101010nnnnddddrr000111mmmm;
+                                 rule := SXTAB;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011010101111ddddrr000111mmmm;
+                                  rule := SXTB;
+| 011        001      -        = *RdRm
+                                  pattern := cccc011010111111dddd11110011mmmm;
+                                  rule := REV;
+| "          011      ~1111    = *RdRnRmRot
+                                  pattern := cccc01101011nnnnddddrr000111mmmm;
+                                  rule := SXTAH;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011010111111ddddrr000111mmmm;
+                                  rule := SXTH;
+| "          101      -        = *RdRm
+                                  pattern := cccc011010111111dddd11111011mmmm;
+                                  rule := REV16;
+| 100        011      ~1111    = *RdRnRmRot
+                                  pattern := cccc01101100nnnnddddrr000111mmmm;
+                                  rule := UXTAB16;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011011001111ddddrr000111mmmm;
+                                  rule := UXTB16;
+| 11x        xx0      -        = *URdImmRnSh
+                                  pattern := cccc0110111iiiiiddddiiiiis01nnnn;
+                                  rule := USAT;
+| 110        001      -        = *URdImmRn
+                                  pattern := cccc01101110iiiidddd11110011nnnn;
+                                  rule := USAT16;
+| "          011      ~1111    = *RdRnRmRot
+                                  pattern := cccc01101110nnnnddddrr000111mmmm;
+                                  rule := UXTAB;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011011101111ddddrr000111mmmm;
+                                  rule := UXTB;
+| 111        001      -        = *RdRmRbit
+                                  pattern := cccc011011111111dddd11110011mmmm;
+                                  rule := RBIT;
+| "          011      ~1111    = *RdRnRmRot
+                                  pattern := cccc01101111nnnnddddrr000111mmmm;
+                                  rule := UXTAH;
+| "          "        1111     = *RdRmRot
+                                  pattern := cccc011011111111ddddrr000111mmmm;
+                                  rule := UXTH;
+| "          101      -        = *RdRm
+                                  pattern := cccc011011111111dddd11111011mmmm;
+                                  rule := REVSH;
+| else:                        = Undefined  # Note on table description.
 +--
 
 +-- signed_multiply_signed_and_unsigned_divide (See Section A5.4.4)

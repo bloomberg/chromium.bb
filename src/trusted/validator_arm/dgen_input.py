@@ -45,7 +45,7 @@ bit_expr7      ::= bit_expr8 |                                 # mul ops
 bit_expr8      ::= bit_expr9 ('=' bitpattern)?                 # bit check
 bit_expr9      ::= bit_expr10 (':' bit_expr10)*                # concat
 bit_expr10     ::= bit_expr11 | bit_expr10 '(' int (':' int)? ')' # bit range
-bit_expr11     ::= int | id | bit_set | '(' bit_expr ')' | call
+bit_expr11     ::= int | nondecimal_int | id | bit_set | '(' bit_expr ')' | call
 bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'
 bitpattern     ::= word | negated_word
 call           ::= word '(' (bit_expr (',' bit_expr)*)? ')'
@@ -56,15 +56,17 @@ decoder        ::= (id ('=>' id)?)?
 decoder_action ::= '=" decoder_defn
 decoder_defn   ::= (decoder (fields? action_option* |
                              action_options_deprecated arch?)
-                   | '*' (int | id) fields? action_option*)
+                   | '*' (int | id) ('-' field_names)? fields? action_option*)
 decoder_method ::= '->' id
 default_row    ::= 'else' ':' action
+field_names    ::= '{' (id (',' id)*)? '}'
 fields         ::= '{' column (',' column)* '}'
 footer         ::= '+' '-' '-'
 header         ::= "|" column+
 int            ::= word     (where word is a sequence of digits)
 id             ::= word     (where word is sequence of letters, digits and _)
 negated_word   ::= '~' word
+nondecimal_int ::= word     (where word is a hexidecimal or bitstring pattern)
 parenthesized_exp ::= '(' (word | punctuation)+ ')'
 pat_bit_set        ::= '{' (bitpattern (',' bitpattern)*)? '}'
 pat_row        ::= pattern+ action
@@ -78,8 +80,8 @@ table_actions  ::= ( ('*' (int | id) decoder_defn)+ footer)?
 table_desc     ::= '+' '-' '-' id citation?
 
 Note that action_options_deprecated is deprecated, and one should generate
-a sequence of action_option's. For action_options_depcrected, the interpretation
-is as follows:
+a sequence of action_option's. For action_options_depcrected, the
+interpretation is as follows:
    id[1] = Arm rule action corresponds to.
    word = Bit pattern of rule.
    rule_restrict = Name defining additional constraints (parse and safety)
@@ -123,6 +125,12 @@ _PREDEFINED_CONSTS = {
     'false': dgen_core.BoolValue(False),
     'inst': dgen_core.Instruction(),
     }
+
+# Predefined regular expressions.
+_DECIMAL_PATTERN = re.compile(r'^([0-9]+)$')
+_HEXIDECIMAL_PATTERN = re.compile(r'^0x([0-9a-fA-F]+)$')
+_BITSTRING_PATTERN = re.compile(r'^\'([01]+)\'$')
+_ID_PATTERN = re.compile(r'^[a-zA-z][a-zA-z0-9_]*$')
 
 # When true, catch all bugs when parsing and report line.
 _CATCH_EXCEPTIONS = True
@@ -431,9 +439,12 @@ class Parser(object):
     return value
 
   def _bit_expr11(self, context):
-    """bit_expr11 ::= int | id | bit_set | '(' bit_expr ')' | call"""
+    """bit_expr11 ::= int | nondecimal_int | id | bit_set |
+                     '(' bit_expr ')' | call"""
     if self._is_int():
       return dgen_core.Literal(self._int())
+    elif self._is_nondecimal_int():
+      return self._nondecimal_int()
     elif self._next_token().kind == '{':
       return self._bit_set(context)
     elif self._next_token().kind == '(':
@@ -445,7 +456,7 @@ class Parser(object):
       # Note: we defer input like "foo(2)" to being a (bit field) column.
       # If you want to recognize "foo(2)" as a function call, write 'foo((2))'
       return self._call(context)
-    else:
+    elif self._is_id():
       name = self._id()
       value = context.find(name)
       if not value:
@@ -456,6 +467,8 @@ class Parser(object):
         # definition will be available when the context is printed.
         context.define(name, value)
       return dgen_core.IdRef(name, value)
+    else:
+      self._unexpected("Don't understand value: %s" % self._next_token().value)
 
   def _bit_set(self, context):
     """bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'"""
@@ -554,9 +567,10 @@ class Parser(object):
     return action
 
   def _decoder_defn(self, starred_actions):
-    """decoder_defnn ::=  (decoder (fields? action_option* |
-                                    action_options_deprecated arch?)
-                           | '*' (int | id) fields? action_option*)
+    """decoder_defn ::=  (decoder (fields? action_option* |
+                                   action_options_deprecated arch?)
+                         | '*' (int | id) ('-' field_names)?
+                               fields? action_option*)
     """
     if self._next_token().kind == '*':
       return self._decoder_action_extend(starred_actions)
@@ -580,7 +594,7 @@ class Parser(object):
     return action
 
   def _decoder_action_extend(self, starred_actions):
-    """'*' (int | id) fields? action_option*
+    """'*' (int | id) ('-' field_names)? fields? action_option*
 
        Helper function to _decoder_action."""
     self._read_token('*')
@@ -595,7 +609,14 @@ class Parser(object):
     # Create an initial copy, and define starred action as
     # inheriting definition.
     action = dgen_core.DecoderAction()
-    action.inherits(indexed_action)
+
+    # Get the set of field names.
+    fields = []
+    if self._next_token().kind == '-':
+      self._read_token('-')
+      fields = self._field_names()
+
+    action.inherits(indexed_action, fields)
 
     # Recognize fields if applicable.
     if self._next_token().kind == '{':
@@ -622,6 +643,32 @@ class Parser(object):
     if not table.add_default_row(action):
       self._unexpected('Unable to install row default')
     return (None, action)
+
+  def _field_names(self):
+    """'{' (id (',' id)*)? '}'
+
+       Note: To capture predefined actions, we allow special
+       action keywords to also apply.
+       """
+    names = []
+    self._read_token('{')
+    if self._is_field_name():
+      names.append(self._read_token().value)
+      while self._next_token().kind == ',':
+        self._read_token(',')
+        if self._is_field_name():
+          name == self._read_token().value
+          if name in names:
+            raise Exception("Repeated field name: %s" % name)
+          names.append(name)
+        else:
+          raise Exception("field name expected, found %s" %
+                          self._next_token().value)
+    self._read_token('}')
+    return names
+
+  def _field_name_next(self):
+    return self._is_id() or self._is_action_option()
 
   def _fields(self, context):
     """fields         ::= '{' column (',' column)* '}'"""
@@ -651,16 +698,38 @@ class Parser(object):
     while self._is_column():
       self._add_column(table)
 
+  def _nondecimal_int(self):
+    """nondecimal_int ::= word
+
+       where word is a hexidecimal or bitstring pattern."""
+    word = self._read_token('word').value
+
+    match = _HEXIDECIMAL_PATTERN.match(word)
+    if match:
+      return Literal(int(match.group(1), 16))
+
+    match = _BITSTRING_PATTERN.match(word)
+    if match:
+      # TODO(karl): Use a separate bit expression class to
+      # denoten bit pattern strings.
+      text = match.group(1)
+      l = dgen_core.Literal(int(text, 2))
+      return dgen_core.BitField(l, len(text) - 1, 0)
+
+    raise Exception('Nondecimal integer expected but not found: %s' % word)
+
   def _int(self):
     """ int ::= word
 
     Int is a sequence of digits. Returns the corresponding integer.
     """
-    if self._is_int():
-      return int(self._read_token('word').value)
-    else:
-      self._unexpected(
-          'integer expected but found "%s"' % self._next_token())
+    word = self._read_token('word').value
+    match = _DECIMAL_PATTERN.match(word)
+    if match:
+      return int(match.group(1))
+
+    self._unexpected(
+        'integer expected but found "%s"' % word)
 
   def _id(self):
     """ id ::= word
@@ -668,11 +737,8 @@ class Parser(object):
     Word starts with a letter, and followed by letters, digits,
     and underscores. Returns the corresponding identifier.
     """
-    ident = self._read_token('word').value
-    m = re.match(r'^[a-zA-z][a-zA-z0-9_]*$', ident)
-    if not m:
-      self._unexpected('"%s" is not a valid identifier' % ident)
-    return ident
+    if self._is_id():
+      return self._read_token('word').value
 
   def _named_value(self, context):
     """named_value    ::= id ':=' bit_expr."""
@@ -841,7 +907,7 @@ class Parser(object):
     self._footer()
 
   def _table_actions(self):
-    """table_actions ::= ( ('*' (int | id) decoder_defn)+ footer)?"""
+    """table_actions  ::= ( ('*' (int | id) decoder_defn)+ footer)?"""
     starred_actions = {}
     if self._next_token().kind != '*': return starred_actions
     while self._next_token().kind == '*':
@@ -935,11 +1001,24 @@ class Parser(object):
             matches = True
     return (tokens, matches)
 
+  def _is_id(self):
+    word = self._next_token()
+    if word.kind != 'word': return False
+    return _ID_PATTERN.match(word.value)
+
+  def _is_field_name(self):
+    return self._is_id() or self._is_action_option()
+
   def _is_int(self):
     """Tests if an integer occurs next."""
-    if self._next_token().kind != 'word': return False
+    if self._next_token().kind != 'word': return None
+    return _DECIMAL_PATTERN.match(self._next_token().value)
+
+  def _is_nondecimal_int(self):
+    if self._next_token().kind != 'word': return None
     word = self._next_token().value
-    return re.match(r'^([0-9]+)$', word)
+    return (_HEXIDECIMAL_PATTERN.match(word) or
+            _BITSTRING_PATTERN.match(word))
 
   def _is_name_equals(self):
     """Returns true if input begins with 'name='."""

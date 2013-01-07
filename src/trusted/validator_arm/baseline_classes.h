@@ -716,18 +716,6 @@ class Unary2RegisterOpNotRmIsPc : public Unary2RegisterOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPc);
 };
 
-// Unary2RegisterOpNotRmIsPc where the conditions flags are not set, even
-// though bit S may be true.
-class Unary2RegisterOpNotRmIsPcNoCondUpdates
-    : public Unary2RegisterOpNotRmIsPc {
- public:
-  Unary2RegisterOpNotRmIsPcNoCondUpdates() {}
-  virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcNoCondUpdates);
-};
-
 // Models a 2 register immediate shifted unary operation of the form:
 // Op(S)<c> <Rd>, <Rm> (, #<imm> | {, <shift> })
 // +--------+--------------+--+--------+--------+----------+----+--+--------+
@@ -1926,6 +1914,7 @@ class Unary2RegisterImmedShiftedOp : public ClassDecoder {
   Unary2RegisterImmedShiftedOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
   // The immediate value stored in the instruction.
   uint32_t ImmediateValue(const Instruction& i) const {
@@ -1934,18 +1923,6 @@ class Unary2RegisterImmedShiftedOp : public ClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOp);
-};
-
-// Implements a Unary2RegisterImmedShiftedOp with the constraint
-// that if either Rm or Rd is Pc, the instruction is unpredictable.
-class Unary2RegisterImmedShiftedOpRegsNotPc
-    : public Unary2RegisterImmedShiftedOp {
- public:
-  Unary2RegisterImmedShiftedOpRegsNotPc() {}
-  virtual SafetyLevel safety(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpRegsNotPc);
 };
 
 // Models a 2-register immediate-shifted unary operation with saturation
@@ -1984,6 +1961,7 @@ class Unary2RegisterSatImmedShiftedOp : public ClassDecoder {
   Unary2RegisterSatImmedShiftedOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterSatImmedShiftedOp);
@@ -2026,67 +2004,6 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOp);
-};
-
-// Models a 3-register immediate-shifted binary operation of the form:
-// Op(S)<c> <Rd>, <Rn>, <Rm> {,<shift>}
-// +--------+--------------+--+--------+--------+----------+----+--+--------+
-// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
-// +--------+--------------+--+--------+--------+----------+----+--+--------+
-// |  cond  |              | S|   Rn   |   Rd   |   imm5   |type|  |   Rm   |
-// +--------+--------------+--+--------+--------+----------+----+--+--------+
-// Definitions:
-//    Rd - The destination register.
-//    Rn - The first operand register.
-//    Rm - The second operand that is (optionally) shifted.
-//    shift = DecodeImmShift(type, imm5) is the amount to shift.
-//
-// NaCl disallows writing to PC to cause a jump.
-//
-// Implements:
-//    ADC(register) A1 A8-16  -- Shouldn't parse when Rd=15 and S=1.
-//    ADD(register) A1 A8-24  -- Shouldn't parse when Rd=15 and S=1, or Rn=13.
-//    AND(register) A1 A8-36  -- Shouldn't parse when Rd=15 and S=1.
-//    BIC(register) A1 A8-52  -- Shouldn't parse when Rd=15 and S=1.
-//    EOR(register) A1 A8-96  -- Shouldn't parse when Rd=15 and S=1.
-//    ORR(register) A1 A8-230 -- Shouldn't parse when Rd=15 and S=1.
-//    RSB(register) A1 A8-286 -- Shouldn't parse when Rd=15 and S=1.
-//    RSC(register) A1 A8-292 -- Shouldn't parse when Rd=15 and S=1.
-//    SBC(register) A1 A8-304 -- Shouldn't parse when Rd=15 and S=1.
-//    SUB(register) A1 A8-422 -- Shouldn't parse when Rd=15 and S=1, or Rn=13.
-class Binary3RegisterImmedShiftedOp : public ClassDecoder {
- public:
-  // Interfaces for components in the instruction.
-  static const RegBits0To3Interface m;
-  static const ShiftTypeBits5To6Interface shift_type;
-  static const Imm5Bits7To11Interface imm;
-  static const RegBits12To15Interface d;
-  static const RegBits16To19Interface n;
-  static const UpdatesConditionsBit20Interface conditions;
-  static const ConditionBits28To31Interface cond;
-
-  // Methods for class.
-  Binary3RegisterImmedShiftedOp() : ClassDecoder() {}
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
-  // The shift value to use.
-  uint32_t ShiftValue(const Instruction& i) const {
-    return shift_type.DecodeImmShift(i, imm.value(i));
-  }
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOp);
-};
-
-// Implements a Binary3RegisterImmedShiftedOp with the constraint
-// that if either Rn, Rm, or Rd is Pc, the instruction is unpredictable.
-class Binary3RegisterImmedShiftedOpRegsNotPc
-    : public Binary3RegisterImmedShiftedOp {
- public:
-  Binary3RegisterImmedShiftedOpRegsNotPc() {}
-  virtual SafetyLevel safety(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOpRegsNotPc);
 };
 
 // Models a 4-register-shifted binary operation of the form:
